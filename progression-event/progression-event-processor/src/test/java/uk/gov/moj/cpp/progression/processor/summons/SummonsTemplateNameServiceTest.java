@@ -9,43 +9,46 @@ import static uk.gov.justice.core.courts.SummonsType.SJP_REFERRAL;
 
 import uk.gov.justice.core.courts.SummonsType;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.stream.Stream;
 
-@RunWith(DataProviderRunner.class)
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class SummonsTemplateNameServiceTest {
 
-    @DataProvider
-    public static Object[][] defendantCaseSummonsSpecifications() {
-        return new Object[][]{
-                {FIRST_HEARING, SummonsCode.MCA, "MCA", "E", false},
-                {FIRST_HEARING, SummonsCode.WITNESS, "MCA", "E", false},
-                {FIRST_HEARING, SummonsCode.EITHER_WAY, "EitherWay", "E", false},
-                {FIRST_HEARING, SummonsCode.MCA, "MCA", "B", true},
-                {FIRST_HEARING, SummonsCode.WITNESS, "MCA", "B", true},
-                {FIRST_HEARING, SummonsCode.EITHER_WAY, "EitherWay", "B", true},
-                {SJP_REFERRAL, null, "SjpReferral", "E", false},
-                {SJP_REFERRAL, null, "SjpReferral", "B", true}
-        };
+    public static Stream<Arguments> defendantCaseSummonsSpecifications() {
+        return Stream.of(
+                Arguments.of(FIRST_HEARING, SummonsCode.MCA, "MCA", "E", false),
+                Arguments.of(FIRST_HEARING, SummonsCode.WITNESS, "MCA", "E", false),
+                Arguments.of(FIRST_HEARING, SummonsCode.EITHER_WAY, "EitherWay", "E", false),
+                Arguments.of(FIRST_HEARING, SummonsCode.MCA, "MCA", "B", true),
+                Arguments.of(FIRST_HEARING, SummonsCode.WITNESS, "MCA", "B", true),
+                Arguments.of(FIRST_HEARING, SummonsCode.EITHER_WAY, "EitherWay", "B", true),
+                Arguments.of(SJP_REFERRAL, null, "SjpReferral", "E", false),
+                Arguments.of(SJP_REFERRAL, null, "SjpReferral", "B", true)
+        );
     }
 
-    @DataProvider
-    public static Object[][] applicationSummonsSpecifications() {
-        return new Object[][]{
-                {APPLICATION, "Application", "E", false},
-                {APPLICATION, "Application", "B", true},
-                {BREACH, "Breach", "E", false},
-                {BREACH, "Breach", "B", true},
-        };
+    public static Stream<Arguments> applicationSummonsSpecifications() {
+        return Stream.of(
+                Arguments.of(APPLICATION, "Application", "E", false),
+                Arguments.of(APPLICATION, "Application", "B", true),
+                Arguments.of(BREACH, "Breach", "E", false),
+                Arguments.of(BREACH, "Breach", "B", true)
+        );
     }
 
-    private SummonsTemplateNameService service = new SummonsTemplateNameService();
+    @InjectMocks
+    private SummonsTemplateNameService service;
 
-    @UseDataProvider("defendantCaseSummonsSpecifications")
-    @Test
+    @MethodSource("defendantCaseSummonsSpecifications")
+    @ParameterizedTest
     public void getCaseSummonsDefendantTemplateName(final SummonsType summonsRequired, final SummonsCode summonsCode, final String templateName, final String language, final boolean isWelsh) {
         assertThat(service.getCaseSummonsTemplateName(summonsRequired, summonsCode, isWelsh), is("SP" + language + "_" + templateName));
     }
@@ -60,8 +63,8 @@ public class SummonsTemplateNameServiceTest {
         assertThat(service.getCaseSummonsParentTemplateName(true), is("SPB_FirstHearingParentGuardian"));
     }
 
-    @UseDataProvider("applicationSummonsSpecifications")
-    @Test
+    @MethodSource("applicationSummonsSpecifications")
+    @ParameterizedTest
     public void getApplicationTemplateName(final SummonsType summonsRequired, final String templateName, final String language, final boolean isWelsh) {
         assertThat(service.getApplicationTemplateName(summonsRequired, isWelsh), is("SP" + language + "_" + templateName));
     }

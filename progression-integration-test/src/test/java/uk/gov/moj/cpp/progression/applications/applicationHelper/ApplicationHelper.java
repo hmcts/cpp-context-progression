@@ -24,7 +24,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 
 public class ApplicationHelper {

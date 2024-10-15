@@ -5,9 +5,9 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -19,7 +19,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.service.MaterialService.MATERIAL_METADETA_QUERY;
-import static uk.gov.moj.cpp.progression.service.MaterialService.UPLOAD_MATERIAL;
 
 import uk.gov.justice.core.courts.CourtsDocumentUploaded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -30,6 +29,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.material.client.MaterialClient;
 
 import java.io.ByteArrayInputStream;
@@ -43,67 +43,71 @@ import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MaterialServiceTest {
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
+
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
+
     @Mock
     Metadata metadata;
+
     @InjectMocks
     private MaterialService service;
+
     @Mock
     private Sender sender;
+
     @Mock
     private Requester requester;
+
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+
     @Mock
     private JsonEnvelope envelope;
+
     @Mock
     private JsonObject courtDocumentUploadJson;
+
     @Mock
     private CourtsDocumentUploaded courtsDocumentUploaded;
+
     @Mock
     private JsonEnvelope finalEnvelope;
+
     @Mock
     private Function<Object, JsonEnvelope> enveloperFunction;
+
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     @Mock
     private MaterialClient materialClient;
+
     @Mock
     private Response response;
-
-    @Before
-    public void initMocks() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test
     public void shouldCallMaterialUpload() {
         final String userId = UUID.randomUUID().toString();
-        when(enveloper.withMetadataFrom(envelope, UPLOAD_MATERIAL)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(envelope.metadata()).thenReturn(metadata);
         when(metadata.userId()).thenReturn(Optional.of(userId));
         //when
@@ -202,6 +206,6 @@ public class MaterialServiceTest {
         final InputStream inputStream = new ByteArrayInputStream("initialString".getBytes());
         when(response.readEntity(InputStream.class)).thenReturn(inputStream);
         final byte[] documentContent = service.getDocumentContent(randomUUID(), randomUUID());
-        assertEquals("Material stream size not as expected", 13, documentContent.length);
+        assertEquals(13, documentContent.length, "Material stream size not as expected");
     }
 }

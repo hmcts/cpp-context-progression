@@ -1,26 +1,22 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAKey;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+import javax.inject.Inject;
+
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAAssociationEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.DefendantLAAKey;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.DefendantLAAAssociationRepository;
-
-import javax.inject.Inject;
-import javax.json.Json;
-import java.util.List;
-import java.util.UUID;
-
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(CdiTestRunner.class)
 public class DefendantLAAAssociationRepositoryTest {
@@ -36,7 +32,7 @@ public class DefendantLAAAssociationRepositoryTest {
 
 
     @Before
-    public void setUp(){
+    public void setUp() {
         final DefendantLAAAssociationEntity defendantLAAAssociationEntity = new DefendantLAAAssociationEntity();
         defendantLAAAssociationEntity.setDefendantLAAKey(new DefendantLAAKey(DEFENDANT_ID, LAA_CONTRACT_NUMBER));
         defendantLAAAssociationEntity.setAssociatedByLAA(false);
@@ -50,7 +46,7 @@ public class DefendantLAAAssociationRepositoryTest {
 
     @Test
     public void shouldGetDefenceLAAAssociationByPrimaryKey() {
-        final DefendantLAAKey defendantLAAKey  =new DefendantLAAKey(DEFENDANT_ID, LAA_CONTRACT_NUMBER);
+        final DefendantLAAKey defendantLAAKey = new DefendantLAAKey(DEFENDANT_ID, LAA_CONTRACT_NUMBER);
         final DefendantLAAAssociationEntity actualEntity = defendantLAAAssociationRepository.findBy(defendantLAAKey);
         assertThat(actualEntity.getDefendantLAAKey().getDefendantId(), is(DEFENDANT_ID));
     }

@@ -5,6 +5,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntit
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
@@ -17,4 +18,8 @@ public interface CourtDocumentIndexRepository extends EntityRepository<CourtDocu
             singleResult = SingleResultType.OPTIONAL)
     CourtDocumentIndexEntity findByCaseIdDefendantIdAndCaseDocumentId(@QueryParam("caseId") UUID caseId, @QueryParam("defendantId") UUID defendantId,
                                                                       @QueryParam("courtDocumentId") UUID courtDocumentId);
+
+    @Modifying
+    @Query(value = "update CourtDocumentIndexEntity cdie set cdie.applicationId =:newApplicationId where  cdie.applicationId =:applicationId")
+    void updateApplicationIdByApplicationId(@QueryParam("newApplicationId") UUID newApplicationId, @QueryParam("applicationId") UUID applicationId);
 }

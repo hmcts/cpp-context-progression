@@ -1,22 +1,26 @@
 package uk.gov.moj.cpp.progression.applications;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -28,11 +32,11 @@ import static uk.gov.moj.cpp.progression.applications.SummonsResultUtil.getSummo
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -40,32 +44,37 @@ import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.getP
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.moj.cpp.progression.AbstractIT;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.util.List;
 import java.util.Optional;
 
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.ReadContext;
+import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-public class GenericSummonsApplicationIT extends AbstractIT {
+@ExtendWith(JmsResourceManagementExtension.class)
+public class GenericSummonsApplicationIT {
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final String INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED = "progression.event.initiate-court-hearing-after-summons-approved";
     private static final String COURT_APPLICATION_SUMMONS_REJECTED = "progression.event.court-application-summons-rejected";
@@ -77,45 +86,33 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
     private static final String PROSECUTOR_EMAIL_ADDRESS = randomAlphanumeric(20) + "@random.com";
 
-    private MessageConsumer consumerForCourtApplicationCreated;
-    private MessageConsumer messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated;
-    private MessageConsumer consumerForInitiateCourtHearingAfterSummonsApproved;
-    private MessageConsumer consumerForSummonsRejected;
-    private MessageConsumer messageConsumerClientPublicSummonsApproved;
-    private MessageConsumer messageConsumerClientPublicSummonsRejected;
+    private static final JmsMessageConsumerClient messageConsumerClientPublicSummonsApproved = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerClientPublicSummonsRejected = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForInitiateCourtHearingAfterSummonsApproved = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForSummonsRejected = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_SUMMONS_REJECTED).getMessageConsumerClient();
 
     private String rejectionReason;
     private String prosecutionCost;
     private boolean personalService;
     private boolean summonsSuppressed;
 
-    @Before
-    public void setUp() {
-        messageConsumerClientPublicSummonsApproved = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED);
-        messageConsumerClientPublicSummonsRejected = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED);
-        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
-        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        consumerForInitiateCourtHearingAfterSummonsApproved = privateEvents.createPrivateConsumer(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED);
-        consumerForSummonsRejected = privateEvents.createPrivateConsumer(COURT_APPLICATION_SUMMONS_REJECTED);
+    @BeforeAll
+    public static void setUpClass() {
         stubInitiateHearing();
         IdMapperStub.setUp();
         NotificationServiceStub.setUp();
+    }
 
+    @BeforeEach
+    public void setUp() {
         rejectionReason = randomAlphabetic(20);
         prosecutionCost = "£" + integer(100);
         personalService = BOOLEAN.next();
         summonsSuppressed = BOOLEAN.next();
     }
 
-    @After
-    public void tearDown() throws Exception {
-        consumerForCourtApplicationCreated.close();
-        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated.close();
-        messageConsumerClientPublicSummonsApproved.close();
-        messageConsumerClientPublicSummonsRejected.close();
-        consumerForInitiateCourtHearingAfterSummonsApproved.close();
-        consumerForSummonsRejected.close();
-    }
 
     @Test
     public void shouldInitiateCourtHearingAfterSummonsApprovedPublicHearingResultedV2() throws Exception {
@@ -128,7 +125,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-linked-application.json");
 
-        verifyCourtApplicationCreatedPrivateEvent();
+        verifyCourtApplicationCreatedPrivateEvent(applicationId);
 
         final JsonObject hearing = getHearingInMessagingQueueForBoxWorkReferred();
 
@@ -150,14 +147,10 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         final JsonObject publicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, summonResultJsonObject);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_RESULTED_V2, publicHearingResultedJsonObject,
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED_V2)
-                        .withUserId(userId)
-                        .build());
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), publicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
-        final String newHearingId = getNewHearingId();
+        final String newHearingId = getNewHearingId(applicationId);
 
         verifyCourtHearingInitiate(newHearingId);
 
@@ -177,7 +170,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-linked-application.json");
 
-        verifyCourtApplicationCreatedPrivateEvent();
+        verifyCourtApplicationCreatedPrivateEvent(applicationId);
 
         final JsonObject hearing = getHearingInMessagingQueueForBoxWorkReferred();
 
@@ -199,12 +192,8 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         final JsonObject publicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, summonResultJsonObject);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_RESULTED_V2, publicHearingResultedJsonObject,
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED_V2)
-                        .withUserId(userId)
-                        .build());
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), publicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
 
         verifySummonsRejected(applicationId);
@@ -228,7 +217,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-first-hearing-summons-linked-application.json");
 
-        verifyCourtApplicationCreatedPrivateEvent();
+        verifyCourtApplicationCreatedPrivateEvent(applicationId);
 
         final JsonObject hearing = getHearingInMessagingQueueForBoxWorkReferred();
 
@@ -250,12 +239,8 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         final JsonObject publicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, summonResultJsonObject);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_RESULTED_V2, publicHearingResultedJsonObject,
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED_V2)
-                        .withUserId(userId)
-                        .build());
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), publicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
 
         verifyCourtApplicationSummonsApprovedPublicEvent(applicationId, caseId);
@@ -272,7 +257,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-first-hearing-summons-linked-application.json");
 
-        verifyCourtApplicationCreatedPrivateEvent();
+        verifyCourtApplicationCreatedPrivateEvent(applicationId);
 
         final JsonObject hearing = getHearingInMessagingQueueForBoxWorkReferred();
 
@@ -294,12 +279,8 @@ public class GenericSummonsApplicationIT extends AbstractIT {
 
         final JsonObject publicHearingResultedJsonObject = createPublicHearingResultedV2(hearing, summonResultJsonObject);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_HEARING_RESULTED_V2, publicHearingResultedJsonObject,
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED_V2)
-                        .withUserId(userId)
-                        .build());
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), publicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         verifySummonsRejected(applicationId);
         verifyCourtApplicationSummonsRejectedPublicEvent(applicationId);
@@ -307,8 +288,9 @@ public class GenericSummonsApplicationIT extends AbstractIT {
         final List<String> expectedEmailDetails = newArrayList(PROSECUTOR_EMAIL_ADDRESS, "Robert12 Smith12, randomreference234", "Robert13 Smith13, randomreference345", rejectionReason);
         verifyEmailNotificationIsRaisedWithoutAttachment(expectedEmailDetails);
     }
+
     private void verifySummonsRejected(String applicationId) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForSummonsRejected);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForSummonsRejected);
         assertTrue(message.isPresent());
         final String rejectedApplicationId = message.get().getJsonObject("courtApplication").getString("id");
         assertThat(rejectedApplicationId, is(applicationId));
@@ -392,28 +374,28 @@ public class GenericSummonsApplicationIT extends AbstractIT {
         pollForResponse("/hearingSearch/" + newHearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(newHearingId)));
     }
 
-    private void verifyCourtApplicationCreatedPrivateEvent() {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
-        assertTrue(message.isPresent());
-        final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        assertThat(applicationReference, is(notNullValue()));
+    private void verifyCourtApplicationCreatedPrivateEvent(final String applicationId) {
+        final JsonPath message = retrieveMessageAsJsonPath(consumerForCourtApplicationCreated, isJson(allOf(withJsonPath("$.courtApplication.id", is(applicationId)))));
+        assertThat(ofNullable(message).isPresent(), is(true));
     }
 
-    private String getNewHearingId() {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(consumerForInitiateCourtHearingAfterSummonsApproved);
-        assertTrue(message.isPresent());
-        final JsonObject courtHearing = message.get().getJsonObject("courtHearing");
-        return courtHearing.getString("id");
+    private String getNewHearingId(final String applicationId) {
+        final JsonPath message = retrieveMessageAsJsonPath(consumerForInitiateCourtHearingAfterSummonsApproved, isJson(Matchers.allOf(
+                        withJsonPath("$.application.id", CoreMatchers.is(applicationId))
+                )
+        ));
+        assertThat(message, notNullValue());
+        return message.getJsonObject("courtHearing.id");
     }
 
     public JsonObject getHearingInMessagingQueueForBoxWorkReferred() {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated);
         assertTrue(message.isPresent());
         return message.get().getJsonObject("hearing");
     }
 
     public void verifyCourtApplicationSummonsApprovedPublicEvent(final String applicationId, final String caseId) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerClientPublicSummonsApproved);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicSummonsApproved);
         assertTrue(message.isPresent());
         assertThat(message.get().getString("id"), is(applicationId));
         assertThat(message.get().getString("prosecutionCaseId"), is(caseId));
@@ -425,7 +407,7 @@ public class GenericSummonsApplicationIT extends AbstractIT {
     }
 
     public void verifyCourtApplicationSummonsRejectedPublicEvent(String applicationId) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerClientPublicSummonsRejected);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicSummonsRejected);
         assertTrue(message.isPresent());
         assertThat(message.get().getString("id"), is(applicationId));
         assertThat(message.get().getJsonObject("summonsRejectedOutcome").getJsonArray("reasons").getString(0), is(rejectionReason));

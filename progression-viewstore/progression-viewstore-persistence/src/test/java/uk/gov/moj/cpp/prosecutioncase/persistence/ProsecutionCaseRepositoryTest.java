@@ -1,28 +1,18 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
-import com.google.common.collect.Sets;
-import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.inject.Inject;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import javax.inject.Inject;
+
+import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * DB integration tests for {@link ProsecutionCaseEntity} class
@@ -44,7 +34,7 @@ public class ProsecutionCaseRepositoryTest {
         repository.save(getProsecutionCase());
 
         final ProsecutionCaseEntity actual = repository.findByCaseId(CASE_ID_ONE);
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(CASE_ID_ONE, actual.getCaseId());
     }
 

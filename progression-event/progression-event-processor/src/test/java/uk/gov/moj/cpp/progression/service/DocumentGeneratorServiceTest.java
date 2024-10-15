@@ -9,9 +9,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,21 +34,13 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
-import uk.gov.moj.cpp.progression.event.nows.order.Address;
-import uk.gov.moj.cpp.progression.event.nows.order.Cases;
-import uk.gov.moj.cpp.progression.event.nows.order.Defendant;
-import uk.gov.moj.cpp.progression.event.nows.order.DefendantCaseOffences;
-import uk.gov.moj.cpp.progression.event.nows.order.NowsDocumentOrder;
 import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.progression.test.TestTemplates;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -59,16 +50,15 @@ import javax.json.JsonObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DocumentGeneratorServiceTest {
 
     @Mock
@@ -168,39 +158,9 @@ public class DocumentGeneratorServiceTest {
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
         when(fileStorer.store(any(), any())).thenReturn(randomUUID());
         when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
-        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
+        when(applicationParameters.getEmailTemplateId(any())).thenReturn(randomUUID().toString());
 
         final UUID userId = randomUUID();
-
-        final Set<DefendantCaseOffences> defendantCaseOffences = new HashSet<>();
-        defendantCaseOffences.add(DefendantCaseOffences.defendantCaseOffences()
-                .withWording("Test")
-                .build());
-
-        final NowsDocumentOrder nowsDocumentOrder = NowsDocumentOrder.nowsDocumentOrder()
-                .withCourtCentreName("CourtCenter 1")
-                .withCases(Arrays.asList(Cases.cases()
-                        .withUrn("CaseUrn1")
-                        .withDefendantCaseOffences(defendantCaseOffences)
-                        .build()))
-                .withDefendant(Defendant.defendant()
-                        .withName("Defendant1")
-                        .withDateOfBirth("20-09-1978")
-                        .withAddress(Address.address()
-                                .withLine1("78")
-                                .withLine2("Address1")
-                                .withLine3("Address2")
-                                .withLine4("Address4")
-                                .withLine5("Address5")
-                                .withPostCode("XXXXX")
-                                .build())
-                        .build())
-                .build();
-
-        when(objectToJsonObjectConverter.convert(nowsDocumentOrder)).thenReturn(nowsDocumentOrderJson);
-
-        when(documentGeneratorClient.generatePdfDocument(nowsDocumentOrderJson, nowDocumentRequest.getTemplateName(), systemUserId)).thenReturn(documentData);
-
         documentGeneratorService.generateNow(sender, originatingEnvelope, userId, nowDocumentRequest);
 
         verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());
@@ -286,7 +246,6 @@ public class DocumentGeneratorServiceTest {
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(fileStorer.store(any(), any())).thenReturn(fileId);
-        doNothing().when(materialService).uploadMaterial(any(), any(), (UUID) any());
 
         final String inputEvent = Resources.toString(getResource("finalised-form-data-with-welsh-data.json"), defaultCharset());
         final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
@@ -331,7 +290,6 @@ public class DocumentGeneratorServiceTest {
         final String fileName = "filename";
 
         when(fileStorer.store(any(), any())).thenReturn(randomUUID());
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn("http://materialUrl");
 
         documentGeneratorService.generatePdfDocument(originatingEnvelope, fileName, documentData);
         verify(fileStorer, times(1)).store(fileStorerMetaDataCaptor.capture(), fileStorerInputStreamCaptor.capture());

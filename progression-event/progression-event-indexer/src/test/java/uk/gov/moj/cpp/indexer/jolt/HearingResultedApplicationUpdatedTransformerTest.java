@@ -18,14 +18,14 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HearingResultedApplicationUpdatedTransformerTest {
 
     private final JoltTransformer joltTransformer = new JoltTransformer();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initializeJolt(joltTransformer);
     }

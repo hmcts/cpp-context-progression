@@ -3,49 +3,33 @@ package uk.gov.moj.cpp.progression.util;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.util.Optional;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 public class ReferApplicationToCourtHelper extends AbstractTestHelper {
 
-    private static final MessageConsumer publicEventsConsumerForHearingExtended =
-            QueueUtil.publicEvents.createPublicConsumer(
-                    "public.progression.events.hearing-extended");
-
-    private static final MessageConsumer applicationReferralToExistingHearingMessageConsumer =
-            QueueUtil.privateEvents.createPrivateConsumer(
-                    "progression.event.application-referral-to-existing-hearing");
-
-    private static final MessageConsumer hearingApplicationLinkCreated =
-            QueueUtil.privateEvents.createPrivateConsumer(
-                    "progression.event.hearing-application-link-created");
-
-    public ReferApplicationToCourtHelper() {
-        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer("listing.command.list-court-hearing");
-    }
-
-    public static void verifyHearingInMessagingQueueForReferToCourt() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(applicationReferralToExistingHearingMessageConsumer);
+    public static void verifyHearingInMessagingQueueForReferToCourt(final JmsMessageConsumerClient applicationReferralToExistingHearingMessageConsumer) {
+        final Optional<JsonObject> message = retrieveMessageBody(applicationReferralToExistingHearingMessageConsumer);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("courtHearing"), is(notNullValue()));
     }
 
-    public static void verifyHearingApplicationLinkCreated(final String hearingId) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(hearingApplicationLinkCreated);
+    public static void verifyHearingApplicationLinkCreated(final String hearingId, final JmsMessageConsumerClient hearingApplicationLinkCreated) {
+        final Optional<JsonObject> message = retrieveMessageBody(hearingApplicationLinkCreated);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("hearing").getString("id"), is(hearingId));
         assertThat(message.get().getJsonObject("hearing").containsKey("prosecutionCases"), is(false));
     }
 
-    public static void verifyPublicEventForHearingExtended(final String hearingId) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForHearingExtended);
+    public static void verifyPublicEventForHearingExtended(final String hearingId, final JmsMessageConsumerClient publicEventsConsumerForHearingExtended) {
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventsConsumerForHearingExtended);
         assertTrue(message.isPresent());
         final JsonObject publicHearingExtendedEvent = message.get();
         assertThat(publicHearingExtendedEvent.getString("hearingId"), is(hearingId));

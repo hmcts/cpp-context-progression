@@ -6,10 +6,9 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.FormType.PET;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -51,15 +50,15 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PetCommandHandlerTest {
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
@@ -82,7 +81,7 @@ public class PetCommandHandlerTest {
     @Spy
     private PetCommandHandler petCommandHandler;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
@@ -110,7 +109,7 @@ public class PetCommandHandlerTest {
 
         final Envelope<CreatePetForm> envelope = envelopeFrom(metadata, createPetForm);
 
-        when(caseAggregate.createPetForm(any(), any(), any(), anyObject(), anyList(), any(), any(), any(), any(), any()))
+        when(caseAggregate.createPetForm(any(), any(), any(), any(), anyList(), any(), any(), any(), any(), any()))
                 .thenReturn(Stream.of(PetFormCreated.petFormCreated()
                         .withCaseId(createPetForm.getCaseId())
                         .withFormId(createPetForm.getFormId())
@@ -239,7 +238,7 @@ public class PetCommandHandlerTest {
 
         final Envelope<UpdatePetDetail> envelope = envelopeFrom(metadata, updatePetDetail);
 
-        when(caseAggregate.updatePetDetail(any(), any(), anyObject(), any(), any()))
+        when(caseAggregate.updatePetDetail(any(), any(), any(), any(), any()))
                 .thenReturn(Stream.of(PetDetailUpdated.petDetailUpdated()
                         .withCaseId(updatePetDetail.getCaseId())
                         .withPetId(updatePetDetail.getPetId())

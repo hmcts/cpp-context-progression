@@ -2,21 +2,23 @@ package uk.gov.moj.cpp.progression.service;
 
 import static java.util.stream.Collectors.joining;
 
-import org.apache.http.HttpStatus;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.moj.cpp.listing.common.azure.ProvisionalBookingService;
+import uk.gov.moj.cpp.listing.common.service.ProvisionalBookingService;
 
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Response;
+
+import org.apache.http.HttpStatus;
 
 public class ProvisionalBookingServiceAdapter {
 

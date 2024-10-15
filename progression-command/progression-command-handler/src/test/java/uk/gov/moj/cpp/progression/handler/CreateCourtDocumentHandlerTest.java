@@ -3,10 +3,10 @@ package uk.gov.moj.cpp.progression.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -45,15 +45,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CreateCourtDocumentHandlerTest {
 
     @Mock
@@ -76,16 +76,6 @@ public class CreateCourtDocumentHandlerTest {
     private CreateCourtDocumentHandler createCourtDocumentHandler;
 
 
-    private CourtDocumentAggregate aggregate;
-
-
-    @Before
-    public void setup() {
-        aggregate = new CourtDocumentAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(aggregate);
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(new CreateCourtDocumentHandler(), isHandler(COMMAND_HANDLER)
@@ -99,7 +89,11 @@ public class CreateCourtDocumentHandlerTest {
         final CreateCourtDocument createCourtDocument =
                 CreateCourtDocument.createCourtDocument().withCourtDocument(buildCourtDocument()).build();
 
-        aggregate.apply(createCourtDocument.getCourtDocument());
+        final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
+
+        courtDocumentAggregate.apply(createCourtDocument.getCourtDocument());
 
 
         final Metadata metadata = Envelope

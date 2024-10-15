@@ -8,26 +8,24 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyHearingIsEmpty;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-
-import com.jayway.restassured.path.json.JsonPath;
-import org.junit.After;
-import org.junit.Assert;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
@@ -35,45 +33,35 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import io.restassured.path.json.JsonPath;
+import org.json.JSONException;
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
 
     private static final String PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT = "public.events.hearing.marked-as-duplicate";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private MessageProducer messageProducerClientPublic;
-    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
-    private MessageConsumer messageConsumerHearingMarkedAsDuplicate;
-    private MessageConsumer messageConsumerHearingMarkedAsDuplicateForCase;
-    private MessageConsumer messageConsumerHearingPopulatedToProbationCaseWorker;
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+
+    private static final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerHearingMarkedAsDuplicate = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.hearing-marked-as-duplicate").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerHearingMarkedAsDuplicateForCase = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.hearing-marked-as-duplicate-for-case").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.hearing-populated-to-probation-caseworker").getMessageConsumerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         HearingStub.stubInitiateHearing();
-        messageProducerClientPublic = publicEvents.createPublicProducer();
-        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
-        messageConsumerHearingMarkedAsDuplicate = privateEvents.createPrivateConsumer("progression.event.hearing-marked-as-duplicate");
-        messageConsumerHearingMarkedAsDuplicateForCase = privateEvents.createPrivateConsumer("progression.event.hearing-marked-as-duplicate-for-case");
-        messageConsumerHearingPopulatedToProbationCaseWorker = privateEvents.createPrivateConsumer("progression.events.hearing-populated-to-probation-caseworker");
-
-    }
-
-    @After
-    public void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
-        messageConsumerHearingPopulatedToProbationCaseWorker.close();
     }
 
     @Test
-    public void shouldHearingAsMarkedDuplicate() throws IOException, JMSException {
+    public void shouldHearingAsMarkedDuplicate() throws IOException, JMSException, JSONException {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
@@ -84,34 +72,19 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
         final String duplicateHearingId = createHearingAndReturnHearingId(caseId, defendantId, duplicateUrn);
         final String hearingId = createHearingAndReturnHearingId(caseId, defendantId, urn);
 
-        Metadata metadata = JsonEnvelope.metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, duplicateHearingId, defendantId, courtCentreId, "Lavender Hill Magistrate's Court");
 
+        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
 
-        try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2")) {
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-            sendMessage(messageProducerClientPublic,
-                    PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
-
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        }
-
-        metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT)
-                .withUserId(userId)
-                .build();
+        doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
 
         final JsonObject hearingMarkedAsDuplicateJson = getHearingMarkedAsDuplicateObject(caseId, duplicateHearingId, defendantId, courtCentreId);
 
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT, hearingMarkedAsDuplicateJson, metadata);
+        final JsonEnvelope publicEventDuplicateEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT, userId), hearingMarkedAsDuplicateJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_MARKED_AS_DUPLICATE_EVENT, publicEventDuplicateEnvelope);
 
         verifyInMessagingQueueForHearingMarkedAsDuplicate();
         verifyInMessagingQueueForHearingMarkedAsDuplicateForCase();
@@ -119,17 +92,17 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds[*]", hasSize(1)));
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds[0]", equalTo(hearingId)));
 
-        final JsonPath messageDaysMatchers = QueueUtil.retrieveMessage(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(withJsonPath("$.hearing.id", is(duplicateHearingId))));
+        final JsonPath messageDaysMatchers = retrieveMessageAsJsonPath(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(withJsonPath("$.hearing.id", is(duplicateHearingId))));
         Assert.assertNotNull(messageDaysMatchers);
     }
 
-    private String createHearingAndReturnHearingId(final String caseId, final String defendantId, final String urn) throws IOException {
+    private String createHearingAndReturnHearingId(final String caseId, final String defendantId, final String urn) throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId, urn);
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
                 singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
 
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
@@ -146,24 +119,25 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueueForHearingMarkedAsDuplicate() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerHearingMarkedAsDuplicate);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingMarkedAsDuplicate);
         assertTrue(message.isPresent());
     }
 
     private void verifyInMessagingQueueForHearingMarkedAsDuplicateForCase() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerHearingMarkedAsDuplicateForCase);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingMarkedAsDuplicateForCase);
         assertTrue(message.isPresent());
     }
 
     private void verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(final String hearingId) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerHearingPopulatedToProbationCaseWorker);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingPopulatedToProbationCaseWorker);
         assertTrue(message.isPresent());
         final JsonObject jsonObject = message.get();
         assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearingId));
 
     }
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }

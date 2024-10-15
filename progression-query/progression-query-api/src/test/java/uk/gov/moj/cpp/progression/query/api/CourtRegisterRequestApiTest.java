@@ -7,13 +7,13 @@ import uk.gov.moj.cpp.progression.query.CourtRegisterDocumentRequestQueryView;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-@RunWith(MockitoJUnitRunner.class)
+import org.mockito.junit.jupiter.MockitoExtension;
+@ExtendWith(MockitoExtension.class)
 public class CourtRegisterRequestApiTest {
 
     @Mock

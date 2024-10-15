@@ -6,7 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CreateHearingApplicationRequest.createHearingApplicationRequest;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -37,15 +37,15 @@ import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CreateHearingApplicationRequestHandlerTest {
 
     private static final UUID APPLICATION_PARTY_ID = randomUUID();
@@ -66,17 +66,9 @@ public class CreateHearingApplicationRequestHandlerTest {
     @InjectMocks
     private CreateHearingApplicationRequestHandler handler;
 
-    private HearingAggregate hearingAggregate;
-
-    @Before
-    public void setup() {
-        hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-    }
-
     @Test
     public void shouldCreateHearingApplicationRequest() throws EventStreamException {
+
         final CreateHearingApplicationRequest payload = createHearingApplicationRequest()
                 .withApplicationRequests(singletonList(CourtApplicationPartyListingNeeds
                         .courtApplicationPartyListingNeeds()
@@ -92,6 +84,10 @@ public class CreateHearingApplicationRequestHandlerTest {
                 .build();
 
         final Envelope<CreateHearingApplicationRequest> envelope = envelopeFrom(metadata, payload);
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         handler.handle(envelope);
 

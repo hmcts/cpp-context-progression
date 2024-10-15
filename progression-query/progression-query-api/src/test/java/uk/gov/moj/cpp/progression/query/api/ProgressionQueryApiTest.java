@@ -10,13 +10,13 @@ import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
 import uk.gov.moj.cpp.progression.query.HearingQueryView;
 import uk.gov.moj.cpp.progression.query.view.ProgressionQueryView;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ProgressionQueryApiTest {
     @Mock
     private JsonEnvelope query;

@@ -1,15 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -19,26 +22,24 @@ import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
-import javax.json.JsonObject;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.hamcrest.CoreMatchers.is;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import javax.json.JsonObject;
 
-@RunWith(MockitoJUnitRunner.class)
+import com.google.common.io.Resources;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class UnscheduledHearingAllocationNotifiedEventProcessorTest {
 
     public static final String ENFORCEMENT_EMAIL = "any@email.com";
@@ -64,7 +65,7 @@ public class UnscheduledHearingAllocationNotifiedEventProcessorTest {
     @Captor
     private ArgumentCaptor<List<EmailChannel>> emailChannelsArgCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp(){
         setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
@@ -96,7 +97,7 @@ public class UnscheduledHearingAllocationNotifiedEventProcessorTest {
         assertThat(emailChannels.get(0).getTemplateId(), is(fromString(TEMPLATE_ID)));
         final Map<String, Object> additionalProperties = emailChannels.get(0).getPersonalisation().getAdditionalProperties();
         assertThat(additionalProperties.get("urn"), is("85GD7524721"));
-        assertThat(additionalProperties.get("dateOfHearing").toString(), startsWith("22/02/2021 10:00 AM"));
+        assertThat(additionalProperties.get("dateOfHearing").toString(), equalToIgnoringCase("22/02/2021 10:00 AM"));
         assertThat(additionalProperties.get("courtCentre"), is("1800 East Hampshire Magistrates' Court"));
         assertThat(additionalProperties.get("sittingAt"), is("Wimbledon Magistrates' Court"));
         assertThat(additionalProperties.get("caseNumber"), is("d36ba5f5-f19a-482d-8b71-c06771a41af1"));

@@ -6,7 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -44,15 +44,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReferCasesToCourtHandlerTest {
 
     @Mock
@@ -75,18 +75,9 @@ public class ReferCasesToCourtHandlerTest {
     private ReferCasesToCourtHandler referCasesToCourtHandler;
 
 
-    private CasesReferredToCourtAggregate aggregate;
-
     private static final UUID CASE_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66");
     private static final UUID RR_ID = randomUUID();
 
-
-    @Before
-    public void setup() {
-        aggregate = new CasesReferredToCourtAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CasesReferredToCourtAggregate.class)).thenReturn(aggregate);
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -99,6 +90,10 @@ public class ReferCasesToCourtHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
         final ReferCasesToCourt referCasesToCourt = generateReferCasesToCourt();
+
+        final CasesReferredToCourtAggregate aggregate = new CasesReferredToCourtAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CasesReferredToCourtAggregate.class)).thenReturn(aggregate);
 
         aggregate.referCasesToCourt(referCasesToCourt.getCourtReferral());
 

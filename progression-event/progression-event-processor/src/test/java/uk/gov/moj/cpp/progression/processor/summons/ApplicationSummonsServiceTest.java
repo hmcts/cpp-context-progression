@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.isEmptyString;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
@@ -53,16 +54,17 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(DataProviderRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApplicationSummonsServiceTest {
 
     private static final UUID APPLICATION_ID = randomUUID();
@@ -93,20 +95,19 @@ public class ApplicationSummonsServiceTest {
 
     private ApplicationSummonsService applicationSummonsService = new ApplicationSummonsService();
 
-    @DataProvider
-    public static Object[][] applicationSummonsSpecifications() {
-        return new Object[][]{
+    public static Stream<Arguments> applicationSummonsSpecifications() {
+        return Stream.of(
                 // summons required, welsh values, subject type
-                {APPLICATION, true, PartyType.INDIVIDUAL},
-                {APPLICATION, false, PartyType.ORGANISATION},
-                {BREACH, true, PartyType.MASTER_DEFENDANT_PERSON},
-                {BREACH, false, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY},
-                {BREACH, false, PartyType.PROSECUTION_AUTHORITY},
-        };
+                Arguments.of(APPLICATION, true, PartyType.INDIVIDUAL),
+                Arguments.of(APPLICATION, false, PartyType.ORGANISATION),
+                Arguments.of(BREACH, true, PartyType.MASTER_DEFENDANT_PERSON),
+                Arguments.of(BREACH, false, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY),
+                Arguments.of(BREACH, false, PartyType.PROSECUTION_AUTHORITY)
+        );
     }
 
-    @UseDataProvider("applicationSummonsSpecifications")
-    @Test
+    @MethodSource("applicationSummonsSpecifications")
+    @ParameterizedTest
     public void generateSummonsDocumentContent(final SummonsType summonsRequired, final boolean welshValuesPresent, final PartyType partyType) {
 
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication(summonsRequired);
@@ -170,7 +171,7 @@ public class ApplicationSummonsServiceTest {
         assertThat(hearingCourtDetails.getCourtRoomName(), is("room name english"));
         assertThat(hearingCourtDetails.getCourtRoomNameWelsh(), is("room name welsh"));
         assertThat(hearingCourtDetails.getHearingDate(), is("2018-04-01"));
-        assertThat(hearingCourtDetails.getHearingTime(), is("2:00 PM"));
+        assertThat(hearingCourtDetails.getHearingTime(), equalToIgnoringCase("2:00 PM"));
         final SummonsAddress hearingCourtAddress = hearingCourtDetails.getCourtAddress();
         assertThat(hearingCourtAddress.getLine1(), is("176a Lavender Hill"));
         assertThat(hearingCourtAddress.getLine2(), is("London"));

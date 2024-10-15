@@ -3,6 +3,12 @@ package uk.gov.moj.cpp.progression.persistence;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -19,14 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
-import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 /**
  * @deprecated This is deprecated for Release 2.4
- *
  */
 @Deprecated
 @RunWith(CdiTestRunner.class)
@@ -50,12 +50,12 @@ public class CaseProgressionDetailRepositoryTest {
     public void setup() {
         now = LocalDate.now();
         final CaseProgressionDetail caseProgressionDetailOne =
-                        createCaseProgressionDetail(CASE_ID_ONE, CaseStatusEnum.INCOMPLETE, CASE_URN_ONE);
+                createCaseProgressionDetail(CASE_ID_ONE, CaseStatusEnum.INCOMPLETE, CASE_URN_ONE);
         caseProgressionDetails.add(caseProgressionDetailOne);
 
         final Defendant defendant =
-                        new Defendant(DEF_ID, caseProgressionDetailOne, false,null);
-        final DefendantBailDocument defendantBailDocument=new DefendantBailDocument();
+                new Defendant(DEF_ID, caseProgressionDetailOne, false, null);
+        final DefendantBailDocument defendantBailDocument = new DefendantBailDocument();
         defendantBailDocument.setDocumentId(MATERIAL_ID);
         defendantBailDocument.setId(UUID.randomUUID());
         defendantBailDocument.setActive(Boolean.TRUE);
@@ -89,7 +89,7 @@ public class CaseProgressionDetailRepositoryTest {
     @After
     public void teardown() {
         caseProgressionDetails.forEach(caseProgressionDetail -> repository
-                        .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));
+                .attachAndRemove(repository.findBy(caseProgressionDetail.getCaseId())));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class CaseProgressionDetailRepositoryTest {
         assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
         assertThat(result.getFromCourtCentre(), equalTo(COURT_CENTER));
         assertThat(result.getCaseStatusUpdatedDateTime(),
-                        equalTo(CASE_STATUS_UPDATED_DATE_TIME));
+                equalTo(CASE_STATUS_UPDATED_DATE_TIME));
         assertThat(result.getSendingCommittalDate(), equalTo(now));
         assertThat(result.getSentenceHearingDate(), equalTo(now));
         assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));
@@ -125,7 +125,7 @@ public class CaseProgressionDetailRepositoryTest {
     @Test
     public void shouldFindByStatus() throws Exception {
         final List<CaseProgressionDetail> results =
-                        repository.findByStatus(Arrays.asList(CaseStatusEnum.INCOMPLETE));
+                repository.findByStatus(Arrays.asList(CaseStatusEnum.INCOMPLETE));
         assertThat(results.size(), equalTo(1));
         final CaseProgressionDetail result = results.get(0);
         assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));
@@ -134,11 +134,12 @@ public class CaseProgressionDetailRepositoryTest {
     @Test
     public void shouldFindByStatusAndCaseId() throws Exception {
         final List<CaseProgressionDetail> results =
-                repository.findByStatusAndCaseID(Arrays.asList(CaseStatusEnum.INCOMPLETE),CASE_ID_ONE);
+                repository.findByStatusAndCaseID(Arrays.asList(CaseStatusEnum.INCOMPLETE), CASE_ID_ONE);
         assertThat(results.size(), equalTo(1));
         final CaseProgressionDetail result = results.get(0);
         assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));
     }
+
     @Test
     public void shouldFindOpenStatus() throws Exception {
         final List<CaseProgressionDetail> results = repository.findOpenStatus();

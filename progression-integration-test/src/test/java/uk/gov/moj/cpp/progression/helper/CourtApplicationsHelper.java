@@ -11,7 +11,7 @@ import java.nio.charset.Charset;
 import java.util.UUID;
 
 import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 
 public class CourtApplicationsHelper {
 

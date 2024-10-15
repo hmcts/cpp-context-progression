@@ -1,24 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-import uk.gov.moj.cpp.progression.util.FileUtil;
-
-import javax.json.JsonObject;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.UUID;
-
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -34,7 +15,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.*;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseAndDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseIdForProsecution;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseIdForProsecutionWithNoCaseId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefence;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefenceWithNoCaseAndDefenceId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByDefendantForDefenceWithNoCaseId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
@@ -46,7 +37,31 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRole
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
-public class CourtDocumentQueryIT extends AbstractIT {
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
+import uk.gov.moj.cpp.progression.util.FileUtil;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
+
+@ExtendWith(JmsResourceManagementExtension.class)
+public class CourtDocumentQueryIT {
 
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
     private static final String CHAMBER_USER_ID = "f5966b76-6e73-4be8-8780-ce542a46c8a4";
@@ -55,15 +70,17 @@ public class CourtDocumentQueryIT extends AbstractIT {
     private String docId;
     private String defendantId;
 
-    @BeforeClass
+    protected static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+
+    @BeforeAll
     public static void setup() {
         setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-specific-groups-by-user.json");
         setupAsAuthorisedUser(fromString(CHAMBER_USER_ID), "stub-data/usersgroups.get-chamber-groups-by-user.json");
         setupAsAuthorisedUser(fromString(ADVOCATE_USER_ID), "stub-data/usersgroups.get-advocateuser-groups-by-user.json");
     }
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    public void setUp() throws IOException, JSONException {
         caseId = UUID.randomUUID().toString();
         docId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
@@ -75,7 +92,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
 
     @Test
-    public void shouldGetCourtDocumentsForGivenDefendantLevelDocsBasedOnRBAC() throws IOException {
+    public void shouldGetCourtDocumentsForGivenDefendantLevelDocsBasedOnRBAC() throws IOException, JSONException {
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         //Doc Type Ref Data
@@ -100,7 +117,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
 
     @Test
-    public void shouldGetCourtDocumentsForGivenCaseLevelAndDefendantLevelDocsBasedOnRBAC() throws IOException {
+    public void shouldGetCourtDocumentsForGivenCaseLevelAndDefendantLevelDocsBasedOnRBAC() throws IOException, JSONException {
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
@@ -139,7 +156,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGetCourtDocumentsForGivenCaseLevelAndDefendantLevelDocsGetOnlyDefendantBasedOnRBAC() throws IOException {
+    public void shouldGetCourtDocumentsForGivenCaseLevelAndDefendantLevelDocsGetOnlyDefendantBasedOnRBAC() throws IOException, JSONException {
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
@@ -179,7 +196,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
 
     @Test
-    public void shouldGetCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException {
+    public void shouldGetCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException, JSONException {
         final String docTypeId = UUID.randomUUID().toString();
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
@@ -215,7 +232,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
 
     @Test
-    public void shouldNotGetCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException {
+    public void shouldNotGetCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException, JSONException {
         final String docTypeId = UUID.randomUUID().toString();
 
         //Case Level Document 1
@@ -241,7 +258,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGetAllCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException {
+    public void shouldGetAllCourtDocumentsForGivenCaseLevelDocsBasedOnRBAC() throws IOException, JSONException {
 
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-seqnum.json");
@@ -280,7 +297,7 @@ public class CourtDocumentQueryIT extends AbstractIT {
 
 
     @Test
-    public void shouldGetAllCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+    public void shouldGetAllCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException, JSONException {
         final String docTypeId = "460fbc00-c002-11e8-a355-529269fb1459";
         final String organisationId = UUID.randomUUID().toString();
 

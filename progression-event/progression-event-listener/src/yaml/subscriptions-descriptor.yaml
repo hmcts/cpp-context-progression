@@ -342,6 +342,9 @@ subscriptions_descriptor:
         - name: progression.event.court-application-subject-custodial-information-updated
           schema_uri: http://justice.gov.uk/progression/event/court-application-subject-custodial-information-updated.json
 
+        - name: progression.event.court-application-document-updated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.court-application-document-updated.json
+
         - name: progression.event.online-plea-allocation-added
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.online-plea-allocation-added.json
 
@@ -358,6 +361,9 @@ subscriptions_descriptor:
 
         - name: progression.event.application-hearing-defendant-updated
           schema_uri: http://justice.gov.uk/progression/event/progression.event.application-hearing-defendant-updated.json
+
+        - name: progression.event.hearing-add-missing-results-bdf
+          schema_uri: http://moj.gov.uk/cpp/progression/court/progression.event.hearing-add-missing-results-bdf.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
@@ -421,6 +427,9 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-deleted-for-court-application
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-deleted-for-court-application.json
+
+        - name: progression.event.court-application-hearing-deleted
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.court-application-hearing-deleted.json
 
         - name: progression.events.offences-removed-from-hearing
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json

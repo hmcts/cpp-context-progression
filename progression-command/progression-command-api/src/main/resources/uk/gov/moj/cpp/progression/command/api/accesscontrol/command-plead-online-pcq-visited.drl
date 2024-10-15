@@ -1,0 +1,17 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - plead online pcq visited"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.plead-online-pcq-visited");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Online Plea System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+
+

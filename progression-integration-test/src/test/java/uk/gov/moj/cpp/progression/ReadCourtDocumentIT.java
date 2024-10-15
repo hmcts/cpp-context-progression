@@ -27,9 +27,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 public class ReadCourtDocumentIT extends AbstractIT {
@@ -38,15 +37,13 @@ public class ReadCourtDocumentIT extends AbstractIT {
     private final String documentUrl = "http://documentlocation.com/myfile.pdf";
     private final JsonObject expectedResponse = Json.createObjectBuilder().add("url", documentUrl).build();
     private static final String QUERY_USERGROUPS_BY_MATERIAL_ID_JSON = "application/vnd.progression.query.usergroups-by-material-id+json";
-    private final String MaterialContent = "Material content for uploaded material";
     private String caseId;
     private UUID materialId;
     private String defendantId;
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
 
-
-    @Before
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID().toString();
         materialId = randomUUID();

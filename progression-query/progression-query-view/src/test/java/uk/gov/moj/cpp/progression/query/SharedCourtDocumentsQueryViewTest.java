@@ -7,11 +7,12 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.ApplicationDocument;
 import uk.gov.justice.core.courts.CaseDocument;
@@ -43,16 +44,16 @@ import java.util.stream.IntStream;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SharedCourtDocumentsQueryViewTest {
 
     @Mock
@@ -79,13 +80,12 @@ public class SharedCourtDocumentsQueryViewTest {
     @Mock
     private CpsSendNotificationRepository cpsSendNotificationRepository;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
 
-    @Test(expected = BadRequestException.class)
     public void shouldThrowExceptionWhenCaseIDNotSentInTheRequest() {
         final UUID hearingId = randomUUID();
         final UUID userGroupId = randomUUID();
@@ -93,10 +93,9 @@ public class SharedCourtDocumentsQueryViewTest {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().add("hearingId",
                 hearingId.toString()).add("userGroupId", userGroupId.toString()).add("defendantId", defendantId.toString()));
-        sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope);
+        assertThrows(BadRequestException.class, () -> sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope));
     }
 
-    @Test(expected = BadRequestException.class)
     public void shouldThrowExceptionWhenDefendantIDNotSentInTheRequest() {
         final UUID hearingId = randomUUID();
         final UUID userGroupId = randomUUID();
@@ -104,17 +103,16 @@ public class SharedCourtDocumentsQueryViewTest {
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().add("hearingId",
                 hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()));
-        sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope);
+        assertThrows(BadRequestException.class, () -> sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope));
     }
 
-    @Test(expected = BadRequestException.class)
     public void shouldThrowExceptionWhenDefendantAndCaseIDNotSentInTheRequest() {
         final UUID hearingId = randomUUID();
         final UUID userGroupId = randomUUID();
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().add("hearingId",
                 hearingId.toString()).add("userGroupId", userGroupId.toString()));
-        sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope);
+        assertThrows(BadRequestException.class, () -> sharedCourtDocumentsQueryView.getSharedCourtDocuments(jsonEnvelope));
     }
 
     @Test
@@ -208,13 +206,8 @@ public class SharedCourtDocumentsQueryViewTest {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId, caseId, defendantId);
-        final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
-        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateDefendantLevelDocument(courtDocumentId, randomUUID()));
-
-        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenCallRealMethod();
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -257,13 +250,8 @@ public class SharedCourtDocumentsQueryViewTest {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final List<SharedCourtDocumentEntity> mockSharedCourtDocuments = getMockSharedCourtDocumentEntities(courtDocumentId, hearingId, userGroupId, caseId, defendantId);
-        final CourtDocumentEntity mockCourtDocumentEntity = getMockCourtDocumentEntity(courtDocumentId);
 
-        when(courtDocumentRepository.findBy(courtDocumentId)).thenReturn(mockCourtDocumentEntity);
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(generateNowDocument(courtDocumentId, randomUUID()));
-
-        when(courtDocumentTransform.transform(Mockito.any(), Mockito.any())).thenCallRealMethod();
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
 
@@ -328,17 +316,6 @@ public class SharedCourtDocumentsQueryViewTest {
 
         when(courtDocumentRepository.findByCourtDocumentIdsAndAreNotRemoved(singletonList(mockCourtDocumentEntity.getCourtDocumentId()))).thenReturn(Arrays.asList());
         when(sharedCourtDocumentRepository.findByHearingIdAndDefendantIdForSelectedCaseForUserGroup(caseId, hearingId, userGroupId, defendantId)).thenReturn(mockSharedCourtDocuments);
-        when(jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(mockCourtDocumentEntity.getPayload()), CourtDocument.class)).thenReturn(courtDocument(courtDocumentId));
-
-        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
-                .withCaseIds(asList(caseId))
-                .withCategory("Defendant level")
-                .withDefendantIds(asList(defendantId))
-                .withHearingIds(asList(randomUUID()))
-                .withDocument(courtDocument(courtDocumentId))
-                .withType("Defendant profile notes");
-
-        when(courtDocumentTransform.transform(Mockito.any(),Mockito.any())).thenReturn(courtDocumentIndexBuilder);
 
         final JsonObjectBuilder body = createObjectBuilder().add("hearingId", hearingId.toString()).add("userGroupId", userGroupId.toString()).add("caseId", caseId.toString()).add("defendantId", defendantId.toString());
         final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUIDAndName(), body);

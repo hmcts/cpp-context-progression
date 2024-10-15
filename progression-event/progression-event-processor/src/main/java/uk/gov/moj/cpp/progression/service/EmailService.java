@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.lang.String.format;
-import static java.lang.String.join;
 import static java.util.UUID.fromString;
 
 import uk.gov.justice.core.courts.Personalisation;

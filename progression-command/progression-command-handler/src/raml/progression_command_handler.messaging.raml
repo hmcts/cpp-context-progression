@@ -253,6 +253,9 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.update-related-hearing+json:
           example: !include json/progression.command.update-related-hearing.json
           schema: !include json/schema/progression.command.update-related-hearing.json
+        application/vnd.progression.command.update-related-hearing-for-adhoc-hearing+json:
+          example: !include json/progression.command.update-related-hearing-for-adhoc-hearing.json
+          schema: !include json/schema/progression.command.update-related-hearing-for-adhoc-hearing.json
         application/vnd.progression.command.add-now-document-request+json:
           example:  !include json/progression.command.add-now-document-request.json
           schema: !include json/schema/progression.command.add-now-document-request.json
@@ -600,6 +603,15 @@ baseUri:  message://command/handler/message/progression
             schema: !include json/schema/progression.command.handler.result-hearing-bdf.json
 
 
+        application/vnd.progression.command.request-related-hearing-for-adhoc-hearing+json:
+#            example: !include json/progression.command.request-related-hearing-for-adhoc-hearing.json
+            schema: !include json/schema/progression.command.request-related-hearing-for-adhoc-hearing.json
+
+        application/vnd.progression.command.handler.update-hearing-bdf+json:
+            example: !include json/progression.command.handler.update-hearing-bdf.json
+            schema: !include json/schema/progression.command.handler.update-hearing-bdf.json
+
+
 # ***** Deprecated API - Start ********
 # ***** Do not add any new API in this section *****
         application/vnd.progression.command.handler.add-case-to-crown-court+json:
@@ -656,6 +668,15 @@ baseUri:  message://command/handler/message/progression
         application/vnd.progression.command.delete-hearing-for-prosecution-case+json:
             example: !include json/progression.command.delete-hearing-for-prosecution-case.json
             schema:  !include json/schema/progression.command.delete-hearing-for-prosecution-case.json
+        application/vnd.progression.command.delete-application-for-case+json:
+            example: !include json/progression.command.delete-application-for-case.json
+            schema:  !include json/schema/progression.command.delete-application-for-case.json
+        application/vnd.progression.command.delete-court-application-hearing+json:
+            example: !include json/progression.command.delete-court-application-hearing.json
+            schema:  !include json/schema/progression.command.delete-court-application-hearing.json
+        application/vnd.progression.command.remove-application-from-seedingHearing+json:
+            example: !include json/progression.command.remove-application-from-seedingHearing.json
+            schema: !include json/schema/progression.command.remove-application-from-seedingHearing.json
         application/vnd.progression.command.decrease-listing-number-for-prosecution-case+json:
             example: !include json/progression.command.decrease-listing-number-for-prosecution-case.json
             schema:  !include json/schema/progression.command.decrease-listing-number-for-prosecution-case.json
@@ -696,6 +717,9 @@ baseUri:  message://command/handler/message/progression
 
         application/vnd.progression.command.create-hearing-event-log-document+json:
         application/vnd.progression.command.create-aaag-hearing-event-log-document+json:
+        application/vnd.progression.command.send-notification-for-auto-application+json:
+            schema: !include json/schema/progression.command.send-notification-for-auto-application.json
+            example: !include json/progression.command.send-notification-for-auto-application.json
 
 # Conviction Date
 

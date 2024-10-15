@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -105,22 +106,16 @@ public class PostalService {
                                                 final String legislationWelsh,
                                                 final CourtCentre courtCentre,
                                                 final CourtApplicationParty courtApplicationParty,
-                                                final JurisdictionType jurisdictionType, String applicationParticulars, final CourtApplication courtApplication, final String thirdParty) {
+                                                final JurisdictionType jurisdictionType, String applicationParticulars,
+                                                final CourtApplication courtApplication, final String thirdParty,
+                                                final Boolean isAmended, final Boolean isWelshTranslationRequired,
+                                                final LocalDate orderedDate) {
 
         final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
 
         JsonObject localJusticeArea = Json.createObjectBuilder().build();
 
-        if (orderingCourtOptional.isPresent()) {
-
-            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getOrganisationUnitById(courtCentre.getId(), envelope, requester);
-
-            final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(IllegalArgumentException::new);
-
-            final JsonObject ljaDetails = referenceDataService.getEnforcementAreaByLjaCode(envelope, courtCentreJson.getString(LJA), requester);
-
-            localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
-        }
+        localJusticeArea = getLja(envelope, courtCentre, orderingCourtOptional, localJusticeArea);
 
         String courtCentreNameWelsh = null;
         if(nonNull(courtCentre)){
@@ -136,7 +131,7 @@ public class PostalService {
 
         final String applicantPersonal = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getFirstName() + " " + courtApplication.getApplicant().getPersonDetails().getLastName() : "";
         final String applicantOther = nonNull(courtApplication.getApplicant().getProsecutingAuthority()) ? courtApplication.getApplicant().getProsecutingAuthority().getProsecutionAuthorityCode() : applicantPersonal;
-        final String applicant = nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails()) ? masterDefendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + masterDefendant.getPersonDefendant().getPersonDetails().getLastName() : applicantOther;
+        final String applicant = getApplicant(courtApplication, masterDefendant, applicantOther);
 
         final PostalAddressee postalAddressee = getPostalAddressee(envelope, courtApplicationParty);
 
@@ -149,12 +144,46 @@ public class PostalService {
                 legislationWelsh,
                 courtCentre,
                 courtCentreNameWelsh,
+                isWelshTranslationRequired,
                 localJusticeArea,
                 courtApplicationParty,
                 jurisdictionType,
                 applicationParticulars,
                 courtApplication, applicant,
-                thirdParty, postalAddressee);
+                thirdParty, postalAddressee,
+                isAmended, orderedDate);
+    }
+
+    private JsonObject getLja(final JsonEnvelope envelope, final CourtCentre courtCentre, final Optional<CourtCentre> orderingCourtOptional, JsonObject localJusticeArea) {
+        if (orderingCourtOptional.isPresent()) {
+
+            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getOrganisationUnitById(courtCentre.getId(), envelope, requester);
+
+            final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(IllegalArgumentException::new);
+
+            final JsonObject ljaDetails = referenceDataService.getEnforcementAreaByLjaCode(envelope, courtCentreJson.getString(LJA), requester);
+
+            localJusticeArea = ljaDetails.getJsonObject(LOCAL_JUSTICE_AREA);
+        }
+        return localJusticeArea;
+    }
+
+    private String getApplicant(final CourtApplication courtApplication, final MasterDefendant masterDefendant, final String applicantOther) {
+        String applicant;
+        if(nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant()) && nonNull(masterDefendant.getPersonDefendant().getPersonDetails())){
+            applicant =  masterDefendant.getPersonDefendant().getPersonDetails().getFirstName() + " " + masterDefendant.getPersonDefendant().getPersonDetails().getLastName();
+        }
+        else if (nonNull(masterDefendant) && nonNull(masterDefendant.getLegalEntityDefendant()) && nonNull(masterDefendant.getLegalEntityDefendant().getOrganisation())){
+            applicant = masterDefendant.getLegalEntityDefendant().getOrganisation().getName();
+        }
+        else {
+            applicant = applicantOther;
+        }
+
+        if(isEmpty(applicant) && nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getOrganisation())) {
+            applicant = courtApplication.getApplicant().getOrganisation().getName();
+        }
+        return applicant;
     }
 
     public void sendPostalNotification(final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification, final UUID linkedCaseId) {
@@ -164,6 +193,18 @@ public class PostalService {
         LOGGER.info("Sending Postal Notification payload - {}", postalNotificationPayload);
 
         final UUID materialId = documentGeneratorService.generateDocument(envelope, postalNotificationPayload, POSTAL_NOTIFICATION, sender, null, applicationId, isPostable(postalNotification));
+
+        final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
+
+        final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+
+        LOGGER.info("creating court document payload - {}", courtDocumentPayload);
+
+        sender.send(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(courtDocumentPayload));
+
+    }
+
+    public void sendPostalNotificationAaag(final JsonEnvelope envelope, final UUID applicationId, final UUID linkedCaseId, final UUID materialId) {
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
@@ -185,22 +226,28 @@ public class PostalService {
                                                       final String legislationWelsh,
                                                       final CourtCentre courtCentre,
                                                       final String courtCentreNameWelsh,
+                                                      final Boolean isWelsh,
                                                       final JsonObject localJusticeArea,
                                                       final CourtApplicationParty courtApplicationParty,
                                                       final JurisdictionType jurisdictionType, String applicationParticulars,
                                                       final CourtApplication courtApplication, final String applicant,
-                                                      final String thirdParty, final PostalAddressee postalAddressee) {
+                                                      final String thirdParty, final PostalAddressee postalAddressee,
+                                                      final Boolean isAmended, final LocalDate orderedDate) {
 
         final PostalNotification.Builder builder = PostalNotification.builder()
                 .withReference(ofNullable(applicationReference).orElse(EMPTY))
-                .withIssueDate(LocalDate.now())
+                .withIssueDate(nonNull(orderedDate) ? orderedDate : LocalDate.now())
                 .withApplicationType(ofNullable(applicationType).orElse(EMPTY))
                 .withLegislationText(ofNullable(legislation).orElse(EMPTY))
                 .withCourtCentreName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))
                 .withCourtCentreNameWelsh(courtCentreNameWelsh)
+                .withIsWelsh(isWelsh)
                 .withApplicantName(applicant)
                 .withThirdParty(thirdParty)
                 .withApplicationParticulars(applicationParticulars);
+        if(nonNull(isAmended) && isAmended) {
+            builder.withAmendmentDate(ZonedDateTime.now().toLocalDate().toString());
+        }
         if(jurisdictionType.equals(JurisdictionType.MAGISTRATES)){
             builder.withLjaCode(ofNullable(localJusticeArea).map(area -> area.getString(NATIONAL_COURT_CODE, EMPTY)).orElse(EMPTY))
                     .withLjaName(ofNullable(localJusticeArea).map(area -> area.getString(NAME, EMPTY)).orElse(EMPTY))
@@ -410,8 +457,12 @@ public class PostalService {
     }
 
     private boolean isPostable(final PostalNotification postalNotification) {
-        final PostalAddress postalAddress = postalNotification.getDefendant().getAddress();
-        return (nonNull(postalAddress) && isBlank(postalAddress.getPostCode())) ? Boolean.FALSE : Boolean.TRUE ;
+        if(nonNull(postalNotification.getDefendant()) && nonNull(postalNotification.getDefendant().getAddress())) {
+            final PostalAddress postalAddress = postalNotification.getDefendant().getAddress();
+            return (isBlank(postalAddress.getPostCode())) ? Boolean.FALSE : Boolean.TRUE;
+        } else{
+            return Boolean.FALSE;
+        }
     }
 
 }

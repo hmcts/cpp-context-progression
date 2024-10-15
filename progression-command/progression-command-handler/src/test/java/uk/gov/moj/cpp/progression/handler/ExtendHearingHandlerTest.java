@@ -3,10 +3,10 @@ package uk.gov.moj.cpp.progression.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -44,15 +44,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ExtendHearingHandlerTest {
 
     @Mock
@@ -73,23 +73,6 @@ public class ExtendHearingHandlerTest {
     @InjectMocks
     private ExtendHearingHandler extendHearingHandler;
 
-    private ApplicationAggregate applicationAggregate;
-
-    private CaseAggregate caseAggregate;
-
-    private HearingAggregate hearingAggregate;
-
-    @Before
-    public void setup() {
-        applicationAggregate = new ApplicationAggregate();
-        caseAggregate = new CaseAggregate();
-        hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(new ExtendHearingHandler(), isHandler(COMMAND_HANDLER)
@@ -100,6 +83,10 @@ public class ExtendHearingHandlerTest {
 
     @Test
     public void shouldProcessCommand() throws Exception {
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         final ExtendHearing extendHearing = createExtendHearingForApplication();
         applicationAggregate.extendHearing(extendHearing.getHearingRequest());
@@ -129,6 +116,11 @@ public class ExtendHearingHandlerTest {
 
     @Test
     public void shouldProcessCommandForProsecutionCase() throws Exception {
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         final ExtendHearing extendHearing = createExtendHearingForProsecutionCase();
         caseAggregate.extendHearing(extendHearing.getHearingRequest(), extendHearing);
@@ -167,6 +159,10 @@ public class ExtendHearingHandlerTest {
                 .withName("progression.command.process-hearing-extended")
                 .withId(randomUUID())
                 .build();
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         hearingAggregate.apply(HearingResulted.hearingResulted().withHearing(Hearing.hearing().withId(hearingId).build()).build());
 

@@ -12,6 +12,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.command.ResultHearingBdf;
+import uk.gov.moj.cpp.progression.command.UpdateHearingBdf;
 
 import java.util.stream.Stream;
 
@@ -46,4 +47,16 @@ public class ResultHearingByBdfHandler {
         eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(hearingResultByBdfEnvelope)));
     }
 
+    @Handles("progression.command.handler.update-hearing-bdf")
+    public void handleUpdateHearing(final Envelope<UpdateHearingBdf> updateHearingBdfEnvelope) throws EventStreamException {
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(RECEIVED_WITH_PAYLOAD, "progression.command.handler.update-hearing-bdf" , updateHearingBdfEnvelope);
+        }
+        final UpdateHearingBdf updateHaringBdf = updateHearingBdfEnvelope.payload();
+        final EventStream eventStream = eventSource.getStreamById(updateHaringBdf.getHearingId());
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events = hearingAggregate.updateHearingByBdf(updateHaringBdf.getHearingId(), updateHaringBdf.getProsecutionCaseId(), updateHaringBdf.getDefendantId(), updateHaringBdf.getOffenceId(), updateHaringBdf.getDefendantCaseJudicialResults(), updateHaringBdf.getOffenceJudicialResults());
+        eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(updateHearingBdfEnvelope)));
+    }
 }

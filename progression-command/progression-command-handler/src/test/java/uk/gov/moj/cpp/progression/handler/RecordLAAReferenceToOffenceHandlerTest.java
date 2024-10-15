@@ -5,8 +5,8 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -49,20 +49,18 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RecordLAAReferenceToOffenceHandlerTest {
 
     @Mock
@@ -99,15 +97,6 @@ public class RecordLAAReferenceToOffenceHandlerTest {
 
     private static final UUID LEGAL_STATUS_ID = randomUUID();
 
-
-
-    @Before
-    public void setup() {
-        aggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(new RecordLAAReferenceToOffenceHandler(), isHandler(COMMAND_HANDLER)
@@ -121,6 +110,10 @@ public class RecordLAAReferenceToOffenceHandlerTest {
 
         final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
                 CASE_ID, DEFENDANT_ID, DEFENDANT_ID_2, OFFENCE_ID);
+
+        final CaseAggregate aggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         aggregate.apply(new ProsecutionCaseCreated(getProsecutionCase(), null));
         aggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(), defendantsAddedToCourtProceedings.getListHearingRequests(),  Optional.of(createJsonList())).collect(toList());
@@ -146,7 +139,7 @@ public class RecordLAAReferenceToOffenceHandlerTest {
     }
 
     private static JsonObject getLegalStatus() {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("id", LEGAL_STATUS_ID.toString())
                 .add("statusDescription", "description")
                 .add("defendantLevelStatus","Granted")
@@ -154,7 +147,7 @@ public class RecordLAAReferenceToOffenceHandlerTest {
     }
 
     private static JsonObject generateRecordLAAReferenceForOffence() {
-        return Json.createObjectBuilder()
+        return createObjectBuilder()
                 .add("caseId", CASE_ID.toString())
                 .add("defendantId", DEFENDANT_ID.toString())
                 .add("offenceId", OFFENCE_ID.toString())

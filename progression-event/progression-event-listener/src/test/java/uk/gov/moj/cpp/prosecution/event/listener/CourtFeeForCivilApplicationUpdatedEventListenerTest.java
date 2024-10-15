@@ -3,8 +3,7 @@ package uk.gov.moj.cpp.prosecution.event.listener;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.jgroups.util.Util.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -19,7 +18,6 @@ import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
-import uk.gov.justice.core.courts.FeeStatus;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
@@ -40,16 +38,17 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
 
     final static private UUID APPLICATION_ID = UUID.randomUUID();
@@ -80,7 +79,7 @@ public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
     @Mock
     private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -110,10 +109,8 @@ public class CourtFeeForCivilApplicationUpdatedEventListenerTest {
         initiateCourtApplicationEntity.setPayload("{}");
 
         when(stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload())).thenReturn(courtApplicationJson);
-        when(jsonObjectToObjectConverter.convert(courtApplicationJson, CourtApplication.class)).thenReturn(courtApplication);
         when(courtApplicationRepository.findByApplicationId(any())).thenReturn(courtApplicationEntity);
         when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(initiateCourtApplicationJson);
-        when(jsonObjectToObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
         when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
 
         listener.processEvent(envelopeFrom(metadataWithRandomUUID("progression.event.court-fee-for-civil-application-updated"),

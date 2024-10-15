@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -38,15 +38,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HmiHandlerTest {
     private static final String UPDATE_HEARING_FROM_HMI_COMMAND = "progression.command.update-hearing-from-hmi";
     private static final String HEARING_MOVED_TO_UNALLOCATED_EVENT = "progression.event.hearing-moved-to-unallocated";
@@ -69,12 +69,6 @@ public class HmiHandlerTest {
 
     private HearingAggregate aggregate;
 
-    @Before
-    public void setup() {
-        aggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -118,6 +112,9 @@ public class HmiHandlerTest {
                                         .build()))
                                 .build()))
                 .build();
+        aggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
         aggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
                 .withHearing(hearing)
                 .build());

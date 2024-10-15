@@ -10,11 +10,13 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -25,13 +27,11 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
@@ -39,9 +39,9 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.getPostBoxWorkApplicationReferredHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.test.utils.core.http.ResponseData;
-import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.io.IOException;
@@ -51,22 +51,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
+@ExtendWith(JmsResourceManagementExtension.class)
 @SuppressWarnings("squid:S1607")
-public class ReferBoxWorkApplicationIT extends AbstractIT {
+public class ReferBoxWorkApplicationIT {
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final String EMAIL_REQUESTED_PRIVATE_EVENT = "progression.event.email-requested";
     private static final String PRINT_REQUESTED_PRIVATE_EVENT = "progression.event.print-requested";
@@ -74,50 +76,37 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
     public static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
     private static final String COURT_DOCUMENT_ADDED = "progression.event.court-document-added";
 
-    private MessageConsumer consumerForCourtApplicationCreated;
-    private MessageConsumer consumerForEmailRequested;
-    private MessageConsumer consumerForPrintRequested;
-    private MessageConsumer messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated;
-    private MessageConsumer publicEventsConsumerForHearingExtended;
-    private MessageConsumer addCourtDocument;
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForEmailRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EMAIL_REQUESTED_PRIVATE_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForPrintRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRINT_REQUESTED_PRIVATE_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient publicEventsConsumerForHearingExtended = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient addCourtDocument = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_DOCUMENT_ADDED).getMessageConsumerClient();
 
     private String applicationId;
     private String caseId;
     private String defendantId;
 
-    @Before
-    public void setUp() throws IOException {
-        cleanEventStoreTables();
-        cleanViewStoreTables();
-        applicationId = randomUUID().toString();
-        caseId = randomUUID().toString();
-        defendantId = randomUUID().toString();
+    @BeforeAll
+    public static void setUpClass() throws IOException, JSONException {
         stubInitiateHearing();
         stubDocumentCreate(STRING.next());
         NotificationServiceStub.setUp();
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED);
-        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        publicEventsConsumerForHearingExtended = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED);
-        consumerForEmailRequested = privateEvents.createPrivateConsumer(EMAIL_REQUESTED_PRIVATE_EVENT);
-        consumerForPrintRequested = privateEvents.createPrivateConsumer(PRINT_REQUESTED_PRIVATE_EVENT);
-        addCourtDocument = privateEvents.createPrivateConsumer(COURT_DOCUMENT_ADDED);
     }
 
-    @After
-    public void tearDown() throws Exception {
-        consumerForCourtApplicationCreated.close();
-        messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated.close();
-        publicEventsConsumerForHearingExtended.close();
-        consumerForEmailRequested.close();
-        consumerForPrintRequested.close();
+    @BeforeEach
+    public void setUp() throws IOException, JSONException {
+        applicationId = randomUUID().toString();
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
     @Test
     public void shouldReferBoxWorkInitiateCourtApplication() throws Exception {
 
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId,"applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
 
         verifyCourtApplicationCreatedPrivateEvent();
 
@@ -147,17 +136,17 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendAppointmentLetterAsEmailAttachmentForVirtualHearingWhenReferBoxWorkInitiateCourtApplicationAndDefendantHasEmailAddress() throws Exception{
+    public void shouldSendAppointmentLetterAsEmailAttachmentForVirtualHearingWhenReferBoxWorkInitiateCourtApplicationAndDefendantHasEmailAddress() throws Exception {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-stat-dec.json");
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId,"applications/progression.initiate-court-proceedings-for-statdec-application-defendant-has-emailAddress.json");
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-statdec-application-defendant-has-emailAddress.json");
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(11, is(applicationReference.length()));
         final UUID materialId = verifyEmailRequestedPrivateEvent();
         final List<String> expectedEmailDetails = newArrayList("hallie.pollich@yahoo.com");
 
-        final JsonObject addDocumentMessage = QueueUtil.retrieveMessageAsJsonObject(addCourtDocument).get();
+        final JsonObject addDocumentMessage = retrieveMessageBody(addCourtDocument).get();
         assertThat(addDocumentMessage.getJsonObject("courtDocument").getString("documentTypeId"), is("460fbe94-c002-11e8-a355-529269fb1459"));
         assertThat(addDocumentMessage.getJsonObject("courtDocument").getString("documentTypeDescription"), is("Orders, Notices & Directions"));
 
@@ -165,9 +154,9 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotSendAppointmentLetterAsEmailAttachmentForNonVirtualHearingWhenReferBoxWorkInitiateCourtApplicationAndDefendantHasEmailAddress() throws Exception{
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId,"applications/progression.initiate-court-proceedings-for-statdec-application-non-virtual-hearing-defendant-has-emailAddress.json");
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+    public void shouldNotSendAppointmentLetterAsEmailAttachmentForNonVirtualHearingWhenReferBoxWorkInitiateCourtApplicationAndDefendantHasEmailAddress() throws Exception {
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-statdec-application-non-virtual-hearing-defendant-has-emailAddress.json");
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(11, is(applicationReference.length()));
@@ -184,7 +173,7 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
     }
 
     private ResponseData verifyCourtApplicationViewStoreUpdated(final String applicationId, final String applicationReceivedDate) {
-        return  poll(requestParams(getReadUrl("/applications/" + applicationId),
+        return poll(requestParams(getReadUrl("/applications/" + applicationId),
                 "application/vnd.progression.query.application.aaag+json").withHeader(USER_ID, randomUUID()))
                 .until(status().is(OK), payload().isJson(allOf(withJsonPath("$.applicationId", is(applicationId)),
                         withJsonPath("$.applicationDetails.applicationReceivedDate", is(applicationReceivedDate)))));
@@ -218,14 +207,14 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
     }
 
     private void verifyCourtApplicationCreatedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(10, is(applicationReference.length()));
     }
 
     private UUID verifyEmailRequestedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForEmailRequested);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForEmailRequested);
         assertTrue(message.isPresent());
         final String applicationIdFromEmailRequested = message.get().getString("applicationId");
         assertThat(applicationId, is(applicationIdFromEmailRequested));
@@ -234,32 +223,32 @@ public class ReferBoxWorkApplicationIT extends AbstractIT {
     }
 
     private void verifyEmailNotRequestedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForEmailRequested);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForEmailRequested);
         assertFalse(message.isPresent());
     }
 
     private void verifyPrintRequestedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForPrintRequested);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPrintRequested);
         assertTrue(message.isPresent());
         final String applicationIdFromEmailRequested = message.get().getString("applicationId");
         assertThat(applicationId, is(applicationIdFromEmailRequested));
     }
 
     private JsonObject getHearingInMessagingQueueForBoxWorkReferred() {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated);
         assertTrue(message.isPresent());
         return message.get().getJsonObject("hearing");
     }
 
     private void verifyPublicEventForHearingExtended(final String sittingDate, final String courtCenterCode, final String jurisdictionType) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventsConsumerForHearingExtended);
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventsConsumerForHearingExtended);
         assertTrue(message.isPresent());
         final JsonObject publicHearingExtendedEvent = message.get();
         assertThat(publicHearingExtendedEvent.getString("hearingId"), is(notNullValue()));
         assertThat(publicHearingExtendedEvent.getJsonArray("hearingDays").size(), is(1));
         assertThat(publicHearingExtendedEvent.getJsonObject("courtCentre").getString("code"), is(courtCenterCode));
         assertThat(publicHearingExtendedEvent.getString("jurisdictionType"), is(jurisdictionType));
-        assertThat(((JsonObject)publicHearingExtendedEvent.getJsonArray("hearingDays").get(0)).getString("sittingDay"), is(sittingDate));
+        assertThat(((JsonObject) publicHearingExtendedEvent.getJsonArray("hearingDays").get(0)).getString("sittingDay"), is(sittingDate));
     }
 }
 

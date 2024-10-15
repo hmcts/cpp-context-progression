@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.EntityRepository;
+import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
@@ -22,4 +23,8 @@ public interface CourtApplicationCaseRepository extends EntityRepository<CourtAp
 
     @Query(value = "SELECT pc.payload FROM ProsecutionCaseEntity pc,CourtApplicationCaseEntity cac WHERE cac.id.applicationId = :applicationId AND cac.id.caseId = :caseId AND pc.caseId = cac.id.caseId")
     String findCaseStatusByApplicationId(@QueryParam("applicationId") final UUID applicationId, @QueryParam("caseId") final UUID caseId);
+
+    @Modifying
+    @Query("delete from CourtApplicationCaseEntity entity where entity.id.applicationId = :applicationId")
+    void removeByApplicationId(@QueryParam("applicationId") UUID applicationId);
 }

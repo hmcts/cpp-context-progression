@@ -1,37 +1,39 @@
 package uk.gov.moj.cpp.progression.service;
 
-import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static com.google.common.io.Resources.getResource;
+import static java.nio.charset.Charset.defaultCharset;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.moj.cpp.listing.common.azure.ProvisionalBookingService;
+import uk.gov.moj.cpp.listing.common.service.ProvisionalBookingService;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.google.common.io.Resources.getResource;
-import static java.nio.charset.Charset.defaultCharset;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.jgroups.util.Util.assertTrue;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Mockito.when;
-import static org.hamcrest.Matchers.is;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
+
+import com.google.common.io.Resources;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProvisionalBookingServiceAdapterTest {
 
     private final UUID  BOOKINGID_1 = UUID.fromString("00e17481-18d3-4eda-9214-75bdb15abd25");
@@ -51,7 +53,7 @@ public class ProvisionalBookingServiceAdapterTest {
     @InjectMocks
     private ProvisionalBookingServiceAdapter provisionalBookingServiceAdapter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }

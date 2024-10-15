@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -31,9 +31,9 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.builder.RequestSpecBuilder;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 
@@ -67,16 +67,29 @@ public class RestHelper {
         return pollForResponse(path, mediaType, randomUUID().toString(), payloadMatchers);
     }
 
+    public static String pollForResponse(final String path, final String mediaType, final int timeOutInSeconds, final Matcher... payloadMatchers) {
+        return pollForResponse(path, mediaType, randomUUID().toString(), timeOutInSeconds, payloadMatchers);
+    }
+
     public static String pollForResponse(final String path, final String mediaType, final String userId, final Matcher... payloadMatchers) {
         return pollForResponse(path, mediaType, userId, status().is(OK), payloadMatchers);
     }
 
+    public static String pollForResponse(final String path, final String mediaType, final String userId, final int timeOutInSeconds, final Matcher... payloadMatchers) {
+        return pollForResponse(path, mediaType, userId, status().is(OK), timeOutInSeconds, payloadMatchers);
+    }
+
 
     public static String pollForResponse(final String path, final String mediaType, final String userId, final ResponseStatusMatcher responseStatusMatcher, final Matcher... payloadMatchers) {
+        return pollForResponse(path, mediaType, userId, responseStatusMatcher, TIMEOUT, payloadMatchers);
+    }
+
+
+    public static String pollForResponse(final String path, final String mediaType, final String userId, final ResponseStatusMatcher responseStatusMatcher, final int timeOutInSeconds, final Matcher... payloadMatchers) {
 
         return poll(requestParams(getReadUrl(path), mediaType)
                 .withHeader(USER_ID, userId).build())
-                .timeout(TIMEOUT, TimeUnit.SECONDS)
+                .timeout(timeOutInSeconds, TimeUnit.SECONDS)
                 .until(
                         responseStatusMatcher,
                         payload().isJson(allOf(payloadMatchers))

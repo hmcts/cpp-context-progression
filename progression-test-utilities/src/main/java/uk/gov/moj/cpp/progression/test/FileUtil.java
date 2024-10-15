@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.test;
 
 import static java.nio.charset.Charset.defaultCharset;
 import static javax.json.Json.createReader;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.InputStream;

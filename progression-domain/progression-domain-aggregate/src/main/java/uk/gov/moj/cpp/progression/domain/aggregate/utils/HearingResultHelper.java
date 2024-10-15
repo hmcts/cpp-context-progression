@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @SuppressWarnings("ALL")
 public class HearingResultHelper {
@@ -74,7 +75,7 @@ public class HearingResultHelper {
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .anyMatch(judicialResult ->
-                        nonNull(judicialResult.getNextHearing()) && TRUE.equals(judicialResult.getIsNewAmendment()
+                        nonNull(judicialResult.getNextHearing()) && isNull(judicialResult.getNextHearing().getApplicationTypeCode()) && TRUE.equals(judicialResult.getIsNewAmendment()
                         )
                 );
     }
@@ -83,18 +84,17 @@ public class HearingResultHelper {
         if (aggregateHearing == null){
             return false;
         }
-        final boolean doNewHearingHasNewHearing = doProsecutionCasesContainNextHearing(resultedHearing.getProsecutionCases()) ||
-                doCourtApplicationsContainNextHearing(resultedHearing.getCourtApplications()) ;
 
-        final boolean doOldHearingHasNewHearing = doProsecutionCasesContainNextHearing(aggregateHearing.getProsecutionCases()) ||
-                doCourtApplicationsContainNextHearing(aggregateHearing.getCourtApplications()) ;
+        final List<UUID> currentJudicialResult = getProsecutionCasesJudiricalResultsNextHearing(resultedHearing.getProsecutionCases());
+        currentJudicialResult.addAll(getCourtApplicationsJudicialResultsNextHearing(resultedHearing.getCourtApplications()));
 
-        return doOldHearingHasNewHearing && ! doNewHearingHasNewHearing ;
+        final List<UUID> previousJudicialResult = getProsecutionCasesJudiricalResultsNextHearingForPrevious(aggregateHearing.getProsecutionCases());
+        previousJudicialResult.addAll(getCourtApplicationsJudicialResultsNextHearing(aggregateHearing.getCourtApplications()));
 
+        return !currentJudicialResult.containsAll(previousJudicialResult);
     }
-
-    private static boolean doProsecutionCasesContainNextHearing(final List<ProsecutionCase> prosecutionCases) {
-        return isNotEmpty(prosecutionCases) && prosecutionCases.stream()
+    private static List<UUID> getProsecutionCasesJudiricalResultsNextHearing(final List<ProsecutionCase> prosecutionCases) {
+        return isEmpty(prosecutionCases) ? new ArrayList<>(): prosecutionCases.stream()
                 .map(ProsecutionCase::getDefendants)
                 .flatMap(Collection::stream)
                 .map(Defendant::getOffences)
@@ -102,9 +102,27 @@ public class HearingResultHelper {
                 .map(Offence::getJudicialResults)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
-                .anyMatch(judicialResult ->
+                .filter(judicialResult ->
+                                nonNull(judicialResult.getNextHearing())
+                                        && StringUtils.isEmpty(judicialResult.getNextHearing().getApplicationTypeCode())
+                ).map(JudicialResult::getJudicialResultId)
+                .collect(Collectors.toList());
+    }
+
+    private static List<UUID> getProsecutionCasesJudiricalResultsNextHearingForPrevious(final List<ProsecutionCase> prosecutionCases) {
+        return  isEmpty(prosecutionCases) ? new ArrayList<>() : prosecutionCases.stream()
+                .map(ProsecutionCase::getDefendants)
+                .flatMap(Collection::stream)
+                .map(Defendant::getOffences)
+                .flatMap(Collection::stream)
+                .map(Offence::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .filter(judicialResult ->
                         nonNull(judicialResult.getNextHearing())
-                );
+                                && StringUtils.isEmpty(judicialResult.getNextHearing().getApplicationTypeCode())
+                ).map(JudicialResult::getJudicialResultId)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -505,13 +523,18 @@ public class HearingResultHelper {
     private static boolean doCourtApplicationsContainNextHearingResults(final List<CourtApplication> courtApplications) {
         return isNotEmpty(courtApplications) && courtApplications.stream()
                 .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
-                .anyMatch(judicialResult -> TRUE.equals(judicialResult.getIsNewAmendment()) && nonNull(judicialResult.getNextHearing()));
+                .anyMatch(judicialResult -> TRUE.equals(judicialResult.getIsNewAmendment())
+                        && nonNull(judicialResult.getNextHearing())
+                        && StringUtils.isEmpty(judicialResult.getNextHearing().getApplicationTypeCode())
+                );
     }
 
-    private static boolean doCourtApplicationsContainNextHearing(final List<CourtApplication> courtApplications) {
-        return isNotEmpty(courtApplications) && courtApplications.stream()
+    private static List<UUID> getCourtApplicationsJudicialResultsNextHearing(final List<CourtApplication> courtApplications) {
+        return isEmpty(courtApplications) ?  new ArrayList<>() : courtApplications.stream()
                 .flatMap(courtApplication -> getAllJudicialResultsFromApplication(courtApplication).stream())
-                .anyMatch(judicialResult -> nonNull(judicialResult.getNextHearing()));
+                .filter(judicialResult -> nonNull(judicialResult.getNextHearing()))
+                .map(JudicialResult::getJudicialResultId)
+                .collect(toList());
     }
 
     private static List<JudicialResult> getAllJudicialResultsFromApplication(final CourtApplication courtApplication) {

@@ -397,6 +397,7 @@ public class ListCourtHearingTransformer {
                 .withBookingType(courtHearingRequest.getBookingType())
                 .withSpecialRequirements(courtHearingRequest.getSpecialRequirements())
                 .withWeekCommencingDate(courtHearingRequest.getWeekCommencingDate())
+                .withNonDefaultDays(courtHearingRequest.getNonDefaultDays())
                 .build();
         hearingsList.add(hearing);
 

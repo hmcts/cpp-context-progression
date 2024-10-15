@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.utils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
@@ -37,7 +38,7 @@ public class TestUtils {
                 .build();
     }
 
-    public static MasterDefendant buildDefendantWithPersonDefendant(){
+    public static MasterDefendant buildDefendantWithPersonDefendant() {
         return MasterDefendant.masterDefendant()
                 .withPersonDefendant(buildPersonDefendant())
                 .build();
@@ -76,18 +77,18 @@ public class TestUtils {
                 .build();
     }
 
-    private static Address buildAddress(String line1, String postcode){
+    private static Address buildAddress(String line1, String postcode) {
         return Address.address()
                 .withAddress1(line1)
                 .withPostcode(postcode)
                 .build();
     }
 
-    public static String getPersonName(){
-        return TEST_FIRST_NAME+" "+TEST_LAST_NAME;
+    public static String getPersonName() {
+        return TEST_FIRST_NAME + " " + TEST_LAST_NAME;
     }
 
-    public static ProsecutingAuthority buildProsecutingAuthority(){
+    public static ProsecutingAuthority buildProsecutingAuthority() {
         return ProsecutingAuthority.prosecutingAuthority()
                 .withName(TEST_PROSECUTION_AUTHORITY_NAME)
                 .withProsecutionAuthorityCode(TEST_PROSECUTION_AUTHORITY_NAME)
@@ -95,77 +96,91 @@ public class TestUtils {
                 .build();
     }
 
-    public static CourtApplicationParty buildCourtApplicationPartyWithLegalEntity(){
-       return CourtApplicationParty.courtApplicationParty()
-               .withMasterDefendant(buildDefendantWithLegalEntity())
-               .build();
+    public static CourtApplicationParty buildCourtApplicationPartyWithLegalEntity() {
+        return CourtApplicationParty.courtApplicationParty()
+                .withMasterDefendant(buildDefendantWithLegalEntity())
+                .build();
     }
 
-    public static CourtApplicationParty buildCourtApplicationPartyWithPersonDefendant(){
+    public static CourtApplicationParty buildCourtApplicationPartyWithPersonDefendant() {
         return CourtApplicationParty.courtApplicationParty()
                 .withMasterDefendant(buildDefendantWithPersonDefendant())
                 .build();
     }
 
-    public static CourtApplicationParty buildCourtApplicationPartyWithProsecutionAuthority(){
+    public static CourtApplicationParty buildCourtApplicationPartyWithProsecutionAuthority() {
         return CourtApplicationParty.courtApplicationParty()
                 .withProsecutingAuthority(buildProsecutingAuthority())
                 .build();
     }
 
-    public static void verifyCompanyName(String resultName){
-        assertEquals("Mismatch company's name", TEST_COMPANY_NAME, resultName);
+    public static void verifyCompanyName(String resultName) {
+        assertEquals(TEST_COMPANY_NAME, resultName, "Mismatch company's name");
     }
 
-    public static void verifyCompanyAddress(PostalAddress resultAddress){
-        assertEquals("Mismatch company's address1", TEST_COMPANY_ADDRESS_LINE1, resultAddress.getLine1());
-        assertEquals("Mismatch company's postcode", TEST_COMPANY_ADDRESS_POSTCODE, resultAddress.getPostCode());
+    public static void verifyCompanyAddress(PostalAddress resultAddress) {
+        assertEquals(TEST_COMPANY_ADDRESS_LINE1, resultAddress.getLine1(), "Mismatch company's address1");
+        assertEquals(TEST_COMPANY_ADDRESS_POSTCODE, resultAddress.getPostCode(), "Mismatch company's postcode");
     }
 
-    public static void verifyCompanyAddress(Address resultAddress){
-        assertEquals("Mismatch company's address1", TEST_COMPANY_ADDRESS_LINE1, resultAddress.getAddress1());
-        assertEquals("Mismatch company's postcode", TEST_COMPANY_ADDRESS_POSTCODE, resultAddress.getPostcode());
+    public static void verifyCompanyAddress(Address resultAddress) {
+        assertEquals(TEST_COMPANY_ADDRESS_LINE1, resultAddress.getAddress1(), "Mismatch company's address1");
+        assertEquals(TEST_COMPANY_ADDRESS_POSTCODE, resultAddress.getPostcode(), "Mismatch company's postcode");
     }
 
-    public static void verifyPersonName(String resultName){
-        assertEquals("Mismatch person's name",TEST_FIRST_NAME+" "+TEST_LAST_NAME, resultName);
+    public static void verifyPersonName(String resultName) {
+        assertEquals(TEST_FIRST_NAME + " " + TEST_LAST_NAME, resultName, "Mismatch person's name");
     }
 
     public static void verifyMagistratesCourt(final String ljaCode, final String ljaName) {
-        assertEquals("Mismatch LJA Code", LJA_CODE, ljaCode);
-        assertEquals("Mismatch LJA NAME", LJA_NAME, ljaName);
+        assertEquals(LJA_CODE, ljaCode, "Mismatch LJA Code");
+        assertEquals(LJA_NAME, ljaName, "Mismatch LJA NAME");
+    }
+
+    public static void verifyMagistratesCourtAmended(final String ljaCode, final String ljaName, final String amendmentDate) {
+        assertEquals(LJA_CODE, ljaCode, "Mismatch LJA Code");
+        assertEquals(LJA_NAME, ljaName, "Mismatch LJA NAME");
+        assertNotNull(amendmentDate);
+
+
     }
 
     public static void verifyCrownCourt(final String ljaCode, final String ljaName) {
-        assertEquals("Mismatch LJA Code", null, ljaCode);
-        assertEquals("Mismatch LJA NAME", null, ljaName);
+        assertEquals(null, ljaCode, "Mismatch LJA Code");
+        assertEquals(null, ljaName, "Mismatch LJA NAME");
     }
 
-    public static void verifyPersonAddress(PostalAddress resultAddress){
-        assertEquals("Mismatch person address1", TEST_PERSON_ADDRESS_LINE1, resultAddress.getLine1());
-        assertEquals("Mismatch person postcode", TEST_PERSON_ADDRESS_POSTCODE, resultAddress.getPostCode());
+    public static void verifyCrownCourtAmended(final String ljaCode, final String ljaName, final String amendmentDate) {
+        assertEquals(null, ljaCode, "Mismatch LJA Code");
+        assertEquals(null, ljaName, "Mismatch LJA NAME");
+        assertNotNull(amendmentDate);
     }
 
-    public static void verifyPersonAddress(Address resultAddress){
-        assertEquals("Mismatch person address1", TEST_PERSON_ADDRESS_LINE1, resultAddress.getAddress1());
-        assertEquals("Mismatch person postcode", TEST_PERSON_ADDRESS_POSTCODE, resultAddress.getPostcode());
+    public static void verifyPersonAddress(PostalAddress resultAddress) {
+        assertEquals(TEST_PERSON_ADDRESS_LINE1, resultAddress.getLine1(), "Mismatch person address1");
+        assertEquals(TEST_PERSON_ADDRESS_POSTCODE, resultAddress.getPostCode(), "Mismatch person postcode");
     }
 
-    public static void verifyProsecutionAuthorityName(String resultName){
-        assertEquals("Mismatch prosecution authority's name", TEST_PROSECUTION_AUTHORITY_NAME, resultName);
+    public static void verifyPersonAddress(Address resultAddress) {
+        assertEquals(TEST_PERSON_ADDRESS_LINE1, resultAddress.getAddress1(), "Mismatch person address1");
+        assertEquals(TEST_PERSON_ADDRESS_POSTCODE, resultAddress.getPostcode(), "Mismatch person postcode");
     }
 
-    public static void verifyProsecutionAuthorityAddress(PostalAddress resultAddress){
-        assertEquals("Mismatch prosecution authority's address1", TEST_PROSECUTION_AUTHORITY_ADDRESS_LINE1, resultAddress.getLine1());
-        assertEquals("Mismatch prosecution authority's postcode", TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE, resultAddress.getPostCode());
+    public static void verifyProsecutionAuthorityName(String resultName) {
+        assertEquals(TEST_PROSECUTION_AUTHORITY_NAME, resultName, "Mismatch prosecution authority's name");
     }
 
-    public static void verifyCompanyEmail(String resultEmail){
-        assertEquals("Mismatch company's email", TEST_COMPANY_EMAIL, resultEmail);
+    public static void verifyProsecutionAuthorityAddress(PostalAddress resultAddress) {
+        assertEquals(TEST_PROSECUTION_AUTHORITY_ADDRESS_LINE1, resultAddress.getLine1(), "Mismatch prosecution authority's address1");
+        assertEquals(TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE, resultAddress.getPostCode(), "Mismatch prosecution authority's postcode");
     }
 
-    public static void verifyPersonEmail(String resultEmail){
-        assertEquals("Mismatch person's email", TEST_PERSON_EMAIL, resultEmail);
+    public static void verifyCompanyEmail(String resultEmail) {
+        assertEquals(TEST_COMPANY_EMAIL, resultEmail, "Mismatch company's email");
+    }
+
+    public static void verifyPersonEmail(String resultEmail) {
+        assertEquals(TEST_PERSON_EMAIL, resultEmail, "Mismatch person's email");
     }
 
 }

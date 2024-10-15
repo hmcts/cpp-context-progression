@@ -6,7 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.hearing.courts.HearingResult.hearingResult;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -28,7 +28,6 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.NextHearingsRequested;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
 import uk.gov.justice.core.courts.ReportingRestriction;
@@ -65,15 +64,15 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultsCommandHandlerTest {
 
     private final UtcClock utcClock = new UtcClock();
@@ -106,14 +105,11 @@ public class HearingResultsCommandHandlerTest {
     @Mock
     private CaseAggregate caseAggregate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         hearingAggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-
     }
 
     @Test
@@ -152,6 +148,9 @@ public class HearingResultsCommandHandlerTest {
                         .build())
                 .build();
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
         hearingAggregate.apply(hearingResult.getHearing());
 
         final Metadata metadata = Envelope
@@ -187,8 +186,8 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResults() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
-        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(new UtcClock().now()).withAdjournmentReason("AdjournmentReason").build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(new UtcClock().now().plusDays(1)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now().plusDays(1), nextHearing, hearingDays);
 
@@ -222,8 +221,8 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsWithoutNextHearingsOnReshareWhenNextHearingResultsNotAmended() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
-        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(new UtcClock().now()).withAdjournmentReason("AdjournmentReason").build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(new UtcClock().now().plusDays(1)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now().plusDays(1), nextHearing, hearingDays, false);
 
@@ -247,8 +246,8 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsWithNextHearingsEventsWhenEarliestNextHearingDateIsNotInFutureAndSingleDayHearing() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
-        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(new UtcClock().now()).withAdjournmentReason("AdjournmentReason").build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(new UtcClock().now().plusDays(1)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now(), nextHearing, hearingDays);
 
@@ -272,9 +271,9 @@ public class HearingResultsCommandHandlerTest {
     public void shouldProcessHearingResultsWithoutNextHearingsEventsWhenEarliestNextHearingDateIsNotInFutureAndMultiDayHearing() throws EventStreamException {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
-        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
-        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build(),
-                HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(2)).build());
+        final NextHearing nextHearing = NextHearing.nextHearing().withListedStartDateTime(new UtcClock().now()).withAdjournmentReason("AdjournmentReason").build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(new UtcClock().now().plusDays(1)).build(),
+                HearingDay.hearingDay().withSittingDay(new UtcClock().now().plusDays(2)).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now(), nextHearing, hearingDays);
 
@@ -300,7 +299,7 @@ public class HearingResultsCommandHandlerTest {
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
         final NextHearing nextHearing = NextHearing.nextHearing().withAdjournmentReason("AdjournmentReason").build();
-        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now()).build());
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build());
 
         final HearingResult hearingResult = createCommandPayload(hearingId, caseId, ZonedDateTime.now().plusDays(1), nextHearing, hearingDays);
 
@@ -454,6 +453,36 @@ public class HearingResultsCommandHandlerTest {
         assertThat(nextHearingRequested1.metadata().name(), is("progression.event.unscheduled-next-hearings-requested"));
         assertThat(nextHearingRequested1.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
         assertThat(nextHearingRequested1.payloadAsJsonObject().getJsonObject("seedingHearing").getString("sittingDay"), is(LocalDate.now().toString()));
+    }
+
+    @Test
+    public void shouldProcessHearingResultsWithoutNextHearingForCaseForAutoApplicationCreation() throws EventStreamException {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final NextHearing nextHearing = NextHearing.nextHearing().withApplicationTypeCode("SE20508").withListedStartDateTime(ZonedDateTime.now()).withAdjournmentReason("AdjournmentReason").build();
+        final List<HearingDay> hearingDays = Arrays.asList(HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build());
+
+        final HearingResult hearingResult = createCommandPayload(hearingId, caseId, utcClock.now().plusDays(1), nextHearing, hearingDays);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.hearing-result")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
+        handler.processHearingResults(envelope);
+
+        final List<JsonEnvelope> events = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        assertThat(events.size(), is(4));
+
+        checkEventsContentOfHearingResultedAndListingStatusChangedAndProsecutionCasesResulted(hearingId, caseId, events);
+
+        final JsonEnvelope unscheduledNextHearingsEvent = events.get(3);
+        assertThat(unscheduledNextHearingsEvent.metadata().name(), is("progression.event.unscheduled-next-hearings-requested"));
+        assertThat(unscheduledNextHearingsEvent.payloadAsJsonObject().getJsonObject("hearing").getString("id"), is(hearingId.toString()));
+        assertThat(unscheduledNextHearingsEvent.payloadAsJsonObject().getJsonObject("seedingHearing").getString("seedingHearingId"), is(hearingId.toString()));
     }
 
     @Test

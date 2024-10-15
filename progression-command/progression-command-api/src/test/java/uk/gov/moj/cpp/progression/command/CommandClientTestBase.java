@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Spy;
 
 public class CommandClientTestBase {
@@ -48,7 +48,7 @@ public class CommandClientTestBase {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());

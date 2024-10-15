@@ -12,6 +12,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
+import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
+import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
+import static uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated.sendNotificationForAutoApplicationInitiated;
+import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplication;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplicationWithCustodialEstablisment;
@@ -36,8 +40,10 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
@@ -46,17 +52,19 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
+import uk.gov.moj.cpp.platform.test.utils.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtApplicationWithCustody;
-import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
-import uk.gov.moj.cpp.progression.events.NotificationCreateHearingApplicationLinkFailed;
+import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -66,21 +74,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.internal.util.reflection.Whitebox;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ApplicationAggregateTest {
 
     private static final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds().build();
     @InjectMocks
     private ApplicationAggregate aggregate;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         aggregate = new ApplicationAggregate();
     }
@@ -106,7 +113,7 @@ public class ApplicationAggregateTest {
         final LocalDate convictionDate = LocalDate.now();
         final CourtApplication courtApplication = buildCourtapplication(randomUUID(), convictionDate);
 
-        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication, null)
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
@@ -120,7 +127,7 @@ public class ApplicationAggregateTest {
         final UUID masterDefendantId = UUID.randomUUID();
         final CourtApplication courtApplication = buildCourtapplicationWithCustodialEstablisment(courtApplicationId, convictionDate, masterDefendantId);
 
-        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication, null)
                 .collect(toList());
         assertThat(eventStream.size(), is(2));
         final Object object = eventStream.get(0);
@@ -161,7 +168,7 @@ public class ApplicationAggregateTest {
 
     @Test
     public void shouldNotReturnApplicationEjected() {
-        Whitebox.setInternalState(this.aggregate, "applicationStatus", ApplicationStatus.EJECTED);
+        ReflectionUtil.setField(this.aggregate, "applicationStatus", ApplicationStatus.EJECTED);
         final List<Object> eventStream = aggregate.ejectApplication(randomUUID(), "Legal").collect(toList());
         assertThat(eventStream.size(), is(0));
     }
@@ -379,13 +386,31 @@ public class ApplicationAggregateTest {
                 .build();
         aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication, null)
                 .collect(toList());
         assertThat(eventStream.size(), is(2));
         final Object object1 = eventStream.get(0);
         assertThat(object1.getClass(), is(equalTo(CourtApplicationCreated.class)));
         final Object object2 = eventStream.get(1);
         assertThat(object2.getClass(), is(equalTo(SendStatdecAppointmentLetter.class)));
+    }
+
+    @Test
+    public void shouldReturnCourtApplicationDocumentWhenOldApplicationIsExistsDuringCourtApplicationIsCreated() {
+        final LocalDate convictionDate = LocalDate.now();
+        final UUID oldApplicationId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final CourtApplication courtApplication = buildCourtapplication(applicationId, convictionDate);
+
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication, oldApplicationId)
+                .collect(toList());
+        assertThat(eventStream.size(), is(2));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(CourtApplicationCreated.class)));
+
+        final CourtApplicationDocumentUpdated courtApplicationDocumentUpdated = (CourtApplicationDocumentUpdated) eventStream.get(1);
+        assertThat(courtApplicationDocumentUpdated.getApplicationId(), is(applicationId));
+        assertThat(courtApplicationDocumentUpdated.getOldApplicationId(), is(oldApplicationId));
     }
 
     @Test
@@ -402,7 +427,7 @@ public class ApplicationAggregateTest {
                 .build();
         aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication)
+        final List<Object> eventStream = aggregate.createCourtApplication(courtApplication, null)
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object1 = eventStream.get(0);
@@ -656,6 +681,124 @@ public class ApplicationAggregateTest {
         final SendNotificationForApplicationInitiated event =  (SendNotificationForApplicationInitiated) eventStream.get(0);
         assertThat(event.getCourtApplication().getId(), is(initiateCourtApplicationProceedings.getCourtApplication().getId()));
 
+    }
+
+    @Test
+    public void shouldRaiseAutoNotificationEvent(){
+
+        final UUID applicationId = randomUUID();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(applicationId)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
+
+        final SendNotificationForAutoApplicationInitiated sendNotificationForAutoApplicationInitiated =
+                sendNotificationForAutoApplicationInitiated()
+                        .withCourtApplication(courtApplication()
+                                .withId(applicationId)
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingStartDateTime("2020-06-26T07:51Z")
+                        .build();
+
+        final List<Object> eventStream = aggregate.sendNotificationForAutoApplication(sendNotificationForAutoApplicationInitiated.getCourtApplication(),
+                sendNotificationForAutoApplicationInitiated.getCourtCentre(), sendNotificationForAutoApplicationInitiated.getJurisdictionType()
+        , sendNotificationForAutoApplicationInitiated.getHearingStartDateTime()).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass().getName(), is("uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated"));
+        final SendNotificationForAutoApplicationInitiated event =  (SendNotificationForAutoApplicationInitiated) eventStream.get(0);
+        assertThat(event.getCourtApplication().getId(), is(initiateCourtApplicationProceedings.getCourtApplication().getId()));
+    }
+
+    @Test
+    public void shouldRaiseAutoNotificationEventForAmend(){
+
+        final UUID applicationId = randomUUID();
+        final LocalDate orderedDate = LocalDate.now();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(applicationId)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .withIsAmended(true)
+                .withIssueDate(orderedDate)
+                .build();
+
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
+
+        final SendNotificationForAutoApplicationInitiated sendNotificationForAutoApplicationInitiated =
+                sendNotificationForAutoApplicationInitiated()
+                        .withCourtApplication(courtApplication()
+                                .withId(applicationId)
+                                .withType(courtApplicationType()
+                                        .withProsecutorThirdPartyFlag(false)
+                                        .withSummonsTemplateType(NOT_APPLICABLE)
+                                        .build())
+                                .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                        .withIsSJP(false)
+                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                        .withCaseStatus("ACTIVE")
+                                        .build()))
+                                .build())
+                        .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingStartDateTime("2020-06-26T07:51Z")
+                        .withIssueDate(orderedDate)
+                        .build();
+
+        final List<Object> eventStream = aggregate.sendNotificationForAutoApplication(sendNotificationForAutoApplicationInitiated.getCourtApplication(),
+                sendNotificationForAutoApplicationInitiated.getCourtCentre(), sendNotificationForAutoApplicationInitiated.getJurisdictionType()
+                , sendNotificationForAutoApplicationInitiated.getHearingStartDateTime()).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        assertThat(eventStream.get(0).getClass().getName(), is("uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated"));
+        final SendNotificationForAutoApplicationInitiated event =  (SendNotificationForAutoApplicationInitiated) eventStream.get(0);
+        assertThat(event.getCourtApplication().getId(), is(initiateCourtApplicationProceedings.getCourtApplication().getId()));
+        assertThat(event.getIsAmended(), is(initiateCourtApplicationProceedings.getIsAmended()));
+        assertThat(event.getIssueDate(), is(orderedDate));
+
+    }
+
+    @Test
+    public void shouldDeleteCourtApplication() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        InitiateCourtApplicationProceedings initiateCourtProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(courtApplicationId).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().withId(hearingId).build())
+                .withSummonsApprovalRequired(false)
+                .build();
+        final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(initiateCourtProceedings, false, false)
+                .collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
+        assertThat(courtApplicationProceedingsInitiated.getClass(), is(equalTo(CourtApplicationProceedingsInitiated.class)));
+        aggregate.apply(courtApplicationProceedingsInitiated);
+
+        final UUID seedingHearingId = randomUUID();
+        final List<Object> deleteCourtApplicationEventStream = aggregate.deleteCourtApplication(courtApplicationId, seedingHearingId).collect(toList());
+
+        assertThat(deleteCourtApplicationEventStream.size(), is(1));
+        final DeleteCourtApplicationHearingRequested event = (DeleteCourtApplicationHearingRequested) deleteCourtApplicationEventStream.get(0);
+        assertThat(event.getApplicationId(), is(courtApplicationId));
+        assertThat(event.getSeedingHearingId(), is(seedingHearingId));
+        assertThat(event.getHearingId(), is(hearingId));
     }
 
     @Test

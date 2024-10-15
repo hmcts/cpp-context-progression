@@ -6,7 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.persistence.NonUniqueResultException;
 
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.After;
@@ -196,9 +197,13 @@ public class MatchDefendantCaseHearingRepositoryTest {
     }
 
     private void removeEntity(final UUID hearingId, final UUID prosecutionCaseId, final UUID defendantId) {
-        final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
-        if (Objects.nonNull(entity)) {
-            matchDefendantCaseHearingRepository.remove(entity);
+        try {
+            final MatchDefendantCaseHearingEntity entity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
+            if (Objects.nonNull(entity)) {
+                matchDefendantCaseHearingRepository.remove(entity);
+            }
+        } catch (NonUniqueResultException e) {
+            // do nothing
         }
     }
 }

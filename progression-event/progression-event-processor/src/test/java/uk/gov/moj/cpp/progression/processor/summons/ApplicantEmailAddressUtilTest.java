@@ -23,34 +23,35 @@ import uk.gov.justice.core.courts.SummonsTemplateType;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(DataProviderRunner.class)
+@ExtendWith(MockitoExtension.class)
+
 public class ApplicantEmailAddressUtilTest {
 
     private static final String EMAIL_ADDRESS = RandomGenerator.EMAIL_ADDRESS.next();
 
     private ApplicantEmailAddressUtil applicantEmailAddressUtil = new ApplicantEmailAddressUtil();
 
-    @DataProvider
-    public static Object[][] applicantType() {
-        return new Object[][]{
+    public static Stream<Arguments> applicantType() {
+        return Stream.of(
                 // party type
-                {PartyType.MASTER_DEFENDANT_PERSON},
-                {PartyType.MASTER_DEFENDANT_LEGAL_ENTITY},
-                {PartyType.INDIVIDUAL},
-                {PartyType.ORGANISATION},
-                {PartyType.PROSECUTION_AUTHORITY}
-        };
+                Arguments.of(PartyType.MASTER_DEFENDANT_PERSON),
+                Arguments.of(PartyType.MASTER_DEFENDANT_LEGAL_ENTITY),
+                Arguments.of(PartyType.INDIVIDUAL),
+                Arguments.of(PartyType.ORGANISATION),
+                Arguments.of(PartyType.PROSECUTION_AUTHORITY)
+        );
     }
 
-    @UseDataProvider("applicantType")
-    @Test
+    @ParameterizedTest
+    @MethodSource("applicantType")
     public void getApplicantEmailAddress_EmailAddressPresent(final PartyType partyType) {
         final CourtApplication courtApplication = buildCourtApplication(partyType, true);
         final Optional<String> applicantEmailAddress = applicantEmailAddressUtil.getApplicantEmailAddress(courtApplication);
@@ -58,8 +59,8 @@ public class ApplicantEmailAddressUtilTest {
         assertThat(applicantEmailAddress.get(), is(EMAIL_ADDRESS));
     }
 
-    @UseDataProvider("applicantType")
-    @Test
+    @ParameterizedTest
+    @MethodSource("applicantType")
     public void getApplicantEmailAddress_EmailAddressNotPresent(final PartyType partyType) {
         final CourtApplication courtApplication = buildCourtApplication(partyType, false);
         final Optional<String> applicantEmailAddress = applicantEmailAddressUtil.getApplicantEmailAddress(courtApplication);

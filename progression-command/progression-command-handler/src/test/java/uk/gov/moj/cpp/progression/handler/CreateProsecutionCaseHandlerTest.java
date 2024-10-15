@@ -3,16 +3,14 @@ package uk.gov.moj.cpp.progression.handler;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.core.courts.CreateProsecutionCase.createProsecutionCase;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -48,17 +46,16 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CreateProsecutionCaseHandlerTest {
 
     @Mock
@@ -80,19 +77,12 @@ public class CreateProsecutionCaseHandlerTest {
     @InjectMocks
     private CreateProsecutionCaseHandler createProsecutionCaseHandler;
 
-
     private CaseAggregate aggregate;
 
 
     @Captor
-    ArgumentCaptor<UUID>  prosecutionCaseIdArgumentCapture;
+    ArgumentCaptor<UUID> prosecutionCaseIdArgumentCapture;
 
-    @Before
-    public void setup() {
-        aggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -104,11 +94,14 @@ public class CreateProsecutionCaseHandlerTest {
 
     @Test
     public void shouldProcessCommand() throws Exception {
+
         final Defendant defendant = Defendant.defendant().withId(randomUUID()).withPersonDefendant(PersonDefendant.personDefendant().build())
                 .withOffences(singletonList(Offence.offence().build()))
                 .build();
-        final List<Defendant> defendants = new ArrayList<Defendant>() {{ add(defendant); }};
-        final CreateProsecutionCase createProsecutionCase = createProsecutionCase()
+        final List<Defendant> defendants = new ArrayList<Defendant>() {{
+            add(defendant);
+        }};
+        final CreateProsecutionCase createProsecutionCase = CreateProsecutionCase.createProsecutionCase()
                 .withProsecutionCase(ProsecutionCase.prosecutionCase()
                         .withDefendants(defendants)
                         .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
@@ -119,7 +112,12 @@ public class CreateProsecutionCaseHandlerTest {
                         .withClassOfCase("Class 1")
                         .build())
                 .build();
-        aggregate.apply(createProsecutionCase.getProsecutionCase());
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        caseAggregate.apply(createProsecutionCase.getProsecutionCase());
 
 
         final Metadata metadata = Envelope
@@ -135,15 +133,14 @@ public class CreateProsecutionCaseHandlerTest {
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
         assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.prosecution-case-created"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase", notNullValue ()),
-                                withJsonPath("$.prosecutionCase.classOfCase", is("Class 1")))
-                        ))
-
-                )
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.prosecution-case-created"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.prosecutionCase", notNullValue()),
+                                        withJsonPath("$.prosecutionCase.classOfCase", is("Class 1")))
+                                ))
+           )
         );
     }
 
@@ -165,6 +162,10 @@ public class CreateProsecutionCaseHandlerTest {
                 .withMasterDefendantId(masterDefendantId)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build());
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         createProsecutionCaseHandler.handleRemoveDefendantCustodialEstablishmentFromCase(envelope);
 

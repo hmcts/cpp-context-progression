@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultHelperTest {
 
     private static final UUID HEARING_ID_1 = fromString("dee1acd3-5c18-4417-9397-36c5257ac6b2");
@@ -570,6 +570,15 @@ public class HearingResultHelperTest {
     }
 
     @Test
+    public void shouldReturnFalseForApplicationContainsNoNextHearingWhenIsAmended() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                emptyList(),
+                asList(buildCourtApplicationsWithNoNextHearingJudicialResults(PROSECUTION_CASE_ID_1, true)));
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(false));
+    }
+
+    @Test
     public void shouldReturnFalseWhenFirstTimeResult(){
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
@@ -585,7 +594,7 @@ public class HearingResultHelperTest {
     }
 
     @Test
-    public void shouldReturnTrueWhenNextHearingDeletedInResultForCase(){
+    public void shouldReturnTrueWhenNextHearingDeletedInResultForCaseWhenOldNextHearingIsNotCreatedWithPreviousResult(){
         final Hearing oldHearingResult = buildHearingWithCourtApplications(
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
                         of(buildDefendant(DEFENDANT_ID_1,
@@ -600,7 +609,32 @@ public class HearingResultHelperTest {
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
                         of(buildDefendant(DEFENDANT_ID_1,
                                 of(buildOffence(OFFENCE_ID_1,
-                                        asList(buildJudicialResultWithAmendmentAs(null, false)),
+                                        asList(buildJudicialResultWithAmendmentAs(null, true)),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        assertThat(HearingResultHelper.isNextHearingDeleted(newHearingResult, oldHearingResult), is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueWhenNextHearingDeletedInResultForCase(){
+        final Hearing oldHearingResult = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResultWithAmendmentAs(buildNextHearing(), true)),
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        final Hearing newHearingResult = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        asList(buildJudicialResultWithAmendmentAs(null, true)),
                                         singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
                                         .collect(Collectors.toList())
                         )).collect(Collectors.toList()))),
@@ -770,6 +804,13 @@ public class HearingResultHelperTest {
         return CourtApplication.courtApplication()
                 .withId(caseId)
                 .withJudicialResults(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment)))
+                .build();
+    }
+
+    private CourtApplication buildCourtApplicationsWithNoNextHearingJudicialResults(final UUID caseId, final boolean isNewAmendment) {
+        return CourtApplication.courtApplication()
+                .withId(caseId)
+                .withJudicialResults(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(null, isNewAmendment)))
                 .build();
     }
 

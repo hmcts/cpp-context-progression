@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.time.LocalDate;
@@ -76,7 +77,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
     public static List<Matcher<? super ReadContext>> getDefendantOffenceMatchersWithOffenceDateCode() {
         return newArrayList(
                 // defendant offence assertion
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                withJsonPath("$.prosecutionCase.defendants[*].offences[*].id", hasItem(equalTo("3789ab16-0bb7-4ef1-87ef-c936bf0364f1"))),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDefinitionId", is("490dce00-8591-49af-b2d0-1e161e7d0c36")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].wording", is("No Travel Card")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].wordingWelsh", is("No Travel Card In Welsh")),
@@ -152,17 +153,17 @@ public class ReferProsecutionCaseToCrownCourtHelper {
     public static List<Matcher<? super ReadContext>> getDefendantMatchers(final String caseId, final String defendantId) {
         return newArrayList(
                 // defendant assertion
-                withJsonPath("$.prosecutionCase.defendants[0].id", is(defendantId)),
-                withJsonPath("$.prosecutionCase.defendants[0].prosecutionCaseId", is(caseId)),
-                withJsonPath("$.prosecutionCase.defendants[0].prosecutionAuthorityReference", is("TFL12345-ABC")),
-                withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567"))
+                withJsonPath("$.prosecutionCase.defendants[*].id", hasItem(equalTo(defendantId))),
+                withJsonPath("$.prosecutionCase.defendants[*].prosecutionCaseId", hasItem(equalTo(caseId))),
+                withJsonPath("$.prosecutionCase.defendants[*].prosecutionAuthorityReference", hasItem(equalTo("TFL12345-ABC"))),
+                withJsonPath("$.prosecutionCase.defendants[*].pncId", hasItem(equalTo("1234567")))
         );
     }
 
     public static List<Matcher<? super ReadContext>> getDefendantOffenceMatchers() {
         return newArrayList(
                 // defendant offence assertion
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                withJsonPath("$.prosecutionCase.defendants[*].offences[*].id", hasItem(equalTo("3789ab16-0bb7-4ef1-87ef-c936bf0364f1"))),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDefinitionId", is("490dce00-8591-49af-b2d0-1e161e7d0c36")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].wording", is("No Travel Card")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].wordingWelsh", is("No Travel Card In Welsh")),

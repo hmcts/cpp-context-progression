@@ -4,23 +4,31 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseWithUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesByCaseUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.io.IOException;
 
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
 public class SearchCasesIT extends AbstractIT {
+
+    private static final JmsMessageConsumerClient publicEventsCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-defendant-updated").getMessageConsumerClient();
 
     private String firstName;
     private String middleName;
@@ -31,22 +39,23 @@ public class SearchCasesIT extends AbstractIT {
     private static final String DOB = "2010-01-01";
     private static ProsecutionCaseUpdateDefendantHelper helper;
 
-    @Before
+
+    @BeforeEach
     public void setUp() {
         firstName = "Harry";
         middleName = "Jack";
         lastName = "Kane Junior";
     }
 
-    @BeforeClass
-    public static void setUpCommonData() throws IOException {
+    @BeforeAll
+    public static void setUpCommonData() throws IOException, JSONException {
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
         helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         helper = null;
     }
@@ -83,20 +92,20 @@ public class SearchCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGetProsecutionCaseByFirstNameAfterDefendantUpdate() {
+    public void shouldGetProsecutionCaseByFirstNameAfterDefendantUpdate() throws JSONException {
         verifyCasesForSearchCriteria(firstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(firstName))});
         final String updatedFirstName = "updatedName";
         // when
         helper.updateDefendant();
 
         // then
-        helper.verifyInActiveMQ();
-        helper.verifyInMessagingQueueForDefendentChanged();
+        helper.verifyInActiveMQ(privateEventsConsumer);
+        helper.verifyInMessagingQueueForDefendentChanged(publicEventsCaseDefendantChanged);
         verifyCasesForSearchCriteria(updatedFirstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(updatedFirstName))});
     }
 
     @Test
-    public void shouldGetProsecutionCaseByReference() throws IOException {
+    public void shouldGetProsecutionCaseByReference() throws IOException, JSONException {
         addProsecutionCaseWithUrn(randomUUID().toString(), randomUUID().toString(), "URN12345");
         verifyCasesByCaseUrn("URN12345", new Matcher[]{withJsonPath("$.searchResults[0].reference", equalTo("URN12345"))});
     }

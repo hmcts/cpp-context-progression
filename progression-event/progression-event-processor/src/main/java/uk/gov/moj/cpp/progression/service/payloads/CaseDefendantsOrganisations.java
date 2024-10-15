@@ -1,8 +1,11 @@
 package uk.gov.moj.cpp.progression.service.payloads;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public class CaseDefendantsOrganisations {
   private final CaseDefendantsWithOrganisation caseDefendantOrganisation;
 
+  @JsonCreator
   public CaseDefendantsOrganisations(final CaseDefendantsWithOrganisation caseDefendantOrganisation) {
     this.caseDefendantOrganisation = caseDefendantOrganisation;
   }

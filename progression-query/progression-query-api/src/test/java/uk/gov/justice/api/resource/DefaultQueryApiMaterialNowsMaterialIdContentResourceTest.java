@@ -11,11 +11,11 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.argThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.api.resource.DefaultQueryApiMaterialMaterialIdContentResource.PROGRESSION_QUERY_MATERIAL_CONTENT;
 import static uk.gov.justice.api.resource.DefaultQueryApiMaterialNowsMaterialIdContentResource.PROGRESSION_QUERY_MATERIAL_NOWS_CONTENT;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -43,16 +43,16 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefaultQueryApiMaterialNowsMaterialIdContentResourceTest {
 
 
@@ -74,10 +74,6 @@ public class DefaultQueryApiMaterialNowsMaterialIdContentResourceTest {
     @InjectMocks
     private DefaultQueryApiMaterialNowsMaterialIdContentResource endpointHandler;
 
-    @Before
-    public void init() {
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-    }
 
     @Test
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() {
@@ -85,6 +81,7 @@ public class DefaultQueryApiMaterialNowsMaterialIdContentResourceTest {
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE, HeaderConstants.ID, randomUUID()));
 
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterialAsPdf(materialId.toString(), systemUserId.toString())).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(InputStream.class)).thenReturn(documentStream);
@@ -119,6 +116,7 @@ public class DefaultQueryApiMaterialNowsMaterialIdContentResourceTest {
     public void shouldRunNotFoundStatusWhenMaterialNotFound() {
         final JsonEnvelope documentDetails = documentDetails(materialId);
 
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
         when(materialClient.getMaterialAsPdf(materialId.toString(), systemUserId.toString())).thenReturn(documentContentResponse);
         when(documentContentResponse.getHeaders()).thenReturn(new MultivaluedHashMap());

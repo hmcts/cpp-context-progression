@@ -18,6 +18,7 @@ import uk.gov.justice.core.courts.RequestEditForm;
 import uk.gov.justice.core.courts.UpdateForm;
 import uk.gov.justice.core.courts.UpdateFormDefendants;
 import uk.gov.justice.services.common.configuration.Value;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -182,7 +183,7 @@ public class FormCommandHandler {
                 requestEditForm.getCourtFormId(),
                 fromString(userId),
                 getDurationMapByFormType(),
-                ZonedDateTime.now(),
+                new UtcClock().now(),
                 nonNull(requestEditForm.getExtend()) ? requestEditForm.getExtend() : Boolean.FALSE.booleanValue(),
                 nonNull(requestEditForm.getExtendTime()) && requestEditForm.getExtendTime() > 0 ? requestEditForm.getExtendTime() : DEFAULT_LOCK_EXTEND_TIME_IN_MINUTES);
 

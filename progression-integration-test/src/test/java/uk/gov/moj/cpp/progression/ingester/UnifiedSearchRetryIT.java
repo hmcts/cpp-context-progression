@@ -19,31 +19,31 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 public class UnifiedSearchRetryIT extends AbstractIT {
     public static final Poller POLLER = new Poller(300, 1000L);
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
     private static final String EVENT_NAME = "progression.event.court-application-created";
     private DeadLetterQueueBrowser deadLetterQueueBrowser;
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
 
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         deadLetterQueueBrowser = new DeadLetterQueueBrowser();
         deadLetterQueueBrowser.removeMessages();
         elasticSearchIndexRemoverUtil.deleteCaseIndex("crime_case_index");
     }
 
-    @After
+    @AfterEach
     public void teardown() throws IOException {
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex("crime_case_index");
     }

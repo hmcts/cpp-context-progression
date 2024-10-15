@@ -6,21 +6,19 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static java.util.UUID.randomUUID;
+import static org.awaitility.Awaitility.waitAtMost;
+import static org.awaitility.Durations.TEN_SECONDS;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.BASE_URI;
 
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.ws.rs.core.Response;
 
-import com.ctc.wstx.evt.WstxEventReader;
 import org.apache.http.HttpHeaders;
 
 /**

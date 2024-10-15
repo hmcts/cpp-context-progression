@@ -1,9 +1,16 @@
 package uk.gov.moj.cpp.progression.persistence;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
+import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -12,18 +19,10 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Sets;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.google.common.collect.Sets;
-
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
-import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
 
 /**
  * DB integration tests for {@link OffenceRepository} class
@@ -57,7 +56,7 @@ public class OffenceRepositoryTest  {
         caseRepository.save(getCaseWithDefendantOffences());
 
         final OffenceDetail actual = offenceRepository.findBy(OFFENCE_ID_ONE);
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(OFFENCE_ID_ONE, actual.getId());
     }
 

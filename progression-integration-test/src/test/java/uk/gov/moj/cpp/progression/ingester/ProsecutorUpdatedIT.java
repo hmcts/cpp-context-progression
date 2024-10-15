@@ -28,12 +28,14 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
@@ -42,13 +44,13 @@ public class ProsecutorUpdatedIT extends AbstractIT {
     private String defendantId;
     private String documentId;
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseId = randomUUID().toString();
         documentId = randomUUID().toString();
@@ -75,7 +77,7 @@ public class ProsecutorUpdatedIT extends AbstractIT {
                 .assertThat("$._case_type", equalTo("PROSECUTION"));
     }
 
-    private void addCourtDocumentAndVerify(final String documentTypeId) throws IOException {
+    private void addCourtDocumentAndVerify(final String documentTypeId) throws IOException, JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When

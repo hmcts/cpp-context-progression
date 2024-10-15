@@ -7,9 +7,9 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -70,18 +70,17 @@ import java.util.UUID;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApplicationQueryViewTest {
 
     final static private UUID APPLICATION_ID = UUID.randomUUID();
@@ -225,14 +224,11 @@ public class ApplicationQueryViewTest {
         final List<CourtDocumentEntity> courtDocumentEntities = Arrays.asList(courtDocumentEntity);
 
         when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(applicationJson);
-
         when(courtDocumentRepository.findByApplicationId(applicationId)).thenReturn(courtDocumentEntities);
-        when(hearingApplicationRepository.findByApplicationId(applicationId)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(courtDocumentJson);
         when(jsonObjectToObjectConverter.convert(any(), eq(CourtDocument.class))).thenReturn(courtDocument);
-        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(this.courtDocumentObject);
+        when(objectToJsonObjectConverter.convert(any(CourtDocument.class))).thenReturn(this.courtDocumentObject);
 
         final JsonEnvelope response = applicationQueryView.getApplication(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("courtApplication"), notNullValue());
@@ -264,8 +260,6 @@ public class ApplicationQueryViewTest {
 
         when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
         when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(applicationJson);
-
-        when(hearingApplicationRepository.findByApplicationId(applicationId)).thenReturn(Arrays.asList(hearingApplicationEntity));
 
         final JsonEnvelope response = applicationQueryView.getApplicationOnly(jsonEnvelope);
 
@@ -302,12 +296,10 @@ public class ApplicationQueryViewTest {
         final CourtApplicationEntity childCourtApplicationEntity = new CourtApplicationEntity();
         when(courtApplicationRepository.findByParentApplicationId(any())).thenReturn(singletonList(childCourtApplicationEntity));
 
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(applicationJson);
+        when(stringToJsonObjectConverter.convert(any())).thenReturn(applicationJson);
         CourtApplication courtApplication = mock(CourtApplication.class);
         CourtApplication childCourtApplication = mock(CourtApplication.class);
         when(jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class)).thenReturn(courtApplication, childCourtApplication);
-        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(applicationJson);
-        when(objectToJsonObjectConverter.convert(any(ProsecutionCaseIdentifier.class))).thenReturn(mock(JsonObject.class));
         when(courtApplication.getCourtApplicationCases()).thenReturn(singletonList(courtApplicationCase));
         when(childCourtApplication.getId()).thenReturn(UUID.randomUUID());
         when(childCourtApplication.getApplicant()).thenReturn(getCourtApplicant());
@@ -318,7 +310,7 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
-        when(objectToJsonObjectConverter.convert(any(ApplicationDetails.class))).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
 
         final JsonEnvelope response = applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getString("applicationId"), is(applicationId.toString()));
@@ -362,7 +354,7 @@ public class ApplicationQueryViewTest {
         assertThat(courtApplicationsJson, notNullValue());
 
         final CourtApplicationSummary summary0 = (CourtApplicationSummary) summaryToJsonCaptor.getValue();
-        Assert.assertEquals(summary0.getAssignedUserId(), courtApplicationEntity.getAssignedUserId());
+        assertEquals(summary0.getAssignedUserId(), courtApplicationEntity.getAssignedUserId());
 
     }
 
@@ -381,10 +373,10 @@ public class ApplicationQueryViewTest {
         courtApplicationEntity.setApplicationId(APPLICATION_ID);
         courtApplicationEntity.setPayload("{}");
 
-        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(jsonObject);
+        when(stringToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         when(courtApplicationRepository.findByParentApplicationId(applicationId)).thenReturn(Arrays.asList(courtApplicationEntity));
         when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
-        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
 
         final JsonEnvelope response = applicationQueryView.getApplicationSummary(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("courtApplications"), notNullValue());

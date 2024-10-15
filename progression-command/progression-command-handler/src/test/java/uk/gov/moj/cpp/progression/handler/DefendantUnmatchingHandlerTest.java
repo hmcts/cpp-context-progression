@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -38,15 +38,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantUnmatchingHandlerTest {
 
     @InjectMocks
@@ -104,7 +105,7 @@ public class DefendantUnmatchingHandlerTest {
 
     private static final ProsecutionCase prosecutionCase = createProsecutionCase(defendants);
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseAggregate = new CaseAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);

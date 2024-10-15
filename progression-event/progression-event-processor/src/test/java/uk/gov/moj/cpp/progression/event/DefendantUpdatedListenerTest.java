@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.event;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.event.DefendantUpdatedListener.DEFENDANT_UPDATED_PUBLIC_EVENT;
@@ -16,11 +16,11 @@ import java.util.function.Function;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * 
  * @deprecated This is deprecated for Release 2.4
@@ -28,7 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @SuppressWarnings("squid:S1133")
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantUpdatedListenerTest {
 
     @InjectMocks

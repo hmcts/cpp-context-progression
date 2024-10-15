@@ -187,8 +187,8 @@ subscriptions_descriptor:
 
           ############  Association End ############
 
-        - name: progression.event.defendant-legalaid-status-updated
-          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json
+        - name: progression.event.defendant-legalaid-status-updated-v2
+          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated-v2.json
 
         - name: progression.event.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
@@ -325,8 +325,18 @@ subscriptions_descriptor:
         - name: progression.event.related-hearing-requested
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-requested.json
 
+        - name: progression.event.related-hearing-requested-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-requested-for-adhoc-hearing.json
+
+        - name: progression.event.related-case-requested-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-case-requested-for-adhoc-hearing.json
+
+
         - name: progression.event.related-hearing-updated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-updated.json
+
+        - name: progression.event.related-hearing-updated-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-updated-for-adhoc-hearing.json
 
         - name: progression.event.delete-next-hearings-requested
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.delete-next-hearings-requested.json
@@ -342,6 +352,18 @@ subscriptions_descriptor:
 
         - name: progression.events.vej-deleted-hearing-populated-to-probation-caseworker
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.vej-deleted-hearing-populated-to-probation-caseworker.json
+
+        - name: progression.event.court-application-hearing-deleted
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.court-application-hearing-deleted.json
+
+        - name: progression.event.delete-application-for-case-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-application-for-case-requested.json
+
+        - name: progression.event.delete-court-application-hearing-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-court-application-hearing-requested.json
+
+        - name: progression.event.initiate-application-for-case-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.initiate-application-for-case-requested.json
 
         - name: progression.event.hearing-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json
@@ -361,7 +383,7 @@ subscriptions_descriptor:
         - name: progression.event.form-defendants-updated
           schema_uri: http://justice.gov.uk/core/courts/form-defendants-updated.json
 
-        - name : progression.event.master-defendant-id-updated-into-hearings
+        - name: progression.event.master-defendant-id-updated-into-hearings
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-into-hearings.json
 
         - name: progression.event.prosecution-case-listing-number-increased
@@ -373,7 +395,7 @@ subscriptions_descriptor:
         - name: progression.event.hearing-for-application-created
           schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created.json
 
-        - name : progression.event.online-plea-document-uploaded-as-case-material
+        - name: progression.event.online-plea-document-uploaded-as-case-material
           schema_uri: http://moj.gov.uk/cpp/progression/events/online-plea-document-uploaded-as-case-material.json
 
         - name: progression.event.notification-sent-for-plea-document
@@ -616,6 +638,9 @@ subscriptions_descriptor:
         - name: progression.event.breach-applications-to-be-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/breach-applications-to-be-added-to-hearing.json
 
+        - name: progression.event.send-notification-for-auto-application-initiated
+          schema_uri: http://justice.gov.uk/core/courts/send-notification-for-auto-application-initiated.json
+
         - name: progression.events.offences-removed-from-hearing
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json
 
@@ -768,7 +793,7 @@ subscriptions_descriptor:
         - name: public.events.listing.hearing-days-without-court-centre-corrected
           schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.hearing-days-without-court-centre-corrected.json
 
-        - name : public.listing.vacated-trial-updated
+        - name: public.listing.vacated-trial-updated
           schema_uri: http://justice.gov.uk/listing/courts/vacated-trial-updated.json
 
         - name: public.prosecutioncasefile.cps-serve-pet-submitted
@@ -786,7 +811,7 @@ subscriptions_descriptor:
         - name: public.listing.cases-added-to-hearing
           schema_uri: http://justice.gov.uk/listing/events/public.listing.case-added-to-hearing.json
 
-        - name : public.listing.hearing-requested-for-listing
+        - name: public.listing.hearing-requested-for-listing
           schema_uri: http://justice.gov.uk/listing/events/public.listing.hearing-requested-for-listing.json
 
         - name: public.listing.hearing-partially-updated

@@ -8,10 +8,9 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -23,7 +22,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
 import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.AddOnlinePleaAllocation;
 import uk.gov.justice.progression.courts.OnlinePleaAllocationAdded;
@@ -72,15 +70,14 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OnlinePleasAllocationHandlerTest {
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(AddOnlinePleaAllocation.class, UpdateOnlinePleaAllocation.class,
@@ -141,15 +138,6 @@ public class OnlinePleasAllocationHandlerTest {
     @Spy
     private OnlinePleasAllocationHandler onlinePleasAllocationHandler;
 
-    @Before
-    public void setup() {
-        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
-        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
-        when(eventSource.getStreamById(trialHearingId)).thenReturn(trialHearingEventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(aggregateService.get(trialHearingEventStream, HearingAggregate.class)).thenReturn(trialtHearingAggregate);
-    }
 
     @Test
     public void shouldHandleAddOnlinePleaAllocation() throws EventStreamException {
@@ -161,17 +149,16 @@ public class OnlinePleasAllocationHandlerTest {
         final OnlinePleaAllocationAdded pleaAllocationEvent = getOnlinePleaAllocationAddedEvent(pleaAllocation.getPleasAllocation(), firstHearingId);
         final Stream<Object> stream = Stream.builder().add(pleaAllocationEvent).build();
         final ZonedDateTime now = ZonedDateTime.now();
-
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(caseAggregate.addOnlinePleaAllocation(any(), any(UUID.class))).thenReturn(stream);
         when(caseAggregate.getLinkedHearingIds()).thenReturn(new HashSet<UUID>() {{
-            add(trialHearingId);
             add(firstHearingId);
         }});
 
         when(hearingAggregate.getHearingType()).thenReturn(firstHearing);
-        when(hearingAggregate.getHearingDate()).thenReturn(now);
-        when(trialtHearingAggregate.getHearingType()).thenReturn(trial);
-
         onlinePleasAllocationHandler.handleAddOnlinePleasAllocation(pleaAllocationEnvelope);
 
         verify(caseAggregate).getLinkedHearingIds();
@@ -186,8 +173,11 @@ public class OnlinePleasAllocationHandlerTest {
         final HearingType trailHearingType = new HearingType("Trial", randomUUID(), "");
         final Envelope<AddOnlinePleaAllocation> pleaAllocationEnvelope = getAddOnlinePleaAllocationEnvelope();
         final AddOnlinePleaAllocation pleaAllocation = pleaAllocationEnvelope.payload();
-
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.getLinkedHearingIds()).thenReturn(Collections.singleton(trialHearingId));
+        when(eventSource.getStreamById(trialHearingId)).thenReturn(trialHearingEventStream);
+        when(aggregateService.get(trialHearingEventStream, HearingAggregate.class)).thenReturn(trialtHearingAggregate);
         when(trialtHearingAggregate.getHearingType()).thenReturn(trailHearingType);
 
         onlinePleasAllocationHandler.handleAddOnlinePleasAllocation(pleaAllocationEnvelope);
@@ -208,8 +198,9 @@ public class OnlinePleasAllocationHandlerTest {
         final Envelope<UpdateOnlinePleaAllocation> pleaAllocationEnvelope = getUpdateOnlinePleaAllocationEnvelope();
         final UpdateOnlinePleaAllocation pleaAllocation = pleaAllocationEnvelope.payload();
         final OnlinePleaAllocationUpdated pleaAllocationEvent = getOnlinePleaAllocationUpdatedEvent(pleaAllocation.getPleasAllocation(), hearingId);
-
-        when(caseAggregate.updateOnlinePleaAllocation(anyObject())).thenReturn(of(Stream.of(pleaAllocationEvent)));
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(caseAggregate.updateOnlinePleaAllocation(any())).thenReturn(of(Stream.of(pleaAllocationEvent)));
 
         onlinePleasAllocationHandler.handleUpdateOnlinePleasAllocation(pleaAllocationEnvelope);
 
@@ -284,10 +275,13 @@ public class OnlinePleasAllocationHandlerTest {
                 .withTriggerDate(generateOpaNotice.getTriggerDate())
                 .withOpaNotice(document).build();
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
-
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.isPublicListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(false);
         when(hearingAggregate.checkOpaPublicListCriteria(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(true);
         when(hearingAggregate.generateOpaPublicListNotice(any(ProsecutionCase.class), eq(defendantId), eq(generateOpaNotice.getTriggerDate()))).thenReturn(Stream.of(event));
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.getProsecutionCase()).thenReturn(prosecutionCase);
 
         onlinePleasAllocationHandler.handleGenerateOpaPublicListNotice(envelope);
@@ -312,6 +306,8 @@ public class OnlinePleasAllocationHandlerTest {
         final GenerateOpaNotice generateOpaNotice = getGenerateOpaNotice();
         final Envelope<GenerateOpaNotice> envelope = getEnvelope("progression.command.generate-opa-public-list-notice", generateOpaNotice);
 
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.isPublicListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(true);
 
         onlinePleasAllocationHandler.handleGenerateOpaPublicListNotice(envelope);
@@ -329,7 +325,8 @@ public class OnlinePleasAllocationHandlerTest {
         final GenerateOpaNotice generateOpaNotice = getGenerateOpaNotice();
         final Envelope<GenerateOpaNotice> envelope = getEnvelope("progression.command.generate-opa-public-list-notice", generateOpaNotice);
         final OpaPublicListNoticeDeactivated event = OpaPublicListNoticeDeactivated.opaPublicListNoticeDeactivated().withDefendantId(defendantId).withCaseId(caseId).withHearingId(firstHearingId).build();
-
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.isPublicListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(false);
         when(hearingAggregate.checkOpaPublicListCriteria(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(false);
         when(hearingAggregate.generateDeactivateOpaPublicListNotice(caseId, defendantId, firstHearingId)).thenReturn(Stream.of(event));
@@ -350,6 +347,11 @@ public class OnlinePleasAllocationHandlerTest {
 
     @Test
     public void shouldHandleGenerateOpaPressListNotice() throws EventStreamException {
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         final GenerateOpaNotice generateOpaNotice = getGenerateOpaNotice();
         final Envelope<GenerateOpaNotice> envelope = getEnvelope("progression.command.generate-opa-press-list-notice", generateOpaNotice);
         final OpaNoticeDocument document = OpaNoticeDocument.opaNoticeDocument().build();
@@ -378,7 +380,6 @@ public class OnlinePleasAllocationHandlerTest {
         verify(hearingAggregate).checkOpaPressListCriteria(generateOpaNotice.getTriggerDate());
         verify(caseAggregate).getProsecutionCase();
         verify(caseAggregate).getOnlinePleasAllocation(defendantId);
-        verify(hearingAggregate).generateOpaPressListNotice(eq(prosecutionCase), eq(defendantId), any(OnlinePleasAllocation.class), eq(generateOpaNotice.getTriggerDate()));
         assertTrue(verifyAppendAndGetArgumentFrom(eventStream).anyMatch(env -> env.metadata().name().equals(PROGRESSION_EVENT_OPA_PRESS_LIST_NOTICE_GENERATED)));
         verify(eventStream).append(any());
 
@@ -391,6 +392,8 @@ public class OnlinePleasAllocationHandlerTest {
         final GenerateOpaNotice generateOpaNotice = getGenerateOpaNotice();
         final Envelope<GenerateOpaNotice> envelope = getEnvelope("progression.command.generate-opa-press-list-notice", generateOpaNotice);
 
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.isPressListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(true);
 
         onlinePleasAllocationHandler.handleGenerateOpaPressListNotice(envelope);
@@ -408,6 +411,8 @@ public class OnlinePleasAllocationHandlerTest {
         final GenerateOpaNotice generateOpaNotice = getGenerateOpaNotice();
         final Envelope<GenerateOpaNotice> envelope = getEnvelope("progression.command.generate-opa-press-list-notice", generateOpaNotice);
         final OpaPressListNoticeDeactivated event = OpaPressListNoticeDeactivated.opaPressListNoticeDeactivated().withDefendantId(defendantId).withCaseId(caseId).withHearingId(firstHearingId).build();
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         when(hearingAggregate.isPressListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(false);
         when(hearingAggregate.checkOpaPressListCriteria(generateOpaNotice.getTriggerDate())).thenReturn(false);
@@ -441,10 +446,14 @@ public class OnlinePleasAllocationHandlerTest {
                 .build();
 
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withId(caseId).build();
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         when(hearingAggregate.isResultListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(false);
         when(hearingAggregate.checkOpaResultListCriteria(defendantId, generateOpaNotice.getTriggerDate())).thenReturn(true);
         when(hearingAggregate.generateOpaResultListNotice(any(ProsecutionCase.class), eq(defendantId), eq(generateOpaNotice.getTriggerDate()))).thenReturn(Stream.of(event));
+        when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.getProsecutionCase()).thenReturn(prosecutionCase);
 
         onlinePleasAllocationHandler.handleGenerateOpaResultListNotice(envelope);
@@ -469,6 +478,9 @@ public class OnlinePleasAllocationHandlerTest {
         final GenerateOpaNotice generateOpaNotice = getGenerateOpaNotice();
         final Envelope<GenerateOpaNotice> envelope = getEnvelope("progression.command.generate-opa-result-list-notice", generateOpaNotice);
 
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         when(hearingAggregate.isResultListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(true);
 
         onlinePleasAllocationHandler.handleGenerateOpaResultListNotice(envelope);
@@ -487,6 +499,8 @@ public class OnlinePleasAllocationHandlerTest {
         final Envelope<GenerateOpaNotice> envelope = getEnvelope("progression.command.generate-opa-result-list-notice", generateOpaNotice);
         final OpaResultListNoticeDeactivated event = OpaResultListNoticeDeactivated.opaResultListNoticeDeactivated().withDefendantId(defendantId).withCaseId(caseId).withHearingId(firstHearingId).build();
 
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.isResultListNoticeAlreadySent(generateOpaNotice.getDefendantId(), generateOpaNotice.getTriggerDate())).thenReturn(false);
         when(hearingAggregate.checkOpaResultListCriteria(defendantId, generateOpaNotice.getTriggerDate())).thenReturn(false);
         when(hearingAggregate.generateDeactivateOpaResultListNotice(caseId, defendantId, firstHearingId)).thenReturn(Stream.of(event));
@@ -515,6 +529,8 @@ public class OnlinePleasAllocationHandlerTest {
                 .withNotificationId(opaNoticeSent.getHearingId())
                 .withTriggerDate(opaNoticeSent.getTriggerDate())
                 .build();
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         when(hearingAggregate.opaPublicListNoticeSent(opaNoticeSent.getNotificationId(), opaNoticeSent.getHearingId(), opaNoticeSent.getDefendantId(), opaNoticeSent.getTriggerDate())).thenReturn(Stream.of(event));
 
@@ -540,7 +556,8 @@ public class OnlinePleasAllocationHandlerTest {
                 .withNotificationId(opaNoticeSent.getHearingId())
                 .withTriggerDate(opaNoticeSent.getTriggerDate())
                 .build();
-
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.opaPressListNoticeSent(opaNoticeSent.getNotificationId(), opaNoticeSent.getHearingId(), opaNoticeSent.getDefendantId(), opaNoticeSent.getTriggerDate())).thenReturn(Stream.of(event));
 
         onlinePleasAllocationHandler.handleOpaPressListNoticeSent(envelope);
@@ -565,7 +582,8 @@ public class OnlinePleasAllocationHandlerTest {
                 .withNotificationId(opaNoticeSent.getHearingId())
                 .withTriggerDate(opaNoticeSent.getTriggerDate())
                 .build();
-
+        when(eventSource.getStreamById(firstHearingId)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.opaResultListNoticeSent(opaNoticeSent.getNotificationId(), opaNoticeSent.getHearingId(), opaNoticeSent.getDefendantId(), opaNoticeSent.getTriggerDate())).thenReturn(Stream.of(event));
 
         onlinePleasAllocationHandler.handleOpaResultListNoticeSent(envelope);

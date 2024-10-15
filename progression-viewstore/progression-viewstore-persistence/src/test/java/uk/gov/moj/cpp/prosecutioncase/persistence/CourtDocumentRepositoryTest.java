@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
-import static java.util.Collections.singletonList;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
@@ -58,7 +58,7 @@ public class CourtDocumentRepositoryTest {
         repository.save(getProsecutionCase(true));
 
         final List<CourtDocumentEntity> actual = repository.findByProsecutionCaseId(CASE_ID);
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(CASE_ID, actual.get(0).getIndices().iterator().next().getProsecutionCaseId());
         assertEquals(COURT_DOCUMENT_ID, actual.get(0).getCourtDocumentId());
         assertEquals(true, actual.get(0).getContainsFinancialMeans());
@@ -69,7 +69,7 @@ public class CourtDocumentRepositoryTest {
     public void shouldFindByCaseIds() throws Exception {
         repository.save(getProsecutionCase(true));
         final List<CourtDocumentEntity> actual = repository.findByProsecutionCaseIds(singletonList(CASE_ID));
-        assertNotNull("Should not be null", actual);
+        assertNotNull(actual, "Should not be null");
         assertEquals(CASE_ID, actual.get(0).getIndices().iterator().next().getProsecutionCaseId());
         assertEquals(COURT_DOCUMENT_ID, actual.get(0).getCourtDocumentId());
         assertEquals(true, actual.get(0).getContainsFinancialMeans());

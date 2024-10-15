@@ -3,14 +3,16 @@ package uk.gov.moj.cpp.progression.transformer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+
+import java.nio.charset.Charset;
+
+import javax.json.JsonArray;
 
 import com.google.common.io.Resources;
-import java.nio.charset.Charset;
-import javax.json.JsonArray;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 
 public class ProsecutionCaseHelperTest {
 

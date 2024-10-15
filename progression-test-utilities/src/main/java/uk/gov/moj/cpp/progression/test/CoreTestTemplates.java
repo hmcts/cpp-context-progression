@@ -83,6 +83,7 @@ public class CoreTestTemplates {
         private boolean minimumOrganisation;
         private boolean minimumOffence;
         private boolean reportingRestrictions;
+        private List<CourtApplication> courtApplications;
 
         private Map<UUID, Map<UUID, List<UUID>>> structure = toMap(randomUUID(), toMap(randomUUID(), asList(randomUUID())));
 
@@ -128,6 +129,12 @@ public class CoreTestTemplates {
 
         public CoreTemplateArguments setConvicted(boolean convicted) {
             this.convicted = convicted;
+            return this;
+        }
+
+        @SuppressWarnings("squid:S2384")
+        public CoreTemplateArguments setCourtApplication(List<CourtApplication> courtApplications) {
+            this.courtApplications = courtApplications;
             return this;
         }
 
@@ -478,7 +485,8 @@ public class CoreTestTemplates {
                         args.structure.entrySet().stream()
                                 .map(entry -> prosecutionCase(args, Pair.p(entry.getKey(), entry.getValue())).build())
                                 .collect(toList())
-                );
+                )
+                .withCourtApplications(args.courtApplications);
 
         if (args.hearingLanguage == HearingLanguage.WELSH) {
             hearingBuilder.withHearingLanguage((HearingLanguage.WELSH));

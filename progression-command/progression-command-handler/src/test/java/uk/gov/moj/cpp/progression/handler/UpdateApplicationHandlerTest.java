@@ -6,8 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
@@ -51,18 +50,19 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+
+@ExtendWith(MockitoExtension.class)
 public class UpdateApplicationHandlerTest {
     private static final UUID applicationId = randomUUID();
     private static final UUID masterDefendantId = randomUUID();
@@ -82,16 +82,15 @@ public class UpdateApplicationHandlerTest {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    @Mock
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             DefendantAddressOnApplicationUpdated.class
     );
 
-    @Before
+    @BeforeEach
     public void setup(){
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         applicationAggregate = new ApplicationAggregate();
@@ -357,7 +356,7 @@ public class UpdateApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
     }
 
     private void createApplicationInAggregateForPersonDefendantAsSubject(final CourtApplicationParty courtApplicationParty) {
@@ -374,7 +373,7 @@ public class UpdateApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
     }
 
     private void createApplicationInAggregateForPersonDefendantAsRespondent(final CourtApplicationParty courtApplicationParty) {
@@ -406,6 +405,6 @@ public class UpdateApplicationHandlerTest {
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
-        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
     }
 }

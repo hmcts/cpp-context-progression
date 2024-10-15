@@ -27,6 +27,7 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.progression.courts.SendStatdecAppointmentLetter.sendStatdecAppointmentLetter;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.getCourtApplicationWithConvictionDate;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
+import static uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated.courtApplicationDocumentUpdated;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.Address;
@@ -53,6 +54,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
@@ -60,6 +62,7 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAddressOnApplicationUpdated;
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.FutureSummonsHearing;
 import uk.gov.justice.core.courts.Hearing;
@@ -69,12 +72,14 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
+import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
@@ -106,7 +111,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908496L;
+    private static final long serialVersionUID = 1331113876243908498L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private ApplicationStatus applicationStatus = DRAFT;
@@ -187,7 +192,7 @@ public class ApplicationAggregate implements Aggregate {
     }
 
     @SuppressWarnings({"squid:S1067"})
-    public Stream<Object> createCourtApplication(final CourtApplication courtApplication) {
+    public Stream<Object> createCourtApplication(final CourtApplication courtApplication, final UUID oldApplicationId) {
         LOGGER.debug("Court application has been created");
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
@@ -195,8 +200,6 @@ public class ApplicationAggregate implements Aggregate {
                 .courtApplication()
                 .withValuesFrom(courtApplication)
                 .build();
-
-
 
         updatedCourtApplication = buildCourtApplicationWithoutCustodialEstablishment(updatedCourtApplication);
 
@@ -226,7 +229,17 @@ public class ApplicationAggregate implements Aggregate {
                     .build());
 
         }
+        raiseCourtDocumentUpdatedIfOldApplicationIsExists(courtApplication, oldApplicationId, streamBuilder);
         return apply(streamBuilder.build());
+    }
+
+    private void raiseCourtDocumentUpdatedIfOldApplicationIsExists(final CourtApplication courtApplication, final UUID oldApplicationId, final Stream.Builder<Object> streamBuilder) {
+        if (nonNull(oldApplicationId)) {
+            streamBuilder.add(courtApplicationDocumentUpdated()
+                    .withApplicationId(courtApplication.getId())
+                    .withOldApplicationId(oldApplicationId)
+                    .build());
+        }
     }
 
     private boolean checkCourtApplicationPartyHasCustodialEstablishment(CourtApplicationParty courtApplicationParty) {
@@ -354,6 +367,10 @@ public class ApplicationAggregate implements Aggregate {
                             .withSummonsApprovalRequired(initiateCourtApplicationProceedings.getSummonsApprovalRequired())
                             .withApplicationReferredToNewHearing(applicationReferredToNewHearing)
                             .withIsSJP(applicationCreatedForSJPCase)
+                            .withIsAmended(initiateCourtApplicationProceedings.getIsAmended())
+                            .withOldApplicationId(initiateCourtApplicationProceedings.getOldApplicationId())
+                            .withIsWelshTranslationRequired(initiateCourtApplicationProceedings.getIsWelshTranslationRequired())
+                            .withIssueDate(initiateCourtApplicationProceedings.getIssueDate())
                             .build()));
         } else {
             LOGGER.debug("Initiated Court Application Event not raised as it is a duplicate request");
@@ -568,6 +585,14 @@ public class ApplicationAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> deleteCourtApplication(final UUID courtApplicationId, final UUID seedingHearingId) {
+        return apply(Stream.of(DeleteCourtApplicationHearingRequested.deleteCourtApplicationHearingRequested()
+                .withApplicationId(courtApplicationId)
+                .withHearingId(this.initiateCourtApplicationProceedings.getCourtHearing().getId())
+                .withSeedingHearingId(seedingHearingId)
+                .build()));
+    }
+
     public Stream<Object> updateCustodialInfomrationForApplicatioNSubject(final DefendantUpdate defendantUpdate, final UUID applicationId) {
         return apply(Stream.of(CourtApplicationSubjectCustodialInformationUpdated.courtApplicationSubjectCustodialInformationUpdated()
                 .withApplicationId(applicationId)
@@ -596,6 +621,21 @@ public class ApplicationAggregate implements Aggregate {
                         .withIsWelshTranslationRequired(sendNotificationForApplicationInitiated.getIsWelshTranslationRequired())
                         .build()));
     }
+
+
+    public Stream<Object> sendNotificationForAutoApplication(final CourtApplication courtApplication, final CourtCentre courtCentre, final JurisdictionType jurisdictionType, final String hearingStartDateTime) {
+        return apply(
+                Stream.of(SendNotificationForAutoApplicationInitiated.sendNotificationForAutoApplicationInitiated()
+                        .withCourtApplication(courtApplication)
+                        .withCourtCentre(courtCentre)
+                        .withJurisdictionType(jurisdictionType)
+                        .withHearingStartDateTime(hearingStartDateTime)
+                        .withIsAmended(this.initiateCourtApplicationProceedings.getIsAmended())
+                        .withIsWelshTranslationRequired(this.initiateCourtApplicationProceedings.getIsWelshTranslationRequired())
+                        .withIssueDate(this.initiateCourtApplicationProceedings.getIssueDate())
+                        .build()));
+    }
+
 
     public UUID getBoxHearingId() {
         return boxHearingId;
@@ -700,6 +740,9 @@ public class ApplicationAggregate implements Aggregate {
                 .withCourtHearing(courtApplicationProceedingsInitiated.getCourtHearing())
                 .withBoxHearing(courtApplicationProceedingsInitiated.getBoxHearing())
                 .withSummonsApprovalRequired(courtApplicationProceedingsInitiated.getSummonsApprovalRequired())
+                .withIsAmended(courtApplicationProceedingsInitiated.getIsAmended())
+                .withIsWelshTranslationRequired(courtApplicationProceedingsInitiated.getIsWelshTranslationRequired())
+                .withIssueDate(courtApplicationProceedingsInitiated.getIssueDate())
                 .build();
     }
 

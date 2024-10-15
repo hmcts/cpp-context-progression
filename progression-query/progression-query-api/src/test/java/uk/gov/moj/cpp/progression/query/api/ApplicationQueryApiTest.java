@@ -5,7 +5,8 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
@@ -30,16 +31,16 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ApplicationQueryApiTest {
 
     public static final String APPLICATION_AT_GLANCE_DEFENCE = "progression.query.application.aaag-for-defence";
@@ -85,7 +86,7 @@ public class ApplicationQueryApiTest {
 
     private Object suppliedObject;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
@@ -98,7 +99,6 @@ public class ApplicationQueryApiTest {
         userDetails.setUserId(UUID.randomUUID());
 
         when(userDetailsLoader.getUserById(requester, query, userDetails.getUserId())).thenReturn(userDetails);
-        when(query.payloadAsJsonObject()).thenReturn(queryJson);
 
         when(responseJson.containsKey("assignedUser")).thenReturn(true);
         when(responseJson.getJsonObject("assignedUser")).thenReturn(assignedUserJson);
@@ -152,7 +152,7 @@ public class ApplicationQueryApiTest {
         assertThat(applicationQueryApi.getApplicationHearings(query), equalTo(response));
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldThrowForbiddenRequestExceptionWhenGetApplicationAtAGlanceForDefenceAndNoLinkedCasesFound() {
 
         final JsonObject jsonObjectPayload = createObjectBuilder().build();
@@ -166,10 +166,10 @@ public class ApplicationQueryApiTest {
                         .build())
                 .build());
 
-        applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
+        assertThrows(ForbiddenRequestException.class, () -> applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope));
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldThrowForbiddenRequestExceptionWhenGetApplicationAtAGlanceForDefenceAndUserNotInAdvocateRoleForTheCase() {
 
         String caseId = randomUUID().toString();
@@ -187,7 +187,7 @@ public class ApplicationQueryApiTest {
                         .build())
                 .build());
 
-        applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
+        assertThrows(ForbiddenRequestException.class, () -> applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope));
     }
 
     @Test
@@ -202,7 +202,6 @@ public class ApplicationQueryApiTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
         when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
-        when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(true);
         when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(Json.createObjectBuilder()
                 .add("groups", createArrayBuilder()
                         .add(createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())

@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,21 +24,19 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseLinkSplitMergeR
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class LinkSplitMergeCasesEventListenerTest {
 
     @Mock
@@ -59,7 +57,7 @@ public class LinkSplitMergeCasesEventListenerTest {
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -81,8 +79,6 @@ public class LinkSplitMergeCasesEventListenerTest {
         searchProsecutionCaseEntity.setReference(caseUrns.get(0));
 
         when(searchCaseRepository.findByCaseUrn(any())).thenReturn(Arrays.asList(searchProsecutionCaseEntity));
-
-        when(caseLinkSplitMergeRepository.findByCaseIdAndLinkedCaseIdAndType(any(), any(), any())).thenReturn(new ArrayList<>());
 
         listener.linkCases(envelopeFrom(metadataWithRandomUUID("progression.event.link-cases"),
                 objectToJsonObjectConverter.convert(event)));
@@ -123,9 +119,6 @@ public class LinkSplitMergeCasesEventListenerTest {
 
         when(searchCaseRepository.findByCaseUrn(any())).thenReturn(Arrays.asList(entityToMerge)); //to get case id with given urn (queried to get case ids for the given case urns to merge)
         when(searchCaseRepository.findByCaseId(any())).thenReturn(Arrays.asList(leadCaseEntity)); //to get urn with given case id (used in giving lead case id and returning lead case's urn)
-
-        when(caseLinkSplitMergeRepository.findByCaseIdAndLinkedCaseIdAndType(any(), any(), any())).thenReturn(new ArrayList<>()); // to check existing links/merges
-
 
         listener.mergeCases(envelopeFrom(metadataWithRandomUUID("progression.event.merge-cases"),
                 objectToJsonObjectConverter.convert(event)));

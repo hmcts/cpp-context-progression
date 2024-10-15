@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.command.api.accesscontrol;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-
 public final class TestRuleConstants {
 
    /* private static final String GROUP_CROWN_COURT_ADMIN = "Crown Court Admin";
@@ -56,8 +54,8 @@ public final class TestRuleConstants {
         return Arrays.asList(GROUP_SYSTEM_USERS, GROUP_LISTING_OFFICERS, GROUP_CROWN_COURT_ADMIN);
     }
 
-    public static List<String> getAddDefendantActionGroups() {
-        return Arrays.asList(GROUP_CMS);
+    public static String getAddDefendantActionGroups() {
+        return GROUP_CMS;
     }
 
     public static List<String> getUpdateBailStatusForDefendantActionGroups() {

@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  *
@@ -30,7 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  *
  */
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateDefendantTest {
 
     private static final UpdateDefendantCommand updateDefendant = DefendantBuilder.defaultUpdateDefendant();
@@ -39,7 +39,7 @@ public class UpdateDefendantTest {
     private CaseAggregate caseAggregate;
 
 
-    @Before
+    @BeforeEach
     public void setUp(){
         caseAggregate =new CaseAggregate();
     }

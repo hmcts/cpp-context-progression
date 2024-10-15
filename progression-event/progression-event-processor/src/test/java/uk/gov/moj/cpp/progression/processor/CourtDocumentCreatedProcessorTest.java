@@ -4,14 +4,9 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtsDocumentCreated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
@@ -19,20 +14,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 
 import java.util.List;
-import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtDocumentCreatedProcessorTest {
 
     private static final String PROGRESSION_COMMAND_UPDATE_FINANCIAL_MEANS_DATA = "progression.command.update-financial-means-data";
@@ -62,13 +54,6 @@ public class CourtDocumentCreatedProcessorTest {
         final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-created"),
                 courtDocumentPayload);
-
-        final JsonObject publicEventPayload = Json.createObjectBuilder()
-                .add("courtDocumentId", courtDocumentId)
-                .build();
-
-
-        when(jsonObjectConverter.convert(any(JsonObject.class), eq(CourtsDocumentCreated.class))).thenReturn(CourtsDocumentCreated.courtsDocumentCreated().withCourtDocument(CourtDocument.courtDocument().withCourtDocumentId(UUID.fromString(courtDocumentId)).build()).build());
 
         processor.processCourtDocumentCreated(requestMessage);
         verify(sender, times(2)).send(envelopeCaptor.capture());

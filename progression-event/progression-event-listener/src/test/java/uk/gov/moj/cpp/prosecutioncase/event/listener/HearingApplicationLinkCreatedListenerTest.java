@@ -34,17 +34,15 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingApplicationLinkCreatedListenerTest {
 
     public static final String PROSECUTION_CASES = "prosecutionCases";
@@ -54,15 +52,10 @@ public class HearingApplicationLinkCreatedListenerTest {
     public static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     public static final String JUDICIAL_RESULTS = "judicialResults";
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
-
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter;
@@ -255,7 +248,6 @@ public class HearingApplicationLinkCreatedListenerTest {
 
         final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(hearingRepository.findBy(HEARING_ID2)).thenReturn(null);
 
         eventListener.process(envelope);
 

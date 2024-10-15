@@ -7,12 +7,11 @@ import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -70,17 +69,16 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NowsRequestedEventProcessorTest {
 
     public static final String USER_ID = UUID.randomUUID().toString();
@@ -161,7 +159,7 @@ public class NowsRequestedEventProcessorTest {
         return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         initReferenceData();
         initUserGroupsData();
@@ -181,8 +179,6 @@ public class NowsRequestedEventProcessorTest {
                 this.objectToJsonObjectConverter,
                 this.refDataService,
                 this.usersGroupService);
-
-        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
     }
 
     @Test
@@ -196,10 +192,11 @@ public class NowsRequestedEventProcessorTest {
                 .build();
 
         final byte[] bytesIn = new byte[2];
+        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
         when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
-        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
+        when(applicationParameters.getEmailTemplateId(any())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
         when(fileStorer.store(any(JsonObject.class), any(InputStream.class)))
@@ -214,7 +211,7 @@ public class NowsRequestedEventProcessorTest {
         assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
@@ -228,7 +225,7 @@ public class NowsRequestedEventProcessorTest {
         assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains(DEFENCE_USERS));
         assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Defence Lawyers"));
 
-        final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = this.envelopeArgumentCaptor.getAllValues().get(1);
+        final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = this.envelopeArgumentCaptor.getAllValues().get(2);
         assertThat(publicNowDocumentRequestedEnvelope.metadata().name(), is(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED));
         assertThat(((JsonObject) publicNowDocumentRequestedEnvelope.payload()).getString("materialId"), is(nowDocumentRequested.getMaterialId().toString()));
         final String updatedNowContent = ((JsonObject) (nowContentArgumentCaptor.getValue().get(FINANCIAL_ORDER_DETAILS))).toString();
@@ -245,10 +242,11 @@ public class NowsRequestedEventProcessorTest {
                 .withMaterialId(nowDocumentRequest.getMaterialId())
                 .build();
         final byte[] bytesIn = new byte[2];
+        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
         when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
-        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
+        when(applicationParameters.getEmailTemplateId(any())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
         when(fileStorer.store(any(JsonObject.class), any(InputStream.class))).thenReturn(fileId);
@@ -261,7 +259,7 @@ public class NowsRequestedEventProcessorTest {
         assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
@@ -290,10 +288,11 @@ public class NowsRequestedEventProcessorTest {
                 .build();
 
         final byte[] bytesIn = new byte[2];
+        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
         when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
-        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
+        when(applicationParameters.getEmailTemplateId(any())).thenReturn(randomUUID().toString());
 
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
         when(fileStorer.store(any(JsonObject.class), any(InputStream.class))).thenReturn(fileId);
@@ -306,7 +305,7 @@ public class NowsRequestedEventProcessorTest {
         assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
         assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
 
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
         final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
         final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
@@ -322,6 +321,12 @@ public class NowsRequestedEventProcessorTest {
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Crown Court Admin"));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(MAGISTRATES));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Court Associate"));
+
+        DefaultEnvelope<?> addCourtDocjsonEnvelope =  envelopeArgumentCaptor.getAllValues().get(1);
+        assertThat(addCourtDocjsonEnvelope.metadata().name(), is("progression.command.add-court-document"));
+        final JsonObject addCourtDocjsonObject = (JsonObject) addCourtDocjsonEnvelope.payload();
+        final CourtDocument addCourtDocument = jsonObjectToObjectConverter.convert(addCourtDocjsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
+        assertThat(addCourtDocument.getDocumentTypeDescription(), is("Electronic Notifications"));
     }
 
     @Test

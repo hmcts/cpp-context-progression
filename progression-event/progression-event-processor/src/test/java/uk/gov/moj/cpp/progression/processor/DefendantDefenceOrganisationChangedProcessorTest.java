@@ -1,14 +1,12 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.UUID.randomUUID;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PUBLIC_CASE_DEFENDANT_CHANGED;
+
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
@@ -23,9 +21,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,14 +29,21 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.moj.cpp.progression.processor.ProsecutionCaseDefendantUpdatedProcessor.PUBLIC_CASE_DEFENDANT_CHANGED;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class DefendantDefenceOrganisationChangedProcessorTest {
 
     @InjectMocks
@@ -79,7 +81,7 @@ public class DefendantDefenceOrganisationChangedProcessorTest {
 
 
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -90,7 +92,7 @@ public class DefendantDefenceOrganisationChangedProcessorTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, DefendantDefenceOrganisationChanged.class))
                 .thenReturn(defendantDefenceOrganisationChanged);
-        when(objectToJsonObjectConverter.convert(Mockito.any(Defendant.class))).thenReturn(payload);
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
         final UUID prosecutionCaseId = randomUUID();
         final UUID defendantId = randomUUID();
         final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
@@ -124,7 +126,6 @@ public class DefendantDefenceOrganisationChangedProcessorTest {
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(progressionService.getProsecutionCaseDetailById(envelope, prosecutionCaseId.toString())).thenReturn(Optional.of(jsonObject));
         when(jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("prosecutionCase"), ProsecutionCase.class)).thenReturn(prosCase);
-        when(objectToJsonObjectConverter.convert(prosCase)).thenReturn(jsonObject);
 
         //When
         this.eventProcessor.handleDefendantDefenceOrganisationChanged(envelope);

@@ -8,8 +8,8 @@ import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseDefendantUpdatedEvent;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getProsecutionCaseDefendantUpdatedEvent;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
@@ -26,17 +26,16 @@ import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.jms.JMSException;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ProsecutionCaseDefendantUpdatedIngesterIT  extends AbstractIT {
+public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String UPDATE_PROSECUTION_DEFENDANT_COMMAND_RESOURCE_LOCATION = "ingestion/progression.update-defendant-for-prosecution-case.json";
     private String caseId;
@@ -48,8 +47,8 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT  extends AbstractIT {
     private ProsecutionCaseUpdateDefendantHelper helper;
     private String caseUrn;
 
-    @Before
-    public void setup(){
+    @BeforeEach
+    public void setup() {
         caseId = randomUUID().toString();
         materialIdActive = randomUUID().toString();
         materialIdDeleted = randomUUID().toString();
@@ -61,19 +60,14 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT  extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @After
-    public void after() throws JMSException {
-        helper.closePrivateEventConsumer();
-    }
-
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
     }
 
     @Test
-    public void shouldUpdateDefendant() throws IOException {
+    public void shouldUpdateDefendant() throws IOException, JSONException {
 
         final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 courtDocumentId, randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
@@ -93,7 +87,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT  extends AbstractIT {
         final JsonObject defendantUpdated = jsonFromString(defendantUpdatedCommand);
 
         final DocumentContext inputCaseDocument = documentContextForProsecutionCase();
-        verifyCaseCreated(1l,inputCaseDocument , outputIndexedJson);
+        verifyCaseCreated(1l, inputCaseDocument, outputIndexedJson);
 
         final JsonObject party = outputIndexedJson.getJsonArray("parties").getJsonObject(0);
         verifyDefendantUpdate(parse(defendantUpdated.getJsonObject("defendant")), party);

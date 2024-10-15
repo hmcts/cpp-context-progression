@@ -12,7 +12,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.progression.processor.FormEventProcessor.CASE_ID;
 import static uk.gov.moj.cpp.progression.utils.PayloadUtil.getPayloadAsJsonObject;
 
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -44,18 +46,19 @@ import javax.json.JsonObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+
+@ExtendWith(MockitoExtension.class)
 public class HearingResultedEventProcessorTest {
 
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -79,12 +82,15 @@ public class HearingResultedEventProcessorTest {
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
-    @Spy
+    @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Spy
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    @Before
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter1 = new JsonObjectToObjectConverter(objectMapper);
+
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -169,7 +175,7 @@ public class HearingResultedEventProcessorTest {
 
         when(progressionService.getCaseStatusForApplicationId(any(JsonEnvelope.class), any(), any())).thenReturn(caseStatusResponsePayload);
         when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
-        when(jsonObjectToObjectConverter.convert(responsePayload, HearingEventLog.class))
+        when(jsonObjectToObjectConverter.convert(any(), any()))
                 .thenReturn(hearingPayload);
         when(progressionService.retrieveApplication(any(JsonEnvelope.class), any())).thenReturn(courtApplicationPayload);
 
@@ -211,7 +217,7 @@ public class HearingResultedEventProcessorTest {
 
         when(progressionService.getCaseStatusForApplicationId(any(JsonEnvelope.class), any(), any())).thenReturn(caseStatusResponsePayload);
         when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
-        when(jsonObjectToObjectConverter.convert(responsePayload, HearingEventLog.class))
+        when(jsonObjectToObjectConverter.convert(any(), any()))
                 .thenReturn(hearingPayload);
         when(progressionService.retrieveApplication(any(JsonEnvelope.class), any())).thenReturn(courtApplicationPayload);
 
@@ -251,7 +257,7 @@ public class HearingResultedEventProcessorTest {
 
         when(progressionService.getCaseStatusForApplicationId(any(JsonEnvelope.class), any(), any())).thenReturn(caseStatusResponsePayload);
         when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
-        when(jsonObjectToObjectConverter.convert(responsePayload, HearingEventLog.class))
+        when(jsonObjectToObjectConverter.convert(any(), any()))
                 .thenReturn(hearingPayload);
         when(progressionService.retrieveApplication(any(JsonEnvelope.class), any())).thenReturn(courtApplicationPayload);
 
@@ -294,7 +300,7 @@ public class HearingResultedEventProcessorTest {
 
         when(progressionService.getCaseStatusForApplicationId(any(JsonEnvelope.class), any(), any())).thenReturn(caseStatusResponsePayload);
         when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
-        when(jsonObjectToObjectConverter.convert(responsePayload, HearingEventLog.class))
+        when(jsonObjectToObjectConverter.convert(any(), any()))
                 .thenReturn(hearingPayload);
         when(progressionService.retrieveApplication(any(JsonEnvelope.class), any())).thenReturn(courtApplicationPayload);
 
@@ -332,14 +338,16 @@ public class HearingResultedEventProcessorTest {
         final JsonObject responsePayload = getPayloadAsJsonObject("hearing.get-hearing-event-log-document.json");
 
         final Optional<JsonObject> caseStatusResponsePayload = Optional.ofNullable(getPayloadAsJsonObject("prosecution-case-with-active-status.json"));
+        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter1.convert(caseStatusResponsePayload.get(),ProsecutionCase.class);
         final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(Resources.toString(getResource("progression.query.application.aaag-no-applicant-respondent.json"), defaultCharset()));
 
 
         when(progressionService.getCaseStatusForApplicationId(any(JsonEnvelope.class), any(), any())).thenReturn(caseStatusResponsePayload);
         when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
-        when(jsonObjectToObjectConverter.convert(responsePayload, HearingEventLog.class))
+        when(jsonObjectToObjectConverter.convert(any(), eq(HearingEventLog.class)))
                 .thenReturn(hearingPayload);
-        when(progressionService.retrieveApplication(any(JsonEnvelope.class), any())).thenReturn(courtApplicationPayload);
+        when(jsonObjectToObjectConverter.convert(any(), eq(ProsecutionCase.class)))
+                .thenReturn(prosecutionCase);
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID("progression.event.hearing-event-logs-document-created").withUserId(userId),
@@ -362,7 +370,7 @@ public class HearingResultedEventProcessorTest {
     }
 
 
-    @Test
+   @Test
     public void shouldProcesCaagHearingLogDocumentForActiveCase() throws IOException {
         //Given
         final String caseId = randomUUID().toString();
@@ -373,7 +381,14 @@ public class HearingResultedEventProcessorTest {
 
         when(progressionService.getCaseStatusForApplicationId(any(JsonEnvelope.class), any(), any())).thenReturn(caseStatusResponsePayload);
         when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
+        final JsonObject hearing = stringToJsonObjectConverter.convert(Resources.toString(getResource("hearing.get-hearing-event-log-for-documents.json"), defaultCharset()));
+        final HearingEventLog hearingPayload = jsonObjectToObjectConverter1.convert(hearing, HearingEventLog.class);
 
+        when(jsonObjectToObjectConverter.convert(any(), eq(HearingEventLog.class)))
+                .thenReturn(hearingPayload);
+       ProsecutionCase prosecutionCase = jsonObjectToObjectConverter1.convert(caseStatusResponsePayload.get(),ProsecutionCase.class);
+       when(jsonObjectToObjectConverter.convert(any(), eq(ProsecutionCase.class)))
+               .thenReturn(prosecutionCase);
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID("progression.event.hearing-event-logs-document-created").withUserId(userId),
                 createObjectBuilder()
@@ -430,14 +445,11 @@ public class HearingResultedEventProcessorTest {
 
         final JsonObject responsePayload = getPayloadAsJsonObject(noHearingEventLogResponse);
 
-        when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
         final Optional<JsonObject> caseStatusResponsePayload = Optional.ofNullable(createObjectBuilder().build());
         final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(Resources.toString(getResource("progression.query.application.aaag-no-applicant.json"), defaultCharset()));
 
 
         when(progressionService.getCaseStatusForApplicationId(any(JsonEnvelope.class), any(), any())).thenReturn(caseStatusResponsePayload);
-        when(hearingService.getHearingEventLogs(any(JsonEnvelope.class), any(), any())).thenReturn(responsePayload);
-        when(progressionService.retrieveApplication(any(JsonEnvelope.class), any())).thenReturn(courtApplicationPayload);
 
         final JsonEnvelope requestEnvelope = envelopeFrom(
                 metadataWithRandomUUID("progression.event.hearing-event-logs-document-created").withUserId(userId),

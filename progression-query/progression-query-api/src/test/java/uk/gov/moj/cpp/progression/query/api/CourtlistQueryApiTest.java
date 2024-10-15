@@ -7,12 +7,12 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.CourtlistQueryView;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+@ExtendWith(MockitoExtension.class)
 public class CourtlistQueryApiTest {
 
 
@@ -33,5 +33,11 @@ public class CourtlistQueryApiTest {
     public void shouldHandleApplicationQuery() {
         when(courtlistQueryView.searchCourtlist(query)).thenReturn(response);
         assertThat(courtListQueryApi.searchCourtlist(query), equalTo(response));
+    }
+
+    @Test
+    public void shouldHandlePrisonCourtListQuery() {
+        when(courtlistQueryView.searchPrisonCourtlist(query)).thenReturn(response);
+        assertThat(courtListQueryApi.searchPrisonCourtlist(query), equalTo(response));
     }
 }

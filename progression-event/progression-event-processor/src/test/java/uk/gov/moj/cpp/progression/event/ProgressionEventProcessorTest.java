@@ -13,7 +13,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotSame;
 import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -65,21 +64,20 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.core.Is;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProgressionEventProcessorTest {
 
     private static final String CASE_ID = randomUUID().toString();
@@ -92,16 +90,11 @@ public class ProgressionEventProcessorTest {
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(objectMapper);
+    private final ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
     @Mock
     private Sender sender;
     @Mock
@@ -156,7 +149,7 @@ public class ProgressionEventProcessorTest {
         return defendant;
     }
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -342,8 +335,7 @@ public class ProgressionEventProcessorTest {
                 .build());
 
         final Optional<JsonObject> searchResult = of(jsonObject);
-        when(progressionService.searchCaseDetailByReference(event, RELATED_URN)).thenReturn(searchResult);
-        when(searchResult.get().getJsonArray(any())).thenReturn(createArrayBuilder().build());
+
         // when
         progressionEventProcessor.publishProsecutionCaseCreatedEvent(event);
         // then
@@ -374,8 +366,7 @@ public class ProgressionEventProcessorTest {
                 .build());
 
         final Optional<JsonObject> searchResult = of(jsonObject);
-        when(progressionService.searchCaseDetailByReference(event, RELATED_URN)).thenReturn(searchResult);
-        when(searchResult.get().getJsonArray(any())).thenReturn(createArrayBuilder().build());
+
         // when
         progressionEventProcessor.publishProsecutionCaseCreatedEvent(event);
         // then

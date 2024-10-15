@@ -79,7 +79,7 @@ public class TestTemplates {
                 .withNowTypeId(nowTypeId)
                 .withNowContent(nowContentTemplate())
                 .withMasterDefendantId(defendantId)
-                .withTemplateName("TestTemplate")
+                .withTemplateName("EDT_TestTemplate")
                 .withBilingualTemplateName("BilingualTestTemplate")
                 .withCases(asList(caseId))
                 .withStorageRequired(true)

@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +19,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
@@ -28,18 +29,18 @@ import java.util.function.Function;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseMarkersUpdatedProcessorTest {
 
     @Mock
@@ -61,7 +62,7 @@ public class CaseMarkersUpdatedProcessorTest {
     private JsonEnvelope finalEnvelope;
 
     @Captor
-    private ArgumentCaptor<JsonEnvelope> senderCaptor;
+    private ArgumentCaptor<DefaultEnvelope> senderCaptor;
 
     @Mock
     private ProgressionService progressionService;
@@ -84,7 +85,6 @@ public class CaseMarkersUpdatedProcessorTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(enveloper.withMetadataFrom(envelope, "public.progression.case-markers-updated")).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(logger.isInfoEnabled()).thenReturn(true);
 
         processor.processCaseMarkerUpdated(envelope);
 

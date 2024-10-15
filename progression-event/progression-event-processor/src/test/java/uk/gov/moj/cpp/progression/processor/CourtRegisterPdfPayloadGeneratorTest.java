@@ -17,7 +17,7 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CourtRegisterPdfPayloadGeneratorTest {
 
@@ -33,15 +33,13 @@ public class CourtRegisterPdfPayloadGeneratorTest {
         assertThat(responseBody.toString(), is(expected));
     }
 
-    // TODO fix this test while rebase
-/*    @Test
+    @Test
     public void shouldMapPayloadForMultiCourtRegisterDocumentRequests() {
         final JsonObject jsonObject = getPayload("progression.event.court-register-generated.json");
         final CourtRegisterPdfPayloadGenerator courtRegisterPdfPayloadGenerator = new CourtRegisterPdfPayloadGenerator();
         final JsonObject responseBody = courtRegisterPdfPayloadGenerator.mapPayload(jsonObject);
-        assertThat(responseBody.toString(), is(getPayload("courtRegisterPdfPayload-multiCourtRegisterDocumentRequests.json").toString()
-                .replaceAll("AGE",String.valueOf(Period.between(LocalDate.of(2007,8,22), LocalDate.now()).getYears()))));
-    }*/
+        assertThat(responseBody.toString(), is(getPayload("courtRegisterPdfPayload-multiCourtRegisterDocumentRequests.json").toString()));
+    }
 
     @Test
     public void shouldMapMinimumPayload() {

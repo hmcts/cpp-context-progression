@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.event;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.event.DefendantAddedListener.DEFENDANT_ADDED_PUBLIC_EVENT;
@@ -9,20 +9,20 @@ import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.CASE_ID;
 import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.DEFENDANT_ID;
 import static uk.gov.moj.cpp.progression.event.EventProcessorConstants.DESCRIPTION;
 
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * 
  * @deprecated This is deprecated for Release 2.4
@@ -30,7 +30,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
  */
 @SuppressWarnings("squid:S1133")
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantAddedListenerTest {
 
     private static final String DUMMY_DESCRIPTION = "some description";

@@ -1,0 +1,83 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Create COTR"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.create-cotr");
+    eval(userAndGroupProvider.hasPermission($action, PermissionConstants.createCotrPermissions())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users", "Advocates"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Serve Prosecution COTR"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.serve-prosecution-cotr");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Archive COTR"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.archive-cotr");
+    eval(userAndGroupProvider.hasPermission($action, PermissionConstants.archivePermissions())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Advocates"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Serve Defendant COTR"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.serve-defendant-cotr");
+    eval(userAndGroupProvider.hasPermission($action, PermissionConstants.serveDefendantCotrPermissions())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Advocates"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Change Defendants COTR"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.change-defendants-cotr");
+    eval(userAndGroupProvider.hasPermission($action, PermissionConstants.changeDefendantsCotrPermissions())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Advocates"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Add further info prosecution COTR"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-further-info-prosecution-cotr");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Add further info defence COTR"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-further-info-defence-cotr");
+    eval(userAndGroupProvider.hasPermission($action, PermissionConstants.addFurtherInfoDefenceCotrPermissions())) or
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Advocates"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Update Review Notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-review-notes");
+    eval(userAndGroupProvider.hasPermission($action, PermissionConstants.updateReviewNotesPermissions()));
+  then
+    $outcome.setSuccess(true);
+end

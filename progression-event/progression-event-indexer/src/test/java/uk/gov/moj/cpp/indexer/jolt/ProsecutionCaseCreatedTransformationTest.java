@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.indexer.jolt;
 
 import static com.jayway.jsonassert.JsonAssert.with;
-import static junit.framework.TestCase.assertNotNull;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJson;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.JsonHelper.readJsonViaPath;
 import static uk.gov.moj.cpp.indexer.jolt.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
@@ -18,8 +18,8 @@ import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ProsecutionCaseCreatedTransformationTest {
 
@@ -27,7 +27,7 @@ public class ProsecutionCaseCreatedTransformationTest {
 
     private JsonDocumentValidator jsonValidator = new JsonDocumentValidator();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initializeJolt(joltTransformer);
     }

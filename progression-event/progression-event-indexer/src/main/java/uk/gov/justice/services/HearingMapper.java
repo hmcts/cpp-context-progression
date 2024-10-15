@@ -1,6 +1,5 @@
 package uk.gov.justice.services;
 
-import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 

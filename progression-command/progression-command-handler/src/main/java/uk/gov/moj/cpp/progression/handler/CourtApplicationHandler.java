@@ -46,6 +46,7 @@ import uk.gov.justice.core.courts.UpdateApplicationDefendant;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.progression.courts.ApproveApplicationSummons;
 import uk.gov.justice.progression.courts.RejectApplicationSummons;
+import uk.gov.justice.progression.courts.SendNotificationForAutoApplication;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -129,9 +130,10 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         }
 
         final CourtApplication application = courtApplicationEnv.payload().getCourtApplication();
+        final UUID oldApplicationId = courtApplicationEnv.payload().getOldApplicationId();
         final EventStream eventStream = eventSource.getStreamById(application.getId());
         final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
-        final Stream<Object> events = applicationAggregate.createCourtApplication(application);
+        final Stream<Object> events = applicationAggregate.createCourtApplication(application, oldApplicationId);
         appendEventsToStream(courtApplicationEnv, eventStream, events);
     }
 
@@ -205,6 +207,21 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
         final Stream<Object> events = applicationAggregate.sendNotificationForApplication(sendNotificationForApplicationEnvelope.payload());
         appendEventsToStream(sendNotificationForApplicationEnvelope, eventStream, events);
+
+    }
+
+    @Handles("progression.command.send-notification-for-auto-application")
+    public void sendNotificationForAutopplication(final Envelope<SendNotificationForAutoApplication> sendNotificationForAutoApplicationEnvelope) throws EventStreamException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.send-notification-for-auto-application {}", sendNotificationForAutoApplicationEnvelope.payload());
+        }
+
+        final EventStream eventStream = eventSource.getStreamById(sendNotificationForAutoApplicationEnvelope.payload().getCourtApplication().getId());
+        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+
+        final Stream<Object> events = applicationAggregate.sendNotificationForAutoApplication(sendNotificationForAutoApplicationEnvelope.payload().getCourtApplication(), sendNotificationForAutoApplicationEnvelope.payload().getCourtCentre(),
+                sendNotificationForAutoApplicationEnvelope.payload().getJurisdictionType(), sendNotificationForAutoApplicationEnvelope.payload().getHearingStartDateTime());
+        appendEventsToStream(sendNotificationForAutoApplicationEnvelope, eventStream, events);
 
     }
 
@@ -313,7 +330,11 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final boolean summonsApprovalRequired = isSummonsApprovalRequired(initiateCourtProceedingsForApplication.getBoxHearing(), initiateCourtProceedingsForApplication.getCourtApplication());
         final InitiateCourtApplicationProceedings.Builder initiateCourtProceedingsForApplicationBuilder = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
                 .withCourtApplication(rebuildCourtApplication(initiateCourtProceedingsForApplication.getCourtApplication(), envelope))
-                .withSummonsApprovalRequired(summonsApprovalRequired);
+                .withSummonsApprovalRequired(summonsApprovalRequired)
+                .withIsAmended(initiateCourtProceedingsForApplication.getIsAmended())
+                .withOldApplicationId(initiateCourtProceedingsForApplication.getOldApplicationId())
+                .withIsWelshTranslationRequired(initiateCourtProceedingsForApplication.getIsWelshTranslationRequired())
+                .withIssueDate(initiateCourtProceedingsForApplication.getIssueDate());
 
         if (nonNull(initiateCourtProceedingsForApplication.getBoxHearing())) {
             initiateCourtProceedingsForApplicationBuilder

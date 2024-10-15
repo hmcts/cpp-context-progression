@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.service;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
@@ -20,17 +20,18 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelope;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateDefendantServiceTest {
 
     @Mock
@@ -48,7 +49,7 @@ public class UpdateDefendantServiceTest {
     @Captor
     private ArgumentCaptor<DefaultJsonEnvelope> jsonEnvelopeCaptor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }

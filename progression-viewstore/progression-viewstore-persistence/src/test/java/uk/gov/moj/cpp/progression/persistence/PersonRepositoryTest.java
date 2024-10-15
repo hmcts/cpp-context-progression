@@ -9,9 +9,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import uk.gov.moj.cpp.progression.persistence.entity.Address;
+import uk.gov.moj.cpp.progression.persistence.entity.Person;
+import uk.gov.moj.cpp.progression.persistence.repository.AddressRepository;
+import uk.gov.moj.cpp.progression.persistence.repository.PersonRepository;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -26,14 +31,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import uk.gov.moj.cpp.progression.persistence.entity.Address;
-import uk.gov.moj.cpp.progression.persistence.entity.Person;
-import uk.gov.moj.cpp.progression.persistence.repository.AddressRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.PersonRepository;
-
 /**
  * @deprecated
- *
  */
 @SuppressWarnings("squid:S1133")
 @Deprecated

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.domain.transformation.deactivestream;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,8 +15,8 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+@ExtendWith(MockitoExtension.class)
 import org.junit.runners.Parameterized;
 
 

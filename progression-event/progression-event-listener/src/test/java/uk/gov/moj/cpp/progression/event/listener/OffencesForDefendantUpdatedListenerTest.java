@@ -5,30 +5,10 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -40,6 +20,22 @@ import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.OffencePlea;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 /**
  * 
  * @deprecated This is deprecated for Release 2.4
@@ -47,14 +43,14 @@ import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
  */
 @Deprecated
 @SuppressWarnings({"WeakerAccess", "squid:S1133"})
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OffencesForDefendantUpdatedListenerTest {
 
 
     private final UUID defendantId = randomUUID();
 
     @Spy
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter();
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
     private final OffenceForDefendantUpdatedToEntity converter = new OffenceForDefendantUpdatedToEntity();
@@ -72,18 +68,6 @@ public class OffencesForDefendantUpdatedListenerTest {
     private final UUID offence2 = UUID.randomUUID();
     private final UUID offence3 = UUID.randomUUID();
 
-    @Before
-    public void setup() throws NoSuchFieldException, IllegalAccessException {
-        final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-        // Super class because the converter is modified by mockito so it does not have this field
-        final Class<?> aClass = jsonObjectToObjectConverter.getClass().getSuperclass();
-
-        final Field objectMapperField = aClass.getDeclaredField("objectMapper");
-        objectMapperField.setAccessible(true);
-        objectMapperField.set(jsonObjectToObjectConverter, objectMapper);
-    }
-
     @Test
     public void shouldAddOffenceForDefendant() {
         //given
@@ -94,8 +78,8 @@ public class OffencesForDefendantUpdatedListenerTest {
         //then
         verify(defendantRepository).save(argumentCaptor.capture());
         assertThat(2,is(argumentCaptor.getValue().getOffences().size()));
-        assertNull("wording is null",argumentCaptor.getValue().getOffences().stream().filter(s-> s.getId().equals(offence2)).findFirst().get().getWording());
-        assertThat("wording 3",is(argumentCaptor.getValue().getOffences().stream().filter(s-> s.getId().equals(offence3)).findFirst().get().getWording()));
+        assertNull(argumentCaptor.getValue().getOffences().stream().filter(s-> s.getId().equals(offence2)).findFirst().get().getWording(), "wording is null");
+        assertThat("wording 3", is(argumentCaptor.getValue().getOffences().stream().filter(s-> s.getId().equals(offence3)).findFirst().get().getWording()));
     }
 
     @Test

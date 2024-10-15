@@ -1,17 +1,11 @@
 package uk.gov.moj.cpp.nows.event.listener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
 import uk.gov.justice.core.courts.CourtRegisterRecorded;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterHearingVenue;
@@ -26,18 +20,24 @@ import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtRegisterRequestEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtRegisterRequestRepository;
 
-import javax.json.JsonObject;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import javax.json.JsonObject;
 
-@RunWith(MockitoJUnitRunner.class)
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class CourtRegisterDocumentRequestListenerTest {
 
     @Mock
@@ -57,7 +57,7 @@ public class CourtRegisterDocumentRequestListenerTest {
     @Captor
     private ArgumentCaptor<CourtRegisterRequestEntity> courtRegisterRequestEntityArgumentCaptor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());

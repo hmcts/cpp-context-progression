@@ -3,15 +3,11 @@
     <parent>
         <artifactId>progression-domain-transformations</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>8.0.191-SNAPSHOT</version>
+        <version>17.0.2-FRAMEWORK-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>progression-domain-transformations-pilotdata</artifactId>
-
-    <properties>
-        <stream-transformation-tool.version>2.0.0</stream-transformation-tool.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -27,7 +23,6 @@
         <dependency>
             <groupId>uk.gov.justice</groupId>
             <artifactId>stream-transformation-tool-api</artifactId>
-            <version>${stream-transformation-tool.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.everit-org.json-schema</groupId>
@@ -47,7 +42,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>core-domain-transform-model</artifactId>
-            <version>${coredomain.version}</version>
         </dependency>
     </dependencies>
 

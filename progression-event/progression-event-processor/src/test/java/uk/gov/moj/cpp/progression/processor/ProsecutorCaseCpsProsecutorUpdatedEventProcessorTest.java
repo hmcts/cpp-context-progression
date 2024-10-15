@@ -1,49 +1,46 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
-import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.events.CaseCpsProsecutorUpdated;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutorCaseCpsProsecutorUpdatedEventProcessorTest {
 
     @InjectMocks
@@ -79,7 +76,7 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessorTest {
     private String prosecutionCaseURN;
     private JsonEnvelope requestMessage;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -104,14 +101,6 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.case-cps-prosecutor-updated"),
                 payload);
 
-        when(hearingsAtAGlance.getHearings()).thenReturn(singletonList(Hearings.hearings().withId(hearingId).build()));
-        when(prosecutionCase.getProsecutionCaseIdentifier()).thenReturn(prosecutionCaseIdentifier);
-        when(prosecutionCaseIdentifier.getProsecutionAuthorityReference()).thenReturn(prosecutionCaseURN);
-
-
-        when(hearingsAtAGlance.getHearings()).thenReturn(singletonList(Hearings.hearings().withId(hearingId).build()));
-        when(prosecutionCase.getProsecutionCaseIdentifier()).thenReturn(prosecutionCaseIdentifier);
-        when(prosecutionCaseIdentifier.getProsecutionAuthorityReference()).thenReturn(prosecutionCaseURN);
     }
 
     @Test
@@ -157,9 +146,6 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessorTest {
         requestMessage = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.case-cps-prosecutor-updated"),
                 createObjectBuilder().add("isCpsOrgVerifyError", true));
-        JsonObject prosecutionCaseJsonObject = createObjectBuilder().add("hearingsAtAGlance",
-                createObjectBuilder().add("hearings", createArrayBuilder().build()).build()).build();
-        when(progressionService.getProsecutionCaseDetailById(any(), eq(prosecutionCaseId))).thenReturn(of(prosecutionCaseJsonObject));
 
         //When
         prosecutorCaseCpsProsecutorUpdatedEventProcessor.processCpsProsecutorUpdated(requestMessage);

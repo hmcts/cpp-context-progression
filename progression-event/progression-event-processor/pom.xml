@@ -3,14 +3,13 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>8.0.208-CCT-2047-SNAPSHOT</version>
+        <version>17.0.12-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-processor</artifactId>
     <packaging>war</packaging>
 
     <properties>
         <cpp.service-component>EVENT_PROCESSOR</cpp.service-component>
-        <pdfbox.version>2.0.19</pdfbox.version>
     </properties>
 
     <dependencies>
@@ -39,7 +38,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.6</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -50,6 +48,12 @@
             <groupId>uk.gov.moj.cpp.material</groupId>
             <artifactId>material-client</artifactId>
             <version>${material.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>uk.gov.justice.services</groupId>
+                    <artifactId>test-utils-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.system.id-mapper</groupId>
@@ -75,24 +79,12 @@
             <version>${framework-libraries.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>common-core-domain</artifactId>
-            <version>${coredomain.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>sjp-public-model</artifactId>
-            <version>${coredomain.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.framework-api</groupId>
@@ -107,11 +99,15 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>${pdfbox.version}</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -134,14 +130,8 @@
             <artifactId>file-service-persistence</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-reflect</artifactId>
-            <version>2.0.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -153,7 +143,11 @@
         <dependency>
             <groupId>uk.co.jemos.podam</groupId>
             <artifactId>podam</artifactId>
-            <version>7.1.0.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.ws</groupId>
+            <artifactId>jaxws-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -172,11 +166,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.tngtech.junit.dataprovider</groupId>
-            <artifactId>junit4-dataprovider</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.github.javafaker</groupId>
             <artifactId>javafaker</artifactId>
             <scope>test</scope>
@@ -184,7 +173,6 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.listing</groupId>
             <artifactId>listing-common</artifactId>
-            <version>${listing.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>uk.gov.moj.cpp.core.domain</groupId>
@@ -202,13 +190,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.jayway.awaitility</groupId>
+            <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
-            <version>${httpmime.version}</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -216,6 +207,11 @@
                     <artifactId>httpclient</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -228,9 +224,21 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>uk.gov.justice.framework-generators</groupId>
                 <artifactId>rest-client-generator-plugin</artifactId>
                 <dependencies>
+                    <dependency>
+                        <groupId>javax</groupId>
+                        <artifactId>javaee-api</artifactId>
+                        <version>${javaee-api.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.systemdocgenerator</groupId>
                         <artifactId>systemdocgenerator-command-api</artifactId>
@@ -424,6 +432,11 @@
                 <artifactId>messaging-client-generator-plugin</artifactId>
                 <dependencies>
                     <dependency>
+                        <groupId>javax</groupId>
+                        <artifactId>javaee-api</artifactId>
+                        <version>${javaee-api.version}</version>
+                    </dependency>
+                    <dependency>
                         <groupId>uk.gov.moj.cpp.progression</groupId>
                         <artifactId>progression-command-handler</artifactId>
                         <version>${project.version}</version>
@@ -437,7 +450,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <!-- MI schema contract validation tests jar dependency-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>

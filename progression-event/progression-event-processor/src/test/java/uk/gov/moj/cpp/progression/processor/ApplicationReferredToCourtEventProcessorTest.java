@@ -1,12 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -18,18 +15,21 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import javax.json.JsonObject;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class ApplicationReferredToCourtEventProcessorTest {
 
@@ -61,7 +61,7 @@ public class ApplicationReferredToCourtEventProcessorTest {
     private Function<Object, JsonEnvelope> enveloperFunction;
     @Mock
     private JsonEnvelope finalEnvelope;
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -81,11 +81,8 @@ public class ApplicationReferredToCourtEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ApplicationReferredToCourt.class))
                 .thenReturn(applicationReferredToCourt);
         when(applicationReferredToCourt.getHearingRequest()).thenReturn(hearingListingNeeds);
-        when(progressionService.getHearing(any(), any())).thenReturn(Optional.of(Json.createObjectBuilder().add("hearing", Json.createObjectBuilder().build
-                ()).build()));
         when(listCourtHearingTransformer.transform(any())).thenReturn(listCourtHearing);
 
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         this.eventProcessor.process(jsonEnvelope);
         verify(listingService).listCourtHearing(jsonEnvelope, listCourtHearing);
         verify(progressionService).updateCourtApplicationStatus(jsonEnvelope, courtApplication.getId(), ApplicationStatus.UN_ALLOCATED);
@@ -106,7 +103,6 @@ public class ApplicationReferredToCourtEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ApplicationReferredToCourt.class))
                 .thenReturn(applicationReferredToCourt);
         when(applicationReferredToCourt.getHearingRequest()).thenReturn(hearingListingNeeds);
-        when(progressionService.getHearing(any(), any())).thenReturn(Optional.empty());
         when(listCourtHearingTransformer.transform(any())).thenReturn(listCourtHearing);
 
         this.eventProcessor.process(jsonEnvelope);

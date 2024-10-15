@@ -3,8 +3,10 @@ package uk.gov.justice.api.resource.utils.payload;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+
+import uk.gov.justice.api.resource.service.ReferenceDataService;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -16,15 +18,14 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.api.resource.service.ReferenceDataService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class PleaValueDescriptionBuilderTest {
 
     @Mock
@@ -33,7 +34,7 @@ public class PleaValueDescriptionBuilderTest {
     @InjectMocks
     private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp(){
         when(referenceDataService.retrievePleaTypeDescriptions()).thenReturn(buildPleaTypeDescriptions());
     }

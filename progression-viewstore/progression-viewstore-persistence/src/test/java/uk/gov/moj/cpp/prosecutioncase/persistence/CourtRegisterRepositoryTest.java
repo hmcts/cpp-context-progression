@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtRegisterRequestEntity;

@@ -6,20 +6,22 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.COURT_LIST_QUERY_NAME;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.PDF_DISPOSITION;
+import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.PRISON_COURT_LIST;
 import static uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource.WORD_DISPOSITION;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -51,14 +53,14 @@ import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * http endpoint adapter which overrides default framework adapter. It handles transfer of files
@@ -66,7 +68,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * the end of interceptor chain, regular query handler is invoked and returns documents details
  */
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefaultQueryApiCourtlistResourceTest {
 
     private static final String PDF_CONTENT_TYPE = "application/pdf";
@@ -81,35 +83,42 @@ public class DefaultQueryApiCourtlistResourceTest {
 
     @Mock
     private InterceptorChainProcessor interceptorChainProcessor;
+
     @Mock
     private StagingPubHubService stagingPubHubService;
+
     @Mock
     private ReferenceDataService referenceDataService;
+
     @Mock
     private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
+
     @Mock
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
+
     @Mock
     private DocumentGeneratorClient documentGeneratorClient;
+
     @Captor
     private ArgumentCaptor<InterceptorContext> interceptorContextCaptor;
+
     @InjectMocks
     private DefaultQueryApiCourtlistResource defaultQueryApiCourtlistResource;
+
     @Mock
     private Requester requester;
+
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<String> stringArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
+
     @Captor
     private ArgumentCaptor<UUID> uuidArgumentCaptor;
-
-    @Before
-    public void init() {
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-    }
 
     @Test
     public void shouldRunAllInterceptorsAndFetchAndStreamDocument() throws IOException {
@@ -121,6 +130,7 @@ public class DefaultQueryApiCourtlistResourceTest {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>(ImmutableMap.of(CONTENT_TYPE, PDF_CONTENT_TYPE, CONTENT_DISPOSITION, PDF_DISPOSITION));
 
 
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(ofNullable(interceptorResponse));
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         assert interceptorResponse != null;
@@ -160,7 +170,7 @@ public class DefaultQueryApiCourtlistResourceTest {
 
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>(ImmutableMap.of(CONTENT_TYPE, WORD_CONTENT_TYPE, CONTENT_DISPOSITION, WORD_DISPOSITION));
 
-
+        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(ofNullable(interceptorResponse));
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         assert interceptorResponse != null;
@@ -195,6 +205,14 @@ public class DefaultQueryApiCourtlistResourceTest {
     public void shouldOverrideGeneratedDefaultAdapterClass() {
         assertThat(defaultQueryApiCourtlistResource.getClass().getName(),
                 is("uk.gov.justice.api.resource.DefaultQueryApiCourtlistResource"));
+    }
+
+    @Test
+    public void shouldErrorWhenCourtListCalledForPrisonList() {
+        final Response courtlistResponse = defaultQueryApiCourtlistResource
+                .getCourtlist(courtCentreId.toString(), courtRoomId.toString(), PRISON_COURT_LIST,
+                        startDate, endDate, false, userId);
+        assertThat(courtlistResponse.getStatus(), is(FORBIDDEN.getStatusCode()));
     }
 
     private void verifyInterceptorChainExecution() {

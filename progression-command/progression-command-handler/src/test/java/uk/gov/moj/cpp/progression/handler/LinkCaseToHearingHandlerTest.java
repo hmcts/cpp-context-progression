@@ -7,7 +7,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -18,6 +18,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
@@ -37,21 +38,18 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
-import uk.gov.moj.cpp.progression.handler.LinkCaseToHearingHandler;
-
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class LinkCaseToHearingHandlerTest {
 
     @Mock
@@ -79,13 +77,10 @@ public class LinkCaseToHearingHandlerTest {
     private final UUID MEMBER_CASE_ID = randomUUID();
     private final UUID GROUP_ID = randomUUID();
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseAggregate = new CaseAggregate();
         groupCaseAggregate = new GroupCaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
     }
 
     @Test
@@ -98,6 +93,9 @@ public class LinkCaseToHearingHandlerTest {
 
     @Test
     public void shouldProcessCommandWithCaseAndHearingId() throws Exception {
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
         caseAggregate.createProsecutionCase(createProsecutionCase());
 
         LinkCaseToHearing linkCaseToHearing = LinkCaseToHearing.linkCaseToHearing().withCaseId(CASE_ID).withHearingId(HEARING_ID).build();
@@ -131,6 +129,9 @@ public class LinkCaseToHearingHandlerTest {
 
     @Test
     public void shouldProcessCommandWithCaseAndHearingIdForGroupCases() throws Exception {
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
         caseAggregate.createProsecutionCase(createProsecutionCaseForGroupCases());
         groupCaseAggregate.initiateCourtProceedings(createCourtReferral());
         LinkCaseToHearing linkCaseToHearing = LinkCaseToHearing.linkCaseToHearing().withCaseId(CASE_ID).withHearingId(HEARING_ID).build();

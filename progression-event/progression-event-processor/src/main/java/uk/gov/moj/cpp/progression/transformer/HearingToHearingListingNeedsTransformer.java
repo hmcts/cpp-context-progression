@@ -7,6 +7,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -101,7 +102,7 @@ public class HearingToHearingListingNeedsTransformer {
                                         .map(offence -> Offence.offence().withValuesFrom(offence).withSeedingHearing(seedingHearing).build())
                                         .forEach(offence -> offence.getJudicialResults().stream()
                                                 .forEach(judicialResult -> {
-                                                            if (isSingleDayHearingWithNextHearing(judicialResult.getNextHearing(), hearing) || isNextHearingOutsideOfMultiDaysHearing(judicialResult.getNextHearing(), hearing)) {
+                                                            if (!isNextHearingApplication(judicialResult) && (isSingleDayHearingWithNextHearing(judicialResult.getNextHearing(), hearing) || isNextHearingOutsideOfMultiDaysHearing(judicialResult.getNextHearing(), hearing))) {
                                                                 transform(prosecutionCase, defendant, offence, judicialResult, hearingListingNeedsMap, bookingReferenceCourtScheduleIds,
                                                                         hearing, committingCourt.isPresent(), committingCourt);
                                                             }
@@ -115,6 +116,10 @@ public class HearingToHearingListingNeedsTransformer {
         setSeedingHearingForApplicationsOffences(hearing.getCourtApplications(), seedingHearing);
 
         return new ArrayList<>(hearingListingNeedsMap.values());
+    }
+
+    private boolean isNextHearingApplication(final JudicialResult judicialResult) {
+        return nonNull(judicialResult.getNextHearing()) && isNotEmpty(judicialResult.getNextHearing().getApplicationTypeCode());
     }
 
     private void setSeedingHearingForApplicationsOffences(final List<CourtApplication> courtApplications, final SeedingHearing seedingHearing) {

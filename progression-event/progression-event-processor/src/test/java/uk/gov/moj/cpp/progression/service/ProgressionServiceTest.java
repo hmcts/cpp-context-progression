@@ -12,15 +12,16 @@ import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
-import static org.apache.activemq.artemis.utils.JsonLoader.createObjectBuilder;
-import static org.apache.activemq.artemis.utils.JsonLoader.createReader;
+import static javax.json.Json.createObjectBuilder;
+import static javax.json.Json.createReader;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -57,6 +58,7 @@ import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationPartyAttendance;
 import uk.gov.justice.core.courts.CourtApplicationPartyCounsel;
+import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
@@ -76,8 +78,8 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
+import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
 import uk.gov.justice.core.courts.InterpreterIntermediary;
-import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
@@ -118,7 +120,6 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
-import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 
 import java.io.IOException;
@@ -144,19 +145,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class ProgressionServiceTest {
 
@@ -216,32 +215,29 @@ public class ProgressionServiceTest {
 
     @Spy
     private final Enveloper enveloper = createEnveloper();
-    @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
     @Spy
-    @InjectMocks
-    private JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     @Spy
-    @InjectMocks
-    private final ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(objectMapper);
-
+    private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    @Spy
+    private ObjectToJsonValueConverter objectToJsonValueConverter = new ObjectToJsonValueConverter(new ObjectMapperProducer().objectMapper());
     @Mock
     private Sender sender;
     @Spy
-    private ListToJsonArrayConverter listToJsonArrayConverter;
+    private ListToJsonArrayConverter<CourtApplication> listToJsonArrayConverter;
     @Spy
-    private ListToJsonArrayConverter resultListToJsonArrayConverter;
+    private ListToJsonArrayConverter<DefendantJudicialResult> resultListToJsonArrayConverter;
     @Spy
     private ListToJsonArrayConverter<ListHearingRequest> hearingRequestListToJsonArrayConverter;
     @Captor
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
     @Captor
-    private ArgumentCaptor<Envelope> typedEnvelopeArgumentCaptor;
+    private ArgumentCaptor<Envelope<PrepareSummonsData>> typedEnvelopeArgumentCaptor;
     @Captor
-    private ArgumentCaptor<Envelope> envelopeCaptor;
+    private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
     @Mock
     private Requester requester;
     @Mock
@@ -255,12 +251,10 @@ public class ProgressionServiceTest {
     private Function<Object, JsonEnvelope> enveloperFunction;
     @Mock
     private JsonEnvelope finalEnvelope;
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
     @Mock
     private JsonSchemaValidator jsonSchemaValidator;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         setField(this.listToJsonArrayConverter, "mapper", objectMapper);
         setField(this.jsonObjectConverter, "objectMapper", objectMapper);
@@ -294,7 +288,7 @@ public class ProgressionServiceTest {
 
         verify(sender).send(typedEnvelopeArgumentCaptor.capture());
 
-        final PrepareSummonsData payload = (PrepareSummonsData) typedEnvelopeArgumentCaptor.getValue().payload();
+        final PrepareSummonsData payload = typedEnvelopeArgumentCaptor.getValue().payload();
         assertThat(typedEnvelopeArgumentCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_PREPARE_SUMMONS_DATA));
         assertThat(payload.getHearingDateTime(), is(publicEventPayload.getHearingDateTime()));
         assertThat(payload.getHearingId(), is(publicEventPayload.getHearingId()));
@@ -410,7 +404,7 @@ public class ProgressionServiceTest {
         progressionService.listUnscheduledHearings(envelope, hearing);
         verify(sender).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_LIST_UNSCHEDULED_HEARING_COMMAND));
-        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        JsonObject jsonObject = envelopeCaptor.getValue().payload();
         assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearing.getId().toString()));
     }
 
@@ -421,7 +415,6 @@ public class ProgressionServiceTest {
         final Hearing hearing = Hearing.hearing().withIsVacatedTrial(true).withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build())).withIsBoxHearing(false).withHearingDays(singletonList(HearingDay.hearingDay().withCourtRoomId(randomUUID()).build())).withId(randomUUID()).withType(HearingType.hearingType().withId(randomUUID()).build()).withHearingLanguage(HearingLanguage.WELSH).withCourtApplications(singletonList(courtApplication().withId(randomUUID()).build())).withPanel("panel").withCourtCentre(CourtCentre.courtCentre().withId(randomUUID()).withRoomId(randomUUID()).build()).withApplicantCounsels(singletonList(ApplicantCounsel.applicantCounsel().withId(randomUUID()).build())).withApplicationPartyCounsels(singletonList(CourtApplicationPartyCounsel.courtApplicationPartyCounsel().withId(randomUUID()).build())).withApprovalsRequested(singletonList(ApprovalRequest.approvalRequest().withHearingId(randomUUID()).build())).withCompanyRepresentatives(singletonList(CompanyRepresentative.companyRepresentative().withId(randomUUID()).build())).withCourtApplicationPartyAttendance(singletonList(CourtApplicationPartyAttendance.courtApplicationPartyAttendance().withCourtApplicationPartyId(randomUUID()).build())).withCrackedIneffectiveTrial(CrackedIneffectiveTrial.crackedIneffectiveTrial().withId(randomUUID()).build()).withDefenceCounsels(singletonList(DefenceCounsel.defenceCounsel().withId(randomUUID()).build())).withDefendantAttendance(singletonList(DefendantAttendance.defendantAttendance().withDefendantId(randomUUID()).build())).withDefendantJudicialResults(singletonList(defendantJudicialResult().withMasterDefendantId(randomUUID()).build())).withReportingRestrictionReason("ReportingRestrictionReason").withEarliestNextHearingDate(ZonedDateTime.now()).withDefendantReferralReasons(singletonList(ReferralReason.referralReason().withId(randomUUID()).build())).withHasSharedResults(true).withHearingCaseNotes(singletonList(HearingCaseNote.hearingCaseNote().withId(randomUUID()).build())).withIntermediaries(singletonList(InterpreterIntermediary.interpreterIntermediary().withId(randomUUID()).build())).withIsEffectiveTrial(true).withIsSJPHearing(false).withIsVirtualBoxHearing(false).withJudiciary(singletonList(JudicialRole.judicialRole().withJudicialId(randomUUID()).build())).withJurisdictionType(JurisdictionType.MAGISTRATES).withProsecutionCounsels(singletonList(ProsecutionCounsel.prosecutionCounsel().withId(randomUUID()).build())).withRespondentCounsels(singletonList(RespondentCounsel.respondentCounsel().withId(randomUUID()).build())).withSeedingHearing(SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).build()).withShadowListedOffences(singletonList(randomUUID())).withYouthCourt(YouthCourt.youthCourt().withYouthCourtId(randomUUID()).build()).withYouthCourtDefendantIds(singletonList(randomUUID())).build();
 
         when(referenceDataService.getOrganisationUnitById(confirmedHearing.getCourtCentre().getId(), jsonEnvelope, requester)).thenReturn(of(generateCourtCentreJson()));
-        when(referenceDataService.getJudiciariesByJudiciaryIdList(asList(JUDICIARY_ID_1, JUDICIARY_ID_2), jsonEnvelope, requester)).thenReturn(of(generateJudiciariesJson()));
 
         final Hearing mixHearing = progressionService.updateHearingForHearingUpdated(confirmedHearing, jsonEnvelope, hearing);
 
@@ -473,7 +466,7 @@ public class ProgressionServiceTest {
         progressionService.recordUnlistedHearing(envelope, hearingId, asList(hearing));
         verify(sender).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_RECORD_UNSCHEDULED_HEARING));
-        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        JsonObject jsonObject = envelopeCaptor.getValue().payload();
         assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
         assertThat(jsonObject.getString("unscheduledHearingIds.length()"), is(unscheduledHearingId.toString()));
         assertThat(jsonObject.getString("unscheduledHearingIds[0]"), is(unscheduledHearingId.toString()));
@@ -486,7 +479,7 @@ public class ProgressionServiceTest {
         progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(envelope, hearings, new HashSet<>());
         verify(sender).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND));
-        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        JsonObject jsonObject = envelopeCaptor.getValue().payload();
         assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearings.get(0).getId().toString()));
     }
 
@@ -538,7 +531,7 @@ public class ProgressionServiceTest {
         final Hearing hearing = Hearing.hearing().withProsecutionCases(singletonList(prosecutionCase)).withCourtApplications(singletonList(courtApplication)).build();
 
 
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("caseStatus", "ACTIVE").build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("caseStatus", "ACTIVE").build();
 
         when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
 
@@ -558,11 +551,8 @@ public class ProgressionServiceTest {
         final Hearing hearing = Hearing.hearing().withProsecutionCases(singletonList(prosecutionCase)).withCourtApplications(singletonList(courtApplication)).build();
 
 
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("caseStatus", "SJP_REFERRAL").build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).add("caseStatus", "SJP_REFERRAL").build();
 
-        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
-
-        when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.updateCaseStatus(envelope, hearing, singletonList(courtApplicationId));
         verifyNoMoreInteractions(sender);
     }
@@ -570,7 +560,6 @@ public class ProgressionServiceTest {
     @Test
     public void shouldCreateCourtCenterWithCourtRoomOuCode() {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
-        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
         final String address1 = "ADDRESS1";
         final UUID courtCentreId = randomUUID();
         final UUID courtRoomId = randomUUID();
@@ -592,7 +581,6 @@ public class ProgressionServiceTest {
     @Test
     public void shouldCreateCourtCenterWithCourtRoomOuCodeWhenDefinitionNotExist() {
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS);
-        when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_HEARING_CONFIRMED_UPDATE_CASE_STATUS)).thenReturn(enveloperFunction);
         final String address1 = "ADDRESS1";
         final UUID courtCentreId = randomUUID();
         final UUID courtRoomId = randomUUID();
@@ -616,7 +604,7 @@ public class ProgressionServiceTest {
 
        final UUID applicationId = randomUUID();
         JsonEnvelope requestEnvelope = getUserEnvelope(APPLICATION_AAAG);
-        when(requester.request(any(JsonEnvelope.class), any(Class.class))).thenReturn(requestEnvelope);
+        when(requester.request(any(), any(Class.class))).thenReturn(requestEnvelope);
         JsonObject courtApplication = progressionService.retrieveApplication(requestEnvelope, applicationId);
 
         assertThat(courtApplication, is(notNullValue()));
@@ -629,7 +617,7 @@ public class ProgressionServiceTest {
                 Envelope.metadataBuilder().
                         withName("progression.query.application.aaag").
                         withId(randomUUID()),
-                Json.createReader(getClass().getClassLoader().
+                createReader(getClass().getClassLoader().
                                 getResourceAsStream(fileName)).
                         readObject()
         );
@@ -715,7 +703,7 @@ public class ProgressionServiceTest {
     }
 
     private JsonEnvelope getEnvelope(final String name) {
-        return envelopeFrom(metadataBuilder().withId(randomUUID()).withName(name).build(), Json.createObjectBuilder().build());
+        return envelopeFrom(metadataBuilder().withId(randomUUID()).withName(name).build(), createObjectBuilder().build());
     }
 
     private <T> Envelope<T> getTypedEnvelope(final String name, final T payload) {
@@ -740,7 +728,7 @@ public class ProgressionServiceTest {
         final UUID hearingId = randomUUID();
         final List<UUID> applicationId = asList(randomUUID());
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.get(0).toString()).build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.get(0).toString()).build();
         when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkApplicationsToHearing(envelope, hearing, applicationId, HearingListingStatus.HEARING_INITIALISED);
@@ -754,7 +742,7 @@ public class ProgressionServiceTest {
         final UUID applicationId = randomUUID();
         final List<UUID> applicationIds = asList(applicationId, applicationId, applicationId);
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.toString()).build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.toString()).build();
         when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkApplicationsToHearing(envelope, hearing, applicationIds, HearingListingStatus.HEARING_INITIALISED);
@@ -767,7 +755,7 @@ public class ProgressionServiceTest {
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
         final Hearing hearing = Hearing.hearing().withId(hearingId).withCourtApplications(Arrays.asList(courtApplication().withId(applicationId).withType(courtApplicationType().withLinkType(LinkType.LINKED).build()).build(), courtApplication().withId(applicationId).withType(courtApplicationType().withLinkType(LinkType.LINKED).build()).build())).build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.toString()).build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing)).add("hearingListingStatus", "HEARING_INITIALISED").add("applicationId", applicationId.toString()).build();
         when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkApplicationToHearing(envelope, hearing, HearingListingStatus.HEARING_INITIALISED);
@@ -781,7 +769,7 @@ public class ProgressionServiceTest {
         final UUID hearingId = randomUUID();
         final List<UUID> caseIds = asList(randomUUID());
         final Hearing hearing = Hearing.hearing().withId(hearingId).build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("hearingId", hearingId.toString()).add("caseId", caseIds.get(0).toString()).build();
+        final JsonObject jsonObject = createObjectBuilder().add("hearingId", hearingId.toString()).add("caseId", caseIds.get(0).toString()).build();
         when(enveloper.withMetadataFrom(envelope, PROGRESSION_COMMAND_CREATE_HEARING_PROSECUTION_CASE_LINK)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(jsonObject)).thenReturn(finalEnvelope);
         progressionService.linkProsecutionCasesToHearing(envelope, hearingId, caseIds);
@@ -856,7 +844,7 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
@@ -887,7 +875,7 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
@@ -915,7 +903,7 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
@@ -945,12 +933,9 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, null))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, null))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-
-        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_COMMAND_UPDATE_DEFENDANT_AS_YOUTH)).thenReturn(enveloperFunction);
-
 
         progressionService.updateDefendantYouthForProsecutionCase(finalEnvelope, hearingInitiate, deltaProsecutionCases);
 
@@ -974,7 +959,7 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCasesWithTwoDefendantsOffences(caseId, defendant1, defendant2, defendant1sOffence1, defendant1sOffence2, defendant2sOffence1, defendant2sOffence2, false))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
@@ -1001,10 +986,10 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1028,10 +1013,10 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1056,10 +1041,10 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN, 1))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN, 1))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1084,10 +1069,9 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1110,10 +1094,9 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.MAGISTRATES))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1136,10 +1119,10 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPlea(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "Yes").build()));
+        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(createObjectBuilder().add("pleaTypeGuiltyFlag", "Yes").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1163,10 +1146,9 @@ public class ProgressionServiceTest {
 
         when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
         when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
-        final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPleaWithVerdict(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
+        final JsonObject jsonObject = createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(buildProsecutionCaseWithDefendantWithOffenceWithPleaWithVerdict(caseId, defendant1, defendant1sOffence1, JurisdictionType.CROWN))).build();
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, LocalDate.now(), finalEnvelope, seedingHearing);
 
@@ -1197,7 +1179,6 @@ public class ProgressionServiceTest {
 
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
-        when(referenceDataService.getPleaType(any(), any())).thenReturn(of(Json.createObjectBuilder().add("pleaTypeGuiltyFlag", "No").build()));
 
         List<ProsecutionCase> prosecutionCases = progressionService.transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, confirmedJsonEnvelope, null);
 
@@ -1206,6 +1187,25 @@ public class ProgressionServiceTest {
         assertThat(9, is(prosecutionCases.get(0).getDefendants().get(0).getOffences().size()));
         assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getPlea(), is(notNullValue()));
         assertThat(prosecutionCases.get(0).getDefendants().get(0).getOffences().get(0).getJudicialResults(), is(Matchers.nullValue()));
+    }
+
+    @Test
+    public void shouldInitiateNewCourtApplication(){
+        final JsonEnvelope event = getJsonEnvelop("progression.event.initiate-application-for-case-requested");
+        final JsonObject jsonObject = getJsonObjectResponseFromJsonResource("progression.event.initiate-application-for-case-requested.json");
+        final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested= jsonObjectConverter.convert(jsonObject, InitiateApplicationForCaseRequested.class);
+        final CourtApplicationType courtApplicationType = courtApplicationType().withType("type").build();
+        when(referenceDataService.retrieveApplicationType(any(), any())).thenReturn(courtApplicationType);
+        progressionService.initiateNewCourtApplication(event, initiateApplicationForCaseRequested);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
+        final JsonObject resultCommand = (JsonObject) envelopeCaptor.getValue().payload();
+
+        JsonObject expectedCommand = getJsonObjectResponseFromJsonResource("progression.command.initiate-court-proceedings-for-application.json");
+        assertThat(resultCommand, is(stringToJsonObjectConverter.convert(expectedCommand.toString().replaceAll("TODAY",LocalDate.now().toString()))));
+
     }
 
     @Test
@@ -1264,7 +1264,7 @@ public class ProgressionServiceTest {
         verify(sender).send(envelopeCaptor.capture());
 
         assertThat(envelopeCaptor.getValue().metadata().name(), is("progression.command.populate-hearing-to-probation-caseworker"));
-        JsonObject jsonObject = (JsonObject) envelopeCaptor.getValue().payload();
+        JsonObject jsonObject = envelopeCaptor.getValue().payload();
         assertThat(jsonObject.size(), is(1));
         assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
     }
@@ -1329,7 +1329,7 @@ public class ProgressionServiceTest {
 
     }
 
-    @Test(expected = CourtApplicationAndCaseNotFoundException.class)
+    @Test
     public void transformProsecutionCaseShouldThrowExceptionIfProsecutionCaseDoesNotExist() {
         final UUID caseId = randomUUID();
         final UUID defendant1 = randomUUID();
@@ -1340,15 +1340,20 @@ public class ProgressionServiceTest {
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
         final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        progressionService.transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, jsonEnvelope, seedingHearing);
+        assertThrows(CourtApplicationAndCaseNotFoundException.class, () -> progressionService.transformProsecutionCase(
+                confirmedProsecutionCases,
+                earliestHearingDate,
+                jsonEnvelope,
+                seedingHearing));
     }
 
-    @Test(expected = CourtApplicationAndCaseNotFoundException.class)
+    @Test
     public void transformProsecutionCaseShouldThrowExceptionIfProsecutionCaseEmpty() {
-        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase().withId(randomUUID()).build());
-        final JsonObject jsonObject = Json.createObjectBuilder().build();
-        when(enveloper.withMetadataFrom(finalEnvelope, PROGRESSION_QUERY_PROSECUTION_CASES)).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
+        final List<ConfirmedProsecutionCase> confirmedProsecutionCases = singletonList(ConfirmedProsecutionCase.confirmedProsecutionCase()
+                .withId(randomUUID())
+                .build());
+        final JsonObject jsonObject = createObjectBuilder().build();
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(finalEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.requestAsAdmin(any())).thenReturn(finalEnvelope);
 
@@ -1356,7 +1361,11 @@ public class ProgressionServiceTest {
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
         final SeedingHearing seedingHearing = SeedingHearing.seedingHearing().withSeedingHearingId(randomUUID()).withJurisdictionType(JurisdictionType.MAGISTRATES).build();
 
-        progressionService.transformProsecutionCase(confirmedProsecutionCases, earliestHearingDate, jsonEnvelope, seedingHearing);
+        assertThrows(CourtApplicationAndCaseNotFoundException.class, () -> progressionService.transformProsecutionCase(
+                confirmedProsecutionCases,
+                earliestHearingDate,
+                jsonEnvelope,
+                seedingHearing));
     }
 
 
@@ -1440,8 +1449,6 @@ public class ProgressionServiceTest {
 
     @Test
     public void shouldThrowDataValidationExceptionWhenHearingRequestedWithoutNextHearings() {
-        expectedException.expect(DataValidationException.class);
-        expectedException.expectMessage("Next hearing without hearing not possible");
         final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_EVENT_NEXT_HEARINGS_REQUESTED);
         final UUID hearingId = randomUUID();
         final UUID caseId = randomUUID();
@@ -1450,7 +1457,9 @@ public class ProgressionServiceTest {
                 .build();
 
         final ListNextHearingsV3 listNextHearings = getListNextHearings(hearingId, singletonList(prosecutionCase), null);
-        progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listNextHearings);
+
+        final Exception exception = assertThrows(DataValidationException.class, () -> progressionService.updateHearingListingStatusToSentForListing(jsonEnvelope, listNextHearings));
+        assertThat(exception.getMessage(), is("Next hearing without hearing not possible"));
     }
 
     private ListNextHearingsV3 getListNextHearings(final UUID hearingId, final List<ProsecutionCase> prosecutionCases, final SeedingHearing seedingHearing ) {

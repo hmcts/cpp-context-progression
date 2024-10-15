@@ -1,21 +1,26 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingResultLineEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.json.Json;
+
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.*;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
-
-import javax.inject.Inject;
-import javax.json.Json;
-import java.util.List;
-import java.util.UUID;
-
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * DB integration tests for {@link HearingApplicationRepositoryTest} class
@@ -109,6 +114,14 @@ public class HearingApplicationRepositoryTest {
         assertThat(actual.size(), is(0));
         hearingApplicationRepository.removeByHearingId(hearingId);
         actual = hearingApplicationRepository.findByHearingId(hearingId);
+        assertThat(actual.size(), is(0));
+    }
+
+    @Test
+    public void shouldDeleteByApplicationId() {
+        hearingApplicationRepository.removeByApplicationId(APPLICATION_ID);
+
+        final List<HearingApplicationEntity> actual = hearingApplicationRepository.findByApplicationId(APPLICATION_ID);
         assertThat(actual.size(), is(0));
     }
 }

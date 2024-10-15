@@ -9,14 +9,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearing;
+import static uk.gov.moj.cpp.progression.helper.TestHelper.buildNextHearingForApplication;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildProsecutionCase;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
-import org.slf4j.Logger;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
@@ -52,14 +52,15 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingToHearingListingNeedsTransformerTest {
     private static final UUID CASE_ID_1 = randomUUID();
     private static final UUID DEFENDANT_ID_1 = randomUUID();
@@ -365,7 +366,6 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnOneHearingNeedsWithSeededHearingIdsOnOffencesWhenTwoHearingMatch() {
         final UUID seedingHearingId = randomUUID();
-        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
         when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
@@ -388,13 +388,8 @@ public class HearingToHearingListingNeedsTransformerTest {
 
     @Test
     public void shouldReturnHearingNeedsWithOneApplicationWhenMoreThanOneJudicialResultsPresentForSameApplication() {
-        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
-        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
-
-        final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
         final NextHearingsRequested nextHearingsRequested = jsonObjectConverter.convert(getHearing("progression.event.next-hearings-requested.json"), NextHearingsRequested.class);
         final Hearing hearing = nextHearingsRequested.getHearing();
-        final List<UUID> shadowListedOffences = nextHearingsRequested.getShadowListedOffences();
         final Optional<CommittingCourt> committingCourt = ofNullable(nextHearingsRequested.getCommittingCourt());
 
 
@@ -409,8 +404,6 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnNoHearingNeedsWithSeededHearingIdsOnOffencesWhenListingStartDateOutsideOfMultiDaysHearing() {
         final UUID seedingHearingId = randomUUID();
-        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
-        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
         final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
@@ -428,7 +421,6 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnHearingNeedsWithSeededHearingIdsOnOffencesWhenSingleDayHearing() {
         final UUID seedingHearingId = randomUUID();
-        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
         when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
@@ -447,7 +439,6 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnOneHearingNeedsWithSeededHearingIdsOnOffencesWhenOneListingStartDateWithInMultiDaysHearingAndAnotherOutside() {
         final UUID seedingHearingId = randomUUID();
-        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
         when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final ZonedDateTime listedStartDateTime = ZonedDateTime.now();
@@ -468,7 +459,6 @@ public class HearingToHearingListingNeedsTransformerTest {
     @Test
     public void shouldReturnOneHearingNeedsWithSeededHearingIdsOnOffencesWhenListingStartDateIsNull() {
         final UUID seedingHearingId = randomUUID();
-        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(new HashMap<>());
         when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
 
         final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
@@ -483,6 +473,156 @@ public class HearingToHearingListingNeedsTransformerTest {
 
         final Defendant defendant1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0);
         assertThat(defendant1.getOffences().get(0).getSeedingHearing().getSeedingHearingId(), equalTo(seedingHearingId));
+    }
+
+    @Test
+    public void shouldNotReturnHearingNeedsWithSeedHearingWhenOneDefendantTwoOffencesBothApplication() {
+        final UUID seedingHearingId = randomUUID();
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID_1)
+                        .withCpsOrganisation("A01")
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                .withId(DEFENDANT_ID_1)
+                                .withOffences(Arrays.asList(Offence.offence()
+                                        .withId(OFFENCE_ID_1)
+                                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                .withNextHearing(buildNextHearingForApplication(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                .build()))
+                                        .build(),
+                                        Offence.offence()
+                                                .withId(OFFENCE_ID_2)
+                                                .withJudicialResults(Arrays.asList(
+                                                        JudicialResult.judicialResult()
+                                                                .withNextHearing(buildNextHearingForApplication(HEARING_TYPE_2, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                                .build()))
+                                                .build()))
+                                .build()))
+                        .build()
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(0));
+    }
+
+    @Test
+    public void shouldOnlyReturnOneHearingNeedsWithSeedHearingWhenOneDefendantTwoOffencesJustOneNonApplication() {
+        final UUID seedingHearingId = randomUUID();
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID_1)
+                        .withCpsOrganisation("A01")
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                .withId(DEFENDANT_ID_1)
+                                .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(OFFENCE_ID_1)
+                                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withNextHearing(buildNextHearing(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                        .build()))
+                                                .build(),
+                                        Offence.offence()
+                                                .withId(OFFENCE_ID_2)
+                                                .withJudicialResults(Arrays.asList(
+                                                        JudicialResult.judicialResult()
+                                                                .withNextHearing(buildNextHearingForApplication(HEARING_TYPE_2, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                                .build()))
+                                                .build()))
+                                .build()))
+                        .build()
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+
+        assertThat(hearingListingNeedsList.get(0).getType().getId(), is(HEARING_TYPE_1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(OFFENCE_ID_1));
+    }
+
+    @Test
+    public void shouldNotReturnHearingNeedsWithSeedHearingWhenTwoDefendantsAllOffencesBothApplication() {
+        final UUID seedingHearingId = randomUUID();
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID_1)
+                        .withCpsOrganisation("A01")
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                .withId(DEFENDANT_ID_1)
+                                .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(OFFENCE_ID_1)
+                                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withNextHearing(buildNextHearingForApplication(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                        .build()))
+                                                .build()))
+                                .build(),
+                                Defendant.defendant()
+                                        .withId(DEFENDANT_ID_2)
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                        .withId(OFFENCE_ID_2)
+                                                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                                .withNextHearing(buildNextHearingForApplication(HEARING_TYPE_2, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                                .build()))
+                                                        .build()))
+                                        .build()))
+                        .build()
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnHearingNeedsWithSeedHearingWhenTwoDefendantsOneOffenceIsNonApplication() {
+        final UUID seedingHearingId = randomUUID();
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearingWithNextDayAsHearingDays(Arrays.asList(
+                ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID_1)
+                        .withCpsOrganisation("A01")
+                        .withDefendants(Arrays.asList(Defendant.defendant()
+                                        .withId(DEFENDANT_ID_1)
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(OFFENCE_ID_1)
+                                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withNextHearing(buildNextHearingForApplication(HEARING_TYPE_1, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                        .build()))
+                                                .build()))
+                                        .build(),
+                                Defendant.defendant()
+                                        .withId(DEFENDANT_ID_2)
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(OFFENCE_ID_2)
+                                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withNextHearing(buildNextHearing(HEARING_TYPE_2, null, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+                                                        .build()))
+                                                .build()))
+                                        .build()))
+                        .build()
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transformWithSeedHearing(hearing, Optional.empty(), SeedingHearing.seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build(), null);
+
+        assertThat(hearingListingNeedsList.size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getType().getId(), is(HEARING_TYPE_2));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0).getId(), is(DEFENDANT_ID_2));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(OFFENCE_ID_2));
     }
 
     @Test

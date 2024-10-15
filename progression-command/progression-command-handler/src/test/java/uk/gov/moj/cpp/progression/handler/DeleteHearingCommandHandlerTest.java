@@ -7,10 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -50,16 +48,18 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DeleteHearingCommandHandlerTest {
 
     @Spy
@@ -89,14 +89,6 @@ public class DeleteHearingCommandHandlerTest {
     @Spy
     private DeleteHearingCommandHandler deleteHearingCommandHandler;
 
-    @Before
-    public void setup() {
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-    }
-
     @Test
     public void shouldHandleDeleteHearing() throws EventStreamException {
         final UUID hearingId = UUID.randomUUID();
@@ -113,6 +105,10 @@ public class DeleteHearingCommandHandlerTest {
         final Envelope<DeleteHearing> envelope = envelopeFrom(metadata, DeleteHearing.deleteHearing()
                 .withHearingId(hearingId)
                 .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         when(hearingAggregate.deleteHearing(eq(hearingId)))
                 .thenReturn(Stream.of(HearingDeleted.hearingDeleted()
                         .withProsecutionCaseIds(caseIds)
@@ -152,14 +148,13 @@ public class DeleteHearingCommandHandlerTest {
                 .build());
 
         hearingAggregate = new HearingAggregate();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         // Set hearing was deleted
         hearingAggregate.apply(HearingDeleted.hearingDeleted()
                 .withProsecutionCaseIds(caseIds)
                 .withHearingId(hearingId)
                 .build());
-
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         deleteHearingCommandHandler.handleDeleteHearing(envelope);
 
@@ -187,6 +182,10 @@ public class DeleteHearingCommandHandlerTest {
                 .withHearingId(hearingId)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
         when(caseAggregate.deleteHearingRelatedToProsecutionCase(eq(hearingId), eq(prosecutionCaseId)))
                 .thenReturn(Stream.of(HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
                         .withProsecutionCaseId(prosecutionCaseId)
@@ -224,6 +223,9 @@ public class DeleteHearingCommandHandlerTest {
                 .withCourtApplicationId(courtApplicationId)
                 .build());
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
         when(applicationAggregate.deleteHearingRelatedToCourtApplication(eq(hearingId), eq(courtApplicationId)))
                 .thenReturn(Stream.of(HearingDeletedForCourtApplication.hearingDeletedForCourtApplication()
                         .withCourtApplicationId(courtApplicationId)
@@ -250,6 +252,8 @@ public class DeleteHearingCommandHandlerTest {
         final UUID prosecutionCase1Id = UUID.randomUUID();
         final UUID prosecutionCase2Id = UUID.randomUUID();
         hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         final List<UUID> caseIds = Arrays.asList(prosecutionCase1Id, prosecutionCase2Id);
 
         final Hearing hearing = getHearing(hearingId, prosecutionCase1Id, prosecutionCase2Id);
@@ -276,8 +280,6 @@ public class DeleteHearingCommandHandlerTest {
                 .withHearingId(hearingId)
                 .build());
 
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-
         deleteHearingCommandHandler.handleRemoveDeletedHearingChildEntriesOnlyByBdf(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -301,6 +303,8 @@ public class DeleteHearingCommandHandlerTest {
         final Envelope<DeleteHearing> envelope = envelopeFrom(metadata, DeleteHearing.deleteHearing()
                 .withHearingId(hearingId)
                 .build());
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         when(hearingAggregate.deleteHearingOnlyByBdf(eq(hearingId)))
                 .thenReturn(Stream.of(HearingDeleted.hearingDeleted()
                         .withHearingId(hearingId)
@@ -352,7 +356,8 @@ public class DeleteHearingCommandHandlerTest {
         final Envelope<DecreaseListingNumberForProsecutionCase> envelope = envelopeFrom(metadata, DecreaseListingNumberForProsecutionCase.decreaseListingNumberForProsecutionCase()
                 .withProsecutionCaseId(caseId)
                 .build());
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.decreaseListingNumbers(any()))
                 .thenReturn(Stream.of(ProsecutionCaseListingNumberDecreased.prosecutionCaseListingNumberDecreased()
                         .withProsecutionCaseId(caseId)

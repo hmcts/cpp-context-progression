@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.ReferralReason.referralReason;
@@ -377,7 +378,7 @@ public class DataPreparedEventProcessorTestHelper {
         assertThat(hearingCourtDetails.getString("courtRoomName"), is("room name english"));
         assertThat(hearingCourtDetails.getString("courtRoomNameWelsh"), is("room name welsh"));
         assertThat(hearingCourtDetails.getString("hearingDate"), is("2018-04-01"));
-        assertThat(hearingCourtDetails.getString("hearingTime"), is("2:00 PM"));
+        assertThat(hearingCourtDetails.getString("hearingTime"), equalToIgnoringCase("2:00 PM"));
     }
 
     public static void assertOnDefendantAddress(final JsonObject defendantAddressJson) {

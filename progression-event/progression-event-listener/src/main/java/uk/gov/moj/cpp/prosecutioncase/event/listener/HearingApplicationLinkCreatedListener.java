@@ -143,8 +143,6 @@ public class HearingApplicationLinkCreatedListener {
         HearingApplicationEntity hearingApplicationEntity = repository.findBy(hearingApplicationKey);
         hearingApplicationEntity = hearingApplicationEntity == null ? new HearingApplicationEntity() : hearingApplicationEntity;
         hearingApplicationEntity.setId(hearingApplicationKey);
-        hearingApplicationEntity.getId().setApplicationId(applicationId);
-        hearingApplicationEntity.getId().setHearingId(hearingFromEvent.getId());
         hearingApplicationEntity.setHearing(hearingEntity);
         return hearingApplicationEntity;
     }

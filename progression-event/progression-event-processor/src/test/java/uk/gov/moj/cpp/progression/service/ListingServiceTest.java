@@ -8,9 +8,9 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -66,19 +66,18 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings({"squid:S1607", "unused"})
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ListingServiceTest {
 
     private static final String LISTING_COMMAND_SEND_CASE_FOR_LISTING = "listing.command.list-court-hearing";
@@ -107,7 +106,7 @@ public class ListingServiceTest {
     @Mock
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -135,9 +134,6 @@ public class ListingServiceTest {
 
         listingService.listCourtHearing(jsonEnvelope, listCourtHearing);
 
-        when(enveloper.withMetadataFrom(envelopeReferral, LISTING_COMMAND_SEND_CASE_FOR_LISTING)).thenReturn(objectJsonEnvelopeFunction);
-        when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelopeListCourtHearing);
-
         verify(sender).send(envelopeArgumentCaptor.capture());
         final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();
         assertThat(metadata.name(), is(LISTING_COMMAND_SEND_CASE_FOR_LISTING));
@@ -162,15 +158,9 @@ public class ListingServiceTest {
                 listCourtHearingJson);
 
 
-        when(objectToJsonObjectConverter.convert(any(ListCourtHearing.class)))
-                .thenReturn(listCourtHearingJson);
-
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
         listingService.listUnscheduledHearings(jsonEnvelope, listCourtHearing);
-
-        when(enveloper.withMetadataFrom(envelopeReferral, LISTING_COMMAND_SEND_UNSCHEDULED_COURT_HEARING)).thenReturn(objectJsonEnvelopeFunction);
-        when(objectJsonEnvelopeFunction.apply(any(JsonObject.class))).thenReturn(envelopeListCourtHearing);
 
         verify(sender).send(envelopeArgumentCaptor.capture());
         final Metadata metadata = envelopeArgumentCaptor.getValue().metadata();

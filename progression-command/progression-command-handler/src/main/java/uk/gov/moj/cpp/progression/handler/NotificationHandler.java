@@ -97,12 +97,14 @@ public class NotificationHandler {
 
         if (nonNull(emailNotification.getCaseId())) {
             appendAggregateEvents(command, emailNotification.getCaseId(), CaseAggregate.class,
-                    aggregate -> aggregate.recordEmailRequest(emailNotification.getCaseId(), emailNotification.getMaterialId(), emailNotification.getNotifications()));
+                    aggregate -> aggregate.recordEmailRequest(emailNotification.getCaseId(),
+                            emailNotification.getMaterialId(), emailNotification.getNotifications()));
         }
 
         if (nonNull(emailNotification.getApplicationId())) {
             appendAggregateEvents(command, emailNotification.getApplicationId(), ApplicationAggregate.class,
-                    aggregate -> aggregate.recordEmailRequest(emailNotification.getApplicationId(), emailNotification.getMaterialId(), emailNotification.getNotifications()));
+                    aggregate -> aggregate.recordEmailRequest(emailNotification.getApplicationId(),
+                            emailNotification.getMaterialId(), emailNotification.getNotifications()));
         }
 
         if (!payload.containsKey(CASE_ID) && !payload.containsKey(APPLICATION_ID) && payload.containsKey(MATERIAL_ID)) {

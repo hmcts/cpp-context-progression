@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.command.request-related-hearing-for-adhoc-hearing.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCase": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+    },
+    "listNewHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json#"
+    },
+    "sendNotificationToParties": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "listNewHearing",
+    "prosecutionCase"
+  ],
+  "additionalProperties": false
+}

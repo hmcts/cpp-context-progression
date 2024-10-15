@@ -1,19 +1,20 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+
 import uk.gov.justice.core.courts.ConfirmedDefendant;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
@@ -33,34 +34,29 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.progression.service.PartialHearingConfirmService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
-import javax.json.JsonObject;
-import java.util.Arrays;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import javax.json.JsonObject;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class ExtendedHearingProcessorTest {
 
@@ -103,7 +99,7 @@ public class ExtendedHearingProcessorTest {
     @Spy
     private PartialHearingConfirmService partialHearingConfirmService = new PartialHearingConfirmService();
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -120,7 +116,6 @@ public class ExtendedHearingProcessorTest {
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingExtendedProcessed.class)).thenReturn(hearingExtendedProcessed);
         when(objectToJsonObjectConverter.convert(Mockito.any(CourtApplication.class))).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), eq(Hearing.class))).thenReturn(Hearing.hearing().build());
         when(hearingExtendedProcessed.getHearingRequest()).thenReturn(hearingListingNeeds);
         when(hearingExtendedProcessed.getHearing()).thenReturn(Hearing.hearing().build());
 
@@ -128,7 +123,7 @@ public class ExtendedHearingProcessorTest {
                 jsonEnvelope.payloadAsJsonObject());
         this.eventProcessor.processed(event);
         verify(sender).send(senderJsonEnvelopeCaptor.capture());
-        verify(progressionService).updateDefendantYouthForProsecutionCase(any(), anyList());
+        verify(progressionService).updateDefendantYouthForProsecutionCase(any(), any());
 
         assertThat(senderJsonEnvelopeCaptor.getValue().metadata().name(), is("public.progression.events.hearing-extended"));
     }
@@ -144,8 +139,6 @@ public class ExtendedHearingProcessorTest {
 
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), HearingExtendedProcessed.class)).thenReturn(hearingExtendedProcessed);
-        when(objectToJsonObjectConverter.convert(Mockito.any(CourtApplication.class))).thenReturn(payload);
-        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), eq(Hearing.class))).thenReturn(Hearing.hearing().build());
         when(hearingExtendedProcessed.getHearingRequest()).thenReturn(hearingListingNeeds);
         when(hearingExtendedProcessed.getHearing()).thenReturn(Hearing.hearing().build());
         final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("progression.event.hearing-extended-processed"),
@@ -235,7 +228,6 @@ public class ExtendedHearingProcessorTest {
                 .build();
         when(progressionService.retrieveHearing(any(), any())).thenReturn(storedHearing);
         when(jsonObjectToObjectConverter.convert(any(), eq(CaseAddedToHearing.class))).thenReturn(caseAddedToHearing);
-        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(storedHearing);
         this.eventProcessor.addCasesToUnAllocatedHearing(event);
 
         verify(sender, times(2)).send(senderJsonEnvelopeCaptor.capture());

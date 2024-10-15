@@ -9,7 +9,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefendantDetailsExtractorTest {
 

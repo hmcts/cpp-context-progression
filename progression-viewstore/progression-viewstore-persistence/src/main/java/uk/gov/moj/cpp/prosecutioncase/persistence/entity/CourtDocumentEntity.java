@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.entity;
 
-import uk.gov.moj.cpp.progression.persistence.entity.BooleanTFConverter;
-
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.BooleanUtils.toBooleanDefaultIfNull;
+
+import uk.gov.moj.cpp.progression.persistence.entity.BooleanTFConverter;
 
 import java.io.Serializable;
 import java.util.HashSet;

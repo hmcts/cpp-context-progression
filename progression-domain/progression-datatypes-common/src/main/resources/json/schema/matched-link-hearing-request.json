@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/hearing-request.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "listHearingRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/listHearingRequest.json#"
+    },
+
+    "isNewHearing": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "listHearingRequest",
+    "isNewHearing"
+  ],
+  "additionalProperties": false
+}

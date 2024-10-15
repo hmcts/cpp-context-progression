@@ -2,12 +2,13 @@ package uk.gov.moj.cpp.progression.query;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -25,15 +26,14 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class CaseNotesQueryViewTest {
 
     private static final UUID ID = randomUUID();
@@ -53,7 +53,7 @@ public class CaseNotesQueryViewTest {
     private CaseNotesQueryView caseNotesQueryView;
 
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
@@ -68,7 +68,7 @@ public class CaseNotesQueryViewTest {
         final JsonEnvelope envelope = caseNotesQueryView.getCaseNotes(jsonEnvelope);
 
         //Then
-        Assert.assertThat(envelope, jsonEnvelope(metadata().withName("progression.query.case-notes"),
+        assertThat(envelope, jsonEnvelope(metadata().withName("progression.query.case-notes"),
                 payload().isJson(allOf(
                         withJsonPath("$.caseNotes[0].author.firstName", Matchers.equalTo("Bob")),
                         withJsonPath("$.caseNotes[0].id", Matchers.equalTo(ID.toString())),

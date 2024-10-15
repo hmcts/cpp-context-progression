@@ -1,39 +1,42 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.FIVE_HUNDRED_MILLISECONDS;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper.OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
-import java.io.IOException;
-import java.time.LocalDate;
+import java.time.Duration;
 
-import com.jayway.awaitility.Duration;
 import org.hamcrest.Matcher;
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
+
+    private static final JmsMessageConsumerClient publicEventsConsumerForOffencesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-offences-updated").getMessageConsumerClient();
 
     private ProsecutionCaseUpdateOffencesHelper helper;
     private String caseId;
     private String defendantId;
     private String offenceId;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -61,8 +64,8 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.updateOffences();
 
         // then
-        helper.verifyInActiveMQ();
-        helper.verifyInMessagingQueueForOffencesUpdated();
+        helper.verifyInActiveMQ(privateEventsConsumer);
+        helper.verifyInMessagingQueueForOffencesUpdated(publicEventsConsumerForOffencesUpdated);
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is(OFFENCE_CODE)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceFacts.alcoholReadingMethodCode", is("B")),
@@ -95,10 +98,11 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
 
     @Test
     public void shouldUpdateVerdictForOffence() throws Exception {
+        final JmsMessageConsumerClient consumerForDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed").getMessageConsumerClient();
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
-        await().atMost(Duration.ONE_MINUTE).pollInterval(FIVE_HUNDRED_MILLISECONDS).until(() -> {
+        await().atMost(Duration.ofMinutes(1)).pollInterval(Duration.ofMillis(500)).until(() -> {
             final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
                     singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))
             );
@@ -107,12 +111,14 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
             final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
             final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
             // Add new offence and check orderIndex is incremented
-            updateOffenceVerdictAndVerify(hearingId, orderIndex, offenceId);
+            updateOffenceVerdictAndVerify(hearingId, orderIndex, offenceId, consumerForDefendantListingStatusChanged);
+            return true;
         });
     }
 
     @Test
     public void shouldUpdatePleaForOffence() throws Exception {
+        final JmsMessageConsumerClient consumerForDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed").getMessageConsumerClient();
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
@@ -124,43 +130,41 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
         final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
         // Add new offence and check orderIndex is incremented
-        updateOffencePleaAndVerify(hearingId, orderIndex, offenceId);
+        updateOffencePleaAndVerify(hearingId, orderIndex, offenceId, consumerForDefendantListingStatusChanged);
     }
 
-
-    private void updateOffenceVerdictAndVerify(final String hearingId, final int orderIndex, final String offenceId) {
-
+    private void updateOffenceVerdictAndVerify(final String hearingId, final int orderIndex, final String offenceId, final JmsMessageConsumerClient consumerForDefendantListingStatusChanged) throws JSONException {
         // when
         helper.updateOffenceVerdict(hearingId, offenceId);
 
         final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is(offenceId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].orderIndex", is(orderIndex)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].verdict", notNullValue())
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(offenceId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].count", is(0)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].orderIndex", is(orderIndex)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].verdict", notNullValue())
         };
 
         // then
-        helper.verifyVerdictInActiveMQ(matchers);
+        helper.verifyVerdictInActiveMQ(consumerForDefendantListingStatusChanged, matchers);
     }
 
-    private void updateOffencePleaAndVerify(final String hearingId, final int orderIndex, final String offenceId) {
+    private void updateOffencePleaAndVerify(final String hearingId, final int orderIndex, final String offenceId, final JmsMessageConsumerClient consumerForDefendantListingStatusChanged) throws JSONException {
 
         // when
         helper.updateOffencePlea(hearingId, offenceId);
 
         final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is(offenceId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].orderIndex", is(orderIndex)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].plea", notNullValue())
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(offenceId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].count", is(0)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].orderIndex", is(orderIndex)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].plea", notNullValue())
         };
 
         // then
-        helper.verifyVerdictInActiveMQ(matchers);
+        helper.verifyVerdictInActiveMQ(consumerForDefendantListingStatusChanged, matchers);
     }
 
-    private void updateOffenceAndVerify(final String newOffenceId, final int orderIndex, final String offenceCode) {
+    private void updateOffenceAndVerify(final String newOffenceId, final int orderIndex, final String offenceCode) throws JSONException {
 
         final int offenceIndex = orderIndex - 1;
 
@@ -168,14 +172,14 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
         helper.updateOffences(newOffenceId, offenceCode);
 
         // then
-        helper.verifyInActiveMQ();
-        helper.verifyInMessagingQueueForOffencesUpdated();
+        helper.verifyInActiveMQ(privateEventsConsumer);
+        helper.verifyInMessagingQueueForOffencesUpdated(publicEventsConsumerForOffencesUpdated);
 
         final Matcher[] matchers = {
-                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].offenceCode", is(offenceCode)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].id", is(newOffenceId)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].count", is(1)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences["+ offenceIndex +"].orderIndex", is(orderIndex))
+                withJsonPath("$.prosecutionCase.defendants[0].offences[" + offenceIndex + "].offenceCode", is(offenceCode)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[" + offenceIndex + "].id", is(newOffenceId)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[" + offenceIndex + "].count", is(1)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[" + offenceIndex + "].orderIndex", is(orderIndex))
         };
         pollProsecutionCasesProgressionFor(caseId, matchers);
     }

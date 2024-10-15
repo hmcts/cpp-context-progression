@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -43,15 +43,15 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EnrichInitiateHearingHandlerTest {
 
     public static final String DEFENCE_REQUEST = "Defence request";
@@ -67,14 +67,6 @@ public class EnrichInitiateHearingHandlerTest {
     private AggregateService aggregateService;
     @InjectMocks
     private EnrichInitiateHearingHandler testObj;
-    private HearingAggregate aggregate;
-
-    @Before
-    public void setup() {
-        aggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
-    }
 
     @Test
     public void erichHearingInitiate() throws Exception {
@@ -103,6 +95,10 @@ public class EnrichInitiateHearingHandlerTest {
         final Envelope<CommandEnrichHearingInitiate> envelope = envelopeFrom(metadata, arbitraryInitiateObj);
 
         //When
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
         testObj.enrichHearingInitiate(envelope);
 
         //Then
@@ -125,7 +121,12 @@ public class EnrichInitiateHearingHandlerTest {
         //Given
         final CommandEnrichHearingInitiate arbitraryInitiate = generateInitiateTestObj();
         ListDefendantRequest arbitraryListDefendantRequest = generateInitiateListDefendantRequest(arbitraryInitiate);
-        aggregate.createHearingDefendantRequest(Arrays.asList(arbitraryListDefendantRequest));
+
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        hearingAggregate.createHearingDefendantRequest(Arrays.asList(arbitraryListDefendantRequest));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

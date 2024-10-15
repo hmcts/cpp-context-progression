@@ -6,6 +6,7 @@ import static java.util.UUID.fromString;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.awaitility.Awaitility.with;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -32,9 +33,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.tika.io.IOUtils;
+import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public class MaterialService {
     }
 
     public void uploadMaterial(final UUID fileServiceId, final UUID materialId, final UUID userId) {
-        if(isNull(userId)){
+        if (isNull(userId)) {
             throw new RuntimeException("UserId missing from event.");
         }
         LOGGER.info("material being uploaded '{}' file service id '{}'", materialId, fileServiceId);
@@ -106,7 +106,7 @@ public class MaterialService {
         final Metadata metadata = metadataWithNewActionName(envelope.metadata(), MATERIAL_METADETA_QUERY);
 
         final AtomicReference<JsonObject> materialMetadataView = new AtomicReference<>();
-        Awaitility.with()
+        with()
                 .ignoreException(ConditionTimeoutException.class)
                 .pollInterval(3, SECONDS)
                 .atMost(15, SECONDS)

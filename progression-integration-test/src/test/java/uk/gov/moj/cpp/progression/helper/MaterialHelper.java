@@ -2,12 +2,13 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 
@@ -33,9 +34,10 @@ public class MaterialHelper {
                 .add("context", createObjectBuilder().add(JsonMetadata.USER_ID, randomUUID().toString()))
                 .build()).build();
 
-        sendMessage(publicEvents.createPublicProducer(),
-                "material.material-added",
-                materialAddedPublicEventPayload,
-                metadata);
+
+        final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, materialAddedPublicEventPayload);
+        messageProducerClientPublic.sendMessage("material.material-added", publicEventEnvelope);
     }
 }

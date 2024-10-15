@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import javax.json.Json;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.http.HttpHeaders;
 
 public class UsersAndGroupsStub {
@@ -50,7 +52,7 @@ public class UsersAndGroupsStub {
 
 
     public static final String USERS_GROUPS_SERVICE_NAME = "usergroups-service";
-    public static final String GET_ORGANISATIONS_DETAILS_FORIDS_QUERY = BASE_QUERY + "/organisations*";
+    public static final String GET_ORGANISATIONS_DETAILS_FORIDS_QUERY = BASE_QUERY + "/organisations.*";
     public static final String GET_ORGANISATION_DETAILS_FORIDS_MEDIA_TYPE = "application/vnd.usersgroups.get-organisations-details-forids+json";
     private static final String CONTENT_TYPE_QUERY_PERMISSION = "application/vnd.usersgroups.get-logged-in-user-permissions+json";
     public static final String GET_ORGANISATIONS_DETAILS_FOR_TYPES_QUERY = BASE_QUERY + "/organisationlist";
@@ -220,7 +222,7 @@ public class UsersAndGroupsStub {
     public static void stubGetOrganisationDetailForIds(final String resourceName, final List<String> organisationIds ,final String userId ) {
         InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
         String body = getPayload(resourceName);
-        stubFor(get(urlPathMatching(GET_ORGANISATIONS_DETAILS_FORIDS_QUERY))
+        stubFor(get(urlMatching(GET_ORGANISATIONS_DETAILS_FORIDS_QUERY))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                 .withHeader(ID,randomUUID().toString())
                 .withHeader(HttpHeaders.CONTENT_TYPE,APPLICATION_JSON)
@@ -239,15 +241,16 @@ public class UsersAndGroupsStub {
     }
 
     public static void stubUserWithPermission(final String userId, final String body) {
+        removeStub(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions")));
         stubPingFor("usersgroups-service");
 
-        stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permission"))
+        stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions"))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, userId)
                         .withHeader(CONTENT_TYPE, "application/json")
                         .withBody(body)));
 
-        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permission", CONTENT_TYPE_QUERY_PERMISSION);
+        waitForStubToBeReady("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions", CONTENT_TYPE_QUERY_PERMISSION);
     }
 
 }

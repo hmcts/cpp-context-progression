@@ -3,42 +3,34 @@
     <parent>
         <artifactId>progression-domain-transformations</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>8.0.208-CCT-2047-SNAPSHOT</version>
+        <version>17.0.12-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>progression-domain-transformation-anonymise</artifactId>
-    <properties>
-        <rest-assured.version>2.5.0</rest-assured.version>
-        <stream-transformation-tool-anonymise.version>6.4.5</stream-transformation-tool-anonymise.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>uk.gov.justice</groupId>
             <artifactId>stream-transformation-tool-anonymise</artifactId>
-            <version>${stream-transformation-tool-anonymise.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.jayway.restassured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>${rest-assured.version}</version>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
-            <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path-assert</artifactId>
-            <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

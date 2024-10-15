@@ -7,6 +7,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.SeedingHearing.seedingHearing;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -61,13 +62,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class HearingAggregateTest {
 
     @Mock
@@ -933,20 +934,14 @@ public class HearingAggregateTest {
 
     @Test
     public void shouldRaiseDefendantUpdatedEventWhenTheHearingNotDeleted(){
+        final UUID hearingId = randomUUID();
         final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
 
-        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
-                .setJurisdictionType(JurisdictionType.CROWN)
-                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
-                .setConvicted(false)).build();
-        hearingAggregate.enrichInitiateHearing(hearing);
-
-
-        final List<Object> events = hearingAggregate.updateDefendant(hearing.getId(), defendantUpdate).
+        final List<Object> events = hearingAggregate.updateDefendant(hearingId, defendantUpdate).
                 collect(toList());
 
         final HearingDefendantUpdated hearingDefendantUpdated = (HearingDefendantUpdated) events.get(0);
-        assertThat(hearingDefendantUpdated.getHearingId(), is(hearing.getId()));
+        assertThat(hearingDefendantUpdated.getHearingId(), is(hearingId));
         assertThat(hearingDefendantUpdated.getDefendant(), is(defendantUpdate));
     }
 

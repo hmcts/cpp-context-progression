@@ -6,11 +6,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ID;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.RefDataService.ID;
-import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_CODE;
 import static uk.gov.moj.cpp.progression.transformer.SendingSheetCompleteTransformer.PROSECUTION_AUTHORITY_ID;
 
@@ -25,8 +25,8 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Interpreter
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Plea;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
-import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,13 +36,13 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class SendingSheetCompleteTransformerTest {
 
     private static final UUID CASE_ID = randomUUID();

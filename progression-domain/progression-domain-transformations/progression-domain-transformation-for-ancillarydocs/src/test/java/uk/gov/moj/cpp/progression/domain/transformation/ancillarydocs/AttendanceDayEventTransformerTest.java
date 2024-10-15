@@ -15,8 +15,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+@ExtendWith(MockitoExtension.class)
 import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)

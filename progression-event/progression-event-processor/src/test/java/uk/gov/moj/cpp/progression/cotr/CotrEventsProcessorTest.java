@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,17 +72,16 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CotrEventsProcessorTest {
 
     public static final String SUBMISSION_ID = "submissionId";
@@ -253,11 +252,8 @@ public class CotrEventsProcessorTest {
         when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
-        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
 
         final Metadata metadata = metadataWithNewActionName(eventEnvelopeMetadata, "progression.query.cotr.details.prosecutioncase");
-        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
-        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         processor.cotrCreated(eventEnvelope);
 
@@ -539,10 +535,6 @@ public class CotrEventsProcessorTest {
 
     @Test
     public void shouldHandleServeCotrReceivedPublicEvent() throws IOException {
-
-        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_QUERY_CASEHEARINGS);
-        final UUID caseId = randomUUID();
-
         String caseHearingpayload = Resources.toString(getResource("progression-case-hearings.json"), defaultCharset());
 
         final JsonObject caseHearingjsonPayload = jsonFromString(caseHearingpayload);
@@ -559,11 +551,8 @@ public class CotrEventsProcessorTest {
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
-        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
 
         final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
-        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
-        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -603,10 +592,8 @@ public class CotrEventsProcessorTest {
                 jsonPayload);
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
-        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
 
         final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
-        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -646,11 +633,6 @@ public class CotrEventsProcessorTest {
                 jsonPayload);
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
-        when(cotrDetailsRepository.findBy(any())).thenReturn(new COTRDetailsEntity(randomUUID(),randomUUID(),randomUUID(),false, null, null, null, null));
-
-        final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
-        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
-        when(requester.requestAsAdmin(any(), any())).thenReturn(envelope1);
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -706,8 +688,6 @@ public class CotrEventsProcessorTest {
 
     @Test
     public void shouldHandleUpdateCotrReceivedPublicEvent() throws IOException {
-        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(createCotrDetails().get());
-        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
         String payload = Resources.toString(getResource("cps-update-cotr-submitted.json"), defaultCharset());
         final JsonObject jsonPayload = jsonFromString(payload);
         final JsonEnvelope envelope = envelopeFrom(
@@ -729,10 +709,6 @@ public class CotrEventsProcessorTest {
 
     @Test
     public void shouldNotHandleUpdateCotrReceivedPublicEvent() throws IOException {
-        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_QUERY_COTR_DETAILS_PROSECUTION_CASE);
-        final UUID caseId = randomUUID();
-        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(createNoCotrDetails().get());
-        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
         String payload = Resources.toString(getResource("cps-update-cotr-submitted.json"), defaultCharset());
         final JsonObject jsonPayload = jsonFromString(payload);
         final JsonEnvelope envelope = envelopeFrom(

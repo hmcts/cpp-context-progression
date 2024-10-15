@@ -110,7 +110,6 @@ public class NotificationNotifyEventProcessor {
     @Handles("public.notificationnotify.events.notification-sent")
     public void markNotificationAsSucceeded(final JsonEnvelope event) {
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
-
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
 
         logger.info(format("2047 received public.notificationnotify.events.notification-sent with metadata originator as : %s", event.metadata().asJsonObject().getString(SOURCE)));
@@ -120,25 +119,15 @@ public class NotificationNotifyEventProcessor {
         }
 
         if (systemIdMapping.isPresent()) {
-
             notificationService.recordNotificationRequestSuccess(event, systemIdMapping.get().getTargetId(), CASE);
-
         } else {
-
             final Optional<SystemIdMapping> applicationSystemIdMapping = systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString());
-
             if (applicationSystemIdMapping.isPresent()) {
-
                 notificationService.recordNotificationRequestSuccess(event, applicationSystemIdMapping.get().getTargetId(), APPLICATION);
-
             } else {
-
                 final Optional<SystemIdMapping> materialSystemIdMapping = systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString());
-
                 if (materialSystemIdMapping.isPresent()) {
-
                     notificationService.recordNotificationRequestSuccess(event, materialSystemIdMapping.get().getTargetId(), MATERIAL);
-
                 } else {
                     logger.info(format("No Case, Application or Material found for the given notification id: %s", notificationId));
                 }
@@ -179,7 +168,7 @@ public class NotificationNotifyEventProcessor {
         final String materialId = payload.getString(MATERIAL_ID, null);
         final String completedAt = payload.getString(COMPLETED_AT, null);
 
-        if(nonNull(completedAt) && nonNull(materialId)) {
+        if (nonNull(completedAt) && nonNull(materialId)) {
             final Optional<SystemIdMapping> optionalSystemIdMapping = systemIdMapperService.getDocumentIdForMaterialId(materialId);
 
             optionalSystemIdMapping.ifPresent(mapping -> {

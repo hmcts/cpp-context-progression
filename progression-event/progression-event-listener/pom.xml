@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>8.0.208-CCT-2047-SNAPSHOT</version>
+        <version>17.0.12-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-listener</artifactId>
     <packaging>war</packaging>
@@ -36,8 +36,8 @@
 
         <!-- Test Dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -65,7 +65,6 @@
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
-            <version>2.2.1</version>
         </dependency>
 
     </dependencies>
@@ -88,7 +87,7 @@
                                 <artifactItem>
                                     <artifactId>mireportdata-progression-event-listener</artifactId>
                                     <groupId>uk.gov.moj.cpp.mi.reportdata</groupId>
-                                    <version>8.0.54</version>
+                                    <version>RELEASE</version>
                                     <classifier>listener-tests</classifier>
                                     <type>jar</type>
                                     <outputDirectory>${project.build.directory}/test-classes

@@ -7,7 +7,7 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -52,15 +52,16 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefenceOrganisationHandlerTest {
 
     @InjectMocks
@@ -129,7 +130,7 @@ public class DefenceOrganisationHandlerTest {
 
     private static final ProsecutionCase prosecutionCase = createProsecutionCase(defendants);
 
-    @Before
+    @BeforeEach
     public void setup() {
         aggregate = new CaseAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
@@ -240,7 +241,6 @@ public class DefenceOrganisationHandlerTest {
                 .build();
         final Envelope<DisassociateDefenceOrganisation> envelope = envelopeFrom(metadata, disassociateDefenceOrganisation);
 
-        when(usersGroupService.getOrganisationDetailsForOrganisationId(envelope, orgId.toString())).thenReturn(new OrganisationDetails(randomUUID(),"Org1", "test"));
         when(prosecutionCaseQueryService.getProsecutionCase(any(),any())).thenReturn(Optional.ofNullable(createProsecutionCase(prosecutionCase.getId(), defendant.getId())));
 
         when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(prosecutionCase);

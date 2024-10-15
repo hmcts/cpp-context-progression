@@ -7,7 +7,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 /**
  * 
  * @deprecated

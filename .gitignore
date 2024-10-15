@@ -1,20 +1,61 @@
-**/target/
-**/bin/
-**/.settings/
-**/.classpath
-**/.project
-**/bin
-**/.prefs
+# Java
+*.class
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.rar
+*.puml
+
+# Thumbnails
+Thumbs.db
+
+# Object files (no binaries in git repos!)
+*.obj
+*.exe
+*.so
+*.zip
+*.tar
+*.gz
+
+# Mac
+.fseventsd/
+.Spotlight-V100/
+.Trashes/
+._.Trashes
+
+# Eclipse
+.classpath
+.compatibility
+.project
+.pydevproject
+.factorypath
+.checkstyle
+.metadata/
+.settings/
+.pmd
+.springBeans
+.tern-project
 
 # IntelliJ
 .idea/
 *.iml
-*.bak
 
-# Misc.
+# Maven
+target/
+
+# Subversion
+.svn/
+
+# Misc
+*~
+*.log
+*.orig
+*.sonar
+deployWars.sh
+buildContexts.sh
+
+
+lightning-jenkins.properties
 **/.DS_Store
-**/out/
-**/.vscode/
-dump.rdb
-**/obj/
-

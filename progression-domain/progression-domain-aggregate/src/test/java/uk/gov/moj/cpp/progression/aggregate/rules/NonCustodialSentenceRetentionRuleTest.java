@@ -7,7 +7,7 @@ import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyType.NON
 
 import uk.gov.justice.core.courts.JurisdictionType;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class NonCustodialSentenceRetentionRuleTest {
 

@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -21,15 +21,15 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DeleteDefendantFinancialMeansHandlerTest {
 
     @Mock
@@ -48,19 +48,9 @@ public class DeleteDefendantFinancialMeansHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             FinancialMeansDeleted.class);
 
-    private CaseAggregate aggregate;
-
     private static final UUID CASE_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a77");
 
     private static final UUID DEFENDANT_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a88");
-
-    @Before
-    public void setup() {
-        aggregate = new CaseAggregate();
-        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
-    }
-
 
     @Test
     public void shouldHandleCommand() {
@@ -85,6 +75,10 @@ public class DeleteDefendantFinancialMeansHandlerTest {
                 .build();
 
         final Envelope<DeleteFinancialMeans> envelope = envelopeFrom(metadata, deleteFinancialMeans);
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(CASE_ID)).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
         deleteDefendantFinancialMeansHandler.handle(envelope);
 

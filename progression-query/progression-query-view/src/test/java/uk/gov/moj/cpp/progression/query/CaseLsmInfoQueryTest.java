@@ -2,18 +2,17 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -42,15 +41,14 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseLsmInfoQueryTest {
     private static final UUID MASTER_DEFENDANT_1 = fromString("b44fa9bb-dc36-4375-83a9-ff1bc4cd4374");
     private static final UUID MASTER_DEFENDANT_2 = fromString("1f1fba3c-34ee-454e-b3be-5fb845b2de4a");
@@ -86,7 +84,7 @@ public class CaseLsmInfoQueryTest {
     private JsonEnvelope envelope;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         JsonObject payload = Json.createObjectBuilder()
                 .add("caseId", randomUUID().toString())
@@ -99,21 +97,7 @@ public class CaseLsmInfoQueryTest {
         prosecutionCaseEntity.setCaseId(randomUUID());
         when(prosecutionCaseRepository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
 
-        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(Hearing.hearing().build());
-
         when(jsonObjectToObjectConverter.convert(any(), eq(ProsecutionCase.class))).thenReturn(createProsecutionCase(RELATED_URN));
-
-        when(caseLsmInfoConverter.convertMatchedCaseDefendants(anyList(), any(), any()))
-                .thenReturn(Json.createArrayBuilder().add(
-                        Json.createObjectBuilder()
-                                .add("masterDefendantId", MASTER_DEFENDANT_1.toString())
-                ));
-
-        when(caseLsmInfoConverter.convertRelatedCaseDefendants(anyList(), any()))
-                .thenReturn(Json.createArrayBuilder().add(
-                        Json.createObjectBuilder()
-                                .add("masterDefendantId", MASTER_DEFENDANT_1.toString())
-                ));
 
     }
 
@@ -130,8 +114,8 @@ public class CaseLsmInfoQueryTest {
         when(caseLinkSplitMergeRepository.findByCaseId(any()))
                 .thenReturn(new ArrayList<>());
 
-        when(caseDefendantHearingRepository.findByCaseId(any()))
-                .thenReturn(new ArrayList<>());
+        when(caseLsmInfoConverter.convertMatchedCaseDefendants(any(),any(),any()))
+                .thenReturn(Json.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -160,8 +144,6 @@ public class CaseLsmInfoQueryTest {
                 .thenReturn(new ArrayList<>());
         when(caseLinkSplitMergeRepository.findByCaseId(any()))
                 .thenReturn(new ArrayList<>());
-        when(caseDefendantHearingRepository.findByCaseId(any()))
-                .thenReturn(new ArrayList<>());
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
 
@@ -185,6 +167,9 @@ public class CaseLsmInfoQueryTest {
 
         when(caseDefendantHearingRepository.findByCaseId(any()))
                 .thenReturn(Arrays.asList(createCaseDefendantHearingEntity()));
+
+        when(caseLsmInfoConverter.convertRelatedCaseDefendants(any(),any()))
+                .thenReturn(Json.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -211,6 +196,8 @@ public class CaseLsmInfoQueryTest {
 
         when(caseDefendantHearingRepository.findByCaseId(any()))
                 .thenReturn(Arrays.asList(createCaseDefendantHearingEntity()));
+
+        when(caseLsmInfoConverter.convertRelatedCaseDefendants(any(),any())).thenReturn(Json.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -245,8 +232,8 @@ public class CaseLsmInfoQueryTest {
         when(caseLinkSplitMergeRepository.findByCaseId(any()))
                 .thenReturn(new ArrayList<>());
 
-        when(caseDefendantHearingRepository.findByCaseId(any()))
-                .thenReturn(new ArrayList<>());
+        when(caseLsmInfoConverter.convertMatchedCaseDefendants(any(),any(),any()))
+                .thenReturn(Json.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -273,8 +260,8 @@ public class CaseLsmInfoQueryTest {
         when(caseLinkSplitMergeRepository.findByCaseId(any()))
                 .thenReturn(new ArrayList<>());
 
-        when(caseDefendantHearingRepository.findByCaseId(any()))
-                .thenReturn(new ArrayList<>());
+        when(caseLsmInfoConverter.convertMatchedCaseDefendants(any(),any(),any()))
+                .thenReturn(Json.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
