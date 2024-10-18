@@ -29,9 +29,11 @@ pool:
     - identifier -equals centos8-j17
 
 variables:
-  sonarqubeProject: "" # update eg: uk.gov.moj.cpp.listing:listing-parent
-  service_Name: '' # this should be service name. Image repository will be <serviceName>-service and should be in sysnc with aks-deploy repo.. eg : stagingbulkscan, hearing, systemidmapper
-  itTest_Folder: '' # integration test folder name system-id-mapper-integration-test
+  sonarqubeProject: "uk.gov.moj.cpp.listing:listing-parent"
+  service_Name: 'progression'
+  itTest_Folder: 'progression-integration-test'
+  LANG : 'en_GB.UTF-8'
+  LC_ALL : 'en_GB.UTF-8'
 
 stages:
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:

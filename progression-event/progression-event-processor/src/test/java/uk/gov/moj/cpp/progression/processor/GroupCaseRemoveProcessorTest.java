@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;

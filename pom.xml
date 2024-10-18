@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.21.11</version>
+        <version>17.21.22</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -70,7 +70,7 @@
         <usersgroups.version>17.0.19</usersgroups.version>
         <defence.version>17.0.16</defence.version>
         <referencedata.offence.version>17.0.17</referencedata.offence.version>
-        <coredomain.version>17.21.12</coredomain.version>
+        <coredomain.version>17.21.13</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.1</results.version>
@@ -96,6 +96,7 @@
         <powermock-reflect>2.0.2</powermock-reflect>
         <byte-buddy.version>1.12.22</byte-buddy.version>
         <podam>7.1.0.RELEASE</podam>
+        <jgitflow.maven.developBranchName>main</jgitflow.maven.developBranchName>
     </properties>
     <build>
         <plugins>

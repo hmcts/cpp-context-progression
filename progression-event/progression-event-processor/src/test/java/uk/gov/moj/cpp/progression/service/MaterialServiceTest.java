@@ -7,6 +7,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -23,7 +24,6 @@ import static uk.gov.moj.cpp.progression.service.MaterialService.MATERIAL_METADE
 import uk.gov.justice.core.courts.CourtsDocumentUploaded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
@@ -42,18 +42,13 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -193,7 +188,7 @@ public class MaterialServiceTest {
         //when
         final JsonEnvelope envelope = envelope().with(metadataWithRandomUUID(MATERIAL_METADETA_QUERY))
                 .build();
-        final ConditionTimeoutException conditionTimeoutException = Assert.assertThrows(ConditionTimeoutException.class, () -> service.getMaterialMetadataV2(envelope, materialId));
+        final ConditionTimeoutException conditionTimeoutException = assertThrows(ConditionTimeoutException.class, () -> service.getMaterialMetadataV2(envelope, materialId));
 
         //then
         MatcherAssert.assertThat(conditionTimeoutException, notNullValue());
