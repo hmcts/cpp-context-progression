@@ -1,7 +1,6 @@
 # CPP progression context
 # Wildfly 10 configuration 
 
-
 * Use `standalone-progression.xml`:
 
     `bin/standalone.sh -c standalone-progression.xml 
