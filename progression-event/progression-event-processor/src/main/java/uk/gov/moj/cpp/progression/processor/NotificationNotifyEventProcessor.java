@@ -112,7 +112,7 @@ public class NotificationNotifyEventProcessor {
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
 
-        logger.info(format("2047 received public.notificationnotify.events.notification-sent with metadata originator as : %s", event.metadata().asJsonObject().getString(SOURCE)));
+        logger.info(format(">> received public.notificationnotify.events.notification-sent with metadata originator as : %s", event.metadata().asJsonObject().getString(SOURCE)));
         logger.info("2047 received public.notificationnotify.events.notification-sent with PAYLOAD : {}", event.payloadAsJsonObject());
         if (event.metadata().asJsonObject().containsKey(SOURCE) && SourceType.EMAIL.toString().equalsIgnoreCase(event.metadata().asJsonObject().getString(SOURCE))) {
             generateAndAddEmailDocument(event);
