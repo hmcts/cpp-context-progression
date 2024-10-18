@@ -23,10 +23,6 @@ resources:
       endpoint: 'hmcts'
       ref: 'main'
 
-variables:
-  LANG : 'en_GB.UTF-8'
-  LC_ALL : 'en_GB.UTF-8'
-
 pool:
   name: "MDV-ADO-AGENT-AKS-01"
   demands:
@@ -36,6 +32,8 @@ variables:
   sonarqubeProject: "uk.gov.moj.cpp.listing:listing-parent"
   service_Name: 'progression'
   itTest_Folder: 'progression-integration-test'
+  LANG : 'en_GB.UTF-8'
+  LC_ALL : 'en_GB.UTF-8'
 
 stages:
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
