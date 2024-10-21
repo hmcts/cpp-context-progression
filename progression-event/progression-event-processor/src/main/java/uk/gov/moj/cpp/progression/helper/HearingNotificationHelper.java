@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -87,10 +86,10 @@ public class HearingNotificationHelper {
     public static final String OFFENCE_TITLE = "title";
     private static final String HEARING_DATE_PATTERN = "dd/MM/yyy HH:mm a";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSS");
-    private static final Map<String, String> welshTemplateResolverMap = ImmutableMap.of("AmendedHearingNotification","BilingualAmendedHearingNotification",
-            "NewHearingNotification","BilingualNewHearingNotification");
+    private static final Map<String, String> welshTemplateResolverMap = ImmutableMap.of("AmendedHearingNotification", "BilingualAmendedHearingNotification",
+            "NewHearingNotification", "BilingualNewHearingNotification");
 
-    private static final String DOCUMENT_TYPE_DESCRIPTION = "Electronic Notifications" ;
+    private static final String DOCUMENT_TYPE_DESCRIPTION = "Electronic Notifications";
     private static final UUID CASE_DOCUMENT_TYPE_ID = fromString("f471eb51-614c-4447-bd8d-28f9c2815c9e");
     private static final String APPLICATION_PDF = "application/pdf";
 
@@ -227,13 +226,11 @@ public class HearingNotificationHelper {
                 .build();
     }
 
-    private void sendNotificationToDefendantOrganisation(final HearingNotificationInputData hearingNotificationInputData,  JsonEnvelope jsonEnvelope, final UUID caseId, final DefenceOrganisationVO defenceOrganisationVO,
+    private void sendNotificationToDefendantOrganisation(final HearingNotificationInputData hearingNotificationInputData, JsonEnvelope jsonEnvelope, final UUID caseId, final DefenceOrganisationVO defenceOrganisationVO,
                                                          final UUID materialId, final String materialUrl, final UUID notificationId) {
         if (isNotEmpty(defenceOrganisationVO.getEmail())) {
-            jsonEnvelope = getJsonEnvelopeWithSourceUpdated(jsonEnvelope, SourceType.EMAIL.name());
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO.getEmail(), materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
-            jsonEnvelope = getJsonEnvelopeWithSourceUpdated(jsonEnvelope, SourceType.LETTER.name());
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
         }
     }
@@ -250,10 +247,8 @@ public class HearingNotificationHelper {
                 && nonNull(personDefendant.getPersonDetails().getContact())
                 && nonNull(personDefendant.getPersonDetails().getContact().getPrimaryEmail())) {
             final String defendantEmail = personDefendant.getPersonDetails().getContact().getPrimaryEmail();
-            jsonEnvelope = getJsonEnvelopeWithSourceUpdated(jsonEnvelope, SourceType.EMAIL.name());
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defendantEmail, materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
-            jsonEnvelope = getJsonEnvelopeWithSourceUpdated(jsonEnvelope, SourceType.LETTER.name());
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
         }
     }
@@ -265,10 +260,8 @@ public class HearingNotificationHelper {
                 && nonNull(legalEntityDefendant.getOrganisation().getContact())
                 && nonNull(legalEntityDefendant.getOrganisation().getContact().getPrimaryEmail())) {
             final String orgDefendantEmail = legalEntityDefendant.getOrganisation().getContact().getPrimaryEmail();
-            jsonEnvelope = getJsonEnvelopeWithSourceUpdated(jsonEnvelope, SourceType.EMAIL.name());
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, orgDefendantEmail, materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
-            jsonEnvelope = getJsonEnvelopeWithSourceUpdated(jsonEnvelope, SourceType.LETTER.name());
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
         }
     }
@@ -367,7 +360,7 @@ public class HearingNotificationHelper {
                 .withCourtAddress(buildPostalAddress(enrichedCourtCentre.getAddress(), false))
                 .withHearingTime(hearingNotificationInputData.getHearingDateTime().toLocalTime().toString());
 
-        if(enrichedCourtCentre.getWelshCourtCentre()){
+        if (enrichedCourtCentre.getWelshCourtCentre()) {
             postalHearingCourtDetailsBuilder.withCourtAddressWelsh(buildPostalAddress(enrichedCourtCentre.getWelshAddress(), enrichedCourtCentre.getWelshCourtCentre()));
         }
         List<CaseOffence> offenceList = new ArrayList<>();

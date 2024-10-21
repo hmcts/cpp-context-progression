@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 public class NotificationNotifyEventProcessor {
 
     private static final String NOTIFICATION_ID = "notificationId";
+    private static final String SOURCE_TYPE = "sourceType";
     private static final String MATERIAL_ID = "materialId";
     private static final String COMPLETED_AT = "completedAt";
     private static final String EMAIL_DOCUMENT_TEMPLATE_NAME = "HearingEmailNotification";
@@ -110,11 +111,12 @@ public class NotificationNotifyEventProcessor {
     @Handles("public.notificationnotify.events.notification-sent")
     public void markNotificationAsSucceeded(final JsonEnvelope event) {
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
+        final String sourceType = event.payloadAsJsonObject().getString(SOURCE_TYPE);
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
 
         logger.info(format(">> received public.notificationnotify.events.notification-sent with metadata originator as : %s", event.metadata().asJsonObject().getString(SOURCE)));
-        logger.info("2047 received public.notificationnotify.events.notification-sent with PAYLOAD : {}", event.payloadAsJsonObject());
-        if (event.metadata().asJsonObject().containsKey(SOURCE) && SourceType.EMAIL.toString().equalsIgnoreCase(event.metadata().asJsonObject().getString(SOURCE))) {
+        logger.info("2047 received public.notificationnotify.events.notification-sent with PAYLOAD : {}", event.payloadAsJsonObject().getJsonNumber(""));
+        if (SourceType.EMAIL.getName().equalsIgnoreCase(sourceType)) {
             generateAndAddEmailDocument(event);
         }
 

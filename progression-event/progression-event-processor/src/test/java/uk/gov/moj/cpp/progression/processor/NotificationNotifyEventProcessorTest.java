@@ -120,7 +120,9 @@ public class NotificationNotifyEventProcessorTest {
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
         final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
-                .withPayloadOf(notificationId.toString(), "notificationId").build();
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf("Letter","sourceType")
+                .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
@@ -134,7 +136,9 @@ public class NotificationNotifyEventProcessorTest {
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
         final JsonEnvelope letterNotification = envelope()
-                .withPayloadOf(notificationId.toString(), "notificationId").build();
+                .withPayloadOf(notificationId.toString(), "notificationId")
+
+                .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(Optional.empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
 
@@ -164,7 +168,7 @@ public class NotificationNotifyEventProcessorTest {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
-        final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("EMAIL"))
+        final JsonEnvelope emailNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("EMAIL"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf("defendant", "recipientType")
                 .withPayloadOf(notificationId.toString(), "caseId")
@@ -172,17 +176,18 @@ public class NotificationNotifyEventProcessorTest {
                 .withPayloadOf("emailSubject", "emailSubject")
                 .withPayloadOf("sendToAddress@gmail.com", "sendToAddress")
                 .withPayloadOf("replyToAddress@gmail.com", "replyToAddress")
+                .withPayloadOf("Email","sourceType")
                 .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
-        doNothing().when(documentGeneratorService).generateNonNowDocument(eq(letterNotification), any(JsonObject.class), anyString(), any(), anyString());
-        doNothing().when(hearingNotificationHelper).addCourtDocument(eq(letterNotification),any(), any(), anyString() );
+        doNothing().when(documentGeneratorService).generateNonNowDocument(eq(emailNotification), any(JsonObject.class), anyString(), any(), anyString());
+        doNothing().when(hearingNotificationHelper).addCourtDocument(eq(emailNotification),any(), any(), anyString() );
 
-        notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
+        notificationNotifyEventProcessor.markNotificationAsSucceeded(emailNotification);
 
-        verify(notificationService).recordNotificationRequestSuccess(letterNotification, systemIdMapping.get().getTargetId(), APPLICATION);
-        verify(documentGeneratorService).generateNonNowDocument(eq(letterNotification), any(JsonObject.class), anyString(), any(), anyString());
-        verify(hearingNotificationHelper).addCourtDocument(eq(letterNotification),any(), any(), anyString());
+        verify(notificationService).recordNotificationRequestSuccess(emailNotification, systemIdMapping.get().getTargetId(), APPLICATION);
+        verify(documentGeneratorService).generateNonNowDocument(eq(emailNotification), any(JsonObject.class), anyString(), any(), anyString());
+        verify(hearingNotificationHelper).addCourtDocument(eq(emailNotification),any(), any(), anyString());
     }
 
     @Test
@@ -191,7 +196,9 @@ public class NotificationNotifyEventProcessorTest {
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
 
         final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
-                .withPayloadOf(notificationId.toString(), "notificationId").build();
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf("letter","sourceType")
+                .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
@@ -206,7 +213,9 @@ public class NotificationNotifyEventProcessorTest {
         final UUID notificationId = randomUUID();
 
         final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
-                .withPayloadOf(notificationId.toString(), "notificationId").build();
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf("letter","sourceType")
+                .build();
 
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
 

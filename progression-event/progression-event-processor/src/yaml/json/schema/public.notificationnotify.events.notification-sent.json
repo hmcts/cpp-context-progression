@@ -35,6 +35,9 @@
     },
     "clientContext": {
       "type": "string"
+    },
+    "sourceType": {
+      "type": "string"
     }
   },
   "required": [
