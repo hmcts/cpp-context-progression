@@ -200,7 +200,9 @@ public class UpdateCourtDocumentHandler {
         final EventStream eventStream = eventSource.getStreamById(updateSendToCpsFlag.getCourtDocumentId());
         final CourtDocumentAggregate courtDocumentAggregate = aggregateService.get(eventStream, CourtDocumentAggregate.class);
 
-        final Stream<Object> events = courtDocumentAggregate.updateSendToCpsFlag(updateSendToCpsFlag.getCourtDocumentId(), nonNull(updateSendToCpsFlag.getSendToCps())?updateSendToCpsFlag.getSendToCps():false);
+        final Stream<Object> events = courtDocumentAggregate.updateSendToCpsFlag(updateSendToCpsFlag.getCourtDocumentId(),
+                nonNull(updateSendToCpsFlag.getSendToCps())?updateSendToCpsFlag.getSendToCps():false,
+                updateSendToCpsFlag.getCourtDocument());
         appendEventsToStream(updateSendToCpsFlagEnvelope, eventStream, events);
 
     }

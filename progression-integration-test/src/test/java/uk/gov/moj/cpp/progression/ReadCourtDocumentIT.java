@@ -5,6 +5,7 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
@@ -59,7 +60,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
 
         pollForResponse("/search?q=" + materialId.toString(), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON,
-                withJsonPath("$.allowedUserGroups[0]", is("Listing Officers")));
+                withJsonPath("$.allowedUserGroups[*]", hasItem("Listing Officers")));
         // and
         pollForResponse("/material/" + materialId + "/metadata",
                 "application/vnd.progression.query.material-metadata+json",
@@ -91,7 +92,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
 
         pollForResponse("/search?q=" + materialId.toString(), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON,
-                withJsonPath("$.allowedUserGroups[0]", is("Listing Officers")));
+                withJsonPath("$.allowedUserGroups[*]", hasItem("Listing Officers")));
         // and
         pollForResponse("/material/" + materialId + "/metadata",
                 "application/vnd.progression.query.material-metadata+json",
@@ -126,7 +127,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
 
         pollForResponse("/search?q=" + materialId.toString(), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON,
-                withJsonPath("$.allowedUserGroups[0]", is("Listing Officers")));
+                withJsonPath("$.allowedUserGroups[*]", hasItem("Listing Officers")));
         // and
         pollForResponse("/material/" + materialId + "/metadata",
                 "application/vnd.progression.query.material-metadata+json",
@@ -155,7 +156,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
 
         pollForResponse("/search?q=" + materialId.toString(), QUERY_USERGROUPS_BY_MATERIAL_ID_JSON,
-                withJsonPath("$.allowedUserGroups[0]", is("Listing Officers")));
+                withJsonPath("$.allowedUserGroups[*]", hasItem("Listing Officers")));
         // and
         pollForResponse("/material/" + materialId + "/metadata",
                 "application/vnd.progression.query.material-metadata+json",

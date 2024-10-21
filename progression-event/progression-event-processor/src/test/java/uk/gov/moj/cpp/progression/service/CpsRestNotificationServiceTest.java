@@ -5,12 +5,16 @@ import static java.nio.charset.Charset.defaultCharset;
 import static javax.json.Json.createObjectBuilder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
@@ -19,6 +23,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.io.IOException;
 import java.util.UUID;
 
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
@@ -45,6 +51,9 @@ public class CpsRestNotificationServiceTest {
     @Mock
     private Response response;
 
+    @Mock
+    private JsonObjectToObjectConverter jsonObjectConverter;
+
     private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
 
     @InjectMocks
@@ -66,9 +75,13 @@ public class CpsRestNotificationServiceTest {
         when(restEasyClientService.post(eq(COURT_DOCUMENT_REST_API_URL), any(), any())).thenReturn(response);
         when(response.getStatus()).thenReturn(200);
 
+        final CourtDocument courtDocument = CourtDocument.courtDocument().build();
+        when(jsonObjectConverter.convert(any(), any())).thenReturn(courtDocument);
+
         final String payloadAsString = Resources.toString(getResource("CpsRestNotification.json"), defaultCharset());
         cpsRestNotificationService.sendMaterial(payloadAsString, UUID.randomUUID(), envelope);
 
         verify(restEasyClientService).post(eq(COURT_DOCUMENT_REST_API_URL), any(), any());
+        verify(jsonObjectConverter, times(1)).convert(any(), any());
     }
 }

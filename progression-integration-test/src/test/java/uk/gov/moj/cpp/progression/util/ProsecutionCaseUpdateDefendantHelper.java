@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
 
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
@@ -101,13 +102,17 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateDefendant(final String jsonString) throws JSONException {
+    public void updateDefendant(final String jsonString) throws JSONException{
+        updateDefendant(jsonString, Response.Status.ACCEPTED.getStatusCode());
+    }
+
+    public void updateDefendant(final String jsonString, final int statusCode) throws JSONException {
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
         jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
 
         request = jsonObjectPayload.toString();
-        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request, statusCode);
     }
 
     public void updateDefendantWithCustody(final String jsonString) throws JSONException {

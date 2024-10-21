@@ -203,6 +203,7 @@ import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.FinanceDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.events.LinkCases;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MergeCases;
 import uk.gov.moj.cpp.progression.events.NotificationSentForDefendantDocument;
 import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocument;
@@ -6894,6 +6895,50 @@ public class CaseAggregateTest {
         final OnlinePleasAllocation onlinePleasAllocation = caseAggregate.getOnlinePleasAllocation(defendantId);
 
         assertThat(defendantId, Matchers.is(onlinePleasAllocation.getDefendantId()));
+    }
+
+    @Test
+    public void shouldSetCorrectMasterDefendantIdForPartiallyMatchedDefendants() {
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        defendantsMap.put(defendantId1, defendants.get(0));
+        defendantsMap.put(defendantId2, defendants.get(0));
+        defendantsMap.put(defendantId3, defendants.get(0));
+
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UUID masterDefendantId1 = randomUUID();
+
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(defendantId1)
+                .withProsecutionCaseId(randomUUID())
+                .withMatchedDefendants(singletonList(
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(masterDefendantId1)
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(masterDefendantId1)
+                                .build()))
+                .build();
+
+        Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
+
+        Optional<Object> masterDefendantIdUpdatedV2 = objectStream.filter(s -> s instanceof MasterDefendantIdUpdatedV2).findFirst();
+        assertThat(masterDefendantIdUpdatedV2.isPresent(), is(true));
+        assertThat(masterDefendantIdUpdatedV2.map(s -> (MasterDefendantIdUpdatedV2) s).get().getMatchedDefendants().size(), is(1));
+        assertThat(defendantsMap.get(defendantId1).getMasterDefendantId(), is(masterDefendantId1));
     }
 
     private void assertPleaAllocationsStoredCorrectly(final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations,
