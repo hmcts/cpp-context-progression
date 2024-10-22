@@ -102,11 +102,12 @@ public class CourtDocumentAggregate implements Aggregate {
         return apply(builder.build());
     }
 
-    public Stream<Object> updateSendToCpsFlag(final UUID courtDocumentId, final boolean sendToCpsFlag) {
+    public Stream<Object> updateSendToCpsFlag(final UUID courtDocumentId, final boolean sendToCpsFlag, final CourtDocument courtDocument) {
         final Stream.Builder<Object> builder = builder();
         builder.add(SendToCpsFlagUpdated.sendToCpsFlagUpdated()
                 .withCourtDocumentId(courtDocumentId)
                 .withSendToCps(sendToCpsFlag)
+                .withCourtDocument(courtDocument)
                 .build());
 
         return apply(builder.build());

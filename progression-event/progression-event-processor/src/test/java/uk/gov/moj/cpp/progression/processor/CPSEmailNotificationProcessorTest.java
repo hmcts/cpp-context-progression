@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,7 +42,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -172,7 +173,7 @@ public class CPSEmailNotificationProcessorTest {
 
          when(referenceDataService.getOrganisationUnitById(courtCenterId, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
          Optional<String> cpsEmailOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getCPSEmail", jsonEnvelope, courtCenterId);
-         Assert.assertEquals("CPSEmail is mismatched", testCPSEmail, cpsEmailOptional.get());
+         assertEquals(testCPSEmail, cpsEmailOptional.get());
    }
 
     @Test
@@ -197,9 +198,9 @@ public class CPSEmailNotificationProcessorTest {
             final Optional<HearingVO> hearingVOOptional = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getHearingVO", hearingDate, futureHearings, earliestHearing);
             final HearingVO hearingVO = hearingVOOptional.get();
             final ZonedDateTime zonedDateTime = ZonedDateTime.parse(hearingVO.getHearingDate());
-            Assert.assertThat("Hearing date mismatched", zonedDateTime.toLocalDate().isEqual(LocalDate.now().plusDays(1)), is(true));
-            Assert.assertNotNull("Court center name should not be empty", hearingVO.getCourtName());
-            Assert.assertNotNull("Court center id should not be empty", hearingVO.getCourtCenterId());
+            assertThat("Hearing date mismatched", zonedDateTime.toLocalDate().isEqual(LocalDate.now().plusDays(1)), is(true));
+            Assertions.assertNotNull(hearingVO.getCourtName(), "Court center name should not be empty");
+            Assertions.assertNotNull(hearingVO.getCourtCenterId(), "Court center id should not be empty");
         }
     }
 

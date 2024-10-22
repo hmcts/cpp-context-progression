@@ -262,9 +262,11 @@ public class UpdateCourtDocumentHandlerTest {
 
     @Test
     public void shouldHandleUpdateSendToCpsFlag() throws EventStreamException {
+        final CourtDocument courtDocument = CourtDocument.courtDocument().withCourtDocumentId(randomUUID()).build();
         final UpdateSendToCpsFlag updateSendToCpsFlag = UpdateSendToCpsFlag.updateSendToCpsFlag()
                 .withCourtDocumentId(randomUUID())
                 .withSendToCps(true)
+                .withCourtDocument(courtDocument)
                 .build();
         final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
@@ -283,6 +285,7 @@ public class UpdateCourtDocumentHandlerTest {
                                 .withName("progression.event.send-to-cps-flag-updated"),
                         payload().isJson(allOf(
                                 withJsonPath("$.courtDocumentId", is(updateSendToCpsFlag.getCourtDocumentId().toString())),
+                                withJsonPath("$.courtDocument", notNullValue()),
                                 withJsonPath("$.sendToCps", is(updateSendToCpsFlag.getSendToCps()))
                                 )
                         ))

@@ -1,0 +1,205 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "19138a71-c38b-432d-83b8-e1630c049db9",
+          "masterDefendant": {
+            "associatedPersons": [
+              {
+                "person": {
+                  "address": {
+                    "address1": "line 1",
+                    "address2": "line 2",
+                    "address3": "line 3",
+                    "address5": "line 5",
+                    "postcode": "TT1 2TR"
+                  },
+                  "firstName": "pgfname",
+                  "gender": "NOT_SPECIFIED",
+                  "lastName": "pgLname"
+                },
+                "role": "PARENT"
+              }
+            ],
+            "isYouth": true,
+            "masterDefendantId": "MASTER_DEFENDANT_ID",
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "Address line 1",
+                  "address2": "Address line 2",
+                  "address3": "line 3",
+                  "address5": "Address line 5",
+                  "postcode": "TR4 3ER"
+                },
+                "dateOfBirth": "2010-01-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Francisca",
+                "gender": "MALE",
+                "lastName": "Schowalter",
+                "nationalityDescription": "Unknown",
+                "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+              }
+            }
+          },
+          "personDetails": {
+            "firstName": "SIMITH",
+            "gender": "NOT_SPECIFIED",
+            "lastName": "fdfdsfd"
+          }
+        },
+        "applicationReceivedDate": "2020-11-04",
+        "applicationReference": "Z3UXCOX63S",
+        "applicationStatus": "LISTED",
+        "id": "d969ad5f-aaa0-4458-88ed-57fd193cbeb3",
+        "type": {
+          "id": "2650cec5-a28d-370e-b2fd-3070cb74592c",
+          "linkType": "LINKED"
+        },
+        "courtApplicationCases": [
+          {
+            "prosecutionCaseId": "CASE_ID_1",
+            "prosecutionCaseIdentifier": {
+              "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+              "prosecutionAuthorityCode": "TFL",
+              "caseURN": "TFL4359536"
+            },
+            "isSJP": false,
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2020-04-14",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e",
+                  "originatingHearingId": "5914d601-7c26-4900-b3d6-e8d27bcd058d",
+                  "sequenceNumber": 90
+                },
+                "aquittalDate": "2020-04-14",
+                "chargeDate": "2020-03-14",
+                "count": 1,
+                "id": "28b3d444-ae80-4920-a70f-ef01e128188e",
+                "isDisposed": true,
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2020-04-14",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e"
+                },
+                "offenceCode": "CA03012",
+                "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e",
+                  "originatingHearingId": "5914d601-7c26-4900-b3d6-e8d27bcd058d",
+                  "pleaDate": "2020-04-14",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "startDate": "2020-03-10",
+                "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+                "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+              }
+            ],
+            "caseStatus": "ACTIVE"
+          }
+        ],
+        "subject": {
+          "id": "e1279fa6-c778-4653-a123-c3e359f23c77",
+          "masterDefendant": {
+            "associatedPersons": [
+              {
+                "person": {
+                  "address": {
+                    "address1": "line 1",
+                    "address2": "line 2",
+                    "address3": "line 3",
+                    "address5": "line 5",
+                    "postcode": "TT1 2TR"
+                  },
+                  "firstName": "pgfname",
+                  "gender": "NOT_SPECIFIED",
+                  "lastName": "pgLname"
+                },
+                "role": "PARENT"
+              }
+            ],
+            "isYouth": true,
+            "masterDefendantId": "MASTER_DEFENDANT_ID",
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "Address line 1",
+                  "address2": "Address line 2",
+                  "address3": "line 3",
+                  "address5": "Address line 5",
+                  "postcode": "TR4 3ER"
+                },
+                "dateOfBirth": "2010-01-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Francisca",
+                "gender": "MALE",
+                "lastName": "Schowalter",
+                "nationalityDescription": "Unknown",
+                "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "courtCentre": {
+      "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+      "name": "Bexley Magistrates' Court"
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 10,
+        "sittingDay": "2020-11-04T00:00:00.000Z"
+      }
+    ],
+    "isBoxHearing": true,
+    "isVirtualBoxHearing": true,
+    "jurisdictionType": "CROWN",
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "masterDefendantId": "MASTER_DEFENDANT_ID",
+            "offences": [
+              {
+                "id": "OFFENCE_ID_1"
+              },
+              {
+                "id": "OFFENCE_ID_2",
+                "proceedingsConcluded": false
+              }
+            ]
+          }
+        ],
+        "id": "CASE_ID_1"
+      }
+    ]
+  }
+}

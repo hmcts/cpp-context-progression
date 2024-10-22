@@ -30,7 +30,7 @@
           "courtroomName": "Courtroom 01",
           "hearingByTimes": [
             {
-              "hearingTime": "10:00 am",
+              "hearingTime": "10:00 AM",
               "hearings": [
                 {
                   "caseReference": "91GD6403223",
@@ -49,7 +49,7 @@
           "courtroomName": "Courtroom 03",
           "hearingByTimes": [
             {
-              "hearingTime": "10:00 am",
+              "hearingTime": "10:00 AM",
               "hearings": [
                 {
                   "caseReference": "CVJVHKJGJC",
@@ -74,7 +74,7 @@
         {
           "hearingByTimes": [
             {
-              "hearingTime": "9:30 am",
+              "hearingTime": "9:30 AM",
               "hearings": [
                 {
                   "caseReference": "92GD4165920",

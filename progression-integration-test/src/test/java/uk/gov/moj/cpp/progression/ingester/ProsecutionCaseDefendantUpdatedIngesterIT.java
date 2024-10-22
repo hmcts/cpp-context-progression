@@ -19,6 +19,8 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+
+import javax.ws.rs.core.Response;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
@@ -38,6 +40,7 @@ import org.junit.jupiter.api.Test;
 public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
     private static final String REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.prosecution-case-refer-to-court.json";
     private static final String UPDATE_PROSECUTION_DEFENDANT_COMMAND_RESOURCE_LOCATION = "ingestion/progression.update-defendant-for-prosecution-case.json";
+    private static final String UPDATE_PROSECUTION_DEFENDANT_COMMAND_RESOURCE_LOCATION_WITHOUT_ADDRESS = "ingestion/progression.update-defendant-for-prosecution-case-without-address.json";
     private String caseId;
     private String courtDocumentId;
     private String materialIdActive;
@@ -94,6 +97,18 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
         final JsonObject defendant = inputCaseDocument.read("$.prosecutionCase.defendants[0]");
         final DocumentContext parsedInputDefendant = parse(defendant);
         verifyDefendantAliases(parsedInputDefendant, party);
+
+    }
+
+    @Test
+    public void shouldReturnErrorWhenDefendantDoesNotHaveAddress() throws IOException, JSONException {
+
+        createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
+                courtDocumentId, randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
+
+        setUpCaseAndDefendants();
+        final String inputDefendant = getPayload(UPDATE_PROSECUTION_DEFENDANT_COMMAND_RESOURCE_LOCATION_WITHOUT_ADDRESS);
+        helper.updateDefendant(inputDefendant, Response.Status.BAD_REQUEST.getStatusCode());
 
     }
 

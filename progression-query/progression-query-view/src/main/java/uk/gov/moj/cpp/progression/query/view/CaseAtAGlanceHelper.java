@@ -213,7 +213,7 @@ public class CaseAtAGlanceHelper {
             final Builder caagDefendantBuilder = caagDefendants().withMasterDefendantId(defendant.getMasterDefendantId());
             setDefendantPersonalDetails(defendant, caagDefendantBuilder);
             final List<CaagDefendantOffences> caagDefendantOffencesList = getCaagDefendantOffencesList(defendant);
-            final List<JudicialResult> defendantJudicialResultList = getDefendantLevelJudicialResults(defendant.getMasterDefendantId());
+            final List<JudicialResult> defendantJudicialResultList = getDefendantLevelJudicialResults();
             final List<JudicialResult> defendantCaseJudicialResultList = getCaseLevelJudicialResults(defendant.getId());
 
             if (!isEmpty(caagDefendantOffencesList)) {
@@ -450,12 +450,11 @@ public class CaseAtAGlanceHelper {
                 .max(comparing(Verdict::getVerdictDate));
     }
 
-    private List<JudicialResult> getDefendantLevelJudicialResults(final UUID masterDefendantId) {
+    private List<JudicialResult> getDefendantLevelJudicialResults() {
         return getResultedHearings()
                 .map(Hearings::getDefendantJudicialResults)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
-                .filter(defendantJudicialResult -> masterDefendantId.equals(defendantJudicialResult.getMasterDefendantId()))
                 .map(DefendantJudicialResult::getJudicialResult)
                 .filter(Objects::nonNull)
                 .collect(toList());

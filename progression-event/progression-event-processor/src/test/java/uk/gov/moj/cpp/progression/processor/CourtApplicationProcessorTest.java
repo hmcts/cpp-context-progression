@@ -1,8 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static com.google.common.io.Resources.getResource;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.*;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -11,12 +10,9 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
@@ -935,7 +931,279 @@ public class CourtApplicationProcessorTest {
                 .replace("OFFENCE_ID_2", OFFENCE_ID_2);
 
         assertEquals(expectedPayload, currentEvents.get(0).payload().toString(), getCustomComparator());
+
+
     }
+
+    @Test
+    public void shouldPickupMatchingDefendantFromApplicantIfAnyInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException  {
+        //Given
+        final UUID applicationId = randomUUID();
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        final String OFFENCE_ID_1 = randomUUID().toString();
+        final String OFFENCE_ID_2 = randomUUID().toString();
+
+        final String masterDefendantId2 = randomUUID().toString();
+        final String OFFENCE_ID_3 = randomUUID().toString();
+        final String OFFENCE_ID_4 = randomUUID().toString();
+
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-boxwork");
+
+        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-boxwork-with-applicant-as-defendant.json"), defaultCharset());
+        inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1);
+        final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1)
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_1))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
+                        ).add(createObjectBuilder().add("masterDefendantId", masterDefendantId2)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_3))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_4).add("proceedingsConcluded", false)))
+                        ))
+
+                ).build()));
+
+        //When
+        courtApplicationProcessor.processBoxWorkApplication(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(2)).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("hearing.initiate"));
+        assertThat(currentEvents.get(1).metadata().name(), is("public.progression.boxwork-application-referred"));
+
+        String expectedPayload = Resources.toString(getResource("expected.progression.event.application-referred-to-boxwork-with-applicant-as-defendant.json"), defaultCharset());
+        expectedPayload = expectedPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId1)
+                .replace("OFFENCE_ID_1", OFFENCE_ID_1)
+                .replace("OFFENCE_ID_2", OFFENCE_ID_2);
+
+
+        assertEquals(expectedPayload, currentEvents.get(0).payload().toString(), getCustomComparator());
+
+    }
+
+    @Test
+    public void shouldPickupMatchingDefendantFromRespondentsIfAnyInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException  {
+        //Given
+        final UUID applicationId = randomUUID();
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        final String OFFENCE_ID_1 = randomUUID().toString();
+        final String OFFENCE_ID_2 = randomUUID().toString();
+
+        final String masterDefendantId2 = randomUUID().toString();
+        final String masterDefendantId3 = randomUUID().toString();
+        final String masterDefendantId4 = randomUUID().toString();
+
+        final String OFFENCE_ID_3 = randomUUID().toString();
+        final String OFFENCE_ID_4 = randomUUID().toString();
+
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-boxwork");
+
+        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-boxwork-with-respondent-as-defendant.json"), defaultCharset());
+        inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID_1", masterDefendantId1)
+                .replace("MASTER_DEFENDANT_ID_2", masterDefendantId2)
+                .replace("MASTER_DEFENDANT_ID_3", masterDefendantId3);
+        final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1)
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId3)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_1))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
+                        ).add(createObjectBuilder().add("masterDefendantId", masterDefendantId4)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_3))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_4).add("proceedingsConcluded", false)))
+                        ))
+
+                ).build()));
+
+        //When
+        courtApplicationProcessor.processBoxWorkApplication(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(2)).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("hearing.initiate"));
+        assertThat(currentEvents.get(1).metadata().name(), is("public.progression.boxwork-application-referred"));
+
+        String expectedPayload = Resources.toString(getResource("expected.progression.event.application-referred-to-boxwork-with-respondent-as-defendant.json"), defaultCharset());
+        expectedPayload = expectedPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID_1", masterDefendantId1)
+                .replace("MASTER_DEFENDANT_ID_2", masterDefendantId2)
+                .replace("MASTER_DEFENDANT_ID_3", masterDefendantId3)
+                .replace("MASTER_DEFENDANT_ID_4", masterDefendantId4)
+                .replace("OFFENCE_ID_1", OFFENCE_ID_1)
+                .replace("OFFENCE_ID_2", OFFENCE_ID_2);
+
+
+        assertEquals(expectedPayload, currentEvents.get(0).payload().toString(), getCustomComparator());
+
+    }
+
+    @Test
+    public void shouldPickupMatchingDefendantFromRespondentsAndApplicantIfAnyInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException  {
+        //Given
+        final UUID applicationId = randomUUID();
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        final String OFFENCE_ID_1 = randomUUID().toString();
+        final String OFFENCE_ID_2 = randomUUID().toString();
+
+        final String masterDefendantId2 = randomUUID().toString();
+        final String masterDefendantId3 = randomUUID().toString();
+        final String masterDefendantId4 = randomUUID().toString();
+
+        final String OFFENCE_ID_3 = randomUUID().toString();
+        final String OFFENCE_ID_4 = randomUUID().toString();
+
+        final String OFFENCE_ID_5 = randomUUID().toString();
+        final String OFFENCE_ID_6 = randomUUID().toString();
+
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-boxwork");
+
+        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-boxwork-with-respondent-and-applicant-as-defendant.json"), defaultCharset());
+        inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID_1", masterDefendantId1)
+                .replace("MASTER_DEFENDANT_ID_2", masterDefendantId2)
+                .replace("MASTER_DEFENDANT_ID_3", masterDefendantId3)
+                .replace("MASTER_DEFENDANT_ID_4", masterDefendantId4);
+        final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1)
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_1))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
+                        ).add(createObjectBuilder().add("masterDefendantId", masterDefendantId2)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_3))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_4).add("proceedingsConcluded", false)))
+                        ).add(createObjectBuilder().add("masterDefendantId", masterDefendantId3)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_5))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_6).add("proceedingsConcluded", false)))
+                        ))
+
+                ).build()));
+
+        //When
+        courtApplicationProcessor.processBoxWorkApplication(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(2)).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("hearing.initiate"));
+        assertThat(currentEvents.get(1).metadata().name(), is("public.progression.boxwork-application-referred"));
+        assertThat(currentEvents.get(0).payload().toString(), isJson(anyOf( withJsonPath("$.hearing.prosecutionCases[0].id", equalTo(caseId_1)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[*].masterDefendantId", equalTo(masterDefendantId1.toString())),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[*].masterDefendantId", equalTo(masterDefendantId2.toString())),
+                withoutJsonPath("$.hearing.prosecutionCases[0].defendants[2].masterDefendantId"))));
+
+    }
+
+    @Test
+    public void shouldPickupAllDefendantsFromCaseIfNonMatchingFromApplicantAndRespondentsInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException  {
+        //Given
+        final UUID applicationId = randomUUID();
+
+        final String caseId_1 = randomUUID().toString();
+        final String masterDefendantId1 = randomUUID().toString();
+        final String OFFENCE_ID_1 = randomUUID().toString();
+        final String OFFENCE_ID_2 = randomUUID().toString();
+
+        final String masterDefendantId2 = randomUUID().toString();
+        final String masterDefendantId3 = randomUUID().toString();
+        final String masterDefendantId4 = randomUUID().toString();
+
+        final String OFFENCE_ID_3 = randomUUID().toString();
+        final String OFFENCE_ID_4 = randomUUID().toString();
+
+        final String OFFENCE_ID_5 = randomUUID().toString();
+        final String OFFENCE_ID_6 = randomUUID().toString();
+
+        final MetadataBuilder metadataBuilder = getMetadata("progression.event.application-referred-to-boxwork");
+
+        String inputPayload = Resources.toString(getResource("progression.event.application-referred-to-boxwork-with-neither-respondent-nor-applicant-as-defendant.json"), defaultCharset());
+        inputPayload = inputPayload.replaceAll("RANDOM_APP_ID", applicationId.toString())
+                .replaceAll("RANDOM_ARN", STRING.next())
+                .replace("CASE_ID_1", caseId_1)
+                .replace("MASTER_DEFENDANT_ID_4", masterDefendantId4);
+        final JsonObject payload = stringToJsonObjectConverter.convert(inputPayload);
+        final JsonEnvelope event = envelopeFrom(metadataBuilder, payload);
+
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq(caseId_1)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId_1)
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId1)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_1))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_2).add("proceedingsConcluded", false)))
+                        ).add(createObjectBuilder().add("masterDefendantId", masterDefendantId2)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_3))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_4).add("proceedingsConcluded", false)))
+                        ).add(createObjectBuilder().add("masterDefendantId", masterDefendantId3)
+                                .add("offences", createArrayBuilder()
+                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_5))
+                                        .add(createObjectBuilder().add("id", OFFENCE_ID_6).add("proceedingsConcluded", false)))
+                        ))
+
+                ).build()));
+
+        //When
+        courtApplicationProcessor.processBoxWorkApplication(event);
+
+        //Then
+        final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
+        verify(sender, times(2)).send(captor.capture());
+        final List<Envelope> currentEvents = captor.getAllValues();
+        assertThat(currentEvents.get(0).metadata().name(), is("hearing.initiate"));
+        assertThat(currentEvents.get(1).metadata().name(), is("public.progression.boxwork-application-referred"));
+        assertThat(currentEvents.get(0).payload().toString(), isJson(anyOf( withJsonPath("$.hearing.prosecutionCases[0].id", equalTo(caseId_1)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[*].masterDefendantId", equalTo(masterDefendantId1.toString())),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[*].masterDefendantId", equalTo(masterDefendantId2.toString())),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[*].masterDefendantId", equalTo(masterDefendantId3.toString())))));
+
+    }
+
 
     @Test
     public void shouldProcessEventWhenApplicationReferredToCourtHearing() throws IOException {

@@ -1,25 +1,28 @@
 #ARG base_image=crmdvrepo01.azurecr.io/wildfly:310122
 
-FROM {base_image}
+ARG baseImageTag
+FROM crmdvrepo01.azurecr.io/hmcts/wildfly:${baseImageTag}
 
 ARG version
 ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
 ARG framework_libraries_version=17.3.1
-ARG framework_version=17.5.0
-ARG eventstore_version=17.5.0
+ARG framework_version=17.5.5
+ARG eventstore_version=17.5.4
 ARG activiti_version=17.10.4
 
 ARG wildfly_home=/opt/jboss/wildfly
 ARG wildfly_user=jboss
+ARG context_group_name=progression
+ARG context_name=progression
 
 # service war file
-ADD ${repo_loc}/uk/gov/moj/cpp/progression/progression-service/${version}/progression-service-${version}.war ${wildfly_home}/standalone/deployments/
+ADD ${repo_loc}/uk/gov/moj/cpp/${context_group_name}/${context_name}-service/${version}/${context_name}-service-${version}.war ${wildfly_home}/standalone/deployments/
 USER root
-RUN chown ${wildfly_user}:${wildfly_user} ${wildfly_home}/standalone/deployments/progression-service-${version}.war
+RUN chown ${wildfly_user}:${wildfly_user} ${wildfly_home}/standalone/deployments/${context_name}-service-${version}.war
 
 # liquibase jars & config
 RUN mkdir /tmp/liquibase
-ADD ${repo_loc}/uk/gov/moj/cpp/progression/progression-viewstore-liquibase/${version}/progression-viewstore-liquibase-${version}.jar /tmp/liquibase/progression-viewstore-liquibase.jar
+ADD ${repo_loc}/uk/gov/moj/cpp/${context_group_name}/${context_name}-viewstore-liquibase/${version}/${context_name}-viewstore-liquibase-${version}.jar /tmp/liquibase/${context_name}-viewstore-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/event-repository-liquibase/${eventstore_version}/event-repository-liquibase-${eventstore_version}.jar  /tmp/liquibase/event-repository-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/aggregate-snapshot-repository-liquibase/${eventstore_version}/aggregate-snapshot-repository-liquibase-${eventstore_version}.jar  /tmp/liquibase/aggregate-snapshot-repository-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/event-buffer-liquibase/${eventstore_version}/event-buffer-liquibase-${eventstore_version}.jar  /tmp/liquibase/event-buffer-liquibase.jar
@@ -35,4 +38,4 @@ RUN mkdir /opt/cpp-tools
 ADD ${repo_loc}/uk/gov/justice/services/framework-jmx-command-client/${framework_version}/framework-jmx-command-client-${framework_version}.jar /opt/cpp-tools/framework-jmx-command-client.jar
 RUN chown ${wildfly_user}:${wildfly_user} /opt/cpp-tools/framework-jmx-command-client.jar && chmod 755 /opt/cpp-tools/framework-jmx-command-client.jar
 USER ${wildfly_user}
-LABEL base_image {base_image}
+LABEL base_image ${baseImageTag}

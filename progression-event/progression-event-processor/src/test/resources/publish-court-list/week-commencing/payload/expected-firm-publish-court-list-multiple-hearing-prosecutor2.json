@@ -32,7 +32,7 @@
           "courtroomName": "Courtroom 01",
           "hearingByTimes": [
             {
-              "hearingTime": "9:00 am",
+              "hearingTime": "9:00 AM",
               "hearings": [
                 {
                   "caseReference": "CTZH5HVZIF",

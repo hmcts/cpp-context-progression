@@ -552,7 +552,10 @@ public class CaseAggregate implements Aggregate {
                         e -> this.exactMatchedDefendants.remove(e.getDefendantId())
                 ),
                 when(MasterDefendantIdUpdatedV2.class).apply(
-                        e -> this.exactMatchedDefendants.remove(e.getDefendant().getId())
+                        e -> {
+                            this.exactMatchedDefendants.remove(e.getDefendant().getId());
+                            this.defendantsMap.put(e.getDefendant().getId(), updateDefendantFromMatchedDefendant(e));
+                        }
                 ),
                 when(DefendantPartialMatchCreated.class).apply(
                         e -> this.partialMatchedDefendants.remove(e.getDefendantId())
@@ -779,6 +782,37 @@ public class CaseAggregate implements Aggregate {
         builder.withPncId(defendantUpdate.getPncId());
         builder.withAliases(defendantUpdate.getAliases());
         builder.withIsYouth(defendantUpdate.getIsYouth());
+
+        return builder.build();
+    }
+
+    private uk.gov.justice.core.courts.Defendant updateDefendantFromMatchedDefendant(final MasterDefendantIdUpdatedV2 masterDefendantIdUpdatedV2) {
+        final uk.gov.justice.core.courts.Defendant.Builder builder = uk.gov.justice.core.courts.Defendant.defendant();
+
+        final uk.gov.justice.core.courts.Defendant defendant = masterDefendantIdUpdatedV2.getDefendant();
+
+        if (defendantsMap.containsKey(defendant.getId())) {
+            builder.withValuesFrom(defendantsMap.get(defendant.getId()));
+        }
+
+        builder.withId(defendant.getId());
+        builder.withMasterDefendantId(isNotEmpty(masterDefendantIdUpdatedV2.getMatchedDefendants())
+                ? masterDefendantIdUpdatedV2.getMatchedDefendants().get(0).getMasterDefendantId()
+                : defendant.getId());
+        builder.withProsecutionCaseId(defendant.getProsecutionCaseId());
+        builder.withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited());
+        builder.withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference());
+        builder.withWitnessStatement(defendant.getWitnessStatement());
+        builder.withWitnessStatementWelsh(defendant.getWitnessStatementWelsh());
+        builder.withMitigation(defendant.getMitigation());
+        builder.withMitigationWelsh(defendant.getMitigationWelsh());
+        builder.withAssociatedPersons(defendant.getAssociatedPersons());
+        builder.withDefenceOrganisation(defendant.getDefenceOrganisation());
+        builder.withPersonDefendant(defendant.getPersonDefendant());
+        builder.withLegalEntityDefendant(defendant.getLegalEntityDefendant());
+        builder.withPncId(defendant.getPncId());
+        builder.withAliases(defendant.getAliases());
+        builder.withIsYouth(defendant.getIsYouth());
 
         return builder.build();
     }

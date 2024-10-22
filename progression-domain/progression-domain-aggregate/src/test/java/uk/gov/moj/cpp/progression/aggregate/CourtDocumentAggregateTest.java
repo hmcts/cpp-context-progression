@@ -605,9 +605,11 @@ public class CourtDocumentAggregateTest {
     }
 
     @Test
-    public void shouldupdateSendToCpsFlag() {
-        final Stream<Object> objectStream = target.updateSendToCpsFlag(randomUUID(), true);
+    public void shouldUpdateSendToCpsFlag() {
+        final UUID courtDocumentId = randomUUID();
+        final Stream<Object> objectStream = target.updateSendToCpsFlag(randomUUID(), true, CourtDocument.courtDocument().withCourtDocumentId(courtDocumentId).build());
         final Object event = objectStream.findFirst().get();
         assertThat(event.getClass(), is(equalTo(SendToCpsFlagUpdated.class)));
+        assertThat(((SendToCpsFlagUpdated)event).getCourtDocument().getCourtDocumentId(), is(courtDocumentId));
     }
 }

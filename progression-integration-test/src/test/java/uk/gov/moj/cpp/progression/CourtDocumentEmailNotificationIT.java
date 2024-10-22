@@ -236,11 +236,13 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     private void verifyForCourtDocumentSentToCps() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCourDocumentSendToCps);
         assertThat(message, notNullValue());
+        assertThat(message.get().get("courtDocument"), notNullValue());
     }
 
     private void verifyForProgressionDocumentSentToCpsFlag() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForProgressionSendToCpsFlag);
         assertThat(message, notNullValue());
+        assertThat(message.get().get("courtDocument"), notNullValue());
     }
 
 
