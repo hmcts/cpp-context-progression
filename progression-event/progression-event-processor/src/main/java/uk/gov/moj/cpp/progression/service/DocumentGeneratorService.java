@@ -304,14 +304,17 @@ public class DocumentGeneratorService {
     }
 
     @Transactional(REQUIRES_NEW)
-    public void generateNonNowDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final UUID materialId, final String fileNameWithoutPdfExtension) {
-
+    public void generateNonNowDocument(final JsonEnvelope envelope, final JsonObject documentPayload,
+                                       String templateName, final UUID materialId,
+                                       final String fileNameWithoutPdfExtension) {
+        LOGGER.info(">> 2047 generateNonNowDocument");
         final String fileName = fileNameWithoutPdfExtension+".pdf";
+        LOGGER.info(">> 2047 filename:{}, template name:{} ",fileName,templateName);
         try {
             final byte[] resultOrderAsByteArray = documentGeneratorClientProducer
                     .documentGeneratorClient()
                     .generatePdfDocument(documentPayload, templateName, getSystemUserUuid());
-
+            LOGGER.info(">> document generated in bytes:{}",resultOrderAsByteArray);
             addDocumentToMaterial(
                     envelope,
                     fileName,
@@ -320,7 +323,7 @@ public class DocumentGeneratorService {
 
         } catch (IOException e) {
             LOGGER.error(ERROR_MESSAGE, e);
-            throw new InvalidHearingTimeException("Error while generating non now document", e);
+            throw new RuntimeException("Error while generating non now document", e);
         }
     }
 

@@ -150,7 +150,10 @@ public class NotificationNotifyEventProcessor {
             documentGeneratorService.generateNonNowDocument(event, emailDocumentJson, EMAIL_DOCUMENT_TEMPLATE_NAME, materialId, fileName);
             hearingNotificationHelper.addCourtDocument(event, caseId, materialId, fileName);
         } catch (RuntimeException e) {
+
             logger.error("Error while generating and uploading email document case id : {} and exception is {}", caseId, e);
+            logger.error("error :{}",e.getStackTrace());
+            throw new RuntimeException(">> CCT-2047 error while generating email hearing template :{}");
         }
     }
 
