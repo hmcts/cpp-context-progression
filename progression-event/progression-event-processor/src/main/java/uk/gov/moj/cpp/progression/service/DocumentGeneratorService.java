@@ -307,14 +307,12 @@ public class DocumentGeneratorService {
     public void generateNonNowDocument(final JsonEnvelope envelope, final JsonObject documentPayload,
                                        String templateName, final UUID materialId,
                                        final String fileNameWithoutPdfExtension) {
-        LOGGER.info(">> 2047 generateNonNowDocument");
         final String fileName = fileNameWithoutPdfExtension+".pdf";
-        LOGGER.info(">> 2047 filename:{}, template name:{} materialId",fileName,templateName,materialId);
         try {
             final byte[] resultOrderAsByteArray = documentGeneratorClientProducer
                     .documentGeneratorClient()
                     .generatePdfDocument(documentPayload, templateName, getSystemUserUuid());
-            LOGGER.info(">> document generated:: {} {} {}",fileName,templateName,materialId);
+            LOGGER.info(">> document generated:: fileName: {} template Name: {} materialId: {}",fileName,templateName,materialId);
             addDocumentToMaterial(
                     envelope,
                     fileName,
@@ -337,7 +335,8 @@ public class DocumentGeneratorService {
         addDocumentToMaterial(sender, originatingEnvelope, filename, fileContent, userId, hearingId, materialId, caseId, applicationId, isRemotePrintingRequired, null);
     }
 
-    private void addDocumentToMaterial(final JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent, final UUID materialId) {
+    private void addDocumentToMaterial(final JsonEnvelope originatingEnvelope,
+                                       final String filename, final InputStream fileContent, final UUID materialId) {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);

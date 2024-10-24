@@ -114,8 +114,7 @@ public class NotificationNotifyEventProcessor {
         final String sourceType = event.payloadAsJsonObject().getString(SOURCE_TYPE);
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
 
-        logger.info(format(">> received public.notificationnotify.events.notification-sent with metadata originator as : %s", event.metadata().asJsonObject().getString(SOURCE)));
-        logger.info("2047 received public.notificationnotify.events.notification-sent with PAYLOAD : {}", event.payloadAsJsonObject().getJsonNumber(""));
+        logger.info(format(">> public.notificationnotify.events.notification-sent  : %s", event.metadata()));
         if (SourceType.EMAIL.getName().equalsIgnoreCase(sourceType)) {
             generateAndAddEmailDocument(event);
         }
