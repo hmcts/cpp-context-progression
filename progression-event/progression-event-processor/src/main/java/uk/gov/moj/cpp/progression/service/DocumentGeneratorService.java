@@ -303,7 +303,7 @@ public class DocumentGeneratorService {
         return fileName;
     }
 
-    @Transactional(REQUIRES_NEW)
+    //@Transactional(REQUIRES_NEW)
     public void generateNonNowDocument(final JsonEnvelope envelope, final JsonObject documentPayload,
                                        String templateName, final UUID materialId,
                                        final String fileNameWithoutPdfExtension) {
