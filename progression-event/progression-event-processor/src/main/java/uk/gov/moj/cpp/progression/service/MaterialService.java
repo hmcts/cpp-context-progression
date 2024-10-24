@@ -72,7 +72,7 @@ public class MaterialService {
         if (isNull(userId)) {
             throw new RuntimeException("UserId missing from event.");
         }
-        LOGGER.info("material being uploaded '{}' file service id '{}' userid {} time {}", materialId, fileServiceId, LocalDateTime.now());
+        LOGGER.info("material being uploaded '{}' file service id '{}' userid {} time {}", materialId, fileServiceId, userId,LocalDateTime.now());
         final JsonObject uploadMaterialPayload = Json.createObjectBuilder()
                 .add(FIELD_MATERIAL_ID, materialId.toString())
                 .add("fileServiceId", fileServiceId.toString())

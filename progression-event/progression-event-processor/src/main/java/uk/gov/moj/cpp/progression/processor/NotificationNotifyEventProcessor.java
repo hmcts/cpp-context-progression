@@ -157,6 +157,10 @@ public class NotificationNotifyEventProcessor {
         }
     }
 
+    public static void main(String[] args) {
+
+    }
+
     @Handles("progression.event.notification-request-failed")
     public void handleNotificationRequestFailed(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();

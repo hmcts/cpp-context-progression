@@ -79,7 +79,7 @@ public class DocumentGeneratorService {
     public static final String FINANCIAL_ORDER_DETAILS = "financialOrderDetails";
     public static final String PET_DOCUMENT_TEMPLATE_NAME = "PetNotification";
     public static final String PET_DOCUMENT_ORDER = "PetDocumentOrder";
-    public static final String STORED_MATERIAL_IN_FILE_STORE = "Stored material {} in file store {}";
+    public static final String STORED_MATERIAL_IN_FILE_STORE = "Stored material {} in file store {} file name{}";
     public static final String ERROR_WHILE_UPLOADING_FILE = "Error while uploading file {}";
     public static final String FORM_DOCUMENT_PDF_NAME = "name";
     public static final String FORM_DOCUMENT_FILE_EXTENSION_AS_PDF = ".pdf";
@@ -303,18 +303,18 @@ public class DocumentGeneratorService {
         return fileName;
     }
 
-    //@Transactional(REQUIRES_NEW)
+    @Transactional(REQUIRES_NEW)
     public void generateNonNowDocument(final JsonEnvelope envelope, final JsonObject documentPayload,
                                        String templateName, final UUID materialId,
                                        final String fileNameWithoutPdfExtension) {
         LOGGER.info(">> 2047 generateNonNowDocument");
         final String fileName = fileNameWithoutPdfExtension+".pdf";
-        LOGGER.info(">> 2047 filename:{}, template name:{} ",fileName,templateName);
+        LOGGER.info(">> 2047 filename:{}, template name:{} materialId",fileName,templateName,materialId);
         try {
             final byte[] resultOrderAsByteArray = documentGeneratorClientProducer
                     .documentGeneratorClient()
                     .generatePdfDocument(documentPayload, templateName, getSystemUserUuid());
-            LOGGER.info(">> document generated in bytes:{}",resultOrderAsByteArray);
+            LOGGER.info(">> document generated:: {} {} {}",fileName,templateName,materialId);
             addDocumentToMaterial(
                     envelope,
                     fileName,
@@ -341,7 +341,7 @@ public class DocumentGeneratorService {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
             materialService.uploadMaterial(fileId, materialId, originatingEnvelope);
         } catch (final FileServiceException e) {
             LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
@@ -359,7 +359,7 @@ public class DocumentGeneratorService {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
             final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder();
             if (nonNull(emailChannel)) {
                 uploadMaterialContextBuilder.setEmailNotifications(of(emailChannel));
@@ -391,7 +391,7 @@ public class DocumentGeneratorService {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
             final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder();
             uploadMaterialService.uploadFile(uploadMaterialContextBuilder
                     .setSender(sender)
@@ -421,7 +421,7 @@ public class DocumentGeneratorService {
 
             final UUID fileId = storeFile(fileContent, filename);
 
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
 
             final boolean isPostable = nowDocumentValidator.isPostable(orderAddressee);
             final boolean firstClassLetter = isFirstClassLetter(nowDistribution) && isPostable;
