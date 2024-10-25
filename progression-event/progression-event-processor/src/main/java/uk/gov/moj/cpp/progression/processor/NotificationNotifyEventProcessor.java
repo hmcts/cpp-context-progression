@@ -142,6 +142,8 @@ public class NotificationNotifyEventProcessor {
         final String recipientType = emailDocumentJson.getString("recipientType");
 
         logger.info("2047 payload received in generateAndAddEmailDocument {}", emailDocumentJson);
+        logger.info("2047 event metadata {}", event.metadata());
+        logger.info("2047 event metadata {}", event.metadata().userId() != null?event.metadata().userId():"no user id");
         try {
             final UUID materialId = randomUUID();
             final String fileName = format("Email notification of hearing %s %s copy", formatter.format(LocalDateTime.now()), recipientType);
