@@ -16,6 +16,8 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.slf4j.Logger;
+
 public class DocumentTypeAccessProvider {
 
     @Inject
@@ -28,9 +30,13 @@ public class DocumentTypeAccessProvider {
     @Inject
     private DocumentTypeAccessConverter documentTypeAccessConverter;
 
-    public DocumentTypeAccess getDocumentTypeAccess(final CourtDocument courtDocument, final JsonEnvelope defaultCourtDocumentEnvelope) {
-        final UUID documentTypeId = courtDocument.getDocumentTypeId();
+    @Inject
+    private Logger logger;
 
+    public DocumentTypeAccess getDocumentTypeAccess(final CourtDocument courtDocument, final JsonEnvelope defaultCourtDocumentEnvelope) {
+        logger.info("document type access {}", courtDocument);
+        final UUID documentTypeId = courtDocument.getDocumentTypeId();
+        logger.info("document type id ", documentTypeId);
         final JsonObject documentTypeData = referenceDataService.getDocumentTypeAccessData(
                 documentTypeId,
                 defaultCourtDocumentEnvelope,
