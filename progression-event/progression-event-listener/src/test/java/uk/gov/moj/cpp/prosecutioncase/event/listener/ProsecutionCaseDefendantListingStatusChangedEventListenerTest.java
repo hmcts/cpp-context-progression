@@ -4,20 +4,26 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
@@ -53,8 +59,11 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-    @Mock
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Spy
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    @Spy
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Mock
     private JsonEnvelope envelope;
@@ -102,7 +111,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantListingStatusChanged.class)).thenReturn(getEnvelope(HearingListingStatus.HEARING_INITIALISED));
 
         eventListener.process(envelope);
@@ -155,7 +163,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantListingStatusChangedV2.class)).thenReturn(getEnvelopeForV2(HearingListingStatus.HEARING_INITIALISED));
 
         eventListener.processV2(envelope);
@@ -195,11 +202,30 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearing(), is(hearingEntity));
     }
 
+    @Test
+    public void ShouldRemoveNowsResultFromHearing(){
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+       hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantListingStatusChangedV2.class)).thenReturn(getEnvelopeForV2WithNows(HearingListingStatus.HEARING_RESULTED));
+
+
+        eventListener.processV2(envelope);
+
+        assertThat(hearingEntity.getPayload().contains("publishedForNows\":true"), is(false));
+
+
+    }
+
     private ProsecutionCaseDefendantListingStatusChanged getEnvelope(final HearingListingStatus hearingListingStatus) {
         return ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
                 .withHearing(Hearing.hearing().withId(hearingId)
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId)
-                                .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId).build()))
+                                .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(Arrays.asList(Offence.offence().build())).build()))
                                 .build()))
                         .build())
                 .withHearingListingStatus(hearingListingStatus)
@@ -210,7 +236,64 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
                 .withHearing(Hearing.hearing().withId(hearingId)
                         .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId)
-                                .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId).build()))
+                                .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(Arrays.asList(Offence.offence().build())).build()))
+                                .build()))
+                        .build())
+                .withHearingListingStatus(hearingListingStatus)
+                .build();
+    }
+
+    private ProsecutionCaseDefendantListingStatusChangedV2 getEnvelopeForV2WithNows(final HearingListingStatus hearingListingStatus) {
+        return ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(Hearing.hearing().withId(hearingId)
+                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase().withId(caseId)
+                                .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withJudicialResults(new ArrayList<>(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withPublishedForNows(false)
+                                                        .build(), JudicialResult.judicialResult()
+                                                        .withPublishedForNows(true)
+                                                        .build())))
+                                                .build()))
+                                        .build(),Defendant.defendant().withId(defendantId)
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withJudicialResults(new ArrayList<>(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withPublishedForNows(false)
+                                                        .build(), JudicialResult.judicialResult()
+                                                        .withPublishedForNows(true)
+                                                        .build())))
+                                                .build()))
+                                        .build()))
+                                .build(), ProsecutionCase.prosecutionCase().withId(caseId)
+                                .withDefendants(Arrays.asList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withJudicialResults(new ArrayList<>(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withPublishedForNows(false)
+                                                        .build(), JudicialResult.judicialResult()
+                                                        .withPublishedForNows(true)
+                                                        .build())))
+                                                .build()))
+                                        .build(),Defendant.defendant().withId(defendantId)
+                                        .withOffences(Arrays.asList(Offence.offence()
+                                                .withId(randomUUID())
+                                                .withJudicialResults(new ArrayList<>(Arrays.asList(JudicialResult.judicialResult()
+                                                        .withPublishedForNows(false)
+                                                        .build(), JudicialResult.judicialResult()
+                                                        .withPublishedForNows(true)
+                                                        .build())))
+                                                .build()))
+                                        .build()))
+                                .build()))
+                        .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
+                                .withJudicialResults(new ArrayList<>(Arrays.asList(JudicialResult.judicialResult()
+                                        .withPublishedForNows(false)
+                                        .build(), JudicialResult.judicialResult()
+                                        .withPublishedForNows(true)
+                                        .build())))
                                 .build()))
                         .build())
                 .withHearingListingStatus(hearingListingStatus)
@@ -240,7 +323,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
         when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
         when(envelope.payloadAsJsonObject()).thenReturn(eventPayloadJsonObject);
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder().build());
         when(jsonObjectToObjectConverter.convert(eventPayloadJsonObject, ProsecutionCaseDefendantListingStatusChangedV2.class)).thenReturn(getEnvelopeForV2(HearingListingStatus.HEARING_INITIALISED));
 
 

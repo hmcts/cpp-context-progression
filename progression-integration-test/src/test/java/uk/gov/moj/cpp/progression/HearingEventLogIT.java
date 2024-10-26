@@ -601,12 +601,6 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(response.getStatusCode(), is(HttpStatus.SC_ACCEPTED));
     }
 
-    private void removeAnyExistingCaseRetentionMessagesFromQueue() {
-        retrieveMessageBody(messageConsumerCaseRetentionPolicyRecorded);
-        retrieveMessageBody(messageConsumerCaseRetentionLengthCalculated);
-        retrieveMessageBody(messageConsumerHearingLogDocumentCreated);
-    }
-
     private void verifyHearingEventsLogsDocumentRequested(final String courtDocumentId, final String caseId, final String defendantId, final String materialId, final Optional<String> applicationId, final String caseStatus) throws Exception {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingLogDocumentCreated);
         assertThat(message.isPresent(), is(true));

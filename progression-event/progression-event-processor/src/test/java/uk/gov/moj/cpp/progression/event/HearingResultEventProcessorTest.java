@@ -411,6 +411,11 @@ public class HearingResultEventProcessorTest {
         final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
         assertThat(allValues.size(), is(1));
         assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
+
+        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(List.class), any(ApplicationStatus.class));
+        verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
+
+
     }
 
     @Test

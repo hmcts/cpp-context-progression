@@ -107,18 +107,18 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessorTest {
     public void shouldProcessCpsProsecutorUpdated() {
 
         //Given
-        JsonObject prosecutionCaseJsonObject = createObjectBuilder().add("hearingsAtAGlance",
+        JsonObject hearingsJsonObject =
                 createObjectBuilder().add("hearings", createArrayBuilder().add(
-                        createObjectBuilder().add("id", hearingId.toString()).build()).build()).build()).build();
+                        createObjectBuilder().add("id", hearingId.toString()).build()).build()).build();
 
-        when(progressionService.getProsecutionCaseDetailById(any(), eq(prosecutionCaseId))).thenReturn(of(prosecutionCaseJsonObject));
+        when(progressionService.getCaseHearings(eq(prosecutionCaseId))).thenReturn(of(hearingsJsonObject));
 
         //When
         prosecutorCaseCpsProsecutorUpdatedEventProcessor.processCpsProsecutorUpdated(requestMessage);
 
         //Then
         verify(sender, times(1)).send(envelopeCaptor.capture());
-        verify(progressionService, times(1)).getProsecutionCaseDetailById(any(), eq(prosecutionCaseId));
+        verify(progressionService, times(1)).getCaseHearings(eq(prosecutionCaseId));
         assertThat(envelopeCaptor.getValue().payload().size(), is(7));
         assertThat(envelopeCaptor.getValue().payload().getJsonArray("hearingIds").size(), is(1));
     }
@@ -126,16 +126,17 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessorTest {
     @Test
     public void shouldProcessCpsProsecutorUpdatedWithoutHearings() {
         //Given
-        JsonObject prosecutionCaseJsonObject = createObjectBuilder().add("hearingsAtAGlance",
-                createObjectBuilder().add("hearings", createArrayBuilder().build()).build()).build();
-        when(progressionService.getProsecutionCaseDetailById(any(), eq(prosecutionCaseId))).thenReturn(of(prosecutionCaseJsonObject));
+        JsonObject hearingsJsonObject =
+                createObjectBuilder().add("hearings", createArrayBuilder().build()).build();
+
+        when(progressionService.getCaseHearings(eq(prosecutionCaseId))).thenReturn(of(hearingsJsonObject));
 
         //When
         prosecutorCaseCpsProsecutorUpdatedEventProcessor.processCpsProsecutorUpdated(requestMessage);
 
         //Then
         verify(sender, times(1)).send(envelopeCaptor.capture());
-        verify(progressionService, times(1)).getProsecutionCaseDetailById(any(), eq(prosecutionCaseId));
+        verify(progressionService, times(1)).getCaseHearings(eq(prosecutionCaseId));
         assertThat(envelopeCaptor.getValue().payload().size(), is(7));
         assertThat(envelopeCaptor.getValue().payload().getJsonArray("hearingIds").size(), is(0));
     }

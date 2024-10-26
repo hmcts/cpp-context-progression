@@ -293,6 +293,24 @@ public class CourtDocumentAggregateTest {
     }
 
     @Test
+    public void shouldReturnCourtsDocumentRemovedBdf() {
+
+        final UUID courtDocumentId = randomUUID();
+
+        target.apply(target.addCourtDocument(CourtDocument.courtDocument().withIsRemoved(FALSE).withCourtDocumentId(courtDocumentId).build()).collect(toList()));
+        target.removeCourtDocumentByBdf(randomUUID(), true);
+        final List<Object> returnedEventStream = target.shareCourtDocument(randomUUID(), randomUUID(), randomUUID(), null).collect(toList());
+
+        assertThat(returnedEventStream.size(), is(1));
+        final Object returnedObject = returnedEventStream.get(0);
+        assertThat(returnedObject.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentShareFailed.class)));
+
+        final CourtDocumentShareFailed returnedEvent = (CourtDocumentShareFailed) returnedObject;
+        assertThat(returnedEvent.getCourtDocumentId(), is(courtDocumentId));
+        assertThat(returnedEvent.getFailureReason(), is(format("Document is deleted. Could not share the given court document id: %s", courtDocumentId)));
+    }
+
+    @Test
     public void shouldReturnCourtDocumentUpdateFailedWhenCourtDocumentIsRemoved() {
 
         final UUID courtDocumentId = randomUUID();

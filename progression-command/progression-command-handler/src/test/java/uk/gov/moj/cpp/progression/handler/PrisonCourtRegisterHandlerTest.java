@@ -65,7 +65,7 @@ public class PrisonCourtRegisterHandlerTest {
     private static final UUID FILE_ID = randomUUID();
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID MASTER_DEFENDANT_ID = randomUUID();
-
+    private static final UUID ID = randomUUID();
 
     @Mock
     private EventSource eventSource;
@@ -237,7 +237,8 @@ public class PrisonCourtRegisterHandlerTest {
                         metadata().withName("progression.event.prison-court-register-generated"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.fileId", is(FILE_ID.toString()))
+                                withJsonPath("$.fileId", is(FILE_ID.toString())),
+                                withJsonPath("$.id", is(ID.toString()))
                         )))));
     }
 
@@ -268,6 +269,7 @@ public class PrisonCourtRegisterHandlerTest {
         final RecordPrisonCourtRegisterDocumentGenerated recordPrisonCourtRegisterDocumentGenerated = RecordPrisonCourtRegisterDocumentGenerated.recordPrisonCourtRegisterDocumentGenerated()
                 .withCourtCentreId(COURT_CENTRE_ID)
                 .withFileId(FILE_ID)
+                .withId(ID)
                 .build();
 
         return envelope(RECORD_PRISON_COURT_REGISTER_GENERATED_COMMAND_NAME, recordPrisonCourtRegisterDocumentGenerated);

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentRemoved;
+import uk.gov.justice.core.courts.CourtsDocumentRemovedBdf;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -56,5 +57,25 @@ public class RemoveCourtDocumentEventListener {
 
     }
 
+    @Handles("progression.event.court-document-removed-bdf")
+    public void processCourtDocumentRemovedBdf(final JsonEnvelope event) {
+        final CourtsDocumentRemovedBdf courtsDocumentRemovedBdf = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtsDocumentRemovedBdf.class);
+        final CourtDocumentEntity courtDocumentEntity = repository.findBy(courtsDocumentRemovedBdf.getCourtDocumentId());
+
+        final CourtDocument courtDocument = jsonObjectConverter.convert(stringToJsonObjectConverter.convert(courtDocumentEntity.getPayload()), CourtDocument.class);
+
+        final CourtDocument courtDocumentUpdated = CourtDocument.courtDocument()
+                .withName(courtDocument.getName())
+                .withDocumentTypeId(courtDocument.getDocumentTypeId())
+                .withDocumentTypeDescription(courtDocument.getDocumentTypeDescription())
+                .withDocumentCategory(courtDocument.getDocumentCategory())
+                .withCourtDocumentId(courtDocument.getCourtDocumentId())
+                .withMaterials(courtDocument.getMaterials())
+                .withMimeType(courtDocument.getMimeType())
+                .build();
+        courtDocumentEntity.setPayload(objectToJsonObjectConverter.convert(courtDocumentUpdated).toString());
+        courtDocumentEntity.setIsRemoved(true);
+
+    }
 
 }

@@ -11,6 +11,9 @@ subscriptions_descriptor:
         - name: progression.event.court-document-removed
           schema_uri: http://justice.gov.uk/core/courts/courts-document-removed.json
 
+        - name: progression.event.court-document-removed-bdf
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-removed-bdf.json
+
         - name: progression.event.court-document-created
           schema_uri: http://justice.gov.uk/core/courts/courts-document-created.json
 

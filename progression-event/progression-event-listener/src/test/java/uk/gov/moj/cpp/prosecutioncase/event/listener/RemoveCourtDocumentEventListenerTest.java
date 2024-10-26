@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtsDocumentRemoved;
+import uk.gov.justice.core.courts.CourtsDocumentRemovedBdf;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -58,6 +59,9 @@ public class RemoveCourtDocumentEventListenerTest {
     private CourtsDocumentRemoved courtsDocumentRemoved;
 
     @Mock
+    private CourtsDocumentRemovedBdf courtsDocumentRemovedBdf;
+
+    @Mock
     private CourtDocument courtDocument;
 
     @Mock
@@ -99,6 +103,24 @@ public class RemoveCourtDocumentEventListenerTest {
         when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
         when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(jsonObject);
         eventListener.processCourtDocumentRemoved(envelope);
+        verify(repository).findBy(argumentCaptorRepoFind.capture());
+        verify(courtDocumentEntity).setPayload(argumentCaptorCourtDoc.capture());
+    }
+
+    @Test
+    public void shouldHandleCourtDocumentBdfRemovedEvent() throws Exception {
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtsDocumentRemovedBdf.class))
+                .thenReturn(courtsDocumentRemovedBdf);
+        when(stringToJsonObjectConverter.convert(Mockito.any())).thenReturn(courtDocumentJson);
+        when(jsonObjectToObjectConverter.convert(courtDocumentJson, CourtDocument.class))
+                .thenReturn(courtDocument);
+        when(repository.findBy(Mockito.any())).thenReturn(courtDocumentEntity);
+        when(courtDocument.getMaterials()).thenReturn(Collections.singletonList(material));
+        when(courtDocument.getCourtDocumentId()).thenReturn(randomUUID());
+        when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
+        when(objectToJsonObjectConverter.convert(Mockito.any(CourtDocument.class))).thenReturn(jsonObject);
+        eventListener.processCourtDocumentRemovedBdf(envelope);
         verify(repository).findBy(argumentCaptorRepoFind.capture());
         verify(courtDocumentEntity).setPayload(argumentCaptorCourtDoc.capture());
     }

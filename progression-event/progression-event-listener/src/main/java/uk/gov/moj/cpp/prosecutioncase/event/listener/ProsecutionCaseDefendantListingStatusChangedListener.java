@@ -1,11 +1,16 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import static uk.gov.moj.cpp.progression.event.util.DuplicateOffencesHelper.filterDuplicateOffencesByIdForHearing;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllApplications;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Stream;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -123,6 +128,8 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
         }
         filterDuplicateOffencesByIdForHearing(hearing);
         hearingEntity.setListingStatus(hearingListingStatus);
+        removeNowsJudicialResultsFromApplication(hearing);
+        removeNowsJudicialResultsFromCase(hearing);
         hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
         return hearingEntity;
     }
@@ -135,5 +142,23 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
                     )
             );
         }
+    }
+
+    private void removeNowsJudicialResultsFromApplication(final Hearing hearing) {
+        ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                .filter(Objects::nonNull)
+               .forEach(courtApplication -> ofNullable(courtApplication.getJudicialResults()).orElseGet(ArrayList::new)
+                    .removeIf(result -> Boolean.TRUE.equals(result.getPublishedForNows())));
+
+
+    }
+
+    private void removeNowsJudicialResultsFromCase(final Hearing hearing){
+        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                .map(ProsecutionCase::getDefendants).flatMap(Collection::stream)
+                .map(Defendant::getOffences).flatMap(Collection::stream)
+                .filter(offence -> isNotEmpty(offence.getJudicialResults()))
+                .forEach(offence ->
+                  offence.getJudicialResults().removeIf(result -> Boolean.TRUE.equals(result.getPublishedForNows())));
     }
 }
