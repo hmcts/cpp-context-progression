@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.nows.event.listener;
 
+import static java.util.Objects.isNull;
+import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
@@ -37,7 +39,7 @@ public class PrisonCourtRegisterEventListener {
 
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity = new PrisonCourtRegisterEntity();
 
-        prisonCourtRegisterEntity.setId(Objects.isNull(prisonCourtRegisterRecorded.getId()) ? UUID.randomUUID() : prisonCourtRegisterRecorded.getId());
+        prisonCourtRegisterEntity.setId(isNull(prisonCourtRegisterRecorded.getId()) ? randomUUID() : prisonCourtRegisterRecorded.getId());
         prisonCourtRegisterEntity.setRecordedDate(LocalDate.now());
         prisonCourtRegisterEntity.setCourtCentreId(prisonCourtRegisterRecorded.getCourtCentreId());
         prisonCourtRegisterEntity.setPayload(prisonCourtRegisterJson.toString());
@@ -50,7 +52,7 @@ public class PrisonCourtRegisterEventListener {
         final JsonObject payload = event.payloadAsJsonObject();
         final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = jsonObjectToObjectConverter.convert(payload, PrisonCourtRegisterGenerated.class);
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity;
-        if(Objects.isNull(prisonCourtRegisterGenerated.getId())) {
+        if(isNull(prisonCourtRegisterGenerated.getId())) {
             // this is for old events , catch-up or replay DLQs
             prisonCourtRegisterEntity = prisonCourtRegisterRepository.findByCourtCentreIdAndHearingId(prisonCourtRegisterGenerated.getCourtCentreId(), prisonCourtRegisterGenerated.getHearingId().toString());
         } else {
