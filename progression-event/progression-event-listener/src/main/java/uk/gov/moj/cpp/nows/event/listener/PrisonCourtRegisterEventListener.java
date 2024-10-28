@@ -14,8 +14,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PrisonCourtRegisterEnti
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PrisonCourtRegisterRepository;
 
 import java.time.LocalDate;
-import java.util.Objects;
-import java.util.UUID;
+
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
