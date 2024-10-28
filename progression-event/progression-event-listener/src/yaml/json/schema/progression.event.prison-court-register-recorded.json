@@ -6,6 +6,9 @@
     "courtCentreId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "prisonCourtRegister": {
       "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterDocumentRequest.json"
     },

@@ -13,5 +13,14 @@ rule "Command - remove court document"
     $outcome.setSuccess(true);
 end
 
+rule "Command - remove court document link by bdf"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.remove-court-document-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
 
 

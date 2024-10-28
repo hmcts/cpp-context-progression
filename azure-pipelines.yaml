@@ -30,11 +30,11 @@ pool:
 
 
 variables:
-
   sonarqubeProject: "uk.gov.moj.cpp.progression:progression-parent" # update eg: uk.gov.moj.cpp.listing:listing-parent
   service_Name: 'progression' # this should be service name. Image repository will be <serviceName>-service and should be in sysnc with aks-deploy repo.. eg : stagingbulkscan, hearing, systemidmapper
   itTest_Folder: 'progression-integration-test' # integration test folder name system-id-mapper-integration-test
-
+  LANG: 'en_GB.UTF-8'
+  LC_ALL: 'en_GB.UTF-8'
 
 stages:
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:

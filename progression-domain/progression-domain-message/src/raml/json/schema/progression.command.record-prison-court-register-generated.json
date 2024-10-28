@@ -11,6 +11,9 @@
     "fileId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "hearingDate": {
       "type": "string",
       "format": "date-time"

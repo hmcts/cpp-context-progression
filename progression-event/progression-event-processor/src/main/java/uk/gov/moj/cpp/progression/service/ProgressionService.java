@@ -24,6 +24,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 
@@ -91,11 +92,13 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.progression.Country;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -189,6 +192,8 @@ public class ProgressionService {
     private static final String JURISDICTION_TYPE = "jurisdictionType";
     private static final String REMIT_RESULT_IDS = "remitResultIds";
     private static final String IS_BOX_HEARING = "isBoxHearing";
+    private static final String PROGRESSION_QUERY_CASE_HEARINGS = "progression.query.casehearings";
+
 
     private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     private static final String PROGRESSION_QUERY_ACTIVE_APPLICATIONS_ON_CASE = "progression.query.active-applications-on-case";
@@ -236,6 +241,9 @@ public class ProgressionService {
 
     @Inject
     private JsonSchemaValidator jsonSchemaValidator;
+
+    @Inject
+    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
 
 
     private static JsonArray transformProsecutionCases(final List<ConfirmedProsecutionCase> prosecutionCases) {
@@ -858,6 +866,20 @@ public class ProgressionService {
         }
         return prosecutionCase.payloadAsJsonObject();
     }
+
+    public Optional<JsonObject> getCaseHearings(final String caseId) {
+        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
+        final UUID systemUser = nonNull(serviceContextSystemUserProvider.getContextSystemUserId()) && serviceContextSystemUserProvider.getContextSystemUserId().isPresent() ? serviceContextSystemUserProvider.getContextSystemUserId().get() : null;
+
+        final MetadataBuilder metadataBuilder = metadataBuilder().withId(UUID.randomUUID())
+                .withName(PROGRESSION_QUERY_CASE_HEARINGS)
+                .withUserId(nonNull(systemUser) ? systemUser.toString() : null);
+
+        final JsonObject caseHearings = requester.request(JsonEnvelope.envelopeFrom(metadataBuilder, payload)).payloadAsJsonObject();
+
+        return ofNullable(caseHearings);
+    }
+
 
     public Optional<JsonObject> searchLinkedCases(final JsonEnvelope envelope, final String caseId) {
 

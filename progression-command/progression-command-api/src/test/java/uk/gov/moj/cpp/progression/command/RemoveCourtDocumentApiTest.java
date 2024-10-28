@@ -49,4 +49,16 @@ public class RemoveCourtDocumentApiTest {
         verify(sender, times(1)).send(commandEnvelope);
     }
 
+    @Test
+    public void shouldRemoveDocumentByBdf() {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.remove-court-document-bdf"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
+        removeCourtDocumentApi.handleBdf(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
+    }
+
 }
