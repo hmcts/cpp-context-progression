@@ -16,7 +16,6 @@ import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
-import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ProsecutionCasesResulted;
@@ -178,7 +177,6 @@ public class HearingResultEventProcessor {
                     applicationIdsResultCategoryFinal.add(courtApplication.getId());
                 }
             });
-            progressionService.linkApplicationsToHearing(event, hearing, allApplicationIds, HearingListingStatus.HEARING_RESULTED);
             progressionService.updateCourtApplicationStatus(event, applicationIdsResultCategoryFinal, ApplicationStatus.FINALISED);
         }
     }

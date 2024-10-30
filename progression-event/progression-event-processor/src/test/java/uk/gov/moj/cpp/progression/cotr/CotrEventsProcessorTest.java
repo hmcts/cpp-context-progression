@@ -15,6 +15,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -150,8 +151,7 @@ public class CotrEventsProcessorTest {
     @Mock
     private COTRDetailsRepository cotrDetailsRepository;
 
-    @Mock
-    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
+
 
     private static JsonObject getReviewNotes(final UUID id1, final UUID id2) {
 
@@ -220,6 +220,7 @@ public class CotrEventsProcessorTest {
         final UUID hearingId = randomUUID();
         final UUID cotrId = randomUUID();
         final UUID submissionId = randomUUID();
+        final UUID caseId = randomUUID();
 
         final String hearingDate = "2022-06-04";
 
@@ -230,8 +231,8 @@ public class CotrEventsProcessorTest {
 
         final List<FormDefendants> formDefendants = new ArrayList<>();
         formDefendants.add(FormDefendants.formDefendants()
-                        .withDefendantId(randomUUID())
-                        .withCpsDefendantId(randomUUID().toString())
+                .withDefendantId(randomUUID())
+                .withCpsDefendantId(randomUUID().toString())
                 .build());
 
         final Envelope<CotrCreated> eventEnvelope = Envelope.envelopeFrom(eventEnvelopeMetadata,
@@ -240,7 +241,7 @@ public class CotrEventsProcessorTest {
                         .withHearingId(hearingId)
                         .withHearingDate(hearingDate)
                         .withSubmissionId(submissionId)
-                        .withCaseId(randomUUID())
+                        .withCaseId(caseId)
                         .withFormDefendants(formDefendants)
                         .build());
 
@@ -248,12 +249,11 @@ public class CotrEventsProcessorTest {
 
         final JsonObject caseHearingjsonPayload = jsonFromString(caseHearingpayload);
 
-        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(caseHearingjsonPayload);
-        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
+        when(progressionService.getCaseHearings(eq(caseId.toString()))).thenReturn(of(caseHearingjsonPayload));
 
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
 
         final Metadata metadata = metadataWithNewActionName(eventEnvelopeMetadata, "progression.query.cotr.details.prosecutioncase");
+        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
 
         processor.cotrCreated(eventEnvelope);
 
@@ -268,7 +268,6 @@ public class CotrEventsProcessorTest {
         assertThat(currentEvents.get(0).payload().toString(), notNullValue());
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COTR_ID), Matchers.is(cotrId.toString()));
     }
-
     @Test
     public void shouldTestProcessServeProsecutionCotrEvent() {
         final UUID hearingId = randomUUID();
@@ -535,12 +534,13 @@ public class CotrEventsProcessorTest {
 
     @Test
     public void shouldHandleServeCotrReceivedPublicEvent() throws IOException {
+
+
         String caseHearingpayload = Resources.toString(getResource("progression-case-hearings.json"), defaultCharset());
 
         final JsonObject caseHearingjsonPayload = jsonFromString(caseHearingpayload);
 
-        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(caseHearingjsonPayload);
-        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
+        when(progressionService.getCaseHearings(eq("417f38c6-1b09-11ed-861d-0242ac120002"))).thenReturn(of(caseHearingjsonPayload));
 
         String payload = Resources.toString(getResource("cps-serve-cotr-submitted.json"), defaultCharset());
         final JsonObject jsonPayload = jsonFromString(payload);
@@ -550,9 +550,9 @@ public class CotrEventsProcessorTest {
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
 
         final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
+        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -572,7 +572,6 @@ public class CotrEventsProcessorTest {
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getString(COURT_CENTER), Matchers.is(notNullValue()));
         assertThat(objectToJsonObjectConverter.convert(currentEvents.get(0).payload()).getJsonArray(DEFENDANT_IDS).size(), is(1));
     }
-
     @Test
     public void shouldHandleServeCotrReceivedForTheLatestHearing() throws IOException {
 
@@ -580,8 +579,8 @@ public class CotrEventsProcessorTest {
 
         final JsonObject caseHearingjsonPayload = jsonFromString(caseHearingpayload);
 
-        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(caseHearingjsonPayload);
-        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
+
+        when(progressionService.getCaseHearings(eq("417f38c6-1b09-11ed-861d-0242ac120002"))).thenReturn(of(caseHearingjsonPayload));
 
 
         String payload = Resources.toString(getResource("cps-serve-cotr-submitted.json"), defaultCharset());
@@ -591,9 +590,6 @@ public class CotrEventsProcessorTest {
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
 
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
-
-        final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -621,8 +617,11 @@ public class CotrEventsProcessorTest {
 
         final JsonObject caseHearingjsonPayload = jsonFromString(caseHearingpayload);
 
-        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(caseHearingjsonPayload);
-        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
+
+
+        when(progressionService.getCaseHearings(eq("417f38c6-1b09-11ed-861d-0242ac120002"))).thenReturn(of(caseHearingjsonPayload));
+
+
 
 
         String payload = Resources.toString(getResource("cps-serve-cotr-submitted.json"), defaultCharset());
@@ -632,7 +631,9 @@ public class CotrEventsProcessorTest {
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
 
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
+
+        final Metadata metadata = metadataWithNewActionName(envelope.metadata(), "progression.query.cotr.details.prosecutioncase");
+        final Envelope envelope1 = Envelope.envelopeFrom(metadata, createCotrDetails().get());
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -656,15 +657,13 @@ public class CotrEventsProcessorTest {
     @Test
     public void shouldNotHandleServeCotrReceivedPublicEvent() throws IOException {
 
-        final JsonEnvelope jsonEnvelope = getEnvelope(PROGRESSION_QUERY_CASEHEARINGS);
-        final UUID caseId = randomUUID();
 
         String caseHearingpayload = Resources.toString(getResource("progression-no-case-hearings.json"), defaultCharset());
 
         final JsonObject caseHearingjsonPayload = jsonFromString(caseHearingpayload);
 
-        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(caseHearingjsonPayload);
-        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
+        when(progressionService.getCaseHearings(eq("417f38c6-1b09-11ed-861d-0242ac120002"))).thenReturn(of(caseHearingjsonPayload));
+
 
         String payload = Resources.toString(getResource("cps-serve-cotr-submitted.json"), defaultCharset());
         final JsonObject jsonPayload = jsonFromString(payload);
@@ -672,8 +671,6 @@ public class CotrEventsProcessorTest {
         final JsonEnvelope envelope = envelopeFrom(
                 metadataWithRandomUUID("public.prosecutioncasefile.cps-serve-pet-submitted"),
                 jsonPayload);
-
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
 
         //when
         processor.handleServeCotrReceivedPublicEvent(envelope);
@@ -685,7 +682,6 @@ public class CotrEventsProcessorTest {
         assertThat(currentEvents.get(0).metadata().name(), Matchers.is(PROGRESSION_OPERATION_FAILED));
         assertThat(currentEvents.get(0).payload(), notNullValue());
     }
-
     @Test
     public void shouldHandleUpdateCotrReceivedPublicEvent() throws IOException {
         String payload = Resources.toString(getResource("cps-update-cotr-submitted.json"), defaultCharset());

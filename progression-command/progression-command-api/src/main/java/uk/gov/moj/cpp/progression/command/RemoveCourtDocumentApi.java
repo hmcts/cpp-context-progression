@@ -22,4 +22,9 @@ public class RemoveCourtDocumentApi {
     public void handle(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "progression.command.remove-court-document").apply(envelope.payloadAsJsonObject()));
     }
+
+    @Handles("progression.remove-court-document-bdf")
+    public void handleBdf(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "progression.command.remove-court-document-bdf").apply(envelope.payloadAsJsonObject()));
+    }
 }

@@ -126,6 +126,7 @@ public class PrisonCourtRegisterEventProcessorTest {
 
         final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = PrisonCourtRegisterRecorded.prisonCourtRegisterRecorded()
                 .withCourtCentreId(UUID.randomUUID())
+                .withId(UUID.randomUUID())
                 .withPrisonCourtRegister(prisonCourtRegisterDocumentRequest).build();
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterRecorded);
 
@@ -155,6 +156,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         JsonObject commandPayload = command.payload();
         assertThat(commandPayload.getString("courtCentreId"), is(courtCentreId.toString()));
         assertThat(commandPayload.getString("fileId"), is(fileId.toString()));
+        assertThat(commandPayload.getString("id"), is(prisonCourtRegisterRecorded.getId().toString()));
         assertThat(commandPayload.getJsonObject("hearingVenue").getString("courtHouse"), is("liverpool Crown Court"));
         assertThat(commandPayload.getJsonObject("defendant").getString("name"), is("defendant-name"));
         assertThat(commandPayload.getJsonObject("defendant").getString("dateOfBirth"), is("dateOfBirth"));

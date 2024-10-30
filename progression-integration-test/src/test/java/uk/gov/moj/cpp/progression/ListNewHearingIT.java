@@ -66,7 +66,7 @@ public class ListNewHearingIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String DOCUMENT_TEXT = new StringGenerator().next();
     private static final String PROGRESSION_EVENT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
-    private static final JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.command.add-court-document").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
 
 
     @BeforeEach

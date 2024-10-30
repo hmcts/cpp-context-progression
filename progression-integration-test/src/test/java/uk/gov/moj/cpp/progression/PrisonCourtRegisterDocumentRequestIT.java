@@ -87,7 +87,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
                 .replaceAll("%HEARING_ID%", hearingId.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString());
 
-        final Response writeResponse = postCommand(getWriteUrl("/prison-court-register"),
+        Response writeResponse = postCommand(getWriteUrl("/prison-court-register"),
                 "application/vnd.progression.add-prison-court-register+json",
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
@@ -95,10 +95,23 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         assertThat(jsonResponse.get("courtCentreId"), is(courtCentreId));
 
-        final JsonPath jsonResponse2 = retrieveMessageAsJsonPath(privateEventsConsumer2);
+        JsonPath jsonResponse2 = retrieveMessageAsJsonPath(privateEventsConsumer2);
         assertThat(jsonResponse2.get("courtCentreId"), is(courtCentreId));
         assertThat(jsonResponse2.get("fileId"), is(notNullValue()));
-        verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId);
+        final String firstFileId = jsonResponse2.get("fileId");
+
+
+        writeResponse = postCommand(getWriteUrl("/prison-court-register"),
+                "application/vnd.progression.add-prison-court-register+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+        jsonResponse2 = retrieveMessageAsJsonPath(privateEventsConsumer2);
+
+        assertThat(jsonResponse2.get("fileId"), is(notNullValue()));
+        final String secondFileId = jsonResponse2.get("fileId");
+
+        verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId, firstFileId);
+        verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId, secondFileId);
     }
 
     @Test
@@ -138,14 +151,15 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
         final JsonPath jsonResponse2 = retrieveMessageAsJsonPath(privateEventsConsumer2);
         assertThat(jsonResponse2.get("courtCentreId"), is(courtCentreId));
         assertThat(jsonResponse2.get("fileId"), is(notNullValue()));
-        verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId);
+        final String fileId = jsonResponse2.get("fileId");
+        verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId), hearingId, fileId);
     }
 
 
-    public void verifyPrisonCourtRegisterRequestsExists(final UUID courtCentreId, final UUID hearingId) {
+    public void verifyPrisonCourtRegisterRequestsExists(final UUID courtCentreId, final UUID hearingId, final String fileId) {
         final String prisonCourtRegisterDocumentRequestPayload = getPrisonCourtRegisterDocumentRequests(courtCentreId, allOf(
                 withJsonPath("$.prisonCourtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString())),
-                withJsonPath("$.prisonCourtRegisterDocumentRequests[*].fileId", is(notNullValue()))
+                withJsonPath("$.prisonCourtRegisterDocumentRequests[*].fileId",  hasItem(fileId))
         ));
 
         final JsonObject prisonCourtRegisterDocumentRequestJsonObject = stringToJsonObjectConverter.convert(prisonCourtRegisterDocumentRequestPayload);

@@ -41,6 +41,7 @@ public class PrisonCourtRegisterEventProcessor {
     private static final String FIELD_TEMPLATE_ID = "templateId";
     private static final String SEND_TO_ADDRESS = "sendToAddress";
     private static final String FILE_ID = "fileId";
+    private static final String ID = "id";
     private static final String PERSONALISATION = "personalisation";
     private static final String DEFENDANT = "defendant";
     private static final String HEARING_VENUE = "hearingVenue";
@@ -92,6 +93,10 @@ public class PrisonCourtRegisterEventProcessor {
                 .add(HEARING_DATE, prisonCourtRegister.getString(HEARING_DATE))
                 .add(FILE_ID, fileId.toString())
                 .add(FIELD_RECIPIENTS, prisonCourtRegister.getJsonArray(FIELD_RECIPIENTS));
+
+        if(payload.containsKey(ID)){
+            payloadBuilder.add(ID, payload.getString(ID));
+        }
 
         sender.send(envelop(payloadBuilder.build())
                 .withName(PROGRESSION_COMMAND_RECORD_PRISON_COURT_REGISTER_GENERATED)

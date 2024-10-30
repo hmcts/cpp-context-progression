@@ -117,7 +117,7 @@ public class HearingUpdatedIT {
     public static void setUpClass() {
         stubInitiateHearing();
     }
-    private static final JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.command.add-court-document").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
 
 
     @BeforeEach

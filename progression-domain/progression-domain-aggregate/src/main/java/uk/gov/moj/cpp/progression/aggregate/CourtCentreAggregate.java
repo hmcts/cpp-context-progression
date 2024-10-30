@@ -73,7 +73,8 @@ public class CourtCentreAggregate implements Aggregate {
         } else {
             final PrisonCourtRegisterRecorded.Builder prisonCourtRegisterBuilder = PrisonCourtRegisterRecorded.prisonCourtRegisterRecorded()
                     .withCourtCentreId(courtCentreId)
-                    .withPrisonCourtRegister(prisonCourtRegisterDocumentRequest);
+                    .withPrisonCourtRegister(prisonCourtRegisterDocumentRequest)
+                    .withId(UUID.randomUUID());
 
             if (Objects.nonNull(defendantType)) {
                 prisonCourtRegisterBuilder.withDefendantType(defendantType);
@@ -114,6 +115,7 @@ public class CourtCentreAggregate implements Aggregate {
                 .withHearingVenue(prisonCourtRegisterDocumentGenerated.getHearingVenue())
                 .withHearingDate(prisonCourtRegisterDocumentGenerated.getHearingDate())
                 .withHearingId(prisonCourtRegisterDocumentGenerated.getHearingId())
+                .withId(prisonCourtRegisterDocumentGenerated.getId())
                 .withCourtCentreId(courtCentreId).build()));
     }
 

@@ -45,7 +45,7 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
 
         caseProsecutorUpdateHelper.verifyInActiveMQ(privateEventsConsumer, caseProsecutorUpdatedPrivateEventsConsumer);
 
-        caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(0, publicEventsCaseProsecutorUpdated);
+        caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(1, publicEventsCaseProsecutorUpdated);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 

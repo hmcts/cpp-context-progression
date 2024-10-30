@@ -114,8 +114,10 @@ public class CourtCentreAggregateTest {
         final UUID courtCentreId = randomUUID();
         final ArrayList<PrisonCourtRegisterRecipient> recipients = Lists.newArrayList(PrisonCourtRegisterRecipient.prisonCourtRegisterRecipient().withEmailAddress1("test@test.com").withRecipientName("john smith").build());
         final UUID fileId = randomUUID();
+        final UUID id = randomUUID();
         final RecordPrisonCourtRegisterDocumentGenerated prisonCourtRegisterDocumentRequest = RecordPrisonCourtRegisterDocumentGenerated.recordPrisonCourtRegisterDocumentGenerated()
                 .withFileId(fileId)
+                .withId(id)
                 .withCourtCentreId(courtCentreId)
                 .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().withName("Test").withDateOfBirth("02/07/1984").build())
                 .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().withCourtHouse("Leamington Avenue").withLjaName("London").build())
@@ -129,6 +131,7 @@ public class CourtCentreAggregateTest {
         assertThat(prisonCourtRegisterRecorded.getCourtCentreId(), is(courtCentreId));
         assertThat(prisonCourtRegisterRecorded.getRecipients(), equalTo(recipients));
         assertThat(prisonCourtRegisterRecorded.getFileId(), equalTo(fileId));
+        assertThat(prisonCourtRegisterRecorded.getId(), equalTo(id));
     }
 
 

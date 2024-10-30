@@ -124,7 +124,7 @@ public class NowsRequestedEventProcessor {
         final UUID materialId = nowDocumentRequested.getMaterialId();
 
         final List<Envelope<JsonObject>> commandAddCourtDocumentEnvolopeList = nowDocumentRequested.getNowDocumentRequest().getCases().stream().map(prosecutionCaseId -> {
-                    CourtDocument courtDocument = buildCourtDocument(prosecutionCaseId, materialId, fileName, isCpsProsecutionCase(nowDocumentRequested.getNowDocumentRequest().getNowContent()));
+                    CourtDocument courtDocument = buildCourtDocument(prosecutionCaseId, materialId, fileName, false);
                     final JsonObject jsonObject = createObjectBuilder()
                             .add("materialId", nowDocumentRequested.getMaterialId().toString())
                             .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();

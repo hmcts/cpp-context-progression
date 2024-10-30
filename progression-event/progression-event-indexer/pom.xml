@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>17.0.16-CCT-2047-SNAPSHOT</version>
+        <version>17.0.22-CCT-2047-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-indexer</artifactId>
     <packaging>war</packaging>
