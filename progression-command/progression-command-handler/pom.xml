@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-command</artifactId>
-        <version>17.0.22-CCT-2047-SNAPSHOT</version>
+        <version>17.0.23-CCT-2047-SNAPSHOT</version>
     </parent>
     <artifactId>progression-command-handler</artifactId>
     <packaging>war</packaging>
