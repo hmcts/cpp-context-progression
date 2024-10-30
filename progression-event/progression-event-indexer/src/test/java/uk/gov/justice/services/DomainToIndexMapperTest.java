@@ -19,14 +19,14 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DomainToIndexMapperTest {
 
     private DomainToIndexMapper domainToIndexMapper;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         domainToIndexMapper = new DomainToIndexMapper();
     }

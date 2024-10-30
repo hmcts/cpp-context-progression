@@ -30,8 +30,8 @@ import java.util.List;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class LinkCasesIT extends AbstractIT {
 
@@ -63,7 +63,7 @@ public class LinkCasesIT extends AbstractIT {
     private String defendantDOB;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stubInitiateHearing();
         prosecutionCaseId_1 = randomUUID().toString();

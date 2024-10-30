@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
@@ -9,14 +8,12 @@ import static java.text.MessageFormat.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import org.apache.http.HttpHeaders;
-import java.text.MessageFormat;
 
 
 public class DirectionsManagementStub {

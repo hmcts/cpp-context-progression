@@ -1,17 +1,18 @@
 package uk.gov.moj.cpp.progression.command.cotr;
 
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -29,21 +30,21 @@ import uk.gov.moj.cpp.progression.command.api.UserDetailsLoader;
 import uk.gov.moj.cpp.progression.command.service.OrganisationService;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CotrCommandApiTest {
     private static final String DEFENDANT_ID1 = "bd8d80d0-e995-40fb-9f59-340a53a1a688";
     private static final String DEFENDANT_ID2 = "c46ca4a8-39ae-440d-9016-e12e936313e3";
@@ -56,7 +57,7 @@ public class CotrCommandApiTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
 
     @Spy
-    private JsonObjectToObjectConverter jsonObjectConverter;
+    private final JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Mock
     private Sender sender;
@@ -75,11 +76,6 @@ public class CotrCommandApiTest {
 
     @Mock
     private Requester requester;
-
-    @Before
-    public void setUp(){
-        setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-    }
 
     @Test
     public void shouldPassThroughCreateCotrForDefendantsOfHearing() {
@@ -204,7 +200,7 @@ public class CotrCommandApiTest {
     }
 
 
-    @Test(expected= ForbiddenRequestException.class)
+    @Test
     public void shouldRaiseExceptionIfUserNotAssociatedToDefendant() {
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
@@ -214,11 +210,9 @@ public class CotrCommandApiTest {
 
         final JsonEnvelope commandJsonEnvelope = envelopeFrom(metadata, getCotrRequestPayload());
         when(userDetailsLoader.isDefenceClient(any(), any())).thenReturn(true);
-        when(requester.requestAsAdmin(any(), any())).thenReturn(getAssociatedDefendantsEnvelope(metadata,randomUUID().toString(),randomUUID().toString()));
 
-        cotrCommandApi.createCotrForDefendantsOfHearing(commandJsonEnvelope);
+        assertThrows(ForbiddenRequestException.class, () -> cotrCommandApi.createCotrForDefendantsOfHearing(commandJsonEnvelope));
     }
-
 
     @Test
     public void shouldCreateCotrIfDefenceClient() {
@@ -231,7 +225,7 @@ public class CotrCommandApiTest {
 
         final JsonEnvelope commandJsonEnvelope = envelopeFrom(metadata, requestPayload);
         when(userDetailsLoader.isDefenceClient(any(), any())).thenReturn(true);
-        when(requester.requestAsAdmin(any(), any())).thenReturn(getAssociatedDefendantsEnvelope(metadata, DEFENDANT_ID1,DEFENDANT_ID2));
+        when(organisationService.getAssociatedDefendants(any(), any())).thenReturn(Arrays.asList(fromString(DEFENDANT_ID1), fromString(DEFENDANT_ID2)));
 
         cotrCommandApi.createCotrForDefendantsOfHearing(commandJsonEnvelope);
 
@@ -242,7 +236,7 @@ public class CotrCommandApiTest {
         assertThat(actualSentEnvelope.payload(), is(requestPayload));
     }
 
-    @Test(expected= ForbiddenRequestException.class)
+    @Test
     public void shouldRaiseExceptionWhileServeDefendantIfUserNotAssociatedToDefendant() {
         final Metadata metadata = metadataBuilder()
                 .withId(randomUUID())
@@ -252,9 +246,9 @@ public class CotrCommandApiTest {
 
         final JsonEnvelope commandJsonEnvelope = envelopeFrom(metadata, getServeCotrRequestPayload());
         when(userDetailsLoader.isDefenceClient(any(), any())).thenReturn(true);
-        when(requester.requestAsAdmin(any(), any())).thenReturn(getAssociatedDefendantsEnvelope(metadata, randomUUID().toString(),randomUUID().toString()));
 
-        cotrCommandApi.serveDefendantCotr(commandJsonEnvelope);
+
+        assertThrows(ForbiddenRequestException.class, () -> cotrCommandApi.serveDefendantCotr(commandJsonEnvelope));
     }
 
     @Test
@@ -269,7 +263,7 @@ public class CotrCommandApiTest {
 
         final JsonEnvelope commandJsonEnvelope = envelopeFrom(metadata, requestPayload);
         when(userDetailsLoader.isDefenceClient(any(), any())).thenReturn(true);
-        when(requester.requestAsAdmin(any(), any())).thenReturn(getAssociatedDefendantsEnvelope(metadata, DEFENDANT_ID1, DEFENDANT_ID2));
+        when(organisationService.getAssociatedDefendants(any(), any())).thenReturn(Arrays.asList(fromString(DEFENDANT_ID1), fromString(DEFENDANT_ID2)));
 
         cotrCommandApi.serveDefendantCotr(commandJsonEnvelope);
 

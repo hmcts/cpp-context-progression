@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Hearing.hearing;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -45,7 +45,6 @@ import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.hearing.courts.HearingResult;
@@ -80,15 +79,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultHandlerTest {
 
     @Mock
@@ -111,9 +109,6 @@ public class HearingResultHandlerTest {
     @InjectMocks
     private HearingResultHandler hearingResultHandler;
 
-
-    private HearingAggregate aggregate;
-
     private final static String COMMITTING_CROWN_COURT_CODE = "CRCODE";
     private final static String COMMITTING_CROWN_COURT_NAME = "Committing Crown Court";
     private final static String COMMITTING_MAGS_COURT_CODE = "MGCODE";
@@ -125,16 +120,6 @@ public class HearingResultHandlerTest {
     @Mock
     private CaseAggregate caseAggregate;
 
-    @Before
-    public void setup() {
-        aggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
-
-        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(new HearingResultHandler(), isHandler(COMMAND_HANDLER)
@@ -145,6 +130,10 @@ public class HearingResultHandlerTest {
 
     @Test
     public void shouldHandleProcessUpdateDefendantStatusWithoutGroupCases() throws EventStreamException {
+        final HearingAggregate aggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
@@ -223,6 +212,12 @@ public class HearingResultHandlerTest {
 
     @Test
     public void shouldHandleProcessUpdateDefendantStatusWithGroupCases() throws EventStreamException {
+        final HearingAggregate aggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
+        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
                 .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
@@ -295,6 +290,10 @@ public class HearingResultHandlerTest {
 
     @Test
     public void shouldProcessCommand() throws Exception {
+        final HearingAggregate aggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         final HearingResult hearingResult = HearingResult.hearingResult()
                 .withHearing(Hearing.hearing()
                         .withId(UUID.randomUUID())
@@ -310,6 +309,7 @@ public class HearingResultHandlerTest {
                 .build();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult);
+
 
         hearingResultHandler.handle(envelope);
 
@@ -335,6 +335,9 @@ public class HearingResultHandlerTest {
 
     @Test
     public void shouldProcessCommand_whenAtLeastOneofOffencesOfDefendantHaveFinalCategory_expectProceedingConcludedAsTrue() throws Exception {
+        final HearingAggregate aggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         Offence offence1 = Offence.offence()
                 .withId(randomUUID())
@@ -403,6 +406,11 @@ public class HearingResultHandlerTest {
 
     @Test
     public void shouldProcessCommand_whenOneDefendantHaveFinalCategoryDefendantLevelAndOffencesOfSecondDefendantHaveFinalCategory_expectProceedingConcludedAsFalse() throws Exception {
+
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         aggregate.apply(createPayload().getHearing());
 
@@ -498,11 +506,16 @@ public class HearingResultHandlerTest {
     @Test
     public void shouldProcessCommand_whenOnlyOneDefendantHaveFinalCategory_expectCaseStatusNotInActive() throws Exception {
 
+        final HearingAggregate aggregate = new HearingAggregate();
+
         aggregate.apply(createHearingResultPayload().getHearing());
 
         final Metadata metadata = getMetadata();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, createHearingResultPayload());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         hearingResultHandler.handle(envelope);
 
@@ -582,11 +595,15 @@ public class HearingResultHandlerTest {
     @Test
     public void shouldProcessCommand_whenHearingHaveFinalCategory_expectCaseStatusInActive() throws Exception {
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(createPayloadWIthHearingHavingFinalCategory().getHearing());
 
         final Metadata metadata = getMetadata();
 
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, createPayloadWIthHearingHavingFinalCategory());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         hearingResultHandler.handle(envelope);
 
@@ -649,6 +666,11 @@ public class HearingResultHandlerTest {
                         .build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         aggregate.apply(hearingResult.getHearing());
 
         final Metadata metadata = getMetadata();
@@ -693,6 +715,12 @@ public class HearingResultHandlerTest {
                 .build();
         final Envelope<HearingResult> envelope = envelopeFrom(metadata, hearingResult().withHearing(hearing).build());
 
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
+
         hearingResultHandler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -719,6 +747,11 @@ public class HearingResultHandlerTest {
                 .withProsecutionCases(getProsecutionCases())
                 .build();
         final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(), hearingResult().withHearing(hearing).build());
+
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         hearingResultHandler.handle(envelope);
 
@@ -747,6 +780,11 @@ public class HearingResultHandlerTest {
                 .withCourtApplications(getCourtApplications())
                 .build();
         final Envelope<HearingResult> envelope = envelopeFrom(getMetadata(), hearingResult().withHearing(hearing).build());
+
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         hearingResultHandler.handle(envelope);
 
@@ -784,6 +822,10 @@ public class HearingResultHandlerTest {
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
                 .withCourtApplications(getCourtApplications())
                 .build();
+
+        final HearingAggregate aggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         aggregate.apply(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
                 .withHearing(initHearing)
@@ -844,6 +886,12 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -868,6 +916,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -875,6 +924,9 @@ public class HearingResultHandlerTest {
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         hearingResultHandler.handle(envelopeFrom(getMetadata(), hearingResult().withHearing(resultHearing).build()));
 
@@ -898,6 +950,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -905,6 +958,9 @@ public class HearingResultHandlerTest {
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
 
         hearingResultHandler.handle(envelopeFrom(getMetadata(), hearingResult().withHearing(resultHearing).build()));
 
@@ -930,6 +986,12 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -953,6 +1015,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -964,6 +1027,10 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -987,6 +1054,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -998,6 +1066,10 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -1023,6 +1095,12 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        final HearingAggregate aggregate = new HearingAggregate();
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -1046,6 +1124,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -1057,6 +1136,10 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -1080,6 +1163,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -1091,6 +1175,10 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -1104,7 +1192,6 @@ public class HearingResultHandlerTest {
 
     }
 
-    //////////////////////////////////
     @Test
     public void shouldUpdateAllOffencesUnderApplicationWhenHearingAdjourned() throws EventStreamException {
 
@@ -1117,6 +1204,10 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+        final HearingAggregate aggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -1142,6 +1233,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -1153,6 +1245,10 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
@@ -1177,6 +1273,7 @@ public class HearingResultHandlerTest {
                 .withType(HearingType.hearingType().withDescription("First Hearing").build())
                 .build();
 
+        final HearingAggregate aggregate = new HearingAggregate();
         aggregate.apply(HearingResulted.hearingResulted().withHearing(firstHearing).build());
 
         final Hearing resultHearing = Hearing.hearing()
@@ -1188,6 +1285,10 @@ public class HearingResultHandlerTest {
                 hearingResult()
                         .withHearing(resultHearing)
                         .build());
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
+
         hearingResultHandler.handle(envelope);
 
         final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());

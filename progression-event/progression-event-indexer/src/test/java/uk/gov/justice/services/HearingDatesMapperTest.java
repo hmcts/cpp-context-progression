@@ -2,24 +2,25 @@ package uk.gov.justice.services;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.services.common.util.UtcClock;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HearingDatesMapperTest {
 
     private HearingDatesMapper hearingDatesMapper;
 
-    @Before
+    @BeforeEach
     public void before() {
         hearingDatesMapper = new HearingDatesMapper();
     }
@@ -38,7 +39,7 @@ public class HearingDatesMapperTest {
     @Test
     public void shouldReturnHearingDates() {
 
-        final ZonedDateTime today = ZonedDateTime.now();
+        final ZonedDateTime today = new UtcClock().now();
 
         final HearingDay hearingDay = HearingDay
                 .hearingDay()

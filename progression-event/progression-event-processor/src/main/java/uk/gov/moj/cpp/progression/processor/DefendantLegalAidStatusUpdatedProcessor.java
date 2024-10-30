@@ -26,11 +26,20 @@ public class DefendantLegalAidStatusUpdatedProcessor {
     private Enveloper enveloper;
 
 
-    @Handles("progression.event.defendant-legalaid-status-updated")
-    public void handleDefendantLegalAidStatusUpdated(final JsonEnvelope jsonEnvelope) {
+    @Handles("progression.event.defendant-legalaid-status-updated-v2")
+    public void handleDefendantLegalAidStatusUpdatedV2(final JsonEnvelope jsonEnvelope) {
+        handle(jsonEnvelope);
+    }
+
+    private void handle(final JsonEnvelope jsonEnvelope) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Received Defendant Legal Status updated with payload : {}", jsonEnvelope.toObfuscatedDebugString());
         }
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED).apply(jsonEnvelope.payloadAsJsonObject()));
+    }
+
+    @Handles("progression.event.defendant-legalaid-status-updated")
+    public void handleDefendantLegalAidStatusUpdated(final JsonEnvelope jsonEnvelope) {
+        handle(jsonEnvelope);
     }
 }

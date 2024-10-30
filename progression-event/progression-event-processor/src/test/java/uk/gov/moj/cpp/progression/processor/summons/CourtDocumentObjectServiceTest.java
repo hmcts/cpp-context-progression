@@ -22,13 +22,13 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class CourtDocumentObjectServiceTest {
 
     private static final UUID CASE_SUMMONS_DOCUMENT_TYPE_ID = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");

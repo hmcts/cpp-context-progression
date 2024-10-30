@@ -8,8 +8,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -42,15 +42,15 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.google.common.io.Resources;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ResendLaaCaseOutcomeHandlerTest {
 
     @InjectMocks

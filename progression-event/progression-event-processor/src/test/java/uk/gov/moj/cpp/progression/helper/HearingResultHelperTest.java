@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.helper;
 
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResults;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResultsUnderCourtApplicationCases;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtApplicationWithJudicialResultsUnderCourtOrders;
@@ -26,19 +27,14 @@ import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultHelperTest {
 
     private static final UUID APPROVED_SUMMONS = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66");
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void shouldReturnTrueWhenNextHearingExistForProsecutionCases() {
@@ -161,10 +157,9 @@ public class HearingResultHelperTest {
 
     @Test
     public void shouldTestExceptionForSummonsRequiredForRespondents() {
-        expectedException.expect(DataValidationException.class);
         List<CourtApplicationParty> respondents = Arrays.asList( CourtApplicationParty.courtApplicationParty().withSummonsRequired(false).build(),
                 CourtApplicationParty.courtApplicationParty().withSummonsRequired(true).build(),
                 CourtApplicationParty.courtApplicationParty().withSummonsRequired(false).build());
-        new HearingResultHelper().isSummonsRequiredForRespondents(respondents);
+        assertThrows(DataValidationException.class, () -> new HearingResultHelper().isSummonsRequiredForRespondents(respondents));
     }
 }

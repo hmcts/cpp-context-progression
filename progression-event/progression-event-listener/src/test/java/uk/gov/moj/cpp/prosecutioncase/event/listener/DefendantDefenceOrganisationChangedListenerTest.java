@@ -40,16 +40,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantDefenceOrganisationChangedListenerTest {
 
     @Mock
@@ -97,7 +96,7 @@ public class DefendantDefenceOrganisationChangedListenerTest {
     @Captor
     private ArgumentCaptor<HearingEntity> hearingEntityArgumentCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
@@ -128,8 +127,6 @@ public class DefendantDefenceOrganisationChangedListenerTest {
                 .build();
         when(defendantDefenceOrganisationChanged.getAssociatedDefenceOrganisation()).thenReturn(associatedDefenceOrganisation);
 
-        when(envelope.metadata()).thenReturn(metadata);
-
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("payload", Json.createObjectBuilder()
                         .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
@@ -158,7 +155,6 @@ public class DefendantDefenceOrganisationChangedListenerTest {
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
 
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
         when(objectToJsonObjectConverter.convert(prosCase)).thenReturn(jsonObject);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
@@ -221,8 +217,6 @@ public class DefendantDefenceOrganisationChangedListenerTest {
                 .build();
         when(defendantDefenceOrganisationChanged.getAssociatedDefenceOrganisation()).thenReturn(associatedDefenceOrganisation);
 
-        when(envelope.metadata()).thenReturn(metadata);
-
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("payload", Json.createObjectBuilder()
                         .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
@@ -250,7 +244,6 @@ public class DefendantDefenceOrganisationChangedListenerTest {
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
 
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
         when(objectToJsonObjectConverter.convert(prosCase)).thenReturn(jsonObject);
         when(objectToJsonObjectConverter.convert(hearing)).thenReturn(jsonObject);
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);

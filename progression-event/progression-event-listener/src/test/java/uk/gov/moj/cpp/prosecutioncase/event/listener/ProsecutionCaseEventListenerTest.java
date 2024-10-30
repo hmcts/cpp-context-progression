@@ -7,7 +7,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -67,17 +67,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.minidev.json.JSONValue;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseEventListenerTest {
 
     private static final String APPLICATION_STATUS = "applicationStatus";
@@ -137,7 +136,7 @@ public class ProsecutionCaseEventListenerTest {
     @Mock
     private SearchProsecutionCase searchCase;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
 
         setField(this.jsonConverter, "mapper",
@@ -152,7 +151,6 @@ public class ProsecutionCaseEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseCreated.class))
                 .thenReturn(prosecutionCaseCreated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(prosecutionCase.getId()).thenReturn(randomUUID());
         when(prosecutionCase.getDefendants()).thenReturn(singletonList(defendant));
         when(defendant.getPersonDefendant()).thenReturn(PersonDefendant.personDefendant().build());
@@ -232,15 +230,14 @@ public class ProsecutionCaseEventListenerTest {
                 .thenReturn(caseEjected);
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class))
                 .thenReturn(prosecutionCase);
-        when(envelope.metadata()).thenReturn(metadata);
         when(caseEjected.getProsecutionCaseId()).thenReturn(caseId);
         when(caseEjected.getRemovalReason()).thenReturn("Legal");
-        when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
         when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(jsonObject);
         when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
         when(jsonObjectToObjectConverter.convert(jsonObject, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
 
-        when(objectToJsonObjectConverter.convert(any(Hearing.class))).thenReturn(Json.createObjectBuilder()
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder()
                 .add("id", randomUUID().toString())
                 .add("prosecutionCases", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()

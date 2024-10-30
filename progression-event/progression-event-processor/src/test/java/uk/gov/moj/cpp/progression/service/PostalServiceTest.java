@@ -6,17 +6,17 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
@@ -73,30 +73,27 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.reflect.Whitebox;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PostalServiceTest {
 
     private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
 
     private final ZonedDateTime hearingDateTime = ZonedDateTime.now(ZoneId.of("UTC"));
     public static final UUID APPLICATION_DOCUMENT_TYPE_ID = UUID.fromString("460fa7ce-c002-11e8-a355-529269fb1459");
+    private final String PROGRESSION_CREATE_DOCUMENT =  "progression.command.create-court-document";
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
     private UUID applicationId;
@@ -116,7 +113,7 @@ public class PostalServiceTest {
     @InjectMocks
     private PostalService postalService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.applicationId = randomUUID();
         this.caseId = randomUUID();
@@ -166,7 +163,66 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
+                                withJsonPath("$.courtDocument.documentCategory.applicationDocument.prosecutionCaseId", equalTo(caseId.toString())),
+                                withJsonPath("$.courtDocument.name", equalTo("PostalNotification")),
+                                withJsonPath("$.courtDocument.documentTypeId", equalTo(APPLICATION_DOCUMENT_TYPE_ID.toString())),
+                                withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
+                                withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf"))
+                        )))));
+    }
+
+    @Test
+    public void sendPostToCourtApplicationPartyForManualApplication() {
+
+        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
+                .thenReturn(UUID.randomUUID());
+
+        when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
+
+
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().build())
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                                Person.person()
+                                        .withContact(
+                                                ContactNumber.contactNumber()
+                                                        .withPrimaryEmail("applicant@test.com")
+                                                        .build())
+                                        .build()).build()).build())
+                        .build())
+                .build();
+
+        final String hearingDate = hearingDateTime.toLocalDate().toString();
+
+        final String hearingTime = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).format(hearingDateTime);
+        final LocalDate orderedDate = null;
+
+        final PostalNotification postalNotification = postalService.getPostalNotificationForCourtApplicationParty(
+                envelope,
+                hearingDate,
+                hearingTime,
+                courtApplication.getApplicationReference(),
+                courtApplication.getType().getType(),
+                courtApplication.getType().getTypeWelsh(),
+                courtApplication.getType().getLegislation(),
+                courtApplication.getType().getLegislationWelsh(),
+                null,
+                courtApplication.getApplicant(),
+                JurisdictionType.MAGISTRATES, courtApplication.getApplicationParticulars(), courtApplication, EMPTY,
+                false, false, orderedDate);
+
+        assertThat(postalNotification.getIssueDate(), is(LocalDate.now()));
+
+        postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
+
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -180,9 +236,6 @@ public class PostalServiceTest {
 
     @Test
     public void sendPostToCourtRespondentAaag() {
-
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
-                .thenReturn(UUID.randomUUID());
 
         when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(generateDocumentTypeAccessForApplication(APPLICATION_DOCUMENT_TYPE_ID)));
 
@@ -222,7 +275,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotificationAaag(envelope, courtApplication.getId(), null, materialId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -280,7 +333,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -334,7 +387,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -352,13 +405,6 @@ public class PostalServiceTest {
 
     @Test
     public void buildPostalNotificationWithJurisdictionTypeMag() {
-
-        final JsonObject courtCentreJson = createObjectBuilder()
-                .add("lja", "1234")
-                .build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
-
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
                         .add("nationalCourtCode", "008")
@@ -427,8 +473,6 @@ public class PostalServiceTest {
                 .add("lja", "1234")
                 .build();
 
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
-
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
                         .add("nationalCourtCode", "008")
@@ -496,8 +540,6 @@ public class PostalServiceTest {
         final JsonObject courtCentreJson = createObjectBuilder()
                 .add("lja", "1234")
                 .build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -569,8 +611,6 @@ public class PostalServiceTest {
                 .add("lja", "1234")
                 .build();
 
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
-
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
                         .add("nationalCourtCode", "008")
@@ -640,8 +680,6 @@ public class PostalServiceTest {
                 .add("lja", "1234")
                 .build();
 
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
-
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
                         .add("nationalCourtCode", "008")
@@ -709,8 +747,6 @@ public class PostalServiceTest {
         final JsonObject courtCentreJson = createObjectBuilder()
                 .add("lja", "1234")
                 .build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
                 .add("localJusticeArea", createObjectBuilder()
@@ -789,7 +825,7 @@ public class PostalServiceTest {
 
         when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(UUID.randomUUID());
-
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
         when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(courtCentreJson));
 
         final JsonObject ljaDetails = createObjectBuilder()
@@ -840,7 +876,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -919,7 +955,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -1002,7 +1038,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender, times(1)).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -1081,7 +1117,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -1160,7 +1196,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -1238,7 +1274,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),
@@ -1316,7 +1352,7 @@ public class PostalServiceTest {
         postalService.sendPostalNotification(envelope, courtApplication.getId(), postalNotification, caseId);
 
         verify(sender).send(argThat(jsonEnvelope(
-                withMetadataEnvelopedFrom(envelope).withName("progression.command.create-court-document"),
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_CREATE_DOCUMENT),
                 payloadIsJson(
                         allOf(
                                 withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(applicationId.toString())),

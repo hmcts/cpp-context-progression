@@ -5,45 +5,36 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearing;
 
-import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 
-import com.google.common.io.Resources;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import com.google.common.io.Resources;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-public class CourtAppealApplicationIT extends AbstractIT {
+@ExtendWith(JmsResourceManagementExtension.class)
+public class CourtAppealApplicationIT {
 
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
-    private MessageConsumer consumerForCourtApplicationCreated;
-
-    @Before
-    public void setUp() {
-        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        consumerForCourtApplicationCreated.close();
-    }
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
 
     @Test
     public void shouldCreateLinkedApplicationForCourtAppeal() throws Exception {
@@ -97,14 +88,14 @@ public class CourtAppealApplicationIT extends AbstractIT {
 
     private CustomComparator getCustomComparator(String applicationId, String applicationReference) {
         return new CustomComparator(STRICT,
-                new Customization("hearings[0].id", (o1, o2) -> o1 != null &&  o2 != null),
+                new Customization("hearings[0].id", (o1, o2) -> o1 != null && o2 != null),
                 new Customization("hearings[0].courtApplications[0].id", (o1, o2) -> applicationId.equals(o1)),
                 new Customization("hearings[0].courtApplications[0].applicationReference", (o1, o2) -> applicationReference.equals(o1))
         );
     }
 
     private String verifyCourtApplicationCreatedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(10, is(applicationReference.length()));

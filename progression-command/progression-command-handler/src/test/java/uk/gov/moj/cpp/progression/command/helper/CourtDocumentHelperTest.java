@@ -7,7 +7,7 @@ import static uk.gov.moj.cpp.progression.helper.CourtDocumentHelper.setDefaults;
 
 import uk.gov.justice.core.courts.CourtDocument;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CourtDocumentHelperTest {
 

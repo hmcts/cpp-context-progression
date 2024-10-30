@@ -6,12 +6,9 @@
              version="1.0">
 
     <persistence-unit name="progression-persistence-unit">
-        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <jta-data-source>java:/DS.progression</jta-data-source>
         <class>uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail</class>
-        <properties>
-            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2"/>
-        </properties>
     </persistence-unit>
 
 </persistence>

@@ -14,8 +14,12 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
@@ -28,12 +32,9 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STR
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
@@ -43,10 +44,13 @@ import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLe
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import io.restassured.path.json.JsonPath;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
@@ -61,27 +65,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.jayway.restassured.response.Response;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(DataProviderRunner.class)
 public class NowDocumentRequestIT extends AbstractIT {
 
     private static final String NOW_DOCUMENT_REQUESTS = "nowDocumentRequests";
@@ -92,9 +93,9 @@ public class NowDocumentRequestIT extends AbstractIT {
     private static final String ORIGINATOR = "originator";
     private static final String ORIGINATOR_VALUE = "court";
     private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
-    private static final MessageConsumer messageConsumerClientPublicForNowDocumentRequested = publicEvents
-            .createPublicConsumer(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED);
+    private static final JmsMessageConsumerClient messageConsumerClientPublicForNowDocumentRequested = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED).getMessageConsumerClient();
 
+    private static final JmsMessageConsumerClient privateCourtDocumentAddedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
     private String materialId;
     private String hearingId;
     private String caseId1;
@@ -102,25 +103,23 @@ public class NowDocumentRequestIT extends AbstractIT {
     private String defendantId;
     private String requestId;
     private UUID userId;
-    private MessageProducer messageProducerClientPublic;
+    final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    @DataProvider
-    public static Object[][] incompleteOrderAddresseePayloads() {
-        return new Object[][]{
-                {"progression.add-now-document-request-no-fixed-abode.json"},
-                {"progression.add-now-document-request-addressee-postcode-missing.json"}
-        };
+    public static Stream<Arguments> incompleteOrderAddresseePayloads() {
+        return Stream.of(
+                Arguments.of("progression.add-now-document-request-no-fixed-abode.json"),
+                Arguments.of("progression.add-now-document-request-addressee-postcode-missing.json")
+        );
     }
 
-    @BeforeClass
-    public static void setupBefore(){
+    @BeforeAll
+    public static void setupBefore() {
         DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
         NotificationServiceStub.setUp();
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
-        messageProducerClientPublic = publicEvents.createPublicProducer();
         hearingId = randomUUID().toString();
         caseId1 = randomUUID().toString();
         caseId2 = randomUUID().toString();
@@ -130,11 +129,6 @@ public class NowDocumentRequestIT extends AbstractIT {
         userId = randomUUID();
         setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-    }
-
-    @After
-    public void tearDown() throws JMSException {
-        closeSilently(messageProducerClientPublic);
     }
 
     @Test
@@ -187,8 +181,8 @@ public class NowDocumentRequestIT extends AbstractIT {
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
     }
 
-    @UseDataProvider("incompleteOrderAddresseePayloads")
-    @Test
+    @MethodSource("incompleteOrderAddresseePayloads")
+    @ParameterizedTest
     public void shouldSuppressPostalNotificationWhenOrderAddresseeAddressIsInvalid(final String fileName) throws IOException {
         final String payload = prepareAddNowNonFinancialDocumentRequestPayload(fileName);
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
@@ -239,7 +233,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendApiNotificationNowDocumentRequest() throws IOException, JMSException {
+    public void shouldSendApiNotificationNowDocumentRequest() throws IOException, JSONException, JMSException {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         stubForApiNotification();
         List<String> caseUrns = createCaseAndFetchCaseUrn(1);
@@ -267,7 +261,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSendApiNotificationNowDocumentRequest_multipleCases() throws IOException, JMSException {
+    public void shouldSendApiNotificationNowDocumentRequest_multipleCases() throws IOException, JSONException, JMSException {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         stubForApiNotification();
         List<String> caseUrns = createCaseAndFetchCaseUrn(2);
@@ -287,6 +281,8 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         sendMaterialFileUploadedPublicEvent(fromString(materialId), userId);
 
+        verifyCourtDocumentAdded();
+
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
         final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
@@ -294,21 +290,27 @@ public class NowDocumentRequestIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPublicForNowDocumentRequested);
     }
 
-    private List<String> createCaseAndFetchCaseUrn(int noOfCases) throws IOException, JMSException {
+    private static void verifyCourtDocumentAdded() {
+        final JsonPath prosecutionCaseDefendantListingStatusChanged = QueueUtil.retrieveMessageAsJsonPath(privateCourtDocumentAddedConsumer);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.get("courtDocument.documentTypeDescription"), is("Electronic Notifications"));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.get("courtDocument.documentTypeId"), is("f471eb51-614c-4447-bd8d-28f9c2815c9e"));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.get("courtDocument.mimeType"), is("application/pdf"));
+    }
+
+    private List<String> createCaseAndFetchCaseUrn(int noOfCases) throws IOException, JMSException , JSONException {
         List<String> caseUrns = new ArrayList<>();
         int i = 0;
         String caseId = caseId1;
         while (i < noOfCases) {
-            try (final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents
-                    .createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed")) {
-                addProsecutionCaseToCrownCourt(caseId, defendantId);
-                String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+            newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed").getMessageConsumerClient();
+            addProsecutionCaseToCrownCourt(caseId, defendantId);
+            String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-                JsonObject jsonObject = jsonToObjectConverter.convert(stringToJsonObjectConverter.convert(response), JsonObject.class);
-                JsonObject prosecutionCase = jsonObject.getJsonObject("prosecutionCase");
-                JsonObject pcIdentifier = prosecutionCase.getJsonObject("prosecutionCaseIdentifier");
-                caseUrns.add(pcIdentifier.getJsonString("prosecutionAuthorityReference").getString());
-            }
+            JsonObject jsonObject = jsonToObjectConverter.convert(stringToJsonObjectConverter.convert(response), JsonObject.class);
+            JsonObject prosecutionCase = jsonObject.getJsonObject("prosecutionCase");
+            JsonObject pcIdentifier = prosecutionCase.getJsonObject("prosecutionCaseIdentifier");
+            caseUrns.add(pcIdentifier.getJsonString("prosecutionAuthorityReference").getString());
 
             i++;
             caseId = caseId2;
@@ -340,14 +342,13 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     private void sendMaterialFileUploadedPublicEvent(final UUID materialId, final UUID userId) {
-        final String commandName = MATERIAL_MATERIAL_ADDED;
         final Metadata metadata = getMetadataFrom(userId.toString());
         final JsonObject payload = createObjectBuilder().add(MATERIAL_ID, materialId.toString()).add(
-                "fileDetails",
-                createObjectBuilder().add("alfrescoAssetId", "aGVsbG8=")
-                        .add("mimeType", "text/plain").add("fileName", "file.txt"))
+                        "fileDetails",
+                        createObjectBuilder().add("alfrescoAssetId", "aGVsbG8=")
+                                .add("mimeType", "text/plain").add("fileName", "file.txt"))
                 .add("materialAddedDate", "2016-04-26T13:01:787.345").build();
-        sendMessage(messageProducerClientPublic, commandName, payload, metadata);
+        messageProducerClientPublic.sendMessage(MATERIAL_MATERIAL_ADDED, envelopeFrom(metadata, payload));
     }
 
     private void sendPublicEventForMaterialAdded() {
@@ -364,10 +365,7 @@ public class NowDocumentRequestIT extends AbstractIT {
                         .add(JsonMetadata.USER_ID, userId.toString()))
                 .build()).build();
 
-        sendMessage(publicEvents.createPublicProducer(),
-                MATERIAL_MATERIAL_ADDED,
-                materialAddPublicEventPayload,
-                metadata);
+        messageProducerClientPublic.sendMessage(MATERIAL_MATERIAL_ADDED, envelopeFrom(metadata, materialAddPublicEventPayload));
     }
 
     private void sendPublicEventForFinancialImpositionAcknowledgement() {
@@ -375,12 +373,9 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         final JsonObject payload = generateSuccessfulAcknowledgement(requestId);
 
-        sendMessage(publicEvents.createPublicProducer(),
-                eventName,
-                payload,
-                metadataOf(randomUUID(), eventName)
-                        .withUserId(randomUUID().toString())
-                        .build());
+        messageProducerClientPublic.sendMessage(eventName, envelopeFrom(metadataOf(randomUUID(), eventName)
+                .withUserId(randomUUID().toString())
+                .build(), payload));
     }
 
     private Metadata getMetadataFrom(final String userId) {
@@ -489,8 +484,8 @@ public class NowDocumentRequestIT extends AbstractIT {
                         payload().isJson(allOf(matchers))).getPayload();
     }
 
-    private static void verifyInMessagingQueue(final MessageConsumer consumer) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumer);
+    private static void verifyInMessagingQueue(final JmsMessageConsumerClient consumer) {
+        final Optional<JsonObject> message = QueueUtil.retrieveMessageBody(consumer);
         assertTrue(message.isPresent());
     }
 }

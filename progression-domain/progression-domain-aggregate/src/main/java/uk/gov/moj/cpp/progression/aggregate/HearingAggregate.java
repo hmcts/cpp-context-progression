@@ -147,7 +147,9 @@ import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
+import uk.gov.justice.progression.courts.RelatedHearingRequestedForAdhocHearing;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
+import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
 import uk.gov.justice.progression.courts.UnscheduledHearingAllocationNotified;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -163,6 +165,7 @@ import uk.gov.justice.progression.event.OpaResultListNoticeGenerated;
 import uk.gov.justice.progression.event.OpaResultListNoticeSent;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
+import uk.gov.moj.cpp.progression.court.HearingAddMissingResultsBdf;
 import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
@@ -1058,6 +1061,19 @@ public class HearingAggregate implements Aggregate {
                 .build()));
     }
 
+    public Stream<Object> updateHearingByBdf(final UUID hearingId, final UUID caseId, final UUID defendantId, final UUID offenceId,
+                                             final List<JudicialResult> defendantCaseJudicialResults, final List<JudicialResult> offenceJudicialResults) {
+
+        return apply(Stream.of(HearingAddMissingResultsBdf.hearingAddMissingResultsBdf()
+                .withHearingId(hearingId)
+                .withProsecutionCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withOffenceId(offenceId)
+                .withDefendantCaseJudicialResults(defendantCaseJudicialResults)
+                .withOffenceJudicialResults(offenceJudicialResults)
+                .build()));
+    }
+
     private Stream<Object> populateHearingObjectStream(final UUID hearingId) {
         final List<UUID> prosecutionCaseIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseIds(hearing) : null;
         final List<UUID> offenceIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseOffenceIds(hearing) : null;
@@ -1564,6 +1580,52 @@ public class HearingAggregate implements Aggregate {
 
         return apply(streamBuilder.build());
     }
+
+    public Stream<Object> updateRelatedHearingForAdhocHearing(final HearingListingNeeds hearingListingNeeds,
+                                                              final Boolean sendNotificationToParties) {
+
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final HearingListingNeeds newHearingListingNeeds = HearingListingNeeds.hearingListingNeeds().withValuesFrom(hearingListingNeeds).build();
+
+
+        final Set<ProsecutionCase> resultCases = new HashSet<>();
+        getProsecutionCasesAfterMergeAtDifferentLevel(hearingListingNeeds, resultCases);
+
+        newHearingListingNeeds.getProsecutionCases().clear();
+        newHearingListingNeeds.getProsecutionCases().addAll(resultCases);
+
+        final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
+                .withId(newHearingListingNeeds.getId())
+                .withHearingDays(this.getHearing().getHearingDays())
+                .withHasSharedResults(false)
+                .withCourtApplications(newHearingListingNeeds.getCourtApplications())
+                .withCourtCentre(newHearingListingNeeds.getCourtCentre())
+                .withJurisdictionType(newHearingListingNeeds.getJurisdictionType())
+                .withType(newHearingListingNeeds.getType())
+                .withReportingRestrictionReason(newHearingListingNeeds.getReportingRestrictionReason())
+                .withJudiciary(newHearingListingNeeds.getJudiciary())
+                .withBookingType(newHearingListingNeeds.getBookingType())
+                .withProsecutionCases(newHearingListingNeeds.getProsecutionCases()).build();
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(prosecutionCaseDefendantListingHearing)
+                .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
+                .build();
+
+        streamBuilder.add(prosecutionCaseDefendantListingStatusChangedV2);
+
+
+
+        final RelatedHearingUpdatedForAdhocHearing relatedHearingUpdated = RelatedHearingUpdatedForAdhocHearing.relatedHearingUpdatedForAdhocHearing()
+                .withHearingRequest(newHearingListingNeeds)
+                .withSendNotificationToParties(sendNotificationToParties)
+                .build();
+
+        streamBuilder.add(relatedHearingUpdated);
+        final Stream events = apply(streamBuilder.build());
+        return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
+    }
+
 
     /**
      * This method is responsible for merging cases, defendants and offences between HearingListingNeeds which is passed in payload and hearing in aggregate.
@@ -2386,6 +2448,13 @@ public class HearingAggregate implements Aggregate {
         }
 
         return events;
+    }
+
+    public Stream<Object> requestRelatedHearingForAdhocHearing(final HearingListingNeeds hearingRequest, final Boolean sendNotificationToParties) {
+        return apply(Stream.of(RelatedHearingRequestedForAdhocHearing.relatedHearingRequestedForAdhocHearing()
+                .withHearingRequest(hearingRequest)
+                .withSendNotificationToParties(sendNotificationToParties)
+                .build()));
     }
 
     private boolean isDeleteNextHearing(final String sittingDay, final boolean hasNewOrAmendedNextHearingsOrRelatedNextHearings, final boolean hasNewOrAmendedUnscheduledNextHearings, final boolean isNextHearingDeleted) {

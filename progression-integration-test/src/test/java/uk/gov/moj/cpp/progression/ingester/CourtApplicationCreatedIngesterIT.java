@@ -4,7 +4,7 @@ import static com.jayway.jsonpath.JsonPath.parse;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
@@ -26,10 +26,10 @@ import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 public class CourtApplicationCreatedIngesterIT extends AbstractIT {
@@ -45,13 +45,13 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
     private String caseId;
     private String applicationStatus;
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         applicationId = randomUUID().toString();
         applicantId = randomUUID().toString();
@@ -91,7 +91,7 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
         verifyAddCourtApplication(inputCourtApplication, courApplicationCreatedResponseJsonObject.get(), applicationId);
     }
 
-    @Ignore("DD-20992")
+    @Disabled("DD-20992")
     @Test
     public void initiateCourtProceedingsForApplicationShouldInitialiseHearingListingStatusAndIngestJurisdictionToUnifiedSearch() throws IOException {
         caseId = randomUUID().toString();

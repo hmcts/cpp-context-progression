@@ -6,10 +6,11 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -19,17 +20,17 @@ import static uk.gov.justice.core.courts.HearingLanguage.WELSH;
 import static uk.gov.justice.core.courts.Verdict.verdict;
 import static uk.gov.justice.core.courts.VerdictType.verdictType;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildJsonEnvelope;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY;
+import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY;
+import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
+import static uk.gov.moj.cpp.progression.service.RefDataService.PROSECUTOR;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY;
-import static uk.gov.moj.cpp.progression.service.RefDataService.ETHNICITY_CODE;
-import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY;
-import static uk.gov.moj.cpp.progression.service.RefDataService.NATIONALITY_CODE;
-import static uk.gov.moj.cpp.progression.service.RefDataService.PROSECUTOR;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
@@ -53,8 +54,8 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
-import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -64,30 +65,30 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class ReferredProsecutionCaseTransformerTest {
     private final PodamFactory factory = new PodamFactoryImpl();
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+
     @Mock
     private ReferenceDataOffenceService referenceDataOffenceService;
+
     @Mock
     private RefDataService referenceDataService;
-    @InjectMocks
-    private ReferredProsecutionCaseTransformer referredProsecutionCaseTransformer;
+
     @Mock
     private Requester requester;
+
+    @InjectMocks
+    private ReferredProsecutionCaseTransformer referredProsecutionCaseTransformer;
 
     private static ReferredProsecutionCase getReferredProsecutionCaseWithMinimalPayload() {
         return ReferredProsecutionCase.referredProsecutionCase()
@@ -206,7 +207,7 @@ public class ReferredProsecutionCaseTransformerTest {
 
     @Test
     public void shouldThrowExceptionForReferenceData() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
+
         final UUID lastName = randomUUID();
         final UUID nationalityId = randomUUID();
         final UUID ethnicityId = randomUUID();
@@ -225,7 +226,7 @@ public class ReferredProsecutionCaseTransformerTest {
         when(referenceDataService.getNationality(jsonEnvelope, nationalityId, requester)).thenThrow(new ReferenceDataNotFoundException("Country Nationality", nationalityId.toString()));
 
         // Run the test
-        final Person result = referredProsecutionCaseTransformer.transform(referredPerson, null, null, jsonEnvelope);
+        assertThrows(ReferenceDataNotFoundException.class, () -> referredProsecutionCaseTransformer.transform(referredPerson, null, null, jsonEnvelope));
 
         verifyNoMoreInteractions(referenceDataService);
     }
@@ -253,7 +254,6 @@ public class ReferredProsecutionCaseTransformerTest {
 
     @Test
     public void shouldThrowExceptionForPersonDefendantReferenceData() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
 
         final ReferredPersonDefendant referredPersonDefendant = factory.manufacturePojoWithFullData
                 (ReferredPersonDefendant.class);
@@ -264,8 +264,8 @@ public class ReferredProsecutionCaseTransformerTest {
                 ("Ethnicity", "E12"));
 
         // Run the test
-        referredProsecutionCaseTransformer.transform
-                (referredPersonDefendant, WELSH, jsonEnvelope);
+        assertThrows(ReferenceDataNotFoundException.class,
+                () -> referredProsecutionCaseTransformer.transform(referredPersonDefendant, WELSH, jsonEnvelope));
 
         verifyNoMoreInteractions(referenceDataService);
     }
@@ -317,7 +317,7 @@ public class ReferredProsecutionCaseTransformerTest {
     @Test
     public void testTransformOffenceDataValidationException() {
         // Setup
-        expectedException.expect(DataValidationException.class);
+
         final UUID offenceDefinitionId = randomUUID();
         final UUID id = randomUUID();
 
@@ -335,8 +335,7 @@ public class ReferredProsecutionCaseTransformerTest {
                 .thenReturn(of(jsonObject));
 
         // Run the test
-        referredProsecutionCaseTransformer.transform
-                (referredOffence, jsonEnvelope, InitiationCode.J);
+        assertThrows(DataValidationException.class, () -> referredProsecutionCaseTransformer.transform(referredOffence, jsonEnvelope, InitiationCode.J));
 
         //Verify the results
         verifyNoMoreInteractions(referenceDataService);
@@ -344,7 +343,6 @@ public class ReferredProsecutionCaseTransformerTest {
 
     @Test
     public void shouldThrowExceptionForOffenceReferenceData() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
 
         final ReferredOffence referredOffence = factory.populatePojo(ReferredOffence.referredOffence()
                 .withId(randomUUID())
@@ -358,7 +356,7 @@ public class ReferredProsecutionCaseTransformerTest {
                 .thenThrow(new ReferenceDataNotFoundException("Offence", "id"));
 
         // Run the test
-        referredProsecutionCaseTransformer.transform(referredOffence, jsonEnvelope, InitiationCode.C);
+        assertThrows(ReferenceDataNotFoundException.class, () -> referredProsecutionCaseTransformer.transform(referredOffence, jsonEnvelope, InitiationCode.C));
 
         // Verify the results
         verifyNoMoreInteractions(referenceDataService);
@@ -389,7 +387,6 @@ public class ReferredProsecutionCaseTransformerTest {
 
         final JsonObject jsonObject = getOffence("Indictable");
 
-        when(referenceDataService.getEthinicity(any(), any(), any())).thenReturn(of(getEthnicityObject()));
         when(referenceDataService.getNationality(any(), any(), any())).thenReturn(of(getNationalityObject()));
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(jsonObject));
 
@@ -464,7 +461,7 @@ public class ReferredProsecutionCaseTransformerTest {
 
     @Test
     public void shouldThrowExceptionWhenProsecutorNotFound() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
+
         final ReferredProsecutionCase referredProsecutionCase = ReferredProsecutionCase.referredProsecutionCase()
                 .withId(randomUUID())
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
@@ -478,25 +475,22 @@ public class ReferredProsecutionCaseTransformerTest {
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(empty());
 
         // Run the test
-        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, WELSH, buildJsonEnvelope());
+        assertThrows(ReferenceDataNotFoundException.class,
+                () -> referredProsecutionCaseTransformer.transform(referredProsecutionCase, WELSH, buildJsonEnvelope()));
 
         verifyNoMoreInteractions(referenceDataService);
     }
 
     @Test
     public void shouldNotCallReferenceDataForNonStdOrganisationProsecutor() {
-
         final ReferredProsecutionCase referredProsecutionCase = getReferredProsecutionCaseWithName();
-
         final JsonEnvelope jsonEnvelope = buildJsonEnvelope();
 
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("Indictable")));
-        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(of(getProsecutor()));
 
         // Run the test
-        final ProsecutionCase result = referredProsecutionCaseTransformer.transform
-                (referredProsecutionCase, WELSH,jsonEnvelope);
+        referredProsecutionCaseTransformer.transform
+                (referredProsecutionCase, WELSH, jsonEnvelope);
 
         verify(referenceDataService, times(0)).getProsecutor(any(), any(), any());
 

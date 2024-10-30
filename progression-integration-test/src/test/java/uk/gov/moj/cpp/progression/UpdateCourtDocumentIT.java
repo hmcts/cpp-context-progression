@@ -12,22 +12,22 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.USER_ID;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForDocumentId;
 import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForMaterialId;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -36,25 +36,18 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObjectBuilder;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateCourtDocumentIT extends AbstractIT {
     private static final String PUBLIC_NOTIFICATION_SENT = "public.notificationnotify.events.notification-sent";
-    private static final String PROGRESSION_EVENT_PRINT_REQUESTED = "progression.event.print-requested";
-    private static final String PROGRESSION_EVENT_PRINT_TIME_UPDATED = "progression.event.court-document-print-time-updated";
 
-    private MessageProducer publicMessageProducer;
-    private MessageConsumer printRequestedConsumer;
-    private MessageConsumer printTimeUpdatedConsumer;
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private String caseId;
     private String defendantId;
@@ -66,15 +59,8 @@ public class UpdateCourtDocumentIT extends AbstractIT {
 
     private UtcClock utcClock = new UtcClock();
 
-    @After
-    public void tearDown() throws JMSException {
-        publicMessageProducer.close();
-        printRequestedConsumer.close();
-        printTimeUpdatedConsumer.close();
-    }
-
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    public void setUp() throws IOException, JSONException {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         documentId = randomUUID();
@@ -85,10 +71,6 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         stubForMaterialId(notificationId, materialId);
         stubForDocumentId(materialId, documentId);
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-
-        publicMessageProducer = publicEvents.createPublicProducer();
-        printRequestedConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_REQUESTED);
-        printTimeUpdatedConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRINT_TIME_UPDATED);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
@@ -144,11 +126,6 @@ public class UpdateCourtDocumentIT extends AbstractIT {
     }
 
     private void produceNotificationSentPublicEvent(final UUID notificationId, final ZonedDateTime sentTime, final ZonedDateTime completedAt) {
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withUserId(USER_ID)
-                .withName(PUBLIC_NOTIFICATION_SENT)
-                .build();
 
         final JsonObjectBuilder objectBuilder = createObjectBuilder()
                 .add("notificationId", notificationId.toString())
@@ -158,6 +135,7 @@ public class UpdateCourtDocumentIT extends AbstractIT {
             objectBuilder.add("completedAt", completedAt.withFixedOffsetZone().toString());
         }
 
-        sendMessage(publicMessageProducer, PUBLIC_NOTIFICATION_SENT, objectBuilder.build(), metadata);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_NOTIFICATION_SENT, USER_ID), objectBuilder.build());
+        messageProducerClientPublic.sendMessage(PUBLIC_NOTIFICATION_SENT, publicEventEnvelope);
     }
 }

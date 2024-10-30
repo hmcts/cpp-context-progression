@@ -5,11 +5,11 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,15 +28,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
 import static uk.gov.moj.cpp.progression.command.helper.HandlerTestHelper.metadataFor;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceOrganisation;
@@ -78,7 +69,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class UpdateCaseHandlerTest {
 
     @Mock
@@ -106,11 +107,9 @@ public class UpdateCaseHandlerTest {
     private ArgumentCaptor<Stream<JsonEnvelope>> eventsStreamCaptor;
 
 
-    @Before
+    @BeforeEach
     public void setup() {
         aggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
     }
 
     @Test
@@ -132,7 +131,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(envelope.payload().getProsecutionCase())
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         updateCaseHandler.handle(envelope);
@@ -167,7 +167,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(envelope.payload().getProsecutionCase())
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         updateCaseHandler.handle(envelope);
@@ -236,7 +237,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         updateCaseHandler.handle(envelope);
@@ -303,7 +305,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         //hearing resulted with defendant one offence 1 FINAL
@@ -380,7 +383,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         //hearing resulted with only defendant1 offences FINAL
@@ -474,7 +478,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         HearingResultedUpdateCase hearingResultedUpdateCase = HearingResultedUpdateCase.hearingResultedUpdateCase()
@@ -538,6 +543,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         //Hearing H1
@@ -758,6 +765,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         //Hearing H1
@@ -886,7 +895,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         final List<OffenceListingNumbers> offenceListingNumbers = new ArrayList<>();
@@ -952,7 +962,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         final List<OffenceListingNumbers> offenceListingNumbers = new ArrayList<>();
@@ -1000,7 +1011,8 @@ public class UpdateCaseHandlerTest {
         final ProsecutionCaseCreated prosecutionCaseCreated = ProsecutionCaseCreated.prosecutionCaseCreated()
                 .withProsecutionCase(prosecutionCase)
                 .build();
-
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
         this.aggregate.apply(prosecutionCaseCreated);
 
         return HearingResultedUpdateCase.hearingResultedUpdateCase()

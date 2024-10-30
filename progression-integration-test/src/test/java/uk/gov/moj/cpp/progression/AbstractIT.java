@@ -40,6 +40,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
@@ -49,10 +50,12 @@ import java.io.IOException;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.restassured.response.Header;
+import io.restassured.http.Header;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@ExtendWith(JmsResourceManagementExtension.class)
 public class AbstractIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIT.class);
 
@@ -69,7 +72,6 @@ public class AbstractIT {
     protected static final String REST_RESOURCE_REF_DATA_GET_ORGANISATION_WITHOUT_POSTCODE_JSON = "/restResource/ref-data-get-organisation-without-postcode.json";
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
-    public static final String PROGRESSION_CONTEXT = "progression";
     protected static final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     protected static final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     protected static final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
@@ -83,24 +85,28 @@ public class AbstractIT {
      */
 
     static {
-        configureFor(HOST, 8080);
-        reset(); // will need to be removed when things are being run in parallel
-        defaultStubs();
-        setUpElasticSearch();
+        try {
+            configureFor(HOST, 8080);
+            reset(); // will need to be removed when things are being run in parallel
+            defaultStubs();
+            setUpElasticSearch();
+        } catch (final Throwable e) {
+            LOGGER.error("Failure during set up of integration test", e);
+            throw e;
+        }
     }
-
 
     private static void setUpElasticSearch() {
         final ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
         elasticSearchIndexFinderUtil = new ElasticSearchIndexFinderUtil(elasticSearchClient);
-        elasticSearchIndexRemoverUtil  = new ElasticSearchIndexRemoverUtil();
+        elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
         deleteAndCreateIndex();
     }
 
     protected static void deleteAndCreateIndex() {
         try {
             elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
-        }catch (final IOException e){
+        } catch (final IOException e) {
             LOGGER.error("Error while creating index ", e);
         }
     }
@@ -133,8 +139,8 @@ public class AbstractIT {
         stubMaterialUploadFile();
         stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL), "stub-data/hearing.get-hearing-of-type-trial.json");
-        setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL_OF_ISSUE),"stub-data/hearing.get-hearing-of-type-trial-of-issue.json");
-        setupHearingQueryStub(fromString(HEARING_ID_TYPE_NON_TRIAL),"stub-data/hearing.get-hearing-of-type-non-trial.json");
+        setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL_OF_ISSUE), "stub-data/hearing.get-hearing-of-type-trial-of-issue.json");
+        setupHearingQueryStub(fromString(HEARING_ID_TYPE_NON_TRIAL), "stub-data/hearing.get-hearing-of-type-non-trial.json");
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
         stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), "2099/1234567L", "1234567");
         setupCourtOrdersStub();

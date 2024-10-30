@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.service.utils;
 
 import static java.util.Objects.isNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import uk.gov.justice.core.courts.nowdocument.Nowaddress;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;

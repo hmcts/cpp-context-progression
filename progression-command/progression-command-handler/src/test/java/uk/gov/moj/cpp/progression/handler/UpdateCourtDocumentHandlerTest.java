@@ -1,14 +1,13 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.time.ZonedDateTime.now;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime.updateCourtDocumentPrintTime;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -32,7 +31,7 @@ import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
 import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -41,7 +40,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
-import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.aggregate.CourtDocumentAggregate;
 import uk.gov.moj.cpp.progression.command.UpdateSendToCpsFlag;
 import uk.gov.moj.cpp.progression.helper.EnvelopeHelper;
@@ -58,17 +57,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateCourtDocumentHandlerTest {
 
     private static final DateTimeFormatter ISO_8601_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -76,11 +73,9 @@ public class UpdateCourtDocumentHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             CourtDocumentUpdated.class, CourtDocumentPrintTimeUpdated.class, SendToCpsFlagUpdated.class);
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    @Spy
-    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
     @Mock
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
     @Mock
     private EventSource eventSource;
     @Mock
@@ -113,25 +108,6 @@ public class UpdateCourtDocumentHandlerTest {
         return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
-    @Before
-    public void setup() {
-        aggregate = new CourtDocumentAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(aggregate);
-        final UUID caseId = randomUUID();
-
-        CourtDocument courtDocument = CourtDocument.courtDocument()
-                .withDocumentCategory(DocumentCategory.documentCategory()
-                        .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
-                .withMaterials(new ArrayList<>())
-                .withSendToCps(false)
-                .build();
-        this.aggregate.createCourtDocument(courtDocument, true);
-
-        ReflectionUtil.setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-        ReflectionUtil.setField(this.jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(new UpdateCourtDocumentHandler(), isHandler(COMMAND_HANDLER)
@@ -144,6 +120,19 @@ public class UpdateCourtDocumentHandlerTest {
     public void shouldProcessShareCourtDocumentCommandForDefendantLevel() throws Exception {
 
         final UpdateCourtDocument updateCourtDocument = buildUpdateCourtDocument();
+
+        final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
+        final UUID caseId = randomUUID();
+
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withDocumentCategory(DocumentCategory.documentCategory()
+                        .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
+                .withMaterials(new ArrayList<>())
+                .withSendToCps(false)
+                .build();
+        courtDocumentAggregate.createCourtDocument(courtDocument, true);
 
         when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(buildDocumentTypeDataWithRBAC("Defendant level")));
 
@@ -161,6 +150,19 @@ public class UpdateCourtDocumentHandlerTest {
     public void shouldProcessShareCourtDocumentCommandForCaseLevel() throws Exception {
 
         final UpdateCourtDocument updateCourtDocument = buildUpdateCourtDocumentWithProsecutionCase();
+
+        final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
+        final UUID caseId = randomUUID();
+
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withDocumentCategory(DocumentCategory.documentCategory()
+                        .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
+                .withMaterials(new ArrayList<>())
+                .withSendToCps(false)
+                .build();
+        courtDocumentAggregate.createCourtDocument(courtDocument, true);
 
         when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(buildDocumentTypeDataWithRBAC("Case level")));
 
@@ -192,6 +194,19 @@ public class UpdateCourtDocumentHandlerTest {
     public void shouldProcessShareCourtDocumentCommandForApplicationLevel() throws Exception {
 
         final UpdateCourtDocument updateCourtDocument = buildUpdateCourtDocumentWithApplication();
+
+        final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
+        final UUID caseId = randomUUID();
+
+        final CourtDocument courtDocument = CourtDocument.courtDocument()
+                .withDocumentCategory(DocumentCategory.documentCategory()
+                        .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
+                .withMaterials(new ArrayList<>())
+                .withSendToCps(false)
+                .build();
+        courtDocumentAggregate.createCourtDocument(courtDocument, true);
 
         when(refDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(Optional.of(buildDocumentTypeDataWithRBAC("Applications")));
 
@@ -225,7 +240,9 @@ public class UpdateCourtDocumentHandlerTest {
         final Envelope<UpdateCourtDocumentPrintTime> envelope =
                 envelopeFrom(metadataFor("progression.command.update-court-document-print-time", randomUUID()),
                         courtDocumentPrintTime);
-
+        final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
         target.handleUpdateCourtDocumentPrintTime(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -245,10 +262,15 @@ public class UpdateCourtDocumentHandlerTest {
 
     @Test
     public void shouldHandleUpdateSendToCpsFlag() throws EventStreamException {
+        final CourtDocument courtDocument = CourtDocument.courtDocument().withCourtDocumentId(randomUUID()).build();
         final UpdateSendToCpsFlag updateSendToCpsFlag = UpdateSendToCpsFlag.updateSendToCpsFlag()
                 .withCourtDocumentId(randomUUID())
                 .withSendToCps(true)
+                .withCourtDocument(courtDocument)
                 .build();
+        final CourtDocumentAggregate courtDocumentAggregate = new CourtDocumentAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
 
         final Envelope<UpdateSendToCpsFlag> envelope =
                 envelopeFrom(metadataFor("progression.command.update-send-to-cps-flag", randomUUID()),
@@ -263,6 +285,7 @@ public class UpdateCourtDocumentHandlerTest {
                                 .withName("progression.event.send-to-cps-flag-updated"),
                         payload().isJson(allOf(
                                 withJsonPath("$.courtDocumentId", is(updateSendToCpsFlag.getCourtDocumentId().toString())),
+                                withJsonPath("$.courtDocument", notNullValue()),
                                 withJsonPath("$.sendToCps", is(updateSendToCpsFlag.getSendToCps()))
                                 )
                         ))
@@ -292,7 +315,7 @@ public class UpdateCourtDocumentHandlerTest {
 
     private UpdateCourtDocumentPrintTime buildUpdateCourtDocumentPrintTime() {
         return updateCourtDocumentPrintTime()
-                .withPrintedAt(now())
+                .withPrintedAt(new UtcClock().now())
                 .withMaterialId(randomUUID())
                 .withCourtDocumentId(randomUUID())
                 .build();

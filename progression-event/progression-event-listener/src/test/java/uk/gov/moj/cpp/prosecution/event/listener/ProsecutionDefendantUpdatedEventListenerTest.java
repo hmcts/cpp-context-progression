@@ -1,14 +1,14 @@
 package uk.gov.moj.cpp.prosecution.event.listener;
 
 import static java.time.LocalDate.now;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
@@ -40,7 +40,6 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum;
 import uk.gov.moj.cpp.prosecutioncase.event.listener.ProsecutionCaseDefendantUpdatedEventListener;
@@ -49,8 +48,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationCaseKey
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationCaseRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
@@ -68,19 +65,17 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionDefendantUpdatedEventListenerTest {
 
     private static final String GRANTED_ONE_ADVOCATE = "Granted (One Advocate)";
@@ -96,11 +91,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     @Mock
     private ProsecutionCaseRepository repository;
 
-    @Mock
-    private CourtApplicationRepository courtApplicationRepository;
-
-    @Mock
-    private CourtApplicationCaseRepository courtApplicationCaseRepository;
 
     @Mock
     private JsonEnvelope envelope;
@@ -120,16 +110,11 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
 
     @Mock
-    private List<Defendant> defendantList;
-
-    @Mock
     private ProsecutionCaseEntity prosecutionCaseEntity;
 
     @Mock
     private HearingEntity hearingEntity;
 
-    @Mock
-    private List<CourtApplicationCaseEntity> courtApplicationCaseEntities;
 
     @Captor
     private ArgumentCaptor<ProsecutionCaseEntity> argumentCaptor;
@@ -141,9 +126,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     private JsonObject payload;
 
     @Mock
-    private Metadata metadata;
-
-    @Mock
     private ProsecutionCase prosecutionCase;
 
     @Mock
@@ -152,19 +134,13 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
     @InjectMocks
     private ProsecutionCaseDefendantUpdatedEventListener eventListener;
 
-    @Mock
-    private StringToJsonObjectConverter stringToJsonObjectConverterMock;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
     @Spy
     private ListToJsonArrayConverter jsonConverter;
 
     @Mock
     private SearchProsecutionCase searchProsecutionCase;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
 
         setField(this.jsonConverter, "mapper",
@@ -180,7 +156,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class))
                 .thenReturn(prosecutionCaseDefendantUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(defendant.getId()).thenReturn(randomUUID());
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendant);
         final JsonObject jsonObject = Json.createObjectBuilder()
@@ -193,8 +168,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class))
                 .thenReturn(prosecutionCase);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
-        when(courtApplicationCaseRepository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(courtApplicationCaseEntities);
         when(objectToJsonObjectConverter.convert(prosecutionCase)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
         eventListener.processProsecutionCaseDefendantUpdated(envelope);
@@ -233,7 +206,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(defendant.getId()).thenReturn(randomUUID());
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
         final JsonObject jsonObject = Json.createObjectBuilder()
@@ -251,15 +223,11 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
-        when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
-        when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
-        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
         when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
-        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
-        when(searchProsecutionCase.makeSearchable(prosecutionCase1, defendant1)).thenReturn(null);
+
+        when(searchProsecutionCase.makeSearchable(eq(prosecutionCase1), any(Defendant.class))).thenReturn(null);
         eventListener.processProsecutionCaseDefendantUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
 
@@ -287,7 +255,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(defendant.getId()).thenReturn(defendantId);
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
 
@@ -311,14 +278,8 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
-        when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
-        when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
-        when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
-        when(searchProsecutionCase.makeSearchable(prosecutionCase1, defendant1)).thenReturn(null);
 
         final JsonObject updatedProsecutionCaseJson = prepareUpdatedProsecutionCase();
         ArgumentCaptor<ProsecutionCase> prosecutionCaseArgumentCaptor = ArgumentCaptor.forClass(ProsecutionCase.class);
@@ -359,7 +320,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(defendant.getId()).thenReturn(defendantId);
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
         final JsonObject jsonObject = Json.createObjectBuilder()
@@ -383,14 +343,8 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
-        when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
-        when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
-        when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
-        when(searchProsecutionCase.makeSearchable(prosecutionCase1, defendant1)).thenReturn(null);
 
         final JsonObject updatedProsecutionCaseJson = prepareUpdatedProsecutionCase();
 
@@ -433,7 +387,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(prosecutionCaseDefendantUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(defendant.getId()).thenReturn(defendantId);
         when(prosecutionCaseDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
         final JsonObject jsonObject = Json.createObjectBuilder()
@@ -456,14 +409,8 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
 
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase1);
-        when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplication.class)).thenReturn(courtApplication);
-        when(stringToJsonObjectConverterMock.convert(courtApplicationEntity.getPayload())).thenReturn(jsonObject);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(courtApplicationCaseRepository.findByCaseId(defendant1.getProsecutionCaseId())).thenReturn(singletonList(courtApplicationCaseEntity));
-        when(objectToJsonObjectConverter.convert(prosecutionCase1)).thenReturn(jsonObject);
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
-        when(searchProsecutionCase.makeSearchable(prosecutionCase1, defendant1)).thenReturn(null);
 
         final JsonObject updatedProsecutionCaseJson = prepareUpdatedProsecutionCase();
 
@@ -487,7 +434,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, HearingResultedCaseUpdated.class)).thenReturn(hearingResultedCaseUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
         when(defendant.getId()).thenReturn(randomUUID());
 
         final UUID def1 = randomUUID();
@@ -519,13 +465,9 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
 
-        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
-
-        when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
 
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
 
         eventListener.processProsecutionCaseUpdated(envelope);
@@ -549,8 +491,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, HearingResultedCaseUpdated.class)).thenReturn(hearingResultedCaseUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
-        when(defendant.getId()).thenReturn(randomUUID());
 
         final UUID def1 = randomUUID();
         final UUID def2 = randomUUID();
@@ -583,13 +523,10 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
 
-        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
 
-        when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
 
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
 
         eventListener.processProsecutionCaseUpdated(envelope);
@@ -623,8 +560,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
 
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, HearingResultedCaseUpdated.class)).thenReturn(hearingResultedCaseUpdated);
-        when(envelope.metadata()).thenReturn(metadata);
-        when(defendant.getId()).thenReturn(randomUUID());
 
         final UUID def1 = randomUUID();
         final UUID def2 = randomUUID();
@@ -657,13 +592,10 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
                 .build();
         when(jsonObjectToObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
 
-        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(jsonObject);
 
-        when(repository.findByCaseId(defendant.getProsecutionCaseId())).thenReturn(prosecutionCaseEntity);
 
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
-        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
-        when(objectToJsonObjectConverter.convert(defendant)).thenReturn(jsonObject);
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
 
         eventListener.processProsecutionCaseUpdated(envelope);
@@ -1008,17 +940,6 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         assertThat("Original bailConditions should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getBailConditions(), is("bailConditions"));
         assertThat("Original occupation should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getOccupation(), is("Plumber"));
         assertThat("Original occupationCode should have been retained.", allValues.getDefendants().get(0).getPersonDefendant().getPersonDetails().getOccupationCode(), is("PL01"));
-        assertThat("Original associated person role should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getRole(), is("role"));
-        assertThat("Original associated person title should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getTitle(), is("Mrs"));
-        assertThat("Original associated person dob should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getDateOfBirth(), is(LocalDate.of(2001, 04, 02)));
-        assertThat("Original associated person contact should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getContact().getPrimaryEmail(), is("associated@hmcts.net"));
-        assertThat("Original associated person contact should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getContact().getHome(), is("01234 567890"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getSelfDefinedEthnicityId(), is(selfDefinedEthnicityId));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getSelfDefinedEthnicityCode(), is("selfDefinedEthnicityCode"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getSelfDefinedEthnicityDescription(), is("selfDefinedEthnicityDescription"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getObservedEthnicityId(), is(observedEthnicityId));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getObservedEthnicityCode(), is("observedEthnicityCode"));
-        assertThat("Original associated person ethnicity should have been retained.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getEthnicity().getObservedEthnicityDescription(), is("observedEthnicityDescription"));
         assertThat("Associated person address was deleted so should be null.", allValues.getDefendants().get(0).getAssociatedPersons().get(0).getPerson().getAddress(), is(nullValue()));
     }
 

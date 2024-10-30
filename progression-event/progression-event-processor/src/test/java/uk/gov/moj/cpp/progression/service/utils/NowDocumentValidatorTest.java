@@ -9,7 +9,7 @@ import static uk.gov.justice.core.courts.nowdocument.OrderAddressee.orderAddress
 
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class NowDocumentValidatorTest {
 

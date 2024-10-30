@@ -187,8 +187,8 @@ subscriptions_descriptor:
 
           ############  Association End ############
 
-        - name: progression.event.defendant-legalaid-status-updated
-          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json
+        - name: progression.event.defendant-legalaid-status-updated-v2
+          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated-v2.json
 
         - name: progression.event.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
@@ -325,8 +325,18 @@ subscriptions_descriptor:
         - name: progression.event.related-hearing-requested
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-requested.json
 
+        - name: progression.event.related-hearing-requested-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-requested-for-adhoc-hearing.json
+
+        - name: progression.event.related-case-requested-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-case-requested-for-adhoc-hearing.json
+
+
         - name: progression.event.related-hearing-updated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-updated.json
+
+        - name: progression.event.related-hearing-updated-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-updated-for-adhoc-hearing.json
 
         - name: progression.event.delete-next-hearings-requested
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.delete-next-hearings-requested.json

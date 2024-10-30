@@ -2,15 +2,15 @@ package uk.gov.moj.cpp.progression.processor;
 
 
 import static java.util.Collections.emptyList;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.progression.courts.api.ProsecutionConcludedForLAA;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -30,15 +30,14 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class LaaDefendantProceedingConcludedEventProcessorTest {
 
     @Mock
@@ -59,16 +58,16 @@ public class LaaDefendantProceedingConcludedEventProcessorTest {
     @Mock
     private ApplicationParameters applicationParameters;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
         final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
         final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
         ReflectionUtil.setField(laaDefendantProceedingConcludedEventProcessor, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
         ReflectionUtil.setField(laaDefendantProceedingConcludedEventProcessor, "objectToJsonObjectConverter", objectToJsonObjectConverter);
-        when(defendantProceedingConcludedTransformer.getProsecutionConcludedRequest(anyListOf(Defendant.class), any(UUID.class), any(UUID.class))).thenReturn(new ProsecutionConcludedForLAA(emptyList()));
-        Mockito.when(applicationParameters.getRetryTimes()).thenReturn("3");
-        Mockito.when(applicationParameters.getRetryInterval()).thenReturn("1000");
+        when(defendantProceedingConcludedTransformer.getProsecutionConcludedRequest(anyList(), any(UUID.class), any(UUID.class))).thenReturn(new ProsecutionConcludedForLAA(emptyList()));
+        when(applicationParameters.getRetryTimes()).thenReturn("3");
+        when(applicationParameters.getRetryInterval()).thenReturn("1000");
     }
 
     @Test
@@ -84,15 +83,15 @@ public class LaaDefendantProceedingConcludedEventProcessorTest {
         verify(azureFunctionService).concludeDefendantProceeding(anyString());
     }
 
-    @Test(expected = LaaAzureApimInvocationException.class)
-    public void shouldHandleDefendantProceedingConcludedEventAndThrowDefendantProceedingConcludedExceptionAfterAllRetries() throws InterruptedException {
+    @Test
+    public void shouldHandleDefendantProceedingConcludedEventAndThrowDefendantProceedingConcludedExceptionAfterAllRetries() {
         final JsonObject proceedingConcludedPayload = new StringToJsonObjectConverter().convert(getProceedingConcludedPayload());
         final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("progression.event.defendant-proceeding-concluded-changed"),
                 proceedingConcludedPayload);
 
         when(azureFunctionService.concludeDefendantProceeding(anyString())).thenReturn(HttpStatus.SC_GATEWAY_TIMEOUT);
 
-        laaDefendantProceedingConcludedEventProcessor.processEvent(event);
+        assertThrows(LaaAzureApimInvocationException.class, () -> laaDefendantProceedingConcludedEventProcessor.processEvent(event));
     }
 
     private String getProceedingConcludedPayload() {

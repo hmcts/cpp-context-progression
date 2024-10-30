@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -23,6 +23,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -35,7 +36,6 @@ import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 
 import java.io.StringReader;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,14 +46,14 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddConvictingCourtCommandHandlerTest {
 
     @Mock
@@ -83,7 +83,7 @@ public class AddConvictingCourtCommandHandlerTest {
     private static final String SEXUAL_OFFENCE_RR_DESCRIPTION = "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992";
 
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseId = randomUUID();
         defendantId = randomUUID();
@@ -92,8 +92,6 @@ public class AddConvictingCourtCommandHandlerTest {
         offenceCode = new StringGenerator().next();
         courtCode = new StringGenerator().next();
         aggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
     }
 
     @Test
@@ -110,7 +108,9 @@ public class AddConvictingCourtCommandHandlerTest {
         AddConvictingCourt addConvictingCourt = prepareData(caseId, offenceId, courtCentreId, courtCode);
         aggregate = getEventStreamReady(caseId, defendantId);
 
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
@@ -136,7 +136,9 @@ public class AddConvictingCourtCommandHandlerTest {
         AddConvictingCourt addConvictingCourt = prepareData(caseId, offenceId, courtCentreId, courtCode);
         aggregate = getEventStreamReadyWithOutOrderIndex(caseId, defendantId);
 
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
@@ -162,7 +164,9 @@ public class AddConvictingCourtCommandHandlerTest {
         AddConvictingCourt addConvictingCourt = prepareDataWithMultipleConvictingCourts(caseId, offenceId, courtCentreId, courtCode);
         aggregate = getEventStreamWithOffenceandMutlipleRR(caseId, defendantId, offenceId);
 
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
@@ -261,7 +265,7 @@ public class AddConvictingCourtCommandHandlerTest {
         final List<AddConvictingInformation> addConvictingInformation = Stream.of(
                 AddConvictingInformation.addConvictingInformation()
                         .withConvictingCourt(convictingCourt)
-                        .withConvictionDate(ZonedDateTime.now())
+                        .withConvictionDate(new UtcClock().now())
                         .withOffenceId(offenceId)
                         .build()
                 ).collect(Collectors.toList());
@@ -276,11 +280,11 @@ public class AddConvictingCourtCommandHandlerTest {
         final List<AddConvictingInformation> addConvictingInformation = Stream.of(
                 AddConvictingInformation.addConvictingInformation()
                         .withConvictingCourt(convictingCourt1)
-                        .withConvictionDate(ZonedDateTime.now())
+                        .withConvictionDate(new UtcClock().now())
                         .withOffenceId(offenceId)
                         .build(), AddConvictingInformation.addConvictingInformation()
                         .withConvictingCourt(convictingCourt2)
-                        .withConvictionDate(ZonedDateTime.now())
+                        .withConvictionDate(new UtcClock().now())
                         .withOffenceId(randomUUID())
                         .build()
         ).collect(Collectors.toList());

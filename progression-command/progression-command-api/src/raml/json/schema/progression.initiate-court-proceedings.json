@@ -5,6 +5,9 @@
   "properties": {
     "initiateCourtProceedings": {
       "$ref": "http://justice.gov.uk/core/courts/courtReferral.json#"
+    },
+    "id" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },
   "required": [

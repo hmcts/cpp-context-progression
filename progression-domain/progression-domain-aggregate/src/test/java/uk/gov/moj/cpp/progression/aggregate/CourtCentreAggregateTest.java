@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import com.google.common.collect.Lists;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import uk.gov.justice.core.courts.CourtRegisterRecorded;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
@@ -20,23 +22,21 @@ import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotificationIgnored;
 import uk.gov.justice.progression.courts.CourtRegisterNotified;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
-import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import com.google.common.collect.Lists;
+import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CourtCentreAggregateTest {
     private CourtCentreAggregate aggregate;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         aggregate = new CourtCentreAggregate();
     }
@@ -114,8 +114,10 @@ public class CourtCentreAggregateTest {
         final UUID courtCentreId = randomUUID();
         final ArrayList<PrisonCourtRegisterRecipient> recipients = Lists.newArrayList(PrisonCourtRegisterRecipient.prisonCourtRegisterRecipient().withEmailAddress1("test@test.com").withRecipientName("john smith").build());
         final UUID fileId = randomUUID();
+        final UUID id = randomUUID();
         final RecordPrisonCourtRegisterDocumentGenerated prisonCourtRegisterDocumentRequest = RecordPrisonCourtRegisterDocumentGenerated.recordPrisonCourtRegisterDocumentGenerated()
                 .withFileId(fileId)
+                .withId(id)
                 .withCourtCentreId(courtCentreId)
                 .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().withName("Test").withDateOfBirth("02/07/1984").build())
                 .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().withCourtHouse("Leamington Avenue").withLjaName("London").build())
@@ -129,6 +131,7 @@ public class CourtCentreAggregateTest {
         assertThat(prisonCourtRegisterRecorded.getCourtCentreId(), is(courtCentreId));
         assertThat(prisonCourtRegisterRecorded.getRecipients(), equalTo(recipients));
         assertThat(prisonCourtRegisterRecorded.getFileId(), equalTo(fileId));
+        assertThat(prisonCourtRegisterRecorded.getId(), equalTo(id));
     }
 
 

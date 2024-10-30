@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor.util;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,21 +13,22 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.IntSupplier;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class RetryHelperTest {
 
     @Mock
     IntSupplier supplier;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -48,17 +50,20 @@ public class RetryHelperTest {
         verify(supplier).getAsInt();
     }
 
-    @Test(expected=LaaAzureApimInvocationException.class)
-    public void shouldThrowExceptionAfterExceedingRetryCount() throws Exception{
+    @Test
+    public void shouldThrowExceptionAfterExceedingRetryCount() {
 
-        retryHelper()
-                .withSupplier(() -> 500)
+        when(supplier.getAsInt()).thenReturn(500);
+
+        assertThrows(LaaAzureApimInvocationException.class, () -> retryHelper()
+                .withSupplier(() -> supplier.getAsInt())
                 .withRetryTimes(3)
                 .withRetryInterval(200)
                 .withExceptionSupplier(() -> new LaaAzureApimInvocationException(new ArrayList<>(), UUID.randomUUID().toString(),"url"))
                 .withPredicate(statusCode -> statusCode > 429)
                 .build()
-                .postWithRetry();
+                .postWithRetry());
+        ;
         verify(supplier, times(3)).getAsInt();
     }
 

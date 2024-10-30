@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.event;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -49,19 +49,17 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AdjournHearingEventProcessorTest {
 
     @InjectMocks
@@ -89,17 +87,12 @@ public class AdjournHearingEventProcessorTest {
     private ArgumentCaptor<JsonEnvelope> envelopeArgumentCaptor;
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -109,8 +102,8 @@ public class AdjournHearingEventProcessorTest {
 
         final UUID previousHearingId = randomUUID();
         final UUID courtCentreId = randomUUID();
-        final LocalDateTime localDateTime = LocalDateTime.now();
-        final ZonedDateTime earliestStartDateTime = localDateTime.atZone(ZoneId.of("UTC"));
+        final LocalDateTime localDateTime = LocalDateTime.now().truncatedTo(MILLIS);
+        final ZonedDateTime earliestStartDateTime = localDateTime.atZone(ZoneId.of("UTC")).truncatedTo(MILLIS);
         final Integer estimatedMinutes = 100;
         final UUID judicialId = randomUUID();
         final UUID hearingTypeId = randomUUID();
@@ -127,7 +120,7 @@ public class AdjournHearingEventProcessorTest {
         final UUID offenceId3 = randomUUID();
         final UUID masterDefendantId = randomUUID();
 
-        ZonedDateTime courtProceedingsInitiated = ZonedDateTime.now(ZoneId.of("UTC"));
+        ZonedDateTime courtProceedingsInitiated = ZonedDateTime.now(ZoneId.of("UTC")).truncatedTo(MILLIS);
 
         final UUID roomId = randomUUID();
 
@@ -232,7 +225,6 @@ public class AdjournHearingEventProcessorTest {
                 metadataWithRandomUUID("public.hearing.adjourned"),
                 objectToJsonObjectConverter.convert(hearingAdjourned));
 
-        when(progressionService.getProsecutionCaseDetailById(event, prosecutionCaseId1.toString())).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
         when(progressionService.getCourtApplicationByIdTyped(event, courtApplication.getId().toString())).thenReturn(Optional.of(courtApplication));
         this.eventProcessor.handleHearingAdjournedPublicEvent(event);
 

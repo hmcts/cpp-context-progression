@@ -5,20 +5,10 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.UUID;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -34,7 +24,18 @@ import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFact
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.util.ArrayList;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class HearingListingNumberUpdatedEventListenerTest {
 
     @Mock

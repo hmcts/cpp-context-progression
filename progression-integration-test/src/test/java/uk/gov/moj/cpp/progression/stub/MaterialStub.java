@@ -8,7 +8,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -16,14 +15,14 @@ import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
-
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
 
 public class MaterialStub {
 
@@ -91,6 +90,7 @@ public class MaterialStub {
         await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {
             RequestPatternBuilder requestPatternBuilder = getRequestedFor(urlPathMatching(UPLOAD_MATERIAL_COMMAND));
             verify(requestPatternBuilder);
+            return true;
         });
     }
 }

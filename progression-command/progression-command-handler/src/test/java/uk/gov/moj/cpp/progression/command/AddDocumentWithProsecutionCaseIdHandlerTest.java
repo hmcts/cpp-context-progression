@@ -8,7 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -52,15 +52,16 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddDocumentWithProsecutionCaseIdHandlerTest {
 
     @Mock
@@ -81,7 +82,7 @@ public class AddDocumentWithProsecutionCaseIdHandlerTest {
     @InjectMocks
     private AddDocumentWithProsecutionCaseIdHandler addDocumentWithProsecutionCaseIdHandler;
 
-    @Before
+    @BeforeEach
     public void setup() {
         createEnveloperWithEvents(DocumentWithProsecutionCaseIdAdded.class);
     }
@@ -110,8 +111,6 @@ public class AddDocumentWithProsecutionCaseIdHandlerTest {
         final EventStream eventStream = mock(EventStream.class);
         final CaseAggregate caseAggregate = mock(CaseAggregate.class);
 
-        when(objectToJsonObjectConverter.convert(courtDocument)).thenReturn(payload);
-        when(envelopeHelper.withMetadataInPayload(any())).thenReturn(jsonEnvelope);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.addDocument(any())).thenReturn(Stream.of(DocumentWithProsecutionCaseIdAdded.documentWithProsecutionCaseIdAdded().withCourtDocument(courtDocument).withProsecutionCase(ProsecutionCase.prosecutionCase().withId(caseId).build()).build()));

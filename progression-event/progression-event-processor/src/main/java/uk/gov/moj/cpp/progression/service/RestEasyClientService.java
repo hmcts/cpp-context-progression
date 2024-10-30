@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 
 @SuppressWarnings({"squid:S2139", "squid:S00112", "squid:S2142"})
 public class RestEasyClientService {
@@ -33,7 +33,7 @@ public class RestEasyClientService {
 
     @PostConstruct
     public void createClient() {
-        client = new ResteasyClientBuilder().disableTrustManager()
+        client = new ResteasyClientBuilderImpl().disableTrustManager()
                 .connectionPoolSize(Integer.parseInt(restEasyClientConnectionPoolSize))
                 .build();
     }

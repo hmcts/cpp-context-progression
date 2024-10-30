@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.listAllStubMappings;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.listAllStubMappings;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;

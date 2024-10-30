@@ -4,7 +4,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.core.requester.Requester;
@@ -12,18 +12,19 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.command.CommandClientTestBase;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import java.util.List;
 import java.util.UUID;
 
-@RunWith(MockitoJUnitRunner.class)
+import javax.json.Json;
+import javax.json.JsonObject;
+
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class OrganisationServiceTest {
 
     private static final String JSON_ASSOCIATED_ORGANISATION_JSON = "json/associatedOrganisation.json";

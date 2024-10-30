@@ -13,7 +13,6 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.CotrPdfContent;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -44,15 +43,14 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.moj.cpp.progression.command.UpdateCpsDefendantId;
 import uk.gov.moj.cpp.progression.json.schemas.event.CotrTaskRequested;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.COTRDetailsEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.COTRDetailsRepository;
-import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -124,7 +122,6 @@ public class CotrEventsProcessor {
     public static final String ANSWER = "answer";
     public static final String DETAILS = "details";
     public static final String HEARINGS = "hearings";
-    public static final String COTR_DETAILS = "cotrDetails";
     public static final String MESSAGE = "message";
     private static final Logger LOGGER = LoggerFactory.getLogger(CotrEventsProcessor.class);
     private static final String COTR_ID = "cotrId";
@@ -147,8 +144,6 @@ public class CotrEventsProcessor {
     private static final String PROGRESSION_COMMAND_SERVE_COTR = "progression.command.serve-prosecution-cotr";
     private static final String PROGRESSION_OPERATION_FAILED = "public.progression.cotr-operation-failed";
     private static final String PROGRESSION_COMMAND_UPDATE_PROSECUTION_COTR = "progression.command.update-prosecution-cotr";
-    private static final String PROGRESSION_QUERY_CASE_HEARINGS = "progression.query.casehearings";
-    private static final String PROGRESSION_QUERY_COTR_DETAILS_PROSECUTION_CASE = "progression.query.cotr.details.prosecutioncase";
     public static final String UPDATE_COTR_FORM = "update-cotr-form";
     public static final String OPERATION = "operation";
     public static final String CREATE_COTR_FORM = "create-cotr-form";
@@ -175,7 +170,7 @@ public class CotrEventsProcessor {
     @Inject
     private COTRDetailsRepository cotrDetailsRepository;
     @Inject
-    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
+    private ProgressionService progressionService;
 
     private static Optional<Map.Entry<UUID, ZonedDateTime>> getRecentHearing(List<Hearings> nonResultedHearing) {
         final Map<UUID, ZonedDateTime> hearingDaysMap = new HashMap<>();
@@ -550,7 +545,7 @@ public class CotrEventsProcessor {
 
     private Optional<Hearings> getCaseHearing(final String caseId) {
         List<Hearings> hearingList;
-        final Optional<JsonObject> caseHearingsResponse = this.getCaseHearings(caseId);
+        final Optional<JsonObject> caseHearingsResponse = progressionService.getCaseHearings(caseId);
         if (caseHearingsResponse.isPresent()) {
             hearingList = caseHearingsResponse.get().getJsonArray(HEARINGS).
                     getValuesAs(JsonObject.class).stream().map(hearing ->
@@ -567,18 +562,7 @@ public class CotrEventsProcessor {
         return Optional.empty();
     }
 
-    public Optional<JsonObject> getCaseHearings(final String caseId) {
-        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
-        final UUID systemUser = nonNull(serviceContextSystemUserProvider.getContextSystemUserId()) && serviceContextSystemUserProvider.getContextSystemUserId().isPresent() ? serviceContextSystemUserProvider.getContextSystemUserId().get() : null;
 
-        final MetadataBuilder metadataBuilder = metadataBuilder().withId(UUID.randomUUID())
-                .withName(PROGRESSION_QUERY_CASE_HEARINGS)
-                .withUserId(nonNull(systemUser) ? systemUser.toString() : null);
-
-        final JsonObject caseHearings = requester.request(envelopeFrom(metadataBuilder, payload)).payloadAsJsonObject();
-
-        return ofNullable(caseHearings);
-    }
 
     private JsonArray getDefendants(final JsonObject payload) {
         final JsonArrayBuilder defendantArrayBuilder = createArrayBuilder();
@@ -714,16 +698,7 @@ public class CotrEventsProcessor {
 
     }
 
-    public Optional<JsonObject> getCotrCaseDetails(final String caseId, final JsonEnvelope event) {
-        final JsonObject payload = Json.createObjectBuilder().add(PROSECUTION_CASE_ID, caseId).build();
-        final JsonObject caseHearings = requester.request(envelop(payload)
-                .withName(PROGRESSION_QUERY_COTR_DETAILS_PROSECUTION_CASE)
-                .withMetadataFrom(event)).payloadAsJsonObject();
 
-        LOGGER.info("getCotrCaseDetails - caseHearings {} ", caseHearings);
-
-        return ofNullable(caseHearings);
-    }
 
     private void updateCpsDefendantId(final Metadata metadata, final String caseId, final FormDefendants defendant) {
         if (StringUtils.isNotEmpty(defendant.getCpsDefendantId())) {

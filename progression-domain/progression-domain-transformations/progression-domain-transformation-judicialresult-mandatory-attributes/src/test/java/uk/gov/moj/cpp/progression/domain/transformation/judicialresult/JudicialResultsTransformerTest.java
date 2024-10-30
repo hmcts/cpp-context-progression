@@ -38,16 +38,17 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(DataProviderRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class JudicialResultsTransformerTest {
 
     private static final String JUDICIAL_RESULTS_KEYWORD = "judicialResults";
@@ -55,45 +56,43 @@ public class JudicialResultsTransformerTest {
     @Mock
     private EventPayloadTransformer eventPayloadTransformer;
 
-    private JudicialResultsTransformer underTest;
+    @InjectMocks
+    private JudicialResultsTransformer judicialResultsTransformer;
 
-    @DataProvider
-    public static Object[][] validEventToTransform() {
-        return new Object[][]{
-                {BOXWORK_APPLICATION_REFERRED.getEventName()},
-                {HEARING_EXTENDED.getEventName()},
-                {HEARING_RESULTED.getEventName()},
-                {COURT_APPLICATION_UPDATED.getEventName()},
-                {PROSECUTION_CASE_OFFENCES_UPDATED.getEventName()},
-                {PROSECUTION_CASE_DEFENDANT_UPDATED.getEventName()},
-                {HEARING_RESULTED_CASE_UPDATED.getEventName()},
-                {HEARING_INITIATE_ENRICHED.getEventName()},
-                {COURT_APPLICATION_CREATED.getEventName()},
-                {COURT_APPLICATION_ADDED_TO_CASE.getEventName()},
-                {LISTED_COURT_APPLICATION_CHANGED.getEventName()},
-                {APPLICATION_REFERRED_TO_COURT.getEventName()},
-                {HEARING_APPLICATION_LINK_CREATED.getEventName()},
-                {PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()},
-                {HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName()}
-        };
+    public static Stream<Arguments> validEventToTransform() {
+        return Stream.of(
+                Arguments.of(BOXWORK_APPLICATION_REFERRED.getEventName()),
+                Arguments.of(HEARING_EXTENDED.getEventName()),
+                Arguments.of(HEARING_RESULTED.getEventName()),
+                Arguments.of(COURT_APPLICATION_UPDATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_OFFENCES_UPDATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_DEFENDANT_UPDATED.getEventName()),
+                Arguments.of(HEARING_RESULTED_CASE_UPDATED.getEventName()),
+                Arguments.of(HEARING_INITIATE_ENRICHED.getEventName()),
+                Arguments.of(COURT_APPLICATION_CREATED.getEventName()),
+                Arguments.of(COURT_APPLICATION_ADDED_TO_CASE.getEventName()),
+                Arguments.of(LISTED_COURT_APPLICATION_CHANGED.getEventName()),
+                Arguments.of(APPLICATION_REFERRED_TO_COURT.getEventName()),
+                Arguments.of(HEARING_APPLICATION_LINK_CREATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()),
+                Arguments.of(HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName())
+        );
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws IllegalAccessException, NoSuchFieldException {
-        MockitoAnnotations.initMocks(this);
-        underTest = new JudicialResultsTransformer();
 
-        final Field eventPayloadTransformerField = JudicialResultsTransformer.class.getDeclaredField("eventPayloadTransformer");
+        final Field eventPayloadTransformerField = judicialResultsTransformer.getClass().getDeclaredField("eventPayloadTransformer");
         eventPayloadTransformerField.setAccessible(true);
-        eventPayloadTransformerField.set(underTest, eventPayloadTransformer);
+        eventPayloadTransformerField.set(judicialResultsTransformer, eventPayloadTransformer);
     }
 
-    @Test
-    @UseDataProvider("validEventToTransform")
+    @ParameterizedTest
+    @MethodSource("validEventToTransform")
     public void shouldTransformValidEventThatHasJudicialResultsInThePayload(final String eventToTransform) {
         final JsonEnvelope event = prepareEventWithJudicialResultsToTransform(eventToTransform);
 
-        final Action action = underTest.actionFor(event);
+        final Action action = judicialResultsTransformer.actionFor(event);
 
         assertThat(action, is(TRANSFORM));
     }
@@ -102,27 +101,27 @@ public class JudicialResultsTransformerTest {
     public void shouldNotTransformAnInvalidEventThatHasJudicialResultsInThePayload() {
         final JsonEnvelope event = prepareEventWithJudicialResultsToTransform(STRING.next());
 
-        final Action action = underTest.actionFor(event);
+        final Action action = judicialResultsTransformer.actionFor(event);
 
         assertThat(action, is(NO_ACTION));
     }
 
-    @Test
-    @UseDataProvider("validEventToTransform")
+    @ParameterizedTest
+    @MethodSource("validEventToTransform")
     public void shouldNotTransformValidEventWhenJudicialResultsIsNotInThePayload(final String eventToTransform) {
         final JsonEnvelope event = prepareEventWithoutJudicialResultsToTransform(eventToTransform);
 
-        final Action action = underTest.actionFor(event);
+        final Action action = judicialResultsTransformer.actionFor(event);
 
         assertThat(action, is(NO_ACTION));
     }
 
-    @Test
-    @UseDataProvider("validEventToTransform")
+    @ParameterizedTest
+    @MethodSource("validEventToTransform")
     public void shouldNotTransformValidEventWhenPayloadHasInvalidId(final String eventToTransform) {
         final JsonEnvelope event = prepareEventWithJudicialResultsAndInvalidIdToTransform(eventToTransform);
 
-        final Action action = underTest.actionFor(event);
+        final Action action = judicialResultsTransformer.actionFor(event);
 
         assertThat(action, is(NO_ACTION));
     }
@@ -133,7 +132,7 @@ public class JudicialResultsTransformerTest {
         final JsonObject transformedPayload = createObjectBuilder().build();
         given(eventPayloadTransformer.transform(event)).willReturn(transformedPayload);
 
-        final Stream<JsonEnvelope> stream = underTest.apply(event);
+        final Stream<JsonEnvelope> stream = judicialResultsTransformer.apply(event);
 
         final List<JsonEnvelope> expectedEvents = stream.collect(toList());
         assertThat(expectedEvents.size(), is(equalTo(1)));

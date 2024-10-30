@@ -3,9 +3,9 @@ package uk.gov.moj.cpp.progression.service;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -25,17 +25,17 @@ import java.util.UUID;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("unused")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class LegalStatusReferenceDataServiceTest {
     @Mock
     private Requester requester;

@@ -5,42 +5,43 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.hasSize;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.OffencesForDefendantChangedVerificationHelper.verifyInitialOffence;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.OffencesForDefendantChangedVerificationHelper.verifyUpdatedOffences;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
-import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Random;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class OffencesForDefendantChangedIT extends AbstractIT {
 
@@ -51,12 +52,8 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     private static final String PAYLOAD_LOCATION_DELETE = "ingestion/progression.update-offences-for-prosecution-case-delete.json";
 
 
-
-    private MessageConsumer messageConsumer;
-    private MessageProducer messageProducer;
-
-    private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
-
+    private static final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(DEFENDANT_CHANGED_EVENT).getMessageConsumerClient();
+    private static final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
     private String caseId;
     private String defendantId;
     private String initialoffenceId1;
@@ -66,11 +63,8 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     private String addedOffenceId6;
     private String caseUrn;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
-        messageConsumer = privateEvents.createPrivateConsumer(DEFENDANT_CHANGED_EVENT);
-        messageProducer = privateEvents.createPrivateProducer();
-
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         caseUrn = PreAndPostConditionHelper.generateUrn();
@@ -86,13 +80,10 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @After
-    public void tearDown() throws JMSException {
+    @AfterAll
+    public static void tearDown() throws JMSException {
         cleanEventStoreTables();
         cleanViewStoreTables();
-
-        messageConsumer.close();
-        messageProducer.close();
     }
 
 
@@ -109,7 +100,7 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
         assertTrue(updatedIndexJsonObject.isPresent());
 
-         verifyUpdatedOffences(defendantChangedEvent,updatedIndexJsonObject.get(), 0, 0, true,"updatedOffences");
+        verifyUpdatedOffences(defendantChangedEvent, updatedIndexJsonObject.get(), 0, 0, true, "updatedOffences");
 
     }
 
@@ -126,7 +117,7 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
         assertTrue(updatedIndexJsonObject.isPresent());
 
-        verifyUpdatedOffences(defendantChangedEvent, updatedIndexJsonObject.get(), 0, 0, true,"addedOffences");
+        verifyUpdatedOffences(defendantChangedEvent, updatedIndexJsonObject.get(), 0, 0, true, "addedOffences");
 
     }
 
@@ -152,7 +143,9 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
     private void sendDefendantChangedEventToMessageQueue(JsonObject defendantChangedEvent) {
         final Metadata metadata = createMetadata(DEFENDANT_CHANGED_EVENT);
-        sendMessage(messageProducer, DEFENDANT_CHANGED_EVENT, defendantChangedEvent, metadata);
+
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, defendantChangedEvent);
+        messageProducer.sendMessage(DEFENDANT_CHANGED_EVENT, publicEventEnvelope);
 
         verifyInMessagingQueue();
     }
@@ -206,11 +199,11 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueue() {
-        final JsonPath message = retrieveMessage(messageConsumer);
+        final JsonPath message = retrieveMessageAsJsonPath(messageConsumer);
         assertTrue(message != null);
     }
 
-    private void generateInitialEventsToIndex() throws Exception{
+    private void generateInitialEventsToIndex() throws Exception {
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION, initialoffenceId1, initialoffenceId2, initialToBeUpdatedOffenceId3, initialToBeDeletedOffenceId4);
 
         final Matcher[] initialMatchers = {withJsonPath("$.parties[*].offences[*]", hasSize(4))};

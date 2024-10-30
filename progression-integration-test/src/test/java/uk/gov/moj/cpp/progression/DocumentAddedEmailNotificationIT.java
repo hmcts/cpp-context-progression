@@ -10,19 +10,23 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentCaseLevel;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentDefendantLevel;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForIds;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
@@ -36,17 +40,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import com.google.common.base.Strings;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DocumentAddedEmailNotificationIT extends AbstractIT {
     private String caseId;
@@ -57,33 +59,26 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     private static final String USER_GROUP_NOT_PRESENT_DROOL = UUID.randomUUID().toString();
     private static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
-    private MessageConsumer consumerForCourDocumentSendToCps;
-    private MessageConsumer consumerForProgressionCommandEmail;
-    private MessageProducer messageProducerClientPublic;
-    private MessageConsumer publicEventConsumer;
+    private static final JmsMessageConsumerClient consumerForCourDocumentSendToCps = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-send-to-cps").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForProgressionCommandEmail = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.email-requested").getMessageConsumerClient();
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
 
-    @BeforeClass
+
+    @BeforeAll
     public static void init() {
 
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_DROOL), "stub-data/usersgroups.get-invalid-groups-by-user.json");
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws JMSException {
         setupUsersGroupQueryStub();
     }
 
-    @After
-    public void tearDownQueues() throws JMSException {
-        consumerForCourDocumentSendToCps.close();
-        consumerForProgressionCommandEmail.close();
-        messageProducerClientPublic.close();
-        publicEventConsumer.close();
-    }
 
-
-    @Before
+    @BeforeEach
     public void setup() {
         UsersAndGroupsStub.stubGetUsersAndGroupsQuery();
         HearingStub.stubInitiateHearing();
@@ -95,15 +90,10 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         defendantId1 = randomUUID().toString();
         defendantId2 = randomUUID().toString();
         userId = randomUUID().toString();
-
-        consumerForCourDocumentSendToCps = privateEvents.createPrivateConsumer("progression.event.court-document-send-to-cps");
-        consumerForProgressionCommandEmail = privateEvents.createPrivateConsumer("progression.event.email-requested");
-        messageProducerClientPublic = publicEvents.createPublicProducer();
-        publicEventConsumer = publicEvents.createPublicConsumer("public.progression.court-document-added");
     }
 
     @Test
-    public void shouldGenerateNotificationForCourtDocumentAddedByNonDefenceUserForCaseLevelDocumentForMultipleDefendants() throws IOException {
+    public void shouldGenerateNotificationForCourtDocumentAddedByNonDefenceUserForCaseLevelDocumentForMultipleDefendants() throws IOException, JSONException {
         final String defendant1FirstName = randomAlphanumeric(10);
         final String defendant1LastName = randomAlphanumeric(10);
 
@@ -127,7 +117,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGenerateNotificationForCourtDocumentForDefendantLevelDocument() throws IOException {
+    public void shouldGenerateNotificationForCourtDocumentForDefendantLevelDocument() throws IOException, JSONException {
         final String defendant1FirstName = randomAlphanumeric(10);
         final String defendant1LastName = randomAlphanumeric(10);
 
@@ -151,12 +141,12 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueueForPublicCourtDocumentAdded() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(publicEventConsumer);
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumer);
         assertThat(message, notNullValue());
     }
 
     private void verifyInMessagingQueueForEmailSendForDocumentAdded(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final boolean expectSeperrateEmails) {
-        final Optional<JsonObject> messageOptional = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
+        final Optional<JsonObject> messageOptional = retrieveMessageBody(consumerForProgressionCommandEmail);
         messageOptional.ifPresent(message -> {
             if ((expectSeperrateEmails)) {
                 checkMultipleNotificationsSeperately(caseId, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName, message);
@@ -174,8 +164,8 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
     private void checkMultipleNotificationsSeperately(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final JsonObject message) {
         checkCommonFields(caseId, message);
         checkSingleDefendantInSingleNotification(message, getDefendantFullName(defendant1FirstName, defendant1LastName), getDefendantFullName(defendant2FirstName, defendant2LastName));
-        if(!Strings.isNullOrEmpty(defendant2FirstName)) {
-            final Optional<JsonObject> messageOptional2 = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
+        if (!Strings.isNullOrEmpty(defendant2FirstName)) {
+            final Optional<JsonObject> messageOptional2 = retrieveMessageBody(consumerForProgressionCommandEmail);
             messageOptional2.ifPresent(message2 -> {
                 checkCommonFields(caseId, message2);
                 checkSingleDefendantInSingleNotification(message2, getDefendantFullName(defendant1FirstName, defendant1LastName), getDefendantFullName(defendant2FirstName, defendant2LastName));
@@ -212,7 +202,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
 
     private void verifyForProgressionCommandEmail() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForProgressionCommandEmail);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForProgressionCommandEmail);
         assertThat(message, notNullValue());
         assertThat(message.get(), isJson(withJsonPath("$.caseId",
                 Matchers.hasToString(Matchers.containsString(caseId)))));

@@ -1,26 +1,10 @@
 package uk.gov.moj.cpp.progression.handler.courts.document;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
 
 import uk.gov.moj.cpp.referencedata.json.schemas.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.referencedata.json.schemas.CppGroup;
@@ -32,7 +16,12 @@ import uk.gov.moj.cpp.referencedata.json.schemas.UploadUserGroups;
 
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class DocumentUserGroupFinderTest {
 
     @InjectMocks

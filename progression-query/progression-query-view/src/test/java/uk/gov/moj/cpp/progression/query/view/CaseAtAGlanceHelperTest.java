@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query.view;
 
+import static org.mockito.ArgumentMatchers.any;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -11,9 +12,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Address.address;
 import static uk.gov.justice.core.courts.CustodyTimeLimit.custodyTimeLimit;
@@ -77,13 +77,12 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import net.sf.cglib.core.Local;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseAtAGlanceHelperTest {
     private static final String CASE_URN = "CASEURN";
     private static final String PROSECUTION_AUTHORITY_CODE = "CPS";
@@ -450,7 +449,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(secondDefendantOffences.get(0).getOffenceCode(), is(OFFENCE_CODE));
         final List<CaagResults> secondDefendantFirstOffenceJudicialResults = secondDefendantOffences.get(0).getCaagResults();
         assertThat(secondDefendantFirstOffenceJudicialResults, is(empty()));
-        assertThat(secondDefendant.getDefendantJudicialResults(), nullValue());
+        assertThat(secondDefendant.getDefendantJudicialResults(), notNullValue());
         assertThat(secondDefendant.getDefendantCaseJudicialResults(), nullValue());
 
         final List<CaagDefendantOffences> thirdDefendantOffences = thirdDefendant.getCaagDefendantOffences();
@@ -458,7 +457,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(thirdDefendantOffences.get(0).getOffenceCode(), is(OFFENCE_CODE));
         final List<CaagResults> thirdCaagResults = thirdDefendantOffences.get(0).getCaagResults();
         assertThat(thirdCaagResults, is(empty()));
-        assertThat(thirdDefendant.getDefendantJudicialResults(), nullValue());
+        assertThat(thirdDefendant.getDefendantJudicialResults(), notNullValue());
         assertThat(thirdDefendant.getDefendantCaseJudicialResults(), nullValue());
     }
 

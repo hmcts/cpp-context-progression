@@ -54,7 +54,6 @@ public class CourtDocumentIndexCriteriaRepositoryTest {
     }
 
 
-
     @Test
     public void shouldGetCountByDefendantId() {
         final Long recordCount = courtDocumentIndexCriteriaRepository.countByCriteria(buildCriteria(defendantId1, null));
@@ -109,7 +108,7 @@ public class CourtDocumentIndexCriteriaRepositoryTest {
         courtDocumentEntity.setName(courtDocumentName);
         courtDocumentEntity.setIsRemoved(false);
         courtDocumentEntity.setPayload("{\"documentTypeId\":\"460fbc00-c002-11e8-a355-529269fb1459\"," +
-                "\"name\":\""+courtDocumentName+"\"}");
+                "\"name\":\"" + courtDocumentName + "\"}");
         final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
         indices.add(getCourtDocumentIndexEntity(courtDocumentEntity, caseId, defendantId, courtDocumentId));
         courtDocumentEntity.setIndices(indices);

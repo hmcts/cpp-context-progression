@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.core.requester.Requester;
@@ -13,15 +13,16 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CalendarServiceTest {
 
     @Mock
@@ -33,9 +34,9 @@ public class CalendarServiceTest {
     @InjectMocks
     private CalendarService calendarService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        when(referenceDataService.getPublicHolidays(anyString(), anyObject(), anyObject(), anyObject())).thenReturn(getPublicHolidays());
+        when(referenceDataService.getPublicHolidays(anyString(), any(), any(), any())).thenReturn(getPublicHolidays());
     }
 
 

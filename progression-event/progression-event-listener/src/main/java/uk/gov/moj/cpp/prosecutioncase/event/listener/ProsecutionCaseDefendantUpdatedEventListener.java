@@ -73,7 +73,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     @Inject
     private HearingRepository hearingRepository;
     @Inject
-    private SearchProsecutionCase searchCase;
+    private SearchProsecutionCase searchProsecutionCase;
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
 
@@ -155,22 +155,24 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
         final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
 
-        hearing.getProsecutionCases().forEach(prosecutionCase -> {
-            final Optional<Defendant> oldDefendant = prosecutionCase.getDefendants().stream()
-                    .filter(d -> d.getId().equals(defendantUpdate.getId()))
-                    .findFirst();
+        if (nonNull(hearing.getProsecutionCases())) {
+            hearing.getProsecutionCases().forEach(prosecutionCase -> {
+                final Optional<Defendant> oldDefendant = prosecutionCase.getDefendants().stream()
+                        .filter(d -> d.getId().equals(defendantUpdate.getId()))
+                        .findFirst();
 
-            if (oldDefendant.isPresent()) {
-                final Defendant updatedDefendant = updateDefendant(oldDefendant.get(), defendantUpdate);
-                prosecutionCase.getDefendants().remove(oldDefendant.get());
-                filterDuplicateOffencesById(updatedDefendant.getOffences());
-                prosecutionCase.getDefendants().add(dedupAllReportingRestrictions(updatedDefendant));
-            }
-        });
+                if (oldDefendant.isPresent()) {
+                    final Defendant updatedDefendant = updateDefendant(oldDefendant.get(), defendantUpdate);
+                    prosecutionCase.getDefendants().remove(oldDefendant.get());
+                    filterDuplicateOffencesById(updatedDefendant.getOffences());
+                    prosecutionCase.getDefendants().add(dedupAllReportingRestrictions(updatedDefendant));
+                }
+            });
 
-        hearingRepository.save(prepareHearingEntity(hearing, hearingEntity));
-
+            hearingRepository.save(prepareHearingEntity(hearing, hearingEntity));
+        }
     }
+
     private void filterDuplicateOffencesById(final List<Offence> offences) {
         if (isNull(offences) || offences.isEmpty()) {
             return;
@@ -188,7 +190,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
 
 
-        final Map<UUID, Integer> listingMap = prosecutionCaseListingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber,Math::max));
+        final Map<UUID, Integer> listingMap = prosecutionCaseListingNumberUpdated.getOffenceListingNumbers().stream().collect(Collectors.toMap(OffenceListingNumbers::getOffenceId, OffenceListingNumbers::getListingNumber, Math::max));
         final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(persistentProsecutionCase)
                 .withDefendants(persistentProsecutionCase.getDefendants().stream()
                         .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
@@ -227,7 +229,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
     }
 
-    private void saveListingNumber(final ProsecutionCaseEntity prosecutionCaseEntity, final Set<UUID> listingSet, int accumulator){
+    private void saveListingNumber(final ProsecutionCaseEntity prosecutionCaseEntity, final Set<UUID> listingSet, int accumulator) {
         final JsonObject prosecutionCaseJson = jsonFromString(prosecutionCaseEntity.getPayload());
         final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
         final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(persistentProsecutionCase)
@@ -235,7 +237,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                         .map(defendant -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
                                 .withOffences(defendant.getOffences().stream()
                                         .map(offence -> uk.gov.justice.core.courts.Offence.offence().withValuesFrom(offence)
-                                                .withListingNumber((listingSet.contains(offence.getId()) ? Integer.valueOf(ofNullable(offence.getListingNumber()).orElse(0) + accumulator ): offence.getListingNumber()))
+                                                .withListingNumber((listingSet.contains(offence.getId()) ? Integer.valueOf(ofNullable(offence.getListingNumber()).orElse(0) + accumulator) : offence.getListingNumber()))
                                                 .build())
                                         .collect(toList()))
                                 .build())
@@ -252,7 +254,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
             final List<Offence> updatedOffences = getUpdatedOffencesWithNonNowsJudicialResults(defendant.getOffences());
 
             updatedOffences.forEach(updatedOffence -> {
-                if(isNotEmpty(updatedOffence.getReportingRestrictions())) {
+                if (isNotEmpty(updatedOffence.getReportingRestrictions())) {
                     updateReportingRestriction(offences, updatedOffence);
                 }
                 final Offence offence = maintainLaaReferenceFromPersistedOffence(offences, updatedOffence);
@@ -294,19 +296,19 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     }
 
     private Offence maintainLaaReferenceFromPersistedOffence(final List<Offence> persistedOffences, final Offence updatedOffence) {
-        final Optional<Offence>  persistedOffence = persistedOffences.stream().filter(offence -> offence.getId().equals(updatedOffence.getId())).findFirst();
+        final Optional<Offence> persistedOffence = persistedOffences.stream().filter(offence -> offence.getId().equals(updatedOffence.getId())).findFirst();
         return persistedOffence.isPresent() && nonNull(persistedOffence.get().getLaaApplnReference()) ?
                 Offence.offence().withValuesFrom(updatedOffence).withLaaApplnReference(persistedOffence.get().getLaaApplnReference()).build() : updatedOffence;
     }
 
     private void updateReportingRestriction(final List<Offence> offences, final Offence updatedOffence) {
-        final  List<ReportingRestriction> reportingRestrictions = updatedOffence.getReportingRestrictions();
-        final Optional<Offence>  originalOffence = offences.stream().filter(offence -> offence.getId().equals(updatedOffence.getId())).findFirst();
-        if(originalOffence.isPresent() && isNotEmpty(originalOffence.get().getReportingRestrictions())){
-            originalOffence.get().getReportingRestrictions().forEach( reportingRestriction -> {
+        final List<ReportingRestriction> reportingRestrictions = updatedOffence.getReportingRestrictions();
+        final Optional<Offence> originalOffence = offences.stream().filter(offence -> offence.getId().equals(updatedOffence.getId())).findFirst();
+        if (originalOffence.isPresent() && isNotEmpty(originalOffence.get().getReportingRestrictions())) {
+            originalOffence.get().getReportingRestrictions().forEach(reportingRestriction -> {
                 //if  reportingRestriction not exist then add it
                 final Optional<ReportingRestriction> originalReportingRestriction = reportingRestrictions.stream().filter(rr -> rr.getLabel().equals(reportingRestriction.getLabel())).findFirst();
-                if(!originalReportingRestriction.isPresent()){
+                if (!originalReportingRestriction.isPresent()) {
                     reportingRestrictions.add(reportingRestriction);
                 }
             });
@@ -316,7 +318,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     private PersonDefendant getUpdatedPersonDefendant(final Defendant originalDefendant, final Defendant defendant) {
         PersonDefendant updatedPersonDefendant = null;
         if (nonNull(defendant.getPersonDefendant())) {
-             updatedPersonDefendant = PersonDefendant.personDefendant()
+            updatedPersonDefendant = PersonDefendant.personDefendant()
                     .withValuesFrom(defendant.getPersonDefendant())
                     .withPoliceBailStatus(getUpdatedValueIfNotPresent(originalDefendant.getPersonDefendant().getPoliceBailStatus(),
                             defendant.getPersonDefendant().getPoliceBailStatus()))
@@ -353,7 +355,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
 
     private void updateSearchable(final ProsecutionCase prosecutionCase) {
         prosecutionCase.getDefendants().forEach(caseDefendant ->
-                searchCase.makeSearchable(prosecutionCase, caseDefendant));
+                searchProsecutionCase.makeSearchable(prosecutionCase, caseDefendant));
     }
 
     private Defendant updateDefendant(final Defendant originDefendant, final DefendantUpdate defendant) {
@@ -362,16 +364,13 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         // with the original defendant to avoid losing data. See Jira GPE-14200 for details.
         // Please read full description of method signature for more details.
         final PersonDefendant updatedPersonDefendant = getUpdatedPersonDefendant(originDefendant, defendant);
-        final List<AssociatedPerson> updatedAssociatedPeople =
-                defendant.getAssociatedPersons() == null
-                        ? originDefendant.getAssociatedPersons()
-                        : getUpdatedAssociatedPeople(originDefendant.getAssociatedPersons(), defendant.getAssociatedPersons());
+
 
         return Defendant.defendant()
                 .withValuesFrom(originDefendant)
                 .withPersonDefendant(updatedPersonDefendant)
                 .withLegalEntityDefendant(defendant.getLegalEntityDefendant())
-                .withAssociatedPersons(updatedAssociatedPeople)
+                .withAssociatedPersons(defendant.getAssociatedPersons())
                 .withId(defendant.getId())
                 .withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited())
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())

@@ -8,18 +8,19 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.MaterialHelper.sendEventToConfirmMaterialAdded;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getLanguagePrefix;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.sendPublicEventToConfirmHearingForInitiatedCase;
@@ -27,29 +28,22 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyCaseDocumen
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyMaterialRequestRecordedAndExtractMaterialId;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePayloadValues;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
+import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(DataProviderRunner.class)
 public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
 
     private static final String PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED = "progression.event.nows-material-request-recorded";
@@ -68,8 +62,7 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
     private static final String PARENT_MIDDLE_NAME = "PM_" + STRING.next();
     private static final String PARENT_LAST_NAME = "PL_" + STRING.next();
 
-    private MessageProducer publicMessageProducer;
-    private MessageConsumer nowsMaterialRequestRecordedConsumer;
+    private static final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
     private static final String DOCUMENT_TEXT = STRING.next();
 
     private static final String DEFENDANT_ID_1 = randomUUID().toString();
@@ -94,25 +87,16 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
             DEFENDANT_ID_3, newArrayList(DEFENDANT_ID_3_NAME, DEFENDANT_ID_3_PARENT_NAME)
     );
 
-    @DataProvider
-    public static Object[][] sjpSpecifications() {
-        return new Object[][]{
+    public static Stream<Arguments> sjpSpecifications() {
+        return Stream.of(
                 // welsh court hearing
-                {false},
-                {true}
-        };
+                Arguments.of(false),
+                Arguments.of(true)
+        );
     }
 
-    @After
-    public void tearDown() throws JMSException {
-        publicMessageProducer.close();
-        nowsMaterialRequestRecordedConsumer.close();
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
-        publicMessageProducer = publicEvents.createPublicProducer();
-        nowsMaterialRequestRecordedConsumer = privateEvents.createPrivateConsumer(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED);
 
         stubInitiateHearing();
         stubDocumentCreate(DOCUMENT_TEXT);
@@ -129,13 +113,8 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
         caseUrn = generateUrn();
     }
 
-    @After
-    public void cleanup() throws JMSException {
-        nowsMaterialRequestRecordedConsumer.close();
-    }
-
-    @UseDataProvider("sjpSpecifications")
-    @Test
+    @MethodSource("sjpSpecifications")
+    @ParameterizedTest
     public void shouldGenerateSummonsForReferredCases(final boolean isWelsh) throws Exception {
         addProsecutionCaseToCrownCourt(caseId, DEDENDANT_ID, materialIdActive, materialIdDeleted, courtDocumentId, SJP_REFERRAL_ID, caseUrn);
         verifySummonsGeneratedOnHearingConfirmed(isWelsh);

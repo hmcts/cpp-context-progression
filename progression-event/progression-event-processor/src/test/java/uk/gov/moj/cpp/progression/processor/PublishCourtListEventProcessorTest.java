@@ -6,8 +6,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -34,17 +34,17 @@ import java.util.Map;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PublishCourtListEventProcessorTest {
 
     private final static String PRIVATE_EVENT_COURT_LIST_PUBLISHED = "progression.event.court-list-published";
@@ -92,7 +92,6 @@ public class PublishCourtListEventProcessorTest {
     @Test
     public void shouldNotSendNotification_WhenNoFlagPresent_ProcessCourtListPublishedHandled() throws IOException {
         final JsonEnvelope privateEvent = getPayloadEnvelope(PRIVATE_EVENT_COURT_LIST_PUBLISHED, "publish-court-list/progression.event.court-list-published-no-flag.json");
-        doAnswer(this::buildAnswer).when(publishCourtListPayloadBuilderService).buildPayloadForInterestedParties(any(), any(), anyMap(), anyMap(), anyMap());
 
         underTest.processCourtListPublished(privateEvent);
 
@@ -104,7 +103,6 @@ public class PublishCourtListEventProcessorTest {
     @Test
     public void shouldNotSendNotification_WhenFlagIsFalse_ProcessCourtListPublishedHandled() throws IOException {
         final JsonEnvelope privateEvent = getPayloadEnvelope(PRIVATE_EVENT_COURT_LIST_PUBLISHED, "publish-court-list/progression.event.court-list-published-flag-false.json");
-        doAnswer(this::buildAnswer).when(publishCourtListPayloadBuilderService).buildPayloadForInterestedParties(any(), any(), anyMap(), anyMap(), anyMap());
 
         underTest.processCourtListPublished(privateEvent);
 

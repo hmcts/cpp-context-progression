@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -24,12 +25,12 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  *
@@ -37,7 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  *
  */
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProgressionEventFactoryTest {
 
     private static final String CASE_ID = randomUUID();
@@ -87,72 +88,14 @@ public class ProgressionEventFactoryTest {
     @Mock
     JsonObject jsonObj;
 
-    @Before
+    @BeforeEach
     public void SetUp() {
         when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
-        when(this.jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
-        when(this.jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
-        when(this.jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
-                        .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sentenceHearingDate")))
-                        .thenReturn(LocalDate.now().toString());
-
-        when(this.jsonObj.getJsonArray(Mockito.eq("defendants")))
-                        .thenReturn(Json.createArrayBuilder().add(Json.createObjectBuilder()
-                                        .add("id", randomUUID()).build()).build());
-
-
-        when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
-                .add("courtCentreName", COURT_CENTRE_NAME)
-                .add("courtCentreId", COURT_CENTRE_ID).add("type", HEARING_TYPE)
-                .add("sendingCommittalDate", SENDING_COMMITAL_DATE).add("caseId", CASE_ID)
-                .add("caseUrn", CASE_URN)
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
-                                .add("id", DEFENDANT_ID)
-                                .add("personId", DEFENDANT_PERSON_ID)
-                                .add("firstName", DEFENDANT_FIRST_NAME).add("lastName", DEFENDANT_LAST_NAME)
-                                .add("nationality", DEFENDANT_NATIONALITY).add("gender", DEFENDANT_GENDER)
-                                        .add("address", Json.createObjectBuilder()
-                                                .add("address1", DEFENDANT_ADDRESS_1)
-                                                .add("address2", DEFENDANT_ADDRESS_2)
-                                                .add("address3", DEFENDANT_ADDRESS_3)
-                                                .add("address4", DEFENDANT_ADDRESS_4)
-                                                .add("postcode", DEFENDANT_POSTCODE).build())
-                                .add("dateOfBirth", DEFENDANT_DATE_OF_BIRTH)
-                                .add("bailStatus", BAIL_STATUS)
-                                .add("custodyTimeLimitDate", CUSTODY_TIME_LIMIT_DATE)
-                                .add("defenceOrganisation", DEFENCE_ORGANISATION)
-                                        .add("interpreter", Json.createObjectBuilder()
-                                                .add("needed", INTERPRETER_NEEDED)
-                                                .add("language", INTERPRETER_LANGUAGE).build())
-                                        .add("offences", Json.createArrayBuilder().add(Json
-                                                        .createObjectBuilder()
-                                                .add("id", OFFENCE_ID)
-                                                .add("offenceCode", OFFENCE_CODE)
-                                                .add("plea", Json.createObjectBuilder().add("id", PLEA_ID)
-                                                        .add("value", PLEA_VALUE)
-                                                        .add("pleaDate", PLEA_DATE).build())
-                                                .add("section", SECTION)
-                                                .add("wording", WORDING)
-                                                .add("reason", REASON)
-                                                .add("description", DESCRIPTION)
-                                                .add("category", CATEGORY)
-                                                .add("startDate", START_DATE)
-                                                .add("title", OFFENCE_TITLE)
-                                                .add("legislation", LEGISLATION)
-                                                .add("orderIndex", ORDER_INDEX)
-                                                .add("endDate", END_DATE).build()))
-                                        .build()).build())
-                        .build());
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
     }
 
     @Test
     public void testCreateCaseAddedToCrownCourt() {
+        when(envelope.payloadAsJsonObject().getString(any())).thenReturn(CASE_ID);
         final Object obj = ProgressionEventFactory.createCaseAddedToCrownCourt(this.envelope);
         assertThat(obj, instanceOf(CaseAddedToCrownCourt.class));
     }
@@ -160,6 +103,9 @@ public class ProgressionEventFactoryTest {
 
     @Test
     public void testCreateSendingCommittalHearingInformationAdded() {
+        when(envelope.payloadAsJsonObject().getString(any())).thenReturn(CASE_ID);
+        when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
+                .thenReturn(LocalDate.now().toString());
         final Object obj = ProgressionEventFactory
                         .createSendingCommittalHearingInformationAdded(this.envelope);
         assertThat(obj, instanceOf(SendingCommittalHearingInformationAdded.class));
@@ -169,6 +115,54 @@ public class ProgressionEventFactoryTest {
 
     @Test
     public void testCreateCompletedSendingSheet() {
+        when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
+                .add("courtCentreName", COURT_CENTRE_NAME)
+                .add("courtCentreId", COURT_CENTRE_ID).add("type", HEARING_TYPE)
+                .add("sendingCommittalDate", SENDING_COMMITAL_DATE).add("caseId", CASE_ID)
+                .add("caseUrn", CASE_URN)
+                .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+                        .add("id", DEFENDANT_ID)
+                        .add("personId", DEFENDANT_PERSON_ID)
+                        .add("firstName", DEFENDANT_FIRST_NAME).add("lastName", DEFENDANT_LAST_NAME)
+                        .add("nationality", DEFENDANT_NATIONALITY).add("gender", DEFENDANT_GENDER)
+                        .add("address", Json.createObjectBuilder()
+                                .add("address1", DEFENDANT_ADDRESS_1)
+                                .add("address2", DEFENDANT_ADDRESS_2)
+                                .add("address3", DEFENDANT_ADDRESS_3)
+                                .add("address4", DEFENDANT_ADDRESS_4)
+                                .add("postcode", DEFENDANT_POSTCODE).build())
+                        .add("dateOfBirth", DEFENDANT_DATE_OF_BIRTH)
+                        .add("bailStatus", BAIL_STATUS)
+                        .add("custodyTimeLimitDate", CUSTODY_TIME_LIMIT_DATE)
+                        .add("defenceOrganisation", DEFENCE_ORGANISATION)
+                        .add("interpreter", Json.createObjectBuilder()
+                                .add("needed", INTERPRETER_NEEDED)
+                                .add("language", INTERPRETER_LANGUAGE).build())
+                        .add("offences", Json.createArrayBuilder().add(Json
+                                .createObjectBuilder()
+                                .add("id", OFFENCE_ID)
+                                .add("offenceCode", OFFENCE_CODE)
+                                .add("plea", Json.createObjectBuilder().add("id", PLEA_ID)
+                                        .add("value", PLEA_VALUE)
+                                        .add("pleaDate", PLEA_DATE).build())
+                                .add("section", SECTION)
+                                .add("wording", WORDING)
+                                .add("reason", REASON)
+                                .add("description", DESCRIPTION)
+                                .add("category", CATEGORY)
+                                .add("startDate", START_DATE)
+                                .add("title", OFFENCE_TITLE)
+                                .add("legislation", LEGISLATION)
+                                .add("orderIndex", ORDER_INDEX)
+                                .add("endDate", END_DATE).build()))
+                        .build()).build())
+                .build());
+
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
+
         final Object obj = ProgressionEventFactory.completedSendingSheet(this.envelope);
         assertThat(obj, instanceOf(SendingSheetCompleted.class));
         final SendingSheetCompleted ssCompleted = (SendingSheetCompleted) obj;
@@ -177,6 +171,7 @@ public class ProgressionEventFactoryTest {
 
     @Test
     public void testCreatePsrForDefendantsRequest() {
+        when(envelope.payloadAsJsonObject().getString(any())).thenReturn(CASE_ID);
         when(this.jsonObj.getJsonArray(Mockito.eq("defendants")))
                 .thenReturn(
                    Json.createArrayBuilder()

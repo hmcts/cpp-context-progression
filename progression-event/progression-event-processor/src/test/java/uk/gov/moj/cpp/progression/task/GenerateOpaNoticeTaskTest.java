@@ -6,7 +6,7 @@ import static java.nio.charset.Charset.defaultCharset;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -30,17 +30,18 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GenerateOpaNoticeTaskTest {
     private static final String GENERATE_OPA_PUBLIC_LIST_NOTICE = "progression.generate-opa-public-list-notice";
     private static final String GENERATE_OPA_PRESS_LIST_NOTICE = "progression.generate-opa-press-list-notice";
@@ -65,7 +66,7 @@ public class GenerateOpaNoticeTaskTest {
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     private StringToJsonObjectConverter jsonObjectConverter = new StringToJsonObjectConverter();
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(utcClock.now()).thenReturn(now);
     }

@@ -4,20 +4,37 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>8.0.202-CPAW-DLQ-SNAPSHOT</version>
+        <version>17.0.22-CPAW-DLQ-SNAPSHOT</version>
     </parent>
     <properties>
-        <jboss-logging.version>3.3.1.Final</jboss-logging.version>
-        <artemis.version>1.2.0</artemis.version>
-        <rest-assured.version>2.5.0</rest-assured.version>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
-        <framework.version>7.1.1</framework.version>
-        <event-store.version>7.0.2</event-store.version>
-        <stream-transformation.version>7.0.0</stream-transformation.version>
-        <json-schema-catalog.version>1.7.6</json-schema-catalog.version>
     </properties>
     <artifactId>progression-integration-test</artifactId>
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.9.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.9.6</version>
+        </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
@@ -35,6 +52,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>uk.gov.justice.utils</groupId>
+            <artifactId>integration-test-utils-jms</artifactId>
+            <version>${framework.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <scope>test</scope>
@@ -43,6 +66,16 @@
             <groupId>org.apache.tomee</groupId>
             <artifactId>openejb-cxf-rs</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>johnzon-jaxrs</artifactId>
+                    <groupId>org.apache.johnzon</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>johnzon-jsonb</artifactId>
+                    <groupId>org.apache.johnzon</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
@@ -52,6 +85,10 @@
                 <exclusion>
                     <artifactId>jboss-logging</artifactId>
                     <groupId>org.jboss.logging</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -68,19 +105,8 @@
             <classifier>raml</classifier>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jms-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.restassured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>${rest-assured.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -92,7 +118,6 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-multipart-provider</artifactId>
-            <version>3.0.7.Final</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -109,22 +134,18 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>criminal-court-public-model</artifactId>
-            <version>${coredomain.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>common-core-domain</artifactId>
-            <version>${coredomain.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
             <artifactId>unifiedsearch-test-utils</artifactId>
-            <version>${cpp.platform-libraries.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.json</groupId>
             <artifactId>json-transformer-jolt</artifactId>
-            <version>${json-transformer.version}</version>
         </dependency>
 
         <!-- added for framework 6-->
@@ -145,31 +166,23 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.tngtech.junit.dataprovider</groupId>
-            <artifactId>junit4-dataprovider</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- need this specific version to get the test working -->
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-            <version>${jboss-logging.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>event-domain</artifactId>
-            <version>${event-store.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>event-store-management-commands</artifactId>
-            <version>${event-store.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-jmx</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
@@ -191,6 +204,7 @@
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
             <artifactId>test-utils-event</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.justice.event-store</groupId>
@@ -214,8 +228,26 @@
             <version>8.0.4</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- added for framework 6-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -303,9 +335,6 @@
                                     <plugin>
                                         uk.gov.justice.generation.pojo.plugin.classmodifying.MakeClassSerializablePlugin
                                     </plugin>
-                                    <!--plugin>
-                                        uk.gov.justice.generation.pojo.plugin.classmodifying.AddEventAnnotationToClassPlugin
-                                    </plugin-->
                                 </plugins>
                                 <typeMappings>
                                     <typeMapping>
@@ -403,8 +432,7 @@
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
-                    <!-- Running with embedded elasticsearch by default - removed on recommendation from DevOps -->
-
+                    <!-- Running with embedded elasticsearch by default -->
                 </plugins>
             </build>
         </profile>

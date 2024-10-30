@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -42,6 +42,7 @@ import uk.gov.justice.core.courts.ProsecutionCaseCreated;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ProsecutionCaseSubject;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -67,7 +68,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,18 +77,17 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddCourtDocumentHandlerTest {
 
     @Mock
@@ -130,6 +129,8 @@ public class AddCourtDocumentHandlerTest {
 
     @InjectMocks
     private AddCourtDocumentHandler addCourtDocumentHandler;
+    @InjectMocks
+    private CourtDocumentAggregate courtDocumentAggregate;
 
     @Captor
     private ArgumentCaptor<java.util.stream.Stream<uk.gov.justice.services.messaging.JsonEnvelope>> eventCaptor;
@@ -145,7 +146,7 @@ public class AddCourtDocumentHandlerTest {
                 .build();
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         createEnveloperWithEvents(CourtsDocumentAdded.class, CourtsDocumentAddedV2.class, CaseCpsDetailsUpdatedFromCourtDocument.class);
     }
@@ -158,12 +159,14 @@ public class AddCourtDocumentHandlerTest {
                 ));
     }
 
-    @Ignore("will restore later")
     @Test
     public void shouldProcessCommand() throws Exception {
 
         final AddCourtDocument addCourtDocument = addCourtDocument()
                 .withCourtDocument(buildCourtDocument())
+                .withIsCpsCase(false)
+                .withIsUnbundledDocument(false)
+                .withMaterialId(randomUUID())
                 .build();
         final CourtDocument courtDocument = addCourtDocument.getCourtDocument();
 
@@ -171,10 +174,28 @@ public class AddCourtDocumentHandlerTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-added"),
                 buildCourtDocumentWithoutDocumentType());
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
-        final DocumentTypeAccess documentTypeData = mock(DocumentTypeAccess.class);
-        final CourtDocument enrichedCourtDocument = mock(CourtDocument.class);
+        final DocumentTypeAccess documentTypeData = DocumentTypeAccess.documentTypeAccess()
+                .withActionRequired(true)
+                .build();
+        final CourtDocument enrichedCourtDocument = CourtDocument.courtDocument()
+                .withValuesFrom(courtDocument)
+                .build();
         final EventStream eventStream = mock(EventStream.class);
-        final CourtDocumentAggregate courtDocumentAggregate = mock(CourtDocumentAggregate.class);
+
+        final JsonObject userOrganisationDetails = Json.createObjectBuilder()
+                .add("organisationId","1fc69990-bf59-4c4a-9489-d766b9abde9a")
+                .add("organisationType","HMCTS")
+                .add("organisationName", "Bodgit and Scarper LLP")
+                .add("addressLine1","Legal House")
+                .add("addressLine2","15 Sewell Street")
+                .add( "addressLine3", "Hammersmith")
+                .add("addressLine4", "London")
+                .add("addressPostcode","SE14 2AB")
+                .add("phoneNumber","080012345678")
+                .add("email","joe@example.com")
+                .add("laaContractNumbers",Json.createArrayBuilder()
+                        .add("LAA3482374WER")
+                        .add("LAA3482374WEM")).build();
 
         when(defaultCourtDocumentFactory.createDefaultCourtDocument(courtDocument)).thenReturn(courtDocument);
         when(objectToJsonObjectConverter.convert(courtDocument)).thenReturn(payload);
@@ -183,13 +204,6 @@ public class AddCourtDocumentHandlerTest {
         when(courtDocumentEnricher.enrichWithMaterialUserGroups(courtDocument, documentTypeData)).thenReturn(enrichedCourtDocument);
         when(eventSource.getStreamById(enrichedCourtDocument.getCourtDocumentId())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
-        when(refDataService.getDocumentTypeAccessData(courtDocument.getDocumentTypeId(), jsonEnvelope, requester)).thenReturn(Optional.of(Json.createObjectBuilder()
-                .add("courtDocumentTypeRBAC",
-                        Json.createObjectBuilder()
-                                .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
-                                .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
-                                .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build()).build()));
-        when(courtDocumentAggregate.addCourtDocument(enrichedCourtDocument)).thenReturn(Stream.of(CourtsDocumentAdded.courtsDocumentAdded().withCourtDocument(courtDocument).build()));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -198,6 +212,8 @@ public class AddCourtDocumentHandlerTest {
                 .build();
 
         final Envelope<AddCourtDocument> envelope = envelopeFrom(metadata, addCourtDocument);
+        when(usersGroupService.getOrganisationDetailsForUser(envelope))
+                .thenReturn(Envelope.envelopeFrom(metadata, userOrganisationDetails));
 
         addCourtDocumentHandler.handle(envelope);
 
@@ -400,7 +416,7 @@ public class AddCourtDocumentHandlerTest {
                 .withDocumentCategory(DocumentCategory.documentCategory().build())
                 .withMimeType("pdf")
                 .withName("name")
-                .withMaterials(Arrays.asList(Material.material().withReceivedDateTime(ZonedDateTime.now()).build()))
+                .withMaterials(Arrays.asList(Material.material().withReceivedDateTime(new UtcClock().now()).build()))
                 .withSendToCps(false)
                 .build();
 

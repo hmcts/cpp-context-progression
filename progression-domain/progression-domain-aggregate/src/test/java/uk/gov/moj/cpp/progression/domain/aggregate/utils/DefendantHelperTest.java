@@ -5,8 +5,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
 import uk.gov.justice.core.courts.Address;
@@ -31,8 +31,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -67,7 +70,7 @@ public class DefendantHelperTest {
                 .withCount(1);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         contactDetails = ContactNumber.contactNumber().withHome("0845123574").withWork("0334578522").withMobile("07896542875").withPrimaryEmail("john.smith@hmcts.net").withSecondaryEmail("john.smith@hmcts.net").withFax("0845123574").build();
 

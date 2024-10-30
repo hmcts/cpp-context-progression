@@ -6,42 +6,41 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateDefendantListingStatusChanged;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UpdateDefendantListingStatusIT extends AbstractIT {
 
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
-    private MessageProducer messageProducerClientPublic;
-    private MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated;
-    private MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
-
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
     private String hearingId;
@@ -53,21 +52,14 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
     private String bailStatusId;
 
 
-    @After
-    public void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
-        messageConsumerClientPublicForHearingResultedCaseUpdated.close();
-        messageConsumerProsecutionCaseDefendantListingStatusChanged.close();
-    }
-
     private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResultedCaseUpdated);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
@@ -77,10 +69,6 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
         bailStatusCode = "C";
         bailStatusDescription = "Remanded into Custody";
         bailStatusId = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
-
-        messageProducerClientPublic = publicEvents.createPublicProducer();
-        messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
-        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer("progression.event.prosecutionCase-defendant-listing-status-changed-v2");
     }
 
     @Test
@@ -99,7 +87,7 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }

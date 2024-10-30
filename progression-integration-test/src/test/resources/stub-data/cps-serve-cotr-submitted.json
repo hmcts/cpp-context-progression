@@ -1,5 +1,5 @@
 {
-  "submissionId": "1bafb21c-1b09-11ed-861d-0242ac120002",
+  "submissionId": "%SUBMISSION_ID%",
   "caseId": "%CASE_ID%",
   "caseUrn": "87GD9945217",
   "formDefendants": [

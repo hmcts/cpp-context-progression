@@ -34,14 +34,14 @@ import uk.gov.moj.cpp.progression.command.handler.courts.UpdateHearingDetailsInU
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class UpdateLaaHearingDetailsInUnifiedSearchHandlerTest {
 

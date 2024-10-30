@@ -35,7 +35,7 @@ public class CaseCpsProsecutorRepositoryTest {
     private CaseCpsProsecutorEntity caseCpsProsecutorEntity;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         caseCpsProsecutorEntity = new CaseCpsProsecutorEntity(ID, PROSECUTOR, OLD_PROSECUTOR);
         caseCpsProsecutorRepository.save(caseCpsProsecutorEntity);
 

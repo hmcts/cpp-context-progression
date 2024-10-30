@@ -8,10 +8,14 @@
     },
     "sendToCps": {
       "type": "boolean"
+    },
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
     }
   },
   "required": [
-    "courtDocumentId"
+    "courtDocumentId",
+    "courtDocument"
   ],
   "additionalProperties": false
 }

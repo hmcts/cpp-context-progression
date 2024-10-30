@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultHelperTest {
 
     private static final UUID HEARING_ID_1 = fromString("dee1acd3-5c18-4417-9397-36c5257ac6b2");
@@ -570,6 +570,15 @@ public class HearingResultHelperTest {
     }
 
     @Test
+    public void shouldReturnFalseForApplicationContainsNoNextHearingWhenIsAmended() {
+        final Hearing hearing = buildHearingWithCourtApplications(
+                emptyList(),
+                asList(buildCourtApplicationsWithNoNextHearingJudicialResults(PROSECUTION_CASE_ID_1, true)));
+
+        assertThat(HearingResultHelper.doHearingContainNewOrAmendedNextHearingResults(hearing), is(false));
+    }
+
+    @Test
     public void shouldReturnFalseWhenFirstTimeResult(){
         final Hearing hearing = buildHearingWithCourtApplications(
                 asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
@@ -795,6 +804,13 @@ public class HearingResultHelperTest {
         return CourtApplication.courtApplication()
                 .withId(caseId)
                 .withJudicialResults(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(buildNextHearing(HEARING_ID_1), isNewAmendment)))
+                .build();
+    }
+
+    private CourtApplication buildCourtApplicationsWithNoNextHearingJudicialResults(final UUID caseId, final boolean isNewAmendment) {
+        return CourtApplication.courtApplication()
+                .withId(caseId)
+                .withJudicialResults(asList(buildRelatedNextHearingJudicialResultWithAmendmentAs(null, isNewAmendment)))
                 .build();
     }
 

@@ -1,10 +1,10 @@
 package uk.gov.moj.cpp.progression.event.utils;
 
 
+import uk.gov.justice.services.common.util.UtcClock;
+
 import java.time.LocalDate;
 import java.util.UUID;
-
-import uk.gov.justice.services.common.util.UtcClock;
 /**
  * 
  * @deprecated This is deprecated for Release 2.4

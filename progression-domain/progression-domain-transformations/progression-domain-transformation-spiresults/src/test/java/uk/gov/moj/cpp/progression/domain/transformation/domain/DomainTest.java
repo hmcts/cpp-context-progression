@@ -8,13 +8,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 
 import java.io.File;
-import java.io.FilterInputStream;
 import java.io.IOException;
 
 import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DomainTest {
 

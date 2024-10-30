@@ -27,16 +27,15 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SummonsHearingRequestServiceTest {
 
     private static final UUID DEFENDANT_ID = randomUUID();
@@ -50,7 +49,7 @@ public class SummonsHearingRequestServiceTest {
     @InjectMocks
     private SummonsHearingRequestService summonsHearingRequestService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(summonsHearingRequestService, "objectToJsonObjectConverter", new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper()));
     }

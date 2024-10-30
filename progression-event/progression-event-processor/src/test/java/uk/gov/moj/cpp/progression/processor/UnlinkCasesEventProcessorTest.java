@@ -1,15 +1,13 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.core.courts.CaseNoteAdded;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.verify;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -20,21 +18,22 @@ import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 import uk.gov.moj.cpp.progression.events.UnlinkedCases;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class UnlinkCasesEventProcessorTest {
     @Mock
     private Sender sender;
@@ -51,7 +50,7 @@ public class UnlinkCasesEventProcessorTest {
     @Spy
     private JsonObjectToObjectConverter jsonObjectConverter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());

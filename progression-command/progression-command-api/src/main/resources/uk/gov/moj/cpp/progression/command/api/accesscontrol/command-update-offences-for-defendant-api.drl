@@ -1,0 +1,39 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.progression.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Rule for update Offences For Defendant"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.command.update-offences-for-defendant");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getUpdateOffencesForDefendantActionGroups()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for update hearing verdict action"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-hearing-offence-verdict");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for update hearing plea action"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-hearing-offence-plea");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end
+
+
+
+
+

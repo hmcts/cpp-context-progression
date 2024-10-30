@@ -54,12 +54,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearin
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.StringReader;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -70,18 +66,16 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.core.Is;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultEventListenerTest {
 
     private static final String CASE_RESULT_LABEL_1 = "case result label 1";
@@ -115,7 +109,7 @@ public class HearingResultEventListenerTest {
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -242,7 +236,7 @@ public class HearingResultEventListenerTest {
 
         HearingEntity savedHearingEntity1 = savedHearingEntities.stream().filter(savedHearingEntity -> savedHearingEntity.getHearingId().equals(firstHearingId))
                 .findFirst().get();
-        
+
         final Hearing savedHearing1 = this.jsonObjectToObjectConverter.convert(jsonFromString(savedHearingEntity1.getPayload()), Hearing.class);
 
         assertThat(savedHearing1, notNullValue());
@@ -1563,7 +1557,7 @@ public class HearingResultEventListenerTest {
         assertThat(laaReference.getStatusDescription(), is(statusDescription));
         assertThat(laaReference.getOffenceLevelStatus(), is(GRANTED.getDescription()));
         assertThat(laaReference.getApplicationReference(), is(LAA_APPLICATION_REFERENCE));
-        assertThat(laaReference.getLaaContractNumber(), Is.is(LAA_Reference));
+        assertThat(laaReference.getLaaContractNumber(), is(LAA_Reference));
     }
 
     @Test

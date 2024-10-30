@@ -5,7 +5,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
@@ -19,8 +18,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.BoxHearingRequest.boxHearingRequest;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -48,7 +47,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePaylo
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.AddCourtApplicationToCase;
 import uk.gov.justice.core.courts.Address;
@@ -94,8 +92,8 @@ import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
-import uk.gov.justice.core.courts.UpdateApplicationDefendant;
 import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
+import uk.gov.justice.core.courts.UpdateApplicationDefendant;
 import uk.gov.justice.core.courts.UpdateCourtApplicationToHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
@@ -115,6 +113,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
@@ -129,15 +128,14 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtApplicationHandlerTest {
 
     private static final String RESENTENCING_ACTIVATION_CODE = "AJ0001";
@@ -199,26 +197,13 @@ public class CourtApplicationHandlerTest {
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
+    @Mock
     private ApplicationAggregate applicationAggregate;
-
     private static final String CONTACT_EMAIL_ADDRESS_PREFIX = STRING.next();
     private static final String EMAIL_ADDRESS_SUFFIX = "@justice.gov.uk";
     private static final String PROSECUTOR_OU_CODE = randomAlphanumeric(8);
     private static final String PROSECUTOR_MAJOR_CREDITOR_CODE = randomAlphanumeric(12);
-
-    @Before
-    public void setup() {
-        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-        applicationAggregate = new ApplicationAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -256,6 +241,12 @@ public class CourtApplicationHandlerTest {
     @Test
     public void shouldHandleCommandForAddBreachApplication() {
 
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         assertThat(new CourtApplicationHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("addBreachApplication")
                         .thatHandles("progression.command.add-breach-application")
@@ -277,6 +268,14 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<AddCourtApplicationToCase> envelope = envelopeFrom(metadata, addCourtApplicationToCase);
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.courtApplicationAddedToCase(envelope);
 
@@ -319,6 +318,14 @@ public class CourtApplicationHandlerTest {
                         .withIsWelshTranslationRequired(false)
                         .build();
 
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
                 .withCourtHearing(new CourtHearingRequest.Builder().build())
                 .withBoxHearing(new BoxHearingRequest.Builder().build())
@@ -347,7 +354,6 @@ public class CourtApplicationHandlerTest {
 
         final Envelope<SendNotificationForApplicationInitiated> envelope = envelopeFrom(metadata, sendNotificationForApplication);
 
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
         courtApplicationHandler.sendNotificationForApplication(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -415,6 +421,14 @@ public class CourtApplicationHandlerTest {
 
         final Envelope<SendNotificationForAutoApplication> envelope = envelopeFrom(metadata, sendNotificationForAutoApplication);
 
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.sendNotificationForAutopplication(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -463,7 +477,13 @@ public class CourtApplicationHandlerTest {
 
         final Envelope<SendNotificationForApplicationInitiated> envelope = envelopeFrom(metadata, sendNotificationForApplication);
 
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new SendNotificationForApplicationIgnored.Builder()
+                .withCourtApplication(courtApplication().build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build()));
+
         courtApplicationHandler.sendNotificationForApplication(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -514,7 +534,6 @@ public class CourtApplicationHandlerTest {
         applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
 
         courtApplicationHandler.sendNotificationForApplication(envelope);
 
@@ -561,7 +580,14 @@ public class CourtApplicationHandlerTest {
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -610,7 +636,15 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -658,7 +692,15 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -709,7 +751,15 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -746,7 +796,14 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<EditCourtApplicationProceedings> envelope = envelopeFrom(metadata, editCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.editCourtApplicationProceedings(envelope);
 
@@ -779,6 +836,14 @@ public class CourtApplicationHandlerTest {
                         .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                         .withSummonsApprovalRequired(false)
                         .build();
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
         applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
@@ -821,6 +886,14 @@ public class CourtApplicationHandlerTest {
                         .withSummonsApprovalRequired(false)
                         .build();
 
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
         applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
 
@@ -861,6 +934,15 @@ public class CourtApplicationHandlerTest {
                 createObjectBuilder()
                         .add(APPLICATION_ID, applicationId.toString())
                         .build());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtHearingFromHearingResult(envelope);
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 
@@ -914,10 +996,18 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor2), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(respondent), any())).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -989,11 +1079,19 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor2), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor3), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(respondent), any())).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1070,10 +1168,18 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor2), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(respondent), any())).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1138,9 +1244,17 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor2), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1207,10 +1321,18 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor2), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor3), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1281,11 +1403,18 @@ public class CourtApplicationHandlerTest {
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor3), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(respondent), any())).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1353,10 +1482,18 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor2), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(respondent), any())).thenReturn(of(buildProsecutorQueryResult(respondent, "respondent")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1428,12 +1565,20 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent1, "respondent1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent2, "respondent2")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor1), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor2), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
+        when(referenceDataService.getProsecutor(any(), eq(prosecutor3), any())).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
+        when(referenceDataService.getProsecutor(any(), eq(subject), any())).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
+        when(referenceDataService.getProsecutor(any(), eq(respondent1), any())).thenReturn(of(buildProsecutorQueryResult(respondent1, "respondent1")));
+        when(referenceDataService.getProsecutor(any(), eq(respondent2), any())).thenReturn(of(buildProsecutorQueryResult(respondent2, "respondent2")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1554,12 +1699,14 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent1, "respondent1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent2, "respondent2")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1623,12 +1770,14 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor1, "prosecutor1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor2, "prosecutor2")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(prosecutor3), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(prosecutor3, "prosecutor3")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(subject), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(subject, "subject")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent1), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent1, "respondent1")));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), eq(respondent2), any(Requester.class))).thenReturn(of(buildProsecutorQueryResult(respondent2, "respondent2")));
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1652,11 +1801,28 @@ public class CourtApplicationHandlerTest {
 
     @Test
     public void shouldUpdateOffenceWordingWhenCourtOrderIsNotSuspendedSentence() throws EventStreamException {
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         offenceWordingTestForCourtOrder(randomUUID());
     }
 
     @Test
     public void shouldUpdateOffenceWordingWhenCourtOrderIsSuspendedSentence() throws EventStreamException {
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         offenceWordingTestForCourtOrder(TYPE_ID_FOR_SUSPENDED_SENTENCE_ORDER);
     }
 
@@ -1670,8 +1836,14 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
-        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1698,8 +1870,13 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
-        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1718,7 +1895,6 @@ public class CourtApplicationHandlerTest {
 
         when(eventSource.getStreamById(any())).thenReturn(eventStream1);
         when(aggregateService.get(eventStream1, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1746,8 +1922,15 @@ public class CourtApplicationHandlerTest {
                 .withId(randomUUID())
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
-        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1783,8 +1966,15 @@ public class CourtApplicationHandlerTest {
                 .withId(randomUUID())
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
-        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1806,8 +1996,15 @@ public class CourtApplicationHandlerTest {
                 .withId(randomUUID())
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
-        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class))).thenReturn(Optional.empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1855,7 +2052,15 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final Envelope<EditCourtApplicationProceedings> envelope = envelopeFrom(metadata, editCourtApplicationProceedings);
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         courtApplicationHandler.editCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -1888,7 +2093,13 @@ public class CourtApplicationHandlerTest {
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
 
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
@@ -1928,6 +2139,14 @@ public class CourtApplicationHandlerTest {
                         .withBoxHearing(boxHearingRequest().build())
                         .withSummonsApprovalRequired(true)
                         .build();
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
@@ -1974,6 +2193,14 @@ public class CourtApplicationHandlerTest {
                         .withBoxHearing(boxHearingRequest().build())
                         .withSummonsApprovalRequired(true)
                         .build();
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
@@ -2030,6 +2257,14 @@ public class CourtApplicationHandlerTest {
                 .withSummonsApprovalRequired(true)
                 .build();
 
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
         applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
 
         applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
@@ -2074,6 +2309,14 @@ public class CourtApplicationHandlerTest {
                 .build();
 
         final HearingResultedUpdateApplication hearingResultedUpdateApplication = hearingResultedUpdateApplication().withCourtApplication(courtApplication().withId(applicationId).build()).build();
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.hearingResultedUpdateApplication(envelopeFrom(metadata, hearingResultedUpdateApplication));
 
@@ -2120,6 +2363,13 @@ public class CourtApplicationHandlerTest {
                         .withSubject(CourtApplicationParty.courtApplicationParty().build())
                         .build())
                 .build();
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
 
         courtApplicationHandler.hearingUpdatedWithApplication(envelopeFrom(metadata, hearingUpdateApplication));
 
@@ -2209,7 +2459,10 @@ public class CourtApplicationHandlerTest {
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
         when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class)))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -2254,6 +2507,7 @@ public class CourtApplicationHandlerTest {
                                 .build()))
                         .build())
                 .build());
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         final JsonObject jsonObject = FileUtil.jsonFromString(FileUtil
@@ -2304,8 +2558,12 @@ public class CourtApplicationHandlerTest {
                 .withName("progression.command.update-application-defendant")
                 .withId(randomUUID())
                 .build();
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationUpdated.Builder()
+                .withCourtApplication(courtApplication().build()));
 
         courtApplicationHandler.updateApplicationDefendant(envelopeFrom(metadata, courtApplication));
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -2330,8 +2588,6 @@ public class CourtApplicationHandlerTest {
                 .withId(randomUUID())
                 .build();
         final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-
-        when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(empty());
 
         courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
 

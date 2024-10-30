@@ -1,7 +1,8 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -22,18 +23,17 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseMarkersUpdatedListenerTest {
     @Mock
     private ProsecutionCaseRepository repository;
@@ -53,7 +53,7 @@ public class ProsecutionCaseMarkersUpdatedListenerTest {
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
 
         setField(this.jsonConverter, "mapper",
@@ -85,7 +85,7 @@ public class ProsecutionCaseMarkersUpdatedListenerTest {
         eventListener.processCaseMarkersUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
         ProsecutionCaseEntity prosecutionCaseEntitySaved = argumentCaptor.getValue();
-        Assert.assertTrue(prosecutionCaseEntitySaved.getPayload().contains("\"cpsOrganisation\":\"A01\""));
-        Assert.assertTrue(prosecutionCaseEntitySaved.getPayload().contains("\"trialReceiptType\":\"Transfer\""));
+        assertTrue(prosecutionCaseEntitySaved.getPayload().contains("\"cpsOrganisation\":\"A01\""));
+        assertTrue(prosecutionCaseEntitySaved.getPayload().contains("\"trialReceiptType\":\"Transfer\""));
     }
 }

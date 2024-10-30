@@ -1,8 +1,9 @@
 package uk.gov.justice.api.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -21,8 +22,8 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.util.CaseInsensitiveMap;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class UploadCaseDocumentsFormParserTest {
 
@@ -30,7 +31,7 @@ public class UploadCaseDocumentsFormParserTest {
 
     private UploadCaseDocumentsFormParser uploadCaseDocumentsFormParser;
 
-    @Before
+    @BeforeEach
     public void setup(){
         uploadCaseDocumentsFormParser = new UploadCaseDocumentsFormParser();
     }
@@ -86,7 +87,7 @@ public class UploadCaseDocumentsFormParserTest {
         assertFalse(result.getValue().isPresent());
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test
     public void shouldThrowExceptionForMalformedUploadform() throws IOException {
 
         final Map<String, List<InputPart>> form = getFormWithMalformedContentDisposition();
@@ -94,10 +95,12 @@ public class UploadCaseDocumentsFormParserTest {
         final MultipartFormDataInput input = mock(MultipartFormDataInput.class);
         when(input.getFormDataMap()).thenReturn(form);
 
-        final KeyValue<Optional<String>, Optional<InputStream>> result = uploadCaseDocumentsFormParser.parse(input);
+        assertThrows(NullPointerException.class, () -> {
+            final KeyValue<Optional<String>, Optional<InputStream>> result = uploadCaseDocumentsFormParser.parse(input);
 
-        assertFalse(result.getKey().isPresent());
-        assertFalse(result.getValue().isPresent());
+            assertFalse(result.getKey().isPresent());
+            assertFalse(result.getValue().isPresent());
+        });
     }
 
     @Test

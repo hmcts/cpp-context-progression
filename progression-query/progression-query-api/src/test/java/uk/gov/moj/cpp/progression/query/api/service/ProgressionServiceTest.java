@@ -5,8 +5,8 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 
@@ -21,14 +21,14 @@ import java.io.IOException;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProgressionServiceTest {
 
     @InjectMocks
@@ -62,7 +62,6 @@ public class ProgressionServiceTest {
                 .build();
 
         when(petQueryView.getPetsForCase(any())).thenReturn(jsonEnvelope);
-        when(envelope.payloadAsJsonObject()).thenReturn(petsForCasePayload);
         final JsonObject jsonObject =  progressionService.getPetsForCase(petQueryView, jsonEnvelope, randomUUID().toString());
         assertThat(jsonObject, is(notNullValue()));
     }

@@ -1,19 +1,19 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence.mapping;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.constant.ProsecutingAuthority.CPS;
-import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICANT_PERSON_FIRST_NAME;
-import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICANT_PERSON_MIDDLE_NAME;
-import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICANT_PERSON_LAST_NAME;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICANT_ORGANISATION_NAME;
+import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICANT_PERSON_FIRST_NAME;
+import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICANT_PERSON_LAST_NAME;
+import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICANT_PERSON_MIDDLE_NAME;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICATION_ARN;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.APPLICATION_ID;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.RESPONDENTS_1_PERSON_FIRST_NAME;
-import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.RESPONDENTS_1_PERSON_MIDDLE_NAME;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.RESPONDENTS_1_PERSON_LAST_NAME;
+import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.RESPONDENTS_1_PERSON_MIDDLE_NAME;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.RESPONDENTS_2_ORGANISATION_NAME;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.RESPONDENTS_3_PERSON_LAST_NAME;
 import static uk.gov.moj.cpp.prosecutioncase.persistence.mapping.SearchProsecutionCaseTest.ApplicationArbitraryValues.RESPONDENTS_4_ORGANISATION_NAME;
@@ -42,15 +42,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SearchProsecutionCaseTest {
 
     public static final String SPACE = " ";
@@ -69,7 +69,7 @@ public class SearchProsecutionCaseTest {
     private CaseProgressionDetail cpsCaseDetail;
     private uk.gov.moj.cpp.progression.persistence.entity.Defendant cpsDefendant;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setField(objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
 
@@ -228,14 +228,14 @@ public class SearchProsecutionCaseTest {
                                         .build())
                                 .build(),
                         CourtApplicationParty.courtApplicationParty()
-                                        .withPersonDetails(Person.person()
-                                                .withLastName(RESPONDENTS_3_PERSON_LAST_NAME) //Missing first & middle names.
-                                                .build())
+                                .withPersonDetails(Person.person()
+                                        .withLastName(RESPONDENTS_3_PERSON_LAST_NAME) //Missing first & middle names.
+                                        .build())
                                 .build(),
                         CourtApplicationParty.courtApplicationParty()
-                                        .withOrganisation(Organisation.organisation()
-                                                .withName(RESPONDENTS_4_ORGANISATION_NAME)
-                                                .build())
+                                .withOrganisation(Organisation.organisation()
+                                        .withName(RESPONDENTS_4_ORGANISATION_NAME)
+                                        .build())
                                 .build()))
                 .build();
         //when

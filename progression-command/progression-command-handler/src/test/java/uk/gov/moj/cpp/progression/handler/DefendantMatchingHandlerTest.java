@@ -4,8 +4,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
@@ -60,15 +60,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantMatchingHandlerTest {
 
     @Mock
@@ -97,13 +97,11 @@ public class DefendantMatchingHandlerTest {
 
     private CaseAggregate caseAggregate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         caseAggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
     }
 
     @Test
@@ -116,6 +114,8 @@ public class DefendantMatchingHandlerTest {
 
     @Test
     public void shouldStoreMatchedDefendants() throws EventStreamException {
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
         final UUID defendantId = prosecutionCase.getDefendants().get(0).getId();
 
@@ -164,6 +164,9 @@ public class DefendantMatchingHandlerTest {
 
     @Test
     public void shouldUpdateMatchedDefendant() throws EventStreamException {
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
         final UUID defendantId = prosecutionCase.getDefendants().get(0).getId();
 
@@ -194,6 +197,9 @@ public class DefendantMatchingHandlerTest {
 
     @Test
     public void shouldHandleMatchedDefendant() throws EventStreamException {
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
         caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
         final UUID defendantId = prosecutionCase.getDefendants().get(0).getId();
 

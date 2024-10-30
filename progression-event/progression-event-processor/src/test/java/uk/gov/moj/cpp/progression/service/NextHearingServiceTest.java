@@ -8,7 +8,7 @@ import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildDefendant;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildHearing;
@@ -46,14 +46,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class NextHearingServiceTest {
 
     private static final UUID HEARING_ID_1 = fromString("dee1acd3-5c18-4417-9397-36c5257ac6b2");
@@ -496,10 +496,6 @@ public class NextHearingServiceTest {
                         .withId(PROSECUTION_CASE_ID_1)
                         .withJudicialResults(judicialResults)
                         .build()));
-
-        final CommittingCourt committingCourt = TestHelper.buildCommittingCourt();
-        final Optional<CommittingCourt> committingCourtOptional = Optional.of(committingCourt);
-        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(committingCourtOptional);
 
         final NextHearingDetails nextHearingDetails = service.getNextHearingDetails(hearing, true, null);
         assertThat(nextHearingDetails.getHearingListingNeedsList().size(), is(1));

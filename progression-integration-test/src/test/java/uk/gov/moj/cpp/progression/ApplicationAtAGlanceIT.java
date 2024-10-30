@@ -12,6 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -28,8 +29,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
@@ -39,18 +39,18 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRoleInCaseByCaseId;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
 
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ApplicationAtAGlanceIT extends AbstractIT {
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-aaag.json";
@@ -101,7 +101,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     private String prosecutionAuthorityCode;
     private String prosecutionAuthorityReference;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stubDocumentCreate(DOCUMENT_TEXT);
         stubInitiateHearing();
@@ -146,13 +146,9 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     }
 
     private void doHearingConfirmedAndVerify() {
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
-                        caseId, hearingId, defendantId, courtCentreId), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                        .withUserId(userId)
-                        .build());
+
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE, caseId, hearingId, defendantId, courtCentreId));
+        publicMessageProducerClient.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
                 withJsonPath("$.hearing.id", is(hearingId))

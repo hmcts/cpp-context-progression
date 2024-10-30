@@ -21,39 +21,41 @@ import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.do
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.PROSECUTION_CASE_OFFENCES_UPDATED;
 import static uk.gov.moj.cpp.progression.domain.transformation.judicialresult.domain.EventToTransform.isEventToTransform;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.stream.Stream;
 
-@RunWith(DataProviderRunner.class)
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class EventToTransformTest {
 
-    @DataProvider
-    public static Object[][] validEventToMatch() {
-        return new Object[][]{
-                {BOXWORK_APPLICATION_REFERRED.getEventName()},
-                {HEARING_EXTENDED.getEventName()},
-                {HEARING_RESULTED.getEventName()},
-                {COURT_APPLICATION_UPDATED.getEventName()},
-                {PROSECUTION_CASE_OFFENCES_UPDATED.getEventName()},
-                {PROSECUTION_CASE_DEFENDANT_UPDATED.getEventName()},
-                {HEARING_RESULTED_CASE_UPDATED.getEventName()},
-                {HEARING_INITIATE_ENRICHED.getEventName()},
-                {COURT_APPLICATION_CREATED.getEventName()},
-                {COURT_APPLICATION_ADDED_TO_CASE.getEventName()},
-                {LISTED_COURT_APPLICATION_CHANGED.getEventName()},
-                {APPLICATION_REFERRED_TO_COURT.getEventName()},
-                {HEARING_APPLICATION_LINK_CREATED.getEventName()},
-                {PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()},
-                {PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V2.getEventName()},
-                {HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName()}
-        };
+    public static Stream<Arguments> validEventToMatch() {
+        return Stream.of(
+                Arguments.of(BOXWORK_APPLICATION_REFERRED.getEventName()),
+                Arguments.of(HEARING_EXTENDED.getEventName()),
+                Arguments.of(HEARING_RESULTED.getEventName()),
+                Arguments.of(COURT_APPLICATION_UPDATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_OFFENCES_UPDATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_DEFENDANT_UPDATED.getEventName()),
+                Arguments.of(HEARING_RESULTED_CASE_UPDATED.getEventName()),
+                Arguments.of(HEARING_INITIATE_ENRICHED.getEventName()),
+                Arguments.of(COURT_APPLICATION_CREATED.getEventName()),
+                Arguments.of(COURT_APPLICATION_ADDED_TO_CASE.getEventName()),
+                Arguments.of(LISTED_COURT_APPLICATION_CHANGED.getEventName()),
+                Arguments.of(APPLICATION_REFERRED_TO_COURT.getEventName()),
+                Arguments.of(HEARING_APPLICATION_LINK_CREATED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED.getEventName()),
+                Arguments.of(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED_V2.getEventName()),
+                Arguments.of(HEARING_CONFIRMED_CASE_STATUS_UPDATED.getEventName())
+        );
     }
 
-    @Test
-    @UseDataProvider("validEventToMatch")
+    @ParameterizedTest
+    @MethodSource("validEventToMatch")
     public void shouldReturnTrueIfEventNameIsAMatch(final String eventName) {
         assertThat(isEventToTransform(eventName), is(true));
     }

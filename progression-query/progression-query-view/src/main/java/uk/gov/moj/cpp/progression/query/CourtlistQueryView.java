@@ -22,6 +22,7 @@ import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrderOffence;
@@ -37,6 +38,7 @@ import uk.gov.justice.core.courts.OffenceFacts;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.Plea;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCounsel;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -73,9 +75,14 @@ import org.slf4j.LoggerFactory;
 @ServiceComponent(Component.QUERY_VIEW)
 public class CourtlistQueryView {
 
+    private static final String NAME = "name";
+    private static final String DATE_OF_BIRTH = "dateOfBirth";
+    private static final String APPLICANT = "applicant";
+    private static final String RESPONDENTS = "respondents";
     private final String ID = "id";
     private final String CASE_ID = "caseId";
     private final String DEFENDANTS = "defendants";
+    private final String COURT_APPLICATION = "courtApplication";
     private final String OFFENCES = "offences";
     private final String HEARING_DATES = "hearingDates";
     private final String COURT_ROOMS = "courtRooms";
@@ -128,6 +135,11 @@ public class CourtlistQueryView {
             return envelopeFrom(query.metadata(), documentPayload);
         }
         return envelopeFrom(query.metadata(), Json.createObjectBuilder().build());
+    }
+
+    @Handles("progression.search.prison.court.list")
+    public JsonEnvelope searchPrisonCourtlist(final JsonEnvelope query) {
+        return searchCourtlist(query);
     }
 
     private CourtCentre getCourtCentreFromHearingMap(final Map<UUID, Hearing> hearingsMap) {
@@ -312,10 +324,65 @@ public class CourtlistQueryView {
                             defendantsArray.add(buildDefendantFromCourtApplication(courtApplication, hearing, offencesForApplications));
                         }
                     });
+
+            final Optional<CourtApplication> hearingCourtApplication = hearing.getCourtApplications().stream()
+                    .filter(courtApplication -> courtApplication.getId().equals(courtApplicationId))
+                    .findFirst();
+
+            final JsonObjectBuilder courtApplicationBuilder = createObjectBuilder();
+            hearingCourtApplication.ifPresent(courtApplication -> {
+                courtApplicationBuilder.add(APPLICANT, buildCourtApplicationParty(courtApplication.getApplicant()));
+                ofNullable(courtApplication.getRespondents()).ifPresent(respondents -> {
+                    final JsonArrayBuilder respondentsBuilder = createArrayBuilder();
+                    respondents.forEach(respondent -> respondentsBuilder.add(buildCourtApplicationParty(respondent)));
+                    courtApplicationBuilder.add(RESPONDENTS, respondentsBuilder.build());
+                });
+            });
+            hearingJson = addProperty(hearingJson, COURT_APPLICATION, courtApplicationBuilder.build());
+
         }
 
         hearingJson = addProperty(hearingJson, DEFENDANTS, defendantsArray.build());
         return hearingJson;
+    }
+
+    private JsonObject buildCourtApplicationParty(final CourtApplicationParty applicant) {
+        final JsonObjectBuilder partyBuilder = createObjectBuilder();
+        if (applicant.getMasterDefendant() != null) {
+            addMasterDefendantToPartyBuilder(applicant.getMasterDefendant(), partyBuilder);
+        } else if (applicant.getProsecutingAuthority() != null) {
+            addProsecutionAuthorityToPartyBuilder(applicant.getProsecutingAuthority(), partyBuilder);
+        } else if (applicant.getOrganisation() != null && applicant.getOrganisation().getName() != null) {
+            partyBuilder.add(NAME, applicant.getOrganisation().getName());
+        } else if (applicant.getPersonDetails() != null) {
+            final Person person = applicant.getPersonDetails();
+            partyBuilder.add(NAME, String.format("%s %s", person.getFirstName(), person.getLastName()));
+            ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> partyBuilder.add(DATE_OF_BIRTH, dateOfBirth.format(DOB_FORMATTER)));
+        } else if (applicant.getRepresentationOrganisation() != null && applicant.getRepresentationOrganisation().getName() != null) {
+            partyBuilder.add(NAME, applicant.getRepresentationOrganisation().getName());
+        }
+        return partyBuilder.build();
+    }
+
+    private void addProsecutionAuthorityToPartyBuilder(final ProsecutingAuthority prosecutingAuthority, final JsonObjectBuilder partyBuilder) {
+        if (prosecutingAuthority.getName() != null) {
+            partyBuilder.add(NAME, prosecutingAuthority.getName());
+        } else if (prosecutingAuthority.getProsecutionAuthorityCode() != null) {
+            partyBuilder.add(NAME, prosecutingAuthority.getProsecutionAuthorityCode());
+        }
+    }
+
+    private void addMasterDefendantToPartyBuilder(final MasterDefendant masterDefendant, final JsonObjectBuilder partyBuilder) {
+        if (masterDefendant.getPersonDefendant() != null
+                && masterDefendant.getPersonDefendant().getPersonDetails() != null) {
+            final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
+            partyBuilder.add(NAME, String.format("%s %s", person.getFirstName(), person.getLastName()));
+            ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> partyBuilder.add(DATE_OF_BIRTH, dateOfBirth.format(DOB_FORMATTER)));
+        } else if (masterDefendant.getLegalEntityDefendant() != null
+                && masterDefendant.getLegalEntityDefendant().getOrganisation() != null
+                && masterDefendant.getLegalEntityDefendant().getOrganisation().getName() != null) {
+            partyBuilder.add(NAME, masterDefendant.getLegalEntityDefendant().getOrganisation().getName());
+        }
     }
 
     private JsonObject buildDefendantFromCourtApplication(final CourtApplication courtApplication, final Hearing hearing, final List<UUID> offencesForApplications) {
@@ -371,7 +438,7 @@ public class CourtlistQueryView {
                 defendantBuilder.add("age", defendantAge);
             }
             ofNullable(person.getAddress()).ifPresent(address -> defendantBuilder.add("address", objectToJsonObjectConverter.convert(address)));
-            ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> defendantBuilder.add("dateOfBirth", dateOfBirth.format(DOB_FORMATTER)));
+            ofNullable(person.getDateOfBirth()).ifPresent(dateOfBirth -> defendantBuilder.add(DATE_OF_BIRTH, dateOfBirth.format(DOB_FORMATTER)));
             ofNullable(person.getNationalityDescription()).ifPresent(nationalityDescription -> defendantBuilder.add("nationality", nationalityDescription));
             if (isNotEmpty(hearing.getDefenceCounsels())) {
                 defendantBuilder.add(DEFENCE_COUNSELS, buildDefenceCounsels(hearing.getDefenceCounsels(), masterDefendant.getMasterDefendantId()));
@@ -570,14 +637,14 @@ public class CourtlistQueryView {
 
     private JsonObject addLjaInformation(JsonObject documentPayload, final CourtCentre courtCentre) {
         if (nonNull(courtCentre)) {
-        final LjaDetails ljaDetails = courtCentre.getLja();
-        if (nonNull(ljaDetails)) {
-            documentPayload = addProperty(documentPayload, "ljaCode", ljaDetails.getLjaCode());
-            documentPayload = addProperty(documentPayload, "ljaName", ljaDetails.getLjaName());
-            if (nonNull(ljaDetails.getWelshLjaName())) {
-                documentPayload = addProperty(documentPayload, "welshLjaName", ljaDetails.getWelshLjaName());
+            final LjaDetails ljaDetails = courtCentre.getLja();
+            if (nonNull(ljaDetails)) {
+                documentPayload = addProperty(documentPayload, "ljaCode", ljaDetails.getLjaCode());
+                documentPayload = addProperty(documentPayload, "ljaName", ljaDetails.getLjaName());
+                if (nonNull(ljaDetails.getWelshLjaName())) {
+                    documentPayload = addProperty(documentPayload, "welshLjaName", ljaDetails.getWelshLjaName());
+                }
             }
-        }
         }
         return documentPayload;
     }

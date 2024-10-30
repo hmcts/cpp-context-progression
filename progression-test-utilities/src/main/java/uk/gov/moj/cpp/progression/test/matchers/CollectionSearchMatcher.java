@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.progression.test.matchers;
 
+import java.util.Optional;
+import java.util.Set;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-
-import java.util.Optional;
-import java.util.Set;
 
 public class CollectionSearchMatcher extends TypeSafeMatcher<Set<?>> {
 

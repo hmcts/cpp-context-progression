@@ -30,7 +30,8 @@ public class CourtApplicationCaseRepositoryTest {
     @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
 
-    @Inject CourtApplicationRepository courtApplicationRepository;
+    @Inject
+    CourtApplicationRepository courtApplicationRepository;
 
     private CourtApplicationCaseKey courtApplicationCaseKey;
     private CourtApplicationCaseEntity courtApplicationCaseEntity;
@@ -41,7 +42,7 @@ public class CourtApplicationCaseRepositoryTest {
     private static UUID CASE_ID;
 
     @Before
-    public void setUp(){
+    public void setUp() {
 
         APPLICATION_ID = randomUUID();
         CASE_ID = randomUUID();
@@ -68,6 +69,7 @@ public class CourtApplicationCaseRepositoryTest {
         courtApplicationCaseRepository.save(courtApplicationCaseEntity);
 
     }
+
     @Test
     public void shouldFindCourtApplicationCaseEntityByApplicationId() {
         final String actual = courtApplicationCaseRepository.findCaseStatusByApplicationId(APPLICATION_ID, CASE_ID);

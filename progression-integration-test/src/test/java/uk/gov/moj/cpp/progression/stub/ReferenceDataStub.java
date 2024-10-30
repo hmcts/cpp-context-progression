@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -31,6 +32,7 @@ import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObject;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.google.common.collect.Lists;
 
 
@@ -117,8 +119,9 @@ public class ReferenceDataStub {
                 .replace("[PROSECUTION_AUTHORITY_ID]", prosecutionAuthorityId)
                 .replace("[OU_CODE]", ouCode);
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors?oucode=" + ouCode;
-        stubFor(get(urlPathEqualTo(urlPath))
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors";
+        stubFor(get(urlPathMatching(urlPath))
+                .withQueryParam("oucode", matching(ouCode))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", APPLICATION_JSON)
@@ -283,12 +286,13 @@ public class ReferenceDataStub {
         final String responseBody = referralReasonsJson.toString()
                 .replace("RANDOM_REFERRAL_ID", referralReasonId.toString());
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/referral-reasons";
-        stubFor(get(urlPathEqualTo(urlPath))
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/referral-reasons/.*";
+        stubFor(get(urlMatching(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(responseBody)));
+
 
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.referral-reasons+json");
     }
@@ -397,7 +401,7 @@ public class ReferenceDataStub {
         final JsonObject responsePayload = Json.createReader(ReferenceDataStub.class
                 .getResourceAsStream(resourceName)).readObject();
 
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors/.*";
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors.*";
         stubFor(get(urlMatching(urlPath))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("CPPID", id.toString())

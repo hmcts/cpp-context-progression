@@ -7,7 +7,7 @@ import static uk.gov.justice.core.courts.FormType.PET;
 import static uk.gov.justice.core.courts.FormType.PTPH;
 import static uk.gov.moj.cpp.progression.service.DocumentTemplateType.getDocumentTemplateNameByType;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DocumentTemplateTypeTest {
 

@@ -23,8 +23,8 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class StreamTransformationIT {
 
@@ -40,7 +40,7 @@ public class StreamTransformationIT {
     private TestHelper testHelper;
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         testHelper = new TestHelper();
         stringToJsonObjectConverter = new StringToJsonObjectConverter();

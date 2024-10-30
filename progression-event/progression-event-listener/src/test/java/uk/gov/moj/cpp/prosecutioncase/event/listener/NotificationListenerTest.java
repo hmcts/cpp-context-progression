@@ -1,10 +1,11 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -26,17 +27,16 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NotificationListenerTest {
 
     private UUID caseId;
@@ -56,11 +56,11 @@ public class NotificationListenerTest {
     @InjectMocks
     private NotificationListener notificationListener;
 
-    @Before
+    @BeforeEach
     public void init() {
         caseId = randomUUID();
         materialId = randomUUID();
-        now = ZonedDateTime.now();
+        now = ZonedDateTime.now().truncatedTo(MILLIS);
         notificationStatus = new NotificationStatusEntity();
         notificationStatus.setMaterialId(materialId);
     }
@@ -77,8 +77,6 @@ public class NotificationListenerTest {
                         .add("materialId", materialId.toString())
                         .add("notificationType", "PRINT")
                         .build());
-
-        when(notificationStatusRepository.findBy(caseId)).thenReturn(null);
 
         notificationListener.printRequested(printRequestedEvent);
 

@@ -9,7 +9,6 @@ import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.MERGED_CASE
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PROGRESSION_COMMAND_PROCESS_LINK_CASES;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PUBLIC_PROGRESSION_CASE_LINKED;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.PUBLIC_PROGRESSION_LINK_CASES_RESPONSE;
-import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.SEARCH_RESULTS;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildCaseLinkedOrUnlinkedEventJson;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.buildLSMCommandPayload;
 import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.createResponsePayload;

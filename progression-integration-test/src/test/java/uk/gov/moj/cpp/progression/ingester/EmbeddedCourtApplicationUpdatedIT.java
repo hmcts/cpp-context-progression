@@ -14,14 +14,14 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyEmbeddedApplication;
@@ -30,17 +30,18 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -49,10 +50,9 @@ import com.jayway.jsonpath.DocumentContext;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607", "squid:S2925"})
 public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
@@ -75,7 +75,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
     private String applicationReference;
     private String applicationStatus;
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseId = UUID.randomUUID().toString();
         defendantId = UUID.randomUUID().toString();
@@ -93,7 +93,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         deleteAndCreateIndex();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
         cleanViewStoreTables();
@@ -103,10 +103,10 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
     public void shouldUpdateCourtApplicationAndGetConfirmation() throws Exception {
         setUpCourtApplication();
 
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer("progression.event.court-application-proceedings-edited")) {
-            updateCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-            verifyMessageReceived(messageConsumer);
-        }
+        final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-edited").getMessageConsumerClient();
+
+        updateCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        verifyMessageReceived(messageConsumer);
 
         final Matcher[] updateApplicationMatcher = {allOf(
                 withJsonPath("$.caseId", equalTo(caseId)),
@@ -133,8 +133,8 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         verifyUpdateCourtApplication(updatedInputCourtApplication, outputUpdatedJson, applicationId);
     }
 
-    private void verifyMessageReceived(final MessageConsumer messageConsumer) {
-        Assert.assertTrue(retrieveMessageAsJsonObject(messageConsumer).isPresent());
+    private void verifyMessageReceived(final JmsMessageConsumerClient messageConsumer) {
+        assertThat(retrieveMessageBody(messageConsumer).isPresent(), is(true));
     }
 
     private String setUpCourtApplication() throws Exception {
@@ -148,7 +148,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         Optional<JsonObject> addCaseResponseJsonObject = findBy(caseMatcher);
         assertThat(addCaseResponseJsonObject.isPresent(), CoreMatchers.is(true));
 
-        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationStatus,CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
+        addCourtApplicationForIngestion(caseId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationStatus, CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION)
                 .then().assertThat().statusCode(is(HttpStatus.SC_ACCEPTED));
 
         final Matcher[] addApplicationMatcher = {allOf(

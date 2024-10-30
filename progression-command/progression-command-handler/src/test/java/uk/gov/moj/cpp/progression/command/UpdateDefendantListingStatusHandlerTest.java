@@ -7,7 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -46,15 +46,16 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateDefendantListingStatusHandlerTest {
 
     private static final UUID MASTER_CASE_ID = randomUUID();
@@ -97,13 +98,9 @@ public class UpdateDefendantListingStatusHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(ProsecutionCaseDefendantListingStatusChanged.class,
             ProsecutionCaseDefendantListingStatusChangedV2.class);
 
-    @Before
+    @BeforeEach
     public void setup() {
         hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         memberCases = Stream.generate(UUID::randomUUID).limit(1).collect(Collectors.toSet());
         memberCases.add(MASTER_CASE_ID);
     }
@@ -125,11 +122,8 @@ public class UpdateDefendantListingStatusHandlerTest {
                 .build();
         final UpdateDefendantListingStatusV2 updateDefendantListingStatus = getUpdateDefendantListingStatus();
         final Envelope<UpdateDefendantListingStatusV2> envelope = envelopeFrom(metadata, updateDefendantListingStatus);
-        when(groupCaseAggregate.getMemberCases()).thenReturn(memberCases);
-        when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase()
-                .withId(MEMBER_CASE_ID)
-                .withIsGroupMaster(false).withIsGroupMember(true)
-                .withGroupId(GROUP_ID).build());
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         handler.handle(envelope);
 
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
@@ -159,7 +153,11 @@ public class UpdateDefendantListingStatusHandlerTest {
                 .build();
         final UpdateDefendantListingStatusV2 updateDefendantListingStatus = getUpdateDefendantListingStatusWithGroupMasterCase();
         final Envelope<UpdateDefendantListingStatusV2> envelope = envelopeFrom(metadata, updateDefendantListingStatus);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(groupCaseAggregate.getMemberCases()).thenReturn(memberCases);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(caseAggregate.getProsecutionCase()).thenReturn(ProsecutionCase.prosecutionCase()
                 .withId(MEMBER_CASE_ID)
                 .withIsGroupMaster(false)

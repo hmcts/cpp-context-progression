@@ -131,7 +131,7 @@
     "bookedSlots": [
       {
         "oucode": "B01EF00",
-        "session": "AM",
+        "session": "am",
         "duration": 180,
         "startTime": "2020-05-21T00:00:00.000Z",
         "courtRoomId": 793,

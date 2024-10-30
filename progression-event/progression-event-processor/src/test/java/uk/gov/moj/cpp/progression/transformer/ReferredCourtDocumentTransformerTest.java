@@ -4,7 +4,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.moj.cpp.progression.helper.TestHelper.buildCourtDocument;
@@ -24,22 +25,20 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ReferredCourtDocumentTransformerTest {
 
     public static final String CASE_DOCUMENT = "CaseDocument";
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+
     @Mock
     private RefDataService referenceDataService;
+
     @InjectMocks
     private ReferredCourtDocumentTransformer referredCourtDocumentTransformer;
 
@@ -85,7 +84,6 @@ public class ReferredCourtDocumentTransformerTest {
 
     @Test
     public void shouldThrowException() {
-        expectedException.expect(ReferenceDataNotFoundException.class);
         // Setup
         final UUID documentTypeId = randomUUID();
         final ReferredCourtDocument referredCourtDocument = buildCourtDocument(documentTypeId);
@@ -94,9 +92,9 @@ public class ReferredCourtDocumentTransformerTest {
         when(referenceDataService.getDocumentTypeAccessData(documentTypeId, jsonEnvelope, requester))
                 .thenThrow(new ReferenceDataNotFoundException("", ""));
 
-        // Run the test
-        referredCourtDocumentTransformer.transform
-                (referredCourtDocument, jsonEnvelope);
+
+        assertThrows(ReferenceDataNotFoundException.class,
+                () -> referredCourtDocumentTransformer.transform(referredCourtDocument, jsonEnvelope));
 
         verifyNoMoreInteractions(referenceDataService);
     }

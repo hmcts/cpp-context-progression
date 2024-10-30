@@ -2,23 +2,30 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.core.courts.CaseDocument;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.DocumentCategory;
 import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.NowDocument;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
+import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -53,6 +60,10 @@ public class NowsRequestedEventProcessor {
     public static final String COURT_DOCUMENT_TYPE_RBAC = "courtDocumentTypeRBAC";
     protected static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
+    private static final String DOCUMENT_TYPE_DESCRIPTION = "Electronic Notifications" ;
+    private static final UUID CASE_DOCUMENT_TYPE_ID = fromString("f471eb51-614c-4447-bd8d-28f9c2815c9e");
+    private static final String APPLICATION_PDF = "application/pdf";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(NowsRequestedEventProcessor.class);
     private final Sender sender;
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -98,12 +109,59 @@ public class NowsRequestedEventProcessor {
             addAsCourtDocuments(event, nowDocumentRequest);
         }
 
-        documentGeneratorService.generateNow(sender, event, userId, nowDocumentRequest);
-
+        final String fileName = documentGeneratorService.generateNow(sender, event, userId, nowDocumentRequest);
+        if (nowDocumentRequest.getTemplateName().startsWith("EDT_")) {
+            final List<Envelope<JsonObject>> commandAddCourtDocumentEnvolopeList = getAddCourtDocumentEnvelope(event, nowDocumentRequested, fileName);
+            commandAddCourtDocumentEnvolopeList.forEach(sender::send);
+        }
         sender.send(envelop(event.payloadAsJsonObject())
                 .withName(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED)
                 .withMetadataFrom(event));
+    }
 
+    private List<Envelope<JsonObject>> getAddCourtDocumentEnvelope(final JsonEnvelope event, final NowDocumentRequested nowDocumentRequested, final String fileName) {
+        LOGGER.info("EDT court document requested, NowDocumentRequested = {}", nowDocumentRequested.getNowDocumentRequest());
+        final UUID materialId = nowDocumentRequested.getMaterialId();
+
+        final List<Envelope<JsonObject>> commandAddCourtDocumentEnvolopeList = nowDocumentRequested.getNowDocumentRequest().getCases().stream().map(prosecutionCaseId -> {
+                    CourtDocument courtDocument = buildCourtDocument(prosecutionCaseId, materialId, fileName, false);
+                    final JsonObject jsonObject = createObjectBuilder()
+                            .add("materialId", nowDocumentRequested.getMaterialId().toString())
+                            .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+            return envelop(jsonObject).withName("progression.command.add-court-document").withMetadataFrom(event);
+                }).collect(toList());
+        LOGGER.info("EDT court document list size {}", commandAddCourtDocumentEnvolopeList.size());
+        return commandAddCourtDocumentEnvolopeList;
+    }
+
+    private CourtDocument buildCourtDocument(final UUID caseId, final UUID materialId, final String filename, boolean cpsFlag) {
+        final DocumentCategory documentCategory = DocumentCategory.documentCategory()
+                .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build())
+                .build();
+
+        final Material material = Material.material().withId(materialId)
+                .withUploadDateTime(ZonedDateTime.now())
+                .build();
+
+        return CourtDocument.courtDocument()
+                .withCourtDocumentId(randomUUID())
+                .withDocumentCategory(documentCategory)
+                .withDocumentTypeDescription(DOCUMENT_TYPE_DESCRIPTION)
+                .withDocumentTypeId(CASE_DOCUMENT_TYPE_ID)
+                .withMimeType(APPLICATION_PDF)
+                .withName(filename)
+                .withMaterials(Collections.singletonList(material))
+                .withSendToCps(cpsFlag)
+                .build();
+    }
+
+    private boolean isCpsProsecutionCase(final NowDocumentContent nowContent) {
+        return nowContent.getCases().stream()
+                .filter(pc -> nonNull(pc.getIsCps()))
+                .filter(ProsecutionCase::getIsCps)
+                .findFirst()
+                .map(ProsecutionCase::getIsCps)
+                .orElse(false);
     }
 
     private void addAsCourtDocuments(final JsonEnvelope incomingEvent, final NowDocumentRequest nowDocumentRequest) {
@@ -223,7 +281,7 @@ public class NowsRequestedEventProcessor {
                                 .build()
                 )
                 .withName(orderName)
-                .withMimeType("application/pdf")
+                .withMimeType(APPLICATION_PDF)
                 .build();
     }
 }

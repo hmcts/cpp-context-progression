@@ -4,7 +4,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -38,17 +39,18 @@ import javax.json.stream.JsonParsingException;
 
 import org.apache.http.client.utils.DateUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SystemDocGeneratorEventProcessorTest {
 
     @InjectMocks
@@ -69,7 +71,7 @@ public class SystemDocGeneratorEventProcessorTest {
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
@@ -88,14 +90,13 @@ public class SystemDocGeneratorEventProcessorTest {
         assertThat(publicEvent.metadata().name(), is("progression.command.notify-court-register"));
     }
 
-    @Test(expected = JsonParsingException.class)
+    @Test
     public void shouldThrowExceptionOnHandleDocument() throws FileServiceException, IOException {
         final UUID courtCentreId = UUID.randomUUID();
         final JsonObject docPayload = documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID(), "IndividualOnlinePlea");
         when(envelope.payloadAsJsonObject()).thenReturn(docPayload);
-        when(envelope.metadata()).thenReturn(getMetadataFrom(randomUUID().toString(), courtCentreId));
         when(fileService.retrieve(any())).thenReturn(java.util.Optional.of(getFileReference()));
-        systemDocGeneratorEventProcessor.handleDocumentAvailable(envelope);
+        assertThrows(JsonParsingException.class, () -> systemDocGeneratorEventProcessor.handleDocumentAvailable(envelope));
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {

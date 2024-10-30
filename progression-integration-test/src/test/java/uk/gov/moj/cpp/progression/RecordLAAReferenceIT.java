@@ -8,14 +8,16 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordLAAReference;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordLAAReferenceWithUserId;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
@@ -32,7 +34,8 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,23 +43,20 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class RecordLAAReferenceIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED = "public.progression.defence-organisation-for-laa-disassociated";
-    private MessageProducer messageProducerClientPublic;
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private String caseId;
     private String defendantId;
     private static final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
@@ -68,19 +68,14 @@ public class RecordLAAReferenceIT extends AbstractIT {
     private String statusCode;
     private String userId;
 
-    @Before
-    public void setup() {
-        messageProducerClientPublic = publicEvents.createPublicProducer();
-    }
-
-    @BeforeClass
+    @BeforeAll
     public static void setupOnce() {
         removeStub();
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
         stubUnifiedSearchQueryPartialMatchWithEmptyResults();
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardownOnce() throws JMSException {
         final String pncId = "2099/1234567L";
         final String croNumber = "1234567";
@@ -90,32 +85,28 @@ public class RecordLAAReferenceIT extends AbstractIT {
         stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), pncId, croNumber);
     }
 
-    @After
-    public void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
-    }
-
-    private static void verifyInMessagingQueueForDefendantOffenceUpdated(final MessageConsumer messageConsumerClientPublicForRecordLAAReference) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForRecordLAAReference);
+    private static void verifyInMessagingQueueForDefendantOffenceUpdated(final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForRecordLAAReference);
         assertThat(message.isPresent(), is(true));
         assertThat(message.get().getJsonArray("updatedOffences").size(), is(1));
         assertThat(message.get().containsKey("addedOffences"), is(false));
         assertThat(message.get().containsKey("deletedOffences"), is(false));
     }
 
-    private static void verifyInMessagingQueueForDefendantLegalAidStatusUpdated(final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
+    private static void verifyInMessagingQueueForDefendantLegalAidStatusUpdated(final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForDefenceOrganisationDisassociated(final MessageConsumer messageConsumerClientPublicForLaaDisasociated) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerClientPublicForLaaDisasociated);
+    private static void verifyInMessagingQueueForDefenceOrganisationDisassociated(final JmsMessageConsumerClient messageConsumerClientPublicForLaaDisasociated) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForLaaDisasociated);
         assertTrue(message.isPresent());
     }
 
 
+    @SuppressWarnings("squid:S1607")
     @Test
-    public void recordLAAReferenceForOffence() throws IOException, JMSException {
+    public void recordLAAReferenceForOffence() throws IOException, JMSException, JSONException {
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -128,16 +119,16 @@ public class RecordLAAReferenceIT extends AbstractIT {
         final String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
 
-        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED)) {
-            //Record LAA reference
-            //When
-            recordLAAReference(caseId, defendantId, offenceId, statusCode);
+        final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+        final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED).getMessageConsumerClient();
 
-            //Then
-            verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
-            verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
-        }
+        //Record LAA reference
+        //When
+        recordLAAReference(caseId, defendantId, offenceId, statusCode);
+
+        //Then
+        verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
+        verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
 
         final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
                 .getJsonObject(0).getJsonArray("hearingIds").getString(0);
@@ -161,21 +152,20 @@ public class RecordLAAReferenceIT extends AbstractIT {
 
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
 
-        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForLaaDisasociated = publicEvents.createPublicConsumer(PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED)) {
+        final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+        final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED).getMessageConsumerClient();
+        final JmsMessageConsumerClient messageConsumerClientPublicForLaaDisasociated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_DEFENCE_ORGANISATION_FOR_LAA_DISASSOCIATED).getMessageConsumerClient();
 
-            //Receive Representation Order
-            //when
-            final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, "PENDING", laaContractNumber, userId);
-            assertThat(responseForRepOrder.getStatus(), equalTo(SC_ACCEPTED));
+        //Receive Representation Order
+        //when
+        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, "PENDING", laaContractNumber, userId);
+        assertThat(responseForRepOrder.getStatus(), equalTo(SC_ACCEPTED));
 
 
-            //Then
-            verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
-            verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
-            verifyInMessagingQueueForDefenceOrganisationDisassociated(messageConsumerClientPublicForLaaDisasociated);
-        }
+        //Then
+        verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
+        verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
+        verifyInMessagingQueueForDefenceOrganisationDisassociated(messageConsumerClientPublicForLaaDisasociated);
 
         final Matcher[] caseWitLAAReferenceForOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
                 asList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
@@ -192,21 +182,21 @@ public class RecordLAAReferenceIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
-        try (final MessageConsumer messageConsumerClientPublicForRecordLAAReference = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED);
-             final MessageConsumer messageConsumerClientPublicForDefendantLegalAidStatusUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED)) {
+        final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference2 = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+        final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated2 = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED).getMessageConsumerClient();
 
-            //Record LAA reference
-            //When
-            stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", "WD", "Withdrawn");
-            stubGetOrganisationDetailsForUser(userId, organisationId, organisationName);
+
+        //Record LAA reference
+        //When
+        stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", "WD", "Withdrawn");
+        stubGetOrganisationDetailsForUser(userId, organisationId, organisationName);
 
         Response withdrawResponse = recordLAAReferenceWithUserId(caseId, defendantId, offenceId, statusCode, "Withdrawn", userId);
         assertThat(withdrawResponse.getStatus(), equalTo(SC_ACCEPTED));
 
-            //Then
-            verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
-            verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
-        }
+        //Then
+        verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference2);
+        verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated2);
 
         final Matcher[] caseWithDefendantLaaReferenceWithDrawnMatchers = getProsecutionCaseMatchers(caseId, defendantId,
                 asList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),

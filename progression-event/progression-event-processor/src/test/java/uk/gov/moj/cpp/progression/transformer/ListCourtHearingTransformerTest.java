@@ -9,9 +9,9 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 import static java.util.Arrays.asList;
@@ -83,8 +83,8 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -139,7 +139,7 @@ public class ListCourtHearingTransformerTest {
     @Mock
     private ProgressionService progressionService;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -297,6 +297,7 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements(), hasItems("RSZ", "CELL"));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getStartDate(), is(LocalDate.now()));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getDuration(), is(1));
+        assertThat(listCourtHearing.getHearings().get(0).getNonDefaultDays().size(), is(1));
     }
 
     @Test
@@ -699,6 +700,7 @@ public class ListCourtHearingTransformerTest {
         assertThat(listCourtHearing.getHearings().get(0).getSpecialRequirements(), hasItems("RSZ", "CELL"));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getStartDate(), is(LocalDate.now()));
         assertThat(listCourtHearing.getHearings().get(0).getWeekCommencingDate().getDuration(), is(1));
+        assertThat(listCourtHearing.getHearings().get(0).getNonDefaultDays().size(), is(1));
     }
 
     private List<CourtApplication> createCourtApplications() {
@@ -1012,6 +1014,19 @@ public class ListCourtHearingTransformerTest {
     }
 
     private List<CourtHearingRequest> getCourtHearingRequest() {
+        final uk.gov.justice.core.courts.NonDefaultDay nonDefaultDay = uk.gov.justice.core.courts.NonDefaultDay.nonDefaultDay()
+                .withDuration(1)
+                .withStartTime(ZonedDateTime.now())
+                .withCourtCentreId("courtCentreId")
+                .withCourtRoomId(1)
+                .withCourtScheduleId("courtScheduleId")
+                .withOucode("oucode")
+                .withSession("PM")
+                .withRoomId("roomId")
+                .build();
+        final List<uk.gov.justice.core.courts.NonDefaultDay> nonDefaultDays = new ArrayList<>();
+        nonDefaultDays.add(nonDefaultDay);
+
         //Either EarliestStartDateTime or ListedStartDateTime can be present. Not both.
         return Arrays.asList(CourtHearingRequest.courtHearingRequest()
                 .withCourtCentre(createCourtCenter())
@@ -1033,6 +1048,7 @@ public class ListCourtHearingTransformerTest {
                         .withStartDate(LocalDate.now())
                         .withDuration(1)
                         .build())
+                .withNonDefaultDays(nonDefaultDays)
                 .build());
     }
 

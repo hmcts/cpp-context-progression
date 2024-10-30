@@ -15,7 +15,7 @@ import uk.gov.justice.core.courts.JurisdictionType;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RetentionPolicyPriorityHelperTest {
     private HearingInfo hearingInfo = new HearingInfo(randomUUID(), "hearingType", JurisdictionType.CROWN.name(),

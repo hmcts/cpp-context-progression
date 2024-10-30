@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,22 +19,21 @@ import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class SlotsBookedForApplicationEventProcessorTest {
 
@@ -67,7 +66,7 @@ public class SlotsBookedForApplicationEventProcessorTest {
     @Mock
     private JsonEnvelope finalEnvelope;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -96,7 +95,6 @@ public class SlotsBookedForApplicationEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SlotsBookedForApplication.class))
                 .thenReturn(slotsBookedForApplication);
         when(slotsBookedForApplication.getHearingRequest()).thenReturn(hearingListingNeeds);
-        when(progressionService.getHearing(any(), any())).thenReturn(Optional.empty());
         when(listCourtHearingTransformer.transform(any())).thenReturn(listCourtHearing);
 
         this.eventProcessor.process(jsonEnvelope);

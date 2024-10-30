@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.persistence.entity;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -17,8 +19,6 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 /**
  * @deprecated
  *

@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -17,7 +17,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
 import uk.gov.justice.core.courts.AddCaseNote;
-import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -36,15 +35,15 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddCaseNoteHandlerTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
@@ -55,9 +54,6 @@ public class AddCaseNoteHandlerTest {
 
     @Mock
     private EventStream eventStream;
-
-    @Mock
-    private CaseAggregate caseAggregate;
 
     @Mock
     private UsersGroupService usersGroupService;
@@ -72,14 +68,6 @@ public class AddCaseNoteHandlerTest {
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
             CaseNoteAddedV2.class);
 
-    @Before
-    public void setup() {
-        caseAggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(usersGroupService.getUserDetails(any())).thenReturn(Optional.of(new UserDetails("Bob", "Marley")));
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(addCaseNoteHandler, isHandler(COMMAND_HANDLER)
@@ -89,6 +77,11 @@ public class AddCaseNoteHandlerTest {
 
     @Test
     public void shouldProcessAddCaseNoteWithCaseId() throws Exception {
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(usersGroupService.getUserDetails(any())).thenReturn(Optional.of(new UserDetails("Bob", "Marley")));
 
         final Envelope<AddCaseNote> envelope = createAddCaseNoteHandlerEnvelope();
 
@@ -101,6 +94,10 @@ public class AddCaseNoteHandlerTest {
     public void shouldProcessAddCaseNoteWithCaseIdAndIsPinned() throws Exception {
 
         final Envelope<AddCaseNote> envelope = createAddCaseNoteWithIsPinnedHandlerEnvelope();
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(usersGroupService.getUserDetails(any())).thenReturn(Optional.of(new UserDetails("Bob", "Marley")));
 
         addCaseNoteHandler.handle(envelope);
 

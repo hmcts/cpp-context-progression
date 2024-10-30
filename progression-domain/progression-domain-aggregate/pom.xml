@@ -3,12 +3,11 @@
     <parent>
         <artifactId>progression-domain</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>8.0.202-CPAW-DLQ-SNAPSHOT</version>
+        <version>17.0.22-CPAW-DLQ-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>progression-domain-aggregate</artifactId>
     <properties>
-        <maven.cucumber.reporting.plugin.version>2.0.0</maven.cucumber.reporting.plugin.version>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
     </properties>
 
@@ -47,13 +46,13 @@
         <!-- Test Dependencies -->
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -76,14 +75,11 @@
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.common.library.utils</groupId>
             <artifactId>cpp-platform-test-utils</artifactId>
-            <!--locking to this version of artefact as newer versions result in failing test-->
-            <version>7.0.10</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -132,32 +128,7 @@
                                 <additionalClasspathElement>target/classes/
                                 </additionalClasspathElement>
                             </additionalClasspathElements>
-
                         </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>net.masterthought</groupId>
-                        <artifactId>maven-cucumber-reporting</artifactId>
-                        <version>${maven.cucumber.reporting.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>execution</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>generate</goal>
-                                </goals>
-                                <configuration>
-                                    <projectName>${project.artifactId}</projectName>
-                                    <outputDirectory>
-                                        ${project.build.directory}/site/cucumber-reports
-                                    </outputDirectory>
-                                    <cucumberOutput>${project.build.directory}/cucumber.json
-                                    </cucumberOutput>
-                                    <skippedFails>true</skippedFails>
-                                    <buildNumber>${ci.build}</buildNumber>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>

@@ -4,7 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -30,16 +30,16 @@ import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OnlinePleasAllocationProcessorTest {
     private static final String ALLOCATION_PLEAS_PAYLOAD = "public.defence.allocation-pleas.json";
     private static final String PROGRESSION_COMMAND_ALLOCATION_PLEAS_ADDED = "progression.command.add-online-plea-allocation";
@@ -88,7 +88,7 @@ public class OnlinePleasAllocationProcessorTest {
         when(featureControlGuard.isFeatureEnabled("OPA")).thenReturn(false);
         allocationProcessor.defenceOnlinePleaAllocationAdded(event);
 
-        verifyZeroInteractions(sender);
+        verifyNoMoreInteractions(sender);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class OnlinePleasAllocationProcessorTest {
         when(featureControlGuard.isFeatureEnabled("OPA")).thenReturn(false);
         allocationProcessor.defenceOnlinePleaAllocationUpdated(event);
 
-        verifyZeroInteractions(sender);
+        verifyNoMoreInteractions(sender);
     }
 
     private void verifyOnlinePleaPayloadContents(final Envelope<JsonObject> envelope, final JsonObject onlinePleJson, final String event) {

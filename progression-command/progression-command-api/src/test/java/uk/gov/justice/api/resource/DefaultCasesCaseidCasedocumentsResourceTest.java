@@ -6,8 +6,8 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,14 +28,13 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class DefaultCasesCaseidCasedocumentsResourceTest {
 
     @Mock
@@ -139,7 +138,7 @@ public class DefaultCasesCaseidCasedocumentsResourceTest {
 
         final Response response = resource.uploadCaseDocument(multipartFormDataInput, "userId", "session","clientCorrelationId", "caseId");
 
-        Assert.assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
+        assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
         final String errorJson = response.getEntity().toString();
 
         with(errorJson).assertThat("$.error", is(errorMessage));

@@ -5,6 +5,7 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.status;
 import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
@@ -56,7 +57,9 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
 
     public static final String USHERS_CROWN = "USHERS_CROWN";
     public static final String USHERS_MAGISTRATE = "USHERS_MAGISTRATE";
+    public static final String PRISON_COURT_LIST = "PRISON";
     protected static final String COURT_LIST_QUERY_NAME = "progression.search.court.list";
+    protected static final String PRISON_COURT_LIST_QUERY_NAME = "progression.search.prison.court.list";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQueryApiCourtlistResource.class);
     private static final String EXTRACT_FILE_NAME = "CourtList.pdf";
@@ -92,6 +95,18 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
     @Override
     public Response getCourtlist(final String courtCentreId, final String courtRoomId, final String listId,
                                  final String startDate, final String endDate, final boolean restricted, final UUID userId) {
+        if (PRISON_COURT_LIST.equals(listId)) {
+            return Response.status(FORBIDDEN).build();
+        }
+        return getCourtListInternal(courtCentreId, courtRoomId, listId, startDate, endDate, restricted, userId, COURT_LIST_QUERY_NAME);
+    }
+
+    @Override
+    public Response getPrisonCourtlist(final String courtCentreId, final String courtRoomId, final String startDate, final String endDate, final UUID userId) {
+        return getCourtListInternal(courtCentreId, courtRoomId, PRISON_COURT_LIST, startDate, endDate, false, userId, PRISON_COURT_LIST_QUERY_NAME);
+    }
+
+    private Response getCourtListInternal(final String courtCentreId, final String courtRoomId, final String listId, final String startDate, final String endDate, final boolean restricted, final UUID userId, final String courtListAction) {
         final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
                 .add("courtCentreId", courtCentreId)
                 .add("listId", listId)
@@ -106,7 +121,7 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
         final JsonEnvelope documentQuery = envelopeFrom(
                 metadataBuilder()
                         .withId(randomUUID())
-                        .withName(COURT_LIST_QUERY_NAME)
+                        .withName(courtListAction)
                         .withUserId(userId.toString())
                         .build(),
                 payloadBuilder.build());
@@ -129,7 +144,9 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
             standardListJsonObjectBuilder.add("courtId", courtCentreData.getJsonString("id"));
         }
 
-        stagingPubHubService.publishStandardList(standardListJsonObjectBuilder.build(), userId);
+        if (!PRISON_COURT_LIST.equalsIgnoreCase(listId)) {
+            stagingPubHubService.publishStandardList(standardListJsonObjectBuilder.build(), userId);
+        }
 
         return getDocumentContent(document);
     }

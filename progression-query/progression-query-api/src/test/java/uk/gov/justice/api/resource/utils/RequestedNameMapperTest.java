@@ -4,14 +4,14 @@ package uk.gov.justice.api.resource.utils;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RequestedNameMapperTest {
 
@@ -23,7 +23,7 @@ public class RequestedNameMapperTest {
 
     private RequestedNameMapper requestedNameMapper;
 
-    @Before
+    @BeforeEach
     public void init() {
         requestedNameMapper = new RequestedNameMapper();
     }

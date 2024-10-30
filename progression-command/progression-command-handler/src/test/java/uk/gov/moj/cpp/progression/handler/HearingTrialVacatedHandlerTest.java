@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -29,6 +29,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.handler.HearingTrialVacatedHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,15 +37,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingTrialVacatedHandlerTest {
 
     @Mock
@@ -63,16 +64,6 @@ public class HearingTrialVacatedHandlerTest {
     @InjectMocks
     private HearingTrialVacatedHandler handler;
 
-
-    private HearingAggregate aggregate;
-
-    @Before
-    public void setup() {
-        aggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
-    }
-
     @Test
     public void shouldHandleCommand() {
         assertThat(new HearingTrialVacatedHandler(), isHandler(COMMAND_HANDLER)
@@ -87,7 +78,11 @@ public class HearingTrialVacatedHandlerTest {
                 .withHearingId(UUID.randomUUID())
                 .withVacatedTrialReasonId(UUID.randomUUID())
                 .build();
-        aggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+        final HearingAggregate hearingAggregate = new HearingAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
                 .withHearing(Hearing.hearing()
                         .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
                                         .withId(randomUUID())
@@ -111,7 +106,7 @@ public class HearingTrialVacatedHandlerTest {
                         .build())
                 .build());
 
-        aggregate.apply(hearingTrialVacated.getHearingId());
+        hearingAggregate.apply(hearingTrialVacated.getHearingId());
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

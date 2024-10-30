@@ -12,11 +12,13 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import com.github.tomakehurst.wiremock.client.RequestPatternBuilder;
+
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.moj.cpp.progression.domain.notification.Subscription;
 
 import java.util.List;
+
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 public class NotifyStub {
 

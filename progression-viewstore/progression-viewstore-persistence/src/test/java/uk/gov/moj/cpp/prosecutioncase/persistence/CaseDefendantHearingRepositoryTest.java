@@ -59,7 +59,7 @@ public class CaseDefendantHearingRepositoryTest {
         hearingResultLineEntity.setId(randomUUID());
 
         final Set<HearingResultLineEntity> resultLines = new HashSet<>();
-        resultLines.add(new HearingResultLineEntity(randomUUID(),Json.createObjectBuilder().build().toString(), null));
+        resultLines.add(new HearingResultLineEntity(randomUUID(), Json.createObjectBuilder().build().toString(), null));
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(caseDefendantHearingKey.getHearingId());

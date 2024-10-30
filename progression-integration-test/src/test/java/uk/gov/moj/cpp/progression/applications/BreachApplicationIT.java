@@ -1,63 +1,48 @@
 package uk.gov.moj.cpp.progression.applications;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.addBreachApplicationForExistingHearing;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 
 import java.util.Optional;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-public class BreachApplicationIT extends AbstractIT {
+@ExtendWith(JmsResourceManagementExtension.class)
+public class BreachApplicationIT {
 
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final String COURT_APPLICATION_PROCEEDINGS_INITIATED_PRIVATE_EVENT = "progression.event.court-application-proceedings-initiated";
     private static final String PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
-    private static MessageConsumer consumerForCourtApplicationCreated;
-    private static MessageConsumer consumerForCourtApplicationProceedingsInitiated;
-    private static MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged;
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient consumerForCourtApplicationProceedingsInitiated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_PROCEEDINGS_INITIATED_PRIVATE_EVENT).getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED).getMessageConsumerClient();
 
-    /**
-     * This test suffers due to a unified search stub which creates exact matches
-     * So the smallest fix is to reset wiremock stubs and put the default stubs back
-     */
-    static {
-        reset();
-        defaultStubs();
-    }
 
-    @Before
-    public void setUp() {
-        consumerForCourtApplicationCreated = privateEvents.createPrivateConsumer(COURT_APPLICATION_CREATED_PRIVATE_EVENT);
-        consumerForCourtApplicationProceedingsInitiated = privateEvents.createPrivateConsumer(COURT_APPLICATION_PROCEEDINGS_INITIATED_PRIVATE_EVENT);
-        messageConsumerProsecutionCaseDefendantListingStatusChanged = privateEvents.createPrivateConsumer(PROSECUTION_CASE_DEFENDANT_LISTING_STATUS_CHANGED);
+    @BeforeAll
+    public static void setUpClass() {
         stubInitiateHearing();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        consumerForCourtApplicationCreated.close();
     }
 
     @Test
@@ -139,20 +124,20 @@ public class BreachApplicationIT extends AbstractIT {
     }
 
     private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
 
     private void verifyCourtApplicationCreatedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(applicationReference.length(), is(10));
     }
 
     private String verifyCourtApplicationProceedingsInitiatedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationProceedingsInitiated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationProceedingsInitiated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(applicationReference.length(), is(8));

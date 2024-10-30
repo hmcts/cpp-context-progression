@@ -1,5 +1,19 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import org.hamcrest.CoreMatchers;
+
+import org.junit.jupiter.api.Test;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
@@ -14,7 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.ApplicationDocument;
@@ -36,20 +50,6 @@ import uk.gov.justice.core.courts.DocumentTypeRBAC;
 import uk.gov.justice.core.courts.DuplicateShareCourtDocumentRequestReceived;
 import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
 
 public class CourtDocumentAggregateTest {
 
@@ -281,6 +281,24 @@ public class CourtDocumentAggregateTest {
 
         target.apply(target.addCourtDocument(CourtDocument.courtDocument().withIsRemoved(FALSE).withCourtDocumentId(courtDocumentId).build()).collect(toList()));
         target.removeCourtDocument(randomUUID(), randomUUID(), true);
+        final List<Object> returnedEventStream = target.shareCourtDocument(randomUUID(), randomUUID(), randomUUID(), null).collect(toList());
+
+        assertThat(returnedEventStream.size(), is(1));
+        final Object returnedObject = returnedEventStream.get(0);
+        assertThat(returnedObject.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentShareFailed.class)));
+
+        final CourtDocumentShareFailed returnedEvent = (CourtDocumentShareFailed) returnedObject;
+        assertThat(returnedEvent.getCourtDocumentId(), is(courtDocumentId));
+        assertThat(returnedEvent.getFailureReason(), is(format("Document is deleted. Could not share the given court document id: %s", courtDocumentId)));
+    }
+
+    @Test
+    public void shouldReturnCourtsDocumentRemovedBdf() {
+
+        final UUID courtDocumentId = randomUUID();
+
+        target.apply(target.addCourtDocument(CourtDocument.courtDocument().withIsRemoved(FALSE).withCourtDocumentId(courtDocumentId).build()).collect(toList()));
+        target.removeCourtDocumentByBdf(randomUUID(), true);
         final List<Object> returnedEventStream = target.shareCourtDocument(randomUUID(), randomUUID(), randomUUID(), null).collect(toList());
 
         assertThat(returnedEventStream.size(), is(1));
@@ -605,9 +623,11 @@ public class CourtDocumentAggregateTest {
     }
 
     @Test
-    public void shouldupdateSendToCpsFlag() {
-        final Stream<Object> objectStream = target.updateSendToCpsFlag(randomUUID(), true);
+    public void shouldUpdateSendToCpsFlag() {
+        final UUID courtDocumentId = randomUUID();
+        final Stream<Object> objectStream = target.updateSendToCpsFlag(randomUUID(), true, CourtDocument.courtDocument().withCourtDocumentId(courtDocumentId).build());
         final Object event = objectStream.findFirst().get();
         assertThat(event.getClass(), is(equalTo(SendToCpsFlagUpdated.class)));
+        assertThat(((SendToCpsFlagUpdated)event).getCourtDocument().getCourtDocumentId(), is(courtDocumentId));
     }
 }

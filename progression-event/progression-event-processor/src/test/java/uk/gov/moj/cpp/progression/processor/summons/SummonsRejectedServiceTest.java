@@ -7,9 +7,9 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -37,49 +37,44 @@ import uk.gov.moj.cpp.progression.service.NotificationService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
-import com.tngtech.java.junit.dataprovider.DataProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
-import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-@RunWith(DataProviderRunner.class)
 public class SummonsRejectedServiceTest {
 
     private static final ArrayList<String> REASONS = newArrayList(randomAlphabetic(20), randomAlphabetic(20));
 
-    @DataProvider
-    public static Object[][] applicationTypesNotInterested() {
-        return new Object[][]{
+    public static Stream<Arguments> applicationTypesNotInterested() {
+        return Stream.of(
                 // summons template type
-                {SummonsTemplateType.PARENT_GENERIC_CASE},
-                {SummonsTemplateType.NOT_APPLICABLE},
-        };
+                Arguments.of(SummonsTemplateType.PARENT_GENERIC_CASE),
+                Arguments.of(SummonsTemplateType.NOT_APPLICABLE)
+        );
     }
 
-    @DataProvider
-    public static Object[][] applicationSummons() {
-        return new Object[][]{
+    public static Stream<Arguments> applicationSummons() {
+        return Stream.of(
                 // summons template type, party type
-                {SummonsTemplateType.GENERIC_APPLICATION, PartyType.MASTER_DEFENDANT_PERSON},
-                {SummonsTemplateType.GENERIC_APPLICATION, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY},
-                {SummonsTemplateType.BREACH, PartyType.INDIVIDUAL},
-                {SummonsTemplateType.BREACH, PartyType.ORGANISATION},
-                {SummonsTemplateType.BREACH, PartyType.PROSECUTION_AUTHORITY},
-        };
+                Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, PartyType.MASTER_DEFENDANT_PERSON),
+                Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY),
+                Arguments.of(SummonsTemplateType.BREACH, PartyType.INDIVIDUAL),
+                Arguments.of(SummonsTemplateType.BREACH, PartyType.ORGANISATION),
+                Arguments.of(SummonsTemplateType.BREACH, PartyType.PROSECUTION_AUTHORITY)
+                );
     }
 
-    @DataProvider
-    public static Object[][] firstHearingSummons() {
-        return new Object[][]{
+    public static Stream<Arguments> firstHearingSummons() {
+        return Stream.of(
                 // summons template type, personal defendant
-                {SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_PERSON},
-                {SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY},
-        };
+                Arguments.of(SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_PERSON),
+                Arguments.of(SummonsTemplateType.FIRST_HEARING, PartyType.MASTER_DEFENDANT_LEGAL_ENTITY)
+                );
     }
 
     @Mock
@@ -101,23 +96,23 @@ public class SummonsRejectedServiceTest {
 
     private static final String APPLICANT_EMAIL_ADDRESS = RandomGenerator.EMAIL_ADDRESS.next();
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
     }
 
-    @UseDataProvider("applicationTypesNotInterested")
-    @Test
+    @MethodSource("applicationTypesNotInterested")
+    @ParameterizedTest
     public void doNotSendSummonsRejectionNotificationForOtherTemplateTypes(final SummonsTemplateType summonsTemplateType) {
         final CourtApplication courtApplication = buildCourtApplication(summonsTemplateType, PartyType.MASTER_DEFENDANT_PERSON);
 
         summonsRejectedService.sendSummonsRejectionNotification(jsonEnvelope, courtApplication, getRejectionOutcome());
 
-        verifyZeroInteractions(summonsNotificationEmailPayloadService, notificationService);
+        verifyNoInteractions(summonsNotificationEmailPayloadService, notificationService);
     }
 
-    @UseDataProvider("applicationSummons")
-    @Test
+    @MethodSource("applicationSummons")
+    @ParameterizedTest
     public void sendSummonsRejectionNotificationForApplications(final SummonsTemplateType summonsTemplateType, final PartyType partyType) {
         final CourtApplication courtApplication = buildCourtApplication(summonsTemplateType, partyType);
         final List<String> partyDetails = getPartyDetails(singletonList(courtApplication.getSubject()), partyType);
@@ -130,8 +125,8 @@ public class SummonsRejectedServiceTest {
         verify(notificationService).sendEmail(eq(jsonEnvelope), eq(null), eq(courtApplication.getId()), eq(null), eq(singletonList(emailChannel)));
     }
 
-    @UseDataProvider("firstHearingSummons")
-    @Test
+    @MethodSource("firstHearingSummons")
+    @ParameterizedTest
     public void sendSummonsRejectionNotificationForFirstHearingApplications(final SummonsTemplateType summonsTemplateType, final PartyType partyType) {
         final CourtApplication courtApplication = buildCourtApplication(summonsTemplateType, partyType);
         final List<String> partyDetails = getPartyDetails(courtApplication.getRespondents(), partyType);

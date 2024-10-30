@@ -1,25 +1,33 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesByCaseUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
+import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
 public class SearchCourtApplicationsIT extends AbstractIT {
@@ -28,26 +36,28 @@ public class SearchCourtApplicationsIT extends AbstractIT {
     private static final String JSON_RESULTS_DEFENDANT_PATH = "$.searchResults[0].defendantName";
     private static final String JSON_RESULTS_PROSECUTOR_PATH = "$.searchResults[0].prosecutor";
 
-    private static final MessageConsumer consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-created").getMessageConsumerClient();
 
     private static CourtApplicationRandomValues randomValues;
+    private static String applicationId;
 
-    @BeforeClass
-    public static void createStandaloneApplication() throws Exception {
+    @BeforeEach
+    public void createStandaloneApplication() throws Exception {
+        applicationId = UUID.randomUUID().toString();
         randomValues = new CourtApplicationRandomValues();
-        addStandaloneCourtApplication(UUID.randomUUID().toString(), UUID.randomUUID().toString(), randomValues, "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), randomValues, "progression.command.create-standalone-court-application.json");
     }
 
 
     @Test
-    public void shouldGetApplicationByApplicantNames() throws Exception {
+    public void shouldGetApplicationByApplicantNames() {
         verifyCasesForSearchCriteria(randomValues.APPLICANT_FIRSTNAME, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(randomValues.APPLICANT_FIRSTNAME))});
         verifyCasesForSearchCriteria(randomValues.APPLICANT_MIDDLENAME.toUpperCase(), new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(randomValues.APPLICANT_MIDDLENAME))});
         verifyCasesForSearchCriteria(randomValues.APPLICANT_LASTNAME, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(randomValues.APPLICANT_LASTNAME))});
     }
 
     @Test
-    public void shouldGetApplicationByRespondentNames() throws Exception {
+    public void shouldGetApplicationByRespondentNames() {
 
         verifyCasesForSearchCriteria(randomValues.RESPONDENT_FIRSTNAME, new Matcher[]{withJsonPath(JSON_RESULTS_PROSECUTOR_PATH, containsString(randomValues.RESPONDENT_FIRSTNAME))});
         verifyCasesForSearchCriteria(randomValues.RESPONDENT_MIDDLENAME.toUpperCase(), new Matcher[]{withJsonPath(JSON_RESULTS_PROSECUTOR_PATH, containsString(randomValues.RESPONDENT_MIDDLENAME))});
@@ -56,10 +66,13 @@ public class SearchCourtApplicationsIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGetApplicationByReferenceNumber() throws Exception {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
-        assertTrue(message.isPresent());
-        final String applicationReferenceNumber = message.get().getJsonObject("courtApplication").getString("applicationReference");
+    public void shouldGetApplicationByReferenceNumber() {
+        final JsonPath message = retrieveMessageAsJsonPath(consumerForCourtApplicationCreated, isJson(Matchers.allOf(
+                        withJsonPath("$.courtApplication.id", CoreMatchers.is(applicationId))
+                )
+        ));
+        assertThat(message, notNullValue());
+        final String applicationReferenceNumber = message.getString("courtApplication.applicationReference");
         verifyCasesByCaseUrn(applicationReferenceNumber, new Matcher[]{withJsonPath("$.searchResults[0].reference", containsString(applicationReferenceNumber))})
         ;
     }

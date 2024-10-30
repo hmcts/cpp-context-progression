@@ -6,7 +6,8 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -22,13 +23,13 @@ import java.util.List;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class UserDetailsLoaderTest {
 
     public static final String JSON_PERMISSION_JSON = "json/permission.json";
@@ -191,7 +192,7 @@ public class UserDetailsLoaderTest {
     }
 
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void shouldPermitBasedOnGrantee_1() {
         final Metadata metadata = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, randomUUID().toString());
         when(requester.request(any())).thenReturn(JsonEnvelope.envelopeFrom(metadata, createObjectBuilder().build()));
@@ -200,6 +201,6 @@ public class UserDetailsLoaderTest {
         final Metadata metadata1 = CommandClientTestBase.metadataFor(USER_GROUPS_GET_PERMISSION, "4a18bec5-ab1a-410a-9889-885694356401");
         final JsonEnvelope envelopeAddCourtDoc = JsonEnvelope.envelopeFrom(metadata1, jsonObj);
 
-        userDetailsLoader.isDefenceClient(envelopeAddCourtDoc, requester);
+        assertThrows(IllegalArgumentException.class, () ->userDetailsLoader.isDefenceClient(envelopeAddCourtDoc, requester));
     }
 }

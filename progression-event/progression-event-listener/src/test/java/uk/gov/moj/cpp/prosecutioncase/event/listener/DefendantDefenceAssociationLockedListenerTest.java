@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +11,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.event.listener.DefendantDefenceAssociationLockedListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
@@ -23,15 +24,14 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantDefenceAssociationLockedListenerTest {
 
     private static final UUID defendantId = randomUUID();
@@ -79,7 +79,6 @@ public class DefendantDefenceAssociationLockedListenerTest {
                                 .build())
                         .build()).build();
         when(repository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
-        when(prosecutionCaseEntity.getCaseId()).thenReturn(prosecutionCaseId);
         when(prosecutionCaseEntity.getPayload()).thenReturn(jsonObject.toString());
         when(jsonObjectConverter.convert(jsonObject, ProsecutionCase.class)).thenReturn(prosCase);
         when(objectToJsonObjectConverter.convert(prosCase)).thenReturn(jsonObject);

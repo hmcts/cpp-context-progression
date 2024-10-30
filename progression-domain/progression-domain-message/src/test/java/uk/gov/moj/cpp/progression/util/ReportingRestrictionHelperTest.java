@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ReportingRestrictionHelperTest {
 

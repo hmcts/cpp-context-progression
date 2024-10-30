@@ -18,9 +18,7 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 
-import com.jayway.restassured.response.Response;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class StandaloneApplicationRespondentsIT extends AbstractIT {
 

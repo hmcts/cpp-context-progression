@@ -1,0 +1,692 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "c133d0de-c989-48b9-bd20-0431943e347e",
+          "notificationRequired": false,
+          "organisation": {
+            "address": {
+              "address1": "1 Queen Victoria Street",
+              "address2": "London",
+              "postcode": "EC4N 4XY"
+            },
+            "name": "City of London Magistrates' Court"
+          },
+          "summonsRequired": false
+        },
+        "applicationParticulars": "Community order England / Wales, End date: 30 September 2025",
+        "applicationReceivedDate": "2024-09-30",
+        "applicationReference": "TSU18163872",
+        "applicationStatus": "FINALISED",
+        "courtApplicationCases": [
+          {
+            "caseStatus": "INACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "e9449a8a-1b94-4752-a49a-51a722bcec4f",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Criminal Justice Department",
+                "address2": "Derbyshire Constabulary",
+                "address3": "Butterley Hall",
+                "address4": "Ripley",
+                "address5": "Derby",
+                "postcode": "DE5 3RS"
+              },
+              "contact": {
+                "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+              },
+              "majorCreditorCode": "PO30",
+              "prosecutionAuthorityCode": "DERPF",
+              "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+              "prosecutionAuthorityName": "Derbyshire Police",
+              "prosecutionAuthorityOUCode": "0300000",
+              "caseURN": "TSU18163872"
+            }
+          }
+        ],
+        "id": "44f9c5e9-14e9-4da3-93d2-c1e69f3c1053",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "INTERMEDIARY",
+            "cjsCode": "4506",
+            "courtClerk": {
+              "firstName": "Evan",
+              "lastName": "Roberts",
+              "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": false,
+            "isUnscheduled": false,
+            "judicialResultId": "2bdde8b2-f3aa-49f1-ba18-3a7149abfdc1",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                "label": "Next hearing in Crown Court",
+                "promptReference": "a57a6041-eecb-4b2e-a7c1-dda56668e2dd",
+                "promptSequence": 0,
+                "usergroups": [],
+                "value": "Fixed Date:03/12/2024\nTime of hearing:10:00\nCourthouse organisation name:Southwark Crown Court\nCourthouse address line 1:1 English Grounds\nCourthouse address line 2:(Off Battlebridge Lane)\nCourthouse address line 3:Southwark\nCourthouse address line 4:London\nCourthouse post code:SE1 2HU\nCourtroom:Courtroom 01\nHearing type:Application\nEstimated duration:15 MINUTES",
+                "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                "label": "Defendant to attend the next hearing",
+                "promptReference": "defendantToAttendTheNextHearing",
+                "promptSequence": 100,
+                "type": "BOOLEAN",
+                "usergroups": [],
+                "value": "true",
+                "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                "welshValue": "true"
+              },
+              {
+                "courtExtract": "Y",
+                "judicialResultPromptTypeId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+                "label": "Unexpected circumstances meant that the case could not be heard",
+                "promptReference": "6a482cfa-cf07-45b8-b4b8-fc1c232a880f",
+                "promptSequence": 200,
+                "qualifier": "KU",
+                "usergroups": [],
+                "value": "",
+                "welshLabel": "Am fod amgylchiadau annisgwyl yn golygu nad oedd modd gwrando'r achos"
+              },
+              {
+                "courtExtract": "Y",
+                "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                "label": "Adjournment reasons",
+                "promptReference": "2a9d8e63-a0e8-4bb9-b299-90d73bd7f369",
+                "promptSequence": 300,
+                "usergroups": [],
+                "value": "",
+                "welshLabel": "Rheswm dros ohirio:"
+              }
+            ],
+            "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "label": "Adjournment",
+            "lastSharedDateTime": "2024-09-30",
+            "level": "O",
+            "lifeDuration": false,
+            "nextHearing": {
+              "adjournmentReason": "Unexpected circumstances meant that the case could not be heard",
+              "courtCentre": {
+                "address": {
+                  "address1": "1 English Grounds",
+                  "address2": "(Off Battlebridge Lane)",
+                  "address3": "Southwark",
+                  "address4": "London",
+                  "postcode": "SE1 2HU"
+                },
+                "code": "C01SW00",
+                "courtHearingLocation": "C01SW00",
+                "id": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+                "name": "Southwark Crown Court",
+                "psaCode": 2576,
+                "roomId": "4492eac0-4978-3775-987b-534adb056ad5",
+                "roomName": "Courtroom 01",
+                "welshName": "Llys Y Goron Southwark"
+              },
+              "estimatedDuration": "15 MINUTES",
+              "estimatedMinutes": 15,
+              "jurisdictionType": "CROWN",
+              "listedStartDateTime": "2024-12-03T10:00:00.000Z",
+              "type": {
+                "description": "Application",
+                "id": "3449743b-95d6-4836-8941-57f588b52068"
+              }
+            },
+            "orderedDate": "2024-11-30",
+            "orderedHearingId": "97d8f379-3247-401f-9ed5-ce1dec756f66",
+            "policeSubjectLineTitle": "Adjourned",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "qualifier": "KU",
+            "rank": 194200,
+            "resultText": "A - Adjournment\nAdjourned for hearing on 03/12/2024 at 10:00 in Courtroom 01, Southwark Crown Court. Reason: Unexpected circumstances meant that the case could not be heard. Defendant to attend the next hearing.",
+            "resultWording": "",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "2bdde8b2-f3aa-49f1-ba18-3a7149abfdc1",
+            "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Gohiriad"
+          },
+          {
+            "alwaysPublished": false,
+            "amendmentDate": "2024-09-30",
+            "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+            "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "ANCILLARY",
+            "courtClerk": {
+              "firstName": "Evan",
+              "lastName": "Roberts",
+              "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "88cefe44-0d88-4c5f-a604-ddd32767ff8b",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "b4ac2e46-5dd3-11e8-9c2d-fa7ae01bbebc",
+                "label": "Text",
+                "promptReference": "text",
+                "promptSequence": 100,
+                "type": "TXT",
+                "usergroups": [],
+                "value": "this is the original text ..... updated text",
+                "welshValue": "this is the original text ..... updated text"
+              }
+            ],
+            "judicialResultTypeId": "98138ec8-5dd3-11e8-9c2d-fa7ae01bbebc",
+            "label": "Text",
+            "lastSharedDateTime": "2024-09-30",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2024-11-30",
+            "orderedHearingId": "97d8f379-3247-401f-9ed5-ce1dec756f66",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 200400,
+            "resultText": "TEXT - Text\nthis is the original text ..... updated text",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "88cefe44-0d88-4c5f-a604-ddd32767ff8b",
+            "rootJudicialResultTypeId": "98138ec8-5dd3-11e8-9c2d-fa7ae01bbebc",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          },
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "ANCILLARY",
+            "courtClerk": {
+              "firstName": "Evan",
+              "lastName": "Roberts",
+              "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": false,
+            "isUnscheduled": false,
+            "judicialResultId": "a57a6041-eecb-4b2e-a7c1-dda56668e2dd",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                "label": "Fixed Date",
+                "promptReference": "fixedDate",
+                "promptSequence": 200,
+                "type": "DATE",
+                "usergroups": [],
+                "value": "03/12/2024",
+                "welshLabel": "Dyddiad Penodol",
+                "welshValue": "03/12/2024"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                "label": "Time of hearing",
+                "promptReference": "timeOfHearing",
+                "promptSequence": 400,
+                "type": "TIME",
+                "usergroups": [],
+                "value": "10:00",
+                "welshLabel": "Amser y gwrandawiad",
+                "welshValue": "10:00"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse organisation name",
+                "promptReference": "hCHOUSEOrganisationName",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "Southwark Crown Court",
+                "welshValue": "Southwark Crown Court"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse address line 1",
+                "promptReference": "hCHOUSEAddress1",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "1 English Grounds",
+                "welshValue": "1 English Grounds"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse address line 2",
+                "promptReference": "hCHOUSEAddress2",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "(Off Battlebridge Lane)",
+                "welshValue": "(Off Battlebridge Lane)"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse address line 3",
+                "promptReference": "hCHOUSEAddress3",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "Southwark",
+                "welshValue": "Southwark"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse address line 4",
+                "promptReference": "hCHOUSEAddress4",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "London",
+                "welshValue": "London"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                "label": "Courthouse post code",
+                "promptReference": "hCHOUSEPostCode",
+                "promptSequence": 500,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "SE1 2HU",
+                "welshValue": "SE1 2HU"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                "label": "Courtroom",
+                "promptReference": "HCROOM",
+                "promptSequence": 600,
+                "type": "INT",
+                "usergroups": [],
+                "value": "Courtroom 01",
+                "welshLabel": "Ystafell Llys",
+                "welshValue": "Courtroom 01"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                "label": "Hearing type",
+                "promptReference": "HTYPE",
+                "promptSequence": 700,
+                "type": "TXT",
+                "usergroups": [],
+                "value": "Application",
+                "welshLabel": "Math o wrandawiad",
+                "welshValue": "Application"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                "label": "Estimated duration",
+                "promptReference": "HEST",
+                "promptSequence": 800,
+                "type": "INT",
+                "usergroups": [],
+                "value": "15 MINUTES",
+                "welshLabel": "Amcangyfrif amser",
+                "welshValue": "15 MINUTES"
+              }
+            ],
+            "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+            "label": "Next hearing in Crown Court",
+            "lastSharedDateTime": "2024-09-30",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2024-11-30",
+            "orderedHearingId": "97d8f379-3247-401f-9ed5-ce1dec756f66",
+            "parentJudicialResultId": "f1d6dde4-509d-4dae-8534-0c875d12a405",
+            "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": true,
+            "publishedForNows": true,
+            "rank": 29600,
+            "resultDefinitionGroup": "Next hearing",
+            "resultText": "hearing on 03/12/2024 at 10:00 in Courtroom 01, Southwark Crown Court",
+            "resultWording": "",
+            "rollUpPrompts": false,
+            "rootJudicialResultId": "2bdde8b2-f3aa-49f1-ba18-3a7149abfdc1",
+            "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+          },
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "ANCILLARY",
+            "courtClerk": {
+              "firstName": "Evan",
+              "lastName": "Roberts",
+              "userId": "735b9bf6-2f4c-4947-92af-b607c7d2880f"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": false,
+            "isUnscheduled": false,
+            "judicialResultId": "6a482cfa-cf07-45b8-b4b8-fc1c232a880f",
+            "judicialResultTypeId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+            "label": "Unexpected circumstances meant that the case could not be heard",
+            "lastSharedDateTime": "2024-09-30",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2024-11-30",
+            "orderedHearingId": "97d8f379-3247-401f-9ed5-ce1dec756f66",
+            "parentJudicialResultId": "2a9d8e63-a0e8-4bb9-b299-90d73bd7f369",
+            "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": true,
+            "publishedForNows": true,
+            "rank": 55500,
+            "resultDefinitionGroup": "Adjournment reasons",
+            "resultText": "Unexpected circumstances meant that the case could not be heard",
+            "resultWording": "",
+            "rollUpPrompts": false,
+            "rootJudicialResultId": "2bdde8b2-f3aa-49f1-ba18-3a7149abfdc1",
+            "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Am fod amgylchiadau annisgwyl yn golygu nad oedd modd gwrando'r achos"
+          }
+        ],
+        "respondents": [
+          {
+            "id": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742",
+            "masterDefendant": {
+              "defendantCase": [
+                {
+                  "caseId": "e9449a8a-1b94-4752-a49a-51a722bcec4f",
+                  "caseReference": "TSU18163872",
+                  "defendantId": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742"
+                }
+              ],
+              "masterDefendantId": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742",
+              "personDefendant": {
+                "arrestSummonsNumber": "E28GC01123537140",
+                "bailConditions": "",
+                "bailStatus": {
+                  "code": "A",
+                  "description": "Not applicable",
+                  "id": "86009c70-759d-3308-8de4-194886ff9a77"
+                },
+                "driverNumber": "CRIME709136TC8GZ",
+                "personDetails": {
+                  "address": {
+                    "address1": "j",
+                    "address2": "Ulices Burg",
+                    "address3": "Lake Dejon",
+                    "address4": "Avon",
+                    "postcode": "DA6 7ND"
+                  },
+                  "contact": {
+                    "home": "651-467-6972"
+                  },
+                  "dateOfBirth": "2007-09-09",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "observedEthnicityCode": "1",
+                    "observedEthnicityDescription": "White",
+                    "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Tamara",
+                  "gender": "FEMALE",
+                  "hearingLanguageNeeds": "ENGLISH",
+                  "lastName": "Ankunding",
+                  "title": "Mr"
+                },
+                "policeBailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                }
+              }
+            },
+            "notificationRequired": false,
+            "personDetails": {
+              "address": {
+                "address1": "j",
+                "address2": "Ulices Burg",
+                "address3": "Lake Dejon",
+                "address4": "Avon",
+                "postcode": "DA6 7ND"
+              },
+              "contact": {
+                "home": "651-467-6972"
+              },
+              "dateOfBirth": "2007-09-09",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Tamara",
+              "gender": "FEMALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Ankunding",
+              "title": "Mr"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "e9449a8a-1b94-4752-a49a-51a722bcec4f",
+                "caseReference": "TSU18163872",
+                "defendantId": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742"
+              }
+            ],
+            "masterDefendantId": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742",
+            "personDefendant": {
+              "arrestSummonsNumber": "E28GC01123537140",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "driverNumber": "CRIME709136TC8GZ",
+              "personDetails": {
+                "address": {
+                  "address1": "j",
+                  "address2": "Ulices Burg",
+                  "address3": "Lake Dejon",
+                  "address4": "Avon",
+                  "postcode": "DA6 7ND"
+                },
+                "contact": {
+                  "home": "651-467-6972"
+                },
+                "dateOfBirth": "2007-09-09",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Tamara",
+                "gender": "FEMALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Ankunding",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": false,
+          "summonsRequired": false
+        },
+        "thirdParties": [
+          {
+            "id": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742",
+            "notificationRequired": false,
+            "organisation": {
+              "address": {
+                "address1": ""
+              },
+              "name": "London Division NPS"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CO",
+          "code": "SE20510",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "REV",
+          "id": "f70ed45a-9cdf-3e1c-b959-58bd83bc8adc",
+          "initialFeeApplicable": false,
+          "jurisdiction": "EITHER",
+          "lastModified": "2022-06-28T20:11:23.439Z",
+          "legislation": "In accordance with paragraph 21 of Schedule 9 to the Sentencing Act 2020.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "NOT_APPLICABLE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Review progress of drug rehabilitation requirement",
+          "validFrom": "2020-12-01"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "1 English Grounds",
+        "address2": "(Off Battlebridge Lane)",
+        "address3": "Southwark",
+        "address4": "London",
+        "address5": "",
+        "postcode": "SE1 2HU"
+      },
+      "code": "C01SW00",
+      "courtHearingLocation": "C01SW00",
+      "courtLocationCode": "0471",
+      "id": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+      "lja": {
+        "ljaCode": "2576",
+        "ljaName": "South London Magistrates' Court"
+      },
+      "name": "Southwark Crown Court",
+      "roomId": "4492eac0-4978-3775-987b-534adb056ad5",
+      "roomName": "Courtroom 01"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2024-11-30"
+          }
+        ],
+        "defendantId": "ef67e7b4-56c4-437c-be4a-f3cf41ab6742"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+        "courtRoomId": "4492eac0-4978-3775-987b-534adb056ad5",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 30,
+        "listingSequence": 0,
+        "sittingDay": "2024-11-30T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "HEARING_ID",
+    "jurisdictionType": "CROWN",
+    "type": {
+      "description": "Review",
+      "id": "bd4dab38-ea91-434b-8e73-e0d50ef0cbdf"
+    }
+  },
+  "hearingDay": "2024-11-30",
+  "sharedTime": "2024-09-30T13:17:21.423Z"
+}

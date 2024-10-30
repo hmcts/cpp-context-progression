@@ -4,8 +4,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.is;
 
-import uk.gov.justice.core.courts.Address;
-
 import java.util.List;
 
 import org.hamcrest.Matcher;

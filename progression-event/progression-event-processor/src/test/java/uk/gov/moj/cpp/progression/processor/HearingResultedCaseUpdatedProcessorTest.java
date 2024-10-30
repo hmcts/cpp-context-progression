@@ -4,7 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,17 +38,17 @@ import java.util.function.Function;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingResultedCaseUpdatedProcessorTest {
 
     @InjectMocks
@@ -96,7 +96,7 @@ public class HearingResultedCaseUpdatedProcessorTest {
     @Mock
     private ProgressionService progressionService;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -106,9 +106,8 @@ public class HearingResultedCaseUpdatedProcessorTest {
         //When
         when(jsonObjectToObjectConverter.convert(any(), any())).thenReturn(mock(HearingResultedCaseUpdated.class));
         when(resultHelper.doProsecutionCasesContainNextHearingResults(any())).thenReturn(false);
-        when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(enveloper.withMetadataFrom(envelope, "public.progression.hearing-resulted-case-updated")).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
 
         this.eventProcessor.process(envelope);
 
@@ -128,7 +127,7 @@ public class HearingResultedCaseUpdatedProcessorTest {
         when(resultHelper.doProsecutionCasesContainNextHearingResults(any())).thenReturn(true);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(enveloper.withMetadataFrom(envelope, "public.progression.hearing-resulted-case-updated")).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
 
         this.eventProcessor.process(envelope);
 

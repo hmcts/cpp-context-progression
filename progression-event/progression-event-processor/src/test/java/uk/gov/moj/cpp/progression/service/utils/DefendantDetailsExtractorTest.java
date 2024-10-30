@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.service.utils;
 
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Person;
@@ -9,7 +10,7 @@ import uk.gov.justice.core.courts.PersonDefendant;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DefendantDetailsExtractorTest {
 

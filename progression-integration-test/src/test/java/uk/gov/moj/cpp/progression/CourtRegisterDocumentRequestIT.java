@@ -8,17 +8,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.helper.CourtRegisterDocumentRequestHelper;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub;
 
 import java.io.IOException;
@@ -27,36 +29,25 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CourtRegisterDocumentRequestIT extends AbstractIT {
 
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    private MessageProducer producer;
-    private MessageConsumer consumerForCourtApplicationCreated;
+    private static final JmsMessageProducerClient producer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-proceedings-initiated").getMessageConsumerClient();
 
-    @Before
+    @BeforeEach
     public void setup() {
         stringToJsonObjectConverter = new StringToJsonObjectConverter();
         SysDocGeneratorStub.stubDocGeneratorEndPoint();
-        producer = QueueUtil.publicEvents.createPublicProducer();
-        consumerForCourtApplicationCreated = QueueUtil.publicEvents.createPublicConsumer("public.progression.court-application-proceedings-initiated");
-    }
-
-    @After
-    public void tearDown() throws JMSException {
-        closeSilently(producer);
     }
 
     @Test
@@ -212,7 +203,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
 
         intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
         verifyCourtApplicationCreatedPublicEvent();
-        final Response writeResponse1 = recordCourtRegister(courtCentreId, courtHouse, registerDate1, hearingId, hearingDate, courtApplicationId );
+        final Response writeResponse1 = recordCourtRegister(courtCentreId, courtHouse, registerDate1, hearingId, hearingDate, courtApplicationId);
 
         assertThat(writeResponse1.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
@@ -288,7 +279,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
     }
 
     private void verifyCourtApplicationCreatedPublicEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(applicationReference, is(notNullValue()));

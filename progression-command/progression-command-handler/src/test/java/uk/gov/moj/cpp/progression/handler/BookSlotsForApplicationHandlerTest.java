@@ -1,11 +1,11 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -20,6 +20,7 @@ import uk.gov.justice.core.courts.BookSlotsForApplication;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.core.courts.SlotsBookedForApplication;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -31,21 +32,20 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class BookSlotsForApplicationHandlerTest {
 
     @Mock
@@ -63,16 +63,8 @@ public class BookSlotsForApplicationHandlerTest {
     @InjectMocks
     private BookSlotsForApplicationHandler bookSlotsForApplicationHandler;
 
-    private ApplicationAggregate aggregate;
 
     private static final Random ran = new Random();
-
-    @Before
-    public void setup() {
-        aggregate = new ApplicationAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(aggregate);
-    }
 
     @Test
     public void shouldHandleBookSlotsForApplicationWhenCommandInitiated() {
@@ -86,7 +78,12 @@ public class BookSlotsForApplicationHandlerTest {
     public void shouldProcessBookSlotsForApplicationWhenCommandInitiated() throws Exception {
 
         final BookSlotsForApplication bookSlotsForApplication = createBookSlotsForApplicationRequest();
-        aggregate.bookSlotsForApplication(bookSlotsForApplication.getHearingRequest());
+
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
+        applicationAggregate.bookSlotsForApplication(bookSlotsForApplication.getHearingRequest());
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -121,7 +118,7 @@ public class BookSlotsForApplicationHandlerTest {
                                 .withDuration(ran.nextInt())
                                 .withOucode("OU001")
                                 .withSession("AD")
-                                .withStartTime(ZonedDateTime.now()).build()))
+                                .withStartTime(new UtcClock().now()).build()))
                         .build())
                 .build();
     }

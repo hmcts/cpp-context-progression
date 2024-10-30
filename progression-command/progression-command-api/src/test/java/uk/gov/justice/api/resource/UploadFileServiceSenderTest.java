@@ -1,25 +1,26 @@
 package uk.gov.justice.api.resource;
 
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
+
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.function.Function;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UploadFileServiceSenderTest {
 
     @Mock

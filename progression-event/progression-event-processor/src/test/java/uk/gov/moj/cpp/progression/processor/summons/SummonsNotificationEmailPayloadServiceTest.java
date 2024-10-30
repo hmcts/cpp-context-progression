@@ -16,10 +16,10 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.ConfirmedProsecutionCaseId.confirmedProsecutionCaseId;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
@@ -61,14 +61,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class SummonsNotificationEmailPayloadServiceTest {
 
     private static final UUID CASE_ID = randomUUID();
@@ -130,15 +129,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
     private MaterialUrlGenerator materialUrlGenerator;
 
     @InjectMocks
-    private final SummonsNotificationEmailPayloadService target = new SummonsNotificationEmailPayloadService();
-
-    @Before
-    public void setup() {
-        when(applicationParameters.getSummonsApprovedAndNotSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID);
-        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
-        when(applicationParameters.getSummonsRejectedTemplateId()).thenReturn(SUMMONS_REJECTED_TEMPLATE_ID);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
-    }
+    private final SummonsNotificationEmailPayloadService summonsNotificationEmailPayloadService = new SummonsNotificationEmailPayloadService();
 
     @Test
     public void shouldNotGenerateEmailNotificationForCaseDefendantWhenSummonsRequestedForSJPReferral() {
@@ -146,8 +137,8 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final SummonsDocumentContent summonsDocumentContent = getCaseSummonsDocumentContentForDefendant();
         final Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
-
-        final Optional<EmailChannel> result = target.getEmailChannelForCaseDefendant(
+        
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(), BOOLEAN.next(),
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SJP_REFERRAL);
 
@@ -158,8 +149,8 @@ public class SummonsNotificationEmailPayloadServiceTest {
     public void shouldNotGenerateEmailNotificationForApplicationWhenSummonsRequestedForSJPReferral() {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication();
         final SummonsDocumentContent summonsDocumentContent = getApplicationSummonsDocumentContentForAddressee();
-
-        final Optional<EmailChannel> result = target.getEmailChannelForApplicationAddressee(
+        
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, BOOLEAN.next(),
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SJP_REFERRAL);
 
@@ -173,7 +164,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
 
-        final Optional<EmailChannel> result = target.getEmailChannelForCaseDefendant(
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, null, defendantIds, defendant, emptyList(), BOOLEAN.next(),
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -187,7 +178,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
 
-        final Optional<EmailChannel> result = target.getEmailChannelForCaseDefendant(
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, "", defendantIds, defendant, emptyList(), BOOLEAN.next(),
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -199,7 +190,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication();
         final SummonsDocumentContent summonsDocumentContent = getApplicationSummonsDocumentContentForAddressee();
 
-        final Optional<EmailChannel> result = target.getEmailChannelForApplicationAddressee(
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(
                 summonsDataPrepared, summonsDocumentContent, "", BOOLEAN.next(),
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -210,8 +201,8 @@ public class SummonsNotificationEmailPayloadServiceTest {
     public void shouldNotGenerateEmailNotificationForApplicationWhenEmailIsEmptyForProsecutor() {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication();
         final SummonsDocumentContent summonsDocumentContent = getApplicationSummonsDocumentContentForAddressee();
-
-        final Optional<EmailChannel> result = target.getEmailChannelForApplicationAddressee(
+        
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(
                 summonsDataPrepared, summonsDocumentContent, "", BOOLEAN.next(),
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -226,7 +217,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = true;
 
-        final Optional<EmailChannel> result = target.getEmailChannelForCaseDefendantParent(
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(),
                 sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -238,8 +229,8 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final SummonsDataPrepared summonsDataPrepared = getSummonsDataPreparedForApplication();
         final SummonsDocumentContent parentSummonsDocumentContent = getApplicationSummonsDocumentContentForAddresseeParent();
         final boolean sendForRemotePrinting = true;
-
-        final Optional<EmailChannel> result = target.getEmailChannelForApplicationAddresseeParent(
+        
+        final Optional<EmailChannel> result = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddresseeParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, sendForRemotePrinting,
                 MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -254,7 +245,10 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = false;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendant(
+        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(), sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -288,7 +282,10 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = false;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendant(
+        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, emptyList(), sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -322,7 +319,10 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = false;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendantParent(
+        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant,
                 emptyList(), sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -357,7 +357,10 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = false;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendantParent(
+        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendantParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant,
                 emptyList(), sendForRemotePrinting, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -390,7 +393,10 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final SummonsDocumentContent summonsDocumentContent = getApplicationSummonsDocumentContentForAddressee();
         final boolean sendForRemotePrinting = false;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForApplicationAddressee(
+        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -422,7 +428,10 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final SummonsDocumentContent parentSummonsDocumentContent = getApplicationSummonsDocumentContentForAddresseeParent();
         final boolean sendForRemotePrinting = false;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForApplicationAddresseeParent(
+        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddresseeParent(
                 summonsDataPrepared, parentSummonsDocumentContent, EMAIL_ADDRESS, sendForRemotePrinting,
                 MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -457,7 +466,9 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final List<UUID> defendantIds = ImmutableList.of(DEFENDANT_ID);
         final boolean sendForRemotePrinting = true;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendant(
+        when(applicationParameters.getSummonsApprovedAndNotSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, newArrayList(), sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -479,7 +490,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         assertThat(result.getReplyToAddress(), is(nullValue()));
         assertThat(result.getReplyToAddressId(), is(nullValue()));
         verify(applicationParameters).getSummonsApprovedAndNotSuppressedTemplateId();
-        verifyZeroInteractions(materialUrlGenerator);
+        verifyNoInteractions(materialUrlGenerator);
     }
 
     @Test
@@ -488,7 +499,9 @@ public class SummonsNotificationEmailPayloadServiceTest {
         final SummonsDocumentContent summonsDocumentContent = getApplicationSummonsDocumentContentForAddressee();
         final boolean sendForRemotePrinting = true;
 
-        final Optional<EmailChannel> optionalResult = target.getEmailChannelForApplicationAddressee(
+        when(applicationParameters.getSummonsApprovedAndNotSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID);
+
+        final Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForApplicationAddressee(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -510,7 +523,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         assertThat(result.getReplyToAddress(), is(nullValue()));
         assertThat(result.getReplyToAddressId(), is(nullValue()));
         verify(applicationParameters).getSummonsApprovedAndNotSuppressedTemplateId();
-        verifyZeroInteractions(materialUrlGenerator);
+        verifyNoInteractions(materialUrlGenerator);
     }
 
     @Test
@@ -522,8 +535,10 @@ public class SummonsNotificationEmailPayloadServiceTest {
         Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
         final List<String> defendantDetails = newArrayList();
 
+        when(applicationParameters.getSummonsApprovedAndNotSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_NOT_SUPPRESSED_TEMPLATE_ID);
+
         //email notification not generated for first defendant
-        Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendant(
+        Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -535,7 +550,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         defendant = getDefendant(DEFENDANT_ID_2, PROSECUTION_AUTHORITY_REFERENCE_2);
 
         //email notification not generated for second defendant
-        optionalResult = target.getEmailChannelForCaseDefendant(
+        optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -547,7 +562,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         defendant = getDefendant(DEFENDANT_ID_3, PROSECUTION_AUTHORITY_REFERENCE_3);
 
         //combined email notification generated for third/last defendant
-        optionalResult = target.getEmailChannelForCaseDefendant(
+        optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -575,7 +590,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         assertThat(result.getReplyToAddress(), is(nullValue()));
         assertThat(result.getReplyToAddressId(), is(nullValue()));
         verify(applicationParameters).getSummonsApprovedAndNotSuppressedTemplateId();
-        verifyZeroInteractions(materialUrlGenerator);
+        verifyNoInteractions(materialUrlGenerator);
     }
 
     @Test
@@ -587,8 +602,11 @@ public class SummonsNotificationEmailPayloadServiceTest {
         Defendant defendant = getDefendant(DEFENDANT_ID, PROSECUTION_AUTHORITY_REFERENCE);
         final List<String> defendantDetails = newArrayList();
 
+        when(applicationParameters.getSummonsApprovedAndSuppressedTemplateId()).thenReturn(SUMMONS_APPROVED_AND_SUPPRESSED_TEMPLATE_ID);
+        when(materialUrlGenerator.pdfFileStreamUrlFor(MATERIAL_ID)).thenReturn(MATERIAL_URL);
+
         //email notification generated for first defendant
-        Optional<EmailChannel> optionalResult = target.getEmailChannelForCaseDefendant(
+        Optional<EmailChannel> optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -601,7 +619,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         defendant = getDefendant(DEFENDANT_ID_2, PROSECUTION_AUTHORITY_REFERENCE_2);
 
         //email notification generated for second defendant
-        optionalResult = target.getEmailChannelForCaseDefendant(
+        optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -614,7 +632,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         defendant = getDefendant(DEFENDANT_ID_3, PROSECUTION_AUTHORITY_REFERENCE_3);
 
         //email notification generated for third defendant
-        optionalResult = target.getEmailChannelForCaseDefendant(
+        optionalResult = summonsNotificationEmailPayloadService.getEmailChannelForCaseDefendant(
                 summonsDataPrepared, summonsDocumentContent, EMAIL_ADDRESS, defendantIds, defendant, defendantDetails, sendForRemotePrinting,
                 DEFENDANT_IS_YOUTH, MATERIAL_ID, SUMMONS_REQUIRED);
 
@@ -636,7 +654,9 @@ public class SummonsNotificationEmailPayloadServiceTest {
                 format("%s %s %s, %s", DEFENDANT_2_FIRST_NAME, DEFENDANT_2_MIDDLE_NAME, DEFENDANT_2_LAST_NAME, PROSECUTION_AUTHORITY_REFERENCE_2)
         );
 
-        final EmailChannel result = target.getEmailChannelForSummonsRejected(EMAIL_ADDRESS, applicationReference, defendantDetails, rejectionReasons);
+        when(applicationParameters.getSummonsRejectedTemplateId()).thenReturn(SUMMONS_REJECTED_TEMPLATE_ID);
+
+        final EmailChannel result = summonsNotificationEmailPayloadService.getEmailChannelForSummonsRejected(EMAIL_ADDRESS, applicationReference, defendantDetails, rejectionReasons);
 
         assertThat(result.getTemplateId(), is(fromString(SUMMONS_REJECTED_TEMPLATE_ID)));
         assertThat(result.getMaterialUrl(), is(nullValue()));
@@ -654,7 +674,7 @@ public class SummonsNotificationEmailPayloadServiceTest {
         assertThat(result.getReplyToAddress(), is(nullValue()));
         assertThat(result.getReplyToAddressId(), is(nullValue()));
         verify(applicationParameters).getSummonsRejectedTemplateId();
-        verifyZeroInteractions(materialUrlGenerator);
+        verifyNoInteractions(materialUrlGenerator);
     }
 
     private SummonsDataPrepared getSummonsDataPreparedForCase() {

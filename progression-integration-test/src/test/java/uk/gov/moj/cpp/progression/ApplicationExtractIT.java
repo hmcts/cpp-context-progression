@@ -8,18 +8,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeAccessQueryData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.moj.cpp.progression.helper.AwaitUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
@@ -27,14 +28,14 @@ import java.io.IOException;
 import java.util.Optional;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
@@ -46,9 +47,10 @@ public class ApplicationExtractIT extends AbstractIT {
     private String updatedDefendantId;
 
     private static final String DOCUMENT_TEXT = STRING.next();
-    private MessageConsumer consumerForCourtApplicationCreated;
 
-    @Before
+    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-created").getMessageConsumerClient();
+
+    @BeforeEach
     public void setUp() {
         hearingId = randomUUID().toString();
         courtApplicationId = randomUUID().toString();
@@ -57,13 +59,10 @@ public class ApplicationExtractIT extends AbstractIT {
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
         stubQueryDocumentTypeAccessQueryData("/restResource/ref-data-document-type-for-standalone.json");
-        consumerForCourtApplicationCreated = publicEvents.createPublicConsumer("public.progression.court-application-created");
-
     }
 
-    @After
-    public void tearDown() throws JMSException {
-        consumerForCourtApplicationCreated.close();
+    @AfterAll
+    public static void tearDown() throws JMSException {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
     }
 
@@ -97,7 +96,7 @@ public class ApplicationExtractIT extends AbstractIT {
         assertEquals(expectedPayloadAfterUpdate, actualDocumentAfterUpdate, getCustomComparator());
     }
 
-    private void verifyAddCourtDocument() throws IOException {
+    private void verifyAddCourtDocument() throws IOException, JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When
@@ -144,7 +143,7 @@ public class ApplicationExtractIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
-        final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(consumerForCourtApplicationCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
 
         String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");
         assertThat(referenceResponse.length(), is(10));

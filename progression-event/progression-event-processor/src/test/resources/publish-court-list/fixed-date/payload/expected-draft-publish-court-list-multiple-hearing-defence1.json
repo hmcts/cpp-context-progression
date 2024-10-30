@@ -32,7 +32,7 @@
           "courtroomName": "Courtroom 01",
           "hearingByTimes": [
             {
-              "hearingTime": "9:00 AM",
+              "hearingTime": "9:00 am",
               "hearings": [
                 {
                   "caseReference": "CTZH5HVZIF",
@@ -48,7 +48,7 @@
               ]
             },
             {
-              "hearingTime": "10:00 AM",
+              "hearingTime": "10:00 am",
               "hearings": [
                 {
                   "caseReference": "91GD6403223",
@@ -64,7 +64,7 @@
               ]
             },
             {
-              "hearingTime": "1:20 PM",
+              "hearingTime": "1:20 pm",
               "hearings": [
                 {
                   "caseReference": "92GD4165920",
@@ -85,7 +85,7 @@
           "courtroomName": "Courtroom 03",
           "hearingByTimes": [
             {
-              "hearingTime": "2:00 PM",
+              "hearingTime": "2:00 pm",
               "hearings": [
                 {
                   "caseReference": "13SS0123695",
@@ -112,7 +112,7 @@
         {
           "hearingByTimes": [
             {
-              "hearingTime": "9:30 AM",
+              "hearingTime": "9:30 am",
               "hearings": [
                 {
                   "caseReference": "92GD4165920",

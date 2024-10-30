@@ -5,6 +5,8 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
@@ -13,10 +15,13 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 
@@ -25,14 +30,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 
@@ -42,17 +45,11 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
 
     private static final String ORIGINATOR = "court_register";
 
-    protected MessageConsumer privateEventsConsumer;
-
-    protected MessageProducer publicMessageProducer;
-
-    public CourtRegisterDocumentRequestHelper() {
-        privateEventsConsumer = QueueUtil.privateEvents.createPrivateConsumer(EVENT_SELECTOR_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED);
-        publicMessageProducer = QueueUtil.publicEvents.createPublicProducer();
-    }
+    private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_SELECTOR_COURT_REGISTER_DOCUMENT_REQUEST_RECORDED).getMessageConsumerClient();
+    private static final JmsMessageProducerClient publicMessageProducer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     public void verifyCourtRegisterDocumentRequestRecordedPrivateTopic(final String courtCentreId) {
-        final JsonPath jsonResponse = retrieveMessage(privateEventsConsumer);
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
         assertThat(jsonResponse.get("courtCentreId"), is(courtCentreId));
     }
 
@@ -74,7 +71,8 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
     public void sendSystemDocGeneratorPublicEvent(final UUID userId, final UUID courtCentreId) {
         final String commandName = "public.systemdocgenerator.events.document-available";
         final Metadata metadata = getMetadataFrom(userId.toString(), courtCentreId);
-        sendMessage(publicMessageProducer, commandName, documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID()), metadata);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID()));
+        publicMessageProducer.sendMessage(commandName, publicEventEnvelope);
     }
 
     private JsonObject documentAvailablePayload(final UUID templatePayloadId, final String templateIdentifier, final String reportId, final UUID generatedDocumentId) {

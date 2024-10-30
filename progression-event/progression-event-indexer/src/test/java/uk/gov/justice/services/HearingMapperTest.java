@@ -2,7 +2,7 @@ package uk.gov.justice.services;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
@@ -12,8 +12,8 @@ import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class HearingMapperTest {
 
@@ -23,7 +23,7 @@ public class HearingMapperTest {
     private CourtCentre defaultCourtCentre;
     private List<String> defaultDefendantIds;
 
-    @Before
+    @BeforeEach
     public void before() {
         hearingMapper = new HearingMapper();
         defaultHearingDays = Collections.emptyList();

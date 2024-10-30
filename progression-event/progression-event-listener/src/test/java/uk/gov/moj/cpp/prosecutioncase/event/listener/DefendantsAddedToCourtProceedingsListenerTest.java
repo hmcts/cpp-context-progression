@@ -1,22 +1,11 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
 import uk.gov.justice.core.courts.Hearing;
@@ -28,20 +17,30 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.prosecutioncase.event.listener.DefendantsAddedToCourtProceedingsListener;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import javax.json.Json;
-import javax.json.JsonObject;
 import java.util.Collections;
 import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonObject;
 
-@RunWith(MockitoJUnitRunner.class)
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+
+@ExtendWith(MockitoExtension.class)
 public class DefendantsAddedToCourtProceedingsListenerTest {
 
     @Mock
@@ -75,9 +74,6 @@ public class DefendantsAddedToCourtProceedingsListenerTest {
     private JsonObject payload;
 
     @Mock
-    private Metadata metadata;
-
-    @Mock
     private ProsecutionCase prosecutionCase;
 
     @InjectMocks
@@ -95,13 +91,7 @@ public class DefendantsAddedToCourtProceedingsListenerTest {
     @Mock
     private HearingRepository hearingRepository;
 
-    @Mock
-    private HearingEntity hearingEntity;
-
-    @Mock
-    private Hearing hearing;
-
-    @Before
+    @BeforeEach
     public void initMocks() {
 
         setField(this.jsonConverter, "mapper",
@@ -117,8 +107,6 @@ public class DefendantsAddedToCourtProceedingsListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, DefendantsAddedToCourtProceedings.class))
                 .thenReturn(defendantsAddedToCourtProceedings);
-        when(envelope.metadata()).thenReturn(metadata);
-
         when(defendant.getId()).thenReturn(UUID.randomUUID());
         when(defendant.getProsecutionCaseId()).thenReturn(UUID.randomUUID());
 
@@ -156,7 +144,6 @@ public class DefendantsAddedToCourtProceedingsListenerTest {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, NewDefendantAddedToHearing.class))
                 .thenReturn(newDefendantAddedToHearing);
-        when(envelope.metadata()).thenReturn(metadata);
 
         HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(UUID.randomUUID());

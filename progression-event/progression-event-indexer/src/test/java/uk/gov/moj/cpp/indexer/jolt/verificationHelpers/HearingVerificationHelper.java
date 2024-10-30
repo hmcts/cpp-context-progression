@@ -19,6 +19,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.PathNotFoundException;
 
 public class HearingVerificationHelper extends BaseVerificationHelper {
     private static final Logger logger = Logger.getLogger(HearingVerificationHelper.class.getName());
@@ -61,13 +62,14 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                                         final int caseIndex,
                                         final int outputHearingIndex) {
         try {
-            if(!inputHearing.jsonString().contains("judiciary")){
+            final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH, caseIndex, outputHearingIndex);
+            final JsonArray judiciaryInput;
+
+            try {
+                judiciaryInput = inputHearing.read(INPUT_JUDICIARY_JSON_PATH);
+            } catch (PathNotFoundException pathNotFoundException){
                 return;
             }
-
-            final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH, caseIndex, outputHearingIndex);
-
-            final JsonArray judiciaryInput = inputHearing.read(INPUT_JUDICIARY_JSON_PATH);
             final int judiciaryInputSize = judiciaryInput.size();
             range(0, judiciaryInputSize)
                     .forEach(judiciaryIndex -> {

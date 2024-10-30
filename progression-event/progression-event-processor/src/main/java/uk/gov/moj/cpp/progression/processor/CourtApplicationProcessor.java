@@ -10,8 +10,8 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.jboss.resteasy.client.ProxyBuilder.build;
 import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.CreateHearingApplicationRequest.createHearingApplicationRequest;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -92,17 +92,11 @@ import uk.gov.moj.cpp.progression.service.SjpService;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -828,7 +822,7 @@ public class CourtApplicationProcessor {
                 final Optional<JsonObject> prosecutionCaseDetailById = progressionService.getProsecutionCaseDetailById(event, courtApplicationCase.getProsecutionCaseId().toString());
                 if (prosecutionCaseDetailById.isPresent()) {
                     final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseDetailById.get().getJsonObject(PROSECUTION_CASE), ProsecutionCase.class);
-                    final ProsecutionCase updatedProsecutionCase = createProsecutionCase(prosecutionCase);
+                    final ProsecutionCase updatedProsecutionCase = createProsecutionCase(prosecutionCase, application);
                     if (isNotEmpty(updatedProsecutionCase.getDefendants())) {
                         prosecutionCases.add(updatedProsecutionCase);
                     }
@@ -840,11 +834,29 @@ public class CourtApplicationProcessor {
         return isNotEmpty(prosecutionCases) ? prosecutionCases : null;
     }
 
-    private ProsecutionCase createProsecutionCase(final ProsecutionCase prosecutionCase) {
+    private ProsecutionCase createProsecutionCase(final ProsecutionCase prosecutionCase, final CourtApplication courtApplication) {
+
+        final Set<Defendant> defendantsFromCourtApplication = new HashSet<>();
+
         final List<Defendant> defendants = prosecutionCase.getDefendants().stream()
                 .map(defendant -> defendant().withValuesFrom(defendant).withDefendantCaseJudicialResults(null).build())
                 .collect(toList());
-        final List<Defendant> defendantList = defendants.stream()
+        Optional.ofNullable(courtApplication).ifPresent(c -> {
+            Optional.ofNullable(c.getApplicant()).ifPresent(a -> {
+                if (Optional.ofNullable(a.getMasterDefendant()).isPresent()) {
+                    defendants.stream().filter(defendant -> defendant.getMasterDefendantId().equals(a.getMasterDefendant().getMasterDefendantId()))
+                            .findFirst().ifPresent(d -> defendantsFromCourtApplication.add(d));
+                }
+            });
+            Optional.ofNullable(c.getRespondents()).ifPresent(respondents -> defendantsFromCourtApplication.addAll(defendants.stream()
+                    .filter(defendant -> respondents.stream().anyMatch(respondent -> nonNull(respondent.getMasterDefendant()) && defendant.getMasterDefendantId().equals(respondent.getMasterDefendant().getMasterDefendantId())))
+                    .collect(Collectors.toSet())));
+        }
+        );
+        if(isEmpty(defendantsFromCourtApplication)) {
+            defendantsFromCourtApplication.addAll(defendants);
+        }
+        final List<Defendant> defendantList = defendantsFromCourtApplication.stream()
                 .map(this::updatedDefendant)
                 .filter(defendant -> isNotEmpty(defendant.getOffences()))
                 .collect(toList());

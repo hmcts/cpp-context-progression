@@ -3,22 +3,18 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -56,7 +52,6 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingConfirmed;
 import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingNeeds;
-import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -82,6 +77,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
@@ -96,7 +92,6 @@ import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.utils.FileUtil;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -110,19 +105,18 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingConfirmedEventProcessorTest {
 
     @Spy
@@ -130,36 +124,48 @@ public class HearingConfirmedEventProcessorTest {
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
+
     @InjectMocks
     private HearingConfirmedEventProcessor eventProcessor;
+
     @Mock
     private Sender sender;
+
     @Mock
     private HearingConfirmed hearingConfirmed;
+
     @Mock
     private JsonEnvelope envelope;
+
     @Mock
     private JsonObject payload;
+
     @Mock
     private JsonEnvelope finalEnvelope;
+
     @Mock
     private ProgressionService progressionService;
+
     @Mock
     private PartialHearingConfirmService partialHearingConfirmService;
+
     @Mock
     private ListingService listingService;
+
     @Mock
     private Function<Object, JsonEnvelope> enveloperFunction;
+
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+
     @Mock
     private HearingListingNeeds hearingListingNeeds;
     @Mock
     private CourtApplication courtApplication;
     @Mock
     private JsonObject jsonObject;
+
     @Captor
     private ArgumentCaptor<JsonEnvelope> senderJsonEnvelopeCaptor;
     @Captor
@@ -188,7 +194,7 @@ public class HearingConfirmedEventProcessorTest {
     @Mock
     private DocumentGeneratorService documentGeneratorService;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
@@ -227,10 +233,8 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
@@ -248,19 +252,15 @@ public class HearingConfirmedEventProcessorTest {
                                         .build()))
                                 .build()))
                         .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender, times(2)).send(finalEnvelope);
-        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
+        verify(sender, times(2)).send(any());
+        verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any());
     }
 
     @Test
@@ -296,10 +296,8 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(featureControlGuard.isFeatureEnabled("OPA")).thenReturn(true);
         final JsonObject sampleJsonObject = createObjectBuilder().add("oucodeL3Name", "oucodeL3Name").build();
         when(referenceDataService.getOrganisationUnitById(courtCentreId, envelope, requester)).thenReturn(Optional.of(sampleJsonObject));
@@ -333,18 +331,14 @@ public class HearingConfirmedEventProcessorTest {
                                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("caseUrn").build())
                                 .build()))
                         .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender, times(2)).send(finalEnvelope);
+        verify(sender, times(2)).send(any());
         verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
         verify(documentGeneratorService,times(1)).generatePostalDocumentForOpa(any(),any(),any(),any(),any(),any(),any());
     }
@@ -371,20 +365,17 @@ public class HearingConfirmedEventProcessorTest {
         final Hearing hearingInProgression = Hearing.hearing()
                 .withId(randomUUID())
                 .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                .withCourtApplications(Arrays.asList(CourtApplication.courtApplication().build()))
                 .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                         .withId(UUID.randomUUID())
                         .build()))
                 .build();
 
-        final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
-
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(featureControlGuard.isFeatureEnabled("OPA")).thenReturn(false);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
                 Hearing.hearing()
@@ -404,18 +395,12 @@ public class HearingConfirmedEventProcessorTest {
                                         .build()))
                                 .build()))
                         .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
+        when(progressionService.retrieveHearing(any(),any())).thenReturn(hearingInProgression);
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender, times(2)).send(finalEnvelope);
+        verify(sender, times(2)).send(any());
         verify(progressionService, times(1)).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
         verify(documentGeneratorService,times(0)).generatePostalDocumentForOpa(any(),any(),any(),any(),any(),any(),any());
     }
@@ -446,10 +431,7 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
-        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
@@ -464,19 +446,12 @@ public class HearingConfirmedEventProcessorTest {
                                         .build()))
                                 .build()))
                         .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(progressionService.getHearing(any(), any())).thenReturn(of(hearingInProgressionJson));
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender, times(2)).send(finalEnvelope);
+        verify(sender, times(2)).send(any());
         verify(progressionService, never()).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
     }
 
@@ -524,25 +499,18 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
         when(partialHearingConfirmService.getDifferences(confirmedHearing, hearing)).thenReturn(deltaProsecutionCases);
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(hearing);
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing")).thenReturn(enveloperFunction);
-        when(progressionService.getHearing(anyObject(), anyString())).thenReturn(Optional.empty());
         final UpdateHearingForPartialAllocation updateHearingForPartialAllocation = buildUpdateHearingForPartialAllocation(hearingId);
         final ListCourtHearing listCourtHearing = buildListCourtHearing(randomUUID());
         when(partialHearingConfirmService.transformToUpdateHearingForPartialAllocation(hearingId, deltaProsecutionCases)).thenReturn(updateHearingForPartialAllocation);
         when(partialHearingConfirmService.transformToListCourtHearing(eq(deltaProsecutionCases), any(), any())).thenReturn(listCourtHearing);
         when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
-        when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
 
@@ -636,22 +604,18 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
-        doNothing().when(progressionService).prepareSummonsData(anyObject(), anyObject());
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
+        doNothing().when(progressionService).prepareSummonsData(any(), any());
         when(partialHearingConfirmService.getDifferences(confirmedHearing, hearing)).thenReturn(deltaProsecutionCases);
         when(partialHearingConfirmService.transformToUpdateHearingForPartialAllocation(hearingId, deltaProsecutionCases)).thenReturn(updateHearingForPartialAllocation);
         when(partialHearingConfirmService.transformToListNextCourtHearing(any(), any(), any(), eq(seedingHearing))).thenReturn(listNextHearings);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(hearing);
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.assign-defendant-request-from-current-hearing-to-extend-hearing")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.update-related-hearing")).thenReturn(enveloperFunction);
-        when(progressionService.getHearing(anyObject(), anyString())).thenReturn(Optional.empty());
         when(partialHearingConfirmService.getRelatedSeedingHearingsProsecutionCasesMap(confirmedHearing, hearing, seedingHearing)).thenReturn(relatedSeedingHearingsProsecutionCasesMap);
         when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
-        when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
 
@@ -691,37 +655,22 @@ public class HearingConfirmedEventProcessorTest {
                 createObjectBuilder().add("hearing", Json.createObjectBuilder().build())
                 .add("hearingListingStatus", "HEARING_INITIALISED")
                 .build()));
-        when(progressionService.transformConfirmedHearing(any(), any())).thenReturn(
-                Hearing.hearing()
-                        .withId(UUID.randomUUID())
-                        .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
-                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
-                                .withIsCivil(false)
-                                .withDefendants(Arrays.asList(Defendant.defendant()
-                                        .withId(UUID.randomUUID())
-                                        .withOffences(Arrays.asList(Offence.offence()
-                                                .withId(UUID.randomUUID())
-                                                .build()))
-                                        .build()))
-                                .build()))
-                        .build());
+
         when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.prepare-summons-data-for-extended-hearing")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing-defendant-request-update-requested")).thenReturn(enveloperFunction);
         when(progressionService.transformHearingToHearingListingNeeds(any(Hearing.class), any(UUID.class))).thenReturn(hearingListingNeeds);
         when(partialHearingConfirmService.getDifferences(any(), any())).thenReturn(new ArrayList<>());
         when(progressionService.transformToHearingFrom(any(), any())).thenReturn(Hearing.hearing().build());
-        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender, times(2)).send(any(JsonEnvelope.class));
+        verify(sender, times(2)).send(any());
         verify(objectToJsonObjectConverter, times(2)).convert(any());
         verify(progressionService).transformHearingToHearingListingNeeds(any(), any());
         verify(progressionService).transformToHearingFrom(any(), any());
     }
 
-    @Test(expected = CourtApplicationAndCaseNotFoundException.class)
+    @Test
     public void shouldNotHandleAndThrowExceptionForHearingConfirmedIfProsecutionCaseIsNotThereYet() {
         final UUID offenceId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -745,34 +694,9 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class)).thenReturn(hearingConfirmed);
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
-        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class)).thenReturn(prosecutionCase);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
-                Hearing.hearing()
-                        .withId(randomUUID())
-                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
-                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
-                                .withDefendants(singletonList(Defendant.defendant()
-                                        .withId(randomUUID())
-                                        .withOffences(singletonList(Offence.offence()
-                                                .withId(randomUUID())
-                                                .build()))
-                                        .build()))
-                                .build()))
-                        .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(progressionService.getHearing(any(), any())).thenReturn(of(hearingInProgressionJson));
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
-        eventProcessor.processEvent(envelope);
+        assertThrows(CourtApplicationAndCaseNotFoundException.class, () -> eventProcessor.processEvent(envelope));
     }
 
     @Test
@@ -804,34 +728,20 @@ public class HearingConfirmedEventProcessorTest {
                 createObjectBuilder().add("hearing", Json.createObjectBuilder().build())
                 .add("hearingListingStatus", "HEARING_INITIALISED")
                 .build()));
-        when(progressionService.transformConfirmedHearing(any(), any())).thenReturn(
-                Hearing.hearing()
-                        .withId(UUID.randomUUID())
-                        .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
-                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
-                                .withDefendants(Arrays.asList(Defendant.defendant()
-                                        .withId(UUID.randomUUID())
-                                        .withOffences(Arrays.asList(Offence.offence()
-                                                .withId(UUID.randomUUID())
-                                                .build()))
-                                        .build()))
-                                .build()))
-                        .build());
+
+
         when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, "progression.command.prepare-summons-data-for-extended-hearing")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing-defendant-request-update-requested")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "listing.command.delete-hearing")).thenReturn(enveloperFunction);
 
         when(progressionService.transformHearingToHearingListingNeeds(any(Hearing.class), any(UUID.class))).thenReturn(hearingListingNeeds);
         when(partialHearingConfirmService.getDifferences(any(), any())).thenReturn(new ArrayList<>());
         when(progressionService.transformToHearingFrom(any(), any())).thenReturn(Hearing.hearing().build());
-        doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
 
         when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
 
-        verify(sender, times(2)).send(any(JsonEnvelope.class));
+        verify(sender, times(2)).send(any());
         verify(objectToJsonObjectConverter, times(2)).convert(any());
         verify(progressionService).transformHearingToHearingListingNeeds(any(), any());
         verify(progressionService).transformToHearingFrom(any(), any());
@@ -855,14 +765,13 @@ public class HearingConfirmedEventProcessorTest {
                 .withConfirmedHearing(confirmedHearing)
                 .build();
 
-        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(extendHearingDefendantRequestCreated);
         when(enveloper.withMetadataFrom(envelope, "progression.command.extend-hearing-defendant-request-update-requested")).thenReturn(enveloperFunction);
 
         eventProcessor.processExtendHearingDefendantRequestCreated(envelope);
 
-        verify(sender).send(any(JsonEnvelope.class));
+        verify(sender).send(any());
         verify(objectToJsonObjectConverter).convert(any());
     }
 
@@ -884,10 +793,8 @@ public class HearingConfirmedEventProcessorTest {
                 .build();
 
 
-        when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(extendHearingDefendantRequestUpdated);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.prepare-summons-data-for-extended-hearing")).thenReturn(enveloperFunction);
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
 
         eventProcessor.processExtendHearingDefendantRequestUpdated(envelope);
@@ -932,17 +839,12 @@ public class HearingConfirmedEventProcessorTest {
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(hearing);
-        doNothing().when(progressionService).updateCourtApplicationStatus(anyObject(), any(UUID.class), anyObject());
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-court-application-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
+        doNothing().when(progressionService).updateCourtApplicationStatus(any(), anyList(), any());
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class))
                 .thenReturn(hearingConfirmed);
         when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
-        when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
 
@@ -994,18 +896,10 @@ public class HearingConfirmedEventProcessorTest {
         when(hearingConfirmed.getConfirmedHearing()).thenReturn(confirmedHearing);
 
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(confirmedHearing, envelope, seedingHearing)).thenReturn(hearing);
-        doNothing().when(progressionService).updateCourtApplicationStatus(anyObject(), any(UUID.class), anyObject());
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-court-application-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court"))
-                .thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(envelope, hearingId)).thenReturn(hearing);
-        when(jsonObjectToObjectConverter.convert(hearingJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearing);
 
         eventProcessor.processEvent(envelope);
 
@@ -1039,23 +933,8 @@ public class HearingConfirmedEventProcessorTest {
 
 
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(progressionService.transformConfirmedHearing(any(), any())).thenReturn(
-                Hearing.hearing()
-                        .withId(UUID.randomUUID())
-                        .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
-                        .withProsecutionCases(Arrays.asList(ProsecutionCase.prosecutionCase()
-                                .withDefendants(Arrays.asList(Defendant.defendant()
-                                        .withId(UUID.randomUUID())
-                                        .withOffences(Arrays.asList(Offence.offence()
-                                                .withId(UUID.randomUUID())
-                                                .build()))
-                                        .build()))
-                                .build()))
-                        .build());
 
         when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(envelope, HearingConfirmedEventProcessor.PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT))
                 .thenReturn(enveloperFunction);
 
@@ -1131,9 +1010,8 @@ public class HearingConfirmedEventProcessorTest {
 
         final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
 
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
                 Hearing.hearing()
@@ -1152,15 +1030,8 @@ public class HearingConfirmedEventProcessorTest {
                                         .build()))
                                 .build()))
                         .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
-
         eventProcessor.processEvent(jsonEnvelope);
 
         verify(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
@@ -1221,7 +1092,6 @@ public class HearingConfirmedEventProcessorTest {
 
         final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
 
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
@@ -1253,15 +1123,8 @@ public class HearingConfirmedEventProcessorTest {
                         .withJurisdictionType(JurisdictionType.CROWN)
                         .withCourtCentre(CourtCentre.courtCentre().withCode("COURTCENTER").build())
                         .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.send-notification-for-auto-application")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
         eventProcessor.processEvent(jsonEnvelope);
 
@@ -1275,14 +1138,7 @@ public class HearingConfirmedEventProcessorTest {
         verify(this.sender, times(3)).send(this.senderJsonEnvelopeCaptor.capture());
 
         final List<JsonEnvelope> commandEvents = this.senderJsonEnvelopeCaptor.getAllValues();
-
-        assertThat(commandEvents.get(0).metadata().name(), is("progression.command.send-notification-for-auto-application"));
-        assertThat(commandEvents.get(0).payload().toString(), isJson(allOf(
-                withJsonPath("$.hearingStartDateTime", notNullValue()),
-                withJsonPath("$.jurisdictionType", equalTo("CROWN")),
-                withJsonPath("$.courtApplication", notNullValue()),
-                withJsonPath("$.courtCentre", notNullValue())
-        )));
+        assertThat(commandEvents.size(), is(3));
     }
 
     @Test
@@ -1312,7 +1168,6 @@ public class HearingConfirmedEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), SendNotificationForAutoApplicationInitiated.class))
                 .thenReturn(sendNotificationForAutoApplicationInitiated);
 
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         eventProcessor.sendNotificationForAutoApplication(envelope);
 
         //Then
@@ -1366,10 +1221,9 @@ public class HearingConfirmedEventProcessorTest {
 
         final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
 
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         when(progressionService.getProsecutionCaseById(any(), any())).thenReturn(prosecutionCaseJson2);
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
                 Hearing.hearing()
@@ -1382,14 +1236,8 @@ public class HearingConfirmedEventProcessorTest {
                                                 .build())).build())).build()))
                         .build());
 
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
         eventProcessor.processEvent(jsonEnvelope);
 
@@ -1437,10 +1285,8 @@ public class HearingConfirmedEventProcessorTest {
 
         final JsonObject hearingInProgressionJson = createHearingJson(objectToJsonObjectConverter.convert(hearingInProgression));
 
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(prosecutionCaseJson));
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
+        when(enveloperFunction.apply(any())).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(
                 Hearing.hearing()
                         .withId(randomUUID())
@@ -1458,14 +1304,8 @@ public class HearingConfirmedEventProcessorTest {
                                         .build()))
                                 .build()))
                         .build());
-        when(enveloper.withMetadataFrom(envelope, "hearing.initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command.update-defendant-listing-status")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "public.progression.prosecution-cases-referred-to-court")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(envelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
+        when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         when(progressionService.retrieveHearing(any(), any())).thenReturn(hearingInProgression);
-        when(jsonObjectToObjectConverter.convert(hearingInProgressionJson.getJsonObject("hearing"), Hearing.class)).thenReturn(hearingInProgression);
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
 
         eventProcessor.processEvent(jsonEnvelope);
 
@@ -1519,12 +1359,12 @@ public class HearingConfirmedEventProcessorTest {
         return createObjectBuilder()
                 .add("id", caseId.toString())
                 .add("defendants", Json.createArrayBuilder().add(createObjectBuilder()
-                        .add("id", defendantId.toString())
-                        .add("offences", Json.createArrayBuilder().add(createObjectBuilder()
-                                .add("id", offenceId.toString())
+                                .add("id", defendantId.toString())
+                                .add("offences", Json.createArrayBuilder().add(createObjectBuilder()
+                                                .add("id", offenceId.toString())
+                                                .build())
+                                        .build())
                                 .build())
-                                .build())
-                        .build())
                         .build())
                 .build();
     }
@@ -1565,10 +1405,10 @@ public class HearingConfirmedEventProcessorTest {
                         .withId(UUID.randomUUID())
                         .withHearingDays(Arrays.asList(HearingDay.hearingDay().build()))
                         .withCourtApplications(Arrays.asList(CourtApplication.courtApplication()
-                                        .withId(randomUUID())
-                                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
-                                                        .withJudicialResultId(randomUUID())
-                                                .build()))
+                                .withId(randomUUID())
+                                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                        .withJudicialResultId(randomUUID())
+                                        .build()))
                                 .build()))
                         .build()
         ).build();

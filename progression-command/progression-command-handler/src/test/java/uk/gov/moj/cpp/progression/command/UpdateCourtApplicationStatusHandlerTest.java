@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.command;
 
 
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -25,15 +25,15 @@ import uk.gov.moj.cpp.progression.handler.UpdateCourtApplicationStatusHandler;
 
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateCourtApplicationStatusHandlerTest {
 
     @Mock
@@ -48,17 +48,8 @@ public class UpdateCourtApplicationStatusHandlerTest {
     @InjectMocks
     private UpdateCourtApplicationStatusHandler updateCourtApplicationStatusHandler;
 
-    private ApplicationAggregate aggregate;
-   
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(ApplicationReferredToCourt.class);
-
-    @Before
-    public void setup() {
-        aggregate = new ApplicationAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(aggregate);
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -71,8 +62,12 @@ public class UpdateCourtApplicationStatusHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
 
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+
         final UpdateCourtApplicationStatus updateApplicationStatus = createUpdateCourtApplicationStatus();
-        aggregate.updateApplicationStatus(updateApplicationStatus.getId(), updateApplicationStatus.getApplicationStatus());
+        applicationAggregate.updateApplicationStatus(updateApplicationStatus.getId(), updateApplicationStatus.getApplicationStatus());
         
 
         final Metadata metadata = Envelope

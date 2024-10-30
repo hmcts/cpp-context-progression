@@ -1,14 +1,16 @@
 package uk.gov.moj.cpp.progression.test.matchers;
 
+import uk.gov.justice.services.common.converter.exception.ConverterException;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+
+import java.io.IOException;
+
+import javax.json.JsonObject;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import uk.gov.justice.services.common.converter.exception.ConverterException;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-
-import javax.json.JsonObject;
-import java.io.IOException;
 
 @SuppressWarnings("squid:S1133")
 public class MapJsonObjectToTypeMatcher<T> extends BaseMatcher<JsonObject> {

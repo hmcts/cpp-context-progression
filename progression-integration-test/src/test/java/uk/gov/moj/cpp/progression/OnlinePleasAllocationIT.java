@@ -3,18 +3,21 @@ package uk.gov.moj.cpp.progression;
 import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.time.LocalDateTime.now;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -24,11 +27,11 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtFirstHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -36,37 +39,32 @@ import uk.gov.justice.core.courts.AddOnlinePleaAllocation;
 import uk.gov.justice.progression.courts.OpaNoticeSent;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
-import uk.gov.moj.cpp.progression.helper.AwaitUtil;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-import com.jayway.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("all")
 public class OnlinePleasAllocationIT extends AbstractIT {
@@ -110,71 +108,51 @@ public class OnlinePleasAllocationIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_SENT = "public.stagingpubhub.opa-result-list-notice-sent";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
-    private MessageProducer messageProducerClientPublic;
-    private MessageConsumer messageConsumerPublicNoticeSent;
-    private MessageConsumer messageConsumerPressNoticeSent;
-    private MessageConsumer messageConsumerResultNoticeSent;
-    private MessageConsumer listingStatusChangedConsumer;
-    private MessageConsumer addOnlinePleasAllocationConsumer;
-    private MessageConsumer updateOnlinePleasAllocationConsumer;
-    private MessageConsumer requestedPublicListConsumer;
-    private MessageConsumer requestedPressListConsumer;
-    private MessageConsumer requestedResultListConsumer;
-    private MessageConsumer generatedPublicListConsumer;
-    private MessageConsumer generatedPressListConsumer;
-    private MessageConsumer generatedResultListConsumer;
-    private MessageConsumer deactivatedPublicListConsumer;
-    private MessageConsumer deactivatedPressListConsumer;
-    private MessageConsumer deactivatedResultListConsumer;
-    private MessageConsumer messageConsumerClientPublicForHearingResultedCaseUpdated;
-    private MessageConsumer messageConsumerClientPublicForHearingResulted;
+    private JmsMessageProducerClient messageProducerClientPublic;
+    private JmsMessageConsumerClient messageConsumerPublicNoticeSent;
+    private JmsMessageConsumerClient messageConsumerPressNoticeSent;
+    private JmsMessageConsumerClient messageConsumerResultNoticeSent;
+    private JmsMessageConsumerClient listingStatusChangedConsumer;
+    private JmsMessageConsumerClient addOnlinePleasAllocationConsumer;
+    private JmsMessageConsumerClient updateOnlinePleasAllocationConsumer;
+    private JmsMessageConsumerClient requestedPublicListConsumer;
+    private JmsMessageConsumerClient requestedPressListConsumer;
+    private JmsMessageConsumerClient requestedResultListConsumer;
+    private JmsMessageConsumerClient generatedPublicListConsumer;
+    private JmsMessageConsumerClient generatedPressListConsumer;
+    private JmsMessageConsumerClient generatedResultListConsumer;
+    private JmsMessageConsumerClient deactivatedPublicListConsumer;
+    private JmsMessageConsumerClient deactivatedPressListConsumer;
+    private JmsMessageConsumerClient deactivatedResultListConsumer;
+    private JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated;
+    private JmsMessageConsumerClient messageConsumerClientPublicForHearingResulted;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         HearingStub.stubInitiateHearing();
-        messageProducerClientPublic = publicEvents.createPublicProducer();
-        listingStatusChangedConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_LISTING_STATUS_CHANGED);
-        addOnlinePleasAllocationConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED);
-        updateOnlinePleasAllocationConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_UPDATED);
-        requestedPublicListConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PUBLIC_LIST_OPA_NOTICE_REQUESTED);
-        requestedPressListConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRESS_LIST_OPA_NOTICE_REQUESTED);
-        requestedResultListConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_RESULT_LIST_OPA_NOTICE_REQUESTED);
-        generatedPublicListConsumer = publicEvents.createPrivateConsumer(PUBLIC_PROGRESSION_PUBLIC_LIST_OPA_NOTICE_GENERATED);
-        generatedPressListConsumer = publicEvents.createPrivateConsumer(PUBLIC_PROGRESSION_PRESS_LIST_OPA_NOTICE_GENERATED);
-        generatedResultListConsumer = publicEvents.createPrivateConsumer(PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_GENERATED);
-        deactivatedPublicListConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PUBLIC_LIST_OPA_NOTICE_DEACTIVATED);
-        deactivatedPressListConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRESS_LIST_OPA_NOTICE_DEACTIVATED);
-        deactivatedResultListConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_RESULT_LIST_OPA_NOTICE_DEACTIVATED);
-        messageConsumerClientPublicForHearingResultedCaseUpdated = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED);
-        messageConsumerClientPublicForHearingResulted = publicEvents.createPublicConsumer(PUBLIC_PROGRESSION_HEARING_RESULTED);
-        messageConsumerPublicNoticeSent = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PUBLIC_LIST_OPA_NOTICE_SENT);
-        messageConsumerPressNoticeSent = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_PRESS_LIST_OPA_NOTICE_SENT);
-        messageConsumerResultNoticeSent = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_RESULT_LIST_OPA_NOTICE_SENT);
+        messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+        listingStatusChangedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED).getMessageConsumerClient();
+        addOnlinePleasAllocationConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED).getMessageConsumerClient();
+        updateOnlinePleasAllocationConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_UPDATED).getMessageConsumerClient();
+        requestedPublicListConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PUBLIC_LIST_OPA_NOTICE_REQUESTED).getMessageConsumerClient();
+        requestedPressListConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PRESS_LIST_OPA_NOTICE_REQUESTED).getMessageConsumerClient();
+        requestedResultListConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_RESULT_LIST_OPA_NOTICE_REQUESTED).getMessageConsumerClient();
+        generatedPublicListConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_PUBLIC_LIST_OPA_NOTICE_GENERATED).getMessageConsumerClient();
+        generatedPressListConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_PRESS_LIST_OPA_NOTICE_GENERATED).getMessageConsumerClient();
+        generatedResultListConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_GENERATED).getMessageConsumerClient();
+        deactivatedPublicListConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PUBLIC_LIST_OPA_NOTICE_DEACTIVATED).getMessageConsumerClient();
+        deactivatedPressListConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PRESS_LIST_OPA_NOTICE_DEACTIVATED).getMessageConsumerClient();
+        deactivatedResultListConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_RESULT_LIST_OPA_NOTICE_DEACTIVATED).getMessageConsumerClient();
+        messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
+        messageConsumerClientPublicForHearingResulted = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED).getMessageConsumerClient();
+        messageConsumerPublicNoticeSent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PUBLIC_LIST_OPA_NOTICE_SENT).getMessageConsumerClient();
+        messageConsumerPressNoticeSent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_PRESS_LIST_OPA_NOTICE_SENT).getMessageConsumerClient();
+        messageConsumerResultNoticeSent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_RESULT_LIST_OPA_NOTICE_SENT).getMessageConsumerClient();
         setFeatureToggle("OPA", true);
     }
 
-    @After
-    public void tearDown() throws JMSException {
-        messageProducerClientPublic.close();
-        listingStatusChangedConsumer.close();
-        addOnlinePleasAllocationConsumer.close();
-        updateOnlinePleasAllocationConsumer.close();
-        requestedPublicListConsumer.close();
-        requestedPressListConsumer.close();
-        requestedResultListConsumer.close();
-        generatedPublicListConsumer.close();
-        generatedPressListConsumer.close();
-        generatedResultListConsumer.close();
-        deactivatedPublicListConsumer.close();
-        deactivatedPressListConsumer.close();
-        deactivatedResultListConsumer.close();
-        messageConsumerClientPublicForHearingResultedCaseUpdated.close();
-        messageConsumerClientPublicForHearingResulted.close();
-        messageConsumerPublicNoticeSent.close();
-        messageConsumerPressNoticeSent.close();
-        messageConsumerResultNoticeSent.close();
-    }
 
     @Test
     public void shouldAddPleasAllocation() throws Exception {
@@ -187,9 +165,8 @@ public class OnlinePleasAllocationIT extends AbstractIT {
 
         final JsonObject onlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
 
-        final Metadata metadata = getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED);
-
-        sendMessage(messageProducerClientPublic, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, onlinePleaAllocationEvent, metadata);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), onlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         verifyInMessageQueueForOnlinePleaAllocatedEvent(addOnlinePleasAllocationConsumer, PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED, onlinePleaAllocationEvent, hearingId);
     }
@@ -205,15 +182,15 @@ public class OnlinePleasAllocationIT extends AbstractIT {
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
         final Metadata addMetadata = getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, addOnlinePleaAllocationEvent, addMetadata);
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         verifyInMessageQueueForOnlinePleaAllocatedEvent(addOnlinePleasAllocationConsumer, PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED, addOnlinePleaAllocationEvent, hearingId);
 
         final JsonObject updatedOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_UPDATED);
-        final Metadata updtaedMetadata = getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED);
 
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, updatedOnlinePleaAllocationEvent, updtaedMetadata);
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, userId), updatedOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, publicEventEnvelope);
 
         verifyInMessageQueueForOnlinePleaAllocatedEvent(updateOnlinePleasAllocationConsumer, PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_UPDATED, updatedOnlinePleaAllocationEvent, hearingId);
     }
@@ -227,18 +204,18 @@ public class OnlinePleasAllocationIT extends AbstractIT {
 
         final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        final Metadata addMetadata = getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, addOnlinePleaAllocationEvent, addMetadata);
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         verifyInMessageQueueForOnlinePleaAllocatedEvent(addOnlinePleasAllocationConsumer, PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED, addOnlinePleaAllocationEvent, hearingId);
 
         final JsonObject updatedOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_UPDATED);
-        final Metadata updtaedMetadata = getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED);
 
         setFeatureToggle("OPA", false);
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, updatedOnlinePleaAllocationEvent, updtaedMetadata);
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, userId), updatedOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, publicEventEnvelope);
+
 
         verifyNoMessageQueueForOnlinePleaAllocatedEvent(updateOnlinePleasAllocationConsumer);
     }
@@ -251,23 +228,23 @@ public class OnlinePleasAllocationIT extends AbstractIT {
         final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
 
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        final Metadata addMetadata = getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, addOnlinePleaAllocationEvent, addMetadata);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         verifyInMessageQueueForOnlinePleaAllocatedEvent(addOnlinePleasAllocationConsumer, PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED, addOnlinePleaAllocationEvent, hearingId);
 
-        final Response publicResponse = postCommand(getWriteUrl("/opa-notice/request"),
+        final io.restassured.response.Response publicResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-public-list-notice+json", "{}");
         assertThat(publicResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         verifyMessageinRequestOpaNoticeQueue(deactivatedPublicListConsumer);
 
-        final Response pressResponse = postCommand(getWriteUrl("/opa-notice/request"),
+        final io.restassured.response.Response pressResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-press-list-notice+json", "{}");
         assertThat(pressResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         verifyMessageinRequestOpaNoticeQueue(deactivatedPressListConsumer);
 
-        final Response resultResponse = postCommand(getWriteUrl("/opa-notice/request"),
+        final io.restassured.response.Response resultResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-result-list-notice+json", "{}");
         assertThat(publicResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         verifyMessageinRequestOpaNoticeQueue(deactivatedResultListConsumer);
@@ -281,25 +258,25 @@ public class OnlinePleasAllocationIT extends AbstractIT {
 
         final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        final Metadata metadata = getMetadata(userId, PUBLIC_LISTING_HEARING_CONFIRMED);
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.opa-hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_LISTING_STATUS_CHANGED)) {
-            sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
 
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumer);
-        }
+        final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED).getMessageConsumerClient();
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+        doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumer);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, addOnlinePleaAllocationEvent, getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED));
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         verifyInMessageQueueForOnlinePleaAllocatedEvent(addOnlinePleasAllocationConsumer, PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED, addOnlinePleaAllocationEvent, hearingId);
 
-        final Response publicResponse = postCommand(getWriteUrl("/opa-notice/request"),
+        final io.restassured.response.Response publicResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-public-list-notice+json", "{}");
         assertThat(publicResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         verifyMessageinRequestOpaNoticeQueue(generatedPublicListConsumer);
 
-        final Response pressResponse = postCommand(getWriteUrl("/opa-notice/request"),
+        final io.restassured.response.Response pressResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-press-list-notice+json", "{}");
         assertThat(pressResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         verifyMessageinRequestOpaNoticeQueue(generatedPressListConsumer);
@@ -314,17 +291,18 @@ public class OnlinePleasAllocationIT extends AbstractIT {
 
         final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        final Metadata metadata = getMetadata(userId, PUBLIC_LISTING_HEARING_CONFIRMED);
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.opa-hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
-        try (final MessageConsumer messageConsumer = privateEvents.createPrivateConsumer(PROGRESSION_EVENT_LISTING_STATUS_CHANGED)) {
-            sendMessage(messageProducerClientPublic, PUBLIC_LISTING_HEARING_CONFIRMED, hearingConfirmedJson, metadata);
+        final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED).getMessageConsumerClient();
 
-            doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumer);
-        }
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumer);
 
         setFeatureToggle("OPA", false);
-        sendMessage(messageProducerClientPublic, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, addOnlinePleaAllocationEvent, getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED));
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         verifyNoMessageQueueForOnlinePleaAllocatedEvent(addOnlinePleasAllocationConsumer);
 
@@ -339,23 +317,19 @@ public class OnlinePleasAllocationIT extends AbstractIT {
 
         final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        final Metadata addMetadata = getMetadata(userId, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED);
 
-        sendMessage(messageProducerClientPublic, PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, addOnlinePleaAllocationEvent, addMetadata);
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         verifyInMessageQueueForOnlinePleaAllocatedEvent(addOnlinePleasAllocationConsumer, PROGRESSION_EVENT_ONLINE_PLEA_ALLOCATION_ADDED, addOnlinePleaAllocationEvent, hearingId);
 
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_HEARING_RESULTED_V2, getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
-                        hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId), JsonEnvelope.metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_HEARING_RESULTED_V2)
-                        .withUserId(userId)
-                        .build());
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
+                hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         verifyInMessagingQueueForHearingResulted();
 
-        final Response resultResponse = postCommand(getWriteUrl("/opa-notice/request"),
+        final io.restassured.response.Response resultResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-result-list-notice+json", "{}");
         assertThat(resultResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         final Optional<JsonEnvelope> jsonEnvelope = verifyMessageinRequestOpaNoticeQueue(generatedResultListConsumer);
@@ -392,24 +366,25 @@ public class OnlinePleasAllocationIT extends AbstractIT {
         final OpaNoticeSent opaNoticeSent = getOpaNoticeSent(hearingId, defendantId);
         final JsonObject opaNoticeSentEvent = buildOpaNoticeSentEvent(opaNoticeSent);
 
-        final Metadata publicNotice = getMetadata(userId, PUBLIC_PROGRESSION_PUBLIC_LIST_OPA_NOTICE_SENT);
-        sendMessage(messageProducerClientPublic, PUBLIC_PROGRESSION_PUBLIC_LIST_OPA_NOTICE_SENT, opaNoticeSentEvent, publicNotice);
 
-        final Metadata pressNotice = getMetadata(userId, PUBLIC_PROGRESSION_PRESS_LIST_OPA_NOTICE_SENT);
-        sendMessage(messageProducerClientPublic, PUBLIC_PROGRESSION_PRESS_LIST_OPA_NOTICE_SENT, opaNoticeSentEvent, pressNotice);
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_PROGRESSION_PUBLIC_LIST_OPA_NOTICE_SENT, userId), opaNoticeSentEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_PROGRESSION_PUBLIC_LIST_OPA_NOTICE_SENT, publicEventEnvelope);
 
-        final Metadata resultNotice = getMetadata(userId, PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_SENT);
-        sendMessage(messageProducerClientPublic, PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_SENT, opaNoticeSentEvent, resultNotice);
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_PROGRESSION_PRESS_LIST_OPA_NOTICE_SENT, userId), opaNoticeSentEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_PROGRESSION_PRESS_LIST_OPA_NOTICE_SENT, publicEventEnvelope);
+
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_SENT, userId), opaNoticeSentEvent);
+        messageProducerClientPublic.sendMessage(PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_SENT, publicEventEnvelope);
 
         verifyMessageAddedToEventStream(opaNoticeSent);
     }
 
     private void verifyMessageAddedToEventStream(final OpaNoticeSent opaNoticeSent) {
-        final Optional<JsonObject> publicListNotice = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(messageConsumerPublicNoticeSent);
+        final Optional<JsonObject> publicListNotice = retrieveMessageBody(messageConsumerPublicNoticeSent);
         assertTrue(publicListNotice.isPresent());
-        final Optional<JsonObject> pressListNotice = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(messageConsumerPressNoticeSent);
+        final Optional<JsonObject> pressListNotice = retrieveMessageBody(messageConsumerPressNoticeSent);
         assertTrue(pressListNotice.isPresent());
-        final Optional<JsonObject> resultListNotice = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(messageConsumerResultNoticeSent);
+        final Optional<JsonObject> resultListNotice = retrieveMessageBody(messageConsumerResultNoticeSent);
         assertTrue(resultListNotice.isPresent());
         assertThat(resultListNotice.get().getString("hearingId"), equalTo(opaNoticeSent.getHearingId().toString()));
         assertThat(resultListNotice.get().getString("defendantId"), equalTo(opaNoticeSent.getDefendantId().toString()));
@@ -443,36 +418,36 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                 .build();
     }
 
-    private String createCaseAndGetHearingId(final String caseId, final String defendantId, final boolean isYouth) throws IOException {
+    private String createCaseAndGetHearingId(final String caseId, final String defendantId, final boolean isYouth) throws IOException, JSONException {
         addProsecutionCaseToCrownCourtFirstHearing(caseId, defendantId, isYouth);
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY")))));
 
-        final String hearingId = retrieveMessageAsJsonObject(listingStatusChangedConsumer)
+        final String hearingId = retrieveMessageBody(listingStatusChangedConsumer)
                 .get().getJsonObject("hearing").getString("id");
         getHearingForDefendant(hearingId, new Matcher[0]);
 
         return hearingId;
     }
 
-    private Optional<JsonEnvelope> verifyMessageinRequestOpaNoticeQueue(final MessageConsumer consumer) {
-        final Stream<JsonEnvelope> envelopeStream = Stream.of(QueueUtil.retrieveMessageAsEnvelope(consumer));
-        final Optional<JsonEnvelope> jsonEnvelope = ofNullable(envelopeStream.findFirst().orElse(null));
+    private Optional<JsonEnvelope> verifyMessageinRequestOpaNoticeQueue(final JmsMessageConsumerClient consumer) {
+        final Optional<JsonEnvelope> envelopeStream = retrieveMessage(consumer);
+        final Optional<JsonEnvelope> jsonEnvelope = ofNullable(envelopeStream.stream().findFirst().orElse(null));
 
         assertThat(jsonEnvelope.isPresent(), is(true));
 
         return jsonEnvelope;
     }
 
-    private void verifyInMessageQueueForOnlinePleaAllocatedEvent(final MessageConsumer consumer,
+    private void verifyInMessageQueueForOnlinePleaAllocatedEvent(final JmsMessageConsumerClient consumer,
                                                                  final String event,
                                                                  final JsonObject onlinePleaAllocationEvent,
                                                                  final String hearingId) {
         final PleasAllocationDetails pleasAllocation = jsonObjectToObjectConverter.convert(onlinePleaAllocationEvent, AddOnlinePleaAllocation.class).getPleasAllocation();
-        final Stream<JsonEnvelope> envelopeStream = Stream.of(QueueUtil.retrieveMessageAsEnvelope(consumer));
+        final Optional<JsonEnvelope> envelopeStream = retrieveMessage(consumer);
 
-        assertThat(envelopeStream, streamContaining(
+        assertThat(envelopeStream.stream(), streamContaining(
                 jsonEnvelope(
                         metadata()
                                 .withName(event),
@@ -488,10 +463,9 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                                 withJsonPath("$.offences[1].pleaDate", is(pleasAllocation.getOffencePleas().get(1).getPleaDate().toString())))))));
     }
 
-    private void verifyNoMessageQueueForOnlinePleaAllocatedEvent(final MessageConsumer consumer) {
-        final Stream<JsonEnvelope> envelopeStream = Stream.of(QueueUtil.retrieveMessageAsEnvelope(consumer));
-
-        assertThat(envelopeStream.collect(toList()).get(0), nullValue());
+    private void verifyNoMessageQueueForOnlinePleaAllocatedEvent(final JmsMessageConsumerClient consumer) {
+        final Optional<JsonObject> message = retrieveMessageBody(consumer, 1L);
+        assertThat(message.isPresent(), is(false));
     }
 
     private JsonObject buildOnlinePleaAllocationPayload(final String allocationId,
@@ -508,8 +482,8 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                 .replaceAll("OFFENCE_ID2", offenceId2));
     }
 
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final MessageConsumer messageConsumerProsecutionCaseDefendantListingStatusChanged) {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
         final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
 
         return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
@@ -535,13 +509,17 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("COURT_CENTRE_NAME", courtCentreName)
+                        .replaceAll("SITTING_DAY_1", now().plus(5, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
+                        .replaceAll("SITTING_DAY_2", now().plus(6, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
+                        .replaceAll("SITTING_DAY_3", now().plus(7, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
+                        .replaceAll("SITTING_DAY_4", now().plus(8, DAYS).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)))
         );
     }
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
                                                           final String defendantId, final String courtCentreId, final String bailStatusCode,
                                                           final String bailStatusDescription, final String bailStatusId) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
@@ -551,8 +529,8 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_ID", bailStatusId)
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
-                        .replaceAll("SITTING_DAY", formatter.format(LocalDateTime.now().plusMonths(1)))
-                        .replaceAll("SHARED_TIME", formatter.format(LocalDateTime.now().minusDays(1)))
+                        .replaceAll("SITTING_DAY", formatter.format(now().plusMonths(1)))
+                        .replaceAll("SHARED_TIME", formatter.format(now().minusDays(1)))
         );
     }
 
@@ -569,21 +547,21 @@ public class OnlinePleasAllocationIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
-        final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResultedCaseUpdated);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
     }
 
     private void verifyInMessagingQueueForHearingResulted() {
-        final Optional<JsonObject> message = AwaitUtil.awaitAndRetrieveMessageAsJsonObject(messageConsumerClientPublicForHearingResulted);
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResulted);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("caseStatus"), equalTo("INACTIVE"));
     }
 
     private void setFeatureToggle(final String featureName, final boolean isToggleOn) {
         final ImmutableMap<String, Boolean> features = ImmutableMap.of(featureName, isToggleOn);
-        FeatureStubber.clearCache(PROGRESSION_CONTEXT);
-        FeatureStubber.stubFeaturesFor(PROGRESSION_CONTEXT, features);
+        FeatureStubber.clearCache(CONTEXT_NAME);
+        FeatureStubber.stubFeaturesFor(CONTEXT_NAME, features);
     }
 }

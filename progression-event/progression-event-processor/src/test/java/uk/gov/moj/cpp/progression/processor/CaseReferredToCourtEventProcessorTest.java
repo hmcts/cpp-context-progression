@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -20,7 +20,6 @@ import uk.gov.justice.core.courts.NextHearing;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.ReferredCourtDocument;
 import uk.gov.justice.core.courts.ReferredDefendant;
 import uk.gov.justice.core.courts.ReferredHearingType;
 import uk.gov.justice.core.courts.ReferredListHearingRequest;
@@ -36,8 +35,6 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.exception.MissingRequiredFieldException;
-import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
 import uk.gov.moj.cpp.progression.processor.summons.SummonsHearingRequestService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.MessageService;
@@ -56,18 +53,16 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class CaseReferredToCourtEventProcessorTest {
 
@@ -132,10 +127,7 @@ public class CaseReferredToCourtEventProcessorTest {
     @Mock
     private ReferralDisqualifyWarningGenerationService referralDisqualifyWarningGenerationService;
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
@@ -161,22 +153,10 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(Json.createObjectBuilder().add("reason", "reason for referral").build());
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class),
                 any(JsonEnvelope.class))).thenReturn(prosecutionCase);
-        when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
-                (JsonEnvelope.class))).thenReturn(courtDocument);
         when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any(UUID.class))).thenReturn
                 (listCourtHearing);
 
-
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command" +
-                ".create-prosecution-case")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.create-hearing-defendant-request")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-
-        when(jsonEnvelope.metadata()).thenReturn(metadataBuilder()
-                .withId(randomUUID())
-                .withName("progression.event.cases-referred-to-court")
-                .withUserId(randomUUID().toString()).build());
 
         //When
         this.eventProcessor.process(jsonEnvelope);
@@ -201,13 +181,10 @@ public class CaseReferredToCourtEventProcessorTest {
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
                 (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
-        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
-                (JsonEnvelope.class))).thenThrow(new MissingRequiredFieldException("value"));
-
         //When
         this.eventProcessor.process(jsonEnvelope);
 
-        verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
+        verify(messageService).sendMessage(any(), any(), any());
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
         verifyNoMoreInteractions(referredProsecutionCaseTransformer);
@@ -227,14 +204,10 @@ public class CaseReferredToCourtEventProcessorTest {
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
                 (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
-        when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
-                (JsonEnvelope.class))).thenThrow(new ReferenceDataNotFoundException("Key", "value"));
-
-
         //When
         this.eventProcessor.process(jsonEnvelope);
 
-        verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
+        verify(messageService).sendMessage(any(), any(), any());
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
         verifyNoMoreInteractions(referredProsecutionCaseTransformer);
@@ -257,7 +230,7 @@ public class CaseReferredToCourtEventProcessorTest {
         //When
         this.eventProcessor.process(jsonEnvelope);
 
-        verify(messageService).sendMessage(any(JsonEnvelope.class), any(JsonObject.class), any(String.class));
+        verify(messageService).sendMessage(any(), any(), any());
         verifyNoMoreInteractions(referredProsecutionCaseTransformer);
         verifyNoMoreInteractions(referredCourtDocumentTransformer);
         verifyNoMoreInteractions(listCourtHearingTransformer);
@@ -290,21 +263,10 @@ public class CaseReferredToCourtEventProcessorTest {
 
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
                 (JsonEnvelope.class))).thenReturn(prosecutionCase);
-        when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
-                (JsonEnvelope.class))).thenReturn(courtDocument);
         when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any(UUID.class))).thenReturn
                 (listCourtHearing);
 
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command" +
-                ".create-prosecution-case")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.create-hearing-defendant-request")).thenReturn(enveloperFunction);
         when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-
-        when(jsonEnvelope.metadata()).thenReturn(metadataBuilder()
-                .withId(randomUUID())
-                .withName("progression.event.cases-referred-to-court")
-                .withUserId(randomUUID().toString()).build());
 
         //When
         this.eventProcessor.process(jsonEnvelope);
@@ -391,17 +353,8 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(Json.createObjectBuilder().add("reason", "reason for referral").build());
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
                 (JsonEnvelope.class))).thenReturn(prosecutionCase);
-        when(referredCourtDocumentTransformer.transform(any(ReferredCourtDocument.class), any
-                (JsonEnvelope.class))).thenReturn(courtDocument);
         when(listCourtHearingTransformer.transformSjpReferralNextHearing(any(), any(), any(), any(), any())).thenReturn
                 (listCourtHearing);
-
-
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command" +
-                ".create-prosecution-case")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.create-hearing-defendant-request")).thenReturn(enveloperFunction);
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command-link-prosecution-cases-to-hearing")).thenReturn(enveloperFunction);
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
 
         when(jsonEnvelope.metadata()).thenReturn(metadataBuilder()
                 .withId(randomUUID())

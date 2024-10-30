@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -30,15 +30,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingEventLogCommandHandlerTest {
 
     @Mock
@@ -64,11 +65,9 @@ public class HearingEventLogCommandHandlerTest {
     private CaseAggregate aggregate;
 
 
-    @Before
+    @BeforeEach
     public void setup() {
         aggregate = new CaseAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
     }
 
     @Test
@@ -90,11 +89,8 @@ public class HearingEventLogCommandHandlerTest {
                 .build();
 
         final Envelope<CreateHearingEventLogDocument> envelope = envelopeFrom(metadata, hearingEventLogsDocument);
-
-        when(caseAggregate.getHearingEventLogsDocuments(any(), any()))
-                .thenReturn(Stream.of(HearingEventLogsDocumentCreated.hearingEventLogsDocumentCreated()
-                        .withCaseId(hearingEventLogsDocument.getCaseId())
-                        .build()));
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         hearingEventLogCommandHandler.handle(envelope);
 
@@ -121,12 +117,8 @@ public class HearingEventLogCommandHandlerTest {
                 .build();
 
         final Envelope<AaagHearingEventLogsDocumentCreated> envelope = envelopeFrom(metadata, hearingEventLogsDocument);
-
-        when(caseAggregate.getHearingEventLogsDocuments(any(), any()))
-                .thenReturn(Stream.of(HearingEventLogsDocumentCreated.hearingEventLogsDocumentCreated()
-                        .withApplicationId(hearingEventLogsDocument.getApplicationId())
-                                .withCaseId(hearingEventLogsDocument.getCaseId())
-                        .build()));
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         hearingEventLogCommandHandler.handleAaag(envelope);
 

@@ -236,7 +236,7 @@ public class PostalService {
 
         final PostalNotification.Builder builder = PostalNotification.builder()
                 .withReference(ofNullable(applicationReference).orElse(EMPTY))
-                .withIssueDate(orderedDate)
+                .withIssueDate(nonNull(orderedDate) ? orderedDate : LocalDate.now())
                 .withApplicationType(ofNullable(applicationType).orElse(EMPTY))
                 .withLegislationText(ofNullable(legislation).orElse(EMPTY))
                 .withCourtCentreName(ofNullable(courtCentre).map(CourtCentre::getName).orElse(EMPTY))

@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-command</artifactId>
-        <version>8.0.202-CPAW-DLQ-SNAPSHOT</version>
+        <version>17.0.22-CPAW-DLQ-SNAPSHOT</version>
     </parent>
     <artifactId>progression-command-handler</artifactId>
     <packaging>war</packaging>
@@ -45,20 +45,23 @@
         <dependency>
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>criminal-court-public-model</artifactId>
-            <version>${coredomain.version}</version>
         </dependency>
 
 
         <!-- Test Dependencies -->
-
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -97,16 +100,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.tngtech.junit.dataprovider</groupId>
-            <artifactId>junit4-dataprovider</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -217,6 +214,11 @@
                 <groupId>uk.gov.justice.framework-generators</groupId>
                 <artifactId>rest-client-generator-plugin</artifactId>
                 <dependencies>
+                    <dependency>
+                        <groupId>javax</groupId>
+                        <artifactId>javaee-api</artifactId>
+                        <version>${javaee-api.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>uk.gov.moj.cpp.usersgroups</groupId>
                         <artifactId>usersgroups-query-api</artifactId>

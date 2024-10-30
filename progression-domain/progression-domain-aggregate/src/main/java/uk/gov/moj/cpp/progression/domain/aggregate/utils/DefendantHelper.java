@@ -130,9 +130,9 @@ public class DefendantHelper {
     }
 
     public static void updatedDefendantsWithProceedingConcludedState(ProsecutionCase inputProsecutionCase, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded, List<Defendant> updatedDefendantsForProceedingsConcludedEvent, List<DefendantJudicialResult> hearingdefendantJudicialResults) {
-        final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = new ArrayList<>();
         getDefendantsWithLAAAndHearingOrCaseDefendantResults(inputProsecutionCase, updatedDefendantsForProceedingsConcludedEvent, hearingdefendantJudicialResults, offenceProceedingConcluded);
         if (CollectionUtils.isEmpty(updatedDefendantsForProceedingsConcludedEvent)) {
+            final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = new ArrayList<>();
             getDefendantsWithLAAAndProceedingConcluded(inputProsecutionCase, updatedDefendants, offenceProceedingConcluded);
             updateOffencesWithProceedingConcludedState(offenceProceedingConcluded, updatedDefendants, updatedDefendantsForProceedingsConcludedEvent);
         }
@@ -190,7 +190,7 @@ public class DefendantHelper {
                 final boolean proceedingConcluded = existingDefendant.getOffences().stream()
                         .map(existingOffence -> getUpdatedOffence(updatedOffences, existingOffence, isConcluded(existingOffence)))
                         .map(Offence::getProceedingsConcluded)
-                        .collect(toList()).stream().anyMatch(finalCategory -> ((Boolean.TRUE).equals(finalCategory)));
+                        .collect(toList()).stream().allMatch(finalCategory -> ((Boolean.TRUE).equals(finalCategory)));
                 final Defendant updatedDefendant = Defendant.defendant().withValuesFrom(existingDefendant).withOffences(updatedOffences).withProceedingsConcluded(proceedingConcluded).build();
                 updatedDefendants.add(updatedDefendant);
 
@@ -202,10 +202,13 @@ public class DefendantHelper {
         if (isNotEmpty(updatedDefendants) && !defendantCaseOffences.isEmpty()) {
 
             updatedDefendants.stream().forEach(defendant -> {
-                final List<Offence> updatedOffences = new ArrayList<>();
                 final List<Offence> caseOffencesStateList = defendantCaseOffences.get(defendant.getId());
                 if (isNotEmpty(caseOffencesStateList)) {
+                    final List<Offence> updatedOffences = new ArrayList<>();
                     getUpdatedOffencesForProceedingConcluded(caseOffencesStateList, defendant, updatedOffences);
+                    if( updatedOffences.isEmpty()) { //DD-34308: If there are no matching prev offences, then copy over new offences.
+                        updatedOffences.addAll(defendant.getOffences());
+                    }
                     final Defendant updatedDef = Defendant.defendant().withValuesFrom(defendant).withOffences(updatedOffences.stream().distinct().collect(toList())).build();
                     updatedDefendantsWithPreviousProceedingChange.add(updatedDef);
                 } else {
@@ -239,13 +242,7 @@ public class DefendantHelper {
 
     private static Offence getOffenceWithProceedingConcluded(final List<Offence> updatedOffences, final Offence existingOffence, final Offence previousOffence) {
         final Offence.Builder offenceBuilder = Offence.offence();
-        if (nonNull(previousOffence.getProceedingsConcluded()) && isEmpty(existingOffence.getJudicialResults())) {
-            offenceBuilder.withValuesFrom(existingOffence).withProceedingsConcluded(previousOffence.getProceedingsConcluded())
-                    .withJudicialResults(previousOffence.getJudicialResults());
-        } else {
-            offenceBuilder.withValuesFrom(existingOffence);
-        }
-
+        offenceBuilder.withValuesFrom(existingOffence);
         updateOffenceMap(updatedOffences, previousOffence);
         updatedOffences.add(offenceBuilder.build());
         return offenceBuilder.build();

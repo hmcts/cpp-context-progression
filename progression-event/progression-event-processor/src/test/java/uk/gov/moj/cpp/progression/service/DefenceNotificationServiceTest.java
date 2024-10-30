@@ -4,7 +4,7 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -32,17 +31,16 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
 public class DefenceNotificationServiceTest {
     private static final UUID CASE_ID = UUID.randomUUID();
@@ -102,7 +100,7 @@ public class DefenceNotificationServiceTest {
     @Captor
     private ArgumentCaptor<String> documentNameCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
     }
 
@@ -148,8 +146,6 @@ public class DefenceNotificationServiceTest {
 
         when(usersGroupService.getEmailsForOrganisationIds(any(), any())).thenReturn(emailOrganisationIds);
         when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
-        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
-        when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
 
         defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument(), documentSection, documentName);
         final UUID materialId = courtDocument.getMaterials().get(0).getId();
@@ -160,7 +156,7 @@ public class DefenceNotificationServiceTest {
                         urnCaptor.capture(),
                         caseIdCaptor.capture(),
                         defendantAndRelatedOrganisationEmailCaptor.capture(), documentSectionCaptor.capture(), documentNameCaptor.capture());
-        verify(usersGroupService, times(2)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
+        verify(usersGroupService, times(2)).getEmailsForOrganisationIds(any(), Mockito.anyList());
 
         assertThat(materialIdCaptor.getValue(), is(materialId));
         assertThat(urnCaptor.getValue(), is(urn));
@@ -208,8 +204,6 @@ public class DefenceNotificationServiceTest {
 
         when(usersGroupService.getEmailsForOrganisationIds(any(), any())).thenReturn(emailOrganisationIds);
         when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
-        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
-        when(applicationParameters.getEndClientHost()).thenReturn("EndClientHost");
 
 
         final HashMap<Defendants, String> defendantAndRelatedOrganisationEmailL = new HashMap<>();
@@ -224,7 +218,7 @@ public class DefenceNotificationServiceTest {
                 .sendEmailNotifications(sourceEnvelopeCaptor.capture(),
                         materialIdCaptor.capture(),
                         urnCaptor.capture(), caseIdCaptor.capture(), defendantAndRelatedOrganisationEmailCaptor.capture(), documentSectionCaptor.capture(), documentNameCaptor.capture());
-        verify(usersGroupService, times(1)).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
+        verify(usersGroupService, times(1)).getEmailsForOrganisationIds(any(), Mockito.anyList());
 
         assertThat(materialIdCaptor.getValue(), is(materialId));
         assertThat(urnCaptor.getValue(), is(urn));
@@ -258,11 +252,10 @@ public class DefenceNotificationServiceTest {
                 .build();
 
         when(defenceService.getDefendantsAndAssociatedOrganisationsForCase(requestMessage, CASE_ID.toString())).thenReturn(caseDefendantsOrg);
-        when(applicationParameters.getNotifyDefenceOfNewMaterialTemplateId()).thenReturn(UUID.randomUUID().toString());
 
         defenceNotificationService.prepareNotificationsForCourtDocument(requestMessage, courtsDocumentAdded.getCourtDocument(), documentSection, documentName);
         verify(emailService, never()).sendEmailNotifications(any(), any(), any(), any(), Mockito.anyMap(), any(), any());
-        verify(usersGroupService, never()).getEmailsForOrganisationIds(any(), Mockito.anyListOf(String.class));
+        verify(usersGroupService, never()).getEmailsForOrganisationIds(any(), Mockito.anyList());
     }
 
     private static JsonObject buildDefendantDocument() {

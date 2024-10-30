@@ -11,7 +11,6 @@ import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -21,13 +20,12 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
@@ -114,6 +112,7 @@ import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
@@ -150,7 +149,7 @@ import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
-import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdated;
+import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdatedV2;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
 import uk.gov.justice.progression.courts.HearingDeletedForProsecutionCase;
 import uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated;
@@ -204,6 +203,7 @@ import uk.gov.moj.cpp.progression.events.DefendantsMasterDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.FinanceDocumentForOnlinePleaSubmitted;
 import uk.gov.moj.cpp.progression.events.LinkCases;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MergeCases;
 import uk.gov.moj.cpp.progression.events.NotificationSentForDefendantDocument;
 import uk.gov.moj.cpp.progression.events.NotificationSentForPleaDocument;
@@ -242,21 +242,18 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import com.google.common.collect.Lists;
-import org.hamcrest.Matchers;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.internal.util.reflection.Whitebox;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CaseAggregateTest {
 
     private static final String CASE_ID = randomUUID().toString();
@@ -384,7 +381,7 @@ public class CaseAggregateTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.caseAggregate = new CaseAggregate();
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
@@ -1113,6 +1110,10 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldApplyCompleteSendingSheet() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
         final List<Object> objects = applySendingSheet(a -> {
         });
         assertThat(objects.size(), is(1));
@@ -1123,8 +1124,12 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldInvalidateSendingSheetWrongCourtCentre() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
         final List<Object> objects = applySendingSheet(a -> {
-            Whitebox.setInternalState(this.caseAggregate, "courtCentreId", null);
+            ReflectionUtil.setField(this.caseAggregate, "courtCentreId", null);
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1136,7 +1141,7 @@ public class CaseAggregateTest {
     @Test
     public void shouldInvalidateSendingSheetNoDefendants() {
         final List<Object> objects = applySendingSheet(a -> {
-            Whitebox.setInternalState(this.caseAggregate, "defendants", new HashSet<>());
+            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>());
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1147,10 +1152,14 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldInvalidateSendingSheetWrongDefendants() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
         final List<Object> objects = applySendingSheet(a -> {
             final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
             defendant.setId(UUID.randomUUID());
-            Whitebox.setInternalState(this.caseAggregate, "defendants", new HashSet<>(asList(defendant)));
+            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>(asList(defendant)));
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1161,9 +1170,14 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldInvalidateSendingSheetWrongOffences() {
+        when(this.jsonObj.getJsonObject("crownCourtHearing"))
+                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
+                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
+                        .build());
+
         final List<Object> objects = applySendingSheet(a -> {
             final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
-            Whitebox.setInternalState(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
+            ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1219,9 +1233,9 @@ public class CaseAggregateTest {
         final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
         offenceIdsByDefendantId.put(UUID.fromString(DEFENDANT_ID), new HashSet(asList(UUID.fromString(OFFENCE_ID))));
         //green path internals
-        Whitebox.setInternalState(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
-        Whitebox.setInternalState(this.caseAggregate, "defendants", defendants);
-        Whitebox.setInternalState(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
+        ReflectionUtil.setField(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
+        ReflectionUtil.setField(this.caseAggregate, "defendants", defendants);
+        ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
         adjustInternals.accept(this.caseAggregate);
 
         final Stream<Object> stream = this.caseAggregate.completeSendingSheet(this.envelope);
@@ -1233,7 +1247,7 @@ public class CaseAggregateTest {
     public void shouldApplyCompleteSendingSheetPreviouslyCompleted() {
         final List<Object> objects = applySendingSheet(a -> {
             final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>(asList(UUID.fromString(CASE_ID)));
-            Whitebox.setInternalState(this.caseAggregate, "caseIdsWithCompletedSendingSheet", caseIdsWithCompletedSendingSheet);
+            ReflectionUtil.setField(this.caseAggregate, "caseIdsWithCompletedSendingSheet", caseIdsWithCompletedSendingSheet);
         });
         assertThat(objects.size(), is(1));
         final Object obj = objects.get(0);
@@ -1264,21 +1278,6 @@ public class CaseAggregateTest {
 
     private void createCompleteSendingSheetEnvelope() {
         when(this.envelope.payloadAsJsonObject()).thenReturn(this.jsonObj);
-        when(this.jsonObj.getString(Mockito.eq("caseId"))).thenReturn(CASE_ID);
-        when(this.jsonObj.getString(Mockito.eq("isKeyEvidence"))).thenReturn("true");
-        when(this.jsonObj.getString(Mockito.eq("planDate"))).thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sendingCommittalDate")))
-                .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("sentenceHearingDate")))
-                .thenReturn(LocalDate.now().toString());
-        when(this.jsonObj.getString(Mockito.eq("courtCentreId")))
-                .thenReturn(COURT_CENTRE_ID);
-
-        final UUID defendantId = randomUUID();
-        when(this.jsonObj.getJsonArray(Mockito.eq("defendants"))).thenReturn(Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("id", defendantId.toString()).build())
-                .build());
-
 
         when(this.jsonObj.getJsonObject("hearing")).thenReturn(Json.createObjectBuilder()
                 .add("courtCentreName", COURT_CENTRE_NAME)
@@ -1317,10 +1316,6 @@ public class CaseAggregateTest {
                                 .add("endDate", END_DATE).build()))
                         .build()).build())
                 .build());
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
     }
 
     private void assertSendingSheetCompletedValues(final SendingSheetCompleted ssCompleted) {
@@ -1533,7 +1528,7 @@ public class CaseAggregateTest {
 
     @Test
     public void shouldNotReturnCaseEjected() {
-        Whitebox.setInternalState(this.caseAggregate, "caseStatus", "EJECTED");
+        ReflectionUtil.setField(this.caseAggregate, "caseStatus", "EJECTED");
         final List<Object> eventStream = caseAggregate.ejectCase(randomUUID(), "Legal").collect(toList());
 
         assertThat(eventStream.size(), is(0));
@@ -1973,7 +1968,7 @@ public class CaseAggregateTest {
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
 
         final Object object3 = eventStream.get(2);
-        assertThat(object3.getClass(), is(equalTo(DefendantLegalaidStatusUpdated.class)));
+        assertThat(object3.getClass(), is(equalTo(DefendantLegalaidStatusUpdatedV2.class)));
 
         final Object object4 = eventStream.get(3);
         assertThat(object4.getClass(), is(equalTo(DefendantDefenceOrganisationChanged.class)));
@@ -2033,7 +2028,7 @@ public class CaseAggregateTest {
         assertThat(((OffencesForDefendantChanged) object2).getDeletedOffences(), is(nullValue()));
 
         final Object object3 = eventStream.get(2);
-        assertThat(object3.getClass(), is(equalTo(DefendantLegalaidStatusUpdated.class)));
+        assertThat(object3.getClass(), is(equalTo(DefendantLegalaidStatusUpdatedV2.class)));
     }
 
     @Test
@@ -2671,6 +2666,105 @@ public class CaseAggregateTest {
         assertThat(caseRetentionPolicyRecorded.getHearingId(), is(hearingId));
         assertThat(caseRetentionPolicyRecorded.getPolicyType(), is("NON_CUSTODIAL"));
         assertThat(caseRetentionPolicyRecorded.getPeriod(), is("7Y0M0D"));
+
+    }
+
+    @Test
+    public void shouldUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshare(){
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withName("Court Name").withCode("code")
+                .withRoomId(randomUUID()).withRoomName("roomName").build();
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(asList(offence()
+                        .withId(offenceId1).withListingNumber(1)
+                        .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                .withCategory(FINAL).build()))
+                        .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        Defendant updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        ProsecutionCase updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        Stream<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() );
+        this.caseAggregate.apply(eventList);
+
+        updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(false)
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        updatedProsecutionCase =prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase,emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() );
+
+        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.filter(o->o.getClass().getName().endsWith("LaaDefendantProceedingConcludedChanged")).findFirst().get();
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(false));
+
+
+
 
     }
 
@@ -6485,22 +6579,36 @@ public class CaseAggregateTest {
         caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
         final Stream<Object> eventStream = caseAggregate.receiveDisAssociateDefenceOrganisation(defendant.getId(), prosecutionCase.getId(), randomUUID());
 
-        doNothing().when(logger).debug(any());
-
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), instanceOf(DefendantDefenceOrganisationChanged.class));
         assertThat(events.get(1), instanceOf(DefenceOrganisationDissociatedByDefenceContext.class));
     }
 
     @Test
-    public void shouldReceiveAssociateDefenceOrganisation() {
+    public void shouldReceiveAssociateDefenceOrganisationWithOrganisationAddressNotPassedAsEmptyObjectWhenOrganisationDetailsDoesNotHaveAddress() {
         caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
         final Stream<Object> eventStream = caseAggregate.receiveAssociateDefenceOrganisation("orgName", defendant.getId(), prosecutionCase.getId(), "LAANumber", ZonedDateTime.now(), "REPRESENTATION_ORDER", OrganisationDetails.newBuilder().build());
 
-        doNothing().when(logger).debug(any());
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), instanceOf(DefendantDefenceOrganisationChanged.class));
+        assertNull(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getAddress());
+        assertNull(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getContact());
+        assertThat(events.get(1), instanceOf(DefenceOrganisationAssociatedByDefenceContext.class));
+    }
+
+    @Test
+    public void shouldReceiveAssociateDefenceOrganisationWithOrganisationAddressPassedAsEmptyObjectWhenOrganisationDetailsHaveAddress() {
+        caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
+        final Stream<Object> eventStream = caseAggregate.receiveAssociateDefenceOrganisation("orgName", defendant.getId(), prosecutionCase.getId(), "LAANumber", ZonedDateTime.now(), "REPRESENTATION_ORDER", OrganisationDetails.newBuilder()
+                .withAddressLine1("AddressLine1")
+                .withName("orgName")
+                .withLaaContractNumber("LAANumber")
+                .build());
 
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), instanceOf(DefendantDefenceOrganisationChanged.class));
+        assertNotNull(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getAddress());
+        assertThat(((DefendantDefenceOrganisationChanged)events.get(0)).getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getAddress().getAddress1(), is("AddressLine1"));
         assertThat(events.get(1), instanceOf(DefenceOrganisationAssociatedByDefenceContext.class));
     }
 
@@ -6787,6 +6895,50 @@ public class CaseAggregateTest {
         final OnlinePleasAllocation onlinePleasAllocation = caseAggregate.getOnlinePleasAllocation(defendantId);
 
         assertThat(defendantId, Matchers.is(onlinePleasAllocation.getDefendantId()));
+    }
+
+    @Test
+    public void shouldSetCorrectMasterDefendantIdForPartiallyMatchedDefendants() {
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        defendantsMap.put(defendantId1, defendants.get(0));
+        defendantsMap.put(defendantId2, defendants.get(0));
+        defendantsMap.put(defendantId3, defendants.get(0));
+
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UUID masterDefendantId1 = randomUUID();
+
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(defendantId1)
+                .withProsecutionCaseId(randomUUID())
+                .withMatchedDefendants(singletonList(
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(masterDefendantId1)
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(masterDefendantId1)
+                                .build()))
+                .build();
+
+        Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
+
+        Optional<Object> masterDefendantIdUpdatedV2 = objectStream.filter(s -> s instanceof MasterDefendantIdUpdatedV2).findFirst();
+        assertThat(masterDefendantIdUpdatedV2.isPresent(), is(true));
+        assertThat(masterDefendantIdUpdatedV2.map(s -> (MasterDefendantIdUpdatedV2) s).get().getMatchedDefendants().size(), is(1));
+        assertThat(defendantsMap.get(defendantId1).getMasterDefendantId(), is(masterDefendantId1));
     }
 
     private void assertPleaAllocationsStoredCorrectly(final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations,

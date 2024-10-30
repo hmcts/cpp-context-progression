@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>8.0.202-CPAW-DLQ-SNAPSHOT</version>
+        <version>17.0.22-CPAW-DLQ-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-indexer</artifactId>
     <packaging>war</packaging>
@@ -81,18 +81,16 @@
         <dependency>
             <groupId>uk.gov.justice.json</groupId>
             <artifactId>json-transformer-jolt</artifactId>
-            <version>${json-transformer.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.unifiedsearch</groupId>
             <artifactId>unifiedsearch-client</artifactId>
-            <version>${cpp.platform-libraries.version}</version>
         </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -223,7 +221,7 @@
                     <dependency>
                         <groupId>javax</groupId>
                         <artifactId>javaee-api</artifactId>
-                        <version>${jee.api.version}</version>
+                        <version>${javaee-api.version}</version>
                         <scope>runtime</scope>
                     </dependency>
                 </dependencies>

@@ -7,38 +7,43 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.privateEvents;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-public class AuditCourtDocumentIT extends AbstractIT {
+@ExtendWith(JmsResourceManagementExtension.class)
+public class AuditCourtDocumentIT {
 
 
     private String caseId;
@@ -48,17 +53,16 @@ public class AuditCourtDocumentIT extends AbstractIT {
     public static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
     private static final String PRIVATE_COURT_DOCUMENT_AUDIT_EVENT = "progression.event.court-document-audit";
 
-    private static final MessageConsumer messageConsumerClientPrivateForCourtDocumentAudit = privateEvents.createPrivateConsumer(PRIVATE_COURT_DOCUMENT_AUDIT_EVENT);
+    private static final JmsMessageConsumerClient messageConsumerClientPrivateForCourtDocumentAudit = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_COURT_DOCUMENT_AUDIT_EVENT).getMessageConsumerClient();
 
 
-
-
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
     }
-    @Before
-    public void setup() throws IOException {
+
+    @BeforeEach
+    public void setup() throws IOException , JSONException{
         caseId = randomUUID().toString();
         courtDocumentId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -69,7 +73,7 @@ public class AuditCourtDocumentIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAuditCourtDocumentForbidden() throws IOException {
+    public void shouldAuditCourtDocumentForbidden() throws IOException, JSONException {
         verifyAddCourtDocument();
         final String body = prepareAuditCourtDocumentPayload("View");
         //When
@@ -80,8 +84,8 @@ public class AuditCourtDocumentIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAuditCourtDocument() throws IOException {
-         verifyAddCourtDocument();
+    public void shouldAuditCourtDocument() throws IOException, JSONException {
+        verifyAddCourtDocument();
         final String body = prepareAuditCourtDocumentPayload("View");
         //When
         final Response writeResponse = postCommand(getWriteUrl("/courtdocuments/" + courtDocumentId + "/materials/" + materialId + "/audit"),
@@ -93,13 +97,13 @@ public class AuditCourtDocumentIT extends AbstractIT {
 
     }
 
-    private static void verifyInMessagingQueue(final MessageConsumer messageConsumer) {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageAsJsonObject(messageConsumer);
+    private static void verifyInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumer);
         assertTrue(message.isPresent());
     }
 
 
-    private void verifyAddCourtDocument() throws IOException {
+    private void verifyAddCourtDocument() throws IOException, JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When
@@ -115,20 +119,20 @@ public class AuditCourtDocumentIT extends AbstractIT {
         );
 
         final String expectedPayload = getPayload("expected/expected.progression.add-court-document-material.json")
-                .replace("COURT-DOCUMENT-ID", courtDocumentId.toString())
-                .replace("DEFENDENT-ID", defendantId.toString())
-                .replace("MATERIAL_ID", materialId.toString())
-                .replace("CASE-ID", caseId.toString());
+                .replace("COURT-DOCUMENT-ID", courtDocumentId)
+                .replace("DEFENDENT-ID", defendantId)
+                .replace("MATERIAL_ID", materialId)
+                .replace("CASE-ID", caseId);
 
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
     private String prepareAddCourtDocumentPayload() {
         String body = getPayload("progression.add-court-document-material.json");
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", courtDocumentId.toString())
-                .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_MATERIAL_ID%", materialId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString());
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", courtDocumentId)
+                .replaceAll("%RANDOM_CASE_ID%", caseId)
+                .replaceAll("%RANDOM_MATERIAL_ID%", materialId)
+                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId);
         return body;
     }
 
@@ -138,8 +142,6 @@ public class AuditCourtDocumentIT extends AbstractIT {
         body = body.replaceAll("%RANDOM_USER_ACTION%", action);
         return body;
     }
-
-
 
 
     private CustomComparator getCustomComparator() {

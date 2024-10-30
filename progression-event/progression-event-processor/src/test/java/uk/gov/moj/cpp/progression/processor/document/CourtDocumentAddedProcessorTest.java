@@ -7,10 +7,10 @@ import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,29 +50,21 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtDocumentAddedProcessorTest {
 
     private static final UUID DOCUMENT_TYPE_ID = UUID.fromString("41be14e8-9df5-4b08-80b0-1e670bc80a5b");
 
-
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-
-    @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     @InjectMocks
     private CourtDocumentAddedProcessor eventProcessor;
     @Mock
@@ -171,17 +163,6 @@ public class CourtDocumentAddedProcessorTest {
                 .build();
     }
 
-    @Before
-    public void setUp() {
-        final JsonObject jsonObject = createObjectBuilder()
-                .add("id", randomUUID().toString())
-                .add("cpsFlag", true)
-                .build();
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
-                .thenReturn(of(getProsecutionCase(true)));
-        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
-    }
-
     @Test
     public void shouldProcessUploadCourtDocumentMessageForDefenceBasedOnNotification() {
         final JsonObject defendantDocumentPayload = buildDocumentCategoryJsonObject(buildDefendantDocument(), DOCUMENT_TYPE_ID.toString(), true);
@@ -192,7 +173,6 @@ public class CourtDocumentAddedProcessorTest {
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Magistrates"));
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
-        when(usersGroupService.getGroupIdForDefenceLawyers()).thenReturn(randomUUID().toString());
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
                 .thenReturn(of(getProsecutionCase(false)));
         when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(of(generateDocumentTypeAccessForApplication(DOCUMENT_TYPE_ID)));
@@ -218,8 +198,16 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("cpsFlag", true)
+                .build();
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
+                .thenReturn(of(getProsecutionCase(true)));
+        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
-        when(usersGroupService.getGroupIdForDefenceLawyers()).thenReturn(randomUUID().toString());
 
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
         verify(sender, times(3)).send(envelopeCaptor.capture());
@@ -245,6 +233,15 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("cpsFlag", true)
+                .build();
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
+                .thenReturn(of(getProsecutionCase(true)));
+        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
 
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
@@ -276,6 +273,13 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("cpsFlag", true)
+                .build();
+        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
 
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq("2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")))
@@ -300,6 +304,13 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("cpsFlag", true)
+                .build();
+        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq("2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")))
                 .thenReturn(Optional.of(getProsecutionCase(true)));
@@ -353,10 +364,6 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
-        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
-        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq("2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")))
-                .thenReturn(Optional.of(getProsecutionCase(true)));
-        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
 
         eventProcessor.handleAddDocumentWithProsecutionCaseId(requestMessage);
         verify(sender, times(1)).send(envelopeCaptor.capture());
@@ -373,10 +380,6 @@ public class CourtDocumentAddedProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.document-with-prosecution-case-id-added"),
                 documentAddedWithProsecutionCaseId);
 
-        List<UserGroupDetails> userGroupDetails = new ArrayList<>();
-        userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
-        when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
-
         eventProcessor.handleAddDocumentWithProsecutionCaseId(requestMessage);
         verify(sender, never()).send(envelopeCaptor.capture());
     }
@@ -391,6 +394,13 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("cpsFlag", true)
+                .build();
+        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), eq("2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")))
                 .thenReturn(Optional.of(getProsecutionCase(true)));
@@ -413,6 +423,15 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("cpsFlag", true)
+                .build();
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
+                .thenReturn(of(getProsecutionCase(true)));
+        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
 
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
@@ -433,6 +452,15 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("id", randomUUID().toString())
+                .add("cpsFlag", true)
+                .build();
+        when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), anyString()))
+                .thenReturn(of(getProsecutionCase(true)));
+        when(referenceDataService.getProsecutorV2(any(JsonEnvelope.class), any(UUID.class), any(Requester.class))).thenReturn(of(jsonObject));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
 
         eventProcessor.handleCourtDocumentAddEvent(requestMessage);
@@ -451,6 +479,7 @@ public class CourtDocumentAddedProcessorTest {
 
         List<UserGroupDetails> userGroupDetails = new ArrayList<>();
         userGroupDetails.add(new UserGroupDetails(randomUUID(), "Chambers Admin"));
+
         when(usersGroupService.getUserGroupsForUser(requestMessage)).thenReturn(userGroupDetails);
         when(featureControlGuard.isFeatureEnabled(FEATURE_DEFENCE_DISCLOSURE)).thenReturn(true);
         when(progressionService.getProsecutionCaseDetailById(eq(requestMessage), any())).thenReturn(empty());

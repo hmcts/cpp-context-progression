@@ -1,0 +1,1079 @@
+{
+  "courtCentre": {
+    "address": {
+      "address1": "Salisbury Law Courts",
+      "address2": "Wilton Road",
+      "address3": "Salisbury",
+      "address4": "Wilts.",
+      "address5": "",
+      "postcode": "SP2 7EP"
+    },
+    "code": "B54WV00",
+    "courtHearingLocation": "B54WV04",
+    "id": "6a60303f-7cfa-343b-b08c-89dfc2450e7c",
+    "lja": {
+      "ljaCode": "3021",
+      "ljaName": "County of Wiltshire Magistrates' Court"
+    },
+    "name": "Salisbury Magistrates' Court",
+    "roomId": "eba91479-9490-307a-a470-9c1a05a50368",
+    "roomName": "Courtroom 04"
+  },
+  "defenceCounsels": [
+    {
+      "attendanceDays": [
+        "2022-11-18"
+      ],
+      "defendants": [
+        "359584a2-cb26-43e6-b761-4e7deae7d9f5"
+      ],
+      "firstName": "Henary",
+      "id": "e7dcfdec-d097-4302-90f0-52281f27db95",
+      "lastName": "Young",
+      "middleName": "",
+      "status": "Reeds",
+      "title": ""
+    }
+  ],
+  "defendantAttendance": [
+    {
+      "attendanceDays": [
+        {
+          "attendanceType": "IN_PERSON",
+          "day": "2022-11-18"
+        }
+      ],
+      "defendantId": "359584a2-cb26-43e6-b761-4e7deae7d9f5"
+    }
+  ],
+  "defendantJudicialResults": [
+    {
+      "judicialResult": {
+        "alwaysPublished": false,
+        "canBeSubjectOfBreach": false,
+        "canBeSubjectOfVariation": false,
+        "category": "ANCILLARY",
+        "cjsCode": "1509",
+        "courtClerk": {
+          "firstName": "David",
+          "lastName": "Godfrey",
+          "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": false,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "isNewAmendment": true,
+        "isUnscheduled": false,
+        "judicialResultId": "5a517cfc-3fbf-4cd8-9596-03d5f41597cf",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "9be231c5-e4e3-4294-872e-e0ad6c9a39a4",
+            "label": "Type of detention",
+            "promptReference": "typeOfDetention",
+            "promptSequence": 100,
+            "type": "FIXL",
+            "usergroups": [],
+            "value": "deemed served by reason of time already spent in custody",
+            "welshLabel": "Math o gadw",
+            "welshValue": "bernir ei fod wedi'i dreulio oherwydd yr amser a dreuliwyd eisoes yn y ddalfa"
+          },
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "9f78d3db-de59-47b3-a206-8e0c20dccc4a",
+            "label": "Total amount enforced",
+            "promptReference": "TOTENF",
+            "promptSequence": 300,
+            "type": "CURR",
+            "usergroups": [],
+            "value": "£50.00",
+            "welshLabel": "Cyfanswm y swm a orfodir",
+            "welshValue": "£50.00"
+          }
+        ],
+        "judicialResultTypeId": "de946ddc-ad77-44b1-8480-8bbc251cdcfb",
+        "label": "Court house detention until court rises",
+        "lastSharedDateTime": "2022-11-18",
+        "level": "D",
+        "lifeDuration": false,
+        "offenceId": "69ff9a3b-fa62-46f9-8e96-ffa95e09b507",
+        "orderedDate": "2022-11-18",
+        "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "publishedForNows": false,
+        "rank": 90400,
+        "resultDefinitionGroup": "DeemedServed",
+        "resultText": "Court house detention until court rises\nType of detention deemed served by reason of time already spent in custody\nTotal amount enforced £50.00",
+        "rollUpPrompts": true,
+        "rootJudicialResultId": "5a517cfc-3fbf-4cd8-9596-03d5f41597cf",
+        "rootJudicialResultTypeId": "de946ddc-ad77-44b1-8480-8bbc251cdcfb",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Cadw yn yr adeilad llys nes bydd y llys yn codi"
+      },
+      "masterDefendantId": "359584a2-cb26-43e6-b761-4e7deae7d9f5"
+    },
+    {
+      "judicialResult": {
+        "alwaysPublished": true,
+        "canBeSubjectOfBreach": false,
+        "canBeSubjectOfVariation": false,
+        "category": "ANCILLARY",
+        "courtClerk": {
+          "firstName": "David",
+          "lastName": "Godfrey",
+          "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": false,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "isNewAmendment": true,
+        "isUnscheduled": false,
+        "judicialResultId": "b0fcc554-917d-4d65-a887-44655d8bd4f7",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "6b36e5ff-e116-4dc3-b438-8c02d493959e",
+            "label": "Collection order type",
+            "promptReference": "collectionOrderType",
+            "promptSequence": 100,
+            "type": "FIXL",
+            "usergroups": [],
+            "value": "Make payments as ordered",
+            "welshLabel": "Math o orchymyn casglu",
+            "welshValue": "Gwneud taliadau yn unol â’r gorchymyn"
+          }
+        ],
+        "judicialResultTypeId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+        "label": "Collection order",
+        "lastSharedDateTime": "2022-11-18",
+        "level": "D",
+        "lifeDuration": false,
+        "offenceId": "69ff9a3b-fa62-46f9-8e96-ffa95e09b507",
+        "orderedDate": "2022-11-18",
+        "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+        "parentJudicialResultId": "ab2bc08f-b328-4ed1-b1c9-a5a0b4cf5285",
+        "parentJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "publishedForNows": false,
+        "rank": 1400,
+        "resultText": "Collection order\nCollection order type Make payments as ordered",
+        "rollUpPrompts": false,
+        "rootJudicialResultId": "ab2bc08f-b328-4ed1-b1c9-a5a0b4cf5285",
+        "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Gorchymyn Casglu"
+      },
+      "masterDefendantId": "359584a2-cb26-43e6-b761-4e7deae7d9f5"
+    },
+    {
+      "judicialResult": {
+        "alwaysPublished": true,
+        "canBeSubjectOfBreach": false,
+        "canBeSubjectOfVariation": false,
+        "category": "FINAL",
+        "courtClerk": {
+          "firstName": "David",
+          "lastName": "Godfrey",
+          "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": false,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "isNewAmendment": true,
+        "isUnscheduled": false,
+        "judicialResultId": "fd29ab58-317d-447e-8c55-d9eaec09e8bc",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+            "label": "Date to pay in full by",
+            "promptReference": "PBD",
+            "promptSequence": 100,
+            "type": "DATE",
+            "usergroups": [],
+            "value": "16/12/2022",
+            "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+            "welshValue": "16/12/2022"
+          }
+        ],
+        "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+        "label": "Pay by date",
+        "lastSharedDateTime": "2022-11-18",
+        "level": "D",
+        "lifeDuration": false,
+        "offenceId": "69ff9a3b-fa62-46f9-8e96-ffa95e09b507",
+        "orderedDate": "2022-11-18",
+        "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+        "parentJudicialResultId": "53fab2c8-aeb0-437f-bec3-38c3b27cec22",
+        "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+        "postHearingCustodyStatus": "A",
+        "publishedAsAPrompt": false,
+        "publishedForNows": false,
+        "rank": 90300,
+        "resultDefinitionGroup": "Payment terms",
+        "resultText": "Pay by date\nDate to pay in full by 16/12/2022",
+        "rollUpPrompts": false,
+        "rootJudicialResultId": "ab2bc08f-b328-4ed1-b1c9-a5a0b4cf5285",
+        "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Dyddiad terfyn ar gyfer talu"
+      },
+      "masterDefendantId": "359584a2-cb26-43e6-b761-4e7deae7d9f5"
+    }
+  ],
+  "hasSharedResults": true,
+  "hearingDays": [
+    {
+      "courtCentreId": "6a60303f-7cfa-343b-b08c-89dfc2450e7c",
+      "courtRoomId": "eba91479-9490-307a-a470-9c1a05a50368",
+      "hasSharedResults": true,
+      "isCancelled": false,
+      "listedDurationMinutes": 20,
+      "listingSequence": 1,
+      "sittingDay": "2022-11-18T09:45:00.000Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+  "judiciary": [
+    {
+      "firstName": "Robert Andrew",
+      "isBenchChairman": true,
+      "isDeputy": false,
+      "judicialId": "e869007a-c6e3-464e-8bf1-f27db84b4571",
+      "judicialRoleType": {
+        "judicialRoleTypeId": "e869007a-c6e3-464e-8bf1-f27db84b4571",
+        "judiciaryType": "Magistrate"
+      },
+      "lastName": "Oglesby",
+      "title": "Mr",
+      "userId": "ea8e45aa-8add-4c04-afac-c4ee65b542ac"
+    },
+    {
+      "firstName": "Elisabeth Leah",
+      "isBenchChairman": false,
+      "isDeputy": true,
+      "judicialId": "42160c28-eb6c-3160-9dbd-85acec2a8ba5",
+      "judicialRoleType": {
+        "judicialRoleTypeId": "42160c28-eb6c-3160-9dbd-85acec2a8ba5",
+        "judiciaryType": "Magistrate"
+      },
+      "lastName": "Roberts",
+      "title": "Ms",
+      "userId": "571cf72e-9d1a-45e0-8565-c0d83122807f"
+    },
+    {
+      "firstName": "Colin David",
+      "isBenchChairman": false,
+      "isDeputy": true,
+      "judicialId": "eaa1bdc4-a5a4-34b8-9b91-583ba099e317",
+      "judicialRoleType": {
+        "judicialRoleTypeId": "eaa1bdc4-a5a4-34b8-9b91-583ba099e317",
+        "judiciaryType": "Magistrate"
+      },
+      "lastName": "Malcolm",
+      "title": "Mr",
+      "userId": "644633f9-41e1-44dc-925c-31e7ef807462"
+    }
+  ],
+  "jurisdictionType": "MAGISTRATES",
+  "prosecutionCases": [
+    {
+      "caseMarkers": [
+        {
+          "id": "17ead1b8-392c-4bc3-ae2a-141f724e867f",
+          "markerTypeCode": "DV",
+          "markerTypeDescription": "Domestic Violence",
+          "markerTypeid": "877ea509-85de-440b-b513-b8e2c82fa7ad"
+        }
+      ],
+      "cpsOrganisation": "A54AE00",
+      "defendants": [
+        {
+          "aliases": [
+            {
+              "firstName": "MATTHEW",
+              "lastName": "ROCKA"
+            }
+          ],
+          "courtProceedingsInitiated": "2022-11-18T08:34:50.253Z",
+          "id": "359584a2-cb26-43e6-b761-4e7deae7d9f5",
+          "isYouth": false,
+          "masterDefendantId": "359584a2-cb26-43e6-b761-4e7deae7d9f5",
+          "offences": [
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2022-11-18",
+                "motReasonCode": "03",
+                "motReasonDescription": "Defendant consents to summary trial",
+                "motReasonId": "a4380923-dd65-3c19-9b16-31af7c829187",
+                "offenceId": "14f5345e-5508-4d92-a548-a9cd267263b1",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "sequenceNumber": 40
+              },
+              "arrestDate": "2022-11-17",
+              "chargeDate": "2022-11-18",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "14f5345e-5508-4d92-a548-a9cd267263b1",
+              "indicatedPlea": {
+                "indicatedPleaDate": "2022-11-18",
+                "indicatedPleaValue": "INDICATED_NOT_GUILTY",
+                "offenceId": "14f5345e-5508-4d92-a548-a9cd267263b1",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "source": "IN_COURT"
+              },
+              "isDisposed": false,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "category": "INTERMEDIARY",
+                  "cjsCode": "4027",
+                  "courtClerk": {
+                    "firstName": "David",
+                    "lastName": "Godfrey",
+                    "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "02f1f689-e785-4229-aa00-b89afdee5f5f",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                      "label": "Next hearing in magistrates' court",
+                      "promptReference": "e29027bc-832c-4e6e-8d14-3193b5f8d54d",
+                      "promptSequence": 0,
+                      "usergroups": [],
+                      "value": "Date of hearing:13/02/2023\nTime of hearing:10:00\nCourthouse organisation name:Salisbury Magistrates' Court\nCourthouse address line 1:Salisbury Law Courts\nCourthouse address line 2:Wilton Road\nCourthouse address line 3:Salisbury\nCourthouse address line 4:Wilts.\nCourthouse post code:SP2 7EP\nCourtroom:Courtroom 03\nHearing type:Trial\nEstimated duration:6 HOURS\nBooking reference:767c52a6-30a5-437c-86b5-20bd159b008e",
+                      "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                      "label": "Defendant to attend the next hearing",
+                      "promptReference": "defendantToAttendTheNextHearing",
+                      "promptSequence": 100,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "true",
+                      "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                      "welshValue": "true"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "80be59c8-ffaa-4570-b40a-f3a085058208",
+                      "label": "Bail condition reason",
+                      "promptReference": "bailConditionReason",
+                      "promptSequence": 300,
+                      "qualifier": "MK",
+                      "type": "FIXLM",
+                      "usergroups": [],
+                      "value": "To prevent offending, To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person",
+                      "welshLabel": "Amod mechnïaeth",
+                      "welshValue": "I atal troseddu, I atal ymyrraeth â thystion neu rwystro cwrs cyfiawnder fel arall, naill ai mewn perthynas â'r diffynnydd neu unrhyw berson arall"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "4958de15-8a0a-4d2b-9f7e-56e037cf03da",
+                      "label": "For the trial to take place",
+                      "promptReference": "9c5af1f3-bb1d-497e-8ae6-6d2ee10c57e1",
+                      "promptSequence": 400,
+                      "qualifier": "GC",
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": " Er mwyn cynnal y treial"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                      "label": "Adjournment reasons",
+                      "promptReference": "08e84285-a61f-4728-9cea-1dcd8a317b66",
+                      "promptSequence": 500,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Rheswm dros ohirio:"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "a8c4fc20-6eee-4ff1-8244-d2d167e88a13",
+                      "label": "Exclusion - not to contact directly or indirectly",
+                      "promptReference": "15952d7d-2c79-425e-9b0c-c6a85294e7fe",
+                      "promptSequence": 600,
+                      "qualifier": "JK",
+                      "usergroups": [],
+                      "value": "Name(s):Kerry-Ann Levett",
+                      "welshLabel": "Gwahardd - peidio â chysylltu'n uniongyrchol nac yn anuniongyrchol"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "c1d490ed-1754-43b8-a485-fdab1a25f8cb",
+                      "label": "Exclusion - not to enter a place",
+                      "promptReference": "56529796-2385-47f1-ad83-4eb25e25ef26",
+                      "promptSequence": 700,
+                      "qualifier": "JO",
+                      "usergroups": [],
+                      "value": "Place or area:Tisbury except on one occasion accompanied by a police officer to collect belongings",
+                      "welshLabel": "Gwahardd - peidio â mynd i rywle penodol"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "3ac96bce-c14d-4f90-9ed3-29aa7bd92c24",
+                      "label": "Other - report to police station",
+                      "promptReference": "6bfa5d63-f42e-4a85-9015-6caa922598af",
+                      "promptSequence": 800,
+                      "qualifier": "JQ",
+                      "usergroups": [],
+                      "value": "Police Station Name:Bournemouth Police Station\nBetween:10:00\nAnd:16:00\nReporting days:Mondays",
+                      "welshLabel": "Arall - ewch i orsaf yr heddlu"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "8cf3b54b-bec8-4bcf-aac4-62561dcc8080",
+                      "label": "Bail conditions",
+                      "promptReference": "f90152a7-8739-40cc-b52e-4fe940e35618",
+                      "promptSequence": 900,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Amodau mechnïaeth"
+                    }
+                  ],
+                  "judicialResultTypeId": "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad",
+                  "label": "Remanded on conditional bail",
+                  "lastSharedDateTime": "2022-11-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "nextHearing": {
+                    "adjournmentReason": "For the trial to take place",
+                    "bookingReference": "767c52a6-30a5-437c-86b5-20bd159b008e",
+                    "courtCentre": {
+                      "address": {
+                        "address1": "Salisbury Law Courts",
+                        "address2": "Wilton Road",
+                        "address3": "Salisbury",
+                        "address4": "Wilts.",
+                        "postcode": "SP2 7EP"
+                      },
+                      "code": "B54WV00",
+                      "courtHearingLocation": "B54WV03",
+                      "id": "6a60303f-7cfa-343b-b08c-89dfc2450e7c",
+                      "name": "Salisbury Magistrates' Court",
+                      "psaCode": 3021,
+                      "roomId": "aadcc47c-0c88-37e4-9f62-fe7f47c43ee7",
+                      "roomName": "Courtroom 03",
+                      "welshName": "Llys Ynadon Salisbury"
+                    },
+                    "estimatedDuration": "6 HOURS",
+                    "estimatedMinutes": 360,
+                    "jurisdictionType": "MAGISTRATES",
+                    "listedStartDateTime": "2023-02-13T10:00:00.000Z",
+                    "type": {
+                      "description": "Trial",
+                      "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                    }
+                  },
+                  "orderedDate": "2022-11-18",
+                  "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                  "postHearingCustodyStatus": "B",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "qualifier": "MK,GC,JK,JO,JQ",
+                  "rank": 19600,
+                  "resultDefinitionGroup": "Remand conditional bail",
+                  "resultText": "Remanded on conditional bail\nNext hearing in magistrates' court Date of hearing:13/02/2023\nTime of hearing:10:00\nCourthouse organisation name:Salisbury Magistrates' Court\nCourthouse address line 1:Salisbury Law Courts\nCourthouse address line 2:Wilton Road\nCourthouse address line 3:Salisbury\nCourthouse address line 4:Wilts.\nCourthouse post code:SP2 7EP\nCourtroom:Courtroom 03\nHearing type:Trial\nEstimated duration:6 HOURS\nBooking reference:767c52a6-30a5-437c-86b5-20bd159b008e\nDefendant to attend the next hearing true\nBail condition reason To prevent offending, To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person\nFor the trial to take place \nAdjournment reasons \nExclusion - not to contact directly or indirectly Name(s):Kerry-Ann Levett\nExclusion - not to enter a place Place or area:Tisbury except on one occasion accompanied by a police officer to collect belongings\nOther - report to police station Police Station Name:Bournemouth Police Station\nBetween:10:00\nAnd:16:00\nReporting days:Mondays\nBail conditions ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "02f1f689-e785-4229-aa00-b89afdee5f5f",
+                  "rootJudicialResultTypeId": "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": true,
+                  "usergroups": [],
+                  "welshLabel": "Wedi'i remandio ar fechnïaeth amodol"
+                }
+              ],
+              "lastAdjournDate": "2022-11-18",
+              "lastAdjournedHearingType": "For the trial to take place",
+              "listingNumber": 1,
+              "modeOfTrial": "Either Way",
+              "offenceCode": "SC15005",
+              "offenceDateCode": 5,
+              "offenceDefinitionId": "f3d0de70-de89-415a-a218-bb743534f51e",
+              "offenceLegislation": "Contrary to section 75A(1)(a) and (5) of the Serious Crime Act 2015.",
+              "offenceTitle": "Intentional strangulation",
+              "orderIndex": 1,
+              "plea": {
+                "offenceId": "14f5345e-5508-4d92-a548-a9cd267263b1",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "pleaDate": "2022-11-18",
+                "pleaValue": "NOT_GUILTY"
+              },
+              "proceedingsConcluded": true,
+              "startDate": "2022-11-12",
+              "wording": "On 12th November 2022 at Tisbury in the County of Wiltshire, intentionally strangled Kerry-Ann Levett.\n\n\n\n\n\nContrary to section 75A(1)(a) and (5) of the Serious Crime Act 2015."
+            },
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2022-11-18",
+                "motReasonCode": "01",
+                "motReasonDescription": "Summary-only offence",
+                "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                "offenceId": "69ff9a3b-fa62-46f9-8e96-ffa95e09b507",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "sequenceNumber": 90
+              },
+              "arrestDate": "2022-11-17",
+              "chargeDate": "2022-11-18",
+              "convictingCourt": {
+                "code": "B54WV00",
+                "id": "6a60303f-7cfa-343b-b08c-89dfc2450e7c",
+                "lja": {
+                  "ljaCode": "3021",
+                  "ljaName": "County of Wiltshire Magistrates' Court"
+                },
+                "name": "Salisbury Magistrates' Court",
+                "roomId": "eba91479-9490-307a-a470-9c1a05a50368"
+              },
+              "convictionDate": "2022-11-18",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "69ff9a3b-fa62-46f9-8e96-ffa95e09b507",
+              "isDisposed": true,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "category": "FINAL",
+                  "cjsCode": "1015",
+                  "courtClerk": {
+                    "firstName": "David",
+                    "lastName": "Godfrey",
+                    "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": true,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "ab2bc08f-b328-4ed1-b1c9-a5a0b4cf5285",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": true,
+                      "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                      "label": "Amount of fine",
+                      "promptReference": "AOF",
+                      "promptSequence": 100,
+                      "type": "CURR",
+                      "usergroups": [],
+                      "value": "£50.00",
+                      "welshLabel": "Swm y ddirwy",
+                      "welshValue": "£50.00"
+                    }
+                  ],
+                  "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                  "label": "Fine",
+                  "lastSharedDateTime": "2022-11-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2022-11-18",
+                  "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 32200,
+                  "resultDefinitionGroup": "Imposition",
+                  "resultText": "Fine\nAmount of fine £50.00",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "ab2bc08f-b328-4ed1-b1c9-a5a0b4cf5285",
+                  "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Dirwy"
+                }
+              ],
+              "listingNumber": 1,
+              "modeOfTrial": "N/A",
+              "offenceCode": "MC80530",
+              "offenceDateCode": 5,
+              "offenceDefinitionId": "9e67f26f-9633-479e-a331-154faddc262a",
+              "offenceLegislation": "In accordance with section 63 of the Magistrates' Courts Act 1980.",
+              "offenceTitle": "Breach of a domestic violence protection order",
+              "orderIndex": 4,
+              "plea": {
+                "offenceId": "69ff9a3b-fa62-46f9-8e96-ffa95e09b507",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "pleaDate": "2022-11-18",
+                "pleaValue": "DENIES_MAGISTRATES"
+              },
+              "proceedingsConcluded": true,
+              "startDate": "2022-11-13",
+              "verdict": {
+                "jurors": {
+                  "numberOfJurors": 12,
+                  "numberOfSplitJurors": 0,
+                  "unanimous": true
+                },
+                "lesserOrAlternativeOffence": {
+                  "offenceCode": "MC80530",
+                  "offenceDefinitionId": "9e67f26f-9633-479e-a331-154faddc262a",
+                  "offenceLegislation": "In accordance with section 63 of the Magistrates' Courts Act 1980.",
+                  "offenceTitle": "Breach of a domestic violence protection order"
+                },
+                "offenceId": "69ff9a3b-fa62-46f9-8e96-ffa95e09b507",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "verdictDate": "2022-11-18",
+                "verdictType": {
+                  "category": "Guilty",
+                  "categoryType": "GUILTY",
+                  "cjsVerdictCode": "G",
+                  "description": "Proved",
+                  "id": "d96d5a18-e50d-34a4-a8bd-c570249ce39d",
+                  "sequence": 200,
+                  "verdictCode": "FPR"
+                }
+              },
+              "wording": "On 13th November 2022 at Tisbury, in the County of Wiltshire, breached a domestic violence protection order made by Salisbury Magistrates Court on 28th October 2022, in that you contacted Kerry-Ann Levett via phone calls and text messages and a complaint is made for you to be liable for a penalty.\n\n\n\n\n\n\n\n'In accordance with section 63 of the Magistrates'' Courts Act 1980.'"
+            },
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2022-11-18",
+                "motReasonCode": "01",
+                "motReasonDescription": "Summary-only offence",
+                "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                "offenceId": "25d1cfcb-c529-4e50-93cc-2ee8b893de6a",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "sequenceNumber": 90
+              },
+              "dvlaOffenceCode": "",
+              "id": "25d1cfcb-c529-4e50-93cc-2ee8b893de6a",
+              "isDisposed": false,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "category": "INTERMEDIARY",
+                  "cjsCode": "4027",
+                  "courtClerk": {
+                    "firstName": "David",
+                    "lastName": "Godfrey",
+                    "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "52199b9f-45d0-4b1a-9fc6-50041ccf9613",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                      "label": "Next hearing in magistrates' court",
+                      "promptReference": "41d453e9-2823-41d4-a2ee-523b200acf51",
+                      "promptSequence": 0,
+                      "usergroups": [],
+                      "value": "Date of hearing:13/02/2023\nTime of hearing:10:00\nCourthouse organisation name:Salisbury Magistrates' Court\nCourthouse address line 1:Salisbury Law Courts\nCourthouse address line 2:Wilton Road\nCourthouse address line 3:Salisbury\nCourthouse address line 4:Wilts.\nCourthouse post code:SP2 7EP\nCourtroom:Courtroom 03\nHearing type:Trial\nEstimated duration:6 HOURS\nBooking reference:767c52a6-30a5-437c-86b5-20bd159b008e",
+                      "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                      "label": "Defendant to attend the next hearing",
+                      "promptReference": "defendantToAttendTheNextHearing",
+                      "promptSequence": 100,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "true",
+                      "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                      "welshValue": "true"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "80be59c8-ffaa-4570-b40a-f3a085058208",
+                      "label": "Bail condition reason",
+                      "promptReference": "bailConditionReason",
+                      "promptSequence": 300,
+                      "qualifier": "MK",
+                      "type": "FIXLM",
+                      "usergroups": [],
+                      "value": "To prevent offending, To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person",
+                      "welshLabel": "Amod mechnïaeth",
+                      "welshValue": "I atal troseddu, I atal ymyrraeth â thystion neu rwystro cwrs cyfiawnder fel arall, naill ai mewn perthynas â'r diffynnydd neu unrhyw berson arall"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "4958de15-8a0a-4d2b-9f7e-56e037cf03da",
+                      "label": "For the trial to take place",
+                      "promptReference": "1def95fc-a5c1-405e-a4cf-8d42c163e298",
+                      "promptSequence": 400,
+                      "qualifier": "GC",
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": " Er mwyn cynnal y treial"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                      "label": "Adjournment reasons",
+                      "promptReference": "8ba04933-8309-4f35-bd5d-0a0b6d4ae6a1",
+                      "promptSequence": 500,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Rheswm dros ohirio:"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "a8c4fc20-6eee-4ff1-8244-d2d167e88a13",
+                      "label": "Exclusion - not to contact directly or indirectly",
+                      "promptReference": "2eff85f7-be31-4c5a-9c10-93780fbbe5cc",
+                      "promptSequence": 600,
+                      "qualifier": "JK",
+                      "usergroups": [],
+                      "value": "Name(s):Kerry-Ann Levett",
+                      "welshLabel": "Gwahardd - peidio â chysylltu'n uniongyrchol nac yn anuniongyrchol"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "c1d490ed-1754-43b8-a485-fdab1a25f8cb",
+                      "label": "Exclusion - not to enter a place",
+                      "promptReference": "744fd73d-11f7-4648-aad3-b02b874ce036",
+                      "promptSequence": 700,
+                      "qualifier": "JO",
+                      "usergroups": [],
+                      "value": "Place or area:Tisbury except on one occasion accompanied by a police officer to collect belongings",
+                      "welshLabel": "Gwahardd - peidio â mynd i rywle penodol"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "3ac96bce-c14d-4f90-9ed3-29aa7bd92c24",
+                      "label": "Other - report to police station",
+                      "promptReference": "a2bc4ff4-5883-4496-8adf-f997f27b36a4",
+                      "promptSequence": 800,
+                      "qualifier": "JQ",
+                      "usergroups": [],
+                      "value": "Police Station Name:Bournemouth Police Station\nBetween:10:00\nAnd:16:00\nReporting days:Mondays",
+                      "welshLabel": "Arall - ewch i orsaf yr heddlu"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "8cf3b54b-bec8-4bcf-aac4-62561dcc8080",
+                      "label": "Bail conditions",
+                      "promptReference": "ac8dd890-811e-423c-b32a-59cd8de47cdd",
+                      "promptSequence": 900,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Amodau mechnïaeth"
+                    }
+                  ],
+                  "judicialResultTypeId": "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad",
+                  "label": "Remanded on conditional bail",
+                  "lastSharedDateTime": "2022-11-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "nextHearing": {
+                    "adjournmentReason": "For the trial to take place",
+                    "bookingReference": "767c52a6-30a5-437c-86b5-20bd159b008e",
+                    "courtCentre": {
+                      "address": {
+                        "address1": "Salisbury Law Courts",
+                        "address2": "Wilton Road",
+                        "address3": "Salisbury",
+                        "address4": "Wilts.",
+                        "postcode": "SP2 7EP"
+                      },
+                      "code": "B54WV00",
+                      "courtHearingLocation": "B54WV03",
+                      "id": "6a60303f-7cfa-343b-b08c-89dfc2450e7c",
+                      "name": "Salisbury Magistrates' Court",
+                      "psaCode": 3021,
+                      "roomId": "aadcc47c-0c88-37e4-9f62-fe7f47c43ee7",
+                      "roomName": "Courtroom 03",
+                      "welshName": "Llys Ynadon Salisbury"
+                    },
+                    "estimatedDuration": "6 HOURS",
+                    "estimatedMinutes": 360,
+                    "jurisdictionType": "MAGISTRATES",
+                    "listedStartDateTime": "2023-02-13T10:00:00.000Z",
+                    "type": {
+                      "description": "Trial",
+                      "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                    }
+                  },
+                  "orderedDate": "2022-11-18",
+                  "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                  "postHearingCustodyStatus": "B",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "qualifier": "MK,GC,JK,JO,JQ",
+                  "rank": 19600,
+                  "resultDefinitionGroup": "Remand conditional bail",
+                  "resultText": "Remanded on conditional bail\nNext hearing in magistrates' court Date of hearing:13/02/2023\nTime of hearing:10:00\nCourthouse organisation name:Salisbury Magistrates' Court\nCourthouse address line 1:Salisbury Law Courts\nCourthouse address line 2:Wilton Road\nCourthouse address line 3:Salisbury\nCourthouse address line 4:Wilts.\nCourthouse post code:SP2 7EP\nCourtroom:Courtroom 03\nHearing type:Trial\nEstimated duration:6 HOURS\nBooking reference:767c52a6-30a5-437c-86b5-20bd159b008e\nDefendant to attend the next hearing true\nBail condition reason To prevent offending, To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person\nFor the trial to take place \nAdjournment reasons \nExclusion - not to contact directly or indirectly Name(s):Kerry-Ann Levett\nExclusion - not to enter a place Place or area:Tisbury except on one occasion accompanied by a police officer to collect belongings\nOther - report to police station Police Station Name:Bournemouth Police Station\nBetween:10:00\nAnd:16:00\nReporting days:Mondays\nBail conditions ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "52199b9f-45d0-4b1a-9fc6-50041ccf9613",
+                  "rootJudicialResultTypeId": "3a529001-2f43-45ba-a0a8-d3ced7e9e7ad",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": true,
+                  "usergroups": [],
+                  "welshLabel": "Wedi'i remandio ar fechnïaeth amodol"
+                }
+              ],
+              "lastAdjournDate": "2022-11-18",
+              "lastAdjournedHearingType": "For the trial to take place",
+              "modeOfTrial": "Summary",
+              "offenceCode": "CJ88116",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "d46641b6-7f05-4786-9873-94f3ad330491",
+              "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act 1988.",
+              "offenceTitle": "Assault by beating",
+              "orderIndex": 5,
+              "plea": {
+                "offenceId": "25d1cfcb-c529-4e50-93cc-2ee8b893de6a",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "pleaDate": "2022-11-18",
+                "pleaValue": "NOT_GUILTY"
+              },
+              "proceedingsConcluded": true,
+              "startDate": "2022-11-12",
+              "wording": "On or in 12 November 2022 at Tisbury assaulted Kerry-Ann Levett by beating her"
+            },
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2022-11-18",
+                "motReasonCode": "01",
+                "motReasonDescription": "Summary-only offence",
+                "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                "offenceId": "2601482c-7020-497f-8645-a83bc19fc817",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "sequenceNumber": 90
+              },
+              "aquittalDate": "2022-11-18",
+              "arrestDate": "2022-11-17",
+              "chargeDate": "2022-11-18",
+              "endorsableFlag": false,
+              "id": "2601482c-7020-497f-8645-a83bc19fc817",
+              "isDisposed": true,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "category": "FINAL",
+                  "cjsCode": "2063",
+                  "courtClerk": {
+                    "firstName": "David",
+                    "lastName": "Godfrey",
+                    "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "80ebd8fe-233c-4131-b155-1fa174ea9257",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "6f305506-9919-4e7b-bd57-c4c352ec3e3e",
+                      "label": "Details",
+                      "promptReference": "details",
+                      "promptSequence": 200,
+                      "type": "FIXL",
+                      "usergroups": [],
+                      "value": "Offence withdrawn",
+                      "welshValue": "Offence withdrawn"
+                    }
+                  ],
+                  "judicialResultTypeId": "eb2e4c4f-b738-4a4d-9cce-0572cecb7cb8",
+                  "label": "Withdrawn",
+                  "lastSharedDateTime": "2022-11-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2022-11-18",
+                  "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 78500,
+                  "resultDefinitionGroup": "WOAEXTEND",
+                  "resultText": "Withdrawn\nDetails Offence withdrawn",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "80ebd8fe-233c-4131-b155-1fa174ea9257",
+                  "rootJudicialResultTypeId": "eb2e4c4f-b738-4a4d-9cce-0572cecb7cb8",
+                  "terminatesOffenceProceedings": true,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Tynnwyd yn ôl"
+                }
+              ],
+              "listingNumber": 1,
+              "modeOfTrial": "Summary",
+              "offenceCode": "CJ88001",
+              "offenceDateCode": 5,
+              "offenceDefinitionId": "11960a34-a0c3-4ef4-967c-c6cac5c413ec",
+              "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act 1988.",
+              "offenceLegislationWelsh": "Yn groes i adran 39 Deddf Cyfiawnder Troseddol 1988.",
+              "offenceTitle": "Common assault",
+              "offenceTitleWelsh": "Ymosodiad cyffredin",
+              "orderIndex": 2,
+              "plea": {
+                "offenceId": "2601482c-7020-497f-8645-a83bc19fc817",
+                "originatingHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+                "pleaDate": "2022-11-18",
+                "pleaValue": "NO_PLEA"
+              },
+              "proceedingsConcluded": true,
+              "startDate": "2022-11-12",
+              "wording": "On 12th November 2022 at Tisbury in the County of Wiltshire, you  assaulted Kerry-Ann Levett.\n\nContrary to section 39 of the Criminal Justice Act 1988.\n\nCCCJS CODE: 'CJ88001'"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "2200000000001127345A",
+            "bailConditions": "Exclusion - not to contact directly or indirectly\nName(s) : Kerry-Ann Levett ;Exclusion - not to enter a place\nPlace or area : Tisbury except on one occasion accompanied by a police officer to collect belongings ;Other - report to police station\nPolice Station Name : Bournemouth Police Station\nBetween : 10:00\nAnd : 16:00\nReporting days : Mondays",
+            "bailReasons": "Nature and seriousness of offence",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "custodialEstablishment": {
+              "custody": "Prison",
+              "id": "cf3ef663-13d0-3461-b611-f0777fdbce26",
+              "name": "HMP/YOI Winchester"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "30 CANBERRA ROAD",
+                "address2": "CHRISTCHURCH",
+                "postcode": "BH12 2HL"
+              },
+              "contact": {
+                "mobile": "07895564118"
+              },
+              "dateOfBirth": "1971-12-28",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "MATTHEW",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "ROCKA",
+              "middleName": "JAMES ",
+              "nationalityDescription": "Unknown",
+              "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
+              "occupation": "Unemployed",
+              "title": "Mr"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          },
+          "pncId": "20200170728C",
+          "prosecutionAuthorityReference": "2200000000001127345A",
+          "prosecutionCaseId": "bcaec5fc-f01f-47f1-b42d-becde3c45c23"
+        }
+      ],
+      "id": "bcaec5fc-f01f-47f1-b42d-becde3c45c23",
+      "initiationCode": "C",
+      "originatingOrganisation": "054ET00",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "Swindon Police Station",
+          "address2": "Gablecross",
+          "address3": "Shrivenham Road",
+          "address4": "South Marston",
+          "address5": "Swindon",
+          "postcode": "SN3 4RB"
+        },
+        "contact": {
+          "primaryEmail": "PNC.Bureau@wiltshire.police.uk"
+        },
+        "majorCreditorCode": "PO54",
+        "prosecutionAuthorityCode": "WILSPF",
+        "prosecutionAuthorityId": "c18fd4ec-17a7-3f95-82f1-c1991c0c9fcc",
+        "prosecutionAuthorityName": "Wiltshire Police",
+        "prosecutionAuthorityOUCode": "0540000",
+        "caseURN": "55ED0457423"
+      }
+    }
+  ],
+  "prosecutionCounsels": [
+    {
+      "attendanceDays": [
+        "2022-11-18"
+      ],
+      "firstName": "Elizabeth",
+      "id": "cd44ed71-52c3-428c-b57b-753327245acb",
+      "lastName": "Hill",
+      "middleName": "",
+      "prosecutionCases": [
+        "bcaec5fc-f01f-47f1-b42d-becde3c45c23"
+      ],
+      "status": "CPS",
+      "title": ""
+    }
+  ],
+  "type": {
+    "description": "First hearing",
+    "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+  }
+}

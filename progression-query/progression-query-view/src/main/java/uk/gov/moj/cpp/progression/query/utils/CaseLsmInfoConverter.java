@@ -10,7 +10,7 @@ import uk.gov.justice.core.courts.Person;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import java.time.ZonedDateTime;
+import uk.gov.justice.services.common.util.UtcClock;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -100,7 +100,7 @@ public class CaseLsmInfoConverter {
         }
 
         final Optional<HearingDay> nextHearingDate = hearing.getHearingDays().stream()
-                .filter(day -> day.getSittingDay().isAfter(ZonedDateTime.now()))
+                .filter(day -> day.getSittingDay().isAfter(new UtcClock().now()))
                 .min(Comparator.comparing(HearingDay::getSittingDay));
 
         if (!nextHearingDate.isPresent()){

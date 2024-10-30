@@ -4,8 +4,8 @@ import static com.google.common.io.Resources.getResource;
 import static java.nio.charset.Charset.defaultCharset;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,17 +31,16 @@ import javax.json.JsonReader;
 import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class VejCaseworkerProcessorTest {
 
     private static final String VEJ_HEARING_DETAILS_URL = "https://spnl-apim-int-gw.cpp.nonlive/vej/api/v1/hearing/details";
@@ -71,7 +70,7 @@ public class VejCaseworkerProcessorTest {
     private static final String HEARING = "hearing";
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setField(vejCaseworkerProcessor, "vejHearingDetailsUrl", VEJ_HEARING_DETAILS_URL);
         setField(vejCaseworkerProcessor, "vejHearingDeleteUrl", VEJ_HEARING_DELETED_URL);
@@ -115,7 +114,6 @@ public class VejCaseworkerProcessorTest {
 
         when(referenceDataService.getPoliceFlag(anyString(), anyString(), eq(requester))).thenReturn(false);
 
-        when(restEasyClientService.post(eq(VEJ_HEARING_DETAILS_URL), any(), any())).thenReturn(response);
         vejCaseworkerProcessor.processVejHearingPopulatedToProbationCaseworker(jsonEnvelope);
 
     }
@@ -126,8 +124,6 @@ public class VejCaseworkerProcessorTest {
         final JsonObject payload = Json.createObjectBuilder().add("hearing", hearing).build();
 
         when(referenceDataService.getPoliceFlag(anyString(), anyString(), eq(requester))).thenReturn(false);
-
-        when(restEasyClientService.post(eq(VEJ_HEARING_DELETED_URL), any(), any())).thenReturn(response);
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.events.hearing-populated-to-probation-caseworker"),

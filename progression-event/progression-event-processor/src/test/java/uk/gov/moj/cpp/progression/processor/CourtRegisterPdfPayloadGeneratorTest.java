@@ -17,8 +17,7 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CourtRegisterPdfPayloadGeneratorTest {
 

@@ -1,17 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.sun.mail.iap.Argument;
-import org.apache.commons.validator.Arg;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.processor.CourtRegisterEventProcessor.COURT_REGISTER_TEMPLATE;
+
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
 import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -29,28 +30,25 @@ import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.UUID;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
-import static uk.gov.moj.cpp.progression.processor.CourtRegisterEventProcessor.COURT_REGISTER_TEMPLATE;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CourtRegisterEventProcessorTest {
     @InjectMocks
     private CourtRegisterEventProcessor courtRegisterEventProcessor;
@@ -92,7 +90,7 @@ public class CourtRegisterEventProcessorTest {
     @Mock
     private Sender sender;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
@@ -112,8 +110,6 @@ public class CourtRegisterEventProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-register-generated"),
                 jsonObject);
 
-        final UUID systemUserId = UUID.randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         final JsonObject fileStorePayload = Json.createObjectBuilder().add("templatePayload", "some values").build();
         when(courtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(fileStorePayload);
 

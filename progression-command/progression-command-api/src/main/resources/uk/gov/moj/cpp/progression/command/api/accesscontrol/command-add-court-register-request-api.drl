@@ -1,0 +1,24 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+global uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider rbacProvider;
+
+rule "Command - aggregate court register document request"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-court-register");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Magistrates"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - genearte court register by date"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.generate-court-register-by-date");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support"))
+  then
+    $outcome.setSuccess(true);
+end

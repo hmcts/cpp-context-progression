@@ -4,22 +4,19 @@ import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.moj.cpp.progression.helper.Cleaner.closeSilently;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
-import uk.gov.justice.services.test.utils.core.messaging.MessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.justice.services.test.utils.core.rest.ResteasyClientBuilderFactory;
 
 import java.io.File;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
@@ -28,29 +25,24 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.base.Joiner;
-import com.jayway.restassured.path.json.JsonPath;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("WeakerAccess")
-public abstract class AbstractTestHelper implements AutoCloseable {
+@ExtendWith(JmsResourceManagementExtension.class)
+public abstract class AbstractTestHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTestHelper.class);
 
-    public static final String PUBLIC_ACTIVE_MQ_TOPIC = "public.event";
     public static final String USER_ID = UUID.randomUUID().toString();
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     protected static final String BASE_URI = System.getProperty("baseUri", "http://" + HOST + ":8080");
-    protected static final String STRUCTURE_EVENT_TOPIC = "progression.event";
     private static final String WRITE_BASE_URL = "/progression-service/command/api/rest/progression";
     private static final String READ_BASE_URL = "/progression-service/query/api/rest/progression";
 
     protected final RestClient restClient = new RestClient();
-
-    protected final MessageConsumerClient publicConsumer = new MessageConsumerClient();
-    protected MessageConsumer publicEventsConsumer;
-    protected MessageConsumer privateEventsConsumer;
 
     public static String getWriteUrl(final String resource) {
         return Joiner.on("").join(BASE_URI, WRITE_BASE_URL, resource);
@@ -119,6 +111,7 @@ public abstract class AbstractTestHelper implements AutoCloseable {
         stubUserGroupDefenceClientPermission(defendantId.toString(), permission);
 
     }
+
     public UUID makeMultipartFormPostCall(final String url, final String fileFieldName, final String fileName) {
         return makeMultipartFormPostCall(UUID.fromString(USER_ID), url, fileFieldName, fileName);
     }
@@ -127,12 +120,4 @@ public abstract class AbstractTestHelper implements AutoCloseable {
         setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-groups-by-user.json");
     }
 
-    public JsonPath getMessage() {
-        return retrieveMessage(privateEventsConsumer);
-    }
-
-    @Override
-    public void close() {
-        closeSilently(publicConsumer);
-    }
 }

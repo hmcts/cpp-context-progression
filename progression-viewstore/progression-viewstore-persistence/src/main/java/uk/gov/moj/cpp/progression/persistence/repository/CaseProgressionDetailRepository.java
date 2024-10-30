@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.progression.persistence.repository;
 
+import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
+import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
+import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -7,10 +11,6 @@ import org.apache.deltaspike.data.api.EntityRepository;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
-
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 /**
  * @deprecated
  *
@@ -31,7 +31,7 @@ public interface CaseProgressionDetailRepository extends EntityRepository<CasePr
     @Query(value = "from CaseProgressionDetail c where c.status IN  (?1) and c.caseId = (?2) ")
     List<CaseProgressionDetail> findByStatusAndCaseID(List<CaseStatusEnum> status,  final UUID caseId);
 
-    @Query(value = "from CaseProgressionDetail c where c.status <> 'COMPLETED') ")
+    @Query(value = "from CaseProgressionDetail c where c.status <> 'COMPLETED' ")
     List<CaseProgressionDetail> findOpenStatus();
 
     @Query(value = "SELECT cd.defendants FROM CaseProgressionDetail cd where cd.caseId = :caseId")

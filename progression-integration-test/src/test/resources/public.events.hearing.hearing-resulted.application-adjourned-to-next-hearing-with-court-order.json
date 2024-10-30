@@ -211,7 +211,7 @@
               "firstName": "a",
               "middleName": "a",
               "lastName": "a",
-              "dateOfBirth": "0000-01-01",
+              "dateOfBirth": "2020-01-01",
               "nationalityId": "00000000-0000-0000-0000-000000000000",
               "nationalityCode": "a",
               "nationalityDescription": "a",
@@ -287,7 +287,7 @@
                   "firstName": "a",
                   "middleName": "a",
                   "lastName": "a",
-                  "dateOfBirth": "0000-01-01",
+                  "dateOfBirth": "2020-01-01",
                   "nationalityId": "00000000-0000-0000-0000-000000000000",
                   "nationalityCode": "a",
                   "nationalityDescription": "a",
@@ -806,11 +806,11 @@
                     "isConvictedResult": true,
                     "isAvailableForCourtExtract": true,
                     "isNewAmendment" : true,
-                    "amendmentDate": "0000-01-01",
+                    "amendmentDate": "2020-01-01",
                     "amendmentReason": "a",
                     "cjsCode": "a",
                     "rank": 0.1,
-                    "orderedDate": "0000-01-01",
+                    "orderedDate": "2020-01-01",
                     "lastSharedDateTime": "a",
                     "courtClerk": {
                       "userId": "00000000-0000-0000-0000-000000000000",
@@ -827,7 +827,7 @@
                       "firstName": "a",
                       "lastName": "a"
                     },
-                    "approvedDate": "0000-01-01",
+                    "approvedDate": "2020-01-01",
                     "usergroups": [
                       "a"
                     ],

@@ -19,19 +19,19 @@ import java.util.List;
 import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class CaseAggregateFinancialMeansTest {
 
     @InjectMocks
     private CaseAggregate caseAggregate;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.caseAggregate = new CaseAggregate();
     }

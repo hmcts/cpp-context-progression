@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.event.listener;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,16 +25,14 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * 
@@ -43,7 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 @Deprecated
 @SuppressWarnings({"WeakerAccess", "squid:S1133"})
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DefendantUpdatedListenerTest {
 
     private final UUID caseId = UUID.randomUUID();
@@ -79,13 +77,10 @@ public class DefendantUpdatedListenerTest {
     @InjectMocks
     private DefendantUpdatedListener listener;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
     }
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Test
     public void shouldUpdateDefendantBailStatus() {
@@ -97,7 +92,6 @@ public class DefendantUpdatedListenerTest {
         when(caseDetail.getDefendant(defendantId)).thenReturn(defendant);
         when(defendantUpdated.getBailStatus())
                 .thenReturn("UNCONDITIONAL");
-        when(defendant.getDefendantBailDocuments()).thenReturn(null);
 
         listener.defendantUpdated(envelope);
 

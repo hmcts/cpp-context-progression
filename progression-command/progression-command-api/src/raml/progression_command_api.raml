@@ -32,6 +32,32 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
 
 
 
+/courtdocument/{courtDocumentId}:
+  uriParameters:
+    courtDocumentId:
+      description: CourtDocumentId of the document link being removed by BDF
+      type: string
+  post:
+      description: |
+        Court document soft link is being removed by BDF.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.remove-court-document-bdf+json
+            name: progression.remove-court-document-bdf
+        ...
+      body:
+        application/vnd.progression.remove-court-document-bdf+json:
+            example:
+             !include json/progression.remove-court-document-bdf.json
+            schema:
+             !include json/schema/progression.remove-court-document-bdf.json
+
+      responses:
+            202:
+                description: OK
+
+
+
 /courtdocument/{materialId}:
   uriParameters:
     materialId:
@@ -1541,6 +1567,23 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           !include json/progression.result-hearing-bdf.json
         schema:
           !include json/schema/progression.result-hearing-bdf.json
+    responses:
+      202:
+        description: OK
+
+/hearings/{hearingId}/update-hearing-bdf:
+  post:
+    description:  |
+      Update resulted hearing BDF
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.api-update-hearing-bdf+json
+          name: progression.command.api-update-hearing-bdf
+      ...
+    body:
+      application/vnd.progression.command.api-update-hearing-bdf+json:
+        schema:
+          !include json/schema/progression.command.api-update-hearing-bdf.json
     responses:
       202:
         description: OK

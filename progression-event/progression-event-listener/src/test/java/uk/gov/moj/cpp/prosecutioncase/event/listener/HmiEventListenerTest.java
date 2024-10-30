@@ -1,26 +1,14 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.eq;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import java.util.UUID;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
@@ -30,7 +18,19 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.time.LocalDate;
+import java.util.UUID;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class HmiEventListenerTest {
 
     @Spy

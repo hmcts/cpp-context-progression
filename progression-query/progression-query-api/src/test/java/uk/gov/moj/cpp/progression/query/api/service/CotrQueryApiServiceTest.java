@@ -6,11 +6,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 import static uk.gov.QueryClientTestBase.metadataFor;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.Defendant;
@@ -45,15 +43,18 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import org.mockito.Mock;
+
+@ExtendWith(MockitoExtension.class)
 public class CotrQueryApiServiceTest {
 
     @InjectMocks
@@ -74,7 +75,7 @@ public class CotrQueryApiServiceTest {
     @Mock
     private JsonEnvelope requestEnvelope;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());

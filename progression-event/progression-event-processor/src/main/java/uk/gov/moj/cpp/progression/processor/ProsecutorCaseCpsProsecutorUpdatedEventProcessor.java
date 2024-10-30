@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static java.util.stream.Collectors.toList;
 
-import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
+import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Component;
@@ -42,6 +42,9 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessor {
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
+    public static final String HEARINGS = "hearings";
+
+
     @Handles("progression.event.case-cps-prosecutor-updated")
     public void processCpsProsecutorUpdated(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
@@ -56,17 +59,14 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessor {
         sender.send(Enveloper.envelop(payload).withName("public.progression.events.cps-prosecutor-updated").withMetadataFrom(event));
     }
 
-    private JsonArray getHearingIdsForCaseAllApplications(final JsonEnvelope event) {
+    private JsonArray getHearingIdsForCase(final JsonEnvelope event) {
         final String prosecutionCaseId = event.payloadAsJsonObject().getString("prosecutionCaseId");
         final JsonArrayBuilder hearingIdsBuilder = Json.createArrayBuilder();
-        progressionService.getProsecutionCaseDetailById(event, prosecutionCaseId).ifPresent(prosecutionCaseJsonObject -> {
-            final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.
-                    convert(prosecutionCaseJsonObject.getJsonObject("hearingsAtAGlance"),
-                            GetHearingsAtAGlance.class);
-            if (isNotEmpty(hearingsAtAGlance.getHearings())) {
-                hearingsAtAGlance.getHearings().forEach(hearing -> hearingIdsBuilder.add(hearing.getId().toString()));
-            }
-        });
+        progressionService.getCaseHearings(prosecutionCaseId).ifPresent(caseHearingsResponse -> caseHearingsResponse.getJsonArray(HEARINGS)
+        .getValuesAs(JsonObject.class).stream().map(hearing ->
+                jsonObjectToObjectConverter.convert(hearing, Hearings.class))
+                .map(Hearings::getId)
+                .collect(toList()).forEach(hearingId -> hearingIdsBuilder.add(hearingId.toString())));
         return hearingIdsBuilder.build();
     }
 
@@ -77,7 +77,7 @@ public class ProsecutorCaseCpsProsecutorUpdatedEventProcessor {
         final CaseCpsProsecutorUpdated publicCaseCpsProsecutorUpdated = jsonObjectToObjectConverter.convert(payload, CaseCpsProsecutorUpdated.class);
 
         final JsonObject publicEventPayload = objectToJsonObjectConverter.convert(publicCaseCpsProsecutorUpdated);
-        final JsonArray hearingIds = getHearingIdsForCaseAllApplications(event);
+        final JsonArray hearingIds = getHearingIdsForCase(event);
         return JsonHelper.addProperty(publicEventPayload, "hearingIds", hearingIds);
     }
 }

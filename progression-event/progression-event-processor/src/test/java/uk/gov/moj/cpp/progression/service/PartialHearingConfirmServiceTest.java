@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -8,7 +7,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 
 import uk.gov.justice.core.courts.ConfirmedDefendant;
@@ -39,18 +37,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class PartialHearingConfirmServiceTest {
     private static final UUID HEARING_ID = randomUUID();
     private static final UUID SEEDING_HEARING_ID = randomUUID();
@@ -136,11 +133,6 @@ public class PartialHearingConfirmServiceTest {
         sampleMap.put(CASE1_ID, case1DefendantsOffencesIds);
         sampleMap.put(CASE2_ID, case2DefendantsOffencesIds);
 
-
-        when(progressionService.getHearing(envelope, HEARING_ID.toString())).thenReturn(of(jsonObject));
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
-        when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(buildSampleHearing(sampleMap));
-
         List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(buildSampleHearingConfirmed(sampleMap), buildSampleHearing(sampleMap));
 
         assertThat(delta.isEmpty(), is(true));
@@ -158,9 +150,6 @@ public class PartialHearingConfirmServiceTest {
         case1DefendantsOffencesIds.put(CASE2_DEFENDANT2_ID, Arrays.asList(CASE2_DEFENDANT2_OFFENCE1_ID, CASE2_DEFENDANT2_OFFENCE2_ID));
         sampleMap.put(CASE1_ID, case1DefendantsOffencesIds);
         sampleMap.put(CASE2_ID, case2DefendantsOffencesIds);
-
-
-        when(progressionService.getHearing(envelope, HEARING_ID.toString())).thenReturn(Optional.empty());
 
         List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(buildSampleHearingConfirmed(sampleMap), buildSampleHearing(sampleMap));
 
@@ -198,10 +187,6 @@ public class PartialHearingConfirmServiceTest {
         sampleConfirmMap.put(CASE1_ID, case1DefendantsOffencesIdsForConfirm);
         sampleConfirmMap.put(CASE2_ID, case2DefendantsOffencesIdsForConfirm);
         sampleConfirmMap.put(CASE3_ID, case3DefendantsOffencesIdsForConfirm);
-
-        when(progressionService.getHearing(envelope, HEARING_ID.toString())).thenReturn(of(jsonObject));
-        when(jsonObject.getJsonObject("hearing")).thenReturn(jsonObject);
-        when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(buildSampleHearing(sampleHearingMap));
 
         List<ProsecutionCase> delta = partialHearingConfirmService.getDifferences(buildSampleHearingConfirmed(sampleConfirmMap), buildSampleHearing(sampleHearingMap));
 

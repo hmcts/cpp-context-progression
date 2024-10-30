@@ -8,8 +8,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,17 +63,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingNotificationHelperTest {
 
     public static final String TEMPLATE_ID = "e4648583-eb0f-438e-aab5-5eff29f3f7b4";
@@ -143,7 +144,7 @@ public class HearingNotificationHelperTest {
 
     private JsonEnvelope jsonEnvelope;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         final Address address = Address.address()
                 .withAddress1("testAddress1")
@@ -219,7 +220,6 @@ public class HearingNotificationHelperTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -260,7 +260,6 @@ public class HearingNotificationHelperTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -302,7 +301,6 @@ public class HearingNotificationHelperTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -337,7 +335,6 @@ public class HearingNotificationHelperTest {
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -372,7 +369,6 @@ public class HearingNotificationHelperTest {
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -407,7 +403,6 @@ public class HearingNotificationHelperTest {
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -442,7 +437,6 @@ public class HearingNotificationHelperTest {
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -488,7 +482,6 @@ public class HearingNotificationHelperTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -534,7 +527,6 @@ public class HearingNotificationHelperTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -577,7 +569,6 @@ public class HearingNotificationHelperTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
-        when(documentGeneratorService.generateDocument(any(), any(), any(), any(), any(), any(), anyBoolean())).thenReturn(materialId);
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 

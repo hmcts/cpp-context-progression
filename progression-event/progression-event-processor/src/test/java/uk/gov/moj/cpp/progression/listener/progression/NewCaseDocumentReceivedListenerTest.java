@@ -3,26 +3,11 @@ package uk.gov.moj.cpp.progression.listener.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Function;
-
-import javax.json.JsonObject;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -31,13 +16,26 @@ import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatch
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 import uk.gov.moj.cpp.progression.listener.casedocument.NewCaseDocumentReceivedListener;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
+
+import javax.json.JsonObject;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * 
  * @deprecated
  *
  */
 @Deprecated
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NewCaseDocumentReceivedListenerTest {
 
     @Mock
@@ -104,7 +102,7 @@ public class NewCaseDocumentReceivedListenerTest {
 
 
         final JsonEnvelope envelope2 = envelopes.get(0);
-        Assert.assertThat(envelope2.metadata().name(), equalTo("public.progression.case-document-added"));
+        assertThat(envelope2.metadata().name(), equalTo("public.progression.case-document-added"));
         final JsonObject payload2 = envelope2.payloadAsJsonObject();
         assertThat(payload2, JsonEnvelopePayloadMatcher.payloadIsJson(allOf(
                 withJsonPath("$.fileName", equalTo(fileName)),

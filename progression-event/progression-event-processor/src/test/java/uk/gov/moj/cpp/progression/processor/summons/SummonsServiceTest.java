@@ -1,9 +1,9 @@
 package uk.gov.moj.cpp.progression.processor.summons;
 
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -17,15 +17,13 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-
+@ExtendWith(MockitoExtension.class)
 public class SummonsServiceTest {
 
     @Mock
@@ -63,12 +61,9 @@ public class SummonsServiceTest {
                 .withProsecutionAuthorityName("Org Name")
                 .build();
 
-        final JsonObject jsonObject = Json.createObjectBuilder().build();
-        when(referenceDataService.getProsecutor(envelope, prosecutionCaseIdentifier.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(jsonObject));
-
         summonsService.getProsecutor(envelope, prosecutionCaseIdentifier);
 
-        verifyZeroInteractions(referenceDataService);
+        verifyNoInteractions(referenceDataService);
 
     }
 

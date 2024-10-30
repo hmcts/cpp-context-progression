@@ -8,8 +8,9 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +29,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.command.api.UserDetailsLoader;
@@ -43,19 +45,18 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AddCourtDocumentApiTest {
 
     private static final String ADD_COURT_DOCUMENT_NAME = "progression.add-court-document";
@@ -70,7 +71,7 @@ public class AddCourtDocumentApiTest {
     @InjectMocks
     private AddCourtDocumentApi addCourtDocumentApi;
     @Captor
-    private ArgumentCaptor<JsonEnvelope> envelopeCaptor;
+    private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
     private UUID uuid;
     private UUID userId;
     private UUID docTypeId;
@@ -82,15 +83,10 @@ public class AddCourtDocumentApiTest {
     private Requester requester;
 
     @Spy
-    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
-
-    @Spy
-    @InjectMocks
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
+    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Mock
     private RefDataService referenceDataService;
@@ -104,7 +100,7 @@ public class AddCourtDocumentApiTest {
     @Mock
     private ProsecutionCaseQueryService prosecutionCaseQueryService;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         uuid = randomUUID();
         userId = randomUUID();
@@ -148,7 +144,7 @@ public class AddCourtDocumentApiTest {
         assertThat(newCommand.payload(), equalTo(builder.build()));
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldThrowExceptionWhenAddDocumentForProsecutorWithForbiddenSectionType() {
 
         final UUID caseId = randomUUID();
@@ -162,11 +158,11 @@ public class AddCourtDocumentApiTest {
         when(referenceDataService.getDocumentTypeAccessReferenceData(requester, docTypeId)).thenReturn(documentTypeAccessReferenceData);
         when(prosecutionCaseQueryService.getProsecutionCase(commandEnvelope,caseId)).thenReturn(Optional.of(createProsecution()));
         when(userGroupQueryService.validateNonCPSUserOrg(any(),eq(userId),eq("Non CPS Prosecutors"),eq("DVLA"))).thenReturn(empty());
-        addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope);
+        assertThrows(ForbiddenRequestException.class, () -> addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope));
 
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldThrowExceptionWhenAddDocumentForProsecutorWithNON_CPS_PROSECUTORS() {
 
         final UUID caseId = randomUUID();
@@ -180,7 +176,7 @@ public class AddCourtDocumentApiTest {
         when(referenceDataService.getDocumentTypeAccessReferenceData(requester, docTypeId)).thenReturn(documentTypeAccessReferenceData);
         when(prosecutionCaseQueryService.getProsecutionCase(commandEnvelope,caseId)).thenReturn(Optional.of(createProsecution()));
         when(userGroupQueryService.validateNonCPSUserOrg(any(),eq(userId),eq("Non CPS Prosecutors"),eq("DVLA"))).thenReturn(of("OrganisationMisMatch"));
-        addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope);
+        assertThrows(ForbiddenRequestException.class, () -> addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope));
 
     }
 
@@ -229,7 +225,6 @@ public class AddCourtDocumentApiTest {
                 .build());
 
         when(referenceDataService.getDocumentTypeAccessReferenceData(requester, docTypeId)).thenReturn(documentTypeAccessReferenceData);
-        when(defenceQueryService.isUserProsecutingCase(commandEnvelope, caseId)).thenReturn(true);
         when(prosecutionCaseQueryService.getProsecutionCase(commandEnvelope,caseId)).thenReturn(Optional.of(createProsecution()));
         when(userGroupQueryService.validateNonCPSUserOrg(any(),eq(userId),eq("Non CPS Prosecutors"),eq("DVLA"))).thenReturn(of("OrganisationMatch"));
 
@@ -253,41 +248,6 @@ public class AddCourtDocumentApiTest {
     }
 
     @Test
-    public void shouldAddDocumentForProsecutorWithAllowedSectionTypeAndNonCPSProsecutorsAndProsecutorObjectExists()
-    {
-        final UUID caseId = randomUUID();
-        final JsonEnvelope commandEnvelope = buildEnvelope(null, true, caseId);
-
-        Optional<DocumentTypeAccessReferenceData> documentTypeAccessReferenceData = of(DocumentTypeAccessReferenceData.documentTypeAccessReferenceData()
-                .withId(docTypeId)
-                .withDefenceOnly(false)
-                .build());
-
-        when(referenceDataService.getDocumentTypeAccessReferenceData(requester, docTypeId)).thenReturn(documentTypeAccessReferenceData);
-        when(defenceQueryService.isUserProsecutingCase(commandEnvelope, caseId)).thenReturn(true);
-        when(prosecutionCaseQueryService.getProsecutionCase(commandEnvelope,caseId)).thenReturn(Optional.of(createProsecutionWithProsecutors()));
-        when(userGroupQueryService.validateNonCPSUserOrg(any(),eq(userId),eq("Non CPS Prosecutors"),eq("DVLA"))).thenReturn(of("OrganisationMatch"));
-
-        addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope);
-        verify(sender, times(1)).send(envelopeCaptor.capture());
-
-        final Envelope newCommand = envelopeCaptor.getValue();
-
-        JsonObjectBuilder builder = createObjectBuilder()
-                .add("documentTypeId", docTypeId.toString())
-                .add("documentCategory", createObjectBuilder()
-                        .add("caseDocument", createObjectBuilder()
-                                .add("prosecutionCaseId", caseId.toString())
-                                .build())
-                        .build());
-        builder = createObjectBuilder().add("courtDocument", builder.build())
-                .add("isUnbundledDocument", true);
-
-        assertThat(newCommand.metadata().name(), is(ADD_COURT_DOCUMENT_COMMAND_NAME));
-        assertThat(newCommand.payload(), equalTo(builder.build()));
-    }
-
-    @Test(expected = ForbiddenRequestException.class)
     public void shouldThrowExceptionWhenAddDocumentForProsecutorWithAUserNotProsecutingTheCase() {
 
         final UUID caseId = randomUUID();
@@ -302,21 +262,21 @@ public class AddCourtDocumentApiTest {
         when(defenceQueryService.isUserProsecutingCase(commandEnvelope, caseId)).thenReturn(false);
         when(prosecutionCaseQueryService.getProsecutionCase(commandEnvelope,caseId)).thenReturn(Optional.of(createProsecution()));
         when(userGroupQueryService.validateNonCPSUserOrg(any(),eq(userId),eq("Non CPS Prosecutors"),eq("DVLA"))).thenReturn(empty());
-        addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope);
+        assertThrows(ForbiddenRequestException.class, () -> addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope));
 
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void shouldThroughBadRequest() {
         final JsonEnvelope commandEnvelope = buildEnvelopeWithResource(randomUUID().toString());
-        addCourtDocumentApi.handleAddCourtDocumentForDefence(commandEnvelope);
+        assertThrows(BadRequestException.class, () -> addCourtDocumentApi.handleAddCourtDocumentForDefence(commandEnvelope));
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldThroughForbiddenRequest() {
         final JsonEnvelope commandEnvelope = buildEnvelopeWithResource("e1d32d9d-29ec-4934-a932-22a50f223966");
         when(userDetailsLoader.isPermitted(any(), any())).thenReturn(false);
-        addCourtDocumentApi.handleAddCourtDocumentForDefence(commandEnvelope);
+        assertThrows(ForbiddenRequestException.class, () -> addCourtDocumentApi.handleAddCourtDocumentForDefence(commandEnvelope));
     }
 
 

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
+import uk.gov.justice.core.courts.UpdateRelatedHearingCommandForAdhocHearing;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -65,4 +66,29 @@ public class RelatedHearingCommandHandler extends AbstractCommandHandler {
         }
     }
 
+    @Handles("progression.command.update-related-hearing-for-adhoc-hearing")
+    public void handleUpdateRelatedHearingCommandForAdhocHearing(final Envelope<UpdateRelatedHearingCommandForAdhocHearing> envelope) throws EventStreamException {
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("progression.command.update-related-hearing-for-adhoc-hearing payload: {}", envelope.payload());
+        }
+
+        final UpdateRelatedHearingCommandForAdhocHearing command = envelope.payload();
+        final HearingListingNeeds hearingRequest = command.getHearingRequest();
+        final EventStream eventStream = eventSource.getStreamById(hearingRequest.getId());
+
+        if (isNotEmpty(hearingRequest.getProsecutionCases())) {
+
+            final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+
+            final Stream<Object> events = hearingAggregate.updateRelatedHearingForAdhocHearing(
+                    hearingRequest,
+                    command.getSendNotificationToParties());
+
+            appendEventsToStream(envelope, eventStream, events);
+
+        } else if (isNotEmpty(hearingRequest.getCourtApplications())) {
+            // DD-8648: Related hearing change for Applications
+        }
+    }
 }

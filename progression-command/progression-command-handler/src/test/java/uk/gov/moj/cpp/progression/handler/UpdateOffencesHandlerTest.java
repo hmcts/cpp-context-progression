@@ -7,9 +7,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -71,15 +71,15 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UpdateOffencesHandlerTest {
 
     @Spy
@@ -112,7 +112,7 @@ public class UpdateOffencesHandlerTest {
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
     private static final String MANUAL_RESTRICTION = "Order made under Section 11 of the Contempt of Court Act 1981";
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseId = randomUUID();
         defendantId = randomUUID();
@@ -121,9 +121,6 @@ public class UpdateOffencesHandlerTest {
         offenceCode2 = new StringGenerator().next();
         aggregate = new CaseAggregate();
         hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
     }
 
     @Test
@@ -148,7 +145,9 @@ public class UpdateOffencesHandlerTest {
         UpdateOffencesForProsecutionCase updateDefendantCaseOffences = prepareData(caseId,defendantId,offenceId, offenceCode);
 
         aggregate = getEventStreamReady(caseId,defendantId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
@@ -175,7 +174,8 @@ public class UpdateOffencesHandlerTest {
         final UpdateDefendantOffences updateDefendantOffences = prepareUpdateDefendantOffences(caseId,defendantId,offenceId, offenceCode);
 
         aggregate = getEventStreamReady(caseId,defendantId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
@@ -209,7 +209,10 @@ public class UpdateOffencesHandlerTest {
                 .withDefendantId(defendantId)
                 .withUpdatedOffences(offences).build();
         hearingAggregate = getEventStreamReady(hearingId);
-        when(this.aggregateService.get(this.eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(this.eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -244,7 +247,11 @@ public class UpdateOffencesHandlerTest {
         UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences (caseId,defendantId,offences);
 
         aggregate = getEventStreamReady(caseId,defendantId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
@@ -275,7 +282,11 @@ public class UpdateOffencesHandlerTest {
         UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
 
         aggregate = getEventStreamReady(caseId, defendantId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
@@ -306,7 +317,11 @@ public class UpdateOffencesHandlerTest {
         UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
 
         aggregate = getEventStreamReady(caseId, defendantId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
@@ -340,8 +355,10 @@ public class UpdateOffencesHandlerTest {
         UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
 
         aggregate = getEventStreamWithOffenceandMutlipleRR(caseId, defendantId, offenceId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -362,7 +379,10 @@ public class UpdateOffencesHandlerTest {
         UpdateOffencesForProsecutionCase updateDefendantCaseOffences = prepareData(caseId,defendantId,offenceId, offenceCode);
 
         aggregate = getEventStreamReadyWithoutOrderIndex(caseId,defendantId);
-        when(this.aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(this.eventStream, CaseAggregate.class)).thenReturn(aggregate);
 
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode,
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
@@ -380,8 +400,7 @@ public class UpdateOffencesHandlerTest {
 
         updateOffencesHandler.handle(envelope);
 
-        Stream<JsonEnvelope> events =  verifyAppendAndGetArgumentFrom(eventStream);
-
+        verifyAppendAndGetArgumentFrom(eventStream);
     }
 
     @Test
@@ -390,7 +409,10 @@ public class UpdateOffencesHandlerTest {
         final UUID applicationId = randomUUID();
 
         hearingAggregate = getEventStreamReadyForApplication(hearingId, applicationId);
-        when(this.aggregateService.get(this.eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(this.eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
 
         UpdateHearingOffenceVerdict updateHearingOffenceVerdict = UpdateHearingOffenceVerdict.updateHearingOffenceVerdict()
                 .withHearingId(hearingId)

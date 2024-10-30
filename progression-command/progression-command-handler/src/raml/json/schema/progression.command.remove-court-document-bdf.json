@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.command.remove-court-document-bdf.json",
+  "type": "object",
+  "properties": {
+    "courtDocumentId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isRemoved": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "courtDocumentId",
+    "isRemoved"
+  ],
+  "additionalProperties": false
+}

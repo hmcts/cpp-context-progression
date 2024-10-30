@@ -7,11 +7,11 @@ import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
@@ -33,16 +33,15 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class NotificationNotifyEventProcessorTest {
 
     @Mock
@@ -225,34 +224,28 @@ public class NotificationNotifyEventProcessorTest {
     public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenCompletionTimeNotAvailable() throws FileServiceException {
         final UUID notificationId = randomUUID();
         final UUID materialId = randomUUID();
-        final UUID courtDocumentId = randomUUID();
         final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf(materialId.toString(), "materialId")
                 .build();
-        when(systemIdMapperService.getDocumentIdForMaterialId(anyString())).thenReturn(of(this.systemIdMapping));
-        when(this.systemIdMapping.getTargetId()).thenReturn(courtDocumentId);
         notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
 
         verify(fileStorer).delete(notificationId);
-        verifyZeroInteractions(systemIdMapperService, systemIdMapping);
+        verifyNoInteractions(systemIdMapperService, systemIdMapping);
     }
 
     @Test
     public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenMaterialIsNotAvailable() throws FileServiceException {
         final UUID notificationId = randomUUID();
         final ZonedDateTime completedAt = now();
-        final UUID courtDocumentId = randomUUID();
         final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf(completedAt.toString(), "completedAt")
                 .build();
-        when(systemIdMapperService.getDocumentIdForMaterialId(anyString())).thenReturn(of(this.systemIdMapping));
-        when(this.systemIdMapping.getTargetId()).thenReturn(courtDocumentId);
         notificationNotifyEventProcessor.handleNotificationRequestSucceeded(notificationSucceededEvent);
 
         verify(fileStorer).delete(notificationId);
-        verifyZeroInteractions(systemIdMapperService, systemIdMapping);
+        verifyNoInteractions(systemIdMapperService, systemIdMapping);
     }
 
     @Test

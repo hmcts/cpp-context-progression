@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,14 +17,14 @@ import java.util.function.Function;
 
 import javax.json.JsonObject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingDaysWithoutCourtCentreCorrectedProcessorTest {
 
     @InjectMocks
@@ -54,9 +53,6 @@ public class HearingDaysWithoutCourtCentreCorrectedProcessorTest {
         final UUID id = randomUUID();
         final JsonObject payload = createObjectBuilder().add("id", id.toString()).build();
         when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
-
-        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
-        when(enveloper.withMetadataFrom(jsonEnvelope, "progression.command.populate-hearing-to-probation-caseworker")).thenReturn(enveloperFunction);
 
         hearingDaysWithoutCourtCentreCorrectedProcessor.correctHearingDaysWithoutCourtCentre(jsonEnvelope);
 

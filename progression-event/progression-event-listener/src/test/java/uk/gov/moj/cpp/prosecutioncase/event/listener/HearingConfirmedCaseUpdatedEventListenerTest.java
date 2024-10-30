@@ -4,7 +4,7 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,17 +38,16 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HearingConfirmedCaseUpdatedEventListenerTest {
     private final UUID id = randomUUID();
     private final UUID defendantId = randomUUID();
@@ -91,7 +90,7 @@ public class HearingConfirmedCaseUpdatedEventListenerTest {
     @InjectMocks
     private HearingConfirmedCaseUpdatedEventListener hearingConfirmedCaseUpdatedEventListener;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setField(this.objectToJsonObjectConverter, "mapper",
                 new ObjectMapperProducer().objectMapper());

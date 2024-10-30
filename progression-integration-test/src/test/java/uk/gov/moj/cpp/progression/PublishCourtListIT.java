@@ -11,13 +11,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasToString;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendMessage;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.CorrespondenceStub.stubForCorrespondenceCaseContacts;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
@@ -27,6 +28,9 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecu
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueReaderUtil;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
@@ -35,20 +39,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
 import javax.json.JsonObject;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PublishCourtListIT extends AbstractIT {
 
     private static final String PUBLIC_EVENT_COURT_LIST_PUBLISHED = "public.listing.court-list-published";
     private static final String PRIVATE_EVENT_EMAIL_REQUESTED = "progression.event.email-requested";
-    private static final String PRIVATE_EVENT_PRINT_REQUESTED = "progression.event.print-requested";
 
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String DEFENCE_ORGANISATION_EMAIL = "email@email.com";
@@ -60,21 +61,18 @@ public class PublishCourtListIT extends AbstractIT {
     private final String userId = randomUUID().toString();
     private final String caseUrn = generateUrn();
 
-    private static final MessageProducer messageProducerClientPublic = publicEvents.createPublicProducer();
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private static JmsMessageConsumerClient messageConsumerClientEmailRequested;
     private static final QueueReaderUtil queueReaderUtil = new QueueReaderUtil();
 
-    @BeforeClass
-    public static void setupOnce() throws Exception {
-        queueReaderUtil.startListeningToPrivateEvents(PRIVATE_EVENT_EMAIL_REQUESTED, PRIVATE_EVENT_PRINT_REQUESTED);
+    @BeforeAll
+    public static void setupOnce()  {
+        messageConsumerClientEmailRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_EMAIL_REQUESTED).getMessageConsumerClient();
+        queueReaderUtil.startListeningToPrivateEvents(messageConsumerClientEmailRequested, PRIVATE_EVENT_EMAIL_REQUESTED);
     }
 
-    @AfterClass
-    public static void teardownOnce() throws JMSException {
-        messageProducerClientPublic.close();
-        queueReaderUtil.closeQueues();
-    }
 
-    @Before
+    @BeforeEach
     public void setup() {
         NotificationServiceStub.setUp();
         stubDocumentCreate(DOCUMENT_TEXT);
@@ -112,7 +110,7 @@ public class PublishCourtListIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForWarnSingleHearing() throws Exception {
+    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForWarnSingleHearing() throws Exception, JSONException {
         givenDefendantIsRepresentedByDefenceOrganisation(defendantId1);
         andProsecutionCaseIsPresentInCrownCourt();
         andNonCPSProsecutorIsPresent();
@@ -126,7 +124,7 @@ public class PublishCourtListIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForFirmSingleHearing() throws Exception {
+    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForFirmSingleHearing() throws Exception, JSONException {
         givenDefendantIsRepresentedByDefenceOrganisation(defendantId1);
         andProsecutionCaseIsPresentInCrownCourt();
         andNonCPSProsecutorIsPresent();
@@ -153,7 +151,7 @@ public class PublishCourtListIT extends AbstractIT {
         stubForCorrespondenceCaseContacts("stub-data/correspondence.query.contacts.json", caseId, defendantId1, defendantId2);
     }
 
-    private void andProsecutionCaseIsPresentInCrownCourt() throws IOException {
+    private void andProsecutionCaseIsPresentInCrownCourt() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtAndVerify(caseId, defendantId1, caseUrn);
     }
 
@@ -162,13 +160,8 @@ public class PublishCourtListIT extends AbstractIT {
     }
 
     private void whenListingRaisesCourtListPublishedEvent(final String eventLocation) {
-        sendMessage(messageProducerClientPublic,
-                PUBLIC_EVENT_COURT_LIST_PUBLISHED, getContentsAsJsonObject(eventLocation),
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(PUBLIC_EVENT_COURT_LIST_PUBLISHED)
-                        .withUserId(userId)
-                        .build());
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENT_COURT_LIST_PUBLISHED, userId), getContentsAsJsonObject(eventLocation));
+        messageProducerClientPublic.sendMessage(PUBLIC_EVENT_COURT_LIST_PUBLISHED, publicEventEnvelope);
     }
 
     private UUID thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail() {
@@ -193,7 +186,7 @@ public class PublishCourtListIT extends AbstractIT {
     }
 
     private UUID verifyEmailRequestedPrivateEvent(final String emailAddress) {
-        final Optional<JsonObject> message = queueReaderUtil.retrieveMessageAsJsonObject(PRIVATE_EVENT_EMAIL_REQUESTED, emailAddress);
+        final Optional<JsonObject> message = queueReaderUtil.retrieveMessageBody(PRIVATE_EVENT_EMAIL_REQUESTED, emailAddress);
         assertThat(message.isPresent(), is(true));
         assertThat(message.get(), isJson(withJsonPath("$.notifications[0].sendToAddress",
                 hasToString(containsString(emailAddress)))));
@@ -201,7 +194,7 @@ public class PublishCourtListIT extends AbstractIT {
         return fromString(message.get().getString("materialId"));
     }
 
-    private void addProsecutionCaseToCrownCourtAndVerify(final String caseId, final String defendantId, final String urn) throws IOException {
+    private void addProsecutionCaseToCrownCourtAndVerify(final String caseId, final String defendantId, final String urn) throws IOException, JSONException {
         addProsecutionCaseToCrownCourt(caseId, defendantId, urn);
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,

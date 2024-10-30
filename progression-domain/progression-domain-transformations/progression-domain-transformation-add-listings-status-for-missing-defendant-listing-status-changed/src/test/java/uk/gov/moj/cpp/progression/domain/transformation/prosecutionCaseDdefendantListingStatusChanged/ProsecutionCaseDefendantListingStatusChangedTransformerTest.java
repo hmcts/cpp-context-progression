@@ -32,13 +32,13 @@ import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseDefendantListingStatusChangedTransformerTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
@@ -53,7 +53,7 @@ public class ProsecutionCaseDefendantListingStatusChangedTransformerTest {
 
     private JsonEnvelope jsonEnvelope;
 
-    @Before
+    @BeforeEach
     public void onceBeforeEachTest() {
         jsonEnvelope = envelopeFrom(metadataWithRandomUUID(PROGRESSION_CASE_DEFENDANT_LISTING_STATUS_CHANGED)
                         .withUserId(randomUUID().toString())

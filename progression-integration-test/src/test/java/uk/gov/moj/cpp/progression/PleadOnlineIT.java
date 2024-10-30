@@ -7,18 +7,21 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForLegalEntityDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.publicEvents;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonObject;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchersForLegalEntity;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.moj.cpp.progression.helper.QueueUtil;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.util.PleadOnlineHelper;
 
 import java.io.IOException;
@@ -26,31 +29,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.MessageConsumer;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PleadOnlineIT extends AbstractIT {
 
-    private final MessageConsumer publicEventConsumerForProsecutionCaseCreated = publicEvents.createPublicConsumer("public.progression.prosecution-case-created");
+    private static final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
     private PleadOnlineHelper pleadOnlineHelper;
 
-    private static final MessageConsumer messageConsumerOnlinePleaRecorded = QueueUtil.privateEvents.createPrivateConsumer("progression.event.online-plea-recorded");
+    private static final JmsMessageConsumerClient messageConsumerOnlinePleaRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.online-plea-recorded").getMessageConsumerClient();
+    private static final JmsMessageConsumerClient messageConsumerOnlinePleaPcqVisitedRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.online-plea-pcq-visited-recorded").getMessageConsumerClient();
 
-    private static final MessageConsumer messageConsumerOnlinePleaPcqVisitedRecorded = QueueUtil.privateEvents.createPrivateConsumer("progression.event.online-plea-pcq-visited-recorded");
-
-
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         setupLoggedInUsersPermissionQueryStub();
 
@@ -58,7 +58,7 @@ public class PleadOnlineIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSubmitOnlinePleaRequestForIndividual() throws IOException {
+    public void shouldSubmitOnlinePleaRequestForIndividual() throws IOException, JSONException {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -77,7 +77,7 @@ public class PleadOnlineIT extends AbstractIT {
         Response response = pleadOnlineHelper.submitOnlinePlea(caseId.toString(), defendantId.toString(), "progression.command.online-plea-request-individual.json");
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final JsonPath matchers = QueueUtil.retrieveMessage(messageConsumerOnlinePleaRecorded, isJson(Matchers.allOf(
+        final JsonPath matchers = retrieveMessageAsJsonPath(messageConsumerOnlinePleaRecorded, isJson(Matchers.allOf(
                 withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.pleadOnline.defendantId", is(defendantId.toString()))
         )));
@@ -88,7 +88,7 @@ public class PleadOnlineIT extends AbstractIT {
 
     //CCT-1324
     @Test
-    public void shouldRaiseOnlinePleaPcqVisitedRequestForIndividual() throws IOException {
+    public void shouldRaiseOnlinePleaPcqVisitedRequestForIndividual() throws IOException, JSONException {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendantId.toString());
@@ -104,10 +104,10 @@ public class PleadOnlineIT extends AbstractIT {
         Response response = pleadOnlineHelper.submitOnlinePleaPcqVisited(caseId.toString(), defendantId.toString(), "progression.command.online-plea-pcq-visited-individual.json");
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final JsonPath matchers = QueueUtil.retrieveMessage(messageConsumerOnlinePleaPcqVisitedRecorded, isJson(Matchers.allOf(
+        final JsonPath matchers = retrieveMessageAsJsonPath(messageConsumerOnlinePleaPcqVisitedRecorded, isJson(Matchers.allOf(
                 withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.pleadOnlinePcqVisited.defendantId", is(defendantId.toString())),
-                withJsonPath("$.pleadOnlinePcqVisited.pcqId",is("9ec012ea-566a-4952-ad8d-b09a57030d95")),
+                withJsonPath("$.pleadOnlinePcqVisited.pcqId", is("9ec012ea-566a-4952-ad8d-b09a57030d95")),
                 withJsonPath("$.pleadOnlinePcqVisited.urn", is("TFL12345467"))
         )));
 
@@ -133,7 +133,7 @@ public class PleadOnlineIT extends AbstractIT {
         Response response = pleadOnlineHelper.submitOnlinePlea(caseId.toString(), defendantId.toString(), "progression.command.online-plea-request-corporate.json");
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final JsonPath matchers = QueueUtil.retrieveMessage(messageConsumerOnlinePleaRecorded, isJson(Matchers.allOf(
+        final JsonPath matchers = retrieveMessageAsJsonPath(messageConsumerOnlinePleaRecorded, isJson(Matchers.allOf(
                 withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.pleadOnline.defendantId", is(defendantId.toString()))
         )));
@@ -160,7 +160,7 @@ public class PleadOnlineIT extends AbstractIT {
         Response response = pleadOnlineHelper.submitOnlinePleaPcqVisited(caseId.toString(), defendantId.toString(), "progression.command.online-plea-pcq-visited-corporate.json");
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final JsonPath matchers = QueueUtil.retrieveMessage(messageConsumerOnlinePleaPcqVisitedRecorded, isJson(Matchers.allOf(
+        final JsonPath matchers = retrieveMessageAsJsonPath(messageConsumerOnlinePleaPcqVisitedRecorded, isJson(Matchers.allOf(
                 withJsonPath("$.caseId", is(caseId.toString())),
                 withJsonPath("$.pleadOnlinePcqVisited.defendantId", is(defendantId.toString()))
         )));
@@ -169,7 +169,7 @@ public class PleadOnlineIT extends AbstractIT {
     }
 
     private void verifyInMessagingQueueForProsecutionCaseCreated() {
-        final Optional<JsonObject> message = retrieveMessageAsJsonObject(publicEventConsumerForProsecutionCaseCreated);
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForProsecutionCaseCreated);
         assertTrue(message.isPresent());
     }
 

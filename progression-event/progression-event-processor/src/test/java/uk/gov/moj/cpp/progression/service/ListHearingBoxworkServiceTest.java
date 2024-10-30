@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.service;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.justice.core.courts.CourtApplication;
 
 import java.time.LocalDate;

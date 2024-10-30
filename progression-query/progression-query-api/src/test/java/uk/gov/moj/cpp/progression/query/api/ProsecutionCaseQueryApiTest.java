@@ -4,14 +4,12 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.QueryClientTestBase.readJson;
-import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
-import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_NAME;
-import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_PROSECUTION;
 
 import uk.gov.QueryClientTestBase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -26,20 +24,18 @@ import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class ProsecutionCaseQueryApiTest {
 
     private static final String JSON_CAAG_RESPONSE_JSON = "json/caagQueryResponse.json";
@@ -94,12 +90,7 @@ public class ProsecutionCaseQueryApiTest {
     UsersGroupQueryService usersGroupQueryService;
 
     @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Before
-    public void setup() {
-        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-    }
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @Test
     public void shouldHandleGetCaseHearings() {
@@ -397,7 +388,7 @@ public class ProsecutionCaseQueryApiTest {
                 .getJsonObject(1).getString("applicationId"), equalTo("fcb1edc9-786a-562d-9400-318c95c7b701"));
     }
 
-    @Test(expected = ForbiddenRequestException.class)
+    @Test
     public void shouldThrowForbiddenExceptionWhenNonCPSProsecutorAndOrganisationMismatch() {
         final JsonObject prosecutionCasePayload = readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
         final JsonObject courtOrdersPayload = readJson(DEFENDANT_WITH_COURT_ORDERS_JSON, JsonObject.class);
@@ -410,10 +401,9 @@ public class ProsecutionCaseQueryApiTest {
         final JsonEnvelope queryEnvelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
         when(prosecutionCaseQuery.getProsecutionCase(queryEnvelope)).thenReturn(envelope);
-        when(courtOrderService.getCourtOrdersByDefendant(any(), any(), any())).thenReturn(courtOrdersPayload);
         when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),any())).thenReturn(Optional.of("OrganisationMisMatch"));
 
-        prosecutionCaseQueryApi.getCaseProsecutionCase(queryEnvelope);
+        assertThrows(ForbiddenRequestException.class, () -> prosecutionCaseQueryApi.getCaseProsecutionCase(queryEnvelope));
 
     }
 

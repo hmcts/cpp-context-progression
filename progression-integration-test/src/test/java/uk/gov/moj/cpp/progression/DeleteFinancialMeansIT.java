@@ -10,19 +10,19 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseWithMatchers;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
-
 import java.io.IOException;
 import java.util.UUID;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
@@ -34,7 +34,7 @@ public class DeleteFinancialMeansIT extends AbstractIT {
     private String defendantId;
 
 
-    @Before
+    @BeforeEach
     public void setup() {
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
@@ -45,7 +45,7 @@ public class DeleteFinancialMeansIT extends AbstractIT {
     }
 
     @Test
-    public void shouldDeleteDefendantFinancialMeansDocument() throws IOException {
+    public void shouldDeleteDefendantFinancialMeansDocument() throws IOException, JSONException {
 
         //Given
         setUpProsecutionCaseWithDefendantCourtDocument();
@@ -63,7 +63,7 @@ public class DeleteFinancialMeansIT extends AbstractIT {
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    private void setUpProsecutionCaseWithDefendantCourtDocument() throws IOException {
+    private void setUpProsecutionCaseWithDefendantCourtDocument() throws IOException, JSONException {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
@@ -103,7 +103,7 @@ public class DeleteFinancialMeansIT extends AbstractIT {
         );
     }
 
-    private void assertCourtDocumentByCase() {
+    private void assertCourtDocumentByCase() throws JSONException {
 
         final String courtDocumentsByCaseStatus = getCourtDocumentsByCaseWithMatchers(UUID.randomUUID().toString(), docId, caseId);
         final String expectedPayload = getPayload("expected/expected.progression.court-document-delete-financial-means.json")

@@ -6,8 +6,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import uk.gov.justice.core.courts.CotrPdfContent;
 import uk.gov.justice.core.courts.CreateCotr;
@@ -33,6 +33,7 @@ import uk.gov.justice.progression.event.DefendantRemovedFromCotr;
 import uk.gov.justice.progression.event.FurtherInfoForDefenceCotrAdded;
 import uk.gov.justice.progression.event.FurtherInfoForProsecutionCotrAdded;
 import uk.gov.justice.progression.event.ReviewNotesUpdated;
+import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.PolarQuestion;
 import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
 import uk.gov.moj.cpp.progression.json.schemas.event.CotrTaskRequested;
@@ -47,20 +48,19 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.SerializationException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.internal.util.reflection.Whitebox;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class CotrAggregateTest {
 
     @InjectMocks
     private CotrAggregate cotrAggregate;
 
-    @After
+    @AfterEach
     public void teardown() {
         try {
             // ensure aggregate is serializable
@@ -174,7 +174,7 @@ public class CotrAggregateTest {
 
     @Test
     public void shouldNotReturnCotrArchived() {
-        Whitebox.setInternalState(this.cotrAggregate, "archived", true);
+        ReflectionUtil.setField(this.cotrAggregate, "archived", true);
         final List<Object> eventStream = cotrAggregate.archiveCotr(randomUUID()).collect(toList());
         assertThat(eventStream.size(), CoreMatchers.is(0));
     }

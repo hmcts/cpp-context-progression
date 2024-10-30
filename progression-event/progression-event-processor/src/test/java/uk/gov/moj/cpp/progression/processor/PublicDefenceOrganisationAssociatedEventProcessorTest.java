@@ -17,8 +17,8 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.common.io.Resources;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -36,7 +36,7 @@ public class PublicDefenceOrganisationAssociatedEventProcessorTest {
     @InjectMocks
     private PublicDefenceOrganisationAssociatedEventProcessor publicDefenceOrganisationAssociatedEventProcessor;
 
-    @Before
+    @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }

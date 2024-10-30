@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.util;
 import static java.nio.charset.Charset.defaultCharset;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.InputStream;
 

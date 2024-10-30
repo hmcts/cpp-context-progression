@@ -1,25 +1,13 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.HearingApplicationLinkCreated.hearingApplicationLinkCreated;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.UUID;
-import javax.json.JsonObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
@@ -33,7 +21,20 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class HearingApplicationLinkCreatedProcessorTest {
 
     @Spy

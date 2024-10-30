@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static com.jayway.jsonassert.JsonAssert.with;
 import static com.jayway.jsonpath.JsonPath.parse;
-import static java.lang.String.valueOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVerificationHelper.addressLines;
 

@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.command;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -12,14 +12,14 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.util.function.Function;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RemoveCourtDocumentApiTest {
 
     @Mock
@@ -45,6 +45,18 @@ public class RemoveCourtDocumentApiTest {
         when(function.apply(any())).thenReturn(commandEnvelope);
 
         removeCourtDocumentApi.handle(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
+    }
+
+    @Test
+    public void shouldRemoveDocumentByBdf() {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.remove-court-document-bdf"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
+        removeCourtDocumentApi.handleBdf(command);
 
         verify(sender, times(1)).send(commandEnvelope);
     }

@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_SAC;
 
-import org.checkerframework.checker.units.qual.C;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
@@ -32,12 +31,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class UnscheduledCourtHearingListTransformerTest {
     private static final UUID WOFN = randomUUID();
     private static final String WOFN_LABEL = "WOFN";

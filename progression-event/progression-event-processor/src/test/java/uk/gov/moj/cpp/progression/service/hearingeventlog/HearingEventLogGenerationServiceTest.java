@@ -9,30 +9,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.utils.PayloadUtil.getPayloadAsJsonObject;
 
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.enveloper.Enveloper;
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
-import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
-import uk.gov.moj.cpp.progression.service.utils.PdfHelper;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
 import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
@@ -44,17 +38,17 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class HearingEventLogGenerationServiceTest {
 
@@ -63,12 +57,8 @@ public class HearingEventLogGenerationServiceTest {
 
     @Spy
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    @Spy
-    @InjectMocks
+    @Mock
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
-    @Spy
-    @InjectMocks
-    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Captor
     ArgumentCaptor<JsonObject> hearingEventLogArgumentCaptor;
     @Captor
@@ -79,16 +69,9 @@ public class HearingEventLogGenerationServiceTest {
     private Enveloper enveloper = EnveloperFactory.createEnveloper();
     @Mock
     private Sender sender;
-    @Mock
-    private NotificationService notificationService;
-    @Mock
-    private FileStorer fileStorer;
+
     @Mock
     private DocumentGeneratorService documentGeneratorService;
-    @Mock
-    private PdfHelper pdfHelper;
-    @Mock
-    private Requester requester;
     @InjectMocks
     private HearingEventLogGenerationService hearingEventLogGenerationService;
     @Mock
@@ -100,30 +83,23 @@ public class HearingEventLogGenerationServiceTest {
     @Mock
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
-    final private UUID applicationId = null;
-
     @Test
     public void shouldGenerateCaseHearingEventLog() throws Exception {
         final byte[] documentData = {34, 56, 78, 90};
         final UUID systemUserId = randomUUID();
         final UUID materialId = randomUUID();
         final UUID caseId = randomUUID();
-        final String caseURN = "89QB622177";
-        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("hearing.get-hearing-event-log-for-documents").build();
         final JsonObject responsePayload = getPayloadAsJsonObject(hearingEventLogResponse);
         final Optional<JsonObject> documentTypeData = buildDocumentTypeDataWithRBAC("documentCategory");
 
 
         when(originatingEnvelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("progression.event.hearing-event-logs-document-created").withUserId(randomUUID().toString()).build());
-        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(JsonEnvelope.envelopeFrom(metadata, responsePayload));
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
-        when(fileStorer.store(any(), any())).thenReturn(randomUUID());
-        when(documentGeneratorClient.generatePdfDocument(responsePayload, "HEARING_EVENT_LOG", systemUserId)).thenReturn(documentData);
         when(documentGeneratorService.generatePdfDocument(any(), any(), any())).thenReturn(materialId);
         when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(documentTypeData);
-
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(documentTypeData.get());
 
         hearingEventLogGenerationService.generateHearingLogEvent(originatingEnvelope, caseId, responsePayload,Optional.empty());
 
@@ -147,23 +123,18 @@ public class HearingEventLogGenerationServiceTest {
         final UUID systemUserId = randomUUID();
         final UUID materialId = randomUUID();
         final UUID caseId = randomUUID();
-        final String caseURN = "89QB622177";
         final UUID applicationId = randomUUID();
-        final Metadata metadata = JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("hearing.get-hearing-event-log-for-documents").build();
         final JsonObject responsePayload = getPayloadAsJsonObject(hearingEventLogResponse);
         final Optional<JsonObject> documentTypeData = buildDocumentTypeDataWithRBAC("documentCategory");
 
 
         when(originatingEnvelope.metadata()).thenReturn(metadataBuilder().withId(randomUUID()).withName("progression.event.hearing-event-logs-document-created").withUserId(randomUUID().toString()).build());
-        when(requester.requestAsAdmin(any(JsonEnvelope.class))).thenReturn(JsonEnvelope.envelopeFrom(metadata, responsePayload));
         when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
         when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(documentData);
-        when(fileStorer.store(any(), any())).thenReturn(randomUUID());
-        when(documentGeneratorClient.generatePdfDocument(responsePayload, "HEARING_EVENT_LOG", systemUserId)).thenReturn(documentData);
         when(documentGeneratorService.generatePdfDocument(any(), any(), any())).thenReturn(materialId);
         when(referenceDataService.getDocumentTypeAccessData(any(), any(), any())).thenReturn(documentTypeData);
-
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(documentTypeData.get());
 
         hearingEventLogGenerationService.generateHearingLogEvent(originatingEnvelope, caseId, responsePayload,Optional.of(applicationId.toString()));
 
