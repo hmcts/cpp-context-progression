@@ -54,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -1900,5 +1901,14 @@ public class PreAndPostConditionHelper {
         return pollForResponse("/prosecutioncases/group/" + groupId , "application/vnd.progression.query.group-member-cases+json", matchers);
     }
 
+    public static Response removeDeletedHearingChildEntries(final String hearingId) throws IOException {
+        final JsonObjectBuilder builder = createObjectBuilder();
+
+        builder.add("hearingId", hearingId);
+
+        return postCommand(getWriteUrl(String.format("/hearing/%s", hearingId)),
+                "application/vnd.progression.command.remove-deleted-hearing-child-entries-bdf+json",
+                builder.build().toString());
+    }
 
 }

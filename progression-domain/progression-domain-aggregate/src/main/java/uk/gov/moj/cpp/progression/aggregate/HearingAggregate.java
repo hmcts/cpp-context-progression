@@ -1110,7 +1110,7 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> hearingTrialVacated(final UUID hearingId, final UUID vacatedTrialReasonId) {
 
-        if (nonNull(this.hearing)) {
+        if (nonNull(this.hearing) && !this.deleted) {
 
             return apply(Stream.of(HearingTrialVacated.hearingTrialVacated()
                     .withHearingId(hearingId)
