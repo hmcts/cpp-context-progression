@@ -278,6 +278,7 @@ public class HearingNotificationHelper {
                 .withMaterialUrl(materialUrl)
                 .withTemplateId(hearingNotificationInputData.getEmailNotificationTemplateId())
                 .withSendToAddress(email)
+                .withReplyToAddress("NOREPLY@noreply.com")
                 .build();
         notificationService.sendEmail(jsonEnvelope, notificationId, caseId, null, materialId, Arrays.asList(emailChannel));
     }

@@ -111,11 +111,12 @@ public class NotificationNotifyEventProcessor {
     @Handles("public.notificationnotify.events.notification-sent")
     public void markNotificationAsSucceeded(final JsonEnvelope event) {
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
-        final String sourceType = event.payloadAsJsonObject().getString(SOURCE_TYPE);
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
 
-        logger.info(format(">> public.notificationnotify.events.notification-sent  : %s", event.metadata()));
-        if (SourceType.EMAIL.getName().equalsIgnoreCase(sourceType)) {
+        logger.info(format(">>2047 public.notificationnotify.events.notification-sent  : %s", event.metadata()));
+        logger.info(format(">>2047 public.notificationnotify.events.notification-sent  : %s", event.payloadAsJsonObject()));
+
+        if (event.payloadAsJsonObject().containsKey(SOURCE_TYPE) && SourceType.EMAIL.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE))) {
             generateAndAddEmailDocument(event);
         }
 
@@ -137,13 +138,14 @@ public class NotificationNotifyEventProcessor {
     }
 
     private void generateAndAddEmailDocument(final JsonEnvelope event) {
+        logger.info("2047 payload received in generateAndAddEmailDocument {}", event.payloadAsJsonObject());
+        logger.info("2047 event metadata {}", event.metadata());
+        logger.info("2047 event metadata {}", event.metadata().userId() != null?event.metadata().userId():"no user id");
+
         final JsonObject emailDocumentJson = event.payloadAsJsonObject();
         final UUID caseId = UUID.fromString(emailDocumentJson.getString(CASE_ID));
         final String recipientType = emailDocumentJson.getString("recipientType");
 
-        logger.info("2047 payload received in generateAndAddEmailDocument {}", emailDocumentJson);
-        logger.info("2047 event metadata {}", event.metadata());
-        logger.info("2047 event metadata {}", event.metadata().userId() != null?event.metadata().userId():"no user id");
         try {
             final UUID materialId = randomUUID();
             final String fileName = format("Email notification of hearing %s %s copy", formatter.format(LocalDateTime.now()), recipientType);

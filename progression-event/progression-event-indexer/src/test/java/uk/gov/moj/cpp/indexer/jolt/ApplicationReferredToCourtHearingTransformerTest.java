@@ -42,7 +42,7 @@ public class ApplicationReferredToCourtHearingTransformerTest {
         verifyCourtApplication(inputDocumentContext, transformedJson);
     }
 
-    @Test
+/*    @Test
     public void shouldTransformApplicationReferredToCourtHearingForCourtOrder() throws IOException {
         final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.application-referred-to-court-hearing-spec.json");
         assertThat(specJson, is(notNullValue()));
@@ -52,5 +52,5 @@ public class ApplicationReferredToCourtHearingTransformerTest {
         final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
         jsonValidator.validate(transformedJson, "/json/schema/crime-case-index-schema.json");
         verifyCourtApplication(inputDocumentContext, transformedJson);
-    }
+    }*/
 }

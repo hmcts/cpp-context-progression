@@ -858,6 +858,7 @@ public class NotificationService {
         emailNotification.setPersonalisation(personalisation);
 
         emailNotification.setReplyToAddress(emailChannel.getReplyToAddress());
+        LOGGER.info(">>2047 Notifications in createNotification {}", emailNotification );
 
         return emailNotification;
     }
