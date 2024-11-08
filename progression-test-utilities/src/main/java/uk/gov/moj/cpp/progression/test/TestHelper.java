@@ -22,8 +22,10 @@ import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
+@SuppressWarnings("squid:S1168")
 public class TestHelper {
 
     private static final String MC_80527 = "MC80527";
@@ -33,7 +35,7 @@ public class TestHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate){
+    public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
@@ -83,7 +85,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static CourtApplication buildCourtapplicationWithOffenceUnderCase(final UUID courtApplicationId, final UUID offenceId, final LocalDate convictionDate){
+    public static CourtApplication buildCourtapplicationWithOffenceUnderCase(final UUID courtApplicationId, final UUID offenceId, final LocalDate convictionDate, final boolean hasCourtApplicationCases, final boolean hasCourtOrder) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
@@ -94,7 +96,8 @@ public class TestHelper {
                                 .withProsecutionAuthorityId(randomUUID())
                                 .build())
                         .build())
-                .withCourtApplicationCases(singletonList(buildCourtApplicationCase(offenceId, convictionDate)))
+                .withCourtApplicationCases(getCourtApplicationCases(offenceId, convictionDate, hasCourtApplicationCases))
+                .withCourtOrder(getCourtOrder(offenceId, convictionDate, hasCourtOrder))
                 .build();
     }
 
@@ -132,7 +135,25 @@ public class TestHelper {
                 .build();
     }
 
-    public static CourtApplication buildCourtapplicationWithOffenceUnderCourtOrder(final UUID courtApplicationId, final UUID offenceId,  final LocalDate convictionDate){
+    public static CourtApplication buildCourtapplicationWithOffenceUnderCase(final UUID courtApplicationId, final UUID offenceId, final LocalDate convictionDate) {
+        return buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, convictionDate, true, false);
+    }
+
+    private static CourtOrder getCourtOrder(final UUID offenceId, final LocalDate convictionDate, final boolean hasCourtOrder) {
+        if (!hasCourtOrder) {
+            return null;
+        }
+        return buildCourtOrder(offenceId, convictionDate);
+    }
+
+    private static List<CourtApplicationCase> getCourtApplicationCases(final UUID offenceId, final LocalDate convictionDate, final boolean hasCourtApplicationCases) {
+        if (!hasCourtApplicationCases) {
+            return null;
+        }
+        return singletonList(buildCourtApplicationCase(offenceId, convictionDate));
+    }
+
+    public static CourtApplication buildCourtapplicationWithOffenceUnderCourtOrder(final UUID courtApplicationId, final UUID offenceId, final LocalDate convictionDate) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
@@ -147,7 +168,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static CourtApplicationCase buildCourtApplicationCase(final UUID offenceId, final LocalDate convictionDate){
+    public static CourtApplicationCase buildCourtApplicationCase(final UUID offenceId, final LocalDate convictionDate) {
         return CourtApplicationCase.courtApplicationCase()
                 .withIsSJP(false)
                 .withCaseStatus("ACTIVE")
@@ -156,7 +177,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static CourtOrder buildCourtOrder(final UUID offenceId, final LocalDate convictionDate){
+    public static CourtOrder buildCourtOrder(final UUID offenceId, final LocalDate convictionDate) {
         return CourtOrder.courtOrder()
                 .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
                         .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())

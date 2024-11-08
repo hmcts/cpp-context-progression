@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.Hearing;
@@ -53,17 +54,20 @@ public class HearingTrialVacatedEventListener {
 
         final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingTrialVacated.getHearingId());
 
-        final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
+        if (nonNull(dbHearingEntity)) {
 
-        final Hearing dbHearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
-        final Hearing.Builder builder = Hearing.hearing().withValuesFrom(dbHearing);
-        builder.withIsVacatedTrial(Objects.nonNull(hearingTrialVacated.getVacatedTrialReasonId()));
+            final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
+
+            final Hearing dbHearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
+            final Hearing.Builder builder = Hearing.hearing().withValuesFrom(dbHearing);
+            builder.withIsVacatedTrial(nonNull(hearingTrialVacated.getVacatedTrialReasonId()));
 
 
-        final JsonObject updatedJsonObject = objectToJsonObjectConverter.convert(builder.build());
-        dbHearingEntity.setPayload(updatedJsonObject.toString());
-        // save in updated hearing in hearing table
-        hearingRepository.save(dbHearingEntity);
+            final JsonObject updatedJsonObject = objectToJsonObjectConverter.convert(builder.build());
+            dbHearingEntity.setPayload(updatedJsonObject.toString());
+            // save in updated hearing in hearing table
+            hearingRepository.save(dbHearingEntity);
+        }
 
     }
 

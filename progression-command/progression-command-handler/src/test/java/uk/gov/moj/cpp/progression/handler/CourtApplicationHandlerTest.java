@@ -90,6 +90,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
@@ -120,10 +121,12 @@ import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.test.FileUtil;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
@@ -824,15 +827,28 @@ public class CourtApplicationHandlerTest {
 
 
     @Test
-    public void shouldReferApplicationToBoxWork() throws Exception {
+    public void shouldReferApplicationToBoxWorkWhenCourtApplicationCasesIsNotNull() throws Exception {
         final UUID applicationId = randomUUID();
         final JsonObject listOrReferCourtApplication =
                 createObjectBuilder().add("id", applicationId.toString()).build();
 
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
                 initiateCourtApplicationProceedings()
-                        .withCourtApplication(courtApplication().withId(applicationId).withType(courtApplicationType().withLinkType(LinkType.LINKED).build()).build())
-                        .withBoxHearing(boxHearingRequest().build())
+                        .withCourtApplication(courtApplication()
+                                .withId(applicationId)
+                                .withType(courtApplicationType()
+                                        .withLinkType(LinkType.LINKED)
+                                        .build())
+                                .withCourtApplicationCases(singletonList(
+                                        CourtApplicationCase.courtApplicationCase()
+                                                .withIsSJP(false)
+                                                .withCaseStatus("ACTIVE")
+                                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                                .withOffences(singletonList(buildOffence(randomUUID(), LocalDate.now())))
+                                                .build()
+                                ))
+                                .build())
+                        .withBoxHearing(boxHearingRequest().withId(randomUUID()).build())
                         .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                         .withSummonsApprovalRequired(false)
                         .build();
@@ -858,19 +874,100 @@ public class CourtApplicationHandlerTest {
 
         courtApplicationHandler.listOrReferApplication(envelope);
 
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        final List<JsonEnvelope> eventList = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        assertThat(eventList.size(), is(2));
+        assertThat(eventList.get(0).metadata().name(), is("progression.event.court-application-added-to-case"));
+        assertThat(eventList.get(1).metadata().name(), is("progression.event.application-referred-to-boxwork"));
+        assertThat(eventList.get(1).payloadAsJsonObject().getJsonObject("application"), notNullValue());
+        assertThat(eventList.get(1).payloadAsJsonObject().getJsonObject("boxHearing"), notNullValue());
+    }
 
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.application-referred-to-boxwork"),
-                        payload().isJson(allOf(
-                                withJsonPath("$.courtApplication", notNullValue()))
-                        ).isJson(allOf(
-                                withJsonPath("$.boxHearing", notNullValue())))
+    @Test
+    public void shouldReferApplicationToBoxWorkWhenCourtOrderIsNotNull() throws Exception {
+        final UUID applicationId = randomUUID();
+        final JsonObject listOrReferCourtApplication =
+                createObjectBuilder().add("id", applicationId.toString()).build();
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withId(applicationId)
+                                .withType(courtApplicationType()
+                                        .withLinkType(LinkType.LINKED)
+                                        .build())
+                                .withCourtOrder(
+                                        CourtOrder.courtOrder()
+                                                .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
+                                                        .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
+                                                        .withOffence(buildOffence(randomUUID(), LocalDate.now()))
+                                                        .build()))
+                                                .build()
+                                )
+                                .build())
+                        .withBoxHearing(boxHearingRequest().withId(randomUUID()).build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .withSummonsApprovalRequired(false)
+                        .build();
 
-                )
-        ));
+        applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.list-or-refer-court-application")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<JsonObject> envelope = envelopeFrom(metadata, listOrReferCourtApplication);
+
+        courtApplicationHandler.listOrReferApplication(envelope);
+
+        final List<JsonEnvelope> eventList = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        assertThat(eventList.size(), is(2));
+        assertThat(eventList.get(0).metadata().name(), is("progression.event.court-application-added-to-case"));
+        assertThat(eventList.get(1).metadata().name(), is("progression.event.application-referred-to-boxwork"));
+        assertThat(eventList.get(1).payloadAsJsonObject().getJsonObject("application"), notNullValue());
+        assertThat(eventList.get(1).payloadAsJsonObject().getJsonObject("boxHearing"), notNullValue());
+    }
+
+    @Test
+    public void shouldNotReferApplicationToBoxWorkWhenCourtOrderAndCourtApplicationCasesIsNull() throws Exception {
+        final UUID applicationId = randomUUID();
+        final JsonObject listOrReferCourtApplication =
+                createObjectBuilder().add("id", applicationId.toString()).build();
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withId(applicationId)
+                                .withType(courtApplicationType()
+                                        .withLinkType(LinkType.LINKED)
+                                        .build())
+                                .build())
+                        .withBoxHearing(boxHearingRequest().withId(randomUUID()).build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .withSummonsApprovalRequired(false)
+                        .build();
+
+        applicationAggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+        applicationAggregate.createCourtApplication(initiateCourtApplicationProceedings.getCourtApplication(), null);
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.list-or-refer-court-application")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<JsonObject> envelope = envelopeFrom(metadata, listOrReferCourtApplication);
+
+        courtApplicationHandler.listOrReferApplication(envelope);
+
+        final List<JsonEnvelope> eventList = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        assertThat(eventList.size(), is(0));
     }
 
     @Test
@@ -2793,5 +2890,12 @@ public class CourtApplicationHandlerTest {
                     .build();
         }
         return null;
+    }
+
+    public static Offence buildOffence(final UUID offenceId, final LocalDate convictionDate) {
+        return Offence.offence()
+                .withId(offenceId)
+                .withConvictionDate(convictionDate)
+                .build();
     }
 }
