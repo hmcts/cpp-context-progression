@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-query</artifactId>
-        <version>17.0.23-CPAW-DLQ-SNAPSHOT</version>
+        <version>17.0.24-CPAW-DLQ-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-view</artifactId>
     <packaging>jar</packaging>
