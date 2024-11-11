@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
 import uk.gov.justice.core.courts.CourtDocument;
@@ -55,11 +56,8 @@ public class CpsRestNotificationService {
         final Response response = restEasyClientService.post(cpsPayloadTransformAndSendUrl, payload, subscriptionKey);
         LOGGER.info("API-M {} called with Request: {} and received status response: {}", cpsPayloadTransformAndSendUrl, payload, response.getStatus());
 
-        final JsonObject event = envelope.payloadAsJsonObject();
-        final CourtDocument courtDocument = jsonObjectConverter.convert(event.getJsonObject("courtDocument"), CourtDocument.class);
-
         UpdateSendToCpsFlag.Builder updateSendToCpsFlagBuilder = UpdateSendToCpsFlag.updateSendToCpsFlag()
-                .withCourtDocumentId(courtDocumentId).withCourtDocument(courtDocument);
+                .withCourtDocumentId(courtDocumentId);
 
         if (HttpStatus.SC_OK == response.getStatus()) {
             updateSendToCpsFlagBuilder = updateSendToCpsFlagBuilder.withSendToCps(true);
@@ -67,5 +65,25 @@ public class CpsRestNotificationService {
 
         sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.update-send-to-cps-flag").build(),
                 this.objectToJsonObjectConverter.convert(updateSendToCpsFlagBuilder.build())));
+    }
+
+    public void sendMaterialWithCourtDocument(final String payload, final UUID courtDocumentId, final JsonEnvelope envelope) {
+        final Response response = restEasyClientService.post(cpsPayloadTransformAndSendUrl, payload, subscriptionKey);
+        LOGGER.info("API-M {} called with Request: {} and received status response: {}", cpsPayloadTransformAndSendUrl, payload, response.getStatus());
+
+        final JsonObject event = envelope.payloadAsJsonObject();
+        if(nonNull(event.getJsonObject("courtDocument"))) {
+            final CourtDocument courtDocument = jsonObjectConverter.convert(event.getJsonObject("courtDocument"), CourtDocument.class);
+
+            UpdateSendToCpsFlag.Builder updateSendToCpsFlagBuilder = UpdateSendToCpsFlag.updateSendToCpsFlag()
+                    .withCourtDocumentId(courtDocumentId).withCourtDocument(courtDocument);
+
+            if (HttpStatus.SC_OK == response.getStatus()) {
+                updateSendToCpsFlagBuilder = updateSendToCpsFlagBuilder.withSendToCps(true);
+            }
+
+            sender.send(Envelope.envelopeFrom(metadataFrom(envelope.metadata()).withName("progression.command.update-send-to-cps-flag").build(),
+                    this.objectToJsonObjectConverter.convert(updateSendToCpsFlagBuilder.build())));
+        }
     }
 }

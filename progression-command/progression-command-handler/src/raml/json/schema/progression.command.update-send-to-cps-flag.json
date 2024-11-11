@@ -14,8 +14,7 @@
     }
   },
   "required": [
-    "courtDocumentId",
-    "courtDocument"
+    "courtDocumentId"
   ],
   "additionalProperties": false
 }
