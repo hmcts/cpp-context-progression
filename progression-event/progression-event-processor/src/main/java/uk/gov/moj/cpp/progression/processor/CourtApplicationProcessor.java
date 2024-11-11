@@ -704,9 +704,10 @@ public class CourtApplicationProcessor {
 
     @Handles("progression.event.send-notification-for-application-initiated")
     public void sendNotificationForApplication(final JsonEnvelope jsonEnvelope) {
+        LOGGER.warn("****** sendNotificationForApplication event received, jsonEnvelope= {}", jsonEnvelope);
         final SendNotificationForApplication sendNotificationForApplication = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForApplication.class);
         final CourtApplication courtApplication = sendNotificationForApplication.getCourtApplication();
-
+        LOGGER.warn("****** sendNotificationForApplication courtApplicationId = {} ", courtApplication.getId());
         if (sendNotificationForApplication.getIsWelshTranslationRequired()) {
             final String applicantNameFromMasterDefendant = nonNull(courtApplication.getApplicant().getMasterDefendant())  && nonNull(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant()) ? courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName() : "";
             final String applicationName = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getPersonDetails().getFirstName() : applicantNameFromMasterDefendant;
@@ -720,7 +721,11 @@ public class CourtApplicationProcessor {
                     .withMetadataFrom(jsonEnvelope));
         }
         final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
+        LOGGER.warn("****** sendNotificationForApplication nonNull(courtHearingRequest) = {} ", nonNull(courtHearingRequest));
         if(nonNull(courtHearingRequest) && (isNull(courtHearingRequest.getCourtCentre().getRoomId()) || nonNull(courtHearingRequest.getWeekCommencingDate()))) {
+            LOGGER.warn("****** sendNotificationForApplication isNull(courtHearingRequest.getCourtCentre().getRoomId()) = {} ", isNull(courtHearingRequest.getCourtCentre().getRoomId()));
+            LOGGER.warn("****** sendNotificationForApplication nonNull(courtHearingRequest.getWeekCommencingDate()) = {} ", nonNull(courtHearingRequest.getWeekCommencingDate()));
+            LOGGER.warn("****** sendNotificationForApplication sending notification to notificationService");
             notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType(), false);
         }
     }
