@@ -90,8 +90,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"WeakerAccess", "squid:CommentedOutCodeLine", "squid:UnusedPrivateMethod", "squid:S1172", "squid:CallToDeprecatedMethod", "squid:S2221", "squid:S1612"})
 public class NotificationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class);
-
     public static final String CASE_ID = "caseId";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String MATERIAL_ID = "materialId";
