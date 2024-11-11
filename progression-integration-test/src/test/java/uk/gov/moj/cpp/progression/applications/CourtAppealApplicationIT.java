@@ -17,6 +17,8 @@ import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearin
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.AbstractIT;
+import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 
 import java.nio.charset.Charset;
 import java.util.Optional;
@@ -31,7 +33,7 @@ import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 @ExtendWith(JmsResourceManagementExtension.class)
-public class CourtAppealApplicationIT {
+public class CourtAppealApplicationIT extends AbstractIT{
 
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
