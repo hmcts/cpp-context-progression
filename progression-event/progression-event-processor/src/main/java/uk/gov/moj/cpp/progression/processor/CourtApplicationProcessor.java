@@ -722,9 +722,9 @@ public class CourtApplicationProcessor {
         }
         final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
         LOGGER.warn("****** sendNotificationForApplication nonNull(courtHearingRequest) = {} ", nonNull(courtHearingRequest));
-        LOGGER.warn("****** sendNotificationForApplication isNull(courtHearingRequest.getCourtCentre().getRoomId()) = {} ", isNull(courtHearingRequest.getCourtCentre().getRoomId()));
-        LOGGER.warn("****** sendNotificationForApplication nonNull(courtHearingRequest.getWeekCommencingDate()) = {} ", nonNull(courtHearingRequest.getWeekCommencingDate()));
         if(nonNull(courtHearingRequest) && (isNull(courtHearingRequest.getCourtCentre().getRoomId()) || nonNull(courtHearingRequest.getWeekCommencingDate()))) {
+            LOGGER.warn("****** sendNotificationForApplication isNull(courtHearingRequest.getCourtCentre().getRoomId()) = {} ", isNull(courtHearingRequest.getCourtCentre().getRoomId()));
+            LOGGER.warn("****** sendNotificationForApplication nonNull(courtHearingRequest.getWeekCommencingDate()) = {} ", nonNull(courtHearingRequest.getWeekCommencingDate()));
             LOGGER.warn("****** sendNotificationForApplication sending notification to notificationService");
             notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType(), false);
         }
