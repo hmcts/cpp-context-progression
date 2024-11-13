@@ -30,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 
 /**
@@ -42,6 +43,7 @@ public class NotificationHandler {
     private static final String APPLICATION_ID = "applicationId";
     private static final String NOTIFICATION_ID = "notificationId";
     private static final String MATERIAL_ID = "materialId";
+    private static final String RECIPIENT_TYPE = "recipientType";
     private static final String POSTAGE = "postage";
     private static final String FAILED_TIME = "failedTime";
     private static final String ERROR_MESSAGE = "errorMessage";
@@ -69,23 +71,24 @@ public class NotificationHandler {
 
         final UUID notificationId = fromString(payload.getString(NOTIFICATION_ID));
         final UUID materialId = fromString(payload.getString(MATERIAL_ID));
+        final String recipientType = payload.getString(RECIPIENT_TYPE);
         final boolean postage = payload.containsKey(POSTAGE) && payload.getBoolean(POSTAGE);
 
         if (payload.containsKey(CASE_ID)) {
             final UUID caseId = fromString(payload.getString(CASE_ID));
             appendAggregateEvents(command, caseId, CaseAggregate.class,
-                    aggregate -> aggregate.recordPrintRequest(caseId, notificationId, materialId, postage));
+                    aggregate -> aggregate.recordPrintRequest(caseId, notificationId, materialId, recipientType, postage));
         }
 
         if (payload.containsKey(APPLICATION_ID)) {
             final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
             appendAggregateEvents(command, applicationId, ApplicationAggregate.class,
-                    aggregate -> aggregate.recordPrintRequest(applicationId, notificationId, materialId, postage));
+                    aggregate -> aggregate.recordPrintRequest(applicationId, notificationId, materialId, recipientType, postage));
         }
 
         if (!payload.containsKey(CASE_ID) && !payload.containsKey(APPLICATION_ID)) {
             appendAggregateEvents(command, materialId, MaterialAggregate.class,
-                    aggregate -> aggregate.recordPrintRequest(materialId, notificationId, false));
+                    aggregate -> aggregate.recordPrintRequest(materialId, notificationId, recipientType, false));
         }
     }
 

@@ -14,6 +14,7 @@ import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.RecipientType;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 
@@ -94,6 +95,7 @@ public class NowsMaterialStatusEventProcessorTest {
         final UUID caseId = UUID.randomUUID();
         final UUID applicationId = UUID.randomUUID();
         final UUID materialId = UUID.randomUUID();
+        final String recipientType = "defendant";
         final String status = "generated";
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.nows-material-status-updated"),
@@ -116,7 +118,7 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendLetter(Mockito.eq(event), any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
+        verify(notificationService).sendLetter(Mockito.eq(event), any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true), any());
         verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), any());
     }
 
@@ -147,7 +149,7 @@ public class NowsMaterialStatusEventProcessorTest {
 
         eventProcessor.processStatusUpdated(event);
 
-        verify(notificationService).sendLetter(Mockito.eq(event), any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(false));
+        verify(notificationService).sendLetter(Mockito.eq(event), any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(false), any());
         verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), any());
     }
 

@@ -116,7 +116,9 @@ public class NotificationNotifyEventProcessor {
         logger.info(format(">>2047 public.notificationnotify.events.notification-sent  : %s", event.metadata()));
         logger.info(format(">>2047 public.notificationnotify.events.notification-sent  : %s", event.payloadAsJsonObject()));
 
-        if (event.payloadAsJsonObject().containsKey(SOURCE_TYPE) && SourceType.EMAIL.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE))) {
+        if (event.payloadAsJsonObject().containsKey(SOURCE_TYPE) &&
+                SourceType.EMAIL.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE)) ||
+                SourceType.LETTER.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE))) {
             generateAndAddEmailDocument(event);
         }
 

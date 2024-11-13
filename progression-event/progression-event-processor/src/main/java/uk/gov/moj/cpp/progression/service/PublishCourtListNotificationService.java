@@ -66,7 +66,7 @@ public class PublishCourtListNotificationService {
                     .build();
             notificationService.sendEmail(event, notificationId, null, null, materialId, ImmutableList.of(emailChannel));
         } else if (publishCourtListPayload.getPublishCourtListType() == WARN || publishCourtListPayload.getPublishCourtListType() == FIRM) {
-            notificationService.sendLetter(event, notificationId, null, null, materialId, true);
+            notificationService.sendLetter(event, notificationId, null, null, materialId, true, null);
         }
     }
 

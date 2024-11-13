@@ -107,6 +107,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.json.JsonObject;
+
 @SuppressWarnings({"squid:S1948"})
 public class ApplicationAggregate implements Aggregate {
 
@@ -336,8 +338,9 @@ public class ApplicationAggregate implements Aggregate {
     public Stream<Object> recordPrintRequest(final UUID applicationId,
                                              final UUID notificationId,
                                              final UUID materialId,
+                                             final String recipientType,
                                              boolean postage) {
-        return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId, postage)));
+        return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId, recipientType, postage)));
     }
 
     public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings,

@@ -121,7 +121,9 @@ public class NotificationNotifyEventProcessorTest {
 
         final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf( randomUUID().toString(), "caseId")
                 .withPayloadOf("Letter","sourceType")
+                .withPayloadOf("defendant","recipientType")
                 .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
 
@@ -198,6 +200,8 @@ public class NotificationNotifyEventProcessorTest {
         final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf("letter","sourceType")
+                .withPayloadOf(randomUUID(),"caseId")
+                .withPayloadOf("defendant","recipientType")
                 .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(empty());
@@ -215,6 +219,8 @@ public class NotificationNotifyEventProcessorTest {
         final JsonEnvelope letterNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("LETTER"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf("letter","sourceType")
+                .withPayloadOf(randomUUID(),"caseId")
+                .withPayloadOf("defendant","recipientType")
                 .build();
 
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());

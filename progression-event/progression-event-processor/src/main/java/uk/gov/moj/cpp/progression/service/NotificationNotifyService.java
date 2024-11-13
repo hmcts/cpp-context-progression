@@ -20,6 +20,7 @@ import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.progression.RecipientType;
 
 /**
  * Created by satishkumar on 12/11/2018.
@@ -32,6 +33,8 @@ public class NotificationNotifyService {
     private static final String NOTIFICATION_NOTIFY_LETTER_COMMAND = "notificationnotify.send-letter-notification";
     private static final String FIELD_LETTER_URL = "letterUrl";
     private static final String FIELD_NOTIFICATION_ID = "notificationId";
+    private static final String FIELD_RECIPIENT_TYPE = "recipientType";
+    private static final String FIELD_CASE_ID = "caseId";
     private static final String FIELD_POSTAGE = "postage";
     private static final String POSTAGE_TYPE = "first";
     private static final String FIELD_TEMPLATE_ID = "templateId";
@@ -47,13 +50,16 @@ public class NotificationNotifyService {
     @Inject
     private MaterialUrlGenerator materialUrlGenerator;
 
-    public void sendLetterNotification(final JsonEnvelope event, final UUID notificationId, final UUID materialId, final boolean postage) {
+    public void sendLetterNotification(final JsonEnvelope event, final UUID notificationId, final UUID materialId, final boolean postage,
+                                       final String recipientType, final String caseId) {
 
         final String letterUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
 
         final JsonObjectBuilder notificationBuilder = createObjectBuilder()
                 .add(FIELD_LETTER_URL, letterUrl)
-                .add(FIELD_NOTIFICATION_ID, notificationId.toString());
+                .add(FIELD_NOTIFICATION_ID, notificationId.toString())
+                .add(FIELD_RECIPIENT_TYPE, recipientType)
+                .add(FIELD_CASE_ID, caseId);
 
         if (postage) {
             notificationBuilder.add(FIELD_POSTAGE, POSTAGE_TYPE);

@@ -116,7 +116,8 @@ public class MaterialAggregateTest {
 
     @Test
     public void shouldRecordPrintRequest() {
-        final List<Object> eventStream = aggregate.recordPrintRequest(randomUUID(), randomUUID(), false).collect(toList());
+        final String recipientType = "defendant" ;
+        final List<Object> eventStream = aggregate.recordPrintRequest(randomUUID(), randomUUID(), recipientType, false).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.equalTo(PrintRequested.class)));

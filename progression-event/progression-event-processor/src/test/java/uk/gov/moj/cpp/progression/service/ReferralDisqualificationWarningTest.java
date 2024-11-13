@@ -217,7 +217,7 @@ public class ReferralDisqualificationWarningTest {
                 withJsonPath("$.courtDocument.documentTypeId", equalTo(APPLICATION_DOCUMENT_TYPE_ID.toString())),
                 withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
                 withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf")))));
-        verify(notificationService).sendLetter(Mockito.eq(originatingEnvelope), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
+        verify(notificationService).sendLetter(Mockito.eq(originatingEnvelope), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true), any());
 
     }
 
@@ -287,7 +287,7 @@ public class ReferralDisqualificationWarningTest {
                 withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Applications")),
                 withJsonPath("$.courtDocument.mimeType", equalTo("application/pdf")))));
 
-        verify(notificationService).sendLetter(Mockito.eq(originatingEnvelope), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
+        verify(notificationService).sendLetter(Mockito.eq(originatingEnvelope), Mockito.any(UUID.class), Mockito.eq(caseId), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true), any());
 
     }
 

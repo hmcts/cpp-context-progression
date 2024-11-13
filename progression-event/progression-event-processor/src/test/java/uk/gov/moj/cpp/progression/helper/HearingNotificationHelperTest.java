@@ -265,7 +265,7 @@ public class HearingNotificationHelperTest {
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
         verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
-        verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
+        verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean(), any());
 
     }
 
@@ -308,7 +308,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
-        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
     }
@@ -342,7 +342,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
-        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
     }
@@ -376,7 +376,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
         final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "defendant_email@email.com", fromString(TEMPLATE_ID));
-        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
     }
@@ -410,7 +410,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
-        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
     }
@@ -444,7 +444,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
         final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "orgdefendantemail@email.com", fromString(TEMPLATE_ID));
-        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
     }
@@ -489,7 +489,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
         final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "organisation@org.com", fromString(TEMPLATE_ID));
-        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
     }
@@ -534,7 +534,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
         final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "organisation@org.com", fromString(TEMPLATE_ID));
-        verify(notificationService, never()).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, never()).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
     }
 
     @Test
@@ -574,7 +574,7 @@ public class HearingNotificationHelperTest {
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
         verify(notificationService, never()).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
-        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean());
+        verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
     }
 

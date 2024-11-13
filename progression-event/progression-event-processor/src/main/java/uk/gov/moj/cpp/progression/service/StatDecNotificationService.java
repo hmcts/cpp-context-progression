@@ -120,7 +120,7 @@ public class StatDecNotificationService {
 
         addressOptional.ifPresent(address -> {
             if (!emailAddressOptional.isPresent()) {
-                notificationService.sendLetter(event, notificationId, null, courtApplication.getId(), materialId, true);
+                notificationService.sendLetter(event, notificationId, null, courtApplication.getId(), materialId, true, null);
             }
         });
 

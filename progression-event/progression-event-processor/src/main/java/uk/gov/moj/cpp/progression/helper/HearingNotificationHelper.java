@@ -156,6 +156,7 @@ public class HearingNotificationHelper {
     }
 
     private void sendNotificationToParties(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
+        LOGGER.info(">>2047 sendNotificationToParties {}", objectToJsonObjectConverter.convert(hearingNotificationInputData));
         sendHearingNotificationToDefendant(prosecutionCase, defendant, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
         sendHearingNotificationToProsecutor(prosecutionCase, defendant, prosecutorDetails, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
     }
@@ -176,6 +177,10 @@ public class HearingNotificationHelper {
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
+        LOGGER.info(">>2047 adding {} sendHearingNotificationToDefendant" , fileName);
+/*        LOGGER.info(">>2047  defenceOrganisationVO {} getPersonDefendant {} getLegalEntityDefendant {}" , defenceOrganisationVO.getEmail() ,
+                defendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail(),
+                defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail());*/
 
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
         if (nonNull(defenceOrganisationVO)) {
@@ -190,13 +195,13 @@ public class HearingNotificationHelper {
     }
 
     public void addCourtDocument(final JsonEnvelope jsonEnvelope, final UUID caseId, final UUID materialId, final String fileName) {
-        LOGGER.info("2047 Adding court document with caseId : {}, materialId : {} , fileName : {}", caseId, materialId, fileName);
+        LOGGER.info(">>2047 Adding court document with caseId : {}, materialId : {} , fileName : {}", caseId, materialId, fileName);
         final CourtDocument courtDocument = buildCourtDocument(caseId, materialId, fileName);
         final JsonObject jsonObject = createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                 .build();
-        LOGGER.info("addCourtDocument {} ", jsonObject);
+        LOGGER.info(">>2047 addCourtDocument {} ", jsonObject);
         final Envelope<JsonObject> data = envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata())
                 .withName("progression.command.add-court-document"), jsonObject);
         sender.send(data);
@@ -231,7 +236,7 @@ public class HearingNotificationHelper {
         if (isNotEmpty(defenceOrganisationVO.getEmail())) {
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO.getEmail(), materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
-            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
+            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENDANT);
         }
     }
 
@@ -249,7 +254,7 @@ public class HearingNotificationHelper {
             final String defendantEmail = personDefendant.getPersonDetails().getContact().getPrimaryEmail();
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defendantEmail, materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
-            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
+            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENDANT);
         }
     }
 
@@ -262,7 +267,7 @@ public class HearingNotificationHelper {
             final String orgDefendantEmail = legalEntityDefendant.getOrganisation().getContact().getPrimaryEmail();
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, orgDefendantEmail, materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
-            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
+            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENDANT);
         }
     }
 
@@ -311,13 +316,13 @@ public class HearingNotificationHelper {
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
-
+        LOGGER.info(">>2047 adding {} in sendHearingNotificationToProsecutor ",fileName );
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
 
         if (isNotEmpty(prosecutorEmail)) {
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId, RecipientType.PROSECUTOR);
         } else {
-            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
+            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.PROSECUTOR);
         }
     }
 

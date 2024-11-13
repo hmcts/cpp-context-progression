@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -47,6 +48,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.RecipientType;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
 import uk.gov.moj.cpp.progression.domain.event.email.PartyType;
 import uk.gov.moj.cpp.progression.nows.InvalidNotificationException;
@@ -98,10 +100,14 @@ public class NotificationService {
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class.getName());
     private static final String APPLICATION_ID = "applicationId";
+    private static final String RECIPIENT_TYPE = "recipientType";
+
     private static final String ACCEPTED_TIME = "acceptedTime";
     private static final String NOTIFICATIONS = "notifications";
     private static final String FAILED_TIME = "failedTime";
     private static final String ERROR_MESSAGE = "errorMessage";
+    public static final String RECIPIENT_TYPE_ADDITION_PROPERTY = "recipient_type";
+    public static final String CASE_ID_ADDITION_PROPERTY = "case_id";
     private static final String SENT_TIME = "sentTime";
     private static final String COMPLETED_AT = "completedAt";
     private static final String TEMPLATE_ID = "templateId";
@@ -376,7 +382,8 @@ public class NotificationService {
         return eventNotificationBuilder.build();
     }
 
-    public void sendLetter(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final boolean postage) {
+    public void sendLetter(final JsonEnvelope sourceEnvelope, final UUID notificationId, final UUID caseId, final UUID applicationId, final UUID materialId, final boolean postage,
+                           final RecipientType recipientType) {
 
         final JsonObjectBuilder payloadBuilder = createObjectBuilder()
                 .add(NOTIFICATION_ID, notificationId.toString())
@@ -391,6 +398,10 @@ public class NotificationService {
         ofNullable(applicationId).ifPresent(id -> {
             systemIdMapperService.mapNotificationIdToApplicationId(applicationId, notificationId);
             payloadBuilder.add(APPLICATION_ID, id.toString());
+        });
+
+        ofNullable(recipientType).ifPresent(r -> {
+            payloadBuilder.add(RECIPIENT_TYPE, r.name());
         });
 
         final JsonObject printPayload = payloadBuilder.build();

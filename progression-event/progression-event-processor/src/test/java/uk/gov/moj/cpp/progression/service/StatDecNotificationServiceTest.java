@@ -184,7 +184,7 @@ public class StatDecNotificationServiceTest {
         statDecNotificationService.sendNotification(envelope, notificationId, courtApplication, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, STAT_DEC_VIRTUAL_HEARING);
 
         verify(sender).send(any());
-        verify(notificationService,times(1)).sendLetter(Mockito.eq(envelope), Mockito.eq(notificationId), Mockito.eq(null), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true));
+        verify(notificationService,times(1)).sendLetter(Mockito.eq(envelope), Mockito.eq(notificationId), Mockito.eq(null), Mockito.eq(applicationId), Mockito.eq(materialId), Mockito.eq(true), any());
 
     }
 

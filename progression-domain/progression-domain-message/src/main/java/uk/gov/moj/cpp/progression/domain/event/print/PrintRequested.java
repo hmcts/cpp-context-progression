@@ -2,10 +2,13 @@ package uk.gov.moj.cpp.progression.domain.event.print;
 
 import uk.gov.justice.domain.annotation.Event;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.json.JsonObject;
 
 @Event("progression.event.print-requested")
 public class PrintRequested {
@@ -14,6 +17,8 @@ public class PrintRequested {
     private final UUID caseId;
     private final UUID notificationId;
     private final UUID materialId;
+    private final String recipientType ;
+
     private final boolean postage;
 
     @JsonCreator
@@ -22,11 +27,13 @@ public class PrintRequested {
             @JsonProperty("applicationId") final UUID applicationId,
             @JsonProperty("caseId") final UUID caseId,
             @JsonProperty("materialId") final UUID materialId,
+            @JsonProperty("recipientType") final String recipientType,
             @JsonProperty("postage") final boolean postage) {
         this.applicationId = applicationId;
         this.caseId = caseId;
         this.notificationId = notificationId;
         this.materialId = materialId;
+        this.recipientType = recipientType;
         this.postage = postage;
     }
 
@@ -40,6 +47,9 @@ public class PrintRequested {
 
     public UUID getMaterialId() {
         return materialId;
+    }
+    public String getRecipientType() {
+        return recipientType;
     }
 
     public UUID getApplicationId() { return applicationId; }
