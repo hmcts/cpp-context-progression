@@ -178,9 +178,6 @@ public class HearingNotificationHelper {
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
         LOGGER.info(">>2047 adding {} sendHearingNotificationToDefendant" , fileName);
-/*        LOGGER.info(">>2047  defenceOrganisationVO {} getPersonDefendant {} getLegalEntityDefendant {}" , defenceOrganisationVO.getEmail() ,
-                defendant.getPersonDefendant().getPersonDetails().getContact().getPrimaryEmail(),
-                defendant.getLegalEntityDefendant().getOrganisation().getContact().getPrimaryEmail());*/
 
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
         if (nonNull(defenceOrganisationVO)) {

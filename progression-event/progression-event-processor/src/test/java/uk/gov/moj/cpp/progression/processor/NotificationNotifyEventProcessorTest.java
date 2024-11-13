@@ -220,7 +220,7 @@ public class NotificationNotifyEventProcessorTest {
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf("letter","sourceType")
                 .withPayloadOf(randomUUID(),"caseId")
-                .withPayloadOf("defendant","recipientType")
+                .withPayloadOf("DEFENDANT","recipientType")
                 .build();
 
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());

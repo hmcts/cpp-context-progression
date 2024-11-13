@@ -147,10 +147,12 @@ public class NotificationNotifyEventProcessor {
         final JsonObject emailDocumentJson = event.payloadAsJsonObject();
         final UUID caseId = UUID.fromString(emailDocumentJson.getString(CASE_ID));
         final String recipientType = emailDocumentJson.getString("recipientType");
+        final String sourceType = emailDocumentJson.getString("sourceType");
 
         try {
             final UUID materialId = randomUUID();
-            final String fileName = format("Email notification of hearing %s %s copy", formatter.format(LocalDateTime.now()), recipientType);
+            final String fileName = format("%s notification of hearing %s %s copy", sourceType, formatter.format(LocalDateTime.now()),
+                    recipientType.substring(0, 1) + recipientType.substring(1).toLowerCase());
 
             documentGeneratorService.generateNonNowDocument(event, emailDocumentJson, EMAIL_DOCUMENT_TEMPLATE_NAME, materialId, fileName);
             hearingNotificationHelper.addCourtDocument(event, caseId, materialId, fileName);
