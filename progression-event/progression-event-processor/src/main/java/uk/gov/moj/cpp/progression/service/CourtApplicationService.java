@@ -53,7 +53,7 @@ public class CourtApplicationService {
     @SuppressWarnings("pmd:NullAssignment")
     private ProsecutingAuthority fetchProsecutingAuthorityInformation(UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope) {
 
-        LOGGER.warn("****** fetchProsecutingAuthorityInformation prosecutionAuthorityId= {}", prosecutionAuthorityId);
+        LOGGER.warn("******-appeals fetchProsecutingAuthorityInformation prosecutionAuthorityId= {}", prosecutionAuthorityId);
         final ProsecutingAuthority.Builder prosecutingAuthorityBuilder = prosecutingAuthority().withProsecutionAuthorityId(prosecutionAuthorityId);
 
         final Optional<JsonObject> optionalProsecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutionAuthorityId, requester);
