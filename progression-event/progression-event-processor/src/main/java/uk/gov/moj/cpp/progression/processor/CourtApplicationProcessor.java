@@ -722,6 +722,7 @@ public class CourtApplicationProcessor {
         }
         final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
         LOGGER.warn("****** sendNotificationForApplication nonNull(courtHearingRequest) = {} ", nonNull(courtHearingRequest));
+        LOGGER.warn("****** sendNotificationForApplication courtHearingRequest = {} ", courtHearingRequest);
         if(nonNull(courtHearingRequest) && (isNull(courtHearingRequest.getCourtCentre().getRoomId()) || nonNull(courtHearingRequest.getWeekCommencingDate()))) {
             LOGGER.warn("****** sendNotificationForApplication isNull(courtHearingRequest.getCourtCentre().getRoomId()) = {} ", isNull(courtHearingRequest.getCourtCentre().getRoomId()));
             LOGGER.warn("****** sendNotificationForApplication nonNull(courtHearingRequest.getWeekCommencingDate()) = {} ", nonNull(courtHearingRequest.getWeekCommencingDate()));
