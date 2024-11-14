@@ -956,6 +956,16 @@ public class NotificationService {
             sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationRequired);
             sendNotificationToThirdParties(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationRequired);
 
+            LOGGER.warn("****** sendNotificationForAutoApplication courtApplication.getType() "+ courtApplication.getType());
+            if (courtApplication.getType() != null
+                    && Boolean.TRUE.equals(courtApplication.getType().getAppealFlag())
+                    && informantNotificationRequired.shouldSendNotificationToInformant()) {
+                LOGGER.warn("****** sendNotificationForAutoApplication sending notification");
+                sendNotificationToInformant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationRequired);
+            } else {
+                LOGGER.warn("****** sendNotificationForAutoApplication skipping notification");
+            }
+
             if(nonNull(isWelshTranslationRequired) && isWelshTranslationRequired) {
                 final String applicantNameFromMasterDefendant = nonNull(courtApplication.getApplicant().getMasterDefendant())  && nonNull(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant()) ? courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName() : "";
                 final String applicationName = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getPersonDetails().getFirstName() : applicantNameFromMasterDefendant;
