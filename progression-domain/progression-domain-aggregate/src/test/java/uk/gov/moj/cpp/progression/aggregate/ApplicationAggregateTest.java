@@ -576,12 +576,12 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldReferApplicationToBoxWork() {
+    public void shouldReferApplicationToBoxWorkWhenCourtApplicationCasesIsNotNull() {
         final UUID courtApplicationId = randomUUID();
         final UUID offenceId = randomUUID();
         final LocalDate convictionDate = LocalDate.now();
 
-        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null);
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, null, true, false);
         InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
                 .withCourtApplication(courtApplication)
                 .withBoxHearing(BoxHearingRequest.boxHearingRequest()
@@ -596,6 +596,50 @@ public class ApplicationAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(ApplicationReferredToBoxwork.class)));
+    }
+
+    @Test
+    public void shouldReferApplicationToBoxWorkWhenCourtApplicationCasesIsNullButCourtOrderIsNotNull() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final LocalDate convictionDate = LocalDate.now();
+
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, offenceId, LocalDate.now(), false, true);
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withBoxHearing(BoxHearingRequest.boxHearingRequest()
+                        .withSendAppointmentLetter(TRUE)
+                        .build())
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        aggregate.addConvictionDate(courtApplicationId, offenceId, convictionDate).collect(toList());
+
+        final List<Object> eventStream = aggregate.referApplication().collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(ApplicationReferredToBoxwork.class)));
+    }
+
+    @Test
+    public void shouldIgnoreReferApplicationToBoxWorkWhenCourtApplicationCasesAndCourtOrderIsNull() {
+        final UUID courtApplicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final LocalDate convictionDate = LocalDate.now();
+
+        CourtApplication courtApplication = buildCourtapplicationWithOffenceUnderCase(courtApplicationId, null, null, false, false);
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withBoxHearing(BoxHearingRequest.boxHearingRequest()
+                        .withSendAppointmentLetter(TRUE)
+                        .build())
+                .withSummonsApprovalRequired(false).build();
+        aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false);
+
+        aggregate.addConvictionDate(courtApplicationId, offenceId, convictionDate).collect(toList());
+
+        final List<Object> eventStream = aggregate.referApplication().collect(toList());
+        assertThat(eventStream.size(), is(0));
     }
 
     @Test
@@ -619,18 +663,18 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shoulRecordEmailRequest(){
+    public void shoulRecordEmailRequest() {
         final Map<String, String> personalisation = new HashMap<>();
         final List<Notification> notifications = new ArrayList<>();
-        notifications.add(new Notification(randomUUID(),randomUUID(),"sendToAddress","replyToAddress", personalisation,"material URL"));
-        final List<Object> eventStream = aggregate.recordEmailRequest(randomUUID(),randomUUID(), notifications).collect(toList());
+        notifications.add(new Notification(randomUUID(), randomUUID(), "sendToAddress", "replyToAddress", personalisation, "material URL"));
+        final List<Object> eventStream = aggregate.recordEmailRequest(randomUUID(), randomUUID(), notifications).collect(toList());
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(EmailRequested.class)));
     }
 
     @Test
-    public void shouldRaiseIgnoreEventWhenApplicationNotExist(){
+    public void shouldRaiseIgnoreEventWhenApplicationNotExist() {
         final SendNotificationForApplicationInitiated sendNotificationForApplicationInitiated = SendNotificationForApplicationInitiated.sendNotificationForApplicationInitiated()
                 .build();
 
@@ -641,7 +685,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldRaiseIgnoreEventWhenApplicationBoxWorkRequested(){
+    public void shouldRaiseIgnoreEventWhenApplicationBoxWorkRequested() {
         aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
                 .withCourtApplication(courtApplication().withId(randomUUID())
@@ -661,7 +705,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldRaiseNotificationEvent(){
+    public void shouldRaiseNotificationEvent() {
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
                 .withCourtApplication(courtApplication().withId(randomUUID())
@@ -678,7 +722,7 @@ public class ApplicationAggregateTest {
         final List<Object> eventStream = aggregate.sendNotificationForApplication(sendNotificationForApplicationInitiated).collect(toList());
         assertThat(eventStream.size(), is(1));
         assertThat(eventStream.get(0).getClass().getName(), is("uk.gov.justice.core.courts.SendNotificationForApplicationInitiated"));
-        final SendNotificationForApplicationInitiated event =  (SendNotificationForApplicationInitiated) eventStream.get(0);
+        final SendNotificationForApplicationInitiated event = (SendNotificationForApplicationInitiated) eventStream.get(0);
         assertThat(event.getCourtApplication().getId(), is(initiateCourtApplicationProceedings.getCourtApplication().getId()));
 
     }

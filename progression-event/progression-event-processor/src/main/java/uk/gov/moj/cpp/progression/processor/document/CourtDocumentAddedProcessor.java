@@ -170,7 +170,7 @@ public class CourtDocumentAddedProcessor {
                 final Optional<JsonObject> prosecutionCaseOptional = nonNull(prosecutionCaseId) ? progressionService.getProsecutionCaseDetailById(envelope, prosecutionCaseId.toString()) : Optional.empty();
 
                 final Optional<String> transformedJsonPayload = courtDocumentTransformer.transform(courtDocument, prosecutionCaseOptional, envelope, "application-document");
-                transformedJsonPayload.ifPresent(s -> cpsRestNotificationService.sendMaterial(s,courtDocument.getCourtDocumentId(),envelope));
+                transformedJsonPayload.ifPresent(s -> cpsRestNotificationService.sendMaterialWithCourtDocument(s,courtDocument.getCourtDocumentId(),envelope));
             }
         }
     }

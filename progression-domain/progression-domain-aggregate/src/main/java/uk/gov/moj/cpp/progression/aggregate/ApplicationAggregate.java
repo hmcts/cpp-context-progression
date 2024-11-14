@@ -488,12 +488,17 @@ public class ApplicationAggregate implements Aggregate {
         }
 
         if (nonNull(boxHearing)) {
-            streams.add(ApplicationReferredToBoxwork.applicationReferredToBoxwork()
-                    .withApplication(courtApplication().withValuesFrom(courtApplication)
-                            .withApplicationStatus(IN_PROGRESS)
-                            .build())
-                    .withBoxHearing(boxHearing)
-                    .build());
+            if (isValidBoxHearing(initiateCourtApplicationProceedings.getCourtApplication())) {
+                streams.add(ApplicationReferredToBoxwork.applicationReferredToBoxwork()
+                        .withApplication(courtApplication().withValuesFrom(courtApplication)
+                                .withApplicationStatus(IN_PROGRESS)
+                                .build())
+                        .withBoxHearing(boxHearing)
+                        .build());
+            }else{
+                //if standaloane application refer to boxwork, user's error
+                return Stream.empty();
+            }
         } else if (applicationReferredToNewHearing) {
             streams.add(ApplicationReferredToCourtHearing.applicationReferredToCourtHearing()
                     .withApplication(courtApplication().withValuesFrom(courtApplication)
@@ -515,6 +520,10 @@ public class ApplicationAggregate implements Aggregate {
         }
 
         return streams.build();
+    }
+
+    private boolean isValidBoxHearing(final CourtApplication courtApplication) {
+        return isNotEmpty(courtApplication.getCourtApplicationCases()) || nonNull(courtApplication.getCourtOrder());
     }
 
     public CourtApplication getCourtApplication() {

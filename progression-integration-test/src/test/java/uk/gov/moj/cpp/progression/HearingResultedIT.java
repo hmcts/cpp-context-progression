@@ -58,8 +58,6 @@ public class HearingResultedIT {
     private static final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).getMessageConsumerClient();
 
     private static final JmsMessageConsumerClient messageConsumerHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.hearing-populated-to-probation-caseworker").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerCaseRetentionPolicyRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.case-retention-policy-recorded").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerCaseRetentionLengthCalculated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.case-retention-length-calculated").getMessageConsumerClient();
 
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -207,6 +205,7 @@ public class HearingResultedIT {
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("COURT_CENTRE_NAME", courtCentreName)
         );
+
     }
 
 
