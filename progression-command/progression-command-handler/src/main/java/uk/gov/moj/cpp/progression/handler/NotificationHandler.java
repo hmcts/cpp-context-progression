@@ -71,7 +71,7 @@ public class NotificationHandler {
 
         final UUID notificationId = fromString(payload.getString(NOTIFICATION_ID));
         final UUID materialId = fromString(payload.getString(MATERIAL_ID));
-        final String recipientType = payload.getString(RECIPIENT_TYPE);
+        final String recipientType = payload.containsKey(RECIPIENT_TYPE) ? payload.getString(RECIPIENT_TYPE): "None" ;
         final boolean postage = payload.containsKey(POSTAGE) && payload.getBoolean(POSTAGE);
 
         if (payload.containsKey(CASE_ID)) {

@@ -143,11 +143,15 @@ public class NotificationNotifyEventProcessor {
         logger.info("2047 payload received in generateAndAddEmailDocument {}", event.payloadAsJsonObject());
         logger.info("2047 event metadata {}", event.metadata());
         logger.info("2047 event metadata {}", event.metadata().userId() != null?event.metadata().userId():"no user id");
-
         final JsonObject emailDocumentJson = event.payloadAsJsonObject();
-        final UUID caseId = UUID.fromString(emailDocumentJson.getString(CASE_ID));
-        final String recipientType = emailDocumentJson.getString("recipientType");
+        final UUID caseId = emailDocumentJson.containsKey(CASE_ID) ? UUID.fromString(emailDocumentJson.getString(CASE_ID)) : null ;
+        final String recipientType = emailDocumentJson.containsKey("recipientType") ? emailDocumentJson.getString("recipientType") :  "None";
         final String sourceType = emailDocumentJson.getString("sourceType");
+
+        if(caseId == null || recipientType.equals("None")){
+            logger.error(">>2047 Email or Letter Document is not generated as case id is {} and recipient Type is {}", caseId, recipientType);
+            return ;
+        }
 
         try {
             final UUID materialId = randomUUID();

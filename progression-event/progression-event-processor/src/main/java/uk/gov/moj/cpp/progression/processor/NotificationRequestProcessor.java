@@ -70,7 +70,7 @@ public class NotificationRequestProcessor {
 
         final UUID materialId = fromString(eventPayload.getString(MATERIAL_ID));
         final String recipientType = eventPayload.getString(FIELD_RECIPIENT_TYPE);
-        final String caseId = eventPayload.getString(FIELD_CASE_ID);
+        final String caseId = eventPayload.containsKey(FIELD_CASE_ID) ? eventPayload.getString(FIELD_CASE_ID) : null;
 
         final boolean postage = eventPayload.containsKey("postage") && eventPayload.getBoolean("postage");
 

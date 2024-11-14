@@ -58,9 +58,11 @@ public class NotificationNotifyService {
         final JsonObjectBuilder notificationBuilder = createObjectBuilder()
                 .add(FIELD_LETTER_URL, letterUrl)
                 .add(FIELD_NOTIFICATION_ID, notificationId.toString())
-                .add(FIELD_RECIPIENT_TYPE, recipientType)
-                .add(FIELD_CASE_ID, caseId);
+                .add(FIELD_RECIPIENT_TYPE, recipientType);
 
+        if (caseId != null) {
+            notificationBuilder.add(FIELD_CASE_ID, caseId);
+        }
         if (postage) {
             notificationBuilder.add(FIELD_POSTAGE, POSTAGE_TYPE);
         }
