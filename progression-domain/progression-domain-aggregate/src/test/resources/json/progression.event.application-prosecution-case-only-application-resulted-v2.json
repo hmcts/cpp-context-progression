@@ -1,0 +1,481 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "8c133ddb-c500-4fd7-a6f0-df8b8b09ad17",
+          "notificationRequired": true,
+          "organisation": {
+            "address": {
+              "address1": "XXX ",
+              "address2": "XXX",
+              "address3": "XXX ",
+              "postcode": "IG1 1NL"
+            },
+            "name": "XXX"
+          },
+          "summonsRequired": false
+        },
+        "applicationParticulars": "Application to give evidence by live link",
+        "applicationReceivedDate": "2024-04-23",
+        "applicationReference": "46ZY1277723",
+        "applicationStatus": "IN_PROGRESS",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "ACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "83fa0fc3-f94b-4023-9201-0ef50bdda1a0",
+            "prosecutionCaseIdentifier": {
+              "contact": {
+                "primaryEmail": "victim.justice@kent.police.uk"
+              },
+              "majorCreditorCode": "PO46",
+              "prosecutionAuthorityCode": "KENPF",
+              "prosecutionAuthorityId": "fafad525-f16b-3653-8064-37ce4e7e817b",
+              "prosecutionAuthorityName": "Kent Police",
+              "prosecutionAuthorityOUCode": "0460000",
+              "caseURN": "46ZY1277723"
+            }
+          }
+        ],
+        "id": "383cc6af-eabb-4feb-9b8c-56b44e725a01",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "category": "FINAL",
+            "cjsCode": "4583",
+            "courtClerk": {
+              "firstName": "James",
+              "lastName": "Manning",
+              "userId": "da6d9f82-0664-4a25-bea9-c43f8de72b60"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "ae52ae5e-9ebd-4c3d-bb21-388b2a0907b0",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "af38d17b-46de-4dbb-a5c7-14ac36905c89",
+                "label": "Reason",
+                "promptReference": "reason",
+                "promptSequence": 100,
+                "type": "TXT",
+                "usergroups": [],
+                "value": "not updated prior to conclusion of case",
+                "welshValue": "not updated prior to conclusion of case"
+              }
+            ],
+            "judicialResultTypeId": "c36fed37-b635-4303-b514-2273e9e2594d",
+            "label": "Entered in error",
+            "lastSharedDateTime": "2024-05-09",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2024-04-23",
+            "orderedHearingId": "5128030a-1b4f-4519-9a65-4752d3565536",
+            "policeSubjectLineTitle": "Final Sentence",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 121300,
+            "resultText": "ERR - Entered in error\nReason: not updated prior to conclusion of case",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "ae52ae5e-9ebd-4c3d-bb21-388b2a0907b0",
+            "rootJudicialResultTypeId": "c36fed37-b635-4303-b514-2273e9e2594d",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ],
+        "respondents": [
+          {
+            "id": "85daf3b1-9d84-47c1-b0da-a7da00167ac4",
+            "masterDefendant": {
+              "defendantCase": [
+                {
+                  "caseId": "83fa0fc3-f94b-4023-9201-0ef50bdda1a0",
+                  "caseReference": "46ZY1277723",
+                  "defendantId": "6fc81b95-4dae-4a9b-a402-0f768d7031d7"
+                }
+              ],
+              "masterDefendantId": "6fc81b95-4dae-4a9b-a402-0f768d7031d7",
+              "personDefendant": {
+                "arrestSummonsNumber": "2300000000000408607M",
+                "bailStatus": {
+                  "code": "U",
+                  "description": "Unconditional bail",
+                  "id": "eaf18bf8-9569-3656-a4ab-64299f9bd513"
+                },
+                "driverNumber": "PUTTI809016JF9UY",
+                "personDetails": {
+                  "address": {
+                    "address1": "XXX",
+                    "address2": "XXX",
+                    "address3": "XXX",
+                    "address4": "XXX",
+                    "address5": "XXX",
+                    "postcode": "IG1 1NL"
+                  },
+                  "contact": {
+                    "mobile": "07501064120"
+                  },
+                  "dateOfBirth": "1978-09-01",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "observedEthnicityCode": "1",
+                    "observedEthnicityDescription": "White",
+                    "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "XXX",
+                  "gender": "MALE",
+                  "hearingLanguageNeeds": "ENGLISH",
+                  "lastName": "XXX",
+                  "occupation": "Company Director",
+                  "occupationCode": "1401"
+                },
+                "policeBailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "85daf3b1-9d84-47c1-b0da-a7da00167ac4",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "83fa0fc3-f94b-4023-9201-0ef50bdda1a0",
+                "caseReference": "46ZY1277723",
+                "defendantId": "6fc81b95-4dae-4a9b-a402-0f768d7031d7"
+              }
+            ],
+            "masterDefendantId": "6fc81b95-4dae-4a9b-a402-0f768d7031d7",
+            "personDefendant": {
+              "arrestSummonsNumber": "2300000000000408607M",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "U",
+                "description": "Unconditional bail",
+                "id": "eaf18bf8-9569-3656-a4ab-64299f9bd513"
+              },
+              "driverNumber": "PUTTI809016JF9UY",
+              "personDetails": {
+                "address": {
+                  "address1": "XXX",
+                  "address2": "XXX",
+                  "address3": "XXX",
+                  "address4": "XXX",
+                  "address5": "XXX",
+                  "postcode": "IG1 1NL"
+                },
+                "contact": {
+                  "mobile": "07501064120"
+                },
+                "dateOfBirth": "1978-09-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "XXX",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "XXX",
+                "occupation": "Company Director",
+                "occupationCode": "1401"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CO",
+          "code": "AP00501",
+          "commrOfOathFlag": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "hearingCode": "APN",
+          "id": "4e281610-96aa-3711-aecf-59df86b6c6bb",
+          "jurisdiction": "EITHER",
+          "legislation": "Refer to nature of application.",
+          "legislationWelsh": "Cyfeiriwch at natur y cais.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application within criminal proceedings",
+          "typeWelsh": "Cais o fewn achos troseddol"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "The Law Courts",
+        "address2": "Castle Hill",
+        "address3": "Folkestone",
+        "address4": "Kent",
+        "postcode": "CT20 2DH"
+      },
+      "code": "B46FO00",
+      "id": "4260477e-88a5-34ec-8de8-be4591dd2ae0",
+      "lja": {
+        "ljaCode": "1965",
+        "ljaName": "East Kent Magistrates' Court"
+      },
+      "name": "Folkestone Magistrates' Court"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "NOT_PRESENT",
+            "day": "2024-04-23"
+          }
+        ],
+        "defendantId": "6fc81b95-4dae-4a9b-a402-0f768d7031d7"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "hasSharedResults": true,
+        "listedDurationMinutes": 10,
+        "sittingDay": "2024-04-23T00:00:00.000Z"
+      }
+    ],
+    "id": "5128030a-1b4f-4519-9a65-4752d3565536",
+    "isBoxHearing": true,
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "cpsOrganisation": "A46BB00",
+        "defendants": [
+          {
+            "aliases": [
+              {
+                "firstName": "XXX",
+                "lastName": "XXX",
+                "middleName": "XXX"
+              },
+              {
+                "lastName": "XXX"
+              },
+              {
+                "firstName": "XXX",
+                "lastName": "XXX"
+              }
+            ],
+            "associatedDefenceOrganisation": {
+              "associationStartDate": "2023-10-13",
+              "defenceOrganisation": {
+                "organisation": {
+                  "address": {
+                    "address1": "XXXXr",
+                    "address2": "XXXXX",
+                    "address3": "XXXX",
+                    "address4": "XXXXX",
+                    "postcode": "IG1 1NL"
+                  },
+                  "name": "National Motoring Lawyers"
+                }
+              },
+              "fundingType": "PRIVATE",
+              "isAssociatedByLAA": false
+            },
+            "courtProceedingsInitiated": "2023-10-12T10:09:12.148Z",
+            "croNumber": "299110/04V",
+            "id": "6fc81b95-4dae-4a9b-a402-0f768d7031d7",
+            "masterDefendantId": "6fc81b95-4dae-4a9b-a402-0f768d7031d7",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2023-11-06",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "6b357312-7f3e-4ec1-af77-f3f4f2ea1bcb",
+                  "originatingHearingId": "50366d5a-9e61-4dd2-8d97-cf07025a84b2",
+                  "sequenceNumber": 90
+                },
+                "arrestDate": "2023-10-05",
+                "chargeDate": "2023-10-05",
+                "count": 0,
+                "dvlaOffenceCode": "DR10",
+                "endorsableFlag": true,
+                "id": "6b357312-7f3e-4ec1-af77-f3f4f2ea1bcb",
+                "isDisposed": false,
+                "lastAdjournDate": "2023-12-18",
+                "lastAdjournedHearingType": "For the trial to take place",
+                "listingNumber": 3,
+                "modeOfTrial": "Summary",
+                "offenceCode": "RT88007",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "e9db9786-e159-4876-8ff9-5fcb2adc9373",
+                "offenceFacts": {
+                  "alcoholReadingAmount": 202,
+                  "alcoholReadingMethodCode": "C",
+                  "alcoholReadingMethodDescription": "Amphetamine"
+                },
+                "offenceLegislation": "Contrary to section 5(1)(a) of the Road Traffic Act 1988 and    Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceLegislationWelsh": "Yn groes i adran 5(1)(a) Deddf Traffig Ffyrdd 1988 ac Atodlen 2 Deddf Troseddwyr Traffig Ffyrdd 1988.",
+                "offenceTitle": "Drive motor vehicle when alcohol level above limit",
+                "offenceTitleWelsh": "Gyrru cerbyd modur pan oedd y lefel alcohol yn uwch na'r terfyn",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "6b357312-7f3e-4ec1-af77-f3f4f2ea1bcb",
+                  "originatingHearingId": "50366d5a-9e61-4dd2-8d97-cf07025a84b2",
+                  "pleaDate": "2023-11-06",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "startDate": "2023-04-09",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "RT88007",
+                    "offenceDefinitionId": "e9db9786-e159-4876-8ff9-5fcb2adc9373",
+                    "offenceLegislation": "Contrary to section 5(1)(a) of the Road Traffic Act 1988 and    Schedule 2 to the Road Traffic Offenders Act 1988.",
+                    "offenceTitle": "Drive motor vehicle when alcohol level above limit"
+                  },
+                  "offenceId": "6b357312-7f3e-4ec1-af77-f3f4f2ea1bcb",
+                  "originatingHearingId": "acd2e608-ab72-40f3-a7a8-59f784156081",
+                  "verdictDate": "2024-04-24",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY",
+                    "cjsVerdictCode": "G",
+                    "description": "Found guilty",
+                    "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "sequence": 10,
+                    "verdictCode": "G"
+                  }
+                },
+                "wording": "XXXX"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "2300000000000408607M",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "U",
+                "description": "Unconditional bail",
+                "id": "eaf18bf8-9569-3656-a4ab-64299f9bd513"
+              },
+              "driverNumber": "PUTTI809016JF9UY",
+              "personDetails": {
+                "address": {
+                  "address1": "XXXX",
+                  "address2": "XXXX",
+                  "address3": "XXXX",
+                  "address4": "XXXX",
+                  "address5": "XXXX",
+                  "postcode": "IG1 1NL"
+                },
+                "contact": {
+                  "mobile": "07501064120"
+                },
+                "dateOfBirth": "1978-09-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "XXXX",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "XXXX",
+                "occupation": "Company Director",
+                "occupationCode": "1401"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "pncId": "20040445655T",
+            "proceedingsConcluded": true,
+            "prosecutionAuthorityReference": "2300000000000408607M",
+            "prosecutionCaseId": "83fa0fc3-f94b-4023-9201-0ef50bdda1a0"
+          }
+        ],
+        "id": "83fa0fc3-f94b-4023-9201-0ef50bdda1a0",
+        "initiationCode": "C",
+        "isCpsOrgVerifyError": false,
+        "originatingOrganisation": "046XY00",
+        "prosecutionCaseIdentifier": {
+          "contact": {
+            "primaryEmail": "victim.justice@kent.police.uk"
+          },
+          "majorCreditorCode": "PO46",
+          "prosecutionAuthorityCode": "KENPF",
+          "prosecutionAuthorityId": "fafad525-f16b-3653-8064-37ce4e7e817b",
+          "prosecutionAuthorityName": "Kent Police",
+          "prosecutionAuthorityOUCode": "0460000",
+          "caseURN": "46ZY1277723"
+        },
+        "prosecutor": {
+          "address": {
+            "address1": "Millmead House",
+            "address2": "Guildford",
+            "postcode": "GU2 4BB"
+          },
+          "isCps": true,
+          "prosecutorCode": "CPS-SE",
+          "prosecutorId": "3857a67c-b797-3424-ac9f-02bac90ab9d7",
+          "prosecutorName": "CPS South East"
+        }
+      }
+    ],
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    }
+  },
+  "hearingDay": "2024-04-23",
+  "sharedTime": "2024-05-09T09:37:04.430Z"
+}

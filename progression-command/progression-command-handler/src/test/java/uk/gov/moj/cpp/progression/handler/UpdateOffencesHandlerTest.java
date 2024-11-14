@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,6 +30,7 @@ import uk.gov.justice.core.courts.DefendantsOffences;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
+import uk.gov.justice.core.courts.HearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.HearingVerdictUpdated;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -83,7 +85,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class UpdateOffencesHandlerTest {
 
     @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class, HearingOffencesUpdated.class, ProsecutionCaseDefendantListingStatusChanged.class, HearingVerdictUpdated.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CasesReferredToCourt.class, HearingOffencesUpdatedV2.class, ProsecutionCaseDefendantListingStatusChanged.class, HearingVerdictUpdated.class);
     @Mock
     private EventSource eventSource;
     @Mock
@@ -208,7 +210,7 @@ public class UpdateOffencesHandlerTest {
                 .withHearingId(hearingId)
                 .withDefendantId(defendantId)
                 .withUpdatedOffences(offences).build();
-        hearingAggregate = getEventStreamReady(hearingId);
+        hearingAggregate = getEventStreamReady(hearingId, defendantId, offenceId);
 
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
@@ -228,7 +230,7 @@ public class UpdateOffencesHandlerTest {
         assertThat(events, streamContaining(
                         jsonEnvelope(
                                 metadata()
-                                        .withName("progression.event.hearing-offences-updated"),
+                                        .withName("progression.event.hearing-offences-updated-v2"),
                                 JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                         withJsonPath("$.hearingId", notNullValue()))
                                 ))
@@ -530,9 +532,18 @@ public class UpdateOffencesHandlerTest {
         }};
     }
 
-    private HearingAggregate getEventStreamReady(final UUID hearingId) {
+    private HearingAggregate getEventStreamReady(final UUID hearingId, final UUID defendantId, final UUID offenceId) {
         return new HearingAggregate() {{
-            apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(Hearing.hearing().withId(hearingId).withHasSharedResults(false).build()).build());
+            apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(Hearing.hearing().withId(hearingId).withHasSharedResults(false)
+                    .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                            .withDefendants(singletonList(Defendant.defendant()
+                                    .withId(defendantId)
+                                    .withOffences(singletonList(Offence.offence()
+                                            .withId(offenceId)
+                                            .build()))
+                                    .build()))
+                            .build()))
+                    .build()).build());
         }};
     }
 

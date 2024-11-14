@@ -85,7 +85,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 
 import java.util.Collection;
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
+import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
@@ -1830,7 +1830,9 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {
         LOGGER.debug("Offences information is being updated.");
         final AtomicInteger maxOrderIndex = new AtomicInteger(Collections.max(this.defendantCaseOffences.get(defendantId), Comparator.comparing(uk.gov.justice.core.courts.Offence::getOrderIndex)).getOrderIndex());
-        final List<uk.gov.justice.core.courts.Offence> updatedOffences = offences.stream().map(commandOffence -> {
+        final List<uk.gov.justice.core.courts.Offence> newOffences = new ArrayList<>();
+
+        final List<uk.gov.justice.core.courts.Offence> allOffences = offences.stream().map(commandOffence -> {
             uk.gov.justice.core.courts.Offence offence;
             Optional<uk.gov.justice.core.courts.Offence> existingOffence = this.defendantCaseOffences.get(defendantId).stream().filter(o -> o.getId().equals(commandOffence.getId())).findFirst();
             if (existingOffence.isPresent()) {
@@ -1839,27 +1841,38 @@ public class CaseAggregate implements Aggregate {
                 offence = updateLaaApplicationReference(defendantId,
                         offenceWithSexualOffenceReportingRestriction(
                                 updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1), referenceDataOffences), referenceDataOffences));
+                newOffences.add(offence);
             }
             return offence;
-        }).collect(Collectors.toList());
+        }).collect(toList());
 
         final DefendantCaseOffences newDefendantCaseOffences = DefendantCaseOffences.defendantCaseOffences()
-                .withOffences(updatedOffences)
+                .withOffences(allOffences)
                 .withDefendantId(defendantId)
                 .withLegalAidStatus(defendantLegalAidStatus.get(defendantId))
                 .withProsecutionCaseId(prosecutionCaseId)
                 .build();
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        final Stream.Builder<Object> streamBuilder = builder();
         streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
                 .withDefendantCaseOffences(newDefendantCaseOffences).build());
 
         if (!hearingIds.isEmpty()) {
-            streamBuilder.add(AllHearingOffencesUpdated.allHearingOffencesUpdated().withUpdatedOffences(updatedOffences).withHearingIds(new ArrayList<>(hearingIds)).
-                    withDefendantId(defendantId).build());
+            final AllHearingOffencesUpdatedV2.Builder allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2();
+            allHearingOffencesUpdatedV2.withHearingIds(new ArrayList<>(hearingIds)).
+                    withDefendantId(defendantId).build();
+            final List<uk.gov.justice.core.courts.Offence> updatedOffences = allOffences.stream().filter(offence -> ! newOffences.contains(offence)).collect(toList());
+            if(! updatedOffences.isEmpty()){
+                allHearingOffencesUpdatedV2.withUpdatedOffences(updatedOffences);
+            }
+            if(! newOffences.isEmpty()){
+                allHearingOffencesUpdatedV2.withNewOffences(newOffences);
+            }
+
+            streamBuilder.add(allHearingOffencesUpdatedV2.build());
         }
 
         if (this.defendantCaseOffences.containsKey(defendantId)) {
-            final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantChanged(updatedOffences, this.defendantCaseOffences.get(defendantId), prosecutionCaseId, defendantId, referenceDataOffences);
+            final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantChanged(allOffences, this.defendantCaseOffences.get(defendantId), prosecutionCaseId, defendantId, referenceDataOffences);
             offencesForDefendantChanged.ifPresent(streamBuilder::add);
         }
         return apply(streamBuilder.build());

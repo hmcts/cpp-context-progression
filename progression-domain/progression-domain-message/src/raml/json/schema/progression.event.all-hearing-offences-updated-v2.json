@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/progression.command.update-offences-for-hearing.json",
+  "id": "http://justice.gov.uk/core/courts/all-hearing-offences-updated-v2.json",
   "type": "object",
   "properties": {
     "updatedOffences": {
@@ -19,8 +19,11 @@
         "$ref": "http://justice.gov.uk/core/courts/offence.json#"
       }
     },
-    "hearingId": {
-      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    "hearingIds": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
     },
     "defendantId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
@@ -29,14 +32,14 @@
   "anyOf": [
     {
       "required": [
-        "hearingId",
+        "hearingIds",
         "defendantId",
         "updatedOffences"
       ]
     },
     {
       "required": [
-        "hearingId",
+        "hearingIds",
         "defendantId",
         "newOffences"
       ]

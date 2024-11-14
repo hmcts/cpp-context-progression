@@ -85,6 +85,7 @@ import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingNumberUpdated;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
+import uk.gov.justice.core.courts.HearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.HearingPleaUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
@@ -326,6 +327,7 @@ public class HearingAggregate implements Aggregate {
                 when(HearingUpdatedWithCourtApplication.class).apply(this::handleCourtApplicationUpdate),
                 when(HearingUpdatedProcessed.class).apply(this::updateHearing),
                 when(HearingOffencesUpdated.class).apply(this::updateOffenceInHearing),
+                when(HearingOffencesUpdatedV2.class).apply(this::updateOffenceInHearingV2),
                 when(HearingUpdatedForAllocationFields.class).apply(this::handleHearingUpdatedForAllocationFields),
                 when(NewDefendantAddedToHearing.class).apply(this::addNewDefendant),
                 when(HearingExtendedProcessed.class).apply(this::updateHearingExtended),
@@ -1497,11 +1499,25 @@ public class HearingAggregate implements Aggregate {
         streamBuilder.add(createListingStatusResultedEvent(updatedHearing));
         streamBuilder.add(createHearingResultedEvent(updatedHearing, sharedTime, hearingDay));
 
-
+        final List<JudicialResult> judicialResults = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).map(ProsecutionCase::getDefendants)
+                .flatMap(Collection::stream)
+                .map(Defendant::getOffences)
+                .flatMap(Collection::stream)
+                .map(Offence::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(toList());
+        judicialResults.addAll(ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty).map(ProsecutionCase::getDefendants)
+                .flatMap(Collection::stream)
+                .map(Defendant::getDefendantCaseJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(toList()));
+        if(isNotEmpty(hearing.getProsecutionCases()) && isNotEmpty(judicialResults)) {
+            streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));
+        }
 
         if (isNotEmpty(hearing.getProsecutionCases())) {
-            streamBuilder.add(createProsecutionCasesResultedV2Event(updatedHearing, shadowListedOffences, hearingDay));
-
             final List<InitiateApplicationForCaseRequested> requestInitiateApplicationForCaseEvents = createRequestInitiateApplicationForCaseEvents(updatedHearing);
             requestInitiateApplicationForCaseEvents.forEach(streamBuilder::add);
 
@@ -1855,13 +1871,31 @@ public class HearingAggregate implements Aggregate {
     }
 
 
-    public Stream<Object> updateOffence(UUID defendantId, final List<Offence> updatedOffences) {
+    public Stream<Object> updateOffence(UUID defendantId, final List<Offence> updatedOffences, final List<Offence> newOffences) {
         if (isNull(this.hearing.getHasSharedResults()) || !this.hearing.getHasSharedResults()) {
             LOGGER.info("Hearing with id {} and the status: {} is either not yet set or not shared, offence can be updated\"", hearing.getId(), hearingListingStatus);
-            return apply(Stream.of(HearingOffencesUpdated.hearingOffencesUpdated()
+            final Set<UUID> existingOffences = this.hearing.getProsecutionCases().stream()
+                    .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                    .filter(defendant -> defendant.getId().equals(defendantId))
+                    .flatMap(defendant -> defendant.getOffences().stream())
+                    .map(Offence::getId)
+                    .collect(Collectors.toSet());
+
+            final HearingOffencesUpdatedV2.Builder hearingOffencesUpdatedV2Builder = HearingOffencesUpdatedV2.hearingOffencesUpdatedV2()
                     .withDefendantId(defendantId)
                     .withHearingId(this.hearing.getId())
-                    .withUpdatedOffences(updatedOffences).build()));
+                    .withNewOffences(newOffences);
+
+            if(updatedOffences != null){
+                hearingOffencesUpdatedV2Builder.withUpdatedOffences(updatedOffences.stream().filter(offence -> existingOffences.contains(offence.getId()))
+                        .collect(collectingAndThen(Collectors.toList(), getListOrNull())));
+            }
+            final HearingOffencesUpdatedV2 hearingOffencesUpdatedV2 = hearingOffencesUpdatedV2Builder.build();
+            if(CollectionUtils.isEmpty(hearingOffencesUpdatedV2.getNewOffences()) && CollectionUtils.isEmpty(hearingOffencesUpdatedV2.getUpdatedOffences())){
+                return Stream.empty();
+            }else{
+                return apply(Stream.of(hearingOffencesUpdatedV2));
+            }
         } else {
             LOGGER.info("Hearing with id {} and the status: {} is already shared, offence can't be updated\"", hearing.getId(), hearingListingStatus);
             return apply(empty());
@@ -2127,6 +2161,26 @@ public class HearingAggregate implements Aggregate {
                                     defendant.getOffences().addAll(hearingOffencesUpdated.getUpdatedOffences().stream()
                                             .sorted(Comparator.comparing(o -> ofNullable(o.getOrderIndex()).orElse(0)))
                                             .collect(toList()));
+                                }
+                            }
+                    );
+        }
+    }
+
+    private void updateOffenceInHearingV2(final HearingOffencesUpdatedV2 hearingOffencesUpdated) {
+        if (isNotEmpty(this.hearing.getProsecutionCases()) &&
+                (isNull(this.hearing.getHasSharedResults()) || !this.hearing.getHasSharedResults())) {
+            this.hearing.getProsecutionCases().stream()
+                    .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                    .forEach(defendant -> {
+                                if (defendant.getId().equals(hearingOffencesUpdated.getDefendantId())) {
+                                    if(hearingOffencesUpdated.getUpdatedOffences() != null) {
+                                        defendant.getOffences().replaceAll(offence -> hearingOffencesUpdated.getUpdatedOffences().stream().filter(o -> o.getId().equals(offence.getId())).findFirst().orElse(offence) );
+                                    }
+                                    if(hearingOffencesUpdated.getNewOffences() != null){
+                                        defendant.getOffences().addAll(hearingOffencesUpdated.getNewOffences());
+                                    }
+                                    defendant.getOffences().sort(Comparator.comparing(o -> ofNullable(o.getOrderIndex()).orElse(0)));
                                 }
                             }
                     );
