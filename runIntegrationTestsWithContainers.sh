@@ -36,7 +36,7 @@ function runLiquibase {
 
 function buildDeployAndTest {
   loginToDockerContainerRegistry
-  buildWars
+#  buildWars
   undeployWarsFromDocker
   buildAndStartContainersWithElasticSearch
   runLiquibase
