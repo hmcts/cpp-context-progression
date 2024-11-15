@@ -620,7 +620,7 @@ public class NotificationService {
 
         return Optional.ofNullable(courtApplicationParty.getProsecutingAuthority())
                 .map(prosecutingAuthority -> prosecutingAuthority.getProsecutionAuthorityId()
-                        .equals(informantNotificationTracker.getInformant().getProsecutionAuthorityId()))
+                        .equals(informantNotificationTracker.getProsecutionAuthorityId()))
                 .orElse(false);
     }
 
