@@ -153,6 +153,12 @@ public class CourtDocumentAddedProcessor {
     public void handleAddDocumentWithProsecutionCaseId(final JsonEnvelope envelope) {
         final DocumentWithProsecutionCaseIdAdded documentAdded = jsonObjectConverter.convert(envelope.payloadAsJsonObject(), DocumentWithProsecutionCaseIdAdded.class);
         final ProsecutionCase prosecutionCase = documentAdded.getProsecutionCase();
+
+        if (prosecutionCase == null) {
+            LOGGER.info("Prosecution case is null. courtDocumentId:{}", documentAdded.getCourtDocument() != null ? documentAdded.getCourtDocument().getCourtDocumentId() : "");
+            return;
+        }
+
         final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_DOCUMENT_ADDED).build();
 
         sender.send(envelopeFrom(metadata, createPayloadFromCourtDocumentAddedToCasePublicEvent (prosecutionCase, documentAdded.getCourtDocument())));
