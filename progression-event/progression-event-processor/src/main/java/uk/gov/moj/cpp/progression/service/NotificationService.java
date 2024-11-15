@@ -572,7 +572,6 @@ public class NotificationService {
     }
 
     private void sendNotificationToThirdParties(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
-        LOGGER.warn("******-appeals sendNotificationToThirdParties courtApplicationID= {}", courtApplication.getId());
         final List<CourtApplicationParty> thirdParties = ofNullable(courtApplication.getThirdParties()).map(r -> courtApplication.getThirdParties()).orElse(new ArrayList<>());
 
         thirdParties.forEach(courtApplicationParty -> {
@@ -583,26 +582,20 @@ public class NotificationService {
 
 
     private void sendNotificationToRespondents(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
-        LOGGER.warn("******-appeals sendNotificationToRespondents courtApplicationID= {}", courtApplication.getId());
         final List<CourtApplicationParty> respondents = ofNullable(courtApplication.getRespondents()).map(r -> courtApplication.getRespondents()).orElse(new ArrayList<>());
         respondents.forEach(courtApplicationParty -> {
-            if (nonNull(courtApplicationParty) && !isCpsProsecutor(event, courtApplicationParty.getProsecutingAuthority())) {
-                checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
-                final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(event, courtApplicationParty.getMasterDefendant());
-                sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
-            }
+            checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
+            final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(event, courtApplicationParty.getMasterDefendant());
+            sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
+
         });
     }
 
     private void sendNotificationToApplicant(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
-        LOGGER.warn("******-appeals sendNotificationToApplicant courtApplicationID= {}", courtApplication.getId());
         final CourtApplicationParty courtApplicationParty = courtApplication.getApplicant();
-
-        if (nonNull(courtApplicationParty) && !isCpsProsecutor(event, courtApplicationParty.getProsecutingAuthority())) {
-            checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
-            final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(event, courtApplicationParty.getMasterDefendant());
-            sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
-        }
+        checkAndUpdateInformantNotifications(informantNotificationTracker, courtApplicationParty);
+        final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(event, courtApplicationParty.getMasterDefendant());
+        sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
     }
 
     private static void checkAndUpdateInformantNotifications(
@@ -618,19 +611,17 @@ public class NotificationService {
             CourtApplicationParty courtApplicationParty,
             InformantNotificationTracker informantNotificationTracker) {
 
-        return Optional.ofNullable(courtApplicationParty.getProsecutingAuthority())
+        return Optional.ofNullable(courtApplicationParty)
+                .map(CourtApplicationParty::getProsecutingAuthority)
                 .map(prosecutingAuthority -> prosecutingAuthority.getProsecutionAuthorityId()
                         .equals(informantNotificationTracker.getProsecutionAuthorityId()))
                 .orElse(false);
     }
 
     private void sendNotificationToInformant(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
-        LOGGER.warn("******-appeals sendNotificationToInformant courtApplicationID= {}", courtApplication.getId());
-        final UUID prosecutionAuthorityId = courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityId();
-
-        final CourtApplicationParty courtApplicationParty = courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(prosecutionAuthorityId, event);
-        final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(event, courtApplicationParty.getMasterDefendant());
-        sendNotification(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, courtApplicationParty, associatedDefenceOrganisation, isAmended, issueDate);
+        final UUID informantAuthorityId = courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityId();
+        final CourtApplicationParty courtApplicationParty = courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(informantAuthorityId, event);
+        sendNotification(event, UUID.randomUUID(), courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType, EMPTY, isAmended, issueDate);
     }
 
     private void sendNotification(JsonEnvelope event, CourtApplication courtApplication, Boolean isWelshTranslationRequired, CourtCentre courtCentre, String hearingDate, String hearingTime, JurisdictionType jurisdictionType, CourtApplicationParty courtApplicationParty, Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation, Boolean isAmended, LocalDate issueDate) {
@@ -923,7 +914,6 @@ public class NotificationService {
 
     public void sendNotification(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final ZonedDateTime hearingStartDateTime, final JurisdictionType jurisdictionType, final Boolean isAmended) {
         requireNonNull(courtApplication);
-        LOGGER.info("******-appeals sendNotification courtApplicationID= {}", courtApplication.getId());
         if (courtApplication.getType().getSummonsTemplateType().equals(NOT_APPLICABLE)) {
             InformantNotificationTracker informantNotificationTracker = new InformantNotificationTracker();
             informantNotificationTracker.setInformant(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier());
@@ -936,10 +926,9 @@ public class NotificationService {
             LOGGER.info("******-appeals sendNotification informantNotificationTracker= {}", informantNotificationTracker);
             LOGGER.info("******-appeals sendNotification courtApplication.getType().getAppealFlag()= {}", courtApplication.getType().getAppealFlag());
             if (shouldSendInformantNotification(courtApplication, informantNotificationTracker)) {
-                LOGGER.warn("******-appeals sendNotification sending notification");
                 sendNotificationToInformant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
             } else {
-                LOGGER.info("******-appeals sendNotification skipping notification");
+                LOGGER.info("******-appeals sendNotification skipping notification for applicant");
             }
         }
     }

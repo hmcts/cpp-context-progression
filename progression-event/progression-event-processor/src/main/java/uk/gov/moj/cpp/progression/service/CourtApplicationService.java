@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.justice.core.courts.ContactNumber.contactNumber;
 import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthority;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
@@ -53,13 +51,10 @@ public class CourtApplicationService {
     @SuppressWarnings("pmd:NullAssignment")
     private ProsecutingAuthority fetchProsecutingAuthorityInformation(UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope) {
 
-        LOGGER.warn("******-appeals fetchProsecutingAuthorityInformation prosecutionAuthorityId= {}", prosecutionAuthorityId);
         final ProsecutingAuthority.Builder prosecutingAuthorityBuilder = prosecutingAuthority().withProsecutionAuthorityId(prosecutionAuthorityId);
 
         final Optional<JsonObject> optionalProsecutorJson = referenceDataService.getProsecutor(jsonEnvelope, prosecutionAuthorityId, requester);
-        LOGGER.warn("****** fetched info from ref data: optionalProsecutorJson = {}", optionalProsecutorJson);
         if (optionalProsecutorJson.isPresent()) {
-            LOGGER.warn("****** fetched info from ref data: optionalProsecutorJson.get = {}", optionalProsecutorJson.get());
             final JsonObject jsonObject = optionalProsecutorJson.get();
             prosecutingAuthorityBuilder.withName(jsonObject.getString("fullName"))
                     .withWelshName(jsonObject.getString("nameWelsh", null))
@@ -69,14 +64,6 @@ public class CourtApplicationService {
                 prosecutingAuthorityBuilder.withContact(contactNumber()
                         .withPrimaryEmail(jsonObject.getString(PROSECUTOR_CONTACT_EMAIL_ADDRESS_KEY))
                         .build());
-            }
-
-            if (jsonObject.containsKey(PROSECUTOR_OUCODE_KEY)) {
-                prosecutingAuthorityBuilder.withProsecutionAuthorityOUCode(jsonObject.getString(PROSECUTOR_OUCODE_KEY));
-            }
-
-            if (jsonObject.containsKey(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY)) {
-                prosecutingAuthorityBuilder.withMajorCreditorCode(jsonObject.getString(PROSECUTOR_MAJOR_CREDITOR_CODE_KEY));
             }
         }
         return prosecutingAuthorityBuilder.build();

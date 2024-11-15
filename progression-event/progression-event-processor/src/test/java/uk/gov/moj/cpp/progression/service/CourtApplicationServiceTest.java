@@ -8,9 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -59,8 +57,6 @@ public class CourtApplicationServiceTest {
                 .add("fullName", "John Doe")
                 .add("nameWelsh", "Ioan Dda")
                 .add("contactEmailAddress", "john.doe@test.com")
-                .add("oucode", "OU123")
-                .add("majorCreditorCode", "MC456")
                 .add("address", Json.createObjectBuilder()
                         .add("line1", "123 Main St")
                         .add("line2", "Apt 4B")
@@ -87,8 +83,6 @@ public class CourtApplicationServiceTest {
         assertThat(result.getProsecutingAuthority().getName(), is("John Doe"));
         assertThat(result.getProsecutingAuthority().getWelshName(), is("Ioan Dda"));
         assertThat(result.getProsecutingAuthority().getContact().getPrimaryEmail(), is("john.doe@test.com"));
-        assertThat(result.getProsecutingAuthority().getProsecutionAuthorityOUCode(), is("OU123"));
-        assertThat(result.getProsecutingAuthority().getMajorCreditorCode(), is("MC456"));
 
         // Verify address conversion
         assertThat(result.getProsecutingAuthority().getAddress().getAddress1(), is("123 Main St"));
