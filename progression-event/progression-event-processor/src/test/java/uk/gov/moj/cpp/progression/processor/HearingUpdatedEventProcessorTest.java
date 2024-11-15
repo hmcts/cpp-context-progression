@@ -4,6 +4,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -32,6 +33,8 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MOD
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
+
+import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.Defendant;
@@ -187,12 +190,82 @@ public class HearingUpdatedEventProcessorTest {
     public void shouldHandleHearingOffenceUpdated() {
         final UUID hearingId = randomUUID();
         final HearingOffencesUpdated hearingOffencesUpdated = HearingOffencesUpdated.hearingOffencesUpdated().withHearingId(hearingId).build();
-        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUID("progression.event.hearing-offences-updated"),
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUID("progression.event.hearing-offences-updated-v2"),
                 objectToJsonObjectConverter.convert(hearingOffencesUpdated));
         eventProcessor.handleHearingOffenceUpdated(jsonEnvelope);
         ArgumentCaptor<UUID> uuidArgumentCaptor = ArgumentCaptor.forClass(UUID.class);
         verify(progressionService, times(1)).populateHearingToProbationCaseworker(envelopeArgumentCaptor.capture(), uuidArgumentCaptor.capture());
         assertThat(uuidArgumentCaptor.getValue(), is(hearingId));
+    }
+
+    @Test
+    public void shouldHandleAllHearingUpdatedWhenOffenceOfCaseUpdated(){
+
+        final AllHearingOffencesUpdatedV2 allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2()
+                .withUpdatedOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                .withHearingIds(singletonList(randomUUID()))
+                .withDefendantId(randomUUID())
+                .build();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUID("progression.event.all-hearing-offences-updated-v2"),
+                objectToJsonObjectConverter.convert(allHearingOffencesUpdatedV2));
+
+        eventProcessor.handleAllHearingOffenceUpdated(jsonEnvelope);
+
+        verify(sender).send(senderJsonEnvelopeCaptor.capture());
+
+        final DefaultEnvelope captorValue = senderJsonEnvelopeCaptor.getValue();
+        assertThat(captorValue.metadata().name(), is("progression.command.update-offences-for-hearing"));
+        assertThat(captorValue.payload().toString(), isJson(allOf(
+                withJsonPath("$.updatedOffences.length()", equalTo(1)),
+                withoutJsonPath("$.newOffences")
+        )));
+    }
+
+    @Test
+    public void shouldHandleAllHearingUpdatedWhenOffenceOfCaseAdded(){
+
+        final AllHearingOffencesUpdatedV2 allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2()
+                .withNewOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                .withHearingIds(singletonList(randomUUID()))
+                .withDefendantId(randomUUID())
+                .build();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUID("progression.event.all-hearing-offences-updated-v2"),
+                objectToJsonObjectConverter.convert(allHearingOffencesUpdatedV2));
+
+        eventProcessor.handleAllHearingOffenceUpdated(jsonEnvelope);
+
+        verify(sender).send(senderJsonEnvelopeCaptor.capture());
+
+        final DefaultEnvelope captorValue = senderJsonEnvelopeCaptor.getValue();
+        assertThat(captorValue.metadata().name(), is("progression.command.update-offences-for-hearing"));
+        assertThat(captorValue.payload().toString(), isJson(allOf(
+                withJsonPath("$.newOffences.length()", equalTo(1)),
+                withoutJsonPath("$.updatedOffences")
+        )));
+    }
+
+    @Test
+    public void shouldHandleAllHearingUpdated(){
+
+        final AllHearingOffencesUpdatedV2 allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2()
+                .withNewOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                .withUpdatedOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
+                .withHearingIds(singletonList(randomUUID()))
+                .withDefendantId(randomUUID())
+                .build();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(metadataWithRandomUUID("progression.event.all-hearing-offences-updated-v2"),
+                objectToJsonObjectConverter.convert(allHearingOffencesUpdatedV2));
+
+        eventProcessor.handleAllHearingOffenceUpdated(jsonEnvelope);
+
+        verify(sender).send(senderJsonEnvelopeCaptor.capture());
+
+        final DefaultEnvelope captorValue = senderJsonEnvelopeCaptor.getValue();
+        assertThat(captorValue.metadata().name(), is("progression.command.update-offences-for-hearing"));
+        assertThat(captorValue.payload().toString(), isJson(allOf(
+                withJsonPath("$.newOffences.length()", equalTo(1)),
+                withJsonPath("$.updatedOffences.length()", equalTo(1))
+        )));
     }
 
     @Test

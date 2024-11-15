@@ -578,7 +578,16 @@ public class PreAndPostConditionHelper {
                 jsonPayload.toString());
     }
 
-    public static Response sendCurrentOffencesToUpdateOffencesCommand(final String caseId, final String defendantId) throws IOException, JSONException {
+    public static Response addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(final String caseId, final String defendantId, final UUID offenceId2) throws IOException, JSONException {
+        final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
+                randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), offenceId2, "progression.command.prosecution-case-refer-to-court-one-grown-defendant-two-offences-ids.json"));
+        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                jsonPayload.toString());
+    }
+
+    public static Response sendCurrentOffencesToUpdateOffencesCommand (final String caseId, final String defendantId) throws IOException, JSONException {
         final String jsonString = getPayload("progression.command.update-offences-for-prosecutioncase-after-defendant-dob-change.json")
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("CASE_ID", caseId);
@@ -666,6 +675,21 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
                 .replace("RANDOM_REFERRAL_ID", referralId)
                 .replace("RR_ORDERED_DATE", LocalDate.now().toString());
+    }
+
+    public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
+                                                                        final String materialIdTwo, final String courtDocumentId, final String referralId,
+                                                                        final String caseUrn, final UUID offenceId2, final String filePath) {
+        return getPayload(filePath)
+                .replaceAll("RANDOM_CASE_ID", caseId)
+                .replace("RANDOM_REFERENCE", caseUrn)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
+                .replace("RANDOM_DOC_ID", courtDocumentId)
+                .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
+                .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
+                .replace("RANDOM_REFERRAL_ID", referralId)
+                .replace("RR_ORDERED_DATE", LocalDate.now().toString())
+                .replace("RANDOM_OFFENCE_ID_2", offenceId2.toString());
     }
 
     public static String createReferProsecutionCaseToMagsCourtJsonBody(final String caseId, final String defendantId, final String referralId,

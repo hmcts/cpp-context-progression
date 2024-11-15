@@ -118,10 +118,6 @@ public class AddCourtDocumentIT extends AbstractIT {
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
-
 
         stubMaterialMetadata();
     }
