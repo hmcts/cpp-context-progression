@@ -103,6 +103,21 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/hearing/" + hearingId + "/plea"), WRITE_MEDIA_TYPE_PLEA, request);
     }
 
+    public void updateMultipleOffences(final String offenceId, final String secondOffenceId, final String offenceCode) throws JSONException {
+        final String jsonString = getPayload("progression.update-multiple-offences-for-prosecution-case.json");
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("defendantId", defendantId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").put("prosecutionCaseId", caseId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("id", offenceId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(0).put("offenceCode", offenceCode);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(1).put("id", secondOffenceId);
+        jsonObjectPayload.getJSONObject("defendantCaseOffences").getJSONArray("offences").getJSONObject(1).put("offenceCode", offenceCode);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
+    }
+
+
     /**
      * Retrieve message from queue and do additional verifications
      */

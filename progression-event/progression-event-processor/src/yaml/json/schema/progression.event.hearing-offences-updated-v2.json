@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/core/courts/progression.command.update-offences-for-hearing.json",
+  "id": "http://justice.gov.uk/core/courts/progression.event.hearing-offences-updated-v2.json",
   "type": "object",
   "properties": {
     "updatedOffences": {

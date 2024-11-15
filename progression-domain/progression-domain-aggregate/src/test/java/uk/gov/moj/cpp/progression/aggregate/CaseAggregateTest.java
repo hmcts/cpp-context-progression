@@ -61,6 +61,7 @@ import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
+import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
@@ -6895,6 +6896,121 @@ public class CaseAggregateTest {
         final OnlinePleasAllocation onlinePleasAllocation = caseAggregate.getOnlinePleasAllocation(defendantId);
 
         assertThat(defendantId, Matchers.is(onlinePleasAllocation.getDefendantId()));
+    }
+
+    @Test
+    public void shouldSendNewOffencesToHearingWhenOffenceAdded(){
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID offenceId4 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId);
+
+        final List<uk.gov.justice.core.courts.Offence> newOffences = singletonList(uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId4).build());
+
+        List<Object> eventStream = caseAggregate.updateOffences(newOffences, caseId, defendantId1, Optional.of(createJsonList())).collect(toList());
+
+        Optional<AllHearingOffencesUpdatedV2> event = eventStream.stream().filter(e -> e.getClass().getName().contains("AllHearingOffencesUpdatedV2")).map(AllHearingOffencesUpdatedV2.class::cast).findFirst();
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getNewOffences().size(), is(1));
+        assertThat(event.get().getNewOffences().get(0).getId(), is(offenceId4));
+        assertThat(event.get().getUpdatedOffences(), is(Matchers.nullValue()));
+
+    }
+
+    @Test
+    public void shouldSendUpdatedOffencesToHearingWhenOffenceUpdated(){
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId);
+
+        final List<uk.gov.justice.core.courts.Offence> newOffences = singletonList(uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId1).build());
+
+        List<Object> eventStream = caseAggregate.updateOffences(newOffences, caseId, defendantId1, Optional.of(createJsonList())).collect(toList());
+
+        Optional<AllHearingOffencesUpdatedV2> event = eventStream.stream().filter(e -> e.getClass().getName().contains("AllHearingOffencesUpdatedV2")).map(AllHearingOffencesUpdatedV2.class::cast).findFirst();
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getUpdatedOffences().size(), is(1));
+        assertThat(event.get().getUpdatedOffences().get(0).getId(), is(offenceId1));
+        assertThat(event.get().getNewOffences(), is(nullValue()));
+
+    }
+
+    @Test
+    public void shouldSendAllOffencesToHearingWhenOffenceAddedAndUpdated(){
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID offenceId4 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId);
+
+        final List<uk.gov.justice.core.courts.Offence> newOffences = asList(uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId4).build(), uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId1).build());
+
+        List<Object> eventStream = caseAggregate.updateOffences(newOffences, caseId, defendantId1, Optional.of(createJsonList())).collect(toList());
+
+        Optional<AllHearingOffencesUpdatedV2> event = eventStream.stream().filter(e -> e.getClass().getName().contains("AllHearingOffencesUpdatedV2")).map(AllHearingOffencesUpdatedV2.class::cast).findFirst();
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getNewOffences().size(), is(1));
+        assertThat(event.get().getNewOffences().get(0).getId(), is(offenceId4));
+        assertThat(event.get().getUpdatedOffences().size(), is(1));
+        assertThat(event.get().getUpdatedOffences().get(0).getId(), is(offenceId1));
+
     }
 
     @Test
