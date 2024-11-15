@@ -4088,6 +4088,71 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldNotRaiseDeleteNextHearingEventInReshareWhenAllNextHearingResultsAreNotDeletedFromResults() throws IOException {
+        final UUID hearingId = randomUUID();
+
+        final ProsecutionCasesResultedV2 prosecutionCasesResultedV1 = ProsecutionCasesResultedV2.prosecutionCasesResultedV2()
+                .withValuesFrom(convertFromFile("json/progression.event.hearing-resulted-next-hearing-removed-not-from-all-results_1.json", ProsecutionCasesResultedV2.class, hearingId.toString())).build();
+
+        final Hearing hearing1 = prosecutionCasesResultedV1.getHearing();
+        final List<Object> eventsV1 = hearingAggregate.processHearingResults(hearing1, ZonedDateTime.now(), null, LocalDate.now()).collect(toList());
+
+        assertThat(eventsV1.size(), is(4));
+        assertThat(eventsV1.get(0).getClass(), is(CoreMatchers.equalTo(ProsecutionCaseDefendantListingStatusChangedV2.class)));
+        assertThat(eventsV1.get(1).getClass(), is(CoreMatchers.equalTo(HearingResulted.class)));
+        assertThat(eventsV1.get(2).getClass(), is(CoreMatchers.equalTo(ProsecutionCasesResultedV2.class)));
+        final NextHearingsRequested nextHearingsRequested = (NextHearingsRequested) eventsV1.get(3);
+        assertThat(nextHearingsRequested.getSeedingHearing().getSeedingHearingId(), is(hearingId));
+
+        hearingAggregate.apply(eventsV1);
+
+        final ProsecutionCasesResultedV2 prosecutionCasesResultedV2 = ProsecutionCasesResultedV2.prosecutionCasesResultedV2()
+                .withValuesFrom(convertFromFile("json/progression.event.hearing-resulted-next-hearing-removed-not-from-all-results_2.json", ProsecutionCasesResultedV2.class, hearingId.toString())).build();
+
+        final Hearing hearing2 = prosecutionCasesResultedV2.getHearing();
+
+        final List<Object> secondEvents = hearingAggregate.processHearingResults(hearing2, ZonedDateTime.now(), null, LocalDate.now()).collect(toList());
+        assertThat(secondEvents.size(), is(3));
+
+        assertThat(secondEvents.get(0).getClass(), is(CoreMatchers.equalTo(ProsecutionCaseDefendantListingStatusChangedV2.class)));
+        assertThat(secondEvents.get(1).getClass(), is(CoreMatchers.equalTo(HearingResulted.class)));
+        assertThat(secondEvents.get(2).getClass(), is(CoreMatchers.equalTo(ProsecutionCasesResultedV2.class)));
+    }
+
+    @Test
+    public void shouldRaiseDeleteNextHearingEventInReshareWhenAllNextHearingResultsAreDeletedFromResults() throws IOException {
+        final UUID hearingId = randomUUID();
+
+        final ProsecutionCasesResultedV2 prosecutionCasesResultedV1 = ProsecutionCasesResultedV2.prosecutionCasesResultedV2()
+                .withValuesFrom(convertFromFile("json/progression.event.hearing-resulted-next-hearing-removed-not-from-all-results_1.json", ProsecutionCasesResultedV2.class, hearingId.toString())).build();
+
+        final Hearing hearing1 = prosecutionCasesResultedV1.getHearing();
+        final List<Object> eventsV1 = hearingAggregate.processHearingResults(hearing1, ZonedDateTime.now(), null, LocalDate.now()).collect(toList());
+
+        assertThat(eventsV1.size(), is(4));
+        assertThat(eventsV1.get(0).getClass(), is(CoreMatchers.equalTo(ProsecutionCaseDefendantListingStatusChangedV2.class)));
+        assertThat(eventsV1.get(1).getClass(), is(CoreMatchers.equalTo(HearingResulted.class)));
+        assertThat(eventsV1.get(2).getClass(), is(CoreMatchers.equalTo(ProsecutionCasesResultedV2.class)));
+        final NextHearingsRequested nextHearingsRequested = (NextHearingsRequested) eventsV1.get(3);
+        assertThat(nextHearingsRequested.getSeedingHearing().getSeedingHearingId(), is(hearingId));
+
+        hearingAggregate.apply(eventsV1);
+
+        final ProsecutionCasesResultedV2 prosecutionCasesResultedV2 = ProsecutionCasesResultedV2.prosecutionCasesResultedV2()
+                .withValuesFrom(convertFromFile("json/progression.event.hearing-resulted-next-hearing-removed-not-from-all-results_2.json", ProsecutionCasesResultedV2.class, hearingId.toString())).build();
+
+        final Hearing hearing2 = prosecutionCasesResultedV2.getHearing();
+
+        final List<Object> secondEvents = hearingAggregate.processHearingResults(hearing2, ZonedDateTime.now(), null, LocalDate.now()).collect(toList());
+        assertThat(secondEvents.size(), is(3));
+
+        assertThat(secondEvents.get(0).getClass(), is(CoreMatchers.equalTo(ProsecutionCaseDefendantListingStatusChangedV2.class)));
+        assertThat(secondEvents.get(1).getClass(), is(CoreMatchers.equalTo(HearingResulted.class)));
+        assertThat(secondEvents.get(2).getClass(), is(CoreMatchers.equalTo(ProsecutionCasesResultedV2.class)));
+    }
+
+
+    @Test
     public void shouldNotDeleteNextHearingWhenCaseIsAmendedButNotAnyAmendmentForJudicialResultWhichCreatesNextHearing() throws IOException {
         final UUID hearingId = randomUUID();
 

@@ -91,7 +91,8 @@ public class HearingResultHelper {
         final List<UUID> previousJudicialResult = getProsecutionCasesJudiricalResultsNextHearingForPrevious(aggregateHearing.getProsecutionCases());
         previousJudicialResult.addAll(getCourtApplicationsJudicialResultsNextHearing(aggregateHearing.getCourtApplications()));
 
-        return !currentJudicialResult.containsAll(previousJudicialResult);
+        return currentJudicialResult.isEmpty() && !previousJudicialResult.isEmpty();
+
     }
     private static List<UUID> getProsecutionCasesJudiricalResultsNextHearing(final List<ProsecutionCase> prosecutionCases) {
         return isEmpty(prosecutionCases) ? new ArrayList<>(): prosecutionCases.stream()
