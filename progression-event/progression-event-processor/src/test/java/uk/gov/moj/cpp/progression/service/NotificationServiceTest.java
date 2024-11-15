@@ -19,7 +19,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.quality.Strictness.LENIENT;
@@ -96,7 +95,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -108,7 +106,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -668,23 +665,34 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void doNotSendNotificationWhenTheApplicantIsCPSProsecutingAuthority() {
+    public void sendNotificationWhenTheApplicantIsCPSProsecutingAuthority() {
+        doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
 
-        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@prosecutingauthority.com").build()).build();
+        when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
+
+        final UUID prosecutionAuthorityId = randomUUID();
+        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority()
+                .withProsecutionAuthorityId(prosecutionAuthorityId)
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail("applicant@prosecutingauthority.com").build()).build();
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withProsecutingAuthority(prosecutingAuthority)
                         .build())
-                .withCourtApplicationCases(createCourtApplications(UUID.randomUUID()))
+                .withCourtApplicationCases(createCourtApplications(prosecutingAuthority.getProsecutionAuthorityId()))
                 .build();
         when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).build()));
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, false);
 
-        verifyNoMoreInteractions(sender);
-        verifyNoMoreInteractions(postalService);
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_COMMAND_EMAIL),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                                withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@prosecutingauthority.com")))))));
     }
 
     @Test
@@ -1306,29 +1314,40 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void doNotSendNotificationWhenRespondentsIsCPSProsecutingAuthority() {
+    public void sendNotificationWhenRespondentsIsCPSProsecutingAuthority() {
         doNothing().when(systemIdMapperService).mapNotificationIdToApplicationId(applicationId, notificationId);
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
-        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority().withContact(ContactNumber.contactNumber().withPrimaryEmail("ProsecutingAuthority@test.com").build()).build();
+        final ProsecutingAuthority prosecutingAuthority = ProsecutingAuthority.prosecutingAuthority()
+                .withProsecutionAuthorityId(UUID.randomUUID())
+                .withContact(ContactNumber.contactNumber().withPrimaryEmail("ProsecutingAuthority@test.com").build()).build();
         final List<CourtApplicationParty> respondents = singletonList(
                 CourtApplicationParty.courtApplicationParty()
-                        .withProsecutingAuthority(prosecutingAuthority)
+                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                        .withPersonDetails(Person.person()
+                                                .withContact(ContactNumber.contactNumber().withPrimaryEmail("defantant@test.com").build()).build()).build()).build())
                         .build());
         when(referenceDataService.getProsecutorV2(envelope, prosecutingAuthority.getProsecutionAuthorityId(), requester)).thenReturn(Optional.of(createObjectBuilder().add("cpsFlag", true).build()));
-
+        when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withRespondents(respondents)
                 .withCourtApplicationCases(createCourtApplications(UUID.randomUUID()))
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(prosecutingAuthority)
+                        .build())
                 .build();
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.MAGISTRATES, false);
 
-        verifyNoMoreInteractions(sender);
-        verifyNoMoreInteractions(postalService);
+        verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
+
+        assertThat(this.envelopeArgumentCaptor.getAllValues().get(2), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
+                withJsonPath("$.applicationId", equalTo(applicationId.toString())),
+                withJsonPath("$.notifications[0].sendToAddress", equalTo("defantant@test.com"))))));
     }
 
     @Test
