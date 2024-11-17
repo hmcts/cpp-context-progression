@@ -6,7 +6,6 @@ import static uk.gov.justice.core.courts.ProsecutingAuthority.prosecutingAuthori
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -41,15 +40,9 @@ public class CourtApplicationService {
     private Requester requester;
 
 
-    public CourtApplicationParty getCourtApplicationPartyByProsecutingAuthority(UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope) {
-        final CourtApplicationParty.Builder builder = CourtApplicationParty.courtApplicationParty();
-            builder.withProsecutingAuthority(fetchProsecutingAuthorityInformation(prosecutionAuthorityId, jsonEnvelope));
-        return builder.build();
-    }
-
 
     @SuppressWarnings("pmd:NullAssignment")
-    private ProsecutingAuthority fetchProsecutingAuthorityInformation(UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope) {
+    public ProsecutingAuthority getProsecutingAuthority(UUID prosecutionAuthorityId, final JsonEnvelope jsonEnvelope) {
 
         final ProsecutingAuthority.Builder prosecutingAuthorityBuilder = prosecutingAuthority().withProsecutionAuthorityId(prosecutionAuthorityId);
 

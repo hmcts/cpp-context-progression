@@ -47,6 +47,8 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.domain.PostalAddress;
+import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
 import uk.gov.moj.cpp.progression.domain.event.email.PartyType;
 import uk.gov.moj.cpp.progression.nows.InvalidNotificationException;
@@ -620,8 +622,9 @@ public class NotificationService {
 
     private void sendNotificationToInformant(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final String hearingDate, final String hearingTime, final JurisdictionType jurisdictionType, final Boolean isAmended, final LocalDate issueDate, final InformantNotificationTracker informantNotificationTracker) {
         final UUID informantAuthorityId = courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityId();
-        final CourtApplicationParty courtApplicationParty = courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(informantAuthorityId, event);
-        sendNotification(event, UUID.randomUUID(), courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, courtApplicationParty, jurisdictionType, EMPTY, isAmended, issueDate);
+        final ProsecutingAuthority prosecutingAuthority = courtApplicationService.getProsecutingAuthority(informantAuthorityId, event);
+        final PostalNotificationDetails postalNotificationDetails = buildPostalNotificationDetails(courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, null, jurisdictionType, isAmended, issueDate);
+        sendNotificationToProsecutor(event, prosecutingAuthority, postalNotificationDetails);
     }
 
     private void sendNotification(JsonEnvelope event, CourtApplication courtApplication, Boolean isWelshTranslationRequired, CourtCentre courtCentre, String hearingDate, String hearingTime, JurisdictionType jurisdictionType, CourtApplicationParty courtApplicationParty, Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation, Boolean isAmended, LocalDate issueDate) {
@@ -694,6 +697,97 @@ public class NotificationService {
         }
 
     }
+
+    private void sendNotificationToProsecutor(final JsonEnvelope event,
+                                              final ProsecutingAuthority prosecutingAuthority,
+                                              final PostalNotificationDetails postalNotificationDetails) {
+
+        final UUID notificationId = UUID.randomUUID();
+
+        // Extract address and email as Optionals
+        final Optional<Address> addressOptional = Optional.ofNullable(prosecutingAuthority.getAddress());
+        final Optional<String> emailAddressOptional = Optional.of(prosecutingAuthority)
+                .map(ProsecutingAuthority::getContact)
+                .map(ContactNumber::getPrimaryEmail);
+
+        // Build PostalAddressee if address is present
+        final Optional<PostalAddressee> postalAddressee = addressOptional.map(address ->
+                new PostalAddressee(
+                        prosecutingAuthority.getProsecutionAuthorityCode(),
+                        new PostalAddress(
+                                address.getAddress1(), address.getAddress2(), address.getAddress3(),
+                                address.getAddress4(), address.getWelshAddress5(), address.getPostcode()
+                        )
+                )
+        );
+
+        // Create PostalNotification
+        final PostalNotification postalNotification = postalService.getPostalNotificationForProsecutor(event, postalNotificationDetails, postalAddressee);
+
+        // Convert PostalNotification to JSON and generate document
+        final JsonObject notificationPayload = objectToJsonObjectConverter.convert(postalNotification);
+        final UUID materialId = documentGeneratorService.generateDocument(
+                event, notificationPayload, PostalService.POSTAL_NOTIFICATION, sender, null,
+                postalNotificationDetails.getCourtApplication().getId(), false
+        );
+        final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
+
+        // Handle Welsh translation requirement
+        if (Boolean.TRUE.equals(postalNotificationDetails.getWelTranslationRequired())) {
+            postalService.sendPostalNotificationAaag(event, postalNotificationDetails.getCourtApplication().getId(), null, materialId);
+            return;
+        }
+
+        // Send email notification if email is present
+        emailAddressOptional.ifPresentOrElse(
+                email -> sendEmailNotification(event, notificationId, postalNotificationDetails, email, materialUrl, materialId),
+                () -> addressOptional.ifPresent(address ->
+                        postalService.sendPostalNotification(event, postalNotificationDetails.getCourtApplication().getId(), postalNotification, null)
+                )
+        );
+    }
+
+    // Extracted method for sending email notification
+    private void sendEmailNotification(final JsonEnvelope event,
+                                       final UUID notificationId,
+                                       final PostalNotificationDetails postalNotificationDetails,
+                                       final String email,
+                                       final String materialUrl,
+                                       final UUID materialId) {
+
+        sendEmail(event, notificationId, null, postalNotificationDetails.getCourtApplication().getId(), null,
+                Collections.singletonList(
+                        buildEmailChannel(
+                                email,
+                                postalNotificationDetails.getCourtApplication().getApplicationReference(),
+                                postalNotificationDetails.getCourtApplication().getType().getType(),
+                                postalNotificationDetails.getCourtApplication().getType().getLegislation(),
+                                postalNotificationDetails.getHearingDate(),
+                                postalNotificationDetails.getHearingTime(),
+                                Optional.ofNullable(postalNotificationDetails.getCourtCentre())
+                                        .map(CourtCentre::getName)
+                                        .orElse(""),
+                                Optional.ofNullable(postalNotificationDetails.getCourtCentre())
+                                        .map(CourtCentre::getAddress)
+                                        .orElse(null),
+                                materialUrl
+                        )
+                )
+        );
+
+        final CourtDocument courtDocument = postalService.courtDocument(
+                postalNotificationDetails.getCourtApplication().getId(), materialId, event, null
+        );
+
+        final JsonObject courtDocumentPayload = Json.createObjectBuilder()
+                .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
+                .build();
+
+        LOGGER.info("Creating court document payload - {}", courtDocumentPayload);
+        sender.send(enveloper.withMetadataFrom(event, PostalService.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT)
+                .apply(courtDocumentPayload));
+    }
+
 
     private boolean isAssociatedDefenceOrganisationEmailOrAddress(final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation){
         return  associatedDefenceOrganisation.isPresent() && nonNull(associatedDefenceOrganisation.get().getEmail())

@@ -36,6 +36,8 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuil
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_ADDRESS_LINE1;
+import static uk.gov.moj.cpp.progression.utils.TestUtils.TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithLegalEntity;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithPersonDefendant;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildDefendantWithLegalEntity;
@@ -194,6 +196,8 @@ public class NotificationServiceTest {
             .withPostcode("AS1 1DF").build()).build();
     private final PostalNotification postalNotification = PostalNotification.builder().withApplicantName("test").build();
 
+    final ProsecutingAuthority prosecutingAuthority = createProsecutorAuthority(UUID.randomUUID(), "informant@test.com");
+
     @BeforeEach
     public void setUp() {
         this.caseId = randomUUID();
@@ -207,6 +211,8 @@ public class NotificationServiceTest {
         when(postalService.getPostalNotificationForCourtApplicationParty(any(), any(), any(), any(),
                 any(), any(), any(), any(), any(), any(),
                 any(), any(), any(), any(), any(), any(), any())).thenReturn(postalNotification);
+
+        when(postalService.getPostalNotificationForProsecutor(any(), any(), any())).thenReturn(postalNotification);
 
         final UUID materialId = UUID.randomUUID();
         when(documentGeneratorService.generateDocument(eq(envelope), any(JsonObject.class), eq(PostalService.POSTAL_NOTIFICATION), eq(sender), any(), any(UUID.class), eq(false))).thenReturn(materialId);
@@ -404,7 +410,7 @@ public class NotificationServiceTest {
                 .build();
 
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
-        when(courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(informantCourtApplicationParty);
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
 
@@ -439,7 +445,7 @@ public class NotificationServiceTest {
                 .build();
 
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
-        when(courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(informantCourtApplicationParty);
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
 
@@ -453,12 +459,20 @@ public class NotificationServiceTest {
     private CourtApplicationParty buildCourtApplicationParty(final UUID prosecutionAuthorityId, String email) {
         return CourtApplicationParty.courtApplicationParty()
                 .withId(randomUUID())
-                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                        .withProsecutionAuthorityId(prosecutionAuthorityId)
-                        .withProsecutionAuthorityCode("Code_" + prosecutionAuthorityId.toString())
-                        .withContact(ContactNumber.contactNumber()
-                                .withPrimaryEmail(email)
-                                .build())
+                .withProsecutingAuthority(createProsecutorAuthority(prosecutionAuthorityId, email))
+                .build();
+    }
+
+    private static ProsecutingAuthority createProsecutorAuthority(final UUID prosecutionAuthorityId, final String email) {
+        return ProsecutingAuthority.prosecutingAuthority()
+                .withProsecutionAuthorityId(prosecutionAuthorityId)
+                .withProsecutionAuthorityCode("Code_" + prosecutionAuthorityId.toString())
+                .withAddress(Address.address()
+                        .withAddress1(TEST_PROSECUTION_AUTHORITY_ADDRESS_LINE1)
+                        .withPostcode(TEST_PROSECUTION_AUTHORITY_ADDRESS_POSTCODE)
+                        .build())
+                .withContact(ContactNumber.contactNumber()
+                        .withPrimaryEmail(email)
                         .build())
                 .build();
     }
@@ -497,7 +511,7 @@ public class NotificationServiceTest {
 
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
-        when(courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(informantCourtApplicationParty);
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
 
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, true);
 
@@ -1105,8 +1119,6 @@ public class NotificationServiceTest {
 
         when(applicationParameters.getApplicationTemplateId()).thenReturn("47705b45-fbdc-44ec-9fe5-ff89b707e6ce");
 
-        final CourtApplicationParty informantCourtApplicationParty = buildCourtApplicationParty(UUID.randomUUID(), "informant@test.com");
-
         final List<CourtApplicationParty> thirdParties = singletonList(
                 CourtApplicationParty.courtApplicationParty()
                         .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber()
@@ -1134,7 +1146,8 @@ public class NotificationServiceTest {
 
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
 
-        when(courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(informantCourtApplicationParty);
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
+
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
 
         verify(this.sender, times(6)).send(this.envelopeArgumentCaptor.capture());
@@ -1188,8 +1201,8 @@ public class NotificationServiceTest {
                 .build();
 
         when(postalService.courtDocument(eq(applicationId), any(UUID.class), any(JsonEnvelope.class), eq(null))).thenReturn(getCourtDocument());
+        when(courtApplicationService.getProsecutingAuthority(any(UUID.class), any(JsonEnvelope.class))).thenReturn(prosecutingAuthority);
 
-        when(courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(eq(prosecutorId), any(JsonEnvelope.class))).thenReturn(informantCourtApplicationParty);
         notificationService.sendNotification(envelope, courtApplication, false, courtCentre, hearingDateTime, JurisdictionType.CROWN, false);
 
         verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
