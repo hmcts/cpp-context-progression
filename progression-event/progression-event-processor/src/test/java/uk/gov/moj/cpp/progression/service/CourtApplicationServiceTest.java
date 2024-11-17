@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.ProsecutingAuthority;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -77,17 +77,17 @@ public class CourtApplicationServiceTest {
                 .thenReturn(address);
 
         // Execute the method
-        CourtApplicationParty result = courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope);
+        ProsecutingAuthority result = courtApplicationService.getProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope);
 
         // Verifying the result
-        assertThat(result.getProsecutingAuthority().getName(), is("John Doe"));
-        assertThat(result.getProsecutingAuthority().getWelshName(), is("Ioan Dda"));
-        assertThat(result.getProsecutingAuthority().getContact().getPrimaryEmail(), is("john.doe@test.com"));
+        assertThat(result.getName(), is("John Doe"));
+        assertThat(result.getWelshName(), is("Ioan Dda"));
+        assertThat(result.getContact().getPrimaryEmail(), is("john.doe@test.com"));
 
         // Verify address conversion
-        assertThat(result.getProsecutingAuthority().getAddress().getAddress1(), is("123 Main St"));
-        assertThat(result.getProsecutingAuthority().getAddress().getAddress2(), is("Apt 4B"));
-        assertThat(result.getProsecutingAuthority().getAddress().getPostcode(), is("SW1A 1AA"));
+        assertThat(result.getAddress().getAddress1(), is("123 Main St"));
+        assertThat(result.getAddress().getAddress2(), is("Apt 4B"));
+        assertThat(result.getAddress().getPostcode(), is("SW1A 1AA"));
     }
 
     @Test
@@ -97,12 +97,12 @@ public class CourtApplicationServiceTest {
                 .thenReturn(Optional.empty());
 
         // Execute the method
-        CourtApplicationParty result = courtApplicationService.getCourtApplicationPartyByProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope);
+        ProsecutingAuthority result = courtApplicationService.getProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope);
 
         // Verifying that fields are not populated
-        assertThat(result.getProsecutingAuthority().getName(), is(nullValue()));
-        assertThat(result.getProsecutingAuthority().getContact(), is(nullValue()));
-        assertThat(result.getProsecutingAuthority().getAddress(), is(nullValue()));
+        assertThat(result.getName(), is(nullValue()));
+        assertThat(result.getContact(), is(nullValue()));
+        assertThat(result.getAddress(), is(nullValue()));
         verify(referenceDataService, times(1)).getProsecutor(jsonEnvelope, prosecutionAuthorityId, requester);
     }
 }
