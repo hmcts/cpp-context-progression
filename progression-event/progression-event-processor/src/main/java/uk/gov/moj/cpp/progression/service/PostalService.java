@@ -306,7 +306,8 @@ public class PostalService {
         }
 
         //Check if the applicant is a defendant
-        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
+        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty)
+                .map(CourtApplicationParty::getMasterDefendant);
         defendantOptional.ifPresent(defendant -> builder.withDefendant(buildDefendant(defendant)));
         if (nonNull(courtApplication.getRespondents())) {
             courtApplication.getRespondents().forEach(respondent -> {
