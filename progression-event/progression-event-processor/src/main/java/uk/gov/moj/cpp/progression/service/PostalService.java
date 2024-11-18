@@ -186,7 +186,7 @@ public class PostalService {
 
         final PostalAddressee postalAddressee = optionalPostalAddressee.orElse(null);
 
-        return buildPostalNotification(postalNotificationDetails.getHearingTime(),
+        return buildPostalNotification(postalNotificationDetails.getHearingDate(),
                 postalNotificationDetails.getHearingTime(),
                 postalNotificationDetails.getCourtApplication().getApplicationReference(),
                 postalNotificationDetails.getCourtApplication().getType().getType(),
