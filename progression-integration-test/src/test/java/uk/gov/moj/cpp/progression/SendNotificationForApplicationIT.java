@@ -60,7 +60,6 @@ import io.restassured.path.json.JsonPath;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class SendNotificationForApplicationIT extends AbstractIT {
@@ -183,7 +182,6 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     }
 
     @Test
-    @Disabled
     public void shouldSendPublicEventWhenApplicationCreatedWithWelshTranslationRequired() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", respondentDefendantId);
         doReferCaseToCourtAndVerify();
