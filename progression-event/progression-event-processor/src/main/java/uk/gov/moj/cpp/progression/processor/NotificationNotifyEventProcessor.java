@@ -140,9 +140,9 @@ public class NotificationNotifyEventProcessor {
     }
 
     private void generateAndAddEmailDocument(final JsonEnvelope event) {
-        logger.info("2047 payload received in generateAndAddEmailDocument {}", event.payloadAsJsonObject());
-        logger.info("2047 event metadata {}", event.metadata());
-        logger.info("2047 event metadata {}", event.metadata().userId() != null?event.metadata().userId():"no user id");
+        logger.info(">>2047 payload received in generateAndAddEmailDocument {}", event.payloadAsJsonObject());
+        logger.info(">>2047 event metadata {}", event.metadata());
+        logger.info(">>2047 event metadata {}", event.metadata().userId() != null?event.metadata().userId():"no user id");
         final JsonObject emailDocumentJson = event.payloadAsJsonObject();
         final UUID caseId = emailDocumentJson.containsKey(CASE_ID) ? UUID.fromString(emailDocumentJson.getString(CASE_ID)) : null ;
         final String recipientType = emailDocumentJson.containsKey("recipientType") ? emailDocumentJson.getString("recipientType") :  "None";
