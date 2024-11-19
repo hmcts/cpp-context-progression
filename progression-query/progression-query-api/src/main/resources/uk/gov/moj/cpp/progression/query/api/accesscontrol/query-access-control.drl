@@ -409,6 +409,15 @@ rule "Command - Access all case notes for progression.query.case-notes"
     $outcome.setSuccess(true);
 end
 
+rule "Command - Access all case notes for progression.query.application-notes"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.application-notes");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate", "Judge", "Recorders", "Deputies"));
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.defendants-by-laacontractnumber"
   when
     $outcome: Outcome();

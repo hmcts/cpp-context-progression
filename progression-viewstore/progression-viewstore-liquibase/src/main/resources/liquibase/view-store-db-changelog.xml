@@ -114,4 +114,5 @@
     <include file="liquibase/alter-table-prosecution-case-add-column-group-id.xml"/>
     <include file="liquibase/create-related-reference.xml"/>
     <include file="liquibase/add-shared-time-to-hearing-table.xml"/>
+    <include file="liquibase/create-application-note.xml"/>
 </databaseChangeLog>

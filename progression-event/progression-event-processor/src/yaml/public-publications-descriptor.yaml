@@ -116,6 +116,12 @@ subscriptions_descriptor:
         - name: public.progression.case-note-edited
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.case-note-edited.json
 
+        - name: public.progression.application-note-added
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.application-note-added.json
+
+        - name: public.progression.application-note-edited
+          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.application-note-edited.json
+
         - name: public.progression.defendant-matched
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.defendant-matched.json
 

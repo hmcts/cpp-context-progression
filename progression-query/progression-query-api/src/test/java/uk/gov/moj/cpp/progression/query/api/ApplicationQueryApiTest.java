@@ -19,6 +19,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 
@@ -77,6 +78,9 @@ public class ApplicationQueryApiTest {
 
     @InjectMocks
     private ApplicationQueryApi applicationQueryApi;
+
+    @Mock
+    private ApplicationNotesQueryView applicationNotesQueryView;
 
     @Mock
     private DefenceQueryService defenceQueryService;
@@ -211,6 +215,12 @@ public class ApplicationQueryApiTest {
         JsonEnvelope response = applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
 
         assertThat(response, equalTo(envelope));
+    }
+
+    @Test
+    public void shouldGetApplicationNotesByApplicationId() {
+        when(applicationNotesQueryView.getApplicationNotes(query)).thenReturn(response);
+        assertThat(applicationQueryApi.getApplicationNotes(query), equalTo(response));
     }
 
     @Test
