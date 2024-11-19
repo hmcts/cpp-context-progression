@@ -22,6 +22,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUIDAndName;
+import static uk.gov.moj.cpp.progression.processor.UnscheduledHearingAllocationNotifiedEventProcessorTest.ENFORCEMENT_EMAIL;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithLegalEntity;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithPersonDefendant;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.buildCourtApplicationPartyWithProsecutionAuthority;
@@ -61,6 +62,7 @@ import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
+import uk.gov.moj.cpp.progression.service.dto.PostalNotificationDetails;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -90,7 +92,7 @@ public class PostalServiceTest {
 
     private final ZonedDateTime hearingDateTime = ZonedDateTime.now(ZoneId.of("UTC"));
     public static final UUID APPLICATION_DOCUMENT_TYPE_ID = UUID.fromString("460fa7ce-c002-11e8-a355-529269fb1459");
-    private final String PROGRESSION_CREATE_DOCUMENT =  "progression.command.create-court-document";
+    private final String PROGRESSION_CREATE_DOCUMENT = "progression.command.create-court-document";
 
     @Spy
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
@@ -447,23 +449,23 @@ public class PostalServiceTest {
         final Boolean isApplicant = false;
         final LocalDate orderedDate = LocalDate.now();
 
-       PostalNotification postalNotification=  postalService.buildPostalNotification(
+        PostalNotification postalNotification = postalService.buildPostalNotification(
                 hearingDate,
                 hearingTime,
                 courtApplication.getApplicationReference(),
-               courtApplication.getType().getType(),
-               courtApplication.getType().getTypeWelsh(),
-               courtApplication.getType().getLegislation(),
-               courtApplication.getType().getLegislationWelsh(),
+                courtApplication.getType().getType(),
+                courtApplication.getType().getTypeWelsh(),
+                courtApplication.getType().getLegislation(),
+                courtApplication.getType().getLegislationWelsh(),
                 null,
                 null,
                 null,
                 localJusticeArea,
                 courtApplication.getApplicant(),
                 JurisdictionType.MAGISTRATES, applicationParticulars, courtApplication, applicant, EMPTY,
-               PostalAddressee.builder().build(), null, orderedDate);
+                PostalAddressee.builder().build(), null, orderedDate);
 
-       verifyMagistratesCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
+        verifyMagistratesCourt(postalNotification.getLjaCode(), postalNotification.getLjaName());
     }
 
     @Test
@@ -515,7 +517,7 @@ public class PostalServiceTest {
         final Boolean isApplicant = false;
         final LocalDate orderedDate = LocalDate.now();
 
-        PostalNotification postalNotification=  postalService.buildPostalNotification(
+        PostalNotification postalNotification = postalService.buildPostalNotification(
                 hearingDate,
                 hearingTime,
                 courtApplication.getApplicationReference(),
@@ -583,7 +585,7 @@ public class PostalServiceTest {
         final Boolean isApplicant = false;
         final LocalDate orderedDate = LocalDate.now();
 
-        PostalNotification postalNotification=  postalService.buildPostalNotification(
+        PostalNotification postalNotification = postalService.buildPostalNotification(
                 hearingDate,
                 hearingTime,
                 courtApplication.getApplicationReference(),
@@ -653,7 +655,7 @@ public class PostalServiceTest {
         final Boolean isApplicant = false;
         final LocalDate orderedDate = LocalDate.now();
 
-        PostalNotification postalNotification=  postalService.buildPostalNotification(
+        PostalNotification postalNotification = postalService.buildPostalNotification(
                 hearingDate,
                 hearingTime,
                 courtApplication.getApplicationReference(),
@@ -722,7 +724,7 @@ public class PostalServiceTest {
         final Boolean isApplicant = false;
         final LocalDate orderedDate = LocalDate.now();
 
-        PostalNotification postalNotification=  postalService.buildPostalNotification(
+        PostalNotification postalNotification = postalService.buildPostalNotification(
                 hearingDate,
                 hearingTime,
                 courtApplication.getApplicationReference(),
@@ -790,7 +792,7 @@ public class PostalServiceTest {
         final Boolean isApplicant = false;
         final LocalDate orderedDate = LocalDate.now();
 
-        PostalNotification postalNotification=  postalService.buildPostalNotification(
+        PostalNotification postalNotification = postalService.buildPostalNotification(
                 hearingDate,
                 hearingTime,
                 courtApplication.getApplicationReference(),
@@ -1383,7 +1385,7 @@ public class PostalServiceTest {
                                                 .withAddress2("Acacia Town")
                                                 .withAddress3("Acacia City")
                                                 .withAddress4("Test")
-                                                .withPostcode(isForeignAddress? null : "AC1 4AC")
+                                                .withPostcode(isForeignAddress ? null : "AC1 4AC")
                                                 .build()
                                         )
                                         .build()).build()).build())
@@ -1458,6 +1460,41 @@ public class PostalServiceTest {
         verifyProsecutionAuthorityAddress(prosecutionAuthorityAddress);
     }
 
+    @Test
+    public void testGetPostalNotificationForProsecutor() {
+        final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+
+        final PostalNotificationDetails postalNotificationDetails = new PostalNotificationDetails();
+        postalNotificationDetails.setHearingDate("hearingDate");
+        postalNotificationDetails.setHearingTime("hearingTime");
+        postalNotificationDetails.setCourtApplication(getCourtApplication(false));
+        postalNotificationDetails.setJurisdictionType(JurisdictionType.MAGISTRATES);
+        postalNotificationDetails.setCourtCentre(CourtCentre.courtCentre().withId(UUID.randomUUID()).build());
+
+        final PostalAddressee postalAddressee = new PostalAddressee("name", new PostalAddress("line1", "line2", "line3", "line4","line5", "postcode"));
+
+        when(referenceDataService.getCourtCentreWithCourtRoomsById(any(), any(), any())).thenReturn(Optional.of(createObjectBuilder().build()));
+
+        final JsonObject sampleJsonObject = createObjectBuilder().add("lja", "lja").build();
+
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
+        when(referenceDataService.getEnforcementAreaByLjaCode(eq(envelope), any(), any())).thenReturn(createObjectBuilder()
+                .add("email", ENFORCEMENT_EMAIL)
+                .add("localJusticeArea", createObjectBuilder()
+                        .add("nationalCourtCode", "1800")
+                        .add("name", "East Hampshire Magistrates' Court")
+                        .build())
+                .build());
+        PostalNotification result = postalService.getPostalNotificationForProsecutor(envelope, postalNotificationDetails, Optional.of(postalAddressee));
+
+        assertThat(result, is(notNullValue()));
+        assertThat(result.getHearingCourtDetails().getHearingDate(), is("hearingDate"));
+        assertThat(result.getHearingCourtDetails().getHearingTime(), is("hearingTime"));
+        assertThat(result.getLjaCode(), is("1800"));
+        assertThat(result.getLjaName(), is("East Hampshire Magistrates' Court"));
+        assertThat(result.getApplicantName(), is("John Edward"));
+        assertThat(result.getAddressee().getAddress().getLine1(), is("line1"));
+    }
 
     private static JsonObject generateDocumentTypeAccessForApplication(UUID id) {
         return createObjectBuilder()
@@ -1479,7 +1516,7 @@ public class PostalServiceTest {
                                         .withAddress2("Acacia Town")
                                         .withAddress3("Acacia City")
                                         .withAddress4("Test")
-                                        .withPostcode(isForeignAddress? null : "AC1 4AC")
+                                        .withPostcode(isForeignAddress ? null : "AC1 4AC")
                                         .build())
                                 .build())
                         .build())
@@ -1505,7 +1542,7 @@ public class PostalServiceTest {
                                         .withAddress2("Acacia Town")
                                         .withAddress3("Acacia City")
                                         .withAddress4("Test")
-                                        .withPostcode(isForeignAddress? null : "AC1 4AC")
+                                        .withPostcode(isForeignAddress ? null : "AC1 4AC")
                                         .build()
                                 )
                                 .build()).build())

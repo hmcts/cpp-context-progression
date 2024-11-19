@@ -704,7 +704,6 @@ public class CourtApplicationProcessor {
 
     @Handles("progression.event.send-notification-for-application-initiated")
     public void sendNotificationForApplication(final JsonEnvelope jsonEnvelope) {
-        LOGGER.info("****** sendNotificationForApplication event received, jsonEnvelope= {}", jsonEnvelope);
         final SendNotificationForApplication sendNotificationForApplication = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForApplication.class);
         final CourtApplication courtApplication = sendNotificationForApplication.getCourtApplication();
         if (sendNotificationForApplication.getIsWelshTranslationRequired()) {
@@ -720,8 +719,6 @@ public class CourtApplicationProcessor {
                     .withMetadataFrom(jsonEnvelope));
         }
         final CourtHearingRequest courtHearingRequest = sendNotificationForApplication.getCourtHearing();
-        LOGGER.info("****** sendNotificationForApplication nonNull(courtHearingRequest) = {} ", nonNull(courtHearingRequest));
-        LOGGER.info("****** sendNotificationForApplication courtHearingRequest = {} ", courtHearingRequest);
         if(nonNull(courtHearingRequest) && (isNull(courtHearingRequest.getCourtCentre().getRoomId()) || nonNull(courtHearingRequest.getWeekCommencingDate()))) {
             notificationService.sendNotification(jsonEnvelope, courtApplication, sendNotificationForApplication.getIsWelshTranslationRequired(), courtHearingRequest.getCourtCentre(), courtHearingRequest.getEarliestStartDateTime(), courtHearingRequest.getJurisdictionType(), false);
         }
