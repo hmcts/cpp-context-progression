@@ -92,14 +92,10 @@ public class CourtApplicationServiceTest {
 
     @Test
     public void shouldReturnEmptyCourtApplicationPartyWhenNoProsecutingAuthorityDataExists() {
-        // Mocking no data scenario
         when(referenceDataService.getProsecutor(any(JsonEnvelope.class), any(UUID.class), any(Requester.class)))
                 .thenReturn(Optional.empty());
 
-        // Execute the method
         ProsecutingAuthority result = courtApplicationService.getProsecutingAuthority(prosecutionAuthorityId, jsonEnvelope);
-
-        // Verifying that fields are not populated
         assertThat(result.getName(), is(nullValue()));
         assertThat(result.getContact(), is(nullValue()));
         assertThat(result.getAddress(), is(nullValue()));

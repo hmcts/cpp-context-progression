@@ -1017,12 +1017,9 @@ public class NotificationService {
             sendNotificationToApplicant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
             sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
             sendNotificationToThirdParties(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
-            LOGGER.info("******-appeals sendNotification informantNotificationTracker= {}", informantNotificationTracker);
-            LOGGER.info("******-appeals sendNotification courtApplication.getType().getAppealFlag()= {}", courtApplication.getType().getAppealFlag());
+            LOGGER.info("InformantNotificationTracker= {}", informantNotificationTracker);
             if (shouldSendInformantNotification(courtApplication, informantNotificationTracker)) {
                 sendNotificationToInformant(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, LocalDate.now(), informantNotificationTracker);
-            } else {
-                LOGGER.info("******-appeals sendNotification skipping notification for applicant");
             }
         }
     }
