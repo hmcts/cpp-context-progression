@@ -359,16 +359,20 @@ public class ProsecutionCaseQuery {
                     .stream()
                     .map(e -> jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(e.getCourtApplication().getPayload()), CourtApplication.class))
                     .filter(e -> Boolean.TRUE.equals(e.getType().getAppealFlag()))
+                    .filter(e -> nonNull(e.getCourtApplicationCases()))
                     .forEach(e -> {
                         final HashSet<UUID> offenceIds = new HashSet<>();
                         e.getCourtApplicationCases()
                                 .stream()
                                 .filter(courtApplicationCase -> courtApplicationCase.getProsecutionCaseId().equals(caseId))
+                                .filter(courtApplicationCase -> nonNull(courtApplicationCase.getOffences()))
                                 .flatMap(courtApplicationCase -> courtApplicationCase.getOffences().stream())
                                 .forEach(o -> offenceIds.add(o.getId()));
 
-                        defendantOffencesMap.computeIfAbsent(e.getSubject().getId(), k -> new HashSet<>());
-                        defendantOffencesMap.get(e.getSubject().getId()).addAll(offenceIds);
+                        if(!offenceIds.isEmpty()) {
+                            defendantOffencesMap.computeIfAbsent(e.getSubject().getId(), k -> new HashSet<>());
+                            defendantOffencesMap.get(e.getSubject().getId()).addAll(offenceIds);
+                        }
                     });
         }
 
