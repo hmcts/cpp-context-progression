@@ -36,7 +36,6 @@ import javax.json.JsonObject;
 public class DefendantMatchingEventProcessor {
 
     private static final String DEFENDANT_ID_FIELD = "defendantId";
-    private static final String MASTER_DEFENDANT_ID_FIELD = "masterDefendantId";
     private static final String PROSECUTION_CASE_ID_FIELD = "prosecutionCaseId";
 
     @Inject
@@ -111,13 +110,6 @@ public class DefendantMatchingEventProcessor {
 
         if (Objects.nonNull(masterDefendant)) {
             sendPublicCaseDefendantChangedEvent(envelope, masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getDefendant());
-
-            masterDefendantIdUpdated.getMatchedDefendants()
-                    .forEach(matchedDefendant -> {
-                        if (!masterDefendant.getMasterDefendantId().equals(matchedDefendant.getMasterDefendantId())) {
-                            sendUpdateMasterDefendantCommand(envelope, matchedDefendant.getProsecutionCaseId(), matchedDefendant.getDefendantId(), masterDefendant.getMasterDefendantId());
-                        }
-                    });
         }
     }
 
@@ -136,19 +128,6 @@ public class DefendantMatchingEventProcessor {
     public void handleDefendantsMasterDefendantIdUpdatedEvent(final JsonEnvelope envelope) {
         final DefendantsMasterDefendantIdUpdated masterDefendantIdUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantsMasterDefendantIdUpdated.class);
         sendPublicCaseDefendantChangedEvent(envelope, masterDefendantIdUpdated.getDefendant().getMasterDefendantId(), masterDefendantIdUpdated.getDefendant());
-    }
-
-    private void sendUpdateMasterDefendantCommand(final JsonEnvelope envelope, final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId) {
-
-        final JsonObject publicEventPayload = createObjectBuilder()
-                .add(PROSECUTION_CASE_ID_FIELD, prosecutionCaseId.toString())
-                .add(DEFENDANT_ID_FIELD, defendantId.toString())
-                .add(MASTER_DEFENDANT_ID_FIELD, masterDefendantId.toString())
-                .build();
-
-        sender.send(Enveloper.envelop(publicEventPayload)
-                .withName("progression.command.update-matched-defendant")
-                .withMetadataFrom(envelope));
     }
 
     private static MatchedDefendants getMasterDefendant(final List<MatchedDefendants> matchedDefendants) {
