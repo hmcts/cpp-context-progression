@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -120,32 +119,6 @@ public class CaseProgressionDetailRepositoryTest {
 
         final CaseProgressionDetail caseProgressionDetail = repository.findByMaterialId(MATERIAL_ID);
         assertThat(caseProgressionDetail.getCaseId(), equalTo(CASE_ID_ONE));
-    }
-
-    @Test
-    public void shouldFindByStatus() throws Exception {
-        final List<CaseProgressionDetail> results =
-                repository.findByStatus(Arrays.asList(CaseStatusEnum.INCOMPLETE));
-        assertThat(results.size(), equalTo(1));
-        final CaseProgressionDetail result = results.get(0);
-        assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));
-    }
-
-    @Test
-    public void shouldFindByStatusAndCaseId() throws Exception {
-        final List<CaseProgressionDetail> results =
-                repository.findByStatusAndCaseID(Arrays.asList(CaseStatusEnum.INCOMPLETE), CASE_ID_ONE);
-        assertThat(results.size(), equalTo(1));
-        final CaseProgressionDetail result = results.get(0);
-        assertThat(result.getStatus(), equalTo(CaseStatusEnum.INCOMPLETE));
-    }
-
-    @Test
-    public void shouldFindOpenStatus() throws Exception {
-        final List<CaseProgressionDetail> results = repository.findOpenStatus();
-        assertThat(results.size(), equalTo(2));
-        final CaseProgressionDetail result = results.get(0);
-        assertThat(result.getCourtCentreId(), equalTo(COURT_CENTER));
     }
 
 

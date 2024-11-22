@@ -5,81 +5,10 @@ import uk.gov.moj.cpp.accesscontrol.drools.Action;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 
-
-
-
-
-rule "Command - Access control for progression.command.sending-committal-hearing-information"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.sending-committal-hearing-information");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers" , "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-
-rule "Command - Access control for progression.command.sentence-hearing-date"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.sentence-hearing-date");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-
-rule "Command - Access control for progression.command.add-case-to-crown-court"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.add-case-to-crown-court");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers" , "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-
-rule "Command - Access control for progression.command.request-psr-for-defendants"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.request-psr-for-defendants");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-
-rule "Command - Access control for progression.command.upload-case-documents"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.upload-case-documents");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Defence Users", "District Judge", "Court Associate"));
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "Command - Access control for progression.command.defendant-document"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.command.defendant-document");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "Command - Access control for progression.command.add-defendant"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.add-defendant");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "CMS"))
-  then
-    $outcome.setSuccess(true);
-end
-
-rule "Command - Access control for progression.command.complete-sending-sheet"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.complete-sending-sheet");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"))
   then
     $outcome.setSuccess(true);

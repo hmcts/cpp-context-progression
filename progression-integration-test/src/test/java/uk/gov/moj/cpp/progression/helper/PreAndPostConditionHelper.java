@@ -63,22 +63,17 @@ import com.jayway.jsonpath.ReadContext;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
-import org.json.JSONException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PreAndPostConditionHelper {
 
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
-
-    public static Response addCaseToCrownCourt(final String caseId) throws IOException {
-        return addCaseToCrownCourt(caseId, randomUUID().toString(), randomUUID().toString());
-    }
 
     public static Response addProsecutionCaseToCrownCourtForIngestion(final String caseId, final String defendantId, final String materialIdOne,
                                                                       final String materialIdTwo, final String courtDocumentId, final String referralId,
@@ -515,12 +510,6 @@ public class PreAndPostConditionHelper {
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
                 jsonPayload.toString());
-    }
-
-    public static Response addCaseToCrownCourt(final String caseId, final String firstDefendantId, final String secondDefendantId) throws IOException {
-        return postCommand(getWriteUrl("/cases/" + caseId),
-                "application/vnd.progression.command.add-case-to-crown-court+json",
-                getAddCaseToCrownCourtJsonBody(caseId, firstDefendantId, secondDefendantId));
     }
 
     public static Response matchDefendant(final String prosecutionCaseId_2, final String defendantId_2, final String prosecutionCaseId_1, final String defendantId_1, final String masterDefendantId) throws IOException {
@@ -1161,10 +1150,6 @@ public class PreAndPostConditionHelper {
     }
 
     // Progression Test DSL for preconditions and assertions
-    public static void givenCaseAddedToCrownCourt(final String caseId, final String firstDefendantId, final String secondDefendantId) throws IOException {
-        final Response writeResponse = addCaseToCrownCourt(caseId, firstDefendantId, secondDefendantId);
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-    }
 
     public static String pollProsecutionCasesProgressionFor(final String caseId) {
         return pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)));

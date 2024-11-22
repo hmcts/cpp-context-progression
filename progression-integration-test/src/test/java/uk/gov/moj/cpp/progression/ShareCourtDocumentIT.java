@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.emptyList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
@@ -18,12 +17,8 @@ import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentCaseLevel;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentDefendantLevel;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_COURT_DOCUMENT_SHARED;
-import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_COURT_DOCUMENT_SHARE_FAILED;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocuments;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.shareCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
@@ -48,7 +43,6 @@ import uk.gov.moj.cpp.progression.util.QueryUtil;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -76,8 +70,6 @@ public class ShareCourtDocumentIT extends AbstractIT {
 
     private static final JmsMessageConsumerClient messageConsumerClientPrivateForCourtDocumentShared = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_COURT_DOCUMENT_SHARED_EVENT_V2).getMessageConsumerClient();
     private static final JmsMessageConsumerClient messageConsumerClientPrivateForDuplicateShareCourtDocumentRequestReceivedEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_DUPLICATE_SHARE_COURT_DOCUMENT_REQUEST_RECEIVED_EVENT).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPrivateForCourtDocumentShareFailedEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_COURT_DOCUMENT_SHARE_FAILED_EVENT).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerCourtDocumentShareFailedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_COURT_DOCUMENT_SHARE_FAILED).getMessageConsumerClient();
     private static final JmsMessageConsumerClient messageConsumerCourtDocumentSharedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_COURT_DOCUMENT_SHARED).getMessageConsumerClient();
     private static final JmsMessageConsumerClient messageConsumerClientPrivateForCaseCreatedEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-created").getMessageConsumerClient();
 
@@ -270,31 +262,6 @@ public class ShareCourtDocumentIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPrivateForDuplicateShareCourtDocumentRequestReceivedEvent);
         verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
 
-    }
-
-    @Test
-    public void shouldRaiseShareCourtDocumentFailedWhenTryToShareDocumentWhichIsAlreadyRemoved() throws Exception {
-
-        final String materialIdActive = randomUUID().toString();
-        final String materialIdDeleted = randomUUID().toString();
-        final String referraReasonId = randomUUID().toString();
-        final String hearingId = "2daefec3-2f76-8109-82d9-2e60544a6c02";
-        final String userId = "dd8dcdcf-58d1-4e45-8450-40b0f569a7e7";
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId1, materialIdActive, materialIdDeleted, defendantLevelDocumentId1, referraReasonId);
-
-        pollProsecutionCasesProgressionFor(caseId, EXTENDED_TIME_OUT_IN_SECONDS, getProsecutionCaseMatchers(caseId, defendantId1, emptyList()));
-
-        setupAsAuthorisedUser(UUID.fromString(userId), "stub-data/usersgroups.get-support-groups-by-user.json");
-
-        addRemoveCourtDocument(defendantLevelDocumentId1, materialIdActive, true, UUID.fromString(userId));
-
-        assertThat(getCourtDocumentsByCase(randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));
-
-        shareCourtDocument(defendantLevelDocumentId1, hearingId, userId, "progression.share-court-document.json");
-
-        verifyInMessagingQueue(messageConsumerClientPrivateForCourtDocumentShareFailedEvent);
-        verifyInMessagingQueue(messageConsumerCourtDocumentShareFailedPublicEvent);
     }
 
     private CustomComparator getCustomComparator() {

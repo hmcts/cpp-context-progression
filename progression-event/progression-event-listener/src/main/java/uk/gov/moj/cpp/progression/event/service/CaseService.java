@@ -1,12 +1,5 @@
 package uk.gov.moj.cpp.progression.event.service;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
@@ -16,9 +9,15 @@ import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
-import uk.gov.moj.cpp.progression.persistence.repository.DefendantDocumentRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 /**
  * @deprecated This is deprecated for Release 2.4
@@ -30,8 +29,6 @@ public class CaseService {
 
     @Inject
     DefendantRepository defendantRepository;
-    @Inject
-    DefendantDocumentRepository defendantDocumentRepository;
     @Inject
     private CaseProgressionDetailRepository caseProgressionDetailRepo;
 

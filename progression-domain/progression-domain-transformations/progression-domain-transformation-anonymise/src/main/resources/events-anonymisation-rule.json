@@ -108,13 +108,6 @@
       ]
     },
     {
-      "eventName": "progression.events.defendant-added",
-      "fieldsToBeIgnored": [
-        "$.offences[*].asnSequenceNumber",
-        "$.offences[*].cpr.offenceSequence"
-      ]
-    },
-    {
       "eventName": "progression.event.summons-data-prepared",
       "fieldsToBeIgnored": [
         "$.summonsData.listDefendantRequests[*].summonsRequired"

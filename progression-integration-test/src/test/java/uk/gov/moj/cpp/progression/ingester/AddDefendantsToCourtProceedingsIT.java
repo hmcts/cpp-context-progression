@@ -221,7 +221,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .build();
         defendantsList.add(defendant);
 
-        final LocalDate dateOfBirth = LocalDate.now().minusYears(20);
         final Address address = Address.address()
                 .withAddress1("address Line1")
                 .withAddress2("address Line2")

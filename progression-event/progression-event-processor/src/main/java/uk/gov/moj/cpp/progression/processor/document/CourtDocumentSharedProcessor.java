@@ -16,7 +16,6 @@ import javax.inject.Inject;
 @ServiceComponent(EVENT_PROCESSOR)
 public class CourtDocumentSharedProcessor {
 
-    public static final String PUBLIC_COURT_DOCUMENT_SHARE_FAILED = "public.progression.event.court-document-share-failed";
     public static final String PUBLIC_COURT_DOCUMENT_SHARED = "public.progression.event.court-document-shared";
 
     @Inject
@@ -31,12 +30,6 @@ public class CourtDocumentSharedProcessor {
     @Handles("progression.event.court-document-shared-v2")
     public void handleCourtDocumentSharedEventV2(final JsonEnvelope envelope) {
         final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARED).build();
-        sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
-    }
-
-    @Handles("progression.event.court-document-share-failed")
-    public void handleCourtDocumentShareFailedEvent(final JsonEnvelope envelope) {
-        final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARE_FAILED).build();
         sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
     }
 

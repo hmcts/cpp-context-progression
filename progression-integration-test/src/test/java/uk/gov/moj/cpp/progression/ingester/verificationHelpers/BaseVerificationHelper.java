@@ -30,8 +30,6 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
     private static final String OUTPUT_PARTIES_JSON_PATH_FOR_SIZE = "$.parties[*]";
     private static final String INPUT_OFFENCES_JSON_PATH_FOR_SIZE = "$.defendants[%d].offences";
     private static final String INPUT_OFFENCES_FOR_DEFENDANTS_UPDATED = "$.%s[%d].offences";
-    private static final String INPUT_OFFENCES_FOR_DEFENDANTS_ALL = "$.%s[%d].offences[%d].id";
-    private static final String INPUT_OFFENCE_ID = "";
     private static final String OUTPUT_OFFENCE_EXP = "$.parties[0].offences[?(@.offenceId==";
     private static final String INPUT_OFFENCE_EXP = "$.%s[%d].offences[?(@.id==";
     private static final String INPUT_OFFENCE_DELETE_EXP = "$.deletedOffences";
@@ -173,9 +171,6 @@ public class BaseVerificationHelper extends BaseVerificationCountHelper {
 
     protected void validateOffences(final JsonObject inputPartiesJsonObject,
                                     final JsonObject outputParties,
-                                    final int inputPartyIndex,
-                                    final int outputPartyIndex,
-                                    final boolean refferedOffence,
                                     final String inputPartyIdentifier) {
 
         try {

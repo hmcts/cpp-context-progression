@@ -119,7 +119,6 @@ public class ApplicationAggregate implements Aggregate {
     private CourtApplication courtApplication;
     private UUID boxHearingId;
     private boolean applicationReferredToNewHearing;
-    public static final String CREATE_HEARING_APPLICATION_LINK_ERROR = "Hearing application link failed because application status is either finalized or ejected!";
 
     @Override
     public Object apply(final Object event) {

@@ -7,13 +7,10 @@ import uk.gov.moj.cpp.progression.domain.event.NewCaseDocumentReceivedEvent;
 import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Address;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.CrownCourtHearing;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.IndicatedPlea;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Interpreter;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Offence;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Plea;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 
 import java.time.LocalDate;
@@ -47,38 +44,6 @@ public class ProgressionEventFactory {
         final String courtCentreId =
                 envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTRE_ID);
         return new CaseAddedToCrownCourt(caseId, courtCentreId);
-    }
-
-    public static SendingSheetCompleted completedSendingSheet(final JsonEnvelope envelope) {
-        final Hearing hearing = createHearingObj(envelope);
-        final CrownCourtHearing crownCourtHearing = createCrownCourtHearingObj(envelope);
-        final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
-        sendingSheetCompleted.setHearing(hearing);
-        sendingSheetCompleted.setCrownCourtHearing(crownCourtHearing);
-        return sendingSheetCompleted;
-    }
-
-    private static Hearing createHearingObj(final JsonEnvelope envelope) {
-        final JsonObject hearingJsonObject = envelope.payloadAsJsonObject().getJsonObject(FIELD_HEARING);
-        final String courtCentreName = hearingJsonObject.getString("courtCentreName");
-        final String courtCentreId = hearingJsonObject.getString(FIELD_COURT_CENTRE_ID);
-        final String type = hearingJsonObject.getString("type");
-        final String sendingCommittalDate = hearingJsonObject.getString(FIELD_SENDING_COMMITTAL_DATE);
-        final UUID caseId = UUID.fromString(hearingJsonObject.getString(FIELD_CASE_ID));
-        final String caseUrn = hearingJsonObject.getString("caseUrn");
-        final JsonArray defendantsJsonObjects = hearingJsonObject.getJsonArray(FIELD_DEFENDANTS);
-        final List<uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant> defendants = defendantsJsonObjects.stream()
-                .map(tempDefendantJsonObj -> createDefendantObj((JsonObject) tempDefendantJsonObj))
-                .collect(Collectors.toList());
-        final Hearing hearing = new Hearing();
-        hearing.setCourtCentreName(courtCentreName);
-        hearing.setCourtCentreId(courtCentreId);
-        hearing.setType(type);
-        hearing.setSendingCommittalDate(sendingCommittalDate);
-        hearing.setCaseId(caseId);
-        hearing.setCaseUrn(caseUrn);
-        hearing.setDefendants(defendants);
-        return hearing;
     }
 
     private static uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Defendant createDefendantObj(final JsonObject tempDefendantJsonObj) {
@@ -196,20 +161,6 @@ public class ProgressionEventFactory {
             plea = new Plea(UUID.fromString(pleaJsonObj.getString("id")), pleaJsonObj.getString("value"), LocalDate.parse(pleaJsonObj.getString("pleaDate")));
         }
         return plea;
-    }
-
-    private static CrownCourtHearing createCrownCourtHearingObj(final JsonEnvelope envelope) {
-        final JsonObject crownCourtHearingJsonObject =
-                envelope.payloadAsJsonObject().getJsonObject("crownCourtHearing");
-        final String ccHearingDate = crownCourtHearingJsonObject.getString("ccHearingDate");
-        final String courtCentreNameForListringReq = crownCourtHearingJsonObject.getString("courtCentreName");
-        final UUID courtCentreIdForListingReq =
-                UUID.fromString(crownCourtHearingJsonObject.getString(FIELD_COURT_CENTRE_ID));
-        final CrownCourtHearing crownCourtHearing = new CrownCourtHearing();
-        crownCourtHearing.setCcHearingDate(ccHearingDate);
-        crownCourtHearing.setCourtCentreName(courtCentreNameForListringReq);
-        crownCourtHearing.setCourtCentreId(courtCentreIdForListingReq);
-        return crownCourtHearing;
     }
 
     public static SendingCommittalHearingInformationAdded createSendingCommittalHearingInformationAdded(final JsonEnvelope envelope) {

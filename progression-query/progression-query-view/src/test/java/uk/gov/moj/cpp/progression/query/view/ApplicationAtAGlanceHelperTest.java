@@ -119,7 +119,6 @@ public class ApplicationAtAGlanceHelperTest {
     @Test
     public void shouldGetApplicantDetailsWhenApplicantIsAnOrganisation() {
 
-        final Address address = mock(Address.class);
         final Organisation applicantOrgan = organisation()
                 .withName(STRING_GENERATOR.next())
                 .withAddress(Address.address()

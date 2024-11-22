@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 
 /**
- * 
+ *
  * @deprecated This is deprecated for Release 2.4
  *
  */

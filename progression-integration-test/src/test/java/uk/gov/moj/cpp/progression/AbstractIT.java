@@ -64,8 +64,6 @@ public class AbstractIT {
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
     protected static final String HEARING_ID_TYPE_TRIAL = randomUUID().toString();
-
-    protected static final String DEFENDANT_ID = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_TRIAL_OF_ISSUE = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_NON_TRIAL = randomUUID().toString();
     protected static final String REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON = "/restResource/ref-data-get-organisation.json";

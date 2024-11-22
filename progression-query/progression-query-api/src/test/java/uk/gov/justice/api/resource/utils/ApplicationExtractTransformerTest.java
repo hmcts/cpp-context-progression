@@ -79,15 +79,12 @@ public class ApplicationExtractTransformerTest {
     private static final UUID DEFANDANT_ID = randomUUID();
 
     private static final String APPLICATION_TYPE = "Appeal";
-    private static final String APPLICATION_OUT_COME = "applicationOutCome";
-    private static final String SYNONYM = "synonym";
     private static final String ADDRESS_4 = "NORWICH";
     private static final String ADDRESS_5 = "BERKSHIRE";
     private static final String APPLICATION_REFERENCE = "APP-1";
     private static final String ORG_NAME = "ABC Corp";
     private static final String JUDICIAL_DISPLAY_NAME = "Chair: Denial Winger1: Denial Winger2: Denial";
     private static final String ROLE_DISPLAY_NAME = "District judge";
-    private static final String RESPONSE_ADMITTED = "Admitted";
     private static final String REPORTING_RESTRICTION_REASON = "Suspect is minor";
     private static final UUID APPLICATION_ID = randomUUID();
     private static final LocalDate ORDERED_DATE = LocalDate.now();
@@ -106,8 +103,6 @@ public class ApplicationExtractTransformerTest {
     private static final String LABEL = "Fine";
     private static final String PROMPT_VALUE = "10";
     private static final String COURT_EXTRACT = "Y";
-
-    private static final LocalDate OUTCOME_DATE = LocalDate.of(2010, 01, 01);
 
     @Spy
     ApplicationExtractTransformer applicationExtractTransformer;

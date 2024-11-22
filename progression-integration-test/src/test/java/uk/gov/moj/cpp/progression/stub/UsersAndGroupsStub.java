@@ -23,7 +23,6 @@ import java.util.List;
 
 import javax.json.Json;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.http.HttpHeaders;
 
 public class UsersAndGroupsStub {

@@ -44,7 +44,6 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;

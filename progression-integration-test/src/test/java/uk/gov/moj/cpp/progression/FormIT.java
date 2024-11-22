@@ -79,7 +79,6 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FormIT extends AbstractIT {

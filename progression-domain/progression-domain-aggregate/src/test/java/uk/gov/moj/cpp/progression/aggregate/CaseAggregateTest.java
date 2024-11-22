@@ -20,13 +20,9 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -180,9 +176,6 @@ import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsReq
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetInvalidated;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetPreviouslyCompleted;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
@@ -234,8 +227,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.json.Json;
@@ -1110,86 +1101,6 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldApplyCompleteSendingSheet() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-        final List<Object> objects = applySendingSheet(a -> {
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetCompleted.class));
-        assertSendingSheetCompletedValues((SendingSheetCompleted) obj);
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetWrongCourtCentre() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-        final List<Object> objects = applySendingSheet(a -> {
-            ReflectionUtil.setField(this.caseAggregate, "courtCentreId", null);
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertTrue(sendingSheetInvalidated.getDescription().contains(CC_COURT_CENTRE_ID));
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetNoDefendants() {
-        final List<Object> objects = applySendingSheet(a -> {
-            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>());
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertEquals(sendingSheetInvalidated.getCaseId(), fromString(CASE_ID));
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetWrongDefendants() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-        final List<Object> objects = applySendingSheet(a -> {
-            final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
-            defendant.setId(UUID.randomUUID());
-            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>(asList(defendant)));
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertEquals(sendingSheetInvalidated.getCaseId(), fromString(CASE_ID));
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetWrongOffences() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-
-        final List<Object> objects = applySendingSheet(a -> {
-            final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
-            ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertEquals(sendingSheetInvalidated.getCaseId(), fromString(CASE_ID));
-        assertTrue(sendingSheetInvalidated.getDescription().contains(OFFENCE_ID));
-
-    }
-
-    @Test
     public void shouldHandleConvictionDateAdded() {
 
         final UUID caseId = randomUUID();
@@ -1219,41 +1130,6 @@ public class CaseAggregateTest {
 
         assertThat(((ConvictionDateRemoved) response).getCaseId(), is(caseId));
         assertThat(((ConvictionDateRemoved) response).getOffenceId(), is(offenceId));
-    }
-
-    private List<Object> applySendingSheet(final Consumer<CaseAggregate> adjustInternals) {
-        createCompleteSendingSheetEnvelope();
-        final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
-        final Hearing hearing = new Hearing();
-        hearing.setCaseId(UUID.fromString("4daefec6-5f77-4109-82d9-1e60544a6c05"));
-        sendingSheetCompleted.setHearing(hearing);
-        final Set<uk.gov.moj.cpp.progression.domain.event.Defendant> defendants = new HashSet<>();
-        final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
-        defendants.add(defendant);
-        defendant.setId(UUID.fromString(DEFENDANT_ID));
-        final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
-        offenceIdsByDefendantId.put(UUID.fromString(DEFENDANT_ID), new HashSet(asList(UUID.fromString(OFFENCE_ID))));
-        //green path internals
-        ReflectionUtil.setField(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
-        ReflectionUtil.setField(this.caseAggregate, "defendants", defendants);
-        ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
-        adjustInternals.accept(this.caseAggregate);
-
-        final Stream<Object> stream = this.caseAggregate.completeSendingSheet(this.envelope);
-        return stream.collect(Collectors.toList());
-
-    }
-
-    @Test
-    public void shouldApplyCompleteSendingSheetPreviouslyCompleted() {
-        final List<Object> objects = applySendingSheet(a -> {
-            final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>(asList(UUID.fromString(CASE_ID)));
-            ReflectionUtil.setField(this.caseAggregate, "caseIdsWithCompletedSendingSheet", caseIdsWithCompletedSendingSheet);
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetPreviouslyCompleted.class));
-        assertThat(CASE_ID, equalTo(((SendingSheetPreviouslyCompleted) obj).getCaseId().toString()));
     }
 
     private void createDefendant(final UUID defendantId) {
@@ -1317,13 +1193,6 @@ public class CaseAggregateTest {
                                 .add("endDate", END_DATE).build()))
                         .build()).build())
                 .build());
-    }
-
-    private void assertSendingSheetCompletedValues(final SendingSheetCompleted ssCompleted) {
-        assertThat(CC_HEARING_DATE, equalTo(ssCompleted.getCrownCourtHearing().getCcHearingDate()));
-        assertThat(CC_COURT_CENTRE_ID, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreId().toString()));
-        assertThat(CC_COURT_CENTRE_NAME, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreName()));
-        assertSendingSheetCompletedHearingValues(ssCompleted.getHearing());
     }
 
     private void assertSendingSheetCompletedHearingValues(final Hearing hearing) {

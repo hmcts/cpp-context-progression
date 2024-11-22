@@ -8,15 +8,11 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.CaseNotesQueryView;
 import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
 import uk.gov.moj.cpp.progression.query.HearingQueryView;
-import uk.gov.moj.cpp.progression.query.view.ProgressionQueryView;
 
 import javax.inject.Inject;
 
 @ServiceComponent(Component.QUERY_API)
 public class ProgressionQueryApi {
-
-    @Inject
-    private ProgressionQueryView progressionQueryView;
 
     @Inject
     private HearingQueryView hearingQueryView;
@@ -26,21 +22,6 @@ public class ProgressionQueryApi {
 
     @Inject
     private DefendantByLAAContractNumberQueryView defendantByLAAContractNumberQueryView;
-
-    @Handles("progression.query.caseprogressiondetail")
-    public JsonEnvelope getCaseprogressiondetail(final JsonEnvelope query) {
-        return progressionQueryView.getCaseProgressionDetails(query);
-    }
-
-    @Handles("progression.query.cases-search-by-material-id")
-    public JsonEnvelope getCaseSearchByMaterialId(final JsonEnvelope query) {
-        return progressionQueryView.searchCaseByMaterialId(query);
-    }
-
-    @Handles("progression.query.defendant.document")
-    public JsonEnvelope getDefendantDocument(final JsonEnvelope query) {
-        return progressionQueryView.getDefendantDocument(query);
-    }
 
     @Handles("progression.query.hearing")
     public JsonEnvelope getHearing(final JsonEnvelope query) {

@@ -33,7 +33,6 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
