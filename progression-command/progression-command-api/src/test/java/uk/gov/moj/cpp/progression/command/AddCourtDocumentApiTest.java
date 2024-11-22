@@ -248,6 +248,40 @@ public class AddCourtDocumentApiTest {
     }
 
     @Test
+    public void shouldAddDocumentForProsecutorWithAllowedSectionTypeAndNonCPSProsecutorsAndProsecutorObjectExists()
+    {
+        final UUID caseId = randomUUID();
+        final JsonEnvelope commandEnvelope = buildEnvelope(null, true, caseId);
+
+        Optional<DocumentTypeAccessReferenceData> documentTypeAccessReferenceData = of(DocumentTypeAccessReferenceData.documentTypeAccessReferenceData()
+                .withId(docTypeId)
+                .withDefenceOnly(false)
+                .build());
+
+        when(referenceDataService.getDocumentTypeAccessReferenceData(requester, docTypeId)).thenReturn(documentTypeAccessReferenceData);
+        when(prosecutionCaseQueryService.getProsecutionCase(commandEnvelope,caseId)).thenReturn(Optional.of(createProsecutionWithProsecutors()));
+        when(userGroupQueryService.validateNonCPSUserOrg(any(),eq(userId),eq("Non CPS Prosecutors"),eq("DVLA"))).thenReturn(of("OrganisationMatch"));
+
+        addCourtDocumentApi.handleAddCourtDocumentForProsecutor(commandEnvelope);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final Envelope newCommand = envelopeCaptor.getValue();
+
+        JsonObjectBuilder builder = createObjectBuilder()
+                .add("documentTypeId", docTypeId.toString())
+                .add("documentCategory", createObjectBuilder()
+                        .add("caseDocument", createObjectBuilder()
+                                .add("prosecutionCaseId", caseId.toString())
+                                .build())
+                        .build());
+        builder = createObjectBuilder().add("courtDocument", builder.build())
+                .add("isUnbundledDocument", true);
+
+        assertThat(newCommand.metadata().name(), is(ADD_COURT_DOCUMENT_COMMAND_NAME));
+        assertThat(newCommand.payload(), equalTo(builder.build()));
+    }
+
+    @Test
     public void shouldThrowExceptionWhenAddDocumentForProsecutorWithAUserNotProsecutingTheCase() {
 
         final UUID caseId = randomUUID();

@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -210,11 +209,7 @@ public class CourtDocumentQueryApi {
         final String shortName = nonNull(prosecutionCaseObj.getProsecutor()) && nonNull(prosecutionCaseObj.getProsecutor().getProsecutorCode()) ? prosecutionCaseObj.getProsecutor().getProsecutorCode() : prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
         final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, shortName);
 
-        if(orgMatch.isPresent()) {
-            if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {
-                throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
-            }
-        } else {
+        if(!orgMatch.isPresent()) {
             isProsecutingCase = defenceQueryService.isUserProsecutingCase(query, query.payloadAsJsonObject().getString(CASE_ID));
         }
 
@@ -226,7 +221,7 @@ public class CourtDocumentQueryApi {
                 .withName(COURT_DOCUMENTS_SEARCH_NAME)
                 .build();
 
-        return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject(), isProsecutingCase)));
+        return courtDocumentQueryView.searchCourtDocumentsForProsecution(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject(), isProsecutingCase)));
 
     }
 

@@ -242,6 +242,22 @@ public class CourtDocumentQueryViewTest {
                 .build();
     }
 
+    private CourtDocument courtDocumentApplicationType(final UUID id, Integer seqNum, DocumentTypeRBAC documentTypeRBAC, final List<String> userGroups, final UUID documentTypeId) {
+        return CourtDocument.courtDocument()
+                .withCourtDocumentId(id)
+                .withDocumentCategory(documentCategoryApplicationTemplate())
+                .withDocumentTypeId(documentTypeId)
+                .withMaterials(asList(
+                        Material.material()
+                                .withId(UUID.randomUUID())
+                                .withUserGroups(userGroups)
+                                .build()
+                ))
+                .withSeqNum(seqNum)
+                .withDocumentTypeRBAC(documentTypeRBAC)
+                .build();
+    }
+
     private NowDocument nowDocumentTemplate() {
         return NowDocument.nowDocument()
                 .withOrderHearingId(UUID.randomUUID())
@@ -433,8 +449,18 @@ public class CourtDocumentQueryViewTest {
     }
 
     @Test
+    public void shouldFindDocumentsForProsecutionByCaseIdPermitted() throws IOException {
+        shouldFindDocumentsForProsecution(true, true, singletonList(randomUUID()), null, null, "Court Clerks", false, true);
+    }
+
+    @Test
     public void shouldFindDocumentsByCaseIdPermittedWhenProsecutingTrue() throws IOException {
         shouldFindDocuments(true, true, singletonList(randomUUID()), null, null, "Court Clerks", true, true);
+    }
+
+    @Test
+    public void shouldFindDocumentsForProsecutionByCaseIdPermittedWhenProsecutingTrue() throws IOException {
+        shouldFindDocumentsForProsecution(true, true, singletonList(randomUUID()), null, null, "Court Clerks", true, true);
     }
 
 
@@ -443,10 +469,20 @@ public class CourtDocumentQueryViewTest {
         shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), null, asList(UUID.randomUUID(), UUID.randomUUID()), "Court Clerks", false, true);
     }
 
+    @Test
+    public void shouldFindDocumentsForProsecutionByCaseIdsAndApplicationIdPermitted() throws IOException {
+        shouldFindDocumentsForProsecution(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), null, asList(UUID.randomUUID(), UUID.randomUUID()), "Court Clerks", false, true);
+    }
+
 
     @Test
     public void shouldFindDocumentsByDefendantIdPermitted() throws IOException {
         shouldFindDocuments(true, true, null, UUID.randomUUID(), null, "Court Clerks", false, true);
+    }
+
+    @Test
+    public void shouldFindDocumentsForProsecutionByDefendantIdPermitted() throws IOException {
+        shouldFindDocumentsForProsecution(true, true, null, UUID.randomUUID(), null, "Court Clerks", false, true);
     }
 
     @Test
@@ -930,10 +966,19 @@ public class CourtDocumentQueryViewTest {
     public void shouldFindDocumentsByCaseIdNotPermitted() throws IOException {
         shouldFindDocuments(true, false, asList(UUID.randomUUID()), null, null, "group1", false, false);
     }
+    @Test
+    public void shouldFindDocumentsForProsecutionByCaseIdNotPermitted() throws IOException {
+        shouldFindDocumentsForProsecution(true, false, asList(UUID.randomUUID()), null, null, "group1", false, false);
+    }
 
     @Test
     public void shouldNotFindDocumentsByDefendantIdPermitted() throws IOException {
         shouldFindDocuments(false, true, null, UUID.randomUUID(), null, "group1", false, false);
+    }
+
+    @Test
+    public void shouldNotFindDocumentsForProsecutionByDefendantIdPermitted() throws IOException {
+        shouldFindDocumentsForProsecution(false, true, null, UUID.randomUUID(), null, "group1", false, false);
     }
 
     private void addId(List<UUID> caseId, UUID defendantId, List<UUID> applicationId, Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex,
@@ -1034,6 +1079,90 @@ public class CourtDocumentQueryViewTest {
             when(courtDocumentTransform.transform(any(), any())).thenAnswer(transformResult);
         }
         final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
+                .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        if (!permitted || !rbackReadPermitted) {
+            assertThat(result.getDocumentIndices().size(), is(0));
+        } else if (!isProsecuting) {
+            assertThat(result.getDocumentIndices().size(), is(id2ExpectedCourtDocumentIndex.size()));
+
+            id2ExpectedCourtDocumentIndex.forEach(
+                    (id, expectedIndexBuilder) -> {
+                        CourtDocumentIndex actualIndex = result.getDocumentIndices().stream().filter(
+                                cdi -> cdi.getCaseIds() != null && cdi.getCaseIds().stream().anyMatch(idin -> idin.equals(id))
+                                        || cdi.getDefendantIds() != null && cdi.getDefendantIds().stream().anyMatch(idIn -> idIn.equals(id))
+                                        //this mess in necessary because output document index does not have applicatiinId field
+                                        || (cdi.getDocument() != null && cdi.getDocument().getDocumentCategory() != null
+                                        && cdi.getDocument().getDocumentCategory().getApplicationDocument() != null
+                                        && id.equals(cdi.getDocument().getDocumentCategory().getApplicationDocument().getApplicationId()))
+
+                        ).findAny().orElse(null);
+                        assertThat(actualIndex, org.hamcrest.Matchers.notNullValue());
+                        CourtDocumentIndex expectedIndex = expectedIndexBuilder.build();
+                        assertThat(actualIndex.getType(), is(expectedIndex.getType()));
+                        assertThat(actualIndex.getCategory(), is(expectedIndex.getCategory()));
+                        assertThat(actualIndex.getHearingIds().get(0), is(expectedIndex.getHearingIds().get(0)));
+                        final int materialCount = actualIndex.getDocument().getMaterials().size();
+                        assertThat(materialCount, is(1));
+                    }
+            );
+
+        }else{
+            assertThat(result.getDocumentIndices().size(), is(0));
+        }
+    }
+
+    private void shouldFindDocumentsForProsecution(final boolean rbackReadPermitted, final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds, final String userGroup, final boolean isProsecuting, final boolean shouldStub) throws IOException {
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+                .build();
+
+        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("prosecutingCase", isProsecuting);
+        final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
+        final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
+        if (isNotEmpty(caseIds) || defendantId != null || isNotEmpty(applicationIds)) {
+            if (isNotEmpty(caseIds) && defendantId != null) {
+                addId(caseIds, defendantId, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1, userGroup);
+                jsonBuilder.add(CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+                jsonBuilder.add(DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+            } else if (caseIds != null) {
+                addId(caseIds, null, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1, null);
+                jsonBuilder.add(CASE_ID_SEARCH_PARAM, caseIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+            } else if (applicationIds != null) {
+                addId(null, null, applicationIds, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_2, null);
+                jsonBuilder.add(APPLICATION_ID_SEARCH_PARAM, applicationIds.stream().map(UUID::toString).collect(Collectors.joining(",")));
+
+            } else if (defendantId != null) {
+                addId(null, defendantId, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_4, null);
+                jsonBuilder.add(DEFENDANT_ID_SEARCH_PARAM, defendantId.toString());
+            }
+        }
+
+        final JsonObject jsonObject = jsonBuilder.build();
+
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+
+
+        Answer<?> transformResult = new Answer<>() {
+            @Override
+            public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
+                CourtDocument courtDocument = (CourtDocument) invocationOnMock.getArguments()[0];
+                UUID id = courtDocumentId2Id.get(courtDocument.getCourtDocumentId());
+                return id2ExpectedCourtDocumentIndex.get(id);
+            }
+        };
+        if(shouldStub) {
+            when(courtDocumentTransform.transform(any(), any())).thenAnswer(transformResult);
+        }
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocumentsForProsecution(jsonEnvelopeIn);
         final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
                 .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
 
@@ -1300,6 +1429,147 @@ public class CourtDocumentQueryViewTest {
         assertThat(materialCount, is(1));
     }
 
+    @Test
+    public void shouldFindDocumentsIsFilterNonCpsProsecutorRelatedDocumentWhenUserHasExcludeNonCpsProsecutorRole() throws IOException {
+        final UUID applicationId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(APPLICATION_ID, applicationId.toString())
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .add(Json.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
+                .build();
+
+        final UUID nowCourtDocumentId = randomUUID();
+        final List userGroups = asList("Court Clerks","Non CPS Prosecutors");
+        final List userGroupsOnlyNonCpsProsecutors = asList("Non CPS Prosecutors");
+        final DocumentTypeRBAC documentTypeRBAC1 = new DocumentTypeRBAC(userGroups, userGroups, now(), now().plusMonths(5), userGroups, userGroups);
+        final DocumentTypeRBAC documentTypeRBAC2 = new DocumentTypeRBAC(userGroupsOnlyNonCpsProsecutors, userGroupsOnlyNonCpsProsecutors, now(), now().plusMonths(5), userGroupsOnlyNonCpsProsecutors, userGroupsOnlyNonCpsProsecutors);
+        final CourtDocument courtDocument1 = courtDocumentApplicationType(nowCourtDocumentId, 20, documentTypeRBAC1, userGroups, DOCUMENT_TYPE_ID_1);
+        final CourtDocumentEntity courtDocumentEntity1 = courtDocumentEntityWithRbac(nowCourtDocumentId, courtDocument1);
+
+        final UUID secondNowCourtDocumentId = randomUUID();
+        final CourtDocument courtDocument2 = courtDocumentApplicationType(secondNowCourtDocumentId, 10, documentTypeRBAC2, userGroupsOnlyNonCpsProsecutors,DOCUMENT_TYPE_ID_2);
+        final CourtDocumentEntity courtDocumentEntity2 = courtDocumentEntityWithRbac(secondNowCourtDocumentId, courtDocument2);
+
+
+        final UUID courtDocumentId = UUID.randomUUID();
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId, 30, documentTypeRBAC1, DOCUMENT_TYPE_ID_3);
+        final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
+
+        when(courtDocumentRepository.findByApplicationIds(Collections.singletonList(applicationId))).thenReturn(asList(courtDocumentEntity1, courtDocumentEntity2, courtDocumentEntity));
+
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder1 = createCourtDocumentIndex(courtDocument1, applicationId);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder2 = createCourtDocumentIndex(courtDocument2, applicationId);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = createCourtDocumentIndex(courtDocument1, applicationId);
+
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder1)
+                .thenReturn(courtDocumentIndexBuilder2)
+                .thenReturn(courtDocumentIndexBuilder);
+
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+        final JsonObject loggedInUserPermissions = Json.createObjectBuilder().add("permissions",
+                        Json.createArrayBuilder()
+                                .add(Json.createObjectBuilder().add("object", "CDES_EXCLUDE_NON_CPS_ROLE").build())
+                                .build())
+                .build();
+        mockLoggedInUserPermissions(loggedInUserPermissions);
+
+        final CourtDocumentIndex expectedIndex1 = courtDocumentIndexBuilder1.build();
+        final CourtDocumentIndex expectedIndex2 = courtDocumentIndexBuilder2.build();
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
+                .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(1));
+
+        final CourtDocumentIndex courtDocumentIndexOut = result.getDocumentIndices().get(0);
+        assertThat(courtDocumentIndexOut.getType(), is(expectedIndex1.getType()));
+        assertThat(courtDocumentIndexOut.getCategory(), is(expectedIndex1.getCategory()));
+        assertThat(courtDocumentIndexOut.getDefendantIds().get(0), is(expectedIndex1.getDefendantIds().get(0)));
+        assertThat(courtDocumentIndexOut.getCaseIds().get(0), is(expectedIndex1.getCaseIds().get(0)));
+        assertThat(courtDocumentIndexOut.getHearingIds().get(0), is(expectedIndex1.getHearingIds().get(0)));
+    }
+
+    @Test
+    public void shouldFindDocumentsIsNotFilterNonCpsProsecutorRelatedDocumentWhenUserHasNotExcludeNonCpsProsecutorRole() throws IOException {
+        final UUID applicationId = UUID.randomUUID();
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add(APPLICATION_ID, applicationId.toString())
+                .build();
+        final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID())
+                        .withName(COURT_DOCUMENTS_SEARCH_NAME)
+                        .withUserId(randomUUID().toString()).build(),
+                jsonObject);
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .add(Json.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
+                .build();
+
+        final UUID nowCourtDocumentId = randomUUID();
+        final List userGroups = asList("Court Clerks","Non CPS Prosecutors");
+        final List userGroupsOnlyNonCpsProsecutors = asList("Non CPS Prosecutors");
+        final DocumentTypeRBAC documentTypeRBAC1 = new DocumentTypeRBAC(userGroups, userGroups, now(), now().plusMonths(5), userGroups, userGroups);
+        final DocumentTypeRBAC documentTypeRBAC2 = new DocumentTypeRBAC(userGroupsOnlyNonCpsProsecutors, userGroupsOnlyNonCpsProsecutors, now(), now().plusMonths(5), userGroupsOnlyNonCpsProsecutors, userGroupsOnlyNonCpsProsecutors);
+        final CourtDocument courtDocument1 = courtDocumentApplicationType(nowCourtDocumentId, 20, documentTypeRBAC1, userGroups, DOCUMENT_TYPE_ID_1);
+        final CourtDocumentEntity courtDocumentEntity1 = courtDocumentEntityWithRbac(nowCourtDocumentId, courtDocument1);
+
+        final UUID secondNowCourtDocumentId = randomUUID();
+        final CourtDocument courtDocument2 = courtDocumentApplicationType(secondNowCourtDocumentId, 10, documentTypeRBAC2, userGroupsOnlyNonCpsProsecutors,DOCUMENT_TYPE_ID_2);
+        final CourtDocumentEntity courtDocumentEntity2 = courtDocumentEntityWithRbac(secondNowCourtDocumentId, courtDocument2);
+
+
+        final UUID courtDocumentId = UUID.randomUUID();
+        final CourtDocument courtDocument = courtDocumentApplicationType(courtDocumentId, 30, documentTypeRBAC1, DOCUMENT_TYPE_ID_3);
+        final CourtDocumentEntity courtDocumentEntity = courtDocumentEntity(courtDocumentId, courtDocument);
+
+        when(courtDocumentRepository.findByApplicationIds(Collections.singletonList(applicationId))).thenReturn(asList(courtDocumentEntity1, courtDocumentEntity2, courtDocumentEntity));
+
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder1 = createCourtDocumentIndex(courtDocument1, applicationId);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder2 = createCourtDocumentIndex(courtDocument2, applicationId);
+        final CourtDocumentIndex.Builder courtDocumentIndexBuilder = createCourtDocumentIndex(courtDocument1, applicationId);
+
+        when(courtDocumentTransform.transform(any(), any())).thenReturn(courtDocumentIndexBuilder1)
+                .thenReturn(courtDocumentIndexBuilder2)
+                .thenReturn(courtDocumentIndexBuilder);
+
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
+        final JsonObject loggedInUserPermissions = Json.createObjectBuilder().add("permissions",
+                        Json.createArrayBuilder()
+                                .add(Json.createObjectBuilder().add("object", "something else").build())
+                                .build())
+                .build();
+        mockLoggedInUserPermissions(loggedInUserPermissions);
+
+        final CourtDocumentIndex expectedIndex1 = courtDocumentIndexBuilder1.build();
+        final CourtDocumentIndex expectedIndex2 = courtDocumentIndexBuilder2.build();
+        final JsonEnvelope jsonEnvelopeOut = target.searchCourtDocuments(jsonEnvelopeIn);
+        final CourtDocumentsSearchResult result = jsonObjectToObjectConverter
+                .convert(jsonEnvelopeOut.payloadAsJsonObject(), CourtDocumentsSearchResult.class);
+
+        assertThat(result.getDocumentIndices().size(), is(2));
+
+        final CourtDocumentIndex courtDocumentIndexOut = result.getDocumentIndices().get(0);
+        assertThat(courtDocumentIndexOut.getType(), is(expectedIndex1.getType()));
+        assertThat(courtDocumentIndexOut.getCategory(), is(expectedIndex1.getCategory()));
+        assertThat(courtDocumentIndexOut.getDefendantIds().get(0), is(expectedIndex1.getDefendantIds().get(0)));
+        assertThat(courtDocumentIndexOut.getCaseIds().get(0), is(expectedIndex1.getCaseIds().get(0)));
+        assertThat(courtDocumentIndexOut.getHearingIds().get(0), is(expectedIndex1.getHearingIds().get(0)));
+
+        final CourtDocumentIndex courtDocumentIndexOut1 = result.getDocumentIndices().get(1);
+        assertThat(courtDocumentIndexOut1.getType(), is(expectedIndex2.getType()));
+        assertThat(courtDocumentIndexOut1.getCategory(), is(expectedIndex2.getCategory()));
+        assertThat(courtDocumentIndexOut1.getDefendantIds().get(0), is(expectedIndex2.getDefendantIds().get(0)));
+        assertThat(courtDocumentIndexOut1.getCaseIds().get(0), is(expectedIndex2.getCaseIds().get(0)));
+        assertThat(courtDocumentIndexOut1.getHearingIds().get(0), is(expectedIndex2.getHearingIds().get(0)));
+    }
+
     private CourtDocumentIndex.Builder createCourtDocumentIndex(CourtDocument courtDocument, UUID applicationId) {
         return CourtDocumentIndex.courtDocumentIndex()
                 .withCaseIds(asList(applicationId))
@@ -1311,7 +1581,7 @@ public class CourtDocumentQueryViewTest {
     }
 
     @Test
-    public void shouldFindDocumentsByHearingId() {
+    public void shouldFindDocumentsByHearingId() throws IOException {
         boolean permitted = false;
         final UUID hearingId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
@@ -1321,8 +1591,14 @@ public class CourtDocumentQueryViewTest {
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
-                        .withName(COURT_DOCUMENTS_NOW_SEARCH_NAME).build(),
+                        .withName(COURT_DOCUMENTS_NOW_SEARCH_NAME)
+                        .withUserId(randomUUID().toString())
+                        .build(),
                 jsonObject);
+        final JsonArray userGroupArray = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .build();
+        mockReferenceData(jsonEnvelopeIn, userGroupArray);
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
                 .withCategory("NOW_DOCUMENT")
                 .withDefendantIds(asList(defendantId))
@@ -1426,6 +1702,17 @@ public class CourtDocumentQueryViewTest {
 
     }
 
+    private void mockLoggedInUserPermissions(final JsonObject loggedInUserPermissions){
+        when(requester.request(any(JsonEnvelope.class))).thenAnswer(invocationOnMock -> {
+            final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
+            JsonObject responsePayload = null;
+            if (envelope.metadata().name().equals("usersgroups.get-logged-in-user-permissions")) {
+                responsePayload = loggedInUserPermissions;
+            }
+            return envelopeFrom(envelope.metadata(), responsePayload);
+        });
+    }
+
     @Test
     public void shouldGetCourtDocumentNotificationStatus() {
         final UUID caseId = UUID.randomUUID();
@@ -1455,6 +1742,11 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldGetCourtDocumentByCaseIdAndDefedantId() throws IOException {
         shouldFindDocuments(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), UUID.randomUUID(), null, "Legal Advisers", false, true);
+    }
+
+    @Test
+    public void shouldGetCourtDocumentForProsecutionByCaseIdAndDefedantId() throws IOException {
+        shouldFindDocumentsForProsecution(true, true, asList(UUID.randomUUID(), UUID.randomUUID()), UUID.randomUUID(), null, "Legal Advisers", false, true);
     }
 }
 
