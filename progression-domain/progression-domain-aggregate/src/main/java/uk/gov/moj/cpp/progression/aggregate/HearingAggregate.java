@@ -1077,6 +1077,9 @@ public class HearingAggregate implements Aggregate {
     }
 
     private Stream<Object> populateHearingObjectStream(final UUID hearingId) {
+        if (isNull(hearing)) {
+            return Stream.empty();
+        }
         final List<UUID> prosecutionCaseIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseIds(hearing) : null;
         final List<UUID> offenceIds = isNotEmpty(hearing.getProsecutionCases()) ? getProsecutionCaseOffenceIds(hearing) : null;
         final List<UUID> courtApplicationIds = isNotEmpty(hearing.getCourtApplications()) ? getCourtApplicationIds(hearing) : null;
@@ -1394,17 +1397,19 @@ public class HearingAggregate implements Aggregate {
     }
 
     private void onHearingDefendantUpdated(final HearingDefendantUpdated event) {
-        hearing.getProsecutionCases().forEach(prosecutionCase -> {
-            final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream()
-                    .filter(d -> d.getId().equals(event.getDefendant().getId()))
-                    .findFirst();
-            if (defendant.isPresent()) {
-                final Defendant updatedDefendant = fromUpdatedDefendant(defendant.get(), event.getDefendant());
-                final int index = prosecutionCase.getDefendants().indexOf(defendant.get());
-                prosecutionCase.getDefendants().remove(index);
-                prosecutionCase.getDefendants().add(index, updatedDefendant);
-            }
-        });
+        if (nonNull(hearing.getProsecutionCases())) {
+            hearing.getProsecutionCases().forEach(prosecutionCase -> {
+                final Optional<Defendant> defendant = prosecutionCase.getDefendants().stream()
+                        .filter(d -> d.getId().equals(event.getDefendant().getId()))
+                        .findFirst();
+                if (defendant.isPresent()) {
+                    final Defendant updatedDefendant = fromUpdatedDefendant(defendant.get(), event.getDefendant());
+                    final int index = prosecutionCase.getDefendants().indexOf(defendant.get());
+                    prosecutionCase.getDefendants().remove(index);
+                    prosecutionCase.getDefendants().add(index, updatedDefendant);
+                }
+            });
+        }
     }
 
     private Defendant fromUpdatedDefendant(final Defendant defendant, final DefendantUpdate defendantUpdate) {

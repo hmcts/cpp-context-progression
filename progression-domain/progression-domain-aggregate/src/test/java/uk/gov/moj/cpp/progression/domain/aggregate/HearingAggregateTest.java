@@ -652,6 +652,22 @@ public class HearingAggregateTest {
         assertThat(hearingId, is(vejDeletedHearingPopulatedToProbationCaseworker.getHearing().getId()));
     }
 
+
+    @Test
+    public void shouldDeleteHearingReturnsEmptyWhenHearingObjectIsNull() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        setField(hearingAggregate, "hearing", null);
+
+        final List<Object> eventStream = hearingAggregate.deleteHearing(hearing.getId()).collect(toList());
+        assertThat(eventStream.size(), is(0));
+
+    }
+
     @Test
     public void shouldUpdateApplication() {
         final UUID prosecutionCaseId = randomUUID();

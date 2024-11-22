@@ -3724,6 +3724,18 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldRaiseHearingDefendantUpdatedWhenProsecutionCasesIsNullInTheHearing(){
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing().withId(hearingId).build();
+        hearingAggregate.enrichInitiateHearing(hearing);
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();
+        final Stream<Object> eventStream = hearingAggregate.updateDefendant(hearingId,defendantUpdate);
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(HearingDefendantUpdated.class));
+    }
+
+    @Test
     public void shouldProsecutionCaseDefendantListingStatusChangedV2EventEmittedWithHearingListingStatusWhenHearingResultedForApplication_NoDuplicateJudicialResults() {
         final UUID hearingId = randomUUID();
         final UUID applicationId = randomUUID();
