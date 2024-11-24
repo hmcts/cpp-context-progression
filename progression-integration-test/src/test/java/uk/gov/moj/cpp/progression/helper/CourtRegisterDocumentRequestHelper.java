@@ -68,10 +68,10 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
         ));
     }
 
-    public void sendSystemDocGeneratorPublicEvent(final UUID userId, final UUID courtCentreId) {
+    public void sendSystemDocGeneratorPublicEvent(final UUID userId, final UUID courtCentreStreamId) {
         final String commandName = "public.systemdocgenerator.events.document-available";
-        final Metadata metadata = getMetadataFrom(userId.toString(), courtCentreId);
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreId.toString(), UUID.randomUUID()));
+        final Metadata metadata = getMetadataFrom(userId.toString(), courtCentreStreamId);
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, documentAvailablePayload(UUID.randomUUID(), "OEE_Layout5", courtCentreStreamId.toString(), UUID.randomUUID()));
         publicMessageProducer.sendMessage(commandName, publicEventEnvelope);
     }
 

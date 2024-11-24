@@ -219,6 +219,9 @@ subscriptions_descriptor:
         - name: progression.event.court-register-notified
           schema_uri: http://justice.gov.uk/progression/courts/court-register-notified.json
 
+        - name: progression.event.court-register-notified-v2
+          schema_uri: http://justice.gov.uk/progression/courts/court-register-notified-v2.json
+
         - name: progression.event.prison-court-register-recorded
           schema_uri: http://justice.gov.uk/core/courts/prison-court-register-recorded.json
 

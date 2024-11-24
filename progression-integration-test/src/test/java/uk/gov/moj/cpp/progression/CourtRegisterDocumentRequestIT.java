@@ -12,6 +12,7 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
+import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getCourtRegisterStreamId;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
@@ -82,7 +83,8 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
                 .findFirst();
         assertThat(courtRegister.isPresent(), is(true));
         SysDocGeneratorStub.pollSysDocGenerationRequests(Matchers.hasSize(1));
-        courtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicEvent(USER_ID_VALUE_AS_ADMIN, courtCentreId);
+        final UUID courtCentreStreamId = getCourtRegisterStreamId(courtCentreId.toString(), registerDate.toLocalDate().toString());
+        courtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicEvent(USER_ID_VALUE_AS_ADMIN, courtCentreStreamId);
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsNotified(courtCentreId);
     }
 
@@ -243,7 +245,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
                 .findFirst();
         assertThat(courtRegister.isPresent(), is(true));
         SysDocGeneratorStub.pollSysDocGenerationRequests(Matchers.hasSize(1));
-        courtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicEvent(USER_ID_VALUE_AS_ADMIN, courtCentreId);
+        courtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicEvent(USER_ID_VALUE_AS_ADMIN, getCourtRegisterStreamId(courtCentreId.toString(), registerDate4.toLocalDate().toString()));
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsNotified(courtCentreId);
 
     }

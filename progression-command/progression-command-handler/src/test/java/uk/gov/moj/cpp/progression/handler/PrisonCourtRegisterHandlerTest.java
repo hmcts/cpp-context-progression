@@ -19,6 +19,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getPrisonCourtRegisterStreamId;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
@@ -44,6 +45,7 @@ import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
 import uk.gov.moj.cpp.progression.test.FileUtil;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -62,6 +64,7 @@ public class PrisonCourtRegisterHandlerTest {
     private static final String ADD_PRISON_COURT_REGISTER_COMMAND_NAME = "progression.command.add-prison-court-register";
     private static final String RECORD_PRISON_COURT_REGISTER_GENERATED_COMMAND_NAME = "progression.command.record-prison-court-register-generated";
     private static final UUID COURT_CENTRE_ID = randomUUID();
+    private static final ZonedDateTime HEARING_DATE = ZonedDateTime.parse("2024-10-24T22:23:12.414Z");
     private static final UUID FILE_ID = randomUUID();
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID MASTER_DEFENDANT_ID = randomUUID();
@@ -107,7 +110,7 @@ public class PrisonCourtRegisterHandlerTest {
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
-        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(eventSource.getStreamById(getPrisonCourtRegisterStreamId(COURT_CENTRE_ID.toString(), HEARING_DATE.toLocalDate().toString()))).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         prisonCourtRegisterHandler.handleAddPrisonCourtRegister(buildEnvelope(new PrisonCourtRegisterRecipient("emailAddress1", null, "emailTemplate", "recipientName")));
@@ -139,7 +142,7 @@ public class PrisonCourtRegisterHandlerTest {
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
-        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(eventSource.getStreamById(getPrisonCourtRegisterStreamId(COURT_CENTRE_ID.toString(), HEARING_DATE.toLocalDate().toString()))).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         prisonCourtRegisterHandler.handleAddPrisonCourtRegister(buildEnvelope(new PrisonCourtRegisterRecipient("emailAddress1", null, "emailTemplate", "recipientName")));
@@ -172,7 +175,7 @@ public class PrisonCourtRegisterHandlerTest {
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
-        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(eventSource.getStreamById(getPrisonCourtRegisterStreamId(COURT_CENTRE_ID.toString(), HEARING_DATE.toLocalDate().toString()))).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         prisonCourtRegisterHandler.handleAddPrisonCourtRegister(buildEnvelope(new PrisonCourtRegisterRecipient("emailAddress1", null, "emailTemplate", "recipientName")));
@@ -204,7 +207,7 @@ public class PrisonCourtRegisterHandlerTest {
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
-        when(eventSource.getStreamById(COURT_CENTRE_ID)).thenReturn(eventStream);
+        when(eventSource.getStreamById(getPrisonCourtRegisterStreamId(COURT_CENTRE_ID.toString(), HEARING_DATE.toLocalDate().toString()))).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
 
         prisonCourtRegisterHandler.handleAddPrisonCourtRegister(buildEnvelopeWithoutRecipients());
@@ -248,7 +251,8 @@ public class PrisonCourtRegisterHandlerTest {
 
     private Envelope<PrisonCourtRegisterDocumentRequest> buildEnvelope(PrisonCourtRegisterRecipient registerRecipient) {
 
-        final PrisonCourtRegisterDocumentRequest.Builder builder = PrisonCourtRegisterDocumentRequest.prisonCourtRegisterDocumentRequest().withCourtCentreId(COURT_CENTRE_ID);
+        final PrisonCourtRegisterDocumentRequest.Builder builder = PrisonCourtRegisterDocumentRequest.prisonCourtRegisterDocumentRequest()
+                .withCourtCentreId(COURT_CENTRE_ID).withHearingDate(HEARING_DATE);
 
         if (registerRecipient != null) {
             builder.withRecipients(asList(registerRecipient));
@@ -268,6 +272,7 @@ public class PrisonCourtRegisterHandlerTest {
 
         final RecordPrisonCourtRegisterDocumentGenerated recordPrisonCourtRegisterDocumentGenerated = RecordPrisonCourtRegisterDocumentGenerated.recordPrisonCourtRegisterDocumentGenerated()
                 .withCourtCentreId(COURT_CENTRE_ID)
+                .withHearingDate(HEARING_DATE)
                 .withFileId(FILE_ID)
                 .withId(ID)
                 .build();

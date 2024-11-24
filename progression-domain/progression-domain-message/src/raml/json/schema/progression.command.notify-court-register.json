@@ -7,7 +7,7 @@
     "systemDocGeneratorId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "courtCentreId": {
+    "courtRegisterId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     }
   },

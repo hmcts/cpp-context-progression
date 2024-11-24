@@ -11,6 +11,7 @@ import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentReq
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterHearingVenue;
 import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotified;
+import uk.gov.justice.progression.courts.CourtRegisterNotifiedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -20,6 +21,7 @@ import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtRegisterRequestEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtRegisterRequestRepository;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -119,6 +121,30 @@ public class CourtRegisterDocumentRequestListenerTest {
         courtRegisterRequestEntity.setCourtCentreId(courtCentreId);
         Mockito.when(courtRegisterRequestRepository.findByCourtCenterIdAndStatusGenerated(courtCentreId)).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
         courtRegisterDocumentRequestListener.notifyCourtRegister(requestMessage);
+        assertThat(courtRegisterRequestEntity.getStatus(), is(RegisterStatus.NOTIFIED));
+        assertThat(courtRegisterRequestEntity.getProcessedOn(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldNotifyCourtRegisterV2() {
+        final UUID courtCentreId = UUID.randomUUID();
+        final LocalDate registerDate = LocalDate.parse("2024-10-25");
+
+        final CourtRegisterNotifiedV2 courtRegisterNotified = CourtRegisterNotifiedV2.courtRegisterNotifiedV2()
+                .withCourtCentreId(courtCentreId)
+                .withRegisterDate(registerDate)
+                .build();
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(courtRegisterNotified);
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-register-notified-v2"),
+                jsonObject);
+        final CourtRegisterRequestEntity courtRegisterRequestEntity = new CourtRegisterRequestEntity();
+        courtRegisterRequestEntity.setStatus(RegisterStatus.GENERATED);
+        courtRegisterRequestEntity.setCourtCentreId(courtCentreId);
+        Mockito.when(courtRegisterRequestRepository.findByCourtCenterIdForRegisterDateAndStatusGenerated(courtCentreId, registerDate)).thenReturn(Lists.newArrayList(courtRegisterRequestEntity));
+
+        courtRegisterDocumentRequestListener.notifyCourtRegisterV2(requestMessage);
+
         assertThat(courtRegisterRequestEntity.getStatus(), is(RegisterStatus.NOTIFIED));
         assertThat(courtRegisterRequestEntity.getProcessedOn(), is(notNullValue()));
     }
