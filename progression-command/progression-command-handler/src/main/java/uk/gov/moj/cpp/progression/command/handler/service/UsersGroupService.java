@@ -76,8 +76,6 @@ public class UsersGroupService {
         final JsonObject getOrganisationForUserRequest = createObjectBuilder().add(USER_ID, userId).build();
         final Envelope<JsonObject> requestEnvelope = envelop(getOrganisationForUserRequest)
                 .withName("usersgroups.get-organisation-details-for-user").withMetadataFrom(envelope);
-        LOGGER.info("Payload from envelope :: {}", requestEnvelope.payload());
-
         return requester.requestAsAdmin(envelopeFrom(
                 metadataFrom(requestEnvelope.metadata()),
                 requestEnvelope.payload()

@@ -514,7 +514,7 @@ public class ProgressionService {
     public void createCourtDocument(final JsonEnvelope jsonEnvelope, final List<CourtDocument> courtDocuments) {
         courtDocuments.forEach(courtDocument -> {
             final JsonObject jsonObject = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
-            LOGGER.info("court document is being created '{}' ", jsonObject);
+            LOGGER.info("court document is being created '{}' ", courtDocument.getCourtDocumentId());
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
         });
     }
@@ -522,7 +522,7 @@ public class ProgressionService {
     public void createProsecutionCases(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases) {
         prosecutionCases.forEach(prosecutionCase -> {
             final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build();
-            LOGGER.info("prosecution case is being created '{}' ", jsonObject);
+            LOGGER.info("prosecution case is being created '{}' ", prosecutionCase.getId());
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE).apply(jsonObject));
             relayCaseToCourtStore(prosecutionCase);
         });
@@ -900,7 +900,7 @@ public class ProgressionService {
                 .add(HEARING_LISTING_STATUS, HEARING_INITIALISED)
                 .add(HEARING, objectToJsonObjectConverter.convert(hearingInitiate.getHearing()))
                 .build();
-        LOGGER.info("update hearing listing status after initiate hearing with payload {}", hearingListingStatusCommand);
+        LOGGER.info("update hearing listing status after initiate hearing with hearingId {}", hearingInitiate.getHearing().getId());
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
     }
 
@@ -921,7 +921,7 @@ public class ProgressionService {
                 }
 
                 final JsonObject hearingListingStatusCommand = hearingListingStatusCommandBuilder.build();
-                LOGGER.info("update hearing listing status after send case for listing with payload {}", hearingListingStatusCommand);
+                LOGGER.info("update hearing listing status after send case for listing with hearingId {}", hearing.getId());
                 sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
             } else {
 
@@ -935,7 +935,7 @@ public class ProgressionService {
 
                 final JsonObject hearingCreatedForApplicationCommand = hearingCreatedForApplicationCommandBuilder.build();
 
-                LOGGER.info("create hearing listing status after send application for listing with payload {}", hearingCreatedForApplicationCommand);
+                LOGGER.info("create hearing listing status after send application for listing with hearingId {}", hearing.getId());
 
                 sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
                         hearingCreatedForApplicationCommand));
@@ -956,7 +956,7 @@ public class ProgressionService {
 
                 final ListNextHearingsV3 listNextHearingsWithOneHearingListingNeeds = getListNextHearings(seedingHearing, listNextHearings.getShadowListedOffences(), hearingListingNeeds);
                 if(nonNull(listNextHearingsWithOneHearingListingNeeds)){
-                    LOGGER.info("A next hearing payload: {}", objectToJsonValueConverter.convert(listNextHearingsWithOneHearingListingNeeds));
+                    LOGGER.info("A next hearing Id: {}", objectToJsonValueConverter.convert(listNextHearingsWithOneHearingListingNeeds.getHearingId()));
                     hearingListingStatusCommandBuilder.add(LIST_NEXT_HEARINGS, objectToJsonObjectConverter.convert(listNextHearingsWithOneHearingListingNeeds));
                 } else {
                     LOGGER.error("Next hearing without hearing not possible");
@@ -964,7 +964,6 @@ public class ProgressionService {
                 }
 
                 final JsonObject hearingListingStatusCommand = hearingListingStatusCommandBuilder.build();
-                LOGGER.info("update hearing listing status after send case for listing payload with listNextHearings-2 {}", objectToJsonValueConverter.convert(hearingListingStatusCommand));
                 try {
                     jsonSchemaValidator.validate(hearingListingStatusCommand.toString(), PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3);
                 } catch (JsonSchemaValidationException e) {
@@ -980,7 +979,7 @@ public class ProgressionService {
 
                 final JsonObject hearingCreatedForApplicationCommand = hearingCreatedForApplicationCommandBuilder.build();
 
-                LOGGER.info("create hearing listing status after send application for listing with payload {}", hearingCreatedForApplicationCommand);
+                LOGGER.info("create hearing listing status after send application for listing with hearingId {}", hearing.getId());
 
                 sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
                         hearingCreatedForApplicationCommand));
@@ -1051,7 +1050,7 @@ public class ProgressionService {
                 .add(HEARING_LISTING_STATUS, "HEARING_INITIALISED")
                 .add(HEARING, objectToJsonObjectConverter.convert(hearing))
                 .build();
-        LOGGER.info("update hearing listing status after initiate hearing with payload {}", hearingListingStatusCommand);
+        LOGGER.info("update hearing listing status after initiate hearing with hearingId {}", hearing.getId());
         sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
     }
 
@@ -1066,7 +1065,7 @@ public class ProgressionService {
     public Optional<CourtApplication> getCourtApplicationByIdTyped(final JsonEnvelope envelope, final String courtApplicationId) {
         final Optional<JsonObject> jsonObject = getCourtApplicationById(envelope, courtApplicationId);
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(String.format("getCourtApplicationByIdTyped courtApplication: %s payload: %s", courtApplicationId, jsonObject.toString()));
+            LOGGER.info(String.format("getCourtApplicationByIdTyped courtApplication: %s ", courtApplicationId));
         }
         return jsonObject.map(json -> jsonObjectConverter.convert(json.getJsonObject("courtApplication"), CourtApplication.class));
     }
@@ -1111,7 +1110,7 @@ public class ProgressionService {
 
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("case {} ,   get court payLoad {}", prosecutionCaseId, prosecutionCase.payloadAsJsonObject());
+            LOGGER.debug("case {} ,   get court payLoad {}", prosecutionCaseId, prosecutionCase.toObfuscatedDebugString());
         }
 
         if (!prosecutionCase.payloadAsJsonObject().isEmpty()) {
@@ -1773,7 +1772,7 @@ public class ProgressionService {
                             .withId(defendant.getId())
                             .withMasterDefendant(masterDefendant)
                             .build());
-            LOGGER.info("Respondents {}", respondents);
+            LOGGER.info("Respondents {}", defendant.getId());
 
             final CourtApplicationParty subject = CourtApplicationParty.courtApplicationParty()
                     .withId(defendant.getId())

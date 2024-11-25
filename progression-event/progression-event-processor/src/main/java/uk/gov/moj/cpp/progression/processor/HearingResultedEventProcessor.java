@@ -83,7 +83,7 @@ public class HearingResultedEventProcessor {
     //Need to decommission it
     @Handles("progression.event.hearing-resulted")
     public void processEvent(final JsonEnvelope event) {
-        LOGGER.info("progression.event.hearing-resulted event received with metadata {} and payload {}", event.metadata(), event.payloadAsJsonObject());
+        LOGGER.info("progression.event.hearing-resulted event received with metadata {} and payload {}", event.metadata(), event.toObfuscatedDebugString());
         final Metadata metadata = metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_HEARING_RESULTED).build();
 
         final JsonObject outboundPayload = createObjectBuilder()
@@ -97,7 +97,7 @@ public class HearingResultedEventProcessor {
     @Handles("progression.events.case-retention-length-calculated")
     public void processRetentionCalculated(final JsonEnvelope event) {
 
-        LOGGER.info("progression.events.case-retention-length-calculated event received with metadata {} and payload {}", event.metadata(), event.payloadAsJsonObject());
+        LOGGER.info("progression.events.case-retention-length-calculated event received with metadata {} and payload {}", event.metadata(), event.toObfuscatedDebugString());
 
         sender.send(JsonEnvelope.envelopeFrom(metadataFrom(event.metadata())
                         .withName(PUBLIC_PROGRESSION_CASE_ARCHIVED),
