@@ -231,9 +231,9 @@ public class HearingNotificationHelper {
     private void sendNotificationToDefendantOrganisation(final HearingNotificationInputData hearingNotificationInputData, JsonEnvelope jsonEnvelope, final UUID caseId, final DefenceOrganisationVO defenceOrganisationVO,
                                                          final UUID materialId, final String materialUrl, final UUID notificationId) {
         if (isNotEmpty(defenceOrganisationVO.getEmail())) {
-            sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO.getEmail(), materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
+            sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO.getEmail(), materialId, materialUrl, notificationId, RecipientType.DEFENCE);
         } else {
-            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENDANT);
+            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENCE);
         }
     }
 
