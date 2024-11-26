@@ -564,8 +564,8 @@
       ],
       "additionalProperties": false
     },
-    "appealsLodged": {
-        "$ref": "http://justice.gov.uk/courts/progression/query/progression.query.prosecutioncase.caag#/definitions/appealsLodged"
+    "appealsLodgedInfo": {
+        "$ref": "http://justice.gov.uk/courts/progression/query/progression.query.prosecutioncase.caag#/definitions/appealsLodgedInfo"
     }
   }
 }

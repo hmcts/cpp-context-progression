@@ -52,6 +52,25 @@
     },
     "subject": {
       "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "CASE_ID",
+            "caseReference": "TFL4359536",
+            "defendantId": "MASTER_DEFENDANT_ID"
+          }
+        ],
+        "legalEntityDefendant": {
+          "organisation": {
+            "address": {
+              "address1": "11",
+              "postcode": "YO43 3DE"
+            },
+            "name": "JLP Limited"
+          }
+        },
+        "masterDefendantId": "MASTER_DEFENDANT_ID"
+      },
       "summonsRequired": false,
       "notificationRequired": true
     },

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.ApplicationExternalCreatorType.PROSECUTOR;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplicationWithMasterDefendantId;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -20,6 +21,7 @@ import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseD
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.util.Optional;
 
@@ -30,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(JmsResourceManagementExtension.class)
-public class GenericLinkedApplicationIT {
+public class GenericLinkedApplicationIT extends AbstractIT {
 
     private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
     private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
@@ -78,7 +80,8 @@ public class GenericLinkedApplicationIT {
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
 
         final String applicationId = randomUUID().toString();
-        initiateCourtProceedingsForCourtApplication(applicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-appeal-linked-application.json");
+        initiateCourtProceedingsForCourtApplicationWithMasterDefendantId(applicationId, caseId, randomUUID().toString(), defendantId,
+                "applications/progression.initiate-court-proceedings-for-appeal-linked-application.json");
 
         verifyCourtApplicationCreatedPrivateEvent();
 
@@ -101,16 +104,16 @@ public class GenericLinkedApplicationIT {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.linkedApplicationsSummary", hasSize(1)),
                 withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("DRAFT")),
-                withJsonPath("$.appealsLodgedInfo[0].defendantId", is("cd3b251d-20e8-44ad-b95e-2f81afde56a4")),
-                withJsonPath("$.appealsLodgedInfo[0].offenceIds[0]", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
+                withJsonPath("$.appealsLodgedInfo.appealsLodgedFor[0].defendantId", is(defendantId)),
+                withJsonPath("$.appealsLodgedInfo.appealsLodgedFor[0].offenceIds[0]", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
         };
 
         pollProsecutionCasesProgressionFor(caseId, caseMatchers);
 
         final Matcher[] prosecutionCasesProgressionForCAAG = new Matcher[]{
                 withJsonPath("$.defendants[0].id", is(defendantId)),
-                withJsonPath("$.appealsLodgedInfo[0].defendantId", is("cd3b251d-20e8-44ad-b95e-2f81afde56a4")),
-                withJsonPath("$.appealsLodgedInfo[0].offenceIds[0]", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
+                withJsonPath("$.appealsLodgedInfo.appealsLodgedFor[0].defendantId", is(defendantId)),
+                withJsonPath("$.appealsLodgedInfo.appealsLodgedFor[0].offenceIds[0]", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
         };
 
         pollProsecutionCasesProgressionForCAAG(caseId, prosecutionCasesProgressionForCAAG);

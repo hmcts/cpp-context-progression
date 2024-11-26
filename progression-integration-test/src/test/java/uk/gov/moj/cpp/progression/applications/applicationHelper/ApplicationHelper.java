@@ -77,6 +77,13 @@ public class ApplicationHelper {
                 getCourtApplicationJson(applicationId, caseId, hearingId, null, fileName));
     }
 
+    public static Response initiateCourtProceedingsForCourtApplicationWithMasterDefendantId(final String applicationId, final String caseId, final String hearingId,
+                                                                                            final String masterDefendantId, final String fileName) throws IOException {
+        return postCommand(getWriteUrl("/initiate-application"),
+                "application/vnd.progression.initiate-court-proceedings-for-application+json",
+                getCourtApplicationJson(applicationId, caseId, hearingId, masterDefendantId, fileName));
+    }
+
     public static Response addBreachApplicationForExistingHearing(final String hearingId, final String masterDefendantId, final String fileName) throws IOException {
         return postCommand(getWriteUrl("/add-breach-application"),
                 "application/vnd.progression.add-breach-application+json",

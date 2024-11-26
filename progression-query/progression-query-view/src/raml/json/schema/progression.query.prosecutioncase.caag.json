@@ -400,14 +400,21 @@
       ],
       "additionalProperties": false
     },
-    "appealsLodged": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/definitions/appealLodged"
+    "appealsLodgedInfo": {
+      "type": "object",
+      "properties": {
+        "appealsLodged": {
+          "type": "boolean"
+        },
+        "appealsLodgedFor": {
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/appealLodgedFor"
+          }
+        }
       }
     },
-    "appealLodged": {
+    "appealLodgedFor": {
       "type": "object",
       "properties": {
         "defendantId": {

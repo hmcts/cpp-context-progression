@@ -20,6 +20,7 @@ import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -121,6 +122,8 @@ public class ProsecutionCaseQuery {
     public static final String PROSECUTION_CASES = "prosecutionCases";
     public static final String OFFENCE_IDS = "offenceIds";
     public static final String APPEALS_LODGED_INFO = "appealsLodgedInfo";
+    public static final String APPEALS_LODGED = "appealsLodged";
+    public static final String APPEALS_LODGED_FOR = "appealsLodgedFor";
 
     @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
@@ -318,11 +321,7 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.add("relatedCases", relatedCases);
             }
 
-            final HashMap<UUID, HashSet<UUID>> appealLodgedInfo = getAppealLodgedInfo(caseId.get());
-            if (!appealLodgedInfo.isEmpty()) {
-                final JsonArray appealsLodged = buildAppealLodgedInfo(appealLodgedInfo);
-                jsonObjectBuilder.add(APPEALS_LODGED_INFO, appealsLodged);
-            }
+            populateAppealLodgedInfo(caseId.get(), jsonObjectBuilder);
 
         } catch (final NoResultException e) {
             LOGGER.info(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
@@ -351,9 +350,10 @@ public class ProsecutionCaseQuery {
         return appealsLodged.build();
     }
 
-    private HashMap<UUID, HashSet<UUID>> getAppealLodgedInfo(final UUID caseId) {
+    private void populateAppealLodgedInfo(final UUID caseId, final JsonObjectBuilder jsonObjectBuilder) {
         final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseId);
         final HashMap<UUID, HashSet<UUID>> defendantOffencesMap = new HashMap<>();
+        boolean appealLodged = false;
         if (isNotEmpty(courtApplicationCaseEntities)) {
             courtApplicationCaseEntities
                     .stream()
@@ -369,14 +369,35 @@ public class ProsecutionCaseQuery {
                                 .flatMap(courtApplicationCase -> courtApplicationCase.getOffences().stream())
                                 .forEach(o -> offenceIds.add(o.getId()));
 
-                        if(!offenceIds.isEmpty()) {
-                            defendantOffencesMap.computeIfAbsent(e.getSubject().getId(), k -> new HashSet<>());
-                            defendantOffencesMap.get(e.getSubject().getId()).addAll(offenceIds);
+                        if(!offenceIds.isEmpty() && e.getSubject().getMasterDefendant() != null) {
+                            final DefendantCase matchingDefendantCase = e.getSubject().getMasterDefendant().getDefendantCase()
+                                    .stream()
+                                    .filter(defendantCase -> caseId.equals(defendantCase.getCaseId()))
+                                    .findFirst()
+                                    .orElse(null);
+                            if(matchingDefendantCase != null) {
+                                defendantOffencesMap.computeIfAbsent(matchingDefendantCase.getDefendantId(), k -> new HashSet<>());
+                                defendantOffencesMap.get(matchingDefendantCase.getDefendantId()).addAll(offenceIds);
+                            }
                         }
                     });
+
+                appealLodged = courtApplicationCaseEntities
+                    .stream()
+                    .map(e -> jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(e.getCourtApplication().getPayload()), CourtApplication.class))
+                    .anyMatch(e -> Boolean.TRUE.equals(e.getType().getAppealFlag()));
         }
 
-        return defendantOffencesMap;
+        final JsonObjectBuilder appealsInfoBuilder = createObjectBuilder();
+        appealsInfoBuilder.add(APPEALS_LODGED, appealLodged);
+
+        if (!defendantOffencesMap.isEmpty()) {
+            final JsonArray appealsLodged = buildAppealLodgedInfo(defendantOffencesMap);
+            appealsInfoBuilder.add(APPEALS_LODGED_FOR, appealsLodged);
+        }
+
+        jsonObjectBuilder.add(APPEALS_LODGED_INFO, appealsInfoBuilder);
+
     }
 
     private void buildCivilFeesList(final CivilFees civilFee, final JsonArrayBuilder jsonProsecutionBuilder) {
@@ -421,11 +442,7 @@ public class ProsecutionCaseQuery {
                 jsonObjectBuilder.add("prosecutorDetails", addProperty(prosecutorDetailsJson, OLD_PROSECUTION_AUTHORITY_CODE, caseCpsProsecutorEntity.getOldCpsProsecutor()));
             }
 
-            final HashMap<UUID, HashSet<UUID>> appealLodgedInfo = getAppealLodgedInfo(caseId.get());
-            if (!appealLodgedInfo.isEmpty()) {
-                final JsonArray appealLodged = buildAppealLodgedInfo(appealLodgedInfo);
-                jsonObjectBuilder.add(APPEALS_LODGED_INFO, appealLodged);
-            }
+            populateAppealLodgedInfo(caseId.get(), jsonObjectBuilder);
 
         } catch (final NoResultException e) {
             LOGGER.warn(NO_CASE_FOUND_YET_FOR_CASE_ID, caseId.get());
