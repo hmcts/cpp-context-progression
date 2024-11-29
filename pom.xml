@@ -149,11 +149,6 @@
                 <version>${stream-transformation-tool.version}</version>
             </dependency>
             <dependency>
-                <groupId>uk.gov.justice</groupId>
-                <artifactId>stream-transformation-tool-api</artifactId>
-                <version>${stream-transformation-tool.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>uk.gov.moj.cpp.core.domain</groupId>
                 <artifactId>mireportdata-cc-dependency</artifactId>
                 <version>${mireportdata-cc-dependency}</version>
