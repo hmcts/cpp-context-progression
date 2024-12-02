@@ -35,7 +35,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.RecipientType;
-import uk.gov.moj.cpp.progression.SourceType;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
@@ -173,7 +172,7 @@ public class HearingNotificationHelper {
         final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, defendantAddressee, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
         final UUID materialId = randomUUID();
 
-        final String fileName = getNotificationPdfName(templateName);
+        final String fileName = getNotificationPdfName(templateName, RecipientType.DEFENDANT);
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
@@ -309,7 +308,7 @@ public class HearingNotificationHelper {
         final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, postalAddressee, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
         final UUID materialId = randomUUID();
         final String templateName = hearingNotificationInputData.getTemplateName();
-        final String fileName = getNotificationPdfName(templateName);
+        final String fileName = getNotificationPdfName(templateName, RecipientType.PROSECUTOR);
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
@@ -515,7 +514,7 @@ public class HearingNotificationHelper {
         return builder.build();
     }
 
-    private String getNotificationPdfName(final String templateName) {
-        return templateName + "_" + formatter.format(LocalDateTime.now());
+    private String getNotificationPdfName(final String templateName, RecipientType receipientType) {
+        return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType + " copy";
     }
 }
