@@ -70,6 +70,7 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -515,6 +516,6 @@ public class HearingNotificationHelper {
     }
 
     private String getNotificationPdfName(final String templateName, RecipientType receipientType) {
-        return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType + " copy";
+        return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType.toString().substring(0, 1).toUpperCase() + receipientType.toString().substring(1).toLowerCase() + " copy";
     }
 }
