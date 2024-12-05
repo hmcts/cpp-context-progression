@@ -91,7 +91,6 @@
         <jmeter-maven-plugin.version>1.10.1</jmeter-maven-plugin.version>
         <jmeter-plugins-standard.version>1.3.1</jmeter-plugins-standard.version>
 
-
         <jmeter-lightning-maven-plugin>0.1.1</jmeter-lightning-maven-plugin>
         <powermock-reflect>2.0.2</powermock-reflect>
         <byte-buddy.version>1.12.22</byte-buddy.version>
