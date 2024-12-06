@@ -126,6 +126,51 @@ public class UpdateCourtApplicationIT extends AbstractIT {
     }
 
     @Test
+    public void shouldUpdateCourtApplicationAndGetConfirmationForCourtOrder() throws Exception {
+
+        // when
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+
+        final Matcher[] initialMatchers = getProsecutionCaseMatchers(caseId, defendantId, singletonList(withJsonPath("$.prosecutionCase.defendants[0].witnessStatement", is("he did not do it"))));
+        String response = pollProsecutionCasesProgressionFor(caseId, initialMatchers);
+        JsonObject prosecutionCasesJsonObject = getJsonObject(response);
+
+        // assert defendant witness statement
+        String reference = prosecutionCasesJsonObject.getJsonObject("prosecutionCase").getJsonObject("prosecutionCaseIdentifier").getString("prosecutionAuthorityReference");
+
+        String applicationId = randomUUID().toString();
+        String applicantId = UUID.fromString("88cdf36e-93e4-41b0-8277-17d9dba7f06f").toString();
+
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
+
+        verifyInMessagingQueueForCourtApplicationCreated(applicationId);
+
+        Matcher[] applicationMatchers = {
+                withJsonPath("$.courtApplication.id", is(applicationId)),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
+                withJsonPath("$.courtApplication.applicationReference", notNullValue()),
+        };
+
+        pollForApplication(applicationId, applicationMatchers);
+
+        updateCourtApplication(applicationId, applicantId, caseId, defendantId, "", "progression.command.update-court-application-with-court-order.json");
+
+        verifyInMessagingQueueForCourtApplicationUpdated();
+
+        Matcher[] updatedApplicationMatchers = {
+                withJsonPath("$.courtApplication.id", is(applicationId)),
+                withJsonPath("$.courtApplication.applicationStatus", is("DRAFT")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("b"))
+        };
+
+        verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, updatedApplicationMatchers);
+
+    }
+
+
+
+    @Test
     public void shouldRaiseProbationEventWhenUpdateCourtApplication() throws Exception {
         HearingStub.stubInitiateHearing();
         final String applicationId = randomUUID().toString();

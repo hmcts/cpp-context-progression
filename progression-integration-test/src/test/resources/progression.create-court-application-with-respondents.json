@@ -46,7 +46,8 @@
               "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
               "address2": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS2",
               "postcode": "CR0 7QP"
-            }
+            },
+            "isProbationBreach": true
           },
           "organisationPersons": [
             {

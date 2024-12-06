@@ -1,0 +1,326 @@
+{
+  "allegationOrComplaintEndDate": "2024-11-15",
+  "allegationOrComplaintStartDate": "2024-11-01",
+  "applicant": {
+    "id": "03a046fc-2634-45c0-a9d5-30e49e674449",
+    "notificationRequired": true,
+    "organisation": {
+      "address": {
+        "address1": "Probation Service Worthing",
+        "address2": "4 Farncombe Road",
+        "address3": "Worthing",
+        "postcode": "BN11 2BE"
+      },
+      "contact": {
+        "primaryEmail": "ksssummons.enforcement@justice.gov.uk",
+        "work": "01482 736716"
+      },
+      "id": "6677dd6d-7f72-4991-8c8f-d3efd7a385bd",
+      "isProbationBreach": true,
+      "name": "Probation Service - Kent, Surrey, Sussex"
+    },
+    "summonsRequired": false
+  },
+  "applicationReceivedDate": "2024-11-21",
+  "applicationReference": "35NR080611,35NR080612",
+  "applicationStatus": "IN_PROGRESS",
+  "commissionerOfOath": false,
+  "courtOrder": {
+    "canBeSubjectOfBreachProceedings": true,
+    "canBeSubjectOfVariationProceedings": true,
+    "courtOrderOffences": [
+      {
+        "offence": {
+          "arrestDate": "2024-02-06",
+          "chargeDate": "2024-02-07",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "ea188a8f-5435-424b-b6c4-4ac98425c794",
+          "isDisposed": true,
+          "listingNumber": 1,
+          "maxPenalty": "S:L3",
+          "modeOfTrial": "Summary",
+          "offenceCode": "CJ03522",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+          "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+          "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+          "offenceTitle": "Use a television set without a licence",
+          "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+          "orderIndex": 1,
+          "startDate": "2024-02-01",
+          "wording": "Original CaseURN: 35NR080611, Re-sentenced Original code : CA03010, Original details: Use / install a television set without a licence."
+        },
+        "prosecutionCaseId": "f01cf2fa-1a5f-4198-b584-4f735a29618e",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Surrey Police",
+            "address2": "Mount Browne",
+            "address3": "Sandy Lane",
+            "address4": "Guildford",
+            "postcode": "GU3 1HG"
+          },
+          "contact": {
+            "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+          },
+          "majorCreditorCode": "PO45",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityName": "Surrey Police",
+          "prosecutionAuthorityOUCode": "0450000",
+          "caseURN": "35NR080611"
+        }
+      },
+      {
+        "offence": {
+          "arrestDate": "2024-02-06",
+          "chargeDate": "2024-02-07",
+          "count": 0,
+          "dateHeldInCustodySince": "2024-11-21",
+          "endorsableFlag": false,
+          "id": "505064da-78fb-4636-915d-65f75aac5267",
+          "isDisposed": true,
+          "lastAdjournDate": "2024-11-21",
+          "lastAdjournedHearingType": "To attend or a warrant to issue",
+          "listingNumber": 1,
+          "maxPenalty": "S:L3",
+          "modeOfTrial": "Summary",
+          "offenceCode": "CJ03522",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+          "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+          "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+          "offenceTitle": "Use a television set without a licence",
+          "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+          "orderIndex": 1,
+          "seedingHearing": {
+            "jurisdictionType": "MAGISTRATES",
+            "seedingHearingId": "4fb79784-5417-47e3-bb76-76c1fedbead6",
+            "sittingDay": "2024-11-21"
+          },
+          "startDate": "2024-02-01",
+          "wording": "Original CaseURN: 35NR080612, Re-sentenced Original code : CA03010, Original details: Use / install a television set without a licence."
+        },
+        "prosecutionCaseId": "ab99243d-8fa1-4aad-902e-4891a80d1677",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Surrey Police",
+            "address2": "Mount Browne",
+            "address3": "Sandy Lane",
+            "address4": "Guildford",
+            "postcode": "GU3 1HG"
+          },
+          "contact": {
+            "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+          },
+          "majorCreditorCode": "PO45",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityName": "Surrey Police",
+          "prosecutionAuthorityOUCode": "0450000",
+          "caseURN": "35NR080612"
+        }
+      }
+    ],
+    "defendantIds": [
+      "2e450409-c9fb-4a22-8a04-690345e99754",
+      "db39261b-d104-44bc-b3ce-815ae5c49136"
+    ],
+    "endDate": "2024-08-21",
+    "id": "defbbe16-8b8c-4620-9016-5ae11a7c4fce",
+    "isSJPOrder": false,
+    "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+    "label": "Community order England / Wales",
+    "masterDefendantId": "2e450409-c9fb-4a22-8a04-690345e99754",
+    "orderDate": "2024-11-21",
+    "orderingCourt": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "courtHearingLocation": "B01LY01",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "orderingHearingId": "73edcba8-f205-482f-952f-4fdf8baa701a",
+    "startDate": "2024-11-21"
+  },
+  "defendantASN": "0800PP0100000000001H",
+  "futureSummonsHearing": {
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "earliestStartDateTime": "2024-11-21T10:00:00.000Z",
+    "estimatedMinutes": 20,
+    "jurisdictionType": "MAGISTRATES"
+  },
+  "hasSummonsSupplied": false,
+  "id": "215b3d3b-c8c0-4811-b79d-c883b8924bbc",
+  "respondents": [
+    {
+      "id": "ee44223d-eeb5-4d0b-92d9-dc63a714d3be",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "ab99243d-8fa1-4aad-902e-4891a80d1677",
+            "caseReference": "35NR080612",
+            "defendantId": "db39261b-d104-44bc-b3ce-815ae5c49136"
+          }
+        ],
+        "masterDefendantId": "2e450409-c9fb-4a22-8a04-690345e99754",
+        "personDefendant": {
+          "arrestSummonsNumber": "2432NR9000009780012Y",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PI",
+          "personDetails": {
+            "address": {
+              "address1": "Addchangenonmaster",
+              "address2": "WplfoqqP",
+              "address3": "addressline 4",
+              "address4": "BtfgstQQ",
+              "address5": "Elfo",
+              "postcode": "TA1 1AT"
+            },
+            "contact": {
+              "home": "02012345679",
+              "mobile": "07771234568",
+              "primaryEmail": "test02@gmail.com"
+            },
+            "dateOfBirth": "1982-08-12",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "nonprobtest1",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "nonprobtestlast1",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": true,
+      "updatedOn": "2024-11-21"
+    }
+  ],
+  "subject": {
+    "id": "ee44223d-eeb5-4d0b-92d9-dc63a714d3be",
+    "masterDefendant": {
+      "defendantCase": [
+        {
+          "caseId": "ab99243d-8fa1-4aad-902e-4891a80d1677",
+          "caseReference": "35NR080612",
+          "defendantId": "db39261b-d104-44bc-b3ce-815ae5c49136"
+        }
+      ],
+      "masterDefendantId": "2e450409-c9fb-4a22-8a04-690345e99754",
+      "personDefendant": {
+        "arrestSummonsNumber": "2432NR9000009780012Y",
+        "bailStatus": {
+          "code": "A",
+          "description": "Not applicable",
+          "id": "86009c70-759d-3308-8de4-194886ff9a77"
+        },
+        "driverNumber": "VANFL002222OW9PI",
+        "personDetails": {
+          "address": {
+            "address1": "Addchangenonmaster",
+            "address2": "WplfoqqP",
+            "address3": "addressline 4",
+            "address4": "BtfgstQQ",
+            "address5": "Elfo",
+            "postcode": "TA1 1AT"
+          },
+          "contact": {
+            "home": "02012345679",
+            "mobile": "07771234568",
+            "primaryEmail": "test02@gmail.com"
+          },
+          "dateOfBirth": "1982-08-12",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "White",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "nonprobtest1",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "nonprobtestlast1",
+          "title": "Mr"
+        },
+        "policeBailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        }
+      }
+    },
+    "notificationRequired": true,
+    "summonsRequired": true,
+    "updatedOn": "2024-11-21"
+  },
+  "type": {
+    "appealFlag": false,
+    "applicantAppellantFlag": false,
+    "boxworkNotifTemplate": "NOT_APPLICABLE",
+    "breachType": "GENERIC_BREACH",
+    "categoryCode": "CB",
+    "code": "CJ03510",
+    "commrOfOathFlag": false,
+    "contestedFeeApplicable": false,
+    "courtExtractAvlFlag": true,
+    "courtOfAppealFlag": false,
+    "exParte": false,
+    "hearingCode": "BOO",
+    "id": "214a102c-fc5f-3c86-bd8a-b48f4c6076c7",
+    "initialFeeApplicable": false,
+    "jurisdiction": "EITHER",
+    "lastModified": "2022-05-18T08:02:32.650Z",
+    "legislation": "In accordance with Part 2 of Schedule 8 to the Criminal Justice Act 2003.",
+    "legislationWelsh": "Yn unol ag Adran 2 Atodlen 8 Deddf Cyfiawnder Troseddol 2003.",
+    "linkType": "LINKED",
+    "listingNotifTemplate": "NOT_APPLICABLE",
+    "offenceActiveOrder": "COURT_ORDER",
+    "pleaApplicableFlag": true,
+    "prefix": "Resentenced",
+    "prosecutorThirdPartyFlag": false,
+    "resentencingActivationCode": "CJ03522",
+    "spiOutApplicableFlag": true,
+    "summonsTemplateType": "BREACH",
+    "type": "Failing to comply with the requirements of a community order",
+    "typeWelsh": "Methu â chydymffurfio â gofynion gorchymyn cymunedol"
+  }
+}
