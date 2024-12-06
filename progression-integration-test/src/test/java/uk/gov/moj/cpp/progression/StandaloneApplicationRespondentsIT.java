@@ -36,6 +36,7 @@ public class StandaloneApplicationRespondentsIT extends AbstractIT {
                         payload().isJson(allOf(
                                 withJsonPath("$.applicationId", equalTo(randomValues.RANDOM_APPLICATION_ID)),
                                 withJsonPath("$.respondentDetails[0].name", equalTo(randomValues.RESPONDENT_ORGANISATION_NAME)),
+                                withJsonPath("$.respondentDetails[0].isProbationBreach", equalTo(true)),
                                 withJsonPath("$.respondentDetails[0].address.address1", equalTo(randomValues.RANDOM_RESPONDENT_ORGANISATION_ADDRESS1)),
                                 withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativeName", equalTo(format("%s %s", randomValues.RANDOM_RESPONDENT_REPRESENTATIVE_FIRST_NAME, randomValues.RANDOM_RESPONDENT_REPRESENTATIVE_LAST_NAME))),
                                 withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativePosition", equalTo(randomValues.RANDOM_RESPONDENT_REPRESENTATIVE_POSITION)),

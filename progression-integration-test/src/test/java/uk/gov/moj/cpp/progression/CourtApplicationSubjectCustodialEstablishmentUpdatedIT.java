@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
@@ -15,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -27,6 +29,7 @@ import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUER
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
@@ -37,20 +40,32 @@ import static uk.gov.moj.cpp.progression.util.ReferApplicationToCourtHelper.veri
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonReader;
 
+import com.google.common.io.Resources;
+import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends AbstractIT {
 
+    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
+    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private String hearingId;
     private String defendantId;
     ProsecutionCaseUpdateDefendantHelper helper;
@@ -80,7 +95,6 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
     public void shouldUpdateDefendantsDetails_WithNonEmptyCustodyEstablishment_WithEmptyCustodyEstablishment() throws Exception {
 
         final String masterDefendantId = randomUUID().toString();
-
 
         // initiation of  case
         final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
@@ -206,30 +220,63 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         ));
     }
 
-    private static String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl("/prosecutioncases/" + caseId),
-                PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(OK), payload().isJson(allOf(matchers)))
-                .getPayload();
-    }
+    @Test
+    void shouldUpdateDefendantsDetailsWhenNewApplicantIsCreatedWithUpdatedAddressForCourtOrder() throws Exception {
+        final String masterDefendantId = defendantId;
+        String id2 = randomUUID().toString();
+        String id3 = randomUUID().toString();
 
-    private static String getProgressionQueryForApplicationAtAaag(final String applicationId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl("/applications/" + applicationId),
-                PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(OK), payload().isJson(allOf(matchers)))
-                .getPayload();
-    }
+        // initiation of  case
+        final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
 
+        initiateCourtProceedingsForMatchedDefendants(caseId, defendantId, masterDefendantId);
+        verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
+        String res = getProgressionCaseHearings(caseId);
+        assertFalse(res.isEmpty());
+
+        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
+        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        // initiation of  application
+        final Response response = intiateCourtProceedingForApplicationWithRespondents(id2, id3, courtApplicationId, caseId, defendantId, masterDefendantId, "Address1", hearingId,
+                "applications/progression.initiate-court-proceedings-for-court-order-linked-application-for-updated-address.json");
+        verifyHearingInMessagingQueueForReferToCourt(applicationReferralToExistingHearingMessageConsumer);
+        verifyHearingApplicationLinkCreated(hearingId, hearingApplicationLinkCreated);
+
+        Optional<JsonObject> message = retrieveMessageBody(privateEventConsumerForpUpdateDefendantAddressOnCase);
+        assertTrue(message.isPresent());
+
+        getProgressionCaseHearings(caseId, anyOf(
+                withJsonPath("$.defendants[0].address.address1", is("sam2Address2Address1"))));
+
+        getProgressionQueryForApplicationAtAaag(courtApplicationId, anyOf(
+                withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address1"))));
+
+        // initiation of  other application
+        String courtApplicationId1 = randomUUID().toString();
+        intiateCourtProceedingForApplicationWithRespondents(id2, id3, courtApplicationId1, caseId, defendantId, masterDefendantId, "Address2", hearingId,
+                "applications/progression.initiate-court-proceedings-for-application-with-respondents.json");
+        verifyHearingInMessagingQueueForReferToCourt(applicationReferralToExistingHearingMessageConsumer);
+        verifyHearingApplicationLinkCreated(hearingId, hearingApplicationLinkCreated);
+
+        message = retrieveMessageBody(privateEventConsumerForpUpdateDefendantAddressOnCase);
+        assertTrue(message.isPresent());
+
+        getProgressionCaseHearings(caseId, anyOf(
+                withJsonPath("$.defendants[0].address.address1", is("sam2Address2Address2"))));
+
+        getProgressionQueryForApplicationAtAaag(courtApplicationId1, anyOf(
+                withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address2"))));
+        getProgressionQueryForApplicationAtAaag(courtApplicationId, anyOf(
+                withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address2"))
+        ));
+    }
 
     @Test
-    public void shouldUpdateDefendantsDetails_WithNonEmptyCustodyEstablishment_WithCustodyEstablishment() throws Exception {
+    void shouldUpdateDefendantsDetails_WithNonEmptyCustodyEstablishment_WithCustodyEstablishment() throws Exception {
 
         final String masterDefendantId = randomUUID().toString();
-
 
         final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
         // initiation of  case
@@ -263,5 +310,50 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         final Optional<JsonObject> message = retrieveMessageBody(privateEventConsumerForRemoveDefendantCustodialEstablishmentFromCaseRequested);
         assertTrue(message.isPresent());
     }
+
+    private void sendHearingResultedPayload(final JsonObject publicHearingResultedJsonObject) {
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED, AbstractTestHelper.USER_ID), publicHearingResultedJsonObject);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED, publicEventEnvelope);
+    }
+
+    public static JsonObject jsonFromString(final String jsonObjectStr) {
+        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+
+        return object;
+    }
+
+
+    private static String getCourtApplicationJson3(final String applicationId, final String caseId, final String defendantId, final String masterDefendantId, final String hearingId, final String fileName) throws IOException {
+        String payloadJson;
+        payloadJson = Resources.toString(getResource(fileName), Charset.defaultCharset())
+                .replaceAll("APPLICATION_ID", applicationId)
+                .replaceAll("CASE_ID", caseId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("MASTERDEFENDANTID", masterDefendantId)
+                .replaceAll("HEARING_ID", hearingId);
+        return payloadJson;
+    }
+
+    private static String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
+        return poll(requestParams(getReadUrl("/prosecutioncases/" + caseId),
+                PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(40, TimeUnit.SECONDS)
+                .until(status().is(OK), payload().isJson(allOf(matchers)))
+                .getPayload();
+    }
+
+    private static String getProgressionQueryForApplicationAtAaag(final String applicationId, final Matcher... matchers) {
+        return poll(requestParams(getReadUrl("/applications/" + applicationId),
+                PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(40, TimeUnit.SECONDS)
+                .until(status().is(OK), payload().isJson(allOf(matchers)))
+                .getPayload();
+    }
+
+
 
 }

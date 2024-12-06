@@ -23,6 +23,11 @@ import org.slf4j.LoggerFactory;
 public class UpdateDefendantService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDefendantService.class);
+    public static final String MASTER_DEFENDANT = "masterDefendant";
+    public static final String APPLICANT = "applicant";
+    public static final String SUBJECT = "subject";
+    public static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
+
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)

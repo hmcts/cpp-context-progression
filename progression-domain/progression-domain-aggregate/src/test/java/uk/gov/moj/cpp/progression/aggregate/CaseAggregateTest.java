@@ -4358,11 +4358,11 @@ public class CaseAggregateTest {
 
     @Test
     public void isDefendantAddressToBeChangedWhenLeAddressIsChanged() {
-        final UUID caseId = randomUUID();
+        final UUID caseId = fromString("f824d930-9876-466a-8c2f-d23b395d8370");
         final Map<UUID, Defendant> defendantsMap = new HashMap<>();
-        final UUID defendantId1 = randomUUID();
-        final UUID defendantId2 = randomUUID();
-        final UUID masterDefendantId = randomUUID();
+        final UUID defendantId2 = fromString("a1e90b9c-22da-4055-a451-679971469b5b");
+        final UUID defendantId1 = fromString("3b3e5f94-750e-4f6e-9f6c-d7804f1a0857");
+        final UUID masterDefendantId = fromString("7e34cbbd-d973-4bd2-9727-2b33d0637703");
 
         final Defendant defendant1 = defendant()
                 .withId(defendantId1)
@@ -4590,6 +4590,7 @@ public class CaseAggregateTest {
         assertThat(defendantCustodialInformationUpdateRequested.getProsecutionCaseId(), is(caseId));
 
     }
+
 
     @Test
     public void shouldUpdateDefendantDetails_WhenSameCustodialInformationIsPresent() {

@@ -131,6 +131,7 @@ import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -207,6 +208,30 @@ public class CourtApplicationHandlerTest {
     private static final String EMAIL_ADDRESS_SUFFIX = "@justice.gov.uk";
     private static final String PROSECUTOR_OU_CODE = randomAlphanumeric(8);
     private static final String PROSECUTOR_MAJOR_CREDITOR_CODE = randomAlphanumeric(12);
+
+    private UUID prosecutor1;
+    private UUID prosecutor2;
+    private String prosecutor2AuthCode;
+    private UUID subject;
+    private UUID respondent;
+    private UUID offenceId;
+    private UUID prosecutionCaseId;
+    private UUID masterDefendantId1;
+    private UUID masterDefendantId2;
+
+    @BeforeEach
+    public void setup(){
+        prosecutor1 = randomUUID();
+        prosecutor2 = randomUUID();
+        prosecutor2AuthCode = STRING.next();
+        subject = randomUUID();
+        respondent = randomUUID();
+        offenceId = randomUUID();
+        prosecutionCaseId = randomUUID();
+        masterDefendantId1= randomUUID();
+        masterDefendantId2= randomUUID();
+
+    }
 
     @Test
     public void shouldHandleCommand() {
@@ -1910,6 +1935,25 @@ public class CourtApplicationHandlerTest {
     }
 
     @Test
+    public void shouldUpdateOffenceWordingWhenCourtOrderIsNotSuspendedSentenceForApplicationAddressUpdated() throws EventStreamException {
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
+                .withCourtHearing(new CourtHearingRequest.Builder().build())
+                .withBoxHearing(new BoxHearingRequest.Builder().build())
+                .build());
+
+        final ProsecutionCase prosecutionCase = getProsecutionCase(prosecutionCaseId, masterDefendantId1, masterDefendantId2);
+        final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
+        when(prosecutionCaseQueryService.getProsecutionCase(any(JsonEnvelope.class),any(String.class)))
+                .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
+
+
+        offenceWordingTestForCourtOrderForUpdatedOn(randomUUID());
+    }
+
+    @Test
     public void shouldUpdateOffenceWordingWhenCourtOrderIsSuspendedSentence() throws EventStreamException {
 
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
@@ -2718,6 +2762,48 @@ public class CourtApplicationHandlerTest {
                         )))));
     }
 
+    private void offenceWordingTestForCourtOrderForUpdatedOn(final UUID judicialResultTypeId) throws EventStreamException {
+        InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = buildInitiateCourtApplicationProceedings(judicialResultTypeId, true, false);
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.initiate-court-proceedings-for-application")
+                .withId(randomUUID())
+                .build();
+        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
+
+        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        final String prefix;
+        final String expectedWording ;
+        final String expectedWordingWelsh;
+        if (TYPE_ID_FOR_SUSPENDED_SENTENCE_ORDER.equals(judicialResultTypeId)) {
+            prefix = "Activation of a suspended sentence order. ";
+            expectedWording  =   prefix + "Original CaseURN: null, " +  "Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING;
+            expectedWordingWelsh = prefix + "Original CaseURN: null, " +  "Original code : " + ORG_OFFENCE_CODE + ", Original details: "  + ORG_OFFENCE_WORDING_WELSH;
+        } else {
+            prefix = "Re-sentenced";
+            expectedWording  =   "Original CaseURN: null, " + prefix +  " Original code : " + ORG_OFFENCE_CODE + ", Original details: " + ORG_OFFENCE_WORDING;
+            expectedWordingWelsh = "Original CaseURN: null, " + prefix + " Original code : " + ORG_OFFENCE_CODE + ", Original details: "  + ORG_OFFENCE_WORDING_WELSH;
+
+        }
+        final CourtOrder courtOrder = initiateCourtApplicationProceedings.getCourtApplication().getCourtOrder();
+        final UUID offenceId = courtOrder.getCourtOrderOffences().get(0).getOffence().getId();
+        final String prosecutor2AuthCode = initiateCourtApplicationProceedings.getCourtApplication().getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(metadata().withName("progression.event.court-application-proceedings-initiated"),
+                        payload().isJson(allOf(
+                                withJsonPath("$.courtApplication", notNullValue()),
+                                withJsonPath("$.courtApplication.applicant.updatedOn", notNullValue()),
+                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.offenceCode", is(RESENTENCING_ACTIVATION_CODE)),
+                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wording", is(expectedWording)),
+                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.wordingWelsh", is(expectedWordingWelsh)),
+                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].offence.id", is(offenceId.toString())),
+                                withJsonPath("$.courtApplication.courtOrder.id", is(courtOrder.getId().toString())),
+                                withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", is(prosecutor2AuthCode))
+                        )))));
+    }
+
     private ProsecutionCase getProsecutionCase(final UUID caseId, final UUID defendantId, final UUID defendantId2) {
         return ProsecutionCase.prosecutionCase()
                 .withCaseStatus("caseStatus")
@@ -2752,6 +2838,14 @@ public class CourtApplicationHandlerTest {
                 .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                         .withProsecutionAuthorityId(prosecutionAuthorityId)
                         .withProsecutionAuthorityCode("Code_" + prosecutionAuthorityId.toString())
+                        .build())
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(masterDefendantId1)
+                        .withPersonDefendant(PersonDefendant.personDefendant()
+                                .withPersonDetails(Person.person()
+                                        .withAddress(Address.address()
+                                                .withAddress1("new adress one")
+                                                .withPostcode("TK2 9MD").build()).build()).build())
                         .build())
                 .build();
     }
@@ -2810,16 +2904,11 @@ public class CourtApplicationHandlerTest {
     }
 
     private InitiateCourtApplicationProceedings buildInitiateCourtApplicationProceedings(final UUID judicialResultTypeId, final boolean withCourtOrder, final boolean withApplicationCases, final boolean withSummonsApprovalRequired, final boolean courtHearing, final LinkType linkType, final String caseStatus) {
-        final UUID prosecutor1 = randomUUID();
-        final UUID prosecutor2 = randomUUID();
-        final String prosecutor2AuthCode = STRING.next();
-        final UUID subject = randomUUID();
-        final UUID respondent = randomUUID();
-        final UUID offenceId = randomUUID();
         final CourtOrder courtOrder;
         if (withCourtOrder) {
             courtOrder = CourtOrder.courtOrder()
                     .withCourtOrderOffences(singletonList(CourtOrderOffence.courtOrderOffence()
+                            .withProsecutionCaseId(prosecutionCaseId)
                             .withProsecutionCaseIdentifier(prosecutionCaseIdentifier()
                                     .withProsecutionAuthorityId(prosecutor2)
                                     .withProsecutionAuthorityCode(prosecutor2AuthCode)

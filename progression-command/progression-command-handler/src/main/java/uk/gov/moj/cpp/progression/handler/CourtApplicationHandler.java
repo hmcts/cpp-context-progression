@@ -173,9 +173,9 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
 
         if (validateInitiateCourtApplicationProceedings(initiateCourtProceedingsForApplication)) {
-            final ProsecutionCase prosecutionCase = getProsecutioncase(initiateCourtApplicationProceedingsEnv.metadata(), initiateCourtProceedingsForApplication.getCourtApplication());
+            final ProsecutionCase prosecutionCase = getProsecutionCase(initiateCourtApplicationProceedingsEnv.metadata(), initiateCourtProceedingsForApplication.getCourtApplication());
             final boolean applicationCreatedForSJPCase = isApplicationCreatedForSJPCase(initiateCourtProceedingsForApplication.getCourtApplication().getCourtApplicationCases());
-            final Stream<Object> events = applicationAggregate.initiateCourtApplicationProceedings(initiateCourtProceedingsForApplication, applicationReferredToNewHearing, applicationCreatedForSJPCase,prosecutionCase);
+            final Stream<Object> events = applicationAggregate.initiateCourtApplicationProceedings(initiateCourtProceedingsForApplication, applicationReferredToNewHearing, applicationCreatedForSJPCase, prosecutionCase);
             appendEventsToStream(initiateCourtApplicationProceedingsEnv, eventStream, events);
         } else {
             final Stream<Object> events = applicationAggregate.ignoreApplicationProceedings(initiateCourtProceedingsForApplication);
@@ -183,16 +183,26 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         }
     }
 
-    private ProsecutionCase getProsecutioncase(final Metadata metadata, final CourtApplication courtApplication) {
+    private ProsecutionCase getProsecutionCase(final Metadata metadata, final CourtApplication courtApplication) {
         ProsecutionCase prosecutionCase = null;
-        if(isNotEmpty(courtApplication.getCourtApplicationCases()) && nonNull(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseId())){
+        if (isNotEmpty(courtApplication.getCourtApplicationCases()) && nonNull(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseId())) {
             final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadata, JsonValue.NULL);
             final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(jsonEnvelope,
                     courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseId().toString());
             if (optionalProsecutionCase.isPresent()) {
                 prosecutionCase = jsonObjectToObjectConverter.convert(optionalProsecutionCase.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
             }
+        } else if (nonNull(courtApplication.getCourtOrder())
+                && isNotEmpty(courtApplication.getCourtOrder().getCourtOrderOffences())
+                && nonNull(courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseId())) {
+            final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadata, JsonValue.NULL);
+            final Optional<JsonObject> optionalProsecutionCase = prosecutionCaseQueryService.getProsecutionCase(jsonEnvelope,
+                    courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseId().toString());
+            if (optionalProsecutionCase.isPresent()) {
+                prosecutionCase = jsonObjectToObjectConverter.convert(optionalProsecutionCase.get().getJsonObject("prosecutionCase"), ProsecutionCase.class);
+            }
         }
+
         return prosecutionCase;
     }
 
@@ -230,8 +240,8 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         final EditCourtApplicationProceedings editCourtApplicationProceedings = rebuildEditCourtApplicationProceedings(editCourtApplicationProceedingsEnvelope.payload(), editCourtApplicationProceedingsEnvelope);
         final EventStream eventStream = eventSource.getStreamById(editCourtApplicationProceedings.getCourtApplication().getId());
         final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
-        final ProsecutionCase prosecutionCase = getProsecutioncase(editCourtApplicationProceedingsEnvelope.metadata(), editCourtApplicationProceedings.getCourtApplication());
-        final Stream<Object> events = applicationAggregate.editCourtApplicationProceedings(editCourtApplicationProceedings,prosecutionCase);
+        final ProsecutionCase prosecutionCase = getProsecutionCase(editCourtApplicationProceedingsEnvelope.metadata(), editCourtApplicationProceedings.getCourtApplication());
+        final Stream<Object> events = applicationAggregate.editCourtApplicationProceedings(editCourtApplicationProceedings, prosecutionCase);
         appendEventsToStream(editCourtApplicationProceedingsEnvelope, eventStream, events);
     }
 
@@ -298,12 +308,12 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         appendEventsToStream(updateCourtApplicationToHearingEnvelope, eventStream, events);
     }
 
-   @Handles("progression.command.update.hearing.application.defendant")
+    @Handles("progression.command.update.hearing.application.defendant")
     public void updateApplicationHearing(final Envelope<ApplicationDefendantUpdateRequested> applicationDefendantUpdateRequestedEnvelope) throws EventStreamException {
-       if (LOGGER.isInfoEnabled()) {
-           LOGGER.info("progression.command.update.hearing.application.defendant {} {} ", applicationDefendantUpdateRequestedEnvelope.payload().getDefendant().getMasterDefendantId(),
-                   applicationDefendantUpdateRequestedEnvelope.payload().getHearingId());
-       }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("progression.command.update.hearing.application.defendant {} {} ", applicationDefendantUpdateRequestedEnvelope.payload().getDefendant().getMasterDefendantId(),
+                    applicationDefendantUpdateRequestedEnvelope.payload().getHearingId());
+        }
         final DefendantUpdate defendantUpdate = applicationDefendantUpdateRequestedEnvelope.payload().getDefendant();
         final UUID hearingId = applicationDefendantUpdateRequestedEnvelope.payload().getHearingId();
         final EventStream eventStream = eventSource.getStreamById(hearingId);
@@ -413,7 +423,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
             return;
         }
 
-        if(LinkType.FIRST_HEARING == courtApplication.getType().getLinkType()) {
+        if (LinkType.FIRST_HEARING == courtApplication.getType().getLinkType()) {
             // no cloning of offence required for first hearing scenario
             return;
         }
@@ -424,7 +434,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
 
         final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases().stream()
                 .map(courtApplicationCase -> {
-                    if(activeCase(courtApplicationCase.getCaseStatus())) {
+                    if (activeCase(courtApplicationCase.getCaseStatus())) {
                         return courtApplicationCase()
                                 .withValuesFrom(courtApplicationCase)
                                 .withOffences(null)
@@ -571,7 +581,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
                 .withCustodyTimeLimit(null);
 
         if (!offence.getOffenceCode().equals(resentencingActivationCode) && hasActivationCode(courtApplication.getType())) {
-            offenceBuilder.withWording(String.format(wordingPattern, prosecutionCaseIdentifier.getCaseURN(), offence.getOffenceCode(),  offence.getWording()))
+            offenceBuilder.withWording(String.format(wordingPattern, prosecutionCaseIdentifier.getCaseURN(), offence.getOffenceCode(), offence.getWording()))
                     .withOffenceCode(resentencingActivationCode);
 
             if (nonNull(offence.getWordingWelsh())) {
