@@ -70,7 +70,6 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,7 +172,8 @@ public class HearingNotificationHelper {
         final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, defendantAddressee, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
         final UUID materialId = randomUUID();
 
-        final String fileName = getNotificationPdfName(templateName, RecipientType.DEFENDANT);
+        RecipientType recipientType = nonNull(defenceOrganisationVO) ? RecipientType.DEFENCE : RecipientType.DEFENDANT ;
+        final String fileName = getNotificationPdfName(templateName, recipientType.getRecipientName());
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
@@ -274,7 +274,7 @@ public class HearingNotificationHelper {
         emailChannel = EmailChannel.emailChannel()
                 .withPersonalisation(Personalisation.personalisation()
                         .withAdditionalProperty(HEARING_NOTIFICATION_DATE, hearingNotificationInputData.getHearingDateTime().format(DateTimeFormatter.ofPattern(HEARING_DATE_PATTERN)))
-                        .withAdditionalProperty(RECIPIENT_TYPE_ADDITION_PROPERTY, recipientType)
+                        .withAdditionalProperty(RECIPIENT_TYPE_ADDITION_PROPERTY, recipientType.getRecipientName())
                         .withAdditionalProperty(CASE_ID_ADDITION_PROPERTY, caseId)
                         .build())
                 .withMaterialUrl(materialUrl)
@@ -309,7 +309,7 @@ public class HearingNotificationHelper {
         final JsonObject documentPayload = createDocumentPayload(prosecutionCase, defendant, postalAddressee, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
         final UUID materialId = randomUUID();
         final String templateName = hearingNotificationInputData.getTemplateName();
-        final String fileName = getNotificationPdfName(templateName, RecipientType.PROSECUTOR);
+        final String fileName = getNotificationPdfName(templateName, RecipientType.PROSECUTOR.getRecipientName());
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
@@ -515,7 +515,8 @@ public class HearingNotificationHelper {
         return builder.build();
     }
 
-    private String getNotificationPdfName(final String templateName, RecipientType receipientType) {
-        return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType.toString().substring(0, 1).toUpperCase() + receipientType.toString().substring(1).toLowerCase() + " copy";
+    private String getNotificationPdfName(final String templateName, String receipientType) {
+        //return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType.toString().substring(0, 1).toUpperCase() + receipientType.toString().substring(1).toLowerCase() + " copy";
+        return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType + " copy";
     }
 }

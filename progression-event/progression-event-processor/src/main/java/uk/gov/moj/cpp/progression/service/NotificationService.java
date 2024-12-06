@@ -5,7 +5,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
@@ -401,7 +400,7 @@ public class NotificationService {
         });
 
         ofNullable(recipientType).ifPresent(r -> {
-            payloadBuilder.add(RECIPIENT_TYPE, r.name());
+            payloadBuilder.add(RECIPIENT_TYPE, r.getRecipientName());
         });
 
         final JsonObject printPayload = payloadBuilder.build();

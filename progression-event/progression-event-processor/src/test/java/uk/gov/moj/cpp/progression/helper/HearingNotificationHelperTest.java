@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
+import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.REPORT_RESTRICT_RESULT_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
 import uk.gov.justice.core.courts.Address;
@@ -36,6 +37,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.RecipientType;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -81,6 +83,7 @@ public class HearingNotificationHelperTest {
     private static final String TEMPLATE_NAME = "NewHearingNotificationTemplate";
     private static final String HEARING_TYPE = "Plea";
     private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
+    public static final String RECIPIENT_TYPE_ADDITION_PROPERTY = "recipient_type";
 
     @Mock
     private ProgressionService progressionService;
@@ -308,6 +311,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
+        assertThat(emailChannels.get(0).getPersonalisation().getAdditionalProperties().get(RECIPIENT_TYPE_ADDITION_PROPERTY), is(RecipientType.PROSECUTOR.getRecipientName()));
         verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
@@ -342,6 +346,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
         final List<EmailChannel> emailChannels = prosecutorEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "Crown.Court.Results@merseyside.police.uk", fromString(TEMPLATE_ID));
+        assertThat(emailChannels.get(0).getPersonalisation().getAdditionalProperties().get(RECIPIENT_TYPE_ADDITION_PROPERTY), is(RecipientType.PROSECUTOR.getRecipientName()));
         verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
@@ -376,6 +381,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
         final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "defendant_email@email.com", fromString(TEMPLATE_ID));
+        assertThat(emailChannels.get(0).getPersonalisation().getAdditionalProperties().get(RECIPIENT_TYPE_ADDITION_PROPERTY), is(RecipientType.DEFENDANT.getRecipientName()));
         verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
@@ -444,6 +450,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
         final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "orgdefendantemail@email.com", fromString(TEMPLATE_ID));
+        assertThat(emailChannels.get(0).getPersonalisation().getAdditionalProperties().get(RECIPIENT_TYPE_ADDITION_PROPERTY), is(RecipientType.DEFENDANT.getRecipientName()));
         verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 
@@ -489,6 +496,7 @@ public class HearingNotificationHelperTest {
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
         final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
         verifyEmailChannel(emailChannels, "organisation@org.com", fromString(TEMPLATE_ID));
+        assertThat(emailChannels.get(0).getPersonalisation().getAdditionalProperties().get(RECIPIENT_TYPE_ADDITION_PROPERTY), is(RecipientType.DEFENCE.getRecipientName()));
         verify(notificationService, times(1)).sendLetter(any(), any(), caseIdCapture.capture(), any(), any(), anyBoolean(), any());
         assertThat(caseIdCapture.getValue(), is(caseId));
 

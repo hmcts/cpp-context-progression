@@ -1,7 +1,17 @@
 package uk.gov.moj.cpp.progression;
 
 public enum RecipientType {
-    DEFENDANT,
-    DEFENCE,
-    PROSECUTOR
+    DEFENDANT("Defendant"),
+    DEFENCE("Defence"),
+    PROSECUTOR("Prosecutor");
+
+    private final String recipientName;
+
+    RecipientType(final String name) {
+        this.recipientName = name;
+    }
+
+    public String getRecipientName() {
+        return recipientName;
+    }
 }
