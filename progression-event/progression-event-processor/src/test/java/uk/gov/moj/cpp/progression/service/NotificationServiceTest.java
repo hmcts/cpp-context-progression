@@ -226,7 +226,7 @@ public class NotificationServiceTest {
                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                         withJsonPath("$.notificationId", equalTo(notificationId.toString())),
                         withJsonPath("$.materialId", equalTo(materialId.toString())),
-                        withJsonPath("$.recipientType", equalTo(recipientType.name())))
+                        withJsonPath("$.recipientType", equalTo(recipientType.getRecipientName())))
                 ))));
     }
 

@@ -47,7 +47,6 @@ import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 
 import com.google.common.base.Strings;
 
@@ -112,7 +111,7 @@ public class PrisonCourtRegisterEventProcessor {
     private static final String APPLICATION_PDF = "application/pdf";
     private static final String MATERIAL_ID = "materialId" ;
     private static final String COURT_DOCUMENT = "courtDocument" ;
-    private static final String PROGRESSION_ADD_COURT_DOCUMENT = "progression.add-court-document" ;
+    private static final String PROGRESSION_COMMAND_ADD_COURT_DOCUMENT = "progression.command.add-court-document" ;
     private static final String CASE_ID = "caseId";
 
     @SuppressWarnings("squid:S1160")
@@ -189,7 +188,7 @@ public class PrisonCourtRegisterEventProcessor {
                 .add(COURT_DOCUMENT, objectToJsonObjectConverter.convert(courtDocument))
                 .build();
         final Envelope<JsonObject> data = envelopeFrom(JsonEnvelope.metadataFrom(envelope.metadata())
-                .withName(PROGRESSION_ADD_COURT_DOCUMENT), jsonObject);
+                .withName(PROGRESSION_COMMAND_ADD_COURT_DOCUMENT), jsonObject);
         sender.send(data);
     }
 
