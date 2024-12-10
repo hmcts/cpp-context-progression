@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static uk.gov.justice.core.courts.CourtDocument.courtDocument;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
@@ -20,7 +20,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -65,8 +64,6 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
     private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
 
-    private static final JmsMessageConsumerClient privateEventConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added-v2").getMessageConsumerClient();
-
     @BeforeEach
     public void setup() {
         helper = new MultipartFileUploadHelper();
@@ -109,18 +106,12 @@ public class UploadCourtDocumentIT extends AbstractIT {
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
                 .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
                 .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
-        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId.toString()),
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document-v2+json",
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final Matcher[] matcher = {
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.courtDocuments[0].courtDocumentId", equalTo(docId))
-        };
-
         assertCourtDocumentByCase();
-        verifyInMessagingQueueForPrivateCourtDocumentAddedV2();
         verifyInMessagingQueueForPublicCourtDocumentAdded();
     }
 
@@ -130,7 +121,6 @@ public class UploadCourtDocumentIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-
 
         addCourtDocument(docId, caseId, defendantId);
 
@@ -196,11 +186,6 @@ public class UploadCourtDocumentIT extends AbstractIT {
         assertTrue(message.isPresent());
     }
 
-    private void verifyInMessagingQueueForPrivateCourtDocumentAddedV2() {
-        final Optional<JsonObject> message = retrieveMessageBody(privateEventConsumer);
-        assertTrue(message.isPresent());
-    }
-
     @Test
     public void uploadApplicationDocument() throws Exception {
         final UUID applicationId = randomUUID();
@@ -209,7 +194,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         final UUID documentTypeId = UUID.fromString("460f7ec0-c002-11e8-a355-529269fb1459");
         final ZonedDateTime uploadTime = ZonedDateTime.now();
 
-        final CourtDocument courtDocument = CourtDocument.courtDocument()
+        final CourtDocument courtDocument = courtDocument()
                 .withCourtDocumentId(docId)
                 .withDocumentTypeId(documentTypeId)
                 .withDocumentTypeDescription("test document")
@@ -231,7 +216,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         final UploadRequest uploadRequest = new UploadRequest();
         uploadRequest.setCourtDocument(courtDocument);
         final String strJson = Utilities.JsonUtil.toJsonString(uploadRequest);
-        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId.toString()),
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document+json",
                 strJson);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));

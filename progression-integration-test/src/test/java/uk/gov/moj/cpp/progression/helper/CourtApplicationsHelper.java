@@ -81,8 +81,6 @@ public class CourtApplicationsHelper {
         final public String RANDOM_RESPONDENT_REPRESENTATIVE_LAST_NAME = new StringGenerator().next();
         final public String RANDOM_RESPONDENT_REPRESENTATIVE_POSITION = new StringGenerator().next();
 
-        final public String RANDOM_INDIVIDUAL_ID = UUID.randomUUID().toString();
-        final public String RANDOM_ORG_ID = UUID.randomUUID().toString();
         final public String RANDOM_APPLICATION_ID = UUID.randomUUID().toString();
         final public String RANDOM_PARENT_APPLICATION_ID = UUID.randomUUID().toString();
 

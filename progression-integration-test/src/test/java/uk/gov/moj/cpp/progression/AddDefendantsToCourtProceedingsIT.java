@@ -75,9 +75,10 @@ import org.slf4j.LoggerFactory;
 
 public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
+
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS = "public.progression.defendants-added-to-court-proceedings";
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE = "public.progression.defendants-added-to-case";
-    private static final Logger LOGGER = LoggerFactory.getLogger(AddDefendantsToCourtProceedingsIT.class);
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
 
     private static final JmsMessageConsumerClient messageConsumerClientPublicCourtProceedings = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS).getMessageConsumerClient();
@@ -91,18 +92,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     private String defendantId;
     private String offenceId;
     private String caseUrn;
-
-    private static void verifyHearingInitialised(final String caseId, final String hearingId) {
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.hearingsAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
-                                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
-                        )));
-    }
 
     @BeforeEach
     public void setUp() {
@@ -378,5 +367,17 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
         );
+    }
+
+    private static void verifyHearingInitialised(final String caseId, final String hearingId) {
+        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
+                .withHeader(USER_ID, randomUUID()))
+                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
+                .until(
+                        status().is(OK),
+                        payload().isJson(allOf(
+                                withJsonPath("$.hearingsAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
+                                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
+                        )));
     }
 }

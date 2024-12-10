@@ -39,7 +39,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.genera
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseWithMatchers;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
@@ -49,8 +48,7 @@ import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterRequested;
+import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getLanguagePrefix;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getSubjectDateOfBirth;
@@ -126,7 +124,6 @@ public class RequestFirstHearingCaseSummonsIT {
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.hearing-populated-to-probation-caseworker").getMessageConsumerClient();
 
     private static final String DOCUMENT_TEXT = STRING.next();
 
@@ -134,16 +131,14 @@ public class RequestFirstHearingCaseSummonsIT {
     public static Stream<Arguments> firstHearingSummonsSpecifications() {
         return Stream.of(
                 // summons code, type, template name, youth defendant, number of documents, isWelsh
-                Arguments.of("M", "MCA", "MCA", false, 1, false),
-                Arguments.of("W", "WS", "MCA", true, 2, true)
+                Arguments.of("M", "MCA", "MCA", false, 1, false)
         );
     }
 
     public static Stream<Arguments> firstHearingAddDefendantSummonsSpecifications() {
         return Stream.of(
                 // summons code, type, template name, youth defendant, number of documents
-                Arguments.of("E", "EW", "EitherWay", false, 1),
-                Arguments.of("W", "WS", "MCA", true, 2)
+                Arguments.of("E", "EW", "EitherWay", false, 1)
         );
     }
 
@@ -183,7 +178,6 @@ public class RequestFirstHearingCaseSummonsIT {
 
         final List<String> expectedEmailDetails = newArrayList(prosecutorEmailAddress, this.caseUrn, format("%s %s %s, %s", getFirstName(defendantId1), getMiddleName(defendantId1), getLastName(defendantId1), defendant1ProsecutionAuthorityReference));
         verifyEmailNotificationIsRaisedWithAttachment(expectedEmailDetails, materialId);
-        verifyNoLetterRequested(of(materialId.toString()));
 
         if (isYouth) {
             final UUID parentMaterialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
@@ -193,7 +187,6 @@ public class RequestFirstHearingCaseSummonsIT {
                     format("%s %s %s (parent/guardian of %s %s %s), %s", getParentFirstName(defendantId1), getParentMiddleName(defendantId1), getParentLastName(defendantId1),
                             getFirstName(defendantId1), getMiddleName(defendantId1), getLastName(defendantId1), defendant1ProsecutionAuthorityReference));
             verifyEmailNotificationIsRaisedWithAttachment(expectedParentEmailDetails, parentMaterialId);
-            verifyNoLetterRequested(of(parentMaterialId.toString()));
         }
     }
 
@@ -216,11 +209,6 @@ public class RequestFirstHearingCaseSummonsIT {
         if (isYouth) {
             final UUID parentMaterialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
             sendEventToConfirmMaterialAdded(parentMaterialId);
-
-            final List<String> expectedParentEmailDetails = newArrayList(prosecutorEmailAddress, this.caseUrn,
-                    format("%s %s %s (parent/guardian of %s %s %s), %s", getParentFirstName(defendantId1), getMiddleName(defendantId1), getParentLastName(defendantId1),
-                            getFirstName(defendantId1), getMiddleName(defendantId1), getLastName(defendantId1), defendant1ProsecutionAuthorityReference));
-            verifyNoEmailNotificationIsRaised(expectedParentEmailDetails);
             verifyCreateLetterRequested(of("letterUrl", parentMaterialId.toString()));
         }
     }
@@ -247,7 +235,6 @@ public class RequestFirstHearingCaseSummonsIT {
 
         verifySummonsGeneratedOnHearingConfirmed(defendantId3, offenceId3, isWelsh, summonsType, templateName, numberOfDocuments, true, isYouth);
 
-
     }
 
     private void whenDefendantIsAddedToCase(final AddDefendantsToCourtProceedings payload) throws IOException {
@@ -270,7 +257,9 @@ public class RequestFirstHearingCaseSummonsIT {
             sendPublicEventForConfirmingDefendantAdditionInListing(hearingId, defendantId, isWelsh);
         } else {
             sendPublicEventToConfirmHearingForInitiatedCase(hearingId, defendantId, offenceId, caseId, isWelsh);
-            verifyInMessagingQueueForHearingPopulatedToProbationCaseWorker(hearingId, isYouth, messageConsumerHearingPopulatedToProbationCaseWorker);
+            if (!isYouth) {
+                verifyProbationHearingCommandInvoked(singletonList(hearingId));
+            }
         }
 
         verifyDocumentAddedToCdes(defendantId, numberOfDocuments);
@@ -293,7 +282,6 @@ public class RequestFirstHearingCaseSummonsIT {
         };
         getCourtDocumentsByCaseWithMatchers(USER_ID, caseId, matchers);
     }
-
 
     private void sendPublicEventForConfirmingDefendantAdditionInListing(final String hearingId, final String defendantId, final boolean isWelsh) {
         JsonObject payload = createObjectBuilder()

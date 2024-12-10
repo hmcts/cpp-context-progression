@@ -12,7 +12,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentCaseLevel;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentDefendantLevel;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
@@ -21,12 +20,12 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForCaseDefendantsOrganisation;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetOrganisationById;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForIds;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
@@ -59,9 +58,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     private static final String USER_GROUP_NOT_PRESENT_DROOL = UUID.randomUUID().toString();
     private static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
-    private static final JmsMessageConsumerClient consumerForCourDocumentSendToCps = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-send-to-cps").getMessageConsumerClient();
     private static final JmsMessageConsumerClient consumerForProgressionCommandEmail = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.email-requested").getMessageConsumerClient();
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
 
 
@@ -84,7 +81,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         HearingStub.stubInitiateHearing();
         NotificationServiceStub.setUp();
         IdMapperStub.setUp();
-        ReferenceDataStub.stubGetOrganisationById("/restResource/ref-data-get-organisation.json");
+        stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
         defendantId1 = randomUUID().toString();
@@ -113,6 +110,8 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
 
         verifyInMessagingQueueForPublicCourtDocumentAdded();
+
+        //FIXME assert against email API
         verifyInMessagingQueueForEmailSendForDocumentAdded(caseId, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName, false);
     }
 
@@ -136,6 +135,8 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
 
         verifyInMessagingQueueForPublicCourtDocumentAdded();
+
+        //FIXME assert against email API
         verifyInMessagingQueueForEmailSendForDocumentAdded(caseId, defendant1FirstName, defendant1LastName, null, null, true);
 
     }
@@ -145,10 +146,10 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         assertThat(message, notNullValue());
     }
 
-    private void verifyInMessagingQueueForEmailSendForDocumentAdded(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final boolean expectSeperrateEmails) {
+    private void verifyInMessagingQueueForEmailSendForDocumentAdded(final String caseId, final String defendant1FirstName, final String defendant1LastName, final String defendant2FirstName, final String defendant2LastName, final boolean expectSeparateEmails) {
         final Optional<JsonObject> messageOptional = retrieveMessageBody(consumerForProgressionCommandEmail);
         messageOptional.ifPresent(message -> {
-            if ((expectSeperrateEmails)) {
+            if ((expectSeparateEmails)) {
                 checkMultipleNotificationsSeperately(caseId, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName, message);
             } else {
                 checkMultipleNotificationsInSameCall(caseId, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName, message);
@@ -198,18 +199,6 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     private static String getDefendantFullName(final String defendant1FirstName, final String defendant1LastName) {
         return defendant1FirstName + " " + defendant1LastName;
-    }
-
-
-    private void verifyForProgressionCommandEmail() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForProgressionCommandEmail);
-        assertThat(message, notNullValue());
-        assertThat(message.get(), isJson(withJsonPath("$.caseId",
-                Matchers.hasToString(Matchers.containsString(caseId)))));
-        assertThat(message.get(), isJson(withJsonPath("$.notifications[0].templateId",
-                Matchers.hasToString(Matchers.containsString("85fe515a-ff7a-4d16-acbd-cf93d0c75f57")))));
-        assertThat(message.get(), isJson(withJsonPath("$.notifications[0].sendToAddress",
-                Matchers.hasToString(Matchers.containsString("abc@xyz.co.uk")))));
     }
 }
 

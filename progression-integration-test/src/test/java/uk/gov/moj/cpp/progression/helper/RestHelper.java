@@ -19,7 +19,6 @@ import uk.gov.justice.services.test.utils.core.rest.RestClient;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +29,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
-import com.jayway.jsonpath.ReadContext;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -39,18 +37,13 @@ import org.hamcrest.Matcher;
 
 public class RestHelper {
 
-    public static final int TIMEOUT = 90;
+    public static final int TIMEOUT = 60;
     public static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final int PORT = 8080;
     private static final String BASE_URI = "http://" + HOST + ":" + PORT;
 
     private static final RestClient restClient = new RestClient();
     private static final RequestSpecification REQUEST_SPECIFICATION = new RequestSpecBuilder().setBaseUri(BASE_URI).build();
-    private static final int POLL_INTERVAL = 2;
-
-    public static RequestSpecification getRequestSpecification() {
-        return REQUEST_SPECIFICATION;
-    }
 
     public static javax.ws.rs.core.Response getMaterialContentResponse(final String path, final UUID userId, final String mediaType) {
         final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
@@ -97,20 +90,6 @@ public class RestHelper {
                 .getPayload();
     }
 
-    public static String pollForResponse(final String path,
-                                         final String mediaType,
-                                         final String userId, List<Matcher<? super ReadContext>> matchers) {
-        return poll(requestParams(getReadUrl(path),
-                mediaType)
-                .withHeader(USER_ID, userId))
-                .pollInterval(POLL_INTERVAL, TimeUnit.SECONDS)
-                .timeout(TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(matchers))).getPayload();
-
-    }
-
     public static JsonObject getJsonObject(final String jsonAsString) {
         final JsonObject payload;
         try (final JsonReader jsonReader = Json.createReader(new StringReader(jsonAsString))) {
@@ -125,7 +104,7 @@ public class RestHelper {
     }
 
     public static Response postCommandWithUserId(final String uri, final String mediaType,
-                                                  final String jsonStringBody, final String userId) throws IOException {
+                                                 final String jsonStringBody, final String userId) throws IOException {
         return given().spec(REQUEST_SPECIFICATION).and().contentType(mediaType).body(jsonStringBody)
                 .header(USER_ID, userId).when().post(uri).then()
                 .extract().response();

@@ -26,7 +26,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertJudiciaryTypes;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -59,14 +58,12 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     private static final String EVENT_LOCATION_WITHOUT_COURT_CENTRE_IN_HEARING_DAYS = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-without-court-centre-in-hearing-days.json";
     private static final String EVENT_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed.json";
     private static final String EVENT_WITH_LINKED_APPLICATION_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-linked-applications.json";
-    private static final String DEFENDANT_LISTING_STATUS_CHANGED_WITH_ESTIMATED_DURATION_EVENT_PAYLOAD_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-next-hearing-estimated-duration.json";
-    private static final String DEFENDANT_LISTING_STATUS_CHANGED_WITH_OFFENCE_PAYLOAD_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-offence.json";
 
     private static final JmsMessageConsumerClient messageConsumerV2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT).getMessageConsumerClient();
     private static final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
     private static final String COURT_APPLICATIONS = "courtApplications";
     private static final String APPLICATIONS = "applications";
-    public static final String APPLICATIN_REFERENCE = "applicationReference";
+    public static final String APPLICATION_REFERENCE = "applicationReference";
 
     private String firstCaseId;
     private String secondCaseId;
@@ -82,14 +79,12 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         secondCaseId = randomUUID().toString();
         thirdCaseId = randomUUID().toString();
         courtId = randomUUID().toString();
-        cleanViewStoreTables();
         deleteAndCreateIndex();
     }
 
     @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
 
@@ -245,7 +240,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         }
 
         for (int i = 0; i < cases.size(); i++) {
-            final JsonObject inputCase = (JsonObject) hearing.getJsonArray("prosecutionCases").get(i);
             verificationHelper.verifyProsecutionCase(parse(hearing), outputCase, "$.prosecutionCases[" + i + "]");
             verificationHelper.verifyHearings(parse(prosecutionCaseDefendantListingStatusChangedEvent), outputCase, 0);
         }
@@ -359,7 +353,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
 
     private void assertApplication(final JsonObject outputApplicationJsonObject, final JsonObject inputApplicationJsonObject) {
         assertThat(outputApplicationJsonObject.getString("applicationId"), is(inputApplicationJsonObject.getString("id")));
-        assertThat(outputApplicationJsonObject.getString(APPLICATIN_REFERENCE), is(inputApplicationJsonObject.getString(APPLICATIN_REFERENCE)));
+        assertThat(outputApplicationJsonObject.getString(APPLICATION_REFERENCE), is(inputApplicationJsonObject.getString(APPLICATION_REFERENCE)));
         assertThat(outputApplicationJsonObject.getString("applicationType"), is(inputApplicationJsonObject.getJsonObject("type").getString("type")));
         assertThat(outputApplicationJsonObject.getString("decisionDate"), is(inputApplicationJsonObject.getString("applicationDecisionSoughtByDate")));
         assertThat(outputApplicationJsonObject.getString("receivedDate"), is(inputApplicationJsonObject.getString("applicationReceivedDate")));

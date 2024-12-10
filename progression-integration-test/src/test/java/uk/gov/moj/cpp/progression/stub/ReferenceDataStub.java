@@ -38,31 +38,12 @@ public class ReferenceDataStub {
 
     public static final String WELSH_COURT_ID = "f8254db1-1683-483e-afb3-b87fde5a0a26";
     public static final String ENGLISH_COURT_ID = "e3114db1-1683-483e-afb3-b87fde5a7777";
-    private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_QUERY_URL = "/referencedata-service/query/api/rest/referencedata/documents-type-access/" + LocalDate.now().toString();
+    private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_QUERY_URL = "/referencedata-service/query/api/rest/referencedata/documents-type-access/" + LocalDate.now();
     private static final String REFERENCE_DATA_ACTION_DOCUMENTS_TYPE_ACCESS_MEDIA_TYPE = "application/vnd.referencedata.get-all-document-type-access+json";
     private static final String COUNTRY_BY_POSTCODE_CONTENT_TYPE = "application/vnd.referencedata.query.country-by-postcode+json";
     private static final String COUNTRY_BY_POSTCODE_ENDPOINT = "/referencedata-service/query/api/rest/referencedata/country-by-postcode";
 
-
     private static final List<Pair<String, String>> COURT_ID_LIST = Lists.newArrayList(Pair.p(".*", "/restResource/referencedata.ou-courtroom.json"), Pair.p(ENGLISH_COURT_ID, "/restResource/referencedata.ou-courtroom-english.json"));
-
-
-    public static void stubQueryOffences(final String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject offences = Json.createReader(ReferenceDataStub.class
-                        .getResourceAsStream(resourceName))
-                .readObject();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/offences";
-        stubFor(get(urlPathEqualTo(urlPath))
-                .withQueryParam("cjsoffencecode", matching(".*"))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(offences.toString())));
-
-        waitForStubToBeReady(urlPath + "?cjsoffencecode", "application/vnd.referencedata.query.offences+json");
-    }
 
     public static void stubPleaTypes() {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
@@ -258,23 +239,6 @@ public class ReferenceDataStub {
 
     }
 
-    public static void stubQueryAllDocumentsTypeData(final String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject documentType = Json.createReader(ReferenceDataStub.class
-                        .getResourceAsStream(resourceName))
-                .readObject();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/documents-metadata/.*";
-        stubFor(get(urlMatching(urlPath))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(documentType.toString())));
-
-        waitForStubToBeReady(urlPath, "application/vnd.referencedata.get-all-document-metadata+json");
-    }
-
-
     public static void stubQueryReferralReasons(final String resourceName, final UUID referralReasonId) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject referralReasonsJson = Json.createReader(ReferenceDataStub.class
@@ -295,7 +259,7 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.referral-reasons+json");
     }
 
-    public static void stubQueryJudiciaries(final String resourceName, final UUID judiciaryId) {
+    public static void stubQueryJudiciaries(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject referralReasonsJson = Json.createReader(ReferenceDataStub.class
                         .getResourceAsStream(resourceName))
@@ -409,6 +373,19 @@ public class ReferenceDataStub {
         waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.prosecutor+json");
     }
 
+    public static void stubQueryProsecutorData(final JsonObject payload, final UUID prosecutorId, final UUID id) {
+        InternalEndpointMockUtils.stubPingFor("referencedata-service");
+
+        final String urlPath = "/referencedata-service/query/api/rest/referencedata/prosecutors/" + prosecutorId.toString();
+        stubFor(get(urlMatching(urlPath))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("CPPID", id.toString())
+                        .withHeader("Content-Type", APPLICATION_JSON)
+                        .withBody(payload.toString())));
+
+        waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.prosecutor+json");
+    }
+
     public static void stubQueryCpsProsecutorData(final String resourceName, final UUID id, int returnStatus) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject documentType = Json.createReader(ReferenceDataStub.class
@@ -511,22 +488,6 @@ public class ReferenceDataStub {
     }
 
 
-    public static void stubGetOrganisationById(final String resourceName, final String statusCode) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject legalStatuses = Json.createReader(ReferenceDataStub.class
-                        .getResourceAsStream(resourceName))
-                .readObject();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/legal-statuses";
-        stubFor(get(urlMatching(urlPath))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(legalStatuses.toString().replace("STATUS_CODE", statusCode))));
-
-        waitForStubToBeReady(urlPath, "application/vnd.referencedata.legal-statuses+json");
-    }
-
     public static void stubGetOrganisationById(final String resourceName) {
         InternalEndpointMockUtils.stubPingFor("referencedata-service");
         final JsonObject judge = Json.createReader(ReferenceDataStub.class
@@ -555,22 +516,6 @@ public class ReferenceDataStub {
                         .withBody(payload)));
 
         waitForStubToBeReady("/referencedata-service/query/api/rest/referencedata/cotr-review-notes", "application/vnd.referencedata.query.cotr-review-notes+json");
-    }
-
-    public static void stubGetOrganisationUnitsByClusterId(final String resourceName) {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
-        final JsonObject judge = Json.createReader(ReferenceDataStub.class
-                        .getResourceAsStream(resourceName))
-                .readObject();
-
-        final String urlPath = "/referencedata-service/query/api/rest/referencedata/cluster-organisation-units.*";
-        stubFor(get(urlMatching(urlPath))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("CPPID", randomUUID().toString())
-                        .withHeader("Content-Type", APPLICATION_JSON)
-                        .withBody(judge.toString())));
-
-        waitForStubToBeReady(urlPath, "application/vnd.referencedata.query.cluster-org-units+json");
     }
 
     public static void stubGetCountryByPostCode(final String... postCode) {

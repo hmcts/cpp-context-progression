@@ -12,7 +12,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
 import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
@@ -60,7 +59,6 @@ public class InitialIndexerIngestionIT extends AbstractIT {
     @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
     @Test

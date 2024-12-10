@@ -7,27 +7,25 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.util.ConvictionDateHelper;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -37,20 +35,19 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 @SuppressWarnings("squid:S1607")
+@ExtendWith(JmsResourceManagementExtension.class)
 public class ConvictionDateIT extends AbstractIT {
 
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-
-    private static final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
 
     private static final String NEW_COURT_CENTRE_ID = fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
     private static final String BAIL_STATUS_CODE = "C";
     private static final String BAIL_STATUS_DESCRIPTION = "Remanded into Custody";
     private static final String BAIL_STATUS_ID = "2593cf09-ace0-4b7d-a746-0703a29f33b5";
-    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -106,8 +103,7 @@ public class ConvictionDateIT extends AbstractIT {
     @Test
     public void shouldRetainTheJudicialResultsWhenConvictionDateIsUpdatedV2() throws IOException, JSONException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        final String hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
+        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId == '" + defendantId + "')].hearingIds", hasSize(greaterThan(0))));
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
                 hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
@@ -116,7 +112,6 @@ public class ConvictionDateIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
 
         helper.addConvictionDate();
-        helper.verifyInActiveMQForConvictionDateChanged();
         final Matcher[] convictionAddedMatchers = {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].chargeDate", is("2018-01-01")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate", is("2017-02-02"))
@@ -124,12 +119,6 @@ public class ConvictionDateIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, convictionAddedMatchers);
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
-    }
-
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,

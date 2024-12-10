@@ -1,44 +1,33 @@
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
+import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.nio.charset.Charset;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,12 +35,7 @@ import org.junit.jupiter.api.Test;
 
 public class UpdatePleaIT extends AbstractIT {
     private static final String DOCUMENT_TEXT = STRING.next();
-    private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression" +
-            ".prosecution-cases-referred-to-court";
-
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-
-    private final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).getMessageConsumerClient();
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
@@ -87,25 +71,17 @@ public class UpdatePleaIT extends AbstractIT {
     public void shouldUpdateOffenceVerdictWhenRaisedPublicEvent() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
 
-        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
-
-        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
-
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
 
-        doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged2);
-
-        verifyInMessagingQueueForCasesReferredToCourts();
         final JsonObject hearingVerdictUpdatedJson = getPleaPublicEventPayload(hearingId, caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope2 = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, userId), hearingVerdictUpdatedJson);
+        final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, userId), hearingVerdictUpdatedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, publicEventEnvelope2);
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
@@ -118,15 +94,13 @@ public class UpdatePleaIT extends AbstractIT {
 
     @Test
     public void shouldUpdateVerdictOfApplication() throws Exception {
-        addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
         pollForApplicationStatus(applicationId, "DRAFT");
 
-        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingWithStandAloneApplicationJsonObject("public.listing.hearing-confirmed-applications-only.json",
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingWithStandAloneApplicationJsonObject("public.listing.hearing-confirmed-applications-only.json",
                 applicationId, hearingId, caseId, defendantId, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
@@ -134,7 +108,7 @@ public class UpdatePleaIT extends AbstractIT {
 
         final JsonObject hearingVerdictUpdatedJson = getPleaPublicEventPayloadForApplication(hearingId, applicationId);
 
-        final JsonEnvelope publicEventEnvelope2 = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, userId), hearingVerdictUpdatedJson);
+        final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, userId), hearingVerdictUpdatedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, publicEventEnvelope2);
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
@@ -144,12 +118,6 @@ public class UpdatePleaIT extends AbstractIT {
                 withJsonPath("$.hearing.courtApplications[0].plea.pleaDate", Matchers.is("2017-05-06"))
         );
 
-    }
-
-
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged) {
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerProsecutionCaseDefendantListingStatusChanged, isJson(allOf(withJsonPath("$.hearing.prosecutionCases[0].id", is(caseId)))));
-        return message.getJsonObject("hearing.id");
     }
 
     private JsonObject getHearingWithStandAloneApplicationJsonObject(final String path, final String applicationId, final String hearingId, final String caseId, final String defendantId, final String courtCentreId) {
@@ -188,11 +156,6 @@ public class UpdatePleaIT extends AbstractIT {
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("APPLICATION_ID", applicationId);
         return stringToJsonObjectConverter.convert(strPayload);
-    }
-
-    private void verifyInMessagingQueueForCasesReferredToCourts() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
-        assertTrue(message.isPresent());
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,

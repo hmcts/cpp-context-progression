@@ -5,6 +5,7 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,6 +15,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJ
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
@@ -35,7 +37,6 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.ingester.verificationHelpers.BaseVerificationHelper;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
@@ -49,7 +50,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
@@ -86,7 +86,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     public void shouldInvokeDefendantsAddedToCaseAndListHearingRequestEvents() throws Exception {
 
         //Create prosecution case
-        final String caseUrn = PreAndPostConditionHelper.generateUrn();
+        final String caseUrn = generateUrn();
         addProsecutionCaseToCrownCourtForIngestion(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId, caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
         final Matcher[] caseMatcher = {withJsonPath("$.caseReference", equalTo(caseUrn)),
@@ -104,8 +104,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         verifyCaseCreated(1L, inputProsecutionCase, outputCase);
         verifyCaseDefendant(inputProsecutionCase, outputCase, true);
 
-        final String offenceId = UUID.randomUUID().toString();
-        final String defendantId2 = UUID.randomUUID().toString();
+        final String offenceId = randomUUID().toString();
+        final String defendantId2 = randomUUID().toString();
 
         //Create payload for
         final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
@@ -178,7 +178,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final List<Defendant> defendantsList = new ArrayList<>();
 
         final Plea plea = Plea.plea()
-                .withOriginatingHearingId(UUID.randomUUID())
+                .withOriginatingHearingId(randomUUID())
                 .withPleaValue("GUILTY")
                 .withPleaDate(LocalDate.of(2019, 8, 12))
                 .withOffenceId(UUID.fromString(offenceId))
@@ -187,14 +187,14 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
         final LaaReference laaReference = LaaReference.laaReference()
                 .withApplicationReference("LaaReference")
-                .withStatusId(UUID.randomUUID())
+                .withStatusId(randomUUID())
                 .withStatusCode("withStatusCode")
                 .withStatusDate(LocalDate.of(2019, 5, 1))
                 .withStatusDescription("withStatusDescription").build();
 
         final Offence offence = Offence.offence()
                 .withId(UUID.fromString(offenceId))
-                .withOffenceDefinitionId(UUID.randomUUID())
+                .withOffenceDefinitionId(randomUUID())
                 .withOffenceCode("TFL123")
                 .withOffenceTitle("TFL Ticket Dodger")
                 .withWording("TFL ticket dodged")
@@ -262,8 +262,8 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
                 .withDefendantId(defendant2.getId())
                 .build();
 
-        final HearingType hearingType = HearingType.hearingType().withId(UUID.randomUUID()).withDescription("TO_JAIL").build();
-        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).withName("Court Centre 1").build();
+        final HearingType hearingType = HearingType.hearingType().withId(randomUUID()).withDescription("TO_JAIL").build();
+        final CourtCentre courtCentre = CourtCentre.courtCentre().withId(randomUUID()).withName("Court Centre 1").build();
 
         final ListHearingRequest listHearingRequest = ListHearingRequest.listHearingRequest()
                 .withCourtCentre(courtCentre).withHearingType(hearingType)
@@ -292,8 +292,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);
         final DocumentContext prosecutionCase = parse(commandJsonInputJson);
         final JsonObject prosecutionCaseJO = prosecutionCase.read("$.courtReferral.prosecutionCases[0]");
-        final JsonObject prosecutionCaseEvent = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
-        return prosecutionCaseEvent;
+        return createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
     }
 
     private DocumentContext documentContextForDefendantAddedEvent(final String jsonDefendantAddedCommandString) {

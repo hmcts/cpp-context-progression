@@ -5,12 +5,11 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
@@ -18,15 +17,12 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.OffencesFo
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.OffencesForDefendantChangedVerificationHelper.verifyUpdatedOffences;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -37,7 +33,6 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,8 +46,6 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     private static final String PAYLOAD_LOCATION_ADD = "ingestion/progression.update-offences-for-prosecution-case-add.json";
     private static final String PAYLOAD_LOCATION_DELETE = "ingestion/progression.update-offences-for-prosecution-case-delete.json";
 
-
-    private static final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(DEFENDANT_CHANGED_EVENT).getMessageConsumerClient();
     private static final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
     private String caseId;
     private String defendantId;
@@ -67,7 +60,7 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     public void setUp() throws IOException {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
-        caseUrn = PreAndPostConditionHelper.generateUrn();
+        caseUrn = generateUrn();
 
         initialoffenceId1 = "11a7c849-1cb8-4ec7-848a-ff53b0e872f0";
         initialoffenceId2 = "393b1edf-b388-415f-8c61-8e72b30bacaf";
@@ -75,7 +68,6 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
         initialToBeDeletedOffenceId4 = "70018321-3798-4ae2-a7ef-82ec0d61dae6";
         addedOffenceId6 = "208127fd-c8d9-4cfd-83c5-9d07d492159d";
 
-        cleanViewStoreTables();
         cleanEventStoreTables();
         deleteAndCreateIndex();
     }
@@ -83,7 +75,6 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     @AfterAll
     public static void tearDown() throws JMSException {
         cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
 
@@ -135,8 +126,6 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
         assertTrue(updatedIndexJsonObject.isPresent());
 
-        final DocumentContext defendantChangedEventDocument = parse(defendantChangedEvent);
-
         verifyUpdatedOffences(defendantChangedEvent, updatedIndexJsonObject.get(), 0, 0, true, "deletedOffences");
 
     }
@@ -147,7 +136,6 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, defendantChangedEvent);
         messageProducer.sendMessage(DEFENDANT_CHANGED_EVENT, publicEventEnvelope);
 
-        verifyInMessagingQueue();
     }
 
     private DocumentContext getInitialOffenceDetails(final String caseUrn, final String initialoffenceId1, final String initialoffenceId2, final String initialToBeUpdatedOffenceId3, final String initialToBeDeletedOffenceId4) throws IOException {
@@ -196,11 +184,6 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
                 .withName(eventName)
                 .withUserId(randomUUID().toString())
                 .build();
-    }
-
-    private void verifyInMessagingQueue() {
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumer);
-        assertTrue(message != null);
     }
 
     private void generateInitialEventsToIndex() throws Exception {

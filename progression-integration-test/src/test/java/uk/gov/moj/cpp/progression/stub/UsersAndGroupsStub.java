@@ -34,8 +34,6 @@ public class UsersAndGroupsStub {
     public static final String GET_GROUPS_QUERY = BASE_QUERY + GROUPS;
     public static final String GET_GROUPS_BY_LOGGEDIN_USER_QUERY = BASE_QUERY + GROUPS_BY_LOGGEDIN_USER;
 
-    public static final String GET_GROUPS_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.groups+json";
-
     public static final String ORGANISATION = "/users/{0}/organisation";
     public static final String GET_ORGANISATION_QUERY = BASE_QUERY + ORGANISATION;
     public static final String GET_ORGANISATION_QUERY_MEDIA_TYPE = "application/vnd.usersgroups.get-organisation-name-for-user+json";
@@ -116,23 +114,6 @@ public class UsersAndGroupsStub {
         waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_FOR_USER_QUERY, userId), GET_ORGANISATION_DETAILS_FOR_USER_MEDIA_TYPE);
     }
 
-
-    public static void stubGetUsersAndGroupsQueryForDefenceUsers(final String userId) {
-        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
-                GET_GROUPS_QUERY,
-                GET_ORGANISATION_QUERY_MEDIA_TYPE,
-                userId,
-                "stub-data/usersgroups.get-defenceuser-groups-by-user.json");
-    }
-
-    public static void stubGetUsersAndGroupsQueryForHMCTSUsers(final String userId) {
-        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
-                GET_GROUPS_QUERY,
-                GET_ORGANISATION_QUERY_MEDIA_TYPE,
-                userId,
-                "stub-data/usersgroups.get-hmcts-groups-by-user.json");
-    }
-
     public static void stubGetUsersAndGroupsQueryForSystemUsers(final String userId) {
         stubEndpoint(USERS_GROUPS_SERVICE_NAME,
                 GET_GROUPS_QUERY,
@@ -186,24 +167,7 @@ public class UsersAndGroupsStub {
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(body)));
         waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber), GET_ORGANISATION_DETAIL_BY_LAA_CONTRACT_NUMBER_QUERY_MEDIA_TYPE);
-
-
     }
-
-    public static void stubGetEmptyOrganisationDetailForLAAContractNumber(final String laaContractNumber) {
-        InternalEndpointMockUtils.stubPingFor(USERS_GROUPS_SERVICE_NAME);
-        String body = getPayload("stub-data/usersGroups.empty-organisation-details-by-laaContractNumber.json");
-
-        stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
-                .willReturn(aResponse().withStatus(OK.getStatusCode())
-                        .withHeader(ID, randomUUID().toString())
-                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(body)));
-        waitForStubToBeReady(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber), GET_ORGANISATION_DETAIL_BY_LAA_CONTRACT_NUMBER_QUERY_MEDIA_TYPE);
-
-
-    }
-
 
     public static void stubEndpoint(final String serviceName, final String query,
                                     String queryMediaType,

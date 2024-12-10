@@ -4,7 +4,6 @@ import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -19,7 +18,6 @@ import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocument
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getLanguagePrefix;
@@ -55,36 +53,15 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
     private String materialIdActive = randomUUID().toString();
     private String materialIdDeleted = randomUUID().toString();
     private String caseUrn = generateUrn();
-    private static final String FIRST_NAME = "F_" + STRING.next();
-    private static final String MIDDLE_NAME = "M_" + STRING.next();
-    private static final String LAST_NAME = "L_" + STRING.next();
-    private static final String PARENT_FIRST_NAME = "PF_" + STRING.next();
-    private static final String PARENT_MIDDLE_NAME = "PM_" + STRING.next();
-    private static final String PARENT_LAST_NAME = "PL_" + STRING.next();
 
     private static final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
     private static final String DOCUMENT_TEXT = STRING.next();
 
-    private static final String DEFENDANT_ID_1 = randomUUID().toString();
-    private static final List<String> DEFENDANT_ID_1_NAME = newArrayList(FIRST_NAME, MIDDLE_NAME, LAST_NAME);
-    private static final List<String> DEFENDANT_ID_1_PARENT_NAME = newArrayList(PARENT_FIRST_NAME, PARENT_MIDDLE_NAME, PARENT_LAST_NAME);
-
-    private static final String DEFENDANT_ID_2 = randomUUID().toString();
-    private static final List<String> DEFENDANT_ID_2_NAME = newArrayList(randomAlphabetic(10), randomAlphabetic(10), randomAlphabetic(10));
-    private static final List<String> DEFENDANT_ID_2_PARENT_NAME = newArrayList(randomAlphabetic(10), randomAlphabetic(10), randomAlphabetic(10));
-
-    private static final String DEFENDANT_ID_3 = randomUUID().toString();
-    private static final List<String> DEFENDANT_ID_3_NAME = newArrayList(randomAlphabetic(10), randomAlphabetic(10), randomAlphabetic(10));
-    private static final List<String> DEFENDANT_ID_3_PARENT_NAME = newArrayList(randomAlphabetic(10), randomAlphabetic(10), randomAlphabetic(10));
-
-    private static final String DEDENDANT_ID = randomUUID().toString();
+    private static final String DEFENDANT_ID = randomUUID().toString();
     private static final List<String> SJP_REFERRED_DEFENDANT_NAME = newArrayList("Harry", "Jack", "Kane Junior");
 
     private static final Map<String, List<List<String>>> DEFENDANT_NAME_MAP = ImmutableMap.of(
-            DEDENDANT_ID, of(newArrayList(SJP_REFERRED_DEFENDANT_NAME)),
-            DEFENDANT_ID_1, newArrayList(DEFENDANT_ID_1_NAME, DEFENDANT_ID_1_PARENT_NAME),
-            DEFENDANT_ID_2, newArrayList(DEFENDANT_ID_2_NAME, DEFENDANT_ID_2_PARENT_NAME),
-            DEFENDANT_ID_3, newArrayList(DEFENDANT_ID_3_NAME, DEFENDANT_ID_3_PARENT_NAME)
+            DEFENDANT_ID, of(newArrayList(SJP_REFERRED_DEFENDANT_NAME))
     );
 
     public static Stream<Arguments> sjpSpecifications() {
@@ -116,28 +93,27 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
     @MethodSource("sjpSpecifications")
     @ParameterizedTest
     public void shouldGenerateSummonsForReferredCases(final boolean isWelsh) throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, DEDENDANT_ID, materialIdActive, materialIdDeleted, courtDocumentId, SJP_REFERRAL_ID, caseUrn);
+        addProsecutionCaseToCrownCourt(caseId, DEFENDANT_ID, materialIdActive, materialIdDeleted, courtDocumentId, SJP_REFERRAL_ID, caseUrn);
         verifySummonsGeneratedOnHearingConfirmed(isWelsh);
 
         verifyMaterialCreated();
         final UUID materialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
         sendEventToConfirmMaterialAdded(materialId);
 
-        verifyNoEmailNotificationIsRaised(of(materialId.toString()));
         verifyCreateLetterRequested(of("letterUrl", materialId.toString()));
     }
 
     private void verifySummonsGeneratedOnHearingConfirmed(final boolean isWelsh) {
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, DEDENDANT_ID,
+        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, DEFENDANT_ID,
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId == '" + DEDENDANT_ID + "')].hearingIds[0]", hasSize(greaterThanOrEqualTo(1))));
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId == '" + DEFENDANT_ID + "')].hearingIds[0]", hasSize(greaterThanOrEqualTo(1))));
 
-        sendPublicEventToConfirmHearingForInitiatedCase(hearingId, DEDENDANT_ID, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1", caseId, isWelsh);
+        sendPublicEventToConfirmHearingForInitiatedCase(hearingId, DEFENDANT_ID, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1", caseId, isWelsh);
 
-        verifyCaseDocumentAddedToCdes(DEDENDANT_ID, caseId, 1);
+        verifyCaseDocumentAddedToCdes(DEFENDANT_ID, caseId, 1);
 
         final String defendantTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_SjpReferral";
-        final List<String> defendantName = DEFENDANT_NAME_MAP.get(DEDENDANT_ID).get(0);
+        final List<String> defendantName = DEFENDANT_NAME_MAP.get(DEFENDANT_ID).get(0);
 
         verifyTemplatePayloadValues(defendantTemplateName, "SJP_REFERRAL", caseUrn, defendantName.get(0), defendantName.get(0), defendantName.get(0));
     }

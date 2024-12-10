@@ -1,0 +1,17 @@
+{
+  "id": "RANDOM_PROSECUTOR_ID",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "TFL2",
+  "oucode": "GB10056",
+  "shortName": "TFL",
+  "fullName": "Transport for London",
+  "nameWelsh": "Transport for London",
+  "address": {
+    "address1": "6th Floor Windsor House",
+    "address2": "42-50 Victoria Street",
+    "address3": "London",
+    "postcode": "SW1H 0TL"
+  },
+  "contactEmailAddress": "RANDOM_EMAIL",
+  "informantEmailAddress": "RANDOM_EMAIL"
+}

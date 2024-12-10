@@ -21,6 +21,7 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumen
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
@@ -36,9 +37,11 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
+@ExtendWith(JmsResourceManagementExtension.class)
 public class ApplicationExtractIT extends AbstractIT {
     private String hearingId;
     private String courtApplicationId;

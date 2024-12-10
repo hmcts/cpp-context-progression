@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -58,7 +57,7 @@ public class StubUtil {
                         .withBody(getPayload("stub-data/usersgroups.user-permissions.json"))));
 
     }
-    
+
 
     public static void setupListingQueryStub() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
@@ -79,6 +78,7 @@ public class StubUtil {
                         .withBody(getPayload("stub-data/listing.ushersmagistratepayload.json"))));
 
     }
+
     public static void setupForUshersCrownListQueryStub() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
         stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
@@ -145,15 +145,5 @@ public class StubUtil {
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", "application/json")
                         .withBody(getPayload("stub-data/material.query.structured-form-for-cotr.json").replace("STRUCTURED_FORM_ID", structuredFormId))));
-    }
-
-    public static String getJsonBodyStr(final String path, final String caseId,
-                                        final String defendantId, final String defendant2Id) {
-        final String payload = getPayload(path);
-        return payload.replace("RANDOM_CASE_ID", caseId)
-                .replace("DEF_ID_1", defendantId)
-                .replace("DEF_ID_2", defendant2Id)
-                .replace("DEF_PRG_ID", defendantId)
-                .replace("TODAY", LocalDate.now().toString());
     }
 }

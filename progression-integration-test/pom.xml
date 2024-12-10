@@ -267,17 +267,6 @@
                 <configuration>
                     <artifactItems>
                         <artifactItem>
-                            <groupId>uk.gov.moj.cpp.progression</groupId>
-                            <artifactId>
-                                progression-domain-transformation-add-listings-status-for-missing-defendant-listing-status-changed
-                            </artifactId>
-                            <version>${project.version}</version>
-                            <type>jar</type>
-                            <overWrite>true</overWrite>
-                            <outputDirectory>${project.basedir}/target/test-classes
-                            </outputDirectory>
-                        </artifactItem>
-                        <artifactItem>
                             <groupId>uk.gov.justice</groupId>
                             <artifactId>stream-transformations</artifactId>
                             <version>${stream-transformation.version}</version>

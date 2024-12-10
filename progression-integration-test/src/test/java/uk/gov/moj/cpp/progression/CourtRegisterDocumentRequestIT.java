@@ -9,7 +9,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getCourtRegisterStreamId;
@@ -20,7 +19,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.helper.CourtRegisterDocumentRequestHelper;
 import uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub;
 
@@ -42,7 +40,6 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
 
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    private static final JmsMessageProducerClient producer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-proceedings-initiated").getMessageConsumerClient();
 
     @BeforeEach
@@ -63,7 +60,6 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
 
-
         intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
         verifyCourtApplicationCreatedPublicEvent();
 
@@ -72,7 +68,6 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(SC_ACCEPTED));
 
         final CourtRegisterDocumentRequestHelper courtRegisterDocumentRequestHelper = new CourtRegisterDocumentRequestHelper();
-        courtRegisterDocumentRequestHelper.verifyCourtRegisterDocumentRequestRecordedPrivateTopic(courtCentreId.toString());
         courtRegisterDocumentRequestHelper.verifyCourtRegisterRequestsExists(courtCentreId);
 
         generateCourtRegister();

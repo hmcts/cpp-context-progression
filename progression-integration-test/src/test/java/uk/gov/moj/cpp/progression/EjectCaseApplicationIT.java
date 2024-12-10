@@ -167,9 +167,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         stubPostSetCaseEjected();
         // when
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        JsonObject prosecutionCasesJsonObject = getJsonObject(response);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         // Creating first application for the case
         String firstApplicationId = randomUUID().toString();

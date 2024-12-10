@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.stub;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -17,12 +18,14 @@ import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
-import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.UUID;
+
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 public class MaterialStub {
 
@@ -89,6 +92,17 @@ public class MaterialStub {
     public static void verifyMaterialCreated() {
         await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {
             RequestPatternBuilder requestPatternBuilder = getRequestedFor(urlPathMatching(UPLOAD_MATERIAL_COMMAND));
+            verify(requestPatternBuilder);
+            return true;
+        });
+    }
+
+    public static void verifyMaterialCreated(String... expectedValues) {
+        await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {
+            RequestPatternBuilder requestPatternBuilder = getRequestedFor(urlPathMatching(UPLOAD_MATERIAL_COMMAND));
+            Arrays.stream(expectedValues).forEach(
+                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
+            );
             verify(requestPatternBuilder);
             return true;
         });

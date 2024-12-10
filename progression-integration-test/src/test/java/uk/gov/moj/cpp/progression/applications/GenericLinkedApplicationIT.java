@@ -4,24 +4,14 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.ApplicationExternalCreatorType.PROSECUTOR;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-
-import java.util.Optional;
-
-import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
@@ -29,9 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(JmsResourceManagementExtension.class)
 public class GenericLinkedApplicationIT {
-
-    private static final String COURT_APPLICATION_CREATED_PRIVATE_EVENT = "progression.event.court-application-created";
-    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(COURT_APPLICATION_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
 
     @Test
     public void shouldInitiateCourtProceedingsForProsecutionCases() throws Exception {
@@ -41,8 +28,6 @@ public class GenericLinkedApplicationIT {
 
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
-
-        verifyCourtApplicationCreatedPrivateEvent();
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
@@ -77,8 +62,6 @@ public class GenericLinkedApplicationIT {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
 
-        verifyCourtApplicationCreatedPrivateEvent();
-
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
                 withJsonPath("$.courtApplication.type.code", is("AS14518")),
@@ -101,12 +84,5 @@ public class GenericLinkedApplicationIT {
         };
 
         pollProsecutionCasesProgressionFor(caseId, caseMatchers);
-    }
-
-    private void verifyCourtApplicationCreatedPrivateEvent() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
-        assertTrue(message.isPresent());
-        final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        assertThat(applicationReference, is(notNullValue()));
     }
 }

@@ -54,7 +54,7 @@ public class IdMapperStub {
                 .willReturn(aResponse()
                         .withBody("{\n" +
                                 "  \"mappingId\": \"166c0ae9-e276-4d29-b669-cb32013228b3\",\n" +
-                                "  \"sourceId\": \""+ sourceNotificationId.toString() +"\",\n" +
+                                "  \"sourceId\": \""+ sourceNotificationId +"\",\n" +
                                 "  \"sourceType\": \"PROGRESSION_NOTIFICATION_ID\",\n" +
                                 "  \"targetId\": \"" + targetMaterialId.toString() +"\",\n" +
                                 "  \"targetType\": \"MATERIAL_ID\",\n" +
@@ -71,7 +71,7 @@ public class IdMapperStub {
                 .willReturn(aResponse()
                         .withBody("{\n" +
                                 "  \"mappingId\": \"166c0ae9-e276-4d29-b669-cb32013228b3\",\n" +
-                                "  \"sourceId\": \""+ sourceMaterialId.toString() +"\",\n" +
+                                "  \"sourceId\": \""+ sourceMaterialId +"\",\n" +
                                 "  \"sourceType\": \"MATERIAL_ID\",\n" +
                                 "  \"targetId\": \"" + targetDocumentId.toString() +"\",\n" +
                                 "  \"targetType\": \"DOCUMENT_ID\",\n" +

@@ -17,9 +17,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
@@ -29,7 +27,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences1;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
@@ -38,7 +35,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStructuredPetQuery;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
@@ -52,7 +48,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.CpsServeMaterialHelper;
-import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
@@ -73,7 +68,6 @@ import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 public class PetFormIT extends AbstractIT {
     public static final String FINALISE_PET_FORM_ENDPOINT = "/pet/%s";
@@ -105,11 +99,7 @@ public class PetFormIT extends AbstractIT {
     private static final JmsMessageConsumerClient consumerForPetFormReleased = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-released").getMessageConsumerClient();
     private static final JmsMessageConsumerClient consumerForPetFormFinalised = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-finalised").getMessageConsumerClient();
     private static final JmsMessageConsumerClient consumerForEditFormRequested = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.edit-form-requested").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForSendToCpsFlagUpdated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.send-to-cps-flag-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForCourtsDocumentAdded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
 
-    private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.cps-prosecutor-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient caseProsecutorUpdatedPrivateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.case-cps-prosecutor-updated").getMessageConsumerClient();
 
     public static final String NAME = "name";
     public static final String USER_NAME_VALUE = "cps user name";
@@ -118,28 +108,6 @@ public class PetFormIT extends AbstractIT {
     public static final String PET_FORM_DATA = "petFormData";
     final UUID petId = randomUUID();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    @Mock
-    private RefDataService referenceDataService;
-
-    private void verifyInMessagingQueueForCourtsDocumentAdded() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtsDocumentAdded);
-        assertTrue(message.isPresent());
-    }
-
-    public static void queryAndVerifyPetCaseDetail(final UUID caseId, final UUID petId, final UUID defendantId, final boolean isYouth) {
-        poll(requestParams(AbstractTestHelper.getReadUrl(format("/prosecutioncases/%s/pet", caseId)),
-                "application/vnd.progression.query.pets-for-case+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(60, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.pets[0].defendants[0].caseId", Matchers.is(caseId.toString())),
-                                        withJsonPath("$.pets[0].defendants[0].defendantId", is(defendantId.toString())),
-                                        withJsonPath("$.pets[0].petId", is(petId.toString())),
-                                        withJsonPath("$.pets[0].isYouth", is(isYouth))
-                                )));
-    }
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -164,7 +132,7 @@ public class PetFormIT extends AbstractIT {
 
         );
 
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
 
         final JsonObject payload = createObjectBuilder()
                 .add("petId", petId.toString())
@@ -248,87 +216,6 @@ public class PetFormIT extends AbstractIT {
         final Response responseForFinalisePetFormForDefendant = postCommand(getWriteUrl(format(FINALISE_PET_FORM_ENDPOINT, petId)), FINALISE_PET_FORM_MEDIA_TYPE, buildPayloadForFinaliseFormApi(caseId.toString()).toString());
         assertThat(responseForFinalisePetFormForDefendant.getStatusCode(), is(ACCEPTED.getStatusCode()));
         verifyInMessagingQueueForPetFormFinalised();
-        verifyInMessagingQueueForCourtsDocumentAdded();
-
-
-        final JsonObject updatePetDetail = createObjectBuilder()
-                .add("caseId", caseId.toString())
-                .add("petDefendants",
-                        createArrayBuilder().add(
-                                createObjectBuilder()
-                                        .add("defendantId", defendantId.toString())))
-                .add("petId", petId.toString())
-                .build();
-
-        final Response updatePetDetailResponse = postCommand(getWriteUrl(format(FINALISE_PET_FORM_ENDPOINT, petId)), UPDATE_PET_DETAIL_MEDIA_TYPE, updatePetDetail.toString());
-
-        assertThat(updatePetDetailResponse.getStatusCode(), is(ACCEPTED.getStatusCode()));
-
-    }
-
-    @Test
-    public void shouldCreatePetFormForYouth() throws IOException, JSONException {
-
-        final boolean isYouth = true;
-        final UUID caseId = randomUUID();
-        final UUID defendantId = randomUUID();
-        final UUID formId = randomUUID();
-
-        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendantId.toString());
-        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendantId.toString(),
-                newArrayList(
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[1].id", is("4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
-                )
-
-        );
-
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
-        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
-
-        final JsonObject payload = createObjectBuilder()
-                .add("petId", petId.toString())
-                .add("caseId", caseId.toString())
-                .add("formId", formId.toString())
-                .add("isYouth", isYouth)
-                .add("petDefendants", createArrayBuilder().add(createObjectBuilder().add("defendantId", defendantId.toString())
-                        .build()))
-                .add("petFormData", createObjectBuilder().build().toString()).build();
-
-        final Response responseForCreatePetForm = postCommand(getWriteUrl(CREATE_PET_FORM_ENDPOINT), CREATE_PET_FORM_MEDIA_TYPE, payload.toString());
-        assertThat(responseForCreatePetForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
-        verifyInMessagingQueueForPetFormCreated();
-
-        //query pets by caseId
-        queryAndVerifyPetCaseDetail(caseId, petId, defendantId, true);
-
-        // update pet form
-        final JsonObject payloadForUpdate = createObjectBuilder()
-                .add("caseId", caseId.toString())
-                .add("petFormData", createObjectBuilder().build().toString()).build();
-
-        final Response response = postCommand(getWriteUrl(format(UPDATE_PET_FORM_ENDPOINT, petId)), UPDATE_PET_FORM_MEDIA_TYPE, payloadForUpdate.toString());
-        assertThat(response.getStatusCode(), is(ACCEPTED.getStatusCode()));
-
-        verifyInMessagingQueueForPetFormUpdated();
-
-        //update pet form for defendant
-        final JsonObject payloadForUpdatePetForDefendant = createObjectBuilder()
-                .add("petId", petId.toString())
-                .add("caseId", caseId.toString())
-                .add("defendantId", defendantId.toString())
-                .add("defendantData", createObjectBuilder().build().toString()).build();
-
-        final Response responseForUpdatePetFormForDefendant = postCommand(getWriteUrl(format(UPDATE_PET_FORM_FOR_DEFENDANT_ENDPOINT, petId)), UPDATE_PET_FORM_FOR_DEFENDANT_MEDIA_TYPE, payloadForUpdatePetForDefendant.toString());
-        assertThat(responseForUpdatePetFormForDefendant.getStatusCode(), is(ACCEPTED.getStatusCode()));
-        verifyInMessagingQueueForPetFormDefendantUpdated();
-
-        //finalise pet form
-        final Response responseForFinalisePetFormForDefendant = postCommand(getWriteUrl(format(FINALISE_PET_FORM_ENDPOINT, petId)), FINALISE_PET_FORM_MEDIA_TYPE, buildPayloadForFinaliseFormApi(caseId.toString()).toString());
-        assertThat(responseForFinalisePetFormForDefendant.getStatusCode(), is(ACCEPTED.getStatusCode()));
-        verifyInMessagingQueueForPetFormFinalised();
-        verifyInMessagingQueueForCourtsDocumentAdded();
-
 
         final JsonObject updatePetDetail = createObjectBuilder()
                 .add("caseId", caseId.toString())
@@ -359,12 +246,9 @@ public class PetFormIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
                         withJsonPath("$.prosecutionCase.defendants[0].offences[1].id", is("4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
                 )
-
         );
 
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
-        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
-
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
 
         final JsonObject payload = createObjectBuilder()
                 .add("petId", petId.toString())
@@ -410,7 +294,6 @@ public class PetFormIT extends AbstractIT {
         final Response responseForFinalisePetFormForDefendant = postCommand(getWriteUrl(format(FINALISE_PET_FORM_ENDPOINT, petId)), FINALISE_PET_FORM_MEDIA_TYPE, buildPayloadForFinaliseFormApi(caseId.toString()).toString());
         assertThat(responseForFinalisePetFormForDefendant.getStatusCode(), is(ACCEPTED.getStatusCode()));
         verifyInMessagingQueueForPetFormFinalised();
-        verifyInMessagingQueueForCourtsDocumentAdded();
 
         //update pet details
         final boolean isYouthFlagWhenUpdated = true;
@@ -449,8 +332,7 @@ public class PetFormIT extends AbstractIT {
 
         );
 
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
-        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
 
         final JsonObject payload = createObjectBuilder()
                 .add("petId", petId.toString())
@@ -489,58 +371,7 @@ public class PetFormIT extends AbstractIT {
     }
 
     @Test
-    public void shouldNotAutomaticallySendToCpsOnFinaliseWhenProsecutorisNotCps() throws IOException, JSONException {
-        final UUID caseId = randomUUID();
-        final UUID defendantId = randomUUID();
-        final UUID formId = randomUUID();
-
-        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences1(caseId.toString(), defendantId.toString());
-        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendantId.toString(),
-                newArrayList(
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[1].id", is("4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
-                )
-
-        );
-
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
-        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
-
-        final JsonObject payload = createObjectBuilder()
-                .add("petId", petId.toString())
-                .add("caseId", caseId.toString())
-                .add("formId", formId.toString())
-                .add("petDefendants", createArrayBuilder().add(createObjectBuilder().add("defendantId", defendantId.toString())
-                        .build()))
-                .add("petFormData", createObjectBuilder().build().toString()).build();
-
-        final Response responseForCreatePetForm = postCommand(getWriteUrl(CREATE_PET_FORM_ENDPOINT), CREATE_PET_FORM_MEDIA_TYPE, payload.toString());
-        assertThat(responseForCreatePetForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
-        verifyInMessagingQueueForPetFormCreated();
-
-        //query pets by caseId
-        queryAndVerifyPetCaseDetail(caseId, petId, defendantId, false);
-
-        //finalise pet form
-        final Response responseForFinalisePetFormForDefendant = postCommand(getWriteUrl(format(FINALISE_PET_FORM_ENDPOINT, petId)), FINALISE_PET_FORM_MEDIA_TYPE, buildPayloadForFinaliseFormApi(caseId.toString()).toString());
-        assertThat(responseForFinalisePetFormForDefendant.getStatusCode(), is(ACCEPTED.getStatusCode()));
-        verifyInMessagingQueueForPetFormFinalised();
-
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtsDocumentAdded);
-        assertThat(message.get().getJsonObject("courtDocument").getBoolean("sendToCps"), is(true));
-
-        final Optional<JsonObject> message1 = retrieveMessageBody(consumerForSendToCpsFlagUpdated);
-        assertFalse(message1.isPresent());
-    }
-
-    public static void addCaseProsecutor(final String caseId) {
-        CaseProsecutorUpdateHelper caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
-        caseProsecutorUpdateHelper.updateCaseProsecutor();
-        caseProsecutorUpdateHelper.verifyInActiveMQ(privateEventsConsumer, caseProsecutorUpdatedPrivateEventsConsumer);
-    }
-
-    @Test
-    public void shouldAutomaticallySendToCpsOnFinaliseWhenProsecutorisCps() throws IOException, JSONException  {
+    public void shouldAutomaticallySendToCpsOnFinaliseWhenProsecutorSsCps() throws IOException, JSONException  {
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final UUID caseId = randomUUID();
@@ -571,61 +402,6 @@ public class PetFormIT extends AbstractIT {
         final Response responseForFinalisePetFormForDefendant = postCommand(getWriteUrl(format(FINALISE_PET_FORM_ENDPOINT, petId)), FINALISE_PET_FORM_MEDIA_TYPE, buildPayloadForFinaliseFormApi(caseId.toString()).toString());
         assertThat(responseForFinalisePetFormForDefendant.getStatusCode(), is(ACCEPTED.getStatusCode()));
         verifyInMessagingQueueForPetFormFinalised();
-
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtsDocumentAdded);
-        assertThat(message.get().getJsonObject("courtDocument").getBoolean("sendToCps"), is(true));
-        assertThat(message.get().getJsonObject("courtDocument").getString("notificationType"), is("pet-form-finalised"));
-    }
-
-    private void verifyInMessagingQueueForPetFormDefendantUpdated() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormDefendantUpdated);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForPetFormCreated() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormCreated);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForPetFormUpdated() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormUpdated);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForPetFormReleased() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormReleased);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForPetFormFinalised() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormFinalised);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForPetDetailUpdated() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetDetailUpdated);
-        assertTrue(message.isPresent());
-    }
-
-    private JsonObject buildPayloadForFinaliseFormApi(final String caseId) throws IOException {
-        final String inputEvent = Resources.toString(getResource("progression.finalise-pet-form.json"), defaultCharset());
-        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
-        JsonObjectBuilder payloadBuilder = createObjectBuilder();
-        JsonArrayBuilder arrayBuilder = createArrayBuilder();
-        readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
-        payloadBuilder.add("caseId", caseId);
-        payloadBuilder.add("finalisedFormData", arrayBuilder.build());
-        return payloadBuilder.build();
-    }
-
-    private JsonObject buildPayloadForCpsServePetSubmitted(final String caseId, final String defendantId1, final String defendantId2, final String cpsDefendantId1) throws IOException {
-        final String inputEvent = Resources.toString(getResource("public.prosecutioncasefile.cps-serve-pet-submitted.json"), defaultCharset());
-        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent
-                .replaceAll("<CASE_ID>", caseId)
-                .replaceAll("<DEFENDANT_ID_1>", defendantId1)
-                .replaceAll("<DEFENDANT_ID_2>", defendantId2)
-                .replaceAll("<CPS_DEFENDANT_ID_1>", cpsDefendantId1));
-        return readData;
     }
 
     @Test
@@ -645,7 +421,7 @@ public class PetFormIT extends AbstractIT {
 
         );
 
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
 
         final CpsServeMaterialHelper cpsServeMaterialHelper = new CpsServeMaterialHelper();
 
@@ -669,40 +445,7 @@ public class PetFormIT extends AbstractIT {
                 )
         );
 
-        final String updatedResponseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithCpsDefendantIdMatchers);
-    }
-
-    private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final JsonObject event) {
-        assertThat(event, Matchers.notNullValue());
-        assertThat(caseId.toString(), Matchers.is(event.getString("caseId")));
-        assertThat(courtFormId.toString(), Matchers.is(event.getString("courtFormId")));
-        assertThat(event.get("lockStatus"), Matchers.notNullValue());
-        final JsonObject lockStatus = event.getJsonObject("lockStatus");
-
-        if (nonNull(lockedBy)) {
-            final JsonObject lockedByJsonObject = lockStatus.getJsonObject("lockedBy");
-            assertThat(lockedBy.toString(), Matchers.is(lockedByJsonObject.getString("userId")));
-            assertThat("rickey", Matchers.is(lockedByJsonObject.getString("firstName")));
-            assertThat("vaughn", Matchers.is(lockedByJsonObject.getString("lastName")));
-            assertThat("rickey.vaughn@test.probation.gsi.gov.uk", Matchers.is(lockedByJsonObject.getString("email")));
-        } else {
-            assertThat(lockStatus.getString("lockedBy", null), Matchers.is(nullValue()));
-        }
-
-        if (nonNull(lockRequestedBy)) {
-            final JsonObject lockRequestedByJsonObject = lockStatus.getJsonObject("lockRequestedBy");
-            assertThat(lockRequestedBy.toString(), Matchers.is(lockRequestedByJsonObject.getString("userId")));
-        } else {
-            assertThat(lockStatus.getString("lockRequestedBy", null), nullValue());
-        }
-
-        assertThat(isLocked, Matchers.is(lockStatus.getBoolean("isLocked")));
-    }
-
-    private JsonObject verifyInMessagingQueueForEditFormRequested() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForEditFormRequested);
-        assertTrue(message.isPresent());
-        return message.get();
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithCpsDefendantIdMatchers);
     }
 
     @Test
@@ -720,8 +463,7 @@ public class PetFormIT extends AbstractIT {
 
         );
 
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
-        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
 
         final JsonObject payload = createObjectBuilder()
                 .add("petId", petId.toString())
@@ -776,5 +518,110 @@ public class PetFormIT extends AbstractIT {
         assertThat(response.getStatusCode(), is(ACCEPTED.getStatusCode()));
 
         verifyInMessagingQueueForPetFormReleased();
+    }
+
+    private void addCaseProsecutor(final String caseId) {
+        CaseProsecutorUpdateHelper caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
+        caseProsecutorUpdateHelper.updateCaseProsecutor();
+    }
+
+    private void verifyInMessagingQueueForPetFormDefendantUpdated() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormDefendantUpdated);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForPetFormCreated() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormCreated);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForPetFormUpdated() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormUpdated);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForPetFormReleased() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormReleased);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForPetFormFinalised() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetFormFinalised);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForPetDetailUpdated() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForPetDetailUpdated);
+        assertTrue(message.isPresent());
+    }
+
+    private JsonObject buildPayloadForFinaliseFormApi(final String caseId) throws IOException {
+        final String inputEvent = Resources.toString(getResource("progression.finalise-pet-form.json"), defaultCharset());
+        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent);
+        JsonObjectBuilder payloadBuilder = createObjectBuilder();
+        JsonArrayBuilder arrayBuilder = createArrayBuilder();
+        readData.getJsonArray("finalisedFormData").forEach(x -> arrayBuilder.add(x.toString()));
+        payloadBuilder.add("caseId", caseId);
+        payloadBuilder.add("finalisedFormData", arrayBuilder.build());
+        return payloadBuilder.build();
+    }
+
+    private JsonObject buildPayloadForCpsServePetSubmitted(final String caseId, final String defendantId1, final String defendantId2, final String cpsDefendantId1) throws IOException {
+        final String inputEvent = Resources.toString(getResource("public.prosecutioncasefile.cps-serve-pet-submitted.json"), defaultCharset());
+        return stringToJsonObjectConverter.convert(inputEvent
+                .replaceAll("<CASE_ID>", caseId)
+                .replaceAll("<DEFENDANT_ID_1>", defendantId1)
+                .replaceAll("<DEFENDANT_ID_2>", defendantId2)
+                .replaceAll("<CPS_DEFENDANT_ID_1>", cpsDefendantId1));
+    }
+
+
+
+    private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final JsonObject event) {
+        assertThat(event, Matchers.notNullValue());
+        assertThat(caseId.toString(), Matchers.is(event.getString("caseId")));
+        assertThat(courtFormId.toString(), Matchers.is(event.getString("courtFormId")));
+        assertThat(event.get("lockStatus"), Matchers.notNullValue());
+        final JsonObject lockStatus = event.getJsonObject("lockStatus");
+
+        if (nonNull(lockedBy)) {
+            final JsonObject lockedByJsonObject = lockStatus.getJsonObject("lockedBy");
+            assertThat(lockedBy.toString(), Matchers.is(lockedByJsonObject.getString("userId")));
+            assertThat("rickey", Matchers.is(lockedByJsonObject.getString("firstName")));
+            assertThat("vaughn", Matchers.is(lockedByJsonObject.getString("lastName")));
+            assertThat("rickey.vaughn@test.probation.gsi.gov.uk", Matchers.is(lockedByJsonObject.getString("email")));
+        } else {
+            assertThat(lockStatus.getString("lockedBy", null), Matchers.is(nullValue()));
+        }
+
+        if (nonNull(lockRequestedBy)) {
+            final JsonObject lockRequestedByJsonObject = lockStatus.getJsonObject("lockRequestedBy");
+            assertThat(lockRequestedBy.toString(), Matchers.is(lockRequestedByJsonObject.getString("userId")));
+        } else {
+            assertThat(lockStatus.getString("lockRequestedBy", null), nullValue());
+        }
+
+        assertThat(isLocked, Matchers.is(lockStatus.getBoolean("isLocked")));
+    }
+
+    private JsonObject verifyInMessagingQueueForEditFormRequested() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForEditFormRequested);
+        assertTrue(message.isPresent());
+        return message.get();
+    }
+
+    public void queryAndVerifyPetCaseDetail(final UUID caseId, final UUID petId, final UUID defendantId, final boolean isYouth) {
+        poll(requestParams(AbstractTestHelper.getReadUrl(format("/prosecutioncases/%s/pet", caseId)),
+                "application/vnd.progression.query.pets-for-case+json")
+                .withHeader("CJSCPPUID", randomUUID()))
+                .timeout(60, SECONDS)
+                .until(status().is(OK),
+                        payload().isJson(
+                                allOf(
+                                        withJsonPath("$.pets[0].defendants[0].caseId", Matchers.is(caseId.toString())),
+                                        withJsonPath("$.pets[0].defendants[0].defendantId", is(defendantId.toString())),
+                                        withJsonPath("$.pets[0].petId", is(petId.toString())),
+                                        withJsonPath("$.pets[0].isYouth", is(isYouth))
+                                )));
     }
 }

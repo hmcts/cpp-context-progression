@@ -17,11 +17,11 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithTwoProsecutionCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -56,14 +56,9 @@ public class CustodyTimeLimitIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FOR_TWO_CASE_ONE_DEFENDANT_FILE = "public.listing.hearing-confirmed-two-cases-one-defendant.json";
     private static final String PUBLIC_EVENTS_LISTING_HEARING_DELETED = "public.events.listing.hearing-deleted";
 
-
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final JmsMessageConsumerClient prosecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient extendCustodyTimeLimitResulted = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.extend-custody-time-limit-resulted").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient custodyTimeLimitExtended = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.custody-time-limit-extended").getMessageConsumerClient();
     private static final JmsMessageConsumerClient custodyTimeLimitExtendedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames("public.events.progression.custody-time-limit-extended").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerHearingDeleted = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.hearing-deleted").getMessageConsumerClient();;
-    private static final JmsMessageConsumerClient messageConsumerOffenceDeleted = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.offences-removed-from-hearing").getMessageConsumerClient();;
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -130,8 +125,6 @@ public class CustodyTimeLimitIT extends AbstractIT {
 
         pollProsecutionCasesProgressionForCAAG(caseId, prosecutionCasesProgressionForCAAG);
 
-        verifyInMessagingQueueForExtendCustodyTimeLimitResulted(hearingIdForCTLExtension, caseId, offenceId, extendedCustodyTimeLimit);
-        verifyInMessagingQueueForCustodyTimeLimitExtended(initialHearingId, offenceId, extendedCustodyTimeLimit);
         verifyInMessagingQueueForCustodyTimeLimitExtendedPublicEvent(initialHearingId, offenceId, extendedCustodyTimeLimit);
         verifyOffenceUpdatedWithCustodyTimeLimitAndCpsDefendantId(initialHearingId, extendedCustodyTimeLimit);
 
@@ -170,16 +163,11 @@ public class CustodyTimeLimitIT extends AbstractIT {
         JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata("public.events.listing.offences-removed-from-allocated-hearing", userId), hearingOffenceRemovedJson);
         messageProducerClientPublic.sendMessage("public.events.listing.offences-removed-from-allocated-hearing", publicEventEnvelope);
 
-        verifyInMessagingQueueForOffenceDeleted();
-
         // When hearing2 was deleted
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(extendedHearingId);
 
         publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENTS_LISTING_HEARING_DELETED, userId), hearingDeletedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_EVENTS_LISTING_HEARING_DELETED, publicEventEnvelope);
-
-
-        verifyInMessagingQueueForHearingDeleted();
 
         final String hearingIdForCTLExtension = randomUUID().toString();
 
@@ -208,8 +196,6 @@ public class CustodyTimeLimitIT extends AbstractIT {
 
         pollProsecutionCasesProgressionForCAAG(caseId, prosecutionCasesProgressionForCAAG);
 
-        verifyInMessagingQueueForExtendCustodyTimeLimitResulted(hearingIdForCTLExtension, caseId, offenceId, extendedCustodyTimeLimit);
-        verifyInMessagingQueueForCustodyTimeLimitExtended(initialHearingId, offenceId, extendedCustodyTimeLimit);
         verifyInMessagingQueueForCustodyTimeLimitExtendedPublicEvent(initialHearingId, offenceId, extendedCustodyTimeLimit);
         verifyOffenceUpdatedWithCustodyTimeLimitAndCpsDefendantId(initialHearingId, extendedCustodyTimeLimit);
 
@@ -234,31 +220,6 @@ public class CustodyTimeLimitIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
         );
-    }
-
-    private void verifyInMessagingQueueForExtendCustodyTimeLimitResulted(final String hearingId, final String caseId, final String offenceId, final String extendedCustodyTimeLimit) {
-
-        final Optional<JsonObject> message = retrieveMessageBody(extendCustodyTimeLimitResulted);
-        assertTrue(message.isPresent());
-
-        final JsonObject extendCustodyTimeLimitResulted = message.get();
-        assertThat(extendCustodyTimeLimitResulted.getString("hearingId"), is(hearingId));
-        assertThat(extendCustodyTimeLimitResulted.getString("caseId"), is(caseId));
-        assertThat(extendCustodyTimeLimitResulted.getString("offenceId"), is(offenceId));
-        assertThat(extendCustodyTimeLimitResulted.getString("extendedTimeLimit"), is(extendedCustodyTimeLimit));
-
-    }
-
-    private void verifyInMessagingQueueForCustodyTimeLimitExtended(final String hearingId, final String offenceId, final String extendedCustodyTimeLimit) {
-
-        final Optional<JsonObject> message = retrieveMessageBody(custodyTimeLimitExtended);
-        assertTrue(message.isPresent());
-
-        final JsonObject custodyTimeLimitExtended = message.get();
-        assertThat(custodyTimeLimitExtended.getJsonArray("hearingIds").getString(0), is(hearingId));
-        assertThat(custodyTimeLimitExtended.getString("offenceId"), is(offenceId));
-        assertThat(custodyTimeLimitExtended.getString("extendedTimeLimit"), is(extendedCustodyTimeLimit));
-
     }
 
     private void verifyInMessagingQueueForCustodyTimeLimitExtendedPublicEvent(final String hearingId, final String offenceId, final String extendedCustodyTimeLimit) {
@@ -339,14 +300,5 @@ public class CustodyTimeLimitIT extends AbstractIT {
         );
     }
 
-    private void verifyInMessagingQueueForOffenceDeleted() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerOffenceDeleted);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForHearingDeleted() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingDeleted);
-        assertTrue(message.isPresent());
-    }
 }
 

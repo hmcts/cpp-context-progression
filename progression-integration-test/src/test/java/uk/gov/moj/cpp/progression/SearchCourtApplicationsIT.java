@@ -67,8 +67,7 @@ public class SearchCourtApplicationsIT extends AbstractIT {
         ));
         assertThat(message, notNullValue());
         final String applicationReferenceNumber = message.getString("courtApplication.applicationReference");
-        verifyCasesByCaseUrn(applicationReferenceNumber, new Matcher[]{withJsonPath("$.searchResults[0].reference", containsString(applicationReferenceNumber))})
-        ;
+        verifyCasesByCaseUrn(applicationReferenceNumber, new Matcher[]{withJsonPath("$.searchResults[0].reference", containsString(applicationReferenceNumber))});
     }
 
 

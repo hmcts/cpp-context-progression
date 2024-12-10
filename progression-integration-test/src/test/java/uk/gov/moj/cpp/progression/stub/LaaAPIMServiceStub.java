@@ -3,13 +3,24 @@ package uk.gov.moj.cpp.progression.stub;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.exactly;
+import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.awaitility.Awaitility.await;
+
+import java.util.List;
+
+import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 public class LaaAPIMServiceStub {
 
@@ -26,6 +37,25 @@ public class LaaAPIMServiceStub {
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 ));
+    }
+
+    public static void verifyLaaProceedingsConcludedCommandInvoked(final List<String> expectedValues) {
+        verifyLaaProceedingsConcludedCommandInvoked(LAA_API_ENDPOINT_URL, moreThanOrExactly(1), expectedValues);
+    }
+
+    public static void verifyLaaProceedingsConcludedCommandInvoked(final int count, final List<String> expectedValues) {
+        verifyLaaProceedingsConcludedCommandInvoked(LAA_API_ENDPOINT_URL, exactly(count), expectedValues);
+    }
+
+    private static void verifyLaaProceedingsConcludedCommandInvoked(final String commandEndPoint, final CountMatchingStrategy countMatchingStrategy, final List<String> expectedValues) {
+        await().atMost(30, SECONDS).pollInterval(10, SECONDS).until(() -> {
+            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
+            expectedValues.forEach(
+                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
+            );
+            verify(countMatchingStrategy, requestPatternBuilder);
+            return true;
+        });
     }
 
 }

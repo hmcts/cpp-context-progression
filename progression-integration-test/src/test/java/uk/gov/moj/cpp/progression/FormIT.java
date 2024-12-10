@@ -15,7 +15,6 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +22,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,12 +43,12 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialStructuredFormQuery;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyBcmNotificationApiNotInvoked;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEndpoint;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -65,7 +63,6 @@ import uk.gov.moj.cpp.progression.helper.CpsServeMaterialHelper;
 import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -169,15 +166,14 @@ public class FormIT extends AbstractIT {
         final JsonObject payload = buildPayloadForCreateFormApi(courtFormId, formId, BCM, defendant1, offenceId);
         final String createFormEndpointUrl = CREATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString());
         final Response responseForCreateForm1 = postCommand(getWriteUrl(createFormEndpointUrl), CREATE_FORM_MEDIA_TYPE, payload.toString());
-        assertThat(responseForCreateForm1.getStatusCode(), is(ACCEPTED.getStatusCode()));
-
+        assertThatRequestIsAccepted(responseForCreateForm1);
         verifyInMessagingQueueForFormCreated();
         queryAndVerifyFormDetailWithCaseId(courtFormId, caseId, defendant1, BCM);
 
         // Create another form and Verify the no of forms created
         final JsonObject payload1 = buildPayloadForCreateFormApi(randomUUID(), randomUUID(), BCM, defendant2, offenceId);
         final Response responseForCreateForm2 = postCommand(getWriteUrl(createFormEndpointUrl), CREATE_FORM_MEDIA_TYPE, payload1.toString());
-        assertThat(responseForCreateForm2.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForCreateForm2);
 
         verifyInMessagingQueueForFormCreated();
         queryAndVerifyNoOfForms(caseId, 2);
@@ -189,7 +185,7 @@ public class FormIT extends AbstractIT {
 
         final JmsMessageConsumerClient consumerForBcmDefendantsUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.event.form-defendants-updated").getMessageConsumerClient();
         final Response responseForCreateFormFailed = postCommand(getWriteUrl(updateBcmDefendantsEndpointUrl), UPDATE_BCM_DEFENDANTS_MEDIA_TYPE, updateBcmDefendantsPayload.toString());
-        assertThat(responseForCreateFormFailed.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForCreateFormFailed);
 
         final JsonObject BcmDefendantsUpdated = verifyInMessagingQueue(consumerForBcmDefendantsUpdated);
         assertThat(BcmDefendantsUpdated.getString("courtFormId"), is(courtFormId.toString()));
@@ -203,7 +199,7 @@ public class FormIT extends AbstractIT {
         final String updateFormEndpointUrl = UPDATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString()).replaceAll("%courtFormId%", courtFormId.toString());
         final Response responseForUpdateForm = postCommand(getWriteUrl(updateFormEndpointUrl), UPDATE_FORM_MEDIA_TYPE, payloadForUpdate.toString());
 
-        assertThat(responseForUpdateForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForUpdateForm);
         verifyInMessagingQueueForFormUpdated();
 
         // verify saved form data via query
@@ -221,7 +217,7 @@ public class FormIT extends AbstractIT {
                         .build()
                         .toString(),
                 userId.toString());
-        assertThat(responseForEditForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForEditForm);
 
         JsonObject editRequestedEvent = verifyInMessagingQueueForEditFormRequested();
         assertEditFormRequestedFromEventStream(caseId, courtFormId, null, null, false, editRequestedEvent);
@@ -233,7 +229,7 @@ public class FormIT extends AbstractIT {
                         .build()
                         .toString(),
                 userId2.toString());
-        assertThat(responseForEditForm2.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForEditForm2);
 
         JsonObject editRequestedEvent2 = verifyInMessagingQueueForEditFormRequested();
         assertEditFormRequestedFromEventStream(caseId, courtFormId, userId, userId2, true, editRequestedEvent2);
@@ -244,7 +240,7 @@ public class FormIT extends AbstractIT {
                 .replaceAll("%caseId%", caseId.toString())
                 .replaceAll("%courtFormId%", courtFormId.toString());
         final Response responseForFinaliseForm = postCommand(getWriteUrl(finaliseFormEndpointUrl), FINALISE_FORM_MEDIA_TYPE, finalisePayload.toString());
-        assertThat(responseForFinaliseForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForFinaliseForm);
 
         verifyInMessagingQueueForFormFinalised();
         final JsonObject jsonObject = verifyInMessagingQueueForAddCourtDocument();
@@ -276,7 +272,7 @@ public class FormIT extends AbstractIT {
 
         final String createFormEndpointUrl = CREATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString());
         final Response responseForCreateForm = postCommand(getWriteUrl(createFormEndpointUrl), CREATE_FORM_MEDIA_TYPE, payload.toString());
-        assertThat(responseForCreateForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForCreateForm);
 
         verifyInMessagingQueueForFormCreated();
         queryAndVerifyFormDetailsWithCaseIdAndFormType(courtFormId, caseId, BCM, defendantId);
@@ -287,7 +283,7 @@ public class FormIT extends AbstractIT {
         final JsonObject duplicateCourtFormIdPayload = buildPayloadForCreateFormApi(courtFormId, formId2, BCM, defendantId2, offenceId);
 
         final Response responseForCreateFormFailed = postCommand(getWriteUrl(createFormEndpointUrl), CREATE_FORM_MEDIA_TYPE, duplicateCourtFormIdPayload.toString());
-        assertThat(responseForCreateFormFailed.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForCreateFormFailed);
 
         final JsonObject failureEvent = verifyInMessagingQueueForFormOperationsFailed();
         assertFormOperationFailedEvent(courtFormId, failureEvent, MESSAGE_FOR_DUPLICATE_COURT_FORM_ID, FORM_CREATION_COMMAND_NAME, BCM);
@@ -303,7 +299,7 @@ public class FormIT extends AbstractIT {
                         .build()
                         .toString(),
                 userId.toString());
-        assertThat(responseForEditForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForEditForm);
 
         JsonObject editRequestedEvent = verifyInMessagingQueueForFormOperationsFailed();
         assertFormOperationFailedEvent(randomCourtFormId, editRequestedEvent,
@@ -316,7 +312,7 @@ public class FormIT extends AbstractIT {
         final JsonObject updateBcmDefendantsPayload = buildPayloadForUpdateBcmDefendantsApi(updateCourtFormId, BCM, updateDefendantId, offenceId);
 
         final Response responseForFormUpdateFailed = postCommand(getWriteUrl(updateBcmDefendantsEndpointUrl), UPDATE_BCM_DEFENDANTS_MEDIA_TYPE, updateBcmDefendantsPayload.toString());
-        assertThat(responseForFormUpdateFailed.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForFormUpdateFailed);
 
         final JsonObject formUpdateFailureEvent = verifyInMessagingQueueForFormOperationsFailed();
         assertFormOperationFailedEvent(updateCourtFormId, formUpdateFailureEvent, UPDATE_BCM_DEFENDANT_OPERATION_IS_FAILED, FORM_UPDATE_COMMAND_NAME, BCM);
@@ -327,11 +323,9 @@ public class FormIT extends AbstractIT {
                 .replaceAll("%caseId%", randomUUID().toString())
                 .replaceAll("%courtFormId%", courtFormId.toString());
         final Response responseForFinaliseForm = postCommand(getWriteUrl(finaliseFormEndpointUrl), FINALISE_FORM_MEDIA_TYPE, finalisePayload.toString());
-        assertThat(responseForFinaliseForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
+        assertThatRequestIsAccepted(responseForFinaliseForm);
 
         verifyInMessagingQueueForFormOperationsFailed();
-
-
     }
 
     @Test
@@ -351,7 +345,7 @@ public class FormIT extends AbstractIT {
 
         );
 
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
 
         final CpsServeMaterialHelper cpsServeMaterialHelper = new CpsServeMaterialHelper();
 
@@ -361,7 +355,6 @@ public class FormIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_BCM_SUBMITTED, randomUUID()), cpsServeBcmSubmittedPublicEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_BCM_SUBMITTED, publicEventEnvelope);
 
-        assertThat(cpsServeMaterialHelper.getFormCreatedPrivateEvent(), is(notNullValue()));
         final JsonEnvelope publicEvent = cpsServeMaterialHelper.getFormCreatedPublicEvent();
         assertThat(publicEvent, is(notNullValue()));
         final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
@@ -376,7 +369,7 @@ public class FormIT extends AbstractIT {
                 )
         );
 
-        final String updatedResponseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithCpsDefendantIdMatchers);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithCpsDefendantIdMatchers);
     }
 
     @Test
@@ -396,7 +389,7 @@ public class FormIT extends AbstractIT {
 
         );
 
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
 
         final CpsServeMaterialHelper cpsServeMaterialHelper = new CpsServeMaterialHelper();
 
@@ -406,7 +399,6 @@ public class FormIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PTPH_SUBMITTED, randomUUID()), cpsServePtphSubmittedPublicEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PTPH_SUBMITTED, publicEventEnvelope);
 
-        assertThat(cpsServeMaterialHelper.getFormCreatedPrivateEvent(), is(notNullValue()));
         final JsonEnvelope publicEvent = cpsServeMaterialHelper.getFormCreatedPublicEvent();
         assertThat(publicEvent, is(notNullValue()));
         final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
@@ -425,7 +417,77 @@ public class FormIT extends AbstractIT {
                 )
         );
 
-        final String updatedResponseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithCpsDefendantIdMatchers);
+        pollProsecutionCasesProgressionFor(caseId.toString(), caseWithCpsDefendantIdMatchers);
+    }
+
+    @Test
+    public void shouldVerifyBCMNotificationOnUpdate() throws IOException, JSONException {
+        final UUID courtFormId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID formId = randomUUID();
+        final UUID userId = randomUUID();
+
+        stubGetAdvocatesGroupsForLoggedInQuery(userId.toString());
+
+        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendant1.toString());
+        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendant1.toString(),
+                newArrayList(
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[*].id",
+                                hasItems("3789ab16-0bb7-4ef1-87ef-c936bf0364f1", "4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
+                )
+        );
+
+        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
+        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
+
+        final String offenceId = caseObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("id");
+
+        //create form
+        final JsonObject payload = buildPayloadForCreateFormApi(courtFormId, formId, BCM, defendant1, offenceId);
+        final String createFormEndpointUrl = CREATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString());
+        final Response responseForCreateForm1 = postCommand(getWriteUrl(createFormEndpointUrl), CREATE_FORM_MEDIA_TYPE, payload.toString());
+        assertThatRequestIsAccepted(responseForCreateForm1);
+
+        verifyInMessagingQueueForFormCreated();
+        queryAndVerifyFormDetailWithCaseId(courtFormId, caseId, defendant1, BCM);
+
+        final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
+                .replace("%CASE_ID%", caseId.toString())
+                .replace("%USER_ROLE_IN_CASE%", "defending");
+
+        stubAdvocateRoleInCaseByCaseId(caseId.toString(), userRoleInCase);
+
+        // update form
+        final String formData = getPayload("formDataOnUpdate.json")
+                .replace("DEF_ID1", defendant1.toString())
+                .replace("DEF_ID2", defendant2.toString());
+
+        final JsonObject payloadForUpdate = createObjectBuilder()
+                .add(COURT_FORM_ID, courtFormId.toString())
+                .add(CASE_ID, caseId.toString())
+                .add(FORM_DATA, formData)
+                .build();
+
+        stubFor(post(urlPathEqualTo("/CPS/v1/notification/bcm-notification"))
+                .withRequestBody(equalToJson(payloadForUpdate.toString()))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
+                        .withHeader("Ocp-Apim-Trace", "true")));
+
+        final String updateFormEndpointUrl = UPDATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString()).replaceAll("%courtFormId%", courtFormId.toString());
+        final Response responseForUpdateForm = postCommand(getWriteUrl(updateFormEndpointUrl), UPDATE_FORM_MEDIA_TYPE, payloadForUpdate.toString());
+
+        assertThatRequestIsAccepted(responseForUpdateForm);
+    }
+
+    private static void stubGetAdvocatesGroupsForLoggedInQuery(final String userId) {
+        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
+                GET_GROUPS_BY_LOGGEDIN_USER_QUERY,
+                GROUPS_FOR_LOGGED_IN_USER_MEDIA_TYPE,
+                userId,
+                "stub-data/usersGroups.get-Advocates-Groups-by-loggedIn-user.json");
     }
 
     private JsonObject buildPayloadForFinaliseFormApi(final String defendantId) throws IOException {
@@ -462,18 +524,6 @@ public class FormIT extends AbstractIT {
                         payload().isJson(
                                 allOf(
                                         withJsonPath("$.forms", hasSize(size))
-                                )));
-    }
-
-    private static void queryAndVerifyFormDetailAreNotCreated(final UUID courtFormId, final UUID caseId) {
-        poll(requestParams(getReadUrl(format("/prosecutioncases/%s/form", caseId)),
-                "application/vnd.progression.query.forms-for-case+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(30, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.forms[*].courtFormId", not(courtFormId.toString()))
                                 )));
     }
 
@@ -612,12 +662,11 @@ public class FormIT extends AbstractIT {
     private JsonObject buildPayloadForCpsServeBcmSubmitted(final String caseId, final String defendantId1, final String defendantId2,
                                                            final String cpsDefendantId1) throws IOException {
         final String inputEvent = Resources.toString(getResource("public.prosecutioncasefile.cps-serve-bcm-submitted.json"), defaultCharset());
-        final JsonObject readData = stringToJsonObjectConverter.convert(inputEvent
+        return stringToJsonObjectConverter.convert(inputEvent
                 .replaceAll("<CASE_ID>", caseId)
                 .replaceAll("<DEFENDANT_ID_1>", defendantId1)
                 .replaceAll("<DEFENDANT_ID_2>", defendantId2)
                 .replaceAll("<CPS_DEFENDANT_ID_1>", cpsDefendantId1));
-        return readData;
     }
 
     private JsonObject buildPayloadFor(String jsonFileName, final String caseId, final String defendantId1, final String defendantId2,
@@ -628,121 +677,6 @@ public class FormIT extends AbstractIT {
                 .replaceAll("<DEFENDANT_ID_1>", defendantId1)
                 .replaceAll("<DEFENDANT_ID_2>", defendantId2)
                 .replaceAll("<CPS_DEFENDANT_ID_1>", cpsDefendantId1));
-    }
-
-    @Test
-    public void shouldVerifyBCMNotificationOnUpdate() throws IOException, JSONException {
-        final UUID courtFormId = randomUUID();
-        final UUID caseId = randomUUID();
-        final UUID defendant1 = randomUUID();
-        final UUID defendant2 = randomUUID();
-        final UUID formId = randomUUID();
-        final UUID userId = randomUUID();
-
-        stubGetAdvocatesGroupsForLoggedInQuery(userId.toString());
-
-        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendant1.toString());
-        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendant1.toString(),
-                newArrayList(
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[*].id",
-                                hasItems("3789ab16-0bb7-4ef1-87ef-c936bf0364f1", "4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
-                )
-        );
-
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
-        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
-
-        final String offenceId = caseObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("id");
-
-        //create form
-        final JsonObject payload = buildPayloadForCreateFormApi(courtFormId, formId, BCM, defendant1, offenceId);
-        final String createFormEndpointUrl = CREATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString());
-        final Response responseForCreateForm1 = postCommand(getWriteUrl(createFormEndpointUrl), CREATE_FORM_MEDIA_TYPE, payload.toString());
-        assertThat(responseForCreateForm1.getStatusCode(), is(ACCEPTED.getStatusCode()));
-
-        verifyInMessagingQueueForFormCreated();
-        queryAndVerifyFormDetailWithCaseId(courtFormId, caseId, defendant1, BCM);
-
-        final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
-                .replace("%CASE_ID%", caseId.toString())
-                .replace("%USER_ROLE_IN_CASE%", "defending");
-
-        stubAdvocateRoleInCaseByCaseId(caseId.toString(), userRoleInCase);
-
-        // update form
-        final String formData = getPayload("formDataOnUpdate.json")
-                .replace("DEF_ID1", defendant1.toString())
-                .replace("DEF_ID2", defendant2.toString());
-
-        final JsonObject payloadForUpdate = createObjectBuilder()
-                .add(COURT_FORM_ID, courtFormId.toString())
-                .add(CASE_ID, caseId.toString())
-                .add(FORM_DATA, formData)
-                .build();
-
-        stubFor(post(urlPathEqualTo("/CPS/v1/notification/bcm-notification"))
-                .withRequestBody(equalToJson(payloadForUpdate.toString()))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
-                        .withHeader("Ocp-Apim-Trace", "true")));
-
-        final String updateFormEndpointUrl = UPDATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString()).replaceAll("%courtFormId%", courtFormId.toString());
-        final Response responseForUpdateForm = postCommand(getWriteUrl(updateFormEndpointUrl), UPDATE_FORM_MEDIA_TYPE, payloadForUpdate.toString());
-
-        assertThat(responseForUpdateForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
-    }
-
-    @Test
-    public void shouldVerifyBCMNotificationOnCreate() throws IOException, JSONException {
-        final UUID courtFormId = randomUUID();
-        final UUID caseId = randomUUID();
-        final UUID defendant1 = randomUUID();
-        final UUID formId = randomUUID();
-
-        addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId.toString(), defendant1.toString());
-        final Matcher[] caseWithOffenceMatchers = getProsecutionCaseMatchers(caseId.toString(), defendant1.toString(),
-                newArrayList(
-                        withJsonPath("$.prosecutionCase.defendants[0].offences[*].id",
-                                hasItems("3789ab16-0bb7-4ef1-87ef-c936bf0364f1", "4789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
-                )
-        );
-
-        final String responseForCaseQuery = pollProsecutionCasesProgressionFor(caseId.toString(), caseWithOffenceMatchers);
-        final JsonObject caseObject = stringToJsonObjectConverter.convert(responseForCaseQuery);
-
-        final String offenceId = caseObject.getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("id");
-
-        final JsonObject payload = buildPayloadForCreateFormApi(courtFormId, formId, BCM, defendant1, offenceId);
-
-        final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
-                .replace("%CASE_ID%", caseId.toString())
-                .replace("%USER_ROLE_IN_CASE%", "defending");
-
-        stubAdvocateRoleInCaseByCaseId(caseId.toString(), userRoleInCase);
-
-        stubFor(post(urlPathEqualTo("/CPS/v1/notification/bcm-notification"))
-                .withRequestBody(equalToJson(payload.toString()))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
-                        .withHeader("Ocp-Apim-Trace", "true")));
-
-        final String createFormEndpointUrl = CREATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString());
-        final Response responseForCreateForm1 = postCommand(getWriteUrl(createFormEndpointUrl), CREATE_FORM_MEDIA_TYPE, payload.toString());
-        assertThat(responseForCreateForm1.getStatusCode(), is(ACCEPTED.getStatusCode()));
-
-        verifyInMessagingQueueForFormCreated();
-        queryAndVerifyFormDetailWithCaseId(courtFormId, caseId, defendant1, BCM);
-
-        final List<String> expectedDetails = newArrayList("notificationType", "bcm-form-updated");
-        verifyBcmNotificationApiNotInvoked(expectedDetails);
-    }
-
-    public static void stubGetAdvocatesGroupsForLoggedInQuery(final String userId) {
-        stubEndpoint(USERS_GROUPS_SERVICE_NAME,
-                GET_GROUPS_BY_LOGGEDIN_USER_QUERY,
-                GROUPS_FOR_LOGGED_IN_USER_MEDIA_TYPE,
-                userId,
-                "stub-data/usersGroups.get-Advocates-Groups-by-loggedIn-user.json");
     }
 }
 

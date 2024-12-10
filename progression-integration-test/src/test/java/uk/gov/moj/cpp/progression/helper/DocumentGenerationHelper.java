@@ -11,7 +11,6 @@ import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,10 +18,8 @@ import org.json.JSONObject;
 
 public class DocumentGenerationHelper {
     public static final String ENGLISH_TEMPLATE_NAME = "NPE_RefferalDisqualificationWarning";
-    public static final String TEMPLATE_IDENTIFIER_EMPTY_PAGE = "EmptyPage";
     public static final String WELSE_TEMPLATE_NAME = "NPB_RefferalDisqualificationWarning";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
-    private static final DateTimeFormatter WELSH_DATE_TIME_FORMATTER = DATE_TIME_FORMATTER.withLocale(new Locale("cy"));
     private static String defendantPostCode = "W1T 1JY";
 
     public static void validateEnglishReferalDisqualifyWarning(final JSONObject documentGenerationRequest, final Path testResourceBasePath, final String caseUrn, final Boolean hasWelshPostCode,  final Boolean hasPostCode) {
