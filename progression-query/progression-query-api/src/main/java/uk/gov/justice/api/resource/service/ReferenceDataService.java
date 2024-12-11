@@ -14,6 +14,7 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.exract.ProsecutingAuthority;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -21,17 +22,26 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +54,7 @@ public class ReferenceDataService {
     public static final String REFERENCEDATA_GET_HEARINGTYPES = "referencedata.query.hearing-types";
     private static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     private static final String REFERENCEDATA_QUERY_CLUSTER = "referencedata.query.cluster-org-units";
+    private static final String REFERENCEDATA_QUERY_DOCUMENTS_TYPE_ACCESS = "referencedata.get-all-document-type-access";
 
     private static final String ADDRESS_1 = "address1";
     private static final String ADDRESS_2 = "address2";
@@ -57,6 +68,9 @@ public class ReferenceDataService {
     private static final String FIELD_PLEA_TYPE_DESCRIPTION = "pleaTypeDescription";
     private static final String FIELD_PLEA_VALUE = "pleaValue";
     private static final String FIELD_JUDICIARIES = "judiciaries";
+    private static final String FIELD_DOCUMENTS_TYPE_ACCESS = "documentsTypeAccess";
+    private static final String FIELD_ID = "id";
+    private static final String DEFAULT_VALUE = null;
 
     @Inject
     @ServiceComponent(QUERY_API)
@@ -64,6 +78,8 @@ public class ReferenceDataService {
 
     @Inject
     private Enveloper enveloper;
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
     public Map<String, String> retrievePleaTypeDescriptions() {
         final MetadataBuilder metadataBuilder = metadataBuilder()
@@ -223,6 +239,12 @@ public class ReferenceDataService {
         return  jsonEnvelop;
     }
 
+    public List<DocumentTypeAccessReferenceData> getDocumentsTypeAccess() {
+        return getRefDataStream(REFERENCEDATA_QUERY_DOCUMENTS_TYPE_ACCESS, FIELD_DOCUMENTS_TYPE_ACCESS,
+                createObjectBuilder().add("date", LocalDate.now().toString()))
+                .map(asDocumentsMetadataRefData()).collect(Collectors.toList());
+    }
+
     public static class ReferenceHearingDetails {
         private final UUID hearingTypeId;
         private final String hearingTypeCode;
@@ -251,5 +273,30 @@ public class ReferenceDataService {
         public Boolean getTrialTypeFlag() {
             return trialTypeFlag;
         }
+    }
+
+    private Stream<JsonValue> getRefDataStream(final String queryName, final String fieldName, final JsonObjectBuilder jsonObjectBuilder) {
+        final JsonEnvelope envelope = envelopeFrom(getMetadataBuilder(queryName), jsonObjectBuilder);
+        return requester.requestAsAdmin(envelope, JsonObject.class)
+                .payload()
+                .getJsonArray(fieldName)
+                .stream();
+    }
+
+    private MetadataBuilder getMetadataBuilder(final String queryName) {
+        return JsonEnvelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName(queryName);
+    }
+
+    public static Function<JsonValue, DocumentTypeAccessReferenceData> asDocumentsMetadataRefData() {
+        return jsonValue -> {
+            try {
+                return OBJECT_MAPPER.readValue(jsonValue.toString(), DocumentTypeAccessReferenceData.class);
+            } catch (IOException e) {
+                LOGGER.error("Unable to unmarshal DocumentTypeAccessReferenceDataId: {}", jsonValue.asJsonObject().getString(FIELD_ID, DEFAULT_VALUE), e);
+                return null;
+            }
+        };
     }
 }

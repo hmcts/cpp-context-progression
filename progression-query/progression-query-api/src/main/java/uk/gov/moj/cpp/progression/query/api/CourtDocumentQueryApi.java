@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -30,12 +29,16 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
+
+import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED_INFO;
+import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,12 +167,27 @@ public class CourtDocumentQueryApi {
                 }
             });
 
+            removeDefenceOnlyDocumentsIfAppealLodged(query, finalDocumentList);
+
             final JsonObject resultJson = objectToJsonObjectConverter.convert(Courtdocuments.courtdocuments().withDocumentIndices(finalDocumentList).build());
             return envelopeFrom(query.metadata(), resultJson);
         } else { // for applicationId
             return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, query.payloadAsJsonObject()));
         }
 
+    }
+
+    private void removeDefenceOnlyDocumentsIfAppealLodged(final JsonEnvelope query, final List<CourtDocumentIndex> finalDocumentList) {
+        final JsonEnvelope caagEnvelope = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query);
+        final JsonObject caagObject = caagEnvelope.payloadAsJsonObject();
+        if (caagObject.containsKey(APPEALS_LODGED_INFO) && caagObject.getJsonObject(APPEALS_LODGED_INFO).containsKey(APPEALS_LODGED)
+                && caagObject.getJsonObject(APPEALS_LODGED_INFO).getBoolean(APPEALS_LODGED)) {
+
+            final List<DocumentTypeAccessReferenceData> defenceOnlyDTA = referenceDataService.getDocumentsTypeAccess()
+                    .stream().filter(dta -> dta.getDefenceOnly()).toList();
+
+            finalDocumentList.removeIf(doc -> defenceOnlyDTA.stream().anyMatch(dta -> dta.getDocumentCategory().equals(doc.getCategory())));
+        }
     }
 
     public List<CourtDocumentIndex> getFilteredList(final List<CourtDocumentIndex> fetchedDocumentIndices, final List<CourtDocumentIndex> existingDocumentList) {
