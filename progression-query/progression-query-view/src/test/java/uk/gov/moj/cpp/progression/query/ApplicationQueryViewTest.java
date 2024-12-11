@@ -307,7 +307,7 @@ public class ApplicationQueryViewTest {
         when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(mock(ApplicationDetails.class));
         final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
 
-        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class))).thenReturn(mock(ApplicantDetails.class));
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);

@@ -135,7 +135,7 @@ public class ApplicationQueryView {
                 final JsonObject applicationDetailsJson = objectToJsonObjectConverter.convert(applicationDetails);
                 jsonObjectBuilder.add("applicationDetails", applicationDetailsJson);
 
-                final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication);
+                final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, envelope);
                 final JsonObject applicantDetailsJson = objectToJsonObjectConverter.convert(applicantDetails);
                 jsonObjectBuilder.add("applicantDetails", applicantDetailsJson);
 

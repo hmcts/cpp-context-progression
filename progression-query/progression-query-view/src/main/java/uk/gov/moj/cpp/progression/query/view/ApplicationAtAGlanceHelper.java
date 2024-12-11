@@ -13,10 +13,12 @@ import static uk.gov.justice.progression.courts.RespondentDetails.respondentDeta
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCivilApplication;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -24,6 +26,7 @@ import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutingAuthority;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.courts.progression.query.AagResultPrompts;
 import uk.gov.justice.courts.progression.query.AagResults;
 import uk.gov.justice.courts.progression.query.ApplicationDetails;
@@ -32,21 +35,48 @@ import uk.gov.justice.courts.progression.query.ThirdPartyRepresentatives;
 import uk.gov.justice.progression.courts.ApplicantDetails;
 import uk.gov.justice.progression.courts.RespondentDetails;
 import uk.gov.justice.progression.courts.RespondentRepresentatives;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.view.service.OrganisationService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
 @SuppressWarnings({"squid:CommentedOutCodeLine"})
 public class ApplicationAtAGlanceHelper {
 
     private static final String FIRST_LAST_NAME_FORMAT = "%s %s";
+    private static final String DEFENDANTS = "defendants";
+    private static final String DEFENDANT_ID = "defendantId";
+    private static final String ORGANISATION_ADDRESS = "organisationAddress";
+    private static final String ADDRESS_POSTCODE = "addressPostcode";
+
+    @Inject
+    private OrganisationService organisationService;
+
+    @Inject
+    private ProsecutionCaseRepository prosecutionCaseRepository;
+
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     public ApplicationDetails getApplicationDetails(final CourtApplication courtApplication) {
         final ApplicationDetails.Builder applicationBuilder = ApplicationDetails.applicationDetails()
@@ -84,7 +114,7 @@ public class ApplicationAtAGlanceHelper {
     }
 
     @SuppressWarnings({"squid:MethodCyclomaticComplexity"})
-    public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication) {
+    public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication, final JsonEnvelope envelope) {
         final ApplicantDetails.Builder applicantDetailsBuilder = applicantDetails();
         final CourtApplicationParty applicant = courtApplication.getApplicant();
         ofNullable(applicant.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(applicantDetailsBuilder::withName);
@@ -116,6 +146,8 @@ public class ApplicationAtAGlanceHelper {
                 applicantDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
                 applicantDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
             }
+
+            createPresentationForMasterDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
         } else if (nonNull(applicant.getProsecutingAuthority())) {
             final ProsecutingAuthority prosecutingAuthority = applicant.getProsecutingAuthority();
             applicantDetailsBuilder.withName(prosecutingAuthority.getProsecutionAuthorityCode());
@@ -128,6 +160,41 @@ public class ApplicationAtAGlanceHelper {
             applicantDetailsBuilder.withUpdatedOn(applicant.getUpdatedOn());
         }
         return applicantDetailsBuilder.build();
+    }
+
+    private void createPresentationForMasterDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
+                                                      final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
+        if(courtApplication.getSubject() != null &&
+                courtApplication.getSubject().getMasterDefendant() != null &&
+                applicant.getId().equals(courtApplication.getSubject().getId())){
+
+            final UUID subjectMasterDefendantId = courtApplication.getSubject().getMasterDefendant().getMasterDefendantId();
+
+            for(final CourtApplicationCase courtApplicationCase : courtApplication.getCourtApplicationCases()){
+                final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(courtApplicationCase.getProsecutionCaseId());
+                final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+                final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
+                final Optional<UUID> optionalMatchingDefendantId = prosecutionCase.getDefendants()
+                        .stream()
+                        .filter(defendant -> defendant.getMasterDefendantId().equals(subjectMasterDefendantId))
+                        .map(Defendant::getId)
+                        .findFirst();
+
+                if(optionalMatchingDefendantId.isPresent()){
+                    final JsonObject associatedCaseDefendants = organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(envelope,
+                            courtApplicationCase.getProsecutionCaseId().toString());
+                    final JsonArray associatedDefendants = associatedCaseDefendants.getJsonArray(DEFENDANTS);
+
+                    final Optional<JsonObject> matchingCaseDefendant = associatedDefendants.stream().map(x -> (JsonObject) x)
+                            .filter(cd -> optionalMatchingDefendantId.get().toString().equals(cd.getString(DEFENDANT_ID))).findFirst();
+
+                    if (matchingCaseDefendant.isPresent() && nonNull(matchingCaseDefendant.get().getJsonObject(ORGANISATION_ADDRESS))) {
+                        applicantDetailsBuilder.withRepresentation(createOrganisation(matchingCaseDefendant.get()));
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private String getOrganisationPersons(final List<AssociatedPerson> associatedPersonList) {
@@ -335,5 +402,22 @@ public class ApplicationAtAGlanceHelper {
         final Pattern pattern = Pattern.compile("\\w - \\w", Pattern.CASE_INSENSITIVE);
         final Matcher matcher = pattern.matcher(checkValue);
         return matcher.find();
+    }
+
+    private String createOrganisation(final JsonObject completeOrganisationDetails) {
+        final JsonObject address = completeOrganisationDetails.getJsonObject(ORGANISATION_ADDRESS);
+
+        final String address1 = address.containsKey("address1") ? address.getString("address1") : " ";
+        final String address2 = address.containsKey("address2") ? address.getString("address2") : " ";
+        final String address3 = address.containsKey("address3") ? address.getString("address3") : " ";
+        final String address4 = address.containsKey("address4") ? address.getString("address4") : " ";
+        final String postCode = address.containsKey(ADDRESS_POSTCODE) ? address.getString(ADDRESS_POSTCODE) : " ";
+
+        return completeOrganisationDetails.getString("organisationName") + ',' +
+                address1 + ',' +
+                address2 + ',' +
+                address3 + ',' +
+                address4 + ',' +
+                postCode;
     }
 }
