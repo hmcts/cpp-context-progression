@@ -26,6 +26,7 @@ import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated.sendNotificationForAutoApplicationInitiated;
 import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
@@ -45,6 +46,7 @@ import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonAddress;
 import static uk.gov.moj.cpp.progression.utils.TestUtils.verifyPersonEmail;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseSubjects;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -73,6 +75,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.RecipientType;
@@ -122,7 +125,16 @@ public class NotificationServiceTest {
     private static final String PROGRESSION_COMMAND_EMAIL = "progression.command.email";
     private static final String PROGRESSION_COMMAND_COURT_DOCUMENT = "progression.command.create-court-document";
     private static final String PUBLIC_PROGRESSION_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
-    private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+    //private final JsonEnvelope envelope = envelopeFrom(metadataWithRandomUUIDAndName(), createObjectBuilder().build());
+    private final String RECIPIENT_TYPE = "Defendant" ;
+    private final JsonEnvelope envelope = envelopeFrom(metadataFrom(
+                    JsonObjects.createObjectBuilder(metadataWithRandomUUIDAndName().build().asJsonObject())
+                            .add("recipientType", RECIPIENT_TYPE)
+                            .build())
+                    .build(),
+            createObjectBuilder().build());
+
+
 
     private UUID caseId;
 
@@ -1010,7 +1022,12 @@ public class NotificationServiceTest {
 
         verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
 
-        assertThat(this.envelopeArgumentCaptor.getAllValues().get(2), jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
+        JsonEnvelope firstMessage = this.envelopeArgumentCaptor.getAllValues().get(0);
+        assertThat(firstMessage.metadata().asJsonObject().getString("recipientType"), is(RECIPIENT_TYPE));
+
+        JsonEnvelope secondMessage = this.envelopeArgumentCaptor.getAllValues().get(2);
+        assertThat(secondMessage.metadata().asJsonObject().getString("recipientType"), is(RECIPIENT_TYPE));
+        assertThat(secondMessage, jsonEnvelope(metadata().withName(PROGRESSION_COMMAND_EMAIL), payloadIsJson(allOf(
                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
                 withJsonPath("$.notifications[0].sendToAddress", equalTo("thirdParties@test.com"))))));
     }

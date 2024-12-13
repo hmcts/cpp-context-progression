@@ -55,7 +55,7 @@ import com.google.common.base.Strings;
 public class PrisonCourtRegisterEventProcessor {
 
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD = DateTimeFormatter.ofPattern("ddMMyy");
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD = DateTimeFormatter.ofPattern("ddMMyyyy");
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PrisonCourtRegisterEventProcessor.class);
     private static final String PRISON_COURT_REGISTER_TEMPLATE = "OEE_Layout5";
     private static final String FIELD_RECIPIENTS = "recipients";
@@ -131,7 +131,7 @@ public class PrisonCourtRegisterEventProcessor {
         if(prisonCourtRegister.containsKey("defendant") &&
                 prisonCourtRegister.getJsonObject("defendant").containsKey("name")) {
             String defendantName = prisonCourtRegister.getJsonObject("defendant").getString("name");
-            filenameForCaseUpload[0] = String.format("PCR_%s_dateOfHearing_%s.pdf", defendantName, utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD));
+            filenameForCaseUpload[0] = String.format("PCR_%s_%s.pdf", defendantName, utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD));
         }
 
         UUID materialId = randomUUID();

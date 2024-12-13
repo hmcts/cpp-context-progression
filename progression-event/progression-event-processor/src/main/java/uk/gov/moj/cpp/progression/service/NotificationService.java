@@ -45,6 +45,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.RecipientType;
@@ -70,6 +71,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -200,7 +202,13 @@ public class NotificationService {
             final JsonObject emailPayload = payloadBuilder.build();
 
             LOGGER.info("sending email payload - {}", emailPayload);
+/*            Function<Object, JsonEnvelope> objectJsonEnvelopeFunction = enveloper.withMetadataFrom(sourceEnvelope, "progression.command.email");
+            //JsonEnvelope.envelopeFrom(Envelope.metadataFrom(sourceEnvelope).withSource().build())*/
 
+            //JsonEnvelope ee = Enveloper.toEnvelopeWithMetadataFrom(sourceEnvelope).apply(emailPayload);
+
+            //JsonEnvelope newe = enveloper.withMetadataFrom(sourceEnvelope, "progression.command.email").apply(emailPayload);
+            //sender.send(newe);
             sender.send(enveloper.withMetadataFrom(sourceEnvelope, "progression.command.email").apply(emailPayload));
 
         } else {

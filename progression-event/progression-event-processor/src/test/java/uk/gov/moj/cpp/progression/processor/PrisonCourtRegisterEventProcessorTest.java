@@ -182,7 +182,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         verify(this.fileStorer).store(any(JsonObject.class), any(ByteArrayInputStream.class));
         List<Envelope<JsonObject>> commandList = envelopeArgumentCaptor.getAllValues();
 
-        assertThat(commandList.get(0).metadata().name(), is("progression.add-court-document"));
+        assertThat(commandList.get(0).metadata().name(), is("progression.command.add-court-document"));
         assertThat(commandList.get(0).payload().containsKey("materialId"), is(true));
         assertThat(commandList.get(0).payload().containsKey("courtDocument"), is(true));
         assertThat(commandList.get(0).payload().containsKey("courtDocument"), is(true));

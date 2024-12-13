@@ -70,6 +70,7 @@ public class NotificationNotifyService {
         final JsonObject letterNotification = notificationBuilder.build();
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("sending letter notification - {} ", letterNotification);
+            LOGGER.info(">>2047 sending letter notification event - {} ", event.metadata().asJsonObject());
         }
 
         sender.sendAsAdmin(
@@ -84,6 +85,7 @@ public class NotificationNotifyService {
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("sending email notification - {} ", emailNotification);
+            LOGGER.info(">>2047 sending email notification event - {} ", event.metadata().asJsonObject());
         }
 
         sender.sendAsAdmin(
