@@ -17,6 +17,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import com.google.common.io.Resources;
+import org.json.JSONException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -46,7 +47,7 @@ public class DefendantUpdateDifferenceServiceTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void calculateDefendantUpdate(final String testCase) throws IOException {
+    public void calculateDefendantUpdate(final String testCase) throws IOException, JSONException {
 
         DefendantUpdateDifferenceService defendantUpdateDifferenceService = new DefendantUpdateDifferenceService();
 

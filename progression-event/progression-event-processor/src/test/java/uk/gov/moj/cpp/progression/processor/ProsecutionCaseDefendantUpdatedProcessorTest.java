@@ -467,8 +467,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
         final JsonObject sampleJsonObject = createObjectBuilder().build();
 
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
-
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
                         .withUserId(randomUUID().toString())
                         .withId(randomUUID())
@@ -499,8 +497,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
 
         final JsonObject sampleJsonObject = createObjectBuilder().build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
                         .withUserId(randomUUID().toString())
