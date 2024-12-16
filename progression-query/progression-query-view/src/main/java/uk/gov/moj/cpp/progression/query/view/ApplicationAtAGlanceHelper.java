@@ -128,6 +128,10 @@ public class ApplicationAtAGlanceHelper {
             final Optional<String> representationName = getRepresentationName(applicant);
             representationName.ifPresent(applicantDetailsBuilder::withRepresentation);
 
+            if(representationName.isEmpty()){
+                createPresentationForSubjectDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
+            }
+
             final Optional<String> remandStatus = getRemandStatus(applicant);
             remandStatus.ifPresent(applicantDetailsBuilder::withRemandStatus);
         } else if (nonNull(organisation)) {
@@ -147,7 +151,7 @@ public class ApplicationAtAGlanceHelper {
                 applicantDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
             }
 
-            createPresentationForMasterDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
+            createPresentationForSubjectDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
         } else if (nonNull(applicant.getProsecutingAuthority())) {
             final ProsecutingAuthority prosecutingAuthority = applicant.getProsecutingAuthority();
             applicantDetailsBuilder.withName(prosecutingAuthority.getProsecutionAuthorityCode());
@@ -162,8 +166,8 @@ public class ApplicationAtAGlanceHelper {
         return applicantDetailsBuilder.build();
     }
 
-    private void createPresentationForMasterDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
-                                                      final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
+    private void createPresentationForSubjectDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
+                                                       final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
         if(courtApplication.getSubject() != null &&
                 courtApplication.getSubject().getMasterDefendant() != null &&
                 applicant.getId().equals(courtApplication.getSubject().getId())){

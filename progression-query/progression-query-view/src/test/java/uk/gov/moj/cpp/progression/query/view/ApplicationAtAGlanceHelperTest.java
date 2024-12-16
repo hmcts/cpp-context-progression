@@ -157,6 +157,88 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
+    public void shouldGetApplicantDetailsWhenApplicantIsAnIndividualAndRepresentationOrganisationIsNull() {
+        final Address address = mock(Address.class);
+
+        final UUID caseId = randomUUID();
+        final UUID applicantId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+
+        final Person person = person()
+                .withFirstName(STRING_GENERATOR.next())
+                .withLastName(STRING_GENERATOR.next())
+                .withAddress(address)
+                .withDateOfBirth(now().minusYears(18L))
+                .withNationalityDescription(STRING_GENERATOR.next())
+                .build();
+
+        final CourtApplicationParty applicant = courtApplicationParty()
+                .withId(applicantId)
+                .withPersonDetails(person)
+                .withMasterDefendant(MasterDefendant.masterDefendant().
+                        withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(defendantId).withCaseId(caseId).build())).build())
+                .build();
+
+        final UUID id = randomUUID();
+        final UUID caseId1 = randomUUID();
+        final UUID caseId2 = randomUUID();
+
+        final CourtApplicationCase courtApplicationCase1 = CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId1).build();
+        final CourtApplicationCase courtApplicationCase2 = CourtApplicationCase.courtApplicationCase().withProsecutionCaseId(caseId2).build();
+
+        final CourtApplication courtApplication = courtApplication()
+                .withId(id)
+                .withSubject(courtApplicationParty().withId(applicantId)
+                        .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId).build()).
+                        build())
+                .withApplicant(applicant)
+                .withCourtApplicationCases(List.of(courtApplicationCase1, courtApplicationCase2))
+                .build();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", randomUUID().toString())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
+                .withName("progression.query.application.aaag"), payload);
+
+        final JsonObject representation = Json.createObjectBuilder()
+                .add("defendants", Json.createArrayBuilder().add(
+                        Json.createObjectBuilder()
+                                .add("defendantId", masterDefendantId.toString())
+                                .add("organisationName", "organisationName")
+                                .add("organisationAddress", Json.createObjectBuilder()
+                                        .add("address1", "address1")
+                                        .add("address2", "address2")
+                                        .add("address3", "address3")
+                                        .add("address4", "address4")
+                                        .add("addressPostcode", "addressPostcode")
+                                )
+                )).build();
+
+        final ProsecutionCaseEntity prosecutionCaseEntity = mock(ProsecutionCaseEntity.class);
+        final String prosecutionCaseEntityPayload = "payload";
+        final JsonObject prosecutionCaseEntityJsonObject = mock(JsonObject.class);
+        final Defendant defendant1 = Defendant.defendant().withId(masterDefendantId).withMasterDefendantId(masterDefendantId).build();
+        final Defendant defendant2 = Defendant.defendant().withId(randomUUID()).withMasterDefendantId(randomUUID()).build();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withDefendants(List.of(defendant1, defendant2)).build();
+
+        when(organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(any(Envelope.class), anyString()))
+                .thenReturn(representation);
+        when(prosecutionCaseRepository.findByCaseId(caseId1)).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseEntity.getPayload()).thenReturn(prosecutionCaseEntityPayload);
+        when(stringToJsonObjectConverter.convert(prosecutionCaseEntityPayload)).thenReturn(prosecutionCaseEntityJsonObject);
+        when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase);
+
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+        assertThat(applicantDetails.getName(), is(format("%s %s", person.getFirstName(), person.getLastName())));
+        assertThat(applicantDetails.getAddress(), is(address));
+        assertThat(applicantDetails.getInterpreterLanguageNeeds(), is(person.getInterpreterLanguageNeeds()));
+        assertThat(applicantDetails.getRepresentation(), is("organisationName,address1,address2,address3,address4,addressPostcode"));
+    }
+
+    @Test
     public void shouldGetApplicantDetailsWhenApplicantIsAnOrganisation() {
 
         final Organisation applicantOrgan = organisation()
