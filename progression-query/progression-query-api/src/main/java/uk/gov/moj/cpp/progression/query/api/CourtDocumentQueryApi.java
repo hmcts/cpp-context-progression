@@ -189,7 +189,7 @@ public class CourtDocumentQueryApi {
                     .stream().filter(dta -> nonNull(dta.getDefenceOnly()) && TRUE.equals(dta.getDefenceOnly())).toList();
 
             finalDocumentList.removeIf(doc -> defenceOnlyDTA.stream()
-                    .anyMatch(dta -> isNotEmpty(dta.getDocumentCategory()) && isNotEmpty(doc.getCategory()) && dta.getDocumentCategory().equals(doc.getCategory())));
+                    .anyMatch(dta -> isNotEmpty(dta.getSection()) && isNotEmpty(doc.getType()) && dta.getSection().equals(doc.getType())));
         }
     }
 

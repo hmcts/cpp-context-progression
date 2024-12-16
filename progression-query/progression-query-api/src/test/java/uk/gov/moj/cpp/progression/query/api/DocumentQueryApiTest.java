@@ -58,7 +58,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class DocumentQueryApiTest {
     public static final String CASE_LEVEL = "case level";
     public static final String DEFENDANT_LEVEL = "defendant level";
-    public static final String DOCUMENT_CATEGORY = "documentCategory";
+    public static final String SECTION = "sectionValue";
     @InjectMocks
     private final CourtDocumentQueryApi target = new CourtDocumentQueryApi();
     @Mock
@@ -433,7 +433,7 @@ public class DocumentQueryApiTest {
         final Courtdocuments courtdocuments = Courtdocuments.courtdocuments()
                 .withDocumentIndices(singletonList(CourtDocumentIndex.courtDocumentIndex()
                         .withCaseIds(singletonList(randomUUID()))
-                        .withCategory(DOCUMENT_CATEGORY)
+                        .withType(SECTION)
                         .build()))
                 .build();
 
@@ -467,7 +467,7 @@ public class DocumentQueryApiTest {
         final Courtdocuments courtdocuments = Courtdocuments.courtdocuments()
                 .withDocumentIndices(singletonList(CourtDocumentIndex.courtDocumentIndex()
                         .withCaseIds(singletonList(randomUUID()))
-                        .withCategory(DOCUMENT_CATEGORY)
+                        .withType(SECTION)
                         .build()))
                 .build();
         when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
@@ -477,7 +477,7 @@ public class DocumentQueryApiTest {
                 .documentTypeAccessReferenceData()
                 .withId(randomUUID())
                 .withDefenceOnly(false)
-                .withDocumentCategory(DOCUMENT_CATEGORY)
+                .withSection(SECTION)
                 .build()));
 
         //Given
@@ -506,7 +506,7 @@ public class DocumentQueryApiTest {
         final Courtdocuments courtdocuments = Courtdocuments.courtdocuments()
                 .withDocumentIndices(singletonList(CourtDocumentIndex.courtDocumentIndex()
                         .withCaseIds(singletonList(randomUUID()))
-                        .withCategory(DOCUMENT_CATEGORY)
+                        .withType(SECTION)
                         .build()))
                 .build();
         when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
@@ -516,7 +516,7 @@ public class DocumentQueryApiTest {
                 .documentTypeAccessReferenceData()
                 .withId(randomUUID())
                 .withDefenceOnly(true)
-                .withDocumentCategory(DOCUMENT_CATEGORY)
+                .withSection(SECTION)
                 .build()));
 
         //Given
