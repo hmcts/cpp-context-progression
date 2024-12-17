@@ -117,7 +117,6 @@ public class PrisonCourtRegisterEventProcessor {
     @SuppressWarnings("squid:S1160")
     @Handles("progression.event.prison-court-register-recorded")
     public void generatePrisonCourtRegister(final JsonEnvelope envelope) throws IOException, FileServiceException {
-        LOGGER.info(">>2047 generatePrisonCourtRegister payload {}", envelope.payloadAsJsonObject());
         final JsonObject payload = envelope.payloadAsJsonObject();
         JsonObject mappedPayload = prisonCourtRegisterPdfPayloadGenerator.mapPayload(payload);
         final byte[] pdfDocumentInBytes = this.generateDocument(PRISON_COURT_REGISTER_TEMPLATE, mappedPayload);
@@ -139,7 +138,7 @@ public class PrisonCourtRegisterEventProcessor {
         List<Optional<UUID>> caseUUIDList = getCaseUUID(envelope, payload);
         caseUUIDList.stream().forEach(c -> {
             if (c.isPresent()){
-                LOGGER.info(">>2047 adding court document for case id {}", c.get());
+                LOGGER.info("Adding court document for case id {}", c.get());
                 addCourtDocument(envelope, c.get(), materialId, filenameForCaseUpload[0]);
             }
         });

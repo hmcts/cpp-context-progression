@@ -9,11 +9,9 @@ import static uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime.updateCour
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.justice.services.messaging.JsonMetadata.SOURCE;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.APPLICATION;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.MATERIAL;
-import static uk.gov.moj.cpp.progression.service.NotificationService.CASE_ID;
 
 import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -113,16 +111,12 @@ public class NotificationNotifyEventProcessor {
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
 
-        logger.info(format(">>2047 public.notificationnotify.events.notification-sent  : %s", event.metadata()));
-        logger.info(format(">>2047 public.notificationnotify.events.notification-sent  : %s", event.payloadAsJsonObject()));
-
-        if (event.payloadAsJsonObject().containsKey(SOURCE_TYPE) &&
-                SourceType.EMAIL.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE)) ||
-                SourceType.LETTER.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE))) {
-            generateAndAddEmailDocument(event);
-        }
-
         if (systemIdMapping.isPresent()) {
+            if (event.payloadAsJsonObject().containsKey(SOURCE_TYPE) &&
+                    SourceType.EMAIL.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE)) ||
+                    SourceType.LETTER.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE))) {
+                generateAndAddEmailDocument(event, systemIdMapping.get().getTargetId());
+            }
             notificationService.recordNotificationRequestSuccess(event, systemIdMapping.get().getTargetId(), CASE);
         } else {
             final Optional<SystemIdMapping> applicationSystemIdMapping = systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString());
@@ -139,17 +133,13 @@ public class NotificationNotifyEventProcessor {
         }
     }
 
-    private void generateAndAddEmailDocument(final JsonEnvelope event) {
-        logger.info(">>2047 payload received in generateAndAddEmailDocument {}", event.payloadAsJsonObject());
-        logger.info(">>2047 event metadata {}", event.metadata());
-        logger.info(">>2047 event metadata {}", event.metadata().userId() != null?event.metadata().userId():"no user id");
+    private void generateAndAddEmailDocument(final JsonEnvelope event, final UUID caseId) {
         final JsonObject emailDocumentJson = event.payloadAsJsonObject();
-        final UUID caseId = emailDocumentJson.containsKey(CASE_ID) ? UUID.fromString(emailDocumentJson.getString(CASE_ID)) : null ;
         final String recipientType = emailDocumentJson.containsKey("recipientType") ? emailDocumentJson.getString("recipientType") :  "None";
         final String sourceType = emailDocumentJson.getString("sourceType");
 
         if(caseId == null || recipientType.equals("None")){
-            logger.error(">>2047 Email or Letter Document is not generated as case id is {} and recipient Type is {}", caseId, recipientType);
+            logger.error("Email or Letter Document is not generated as case id is {} and recipient Type is {}", caseId, recipientType);
             return ;
         }
 

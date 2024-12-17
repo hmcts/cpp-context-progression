@@ -81,7 +81,7 @@ public class NotificationRequestProcessor {
 
     @Handles("progression.event.email-requested")
     public void emailDocument(final JsonEnvelope event) {
-        LOGGER.info(">>2047 progression.event.email-requested {} all message {}", event.metadata().asJsonObject(), event.asJsonObject());
+
         final JsonObject eventPayload = event.payloadAsJsonObject();
 
         final JsonArray notifications = eventPayload.getJsonArray("notifications");

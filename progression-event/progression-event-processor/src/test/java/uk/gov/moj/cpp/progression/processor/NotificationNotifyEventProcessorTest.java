@@ -182,12 +182,35 @@ public class NotificationNotifyEventProcessorTest {
                 .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
+
+        notificationNotifyEventProcessor.markNotificationAsSucceeded(emailNotification);
+
+        verify(notificationService).recordNotificationRequestSuccess(emailNotification, systemIdMapping.get().getTargetId(), APPLICATION);
+    }
+
+    @Test
+    public void shouldHandleSucceededPrintOrderRequestForCase() throws FileServiceException {
+        final UUID notificationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final Optional<SystemIdMapping> systemIdMapping = Optional.of(new SystemIdMapping(null, null, null,caseId , null , null ));
+
+        final JsonEnvelope emailNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("EMAIL"))
+                .withPayloadOf(notificationId.toString(), "notificationId")
+                .withPayloadOf("defendant", "recipientType")
+                .withPayloadOf(notificationId.toString(), "caseId")
+                .withPayloadOf("emailBody", "emailBody")
+                .withPayloadOf("emailSubject", "emailSubject")
+                .withPayloadOf("sendToAddress@gmail.com", "sendToAddress")
+                .withPayloadOf("replyToAddress@gmail.com", "replyToAddress")
+                .withPayloadOf("Email","sourceType")
+                .build();
+        when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
         doNothing().when(documentGeneratorService).generateNonNowDocument(eq(emailNotification), any(JsonObject.class), anyString(), any(), anyString());
         doNothing().when(hearingNotificationHelper).addCourtDocument(eq(emailNotification),any(), any(), anyString() );
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(emailNotification);
 
-        verify(notificationService).recordNotificationRequestSuccess(emailNotification, systemIdMapping.get().getTargetId(), APPLICATION);
+        verify(notificationService).recordNotificationRequestSuccess(emailNotification, systemIdMapping.get().getTargetId(), CASE);
         verify(documentGeneratorService).generateNonNowDocument(eq(emailNotification), any(JsonObject.class), anyString(), any(), anyString());
         verify(hearingNotificationHelper).addCourtDocument(eq(emailNotification),any(), any(), anyString());
     }

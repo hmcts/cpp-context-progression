@@ -8,7 +8,6 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CaseDocument;
@@ -32,8 +31,6 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.JsonObjects;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.RecipientType;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
@@ -156,12 +153,11 @@ public class HearingNotificationHelper {
     }
 
     private void sendNotificationToParties(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
-        LOGGER.info(">>2047 sendNotificationToParties {}", objectToJsonObjectConverter.convert(hearingNotificationInputData));
         sendHearingNotificationToDefendant(prosecutionCase, defendant, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
         sendHearingNotificationToProsecutor(prosecutionCase, defendant, prosecutorDetails, enrichedCourtCentre, hearingNotificationInputData, jsonEnvelope);
     }
 
-    private void sendHearingNotificationToDefendant(final ProsecutionCase prosecutionCase, final Defendant defendant, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, JsonEnvelope jsonEnvelope) {
+    private void sendHearingNotificationToDefendant(final ProsecutionCase prosecutionCase, final Defendant defendant, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
         LOGGER.info("Sending HearingNotification on HearingId {} and DefendantId {}", hearingNotificationInputData.getHearingId(), defendant.getId());
         final UUID caseId = prosecutionCase.getId();
         final UUID defendantId = defendant.getId();
@@ -178,31 +174,25 @@ public class HearingNotificationHelper {
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
-        LOGGER.info(">>2047 adding {} sendHearingNotificationToDefendant" , fileName);
 
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
         if (nonNull(defenceOrganisationVO)) {
-            jsonEnvelope = getJsonEnvelopeWithRecipientType(jsonEnvelope, RecipientType.DEFENCE.getRecipientName());
             sendNotificationToDefendantOrganisation(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO, materialId, materialUrl, notificationId);
         } else if (nonNull(defendant.getPersonDefendant())) {
             final PersonDefendant personDefendant = defendant.getPersonDefendant();
-            jsonEnvelope = getJsonEnvelopeWithRecipientType(jsonEnvelope, RecipientType.DEFENDANT.getRecipientName());
             sendNotificationToPersonDefendant(hearingNotificationInputData, jsonEnvelope, caseId, personDefendant, materialId, materialUrl, notificationId);
         } else if (nonNull(defendant.getLegalEntityDefendant())) {
             final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
-            jsonEnvelope = getJsonEnvelopeWithRecipientType(jsonEnvelope, RecipientType.DEFENDANT.getRecipientName());
             sendNotificationToLegalEntityDefendant(hearingNotificationInputData, jsonEnvelope, caseId, legalEntityDefendant, materialId, materialUrl, notificationId);
         }
     }
 
     public void addCourtDocument(final JsonEnvelope jsonEnvelope, final UUID caseId, final UUID materialId, final String fileName) {
-        LOGGER.info(">>2047 Adding court document with caseId : {}, materialId : {} , fileName : {}", caseId, materialId, fileName);
         final CourtDocument courtDocument = buildCourtDocument(caseId, materialId, fileName);
         final JsonObject jsonObject = createObjectBuilder()
                 .add("materialId", materialId.toString())
                 .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                 .build();
-        LOGGER.info(">>2047 addCourtDocument {} ", jsonObject);
         final Envelope<JsonObject> data = envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata())
                 .withName("progression.command.add-court-document"), jsonObject);
         sender.send(data);
@@ -239,11 +229,6 @@ public class HearingNotificationHelper {
         } else {
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENCE);
         }
-    }
-
-    private static JsonEnvelope getJsonEnvelopeWithRecipientType(JsonEnvelope jsonEnvelope, final String recipientType) {
-        final JsonObject metadata = JsonObjects.createObjectBuilder(jsonEnvelope.metadata().asJsonObject()).add("recipientType", recipientType).build();
-        return JsonEnvelope.envelopeFrom(metadataFrom(metadata).build(),jsonEnvelope.payloadAsJsonObject());
     }
 
     private void sendNotificationToPersonDefendant(final HearingNotificationInputData hearingNotificationInputData, JsonEnvelope jsonEnvelope, final UUID caseId, final PersonDefendant personDefendant,
@@ -290,7 +275,7 @@ public class HearingNotificationHelper {
     }
 
 
-    private void sendHearingNotificationToProsecutor(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, JsonEnvelope jsonEnvelope) {
+    private void sendHearingNotificationToProsecutor(final ProsecutionCase prosecutionCase, final Defendant defendant, final Optional<JsonObject> prosecutorDetails, final CourtCentre enrichedCourtCentre, final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope) {
         final UUID caseId = prosecutionCase.getId();
         if (!prosecutorDetails.isPresent()) {
             LOGGER.info("Hearing notification will not be sent for caseId {} due to absence of prosecutor details", caseId);
@@ -317,9 +302,7 @@ public class HearingNotificationHelper {
         documentGeneratorService.generateNonNowDocument(jsonEnvelope, documentPayload, templateName, materialId, fileName);
         final String materialUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
         final UUID notificationId = randomUUID();
-        LOGGER.info(">>2047 adding {} in sendHearingNotificationToProsecutor ",fileName );
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
-        jsonEnvelope = getJsonEnvelopeWithRecipientType(jsonEnvelope, RecipientType.PROSECUTOR.getRecipientName());
 
         if (isNotEmpty(prosecutorEmail)) {
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId, RecipientType.PROSECUTOR);
