@@ -69,8 +69,8 @@
           "home": " ",
           "work": "a",
           "mobile": " ",
-          "primaryEmail": "!.!@00.00",
-          "secondaryEmail": "!.!@00.00",
+          "primaryEmail": "applicant@email.com",
+          "secondaryEmail": "applicant-secondary@email.com",
           "fax": "a"
         },
         "personMarkers": [

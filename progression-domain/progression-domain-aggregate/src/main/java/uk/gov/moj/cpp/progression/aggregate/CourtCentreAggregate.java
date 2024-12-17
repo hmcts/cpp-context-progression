@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -22,8 +23,11 @@ import uk.gov.justice.listing.courts.PublishCourtList;
 import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotificationIgnored;
 import uk.gov.justice.progression.courts.CourtRegisterNotified;
+import uk.gov.justice.progression.courts.CourtRegisterNotifiedV2;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -32,14 +36,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CourtCentreAggregate implements Aggregate {
-    private static final long serialVersionUID = 101L;
+    private static final long serialVersionUID = 102L;
     private List<CourtRegisterRecipient> courtRegisterRecipients;
+
+    private UUID courtCentreId;
+    private ZonedDateTime registerDate;
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
                 when(CourtRegisterRecorded.class).apply(e -> {
-                    // Do something here if needed.
+                    this.courtCentreId = e.getCourtCentreId();
+                    this.registerDate = e.getCourtRegister().getRegisterDate();
                 }),
                 when(PrisonCourtRegisterRecorded.class).apply(e -> {
                     // Do something here if needed.
@@ -54,14 +62,14 @@ public class CourtCentreAggregate implements Aggregate {
 
                     if (isNotEmpty(courtRegisterWithRecipients)) {
                         this.courtRegisterRecipients = courtRegisterWithRecipients.stream().findFirst().get().getRecipients();
+                        if (isNull(courtCentreId)){
+                            this.courtCentreId = courtRegisterWithRecipients.stream().findFirst().get().getCourtCentreId();
+                            this.registerDate = courtRegisterWithRecipients.stream().findFirst().get().getRegisterDate();
+                        }
                     }
                 }),
                 otherwiseDoNothing()
         );
-    }
-
-    public Stream<Object> createCourtRegister(final UUID courtCentreId, final CourtRegisterDocumentRequest courtRegisterDocumentRequest) {
-        return apply(Stream.of(new CourtRegisterRecorded(courtCentreId, courtRegisterDocumentRequest)));
     }
 
     public Stream<Object> createPrisonCourtRegister(final UUID courtCentreId, final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest, final String defendantType) {
@@ -84,22 +92,18 @@ public class CourtCentreAggregate implements Aggregate {
         }
     }
 
-    public Stream<Object> generateDocument(final List<CourtRegisterDocumentRequest> courtRegisterDocumentRequests, final boolean systemGenerated) {
-        return apply(Stream.of(CourtRegisterGenerated.courtRegisterGenerated()
-                .withCourtRegisterDocumentRequests(courtRegisterDocumentRequests)
-                .withSystemGenerated(systemGenerated)
-                .build()));
-    }
-
     public Stream<Object> notifyCourt(final NotifyCourtRegister notifyCourtRegister) {
         if (isEmpty(courtRegisterRecipients)) {
             return apply(Stream.of(CourtRegisterNotificationIgnored.courtRegisterNotificationIgnored()
                     .withMaterialId(notifyCourtRegister.getSystemDocGeneratorId())
-                    .withCourtCentreId(notifyCourtRegister.getCourtCentreId()).build()));
+                    .withCourtCentreId(courtCentreId).build()));
         }
-        return apply(Stream.of(CourtRegisterNotified.courtRegisterNotified().withRecipients(courtRegisterRecipients)
+        return apply(Stream.of(CourtRegisterNotifiedV2.courtRegisterNotifiedV2()
+                .withRecipients(courtRegisterRecipients)
                 .withSystemDocGeneratorId(notifyCourtRegister.getSystemDocGeneratorId())
-                .withCourtCentreId(notifyCourtRegister.getCourtCentreId()).build()));
+                .withCourtCentreId(courtCentreId)
+                .withRegisterDate(registerDate.toLocalDate())
+                .build()));
     }
 
     //should be used only in test

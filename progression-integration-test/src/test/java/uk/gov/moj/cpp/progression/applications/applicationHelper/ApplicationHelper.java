@@ -63,13 +63,13 @@ public class ApplicationHelper {
                 getCourtApplicationJson3(applicationId, caseId, defendantId, masterDefendantId, hearingId, fileName));
     }
 
-    public static Response intiateCourtProceedingForApplicationWithRespondents(final String id2, final String id3,
+    public static Response intiateCourtProceedingForApplicationWithRespondents(final String defendantId1, final String defendantId2,
                                                                                final String applicationId, final String caseId, final String defendantId,
                                                                                final String masterDefendantId, final String address,
                                                                                final String hearingId, final String fileName) throws IOException {
         return postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json",
-                getCourtApplicationJson3WithAddressUpdate(id2, id3, applicationId, caseId, defendantId, masterDefendantId, address , hearingId, fileName));
+                getCourtApplicationJson3WithAddressUpdate(defendantId1, defendantId2, applicationId, caseId, defendantId, masterDefendantId, address , hearingId, fileName));
     }
     public static Response initiateCourtProceedingsForCourtApplication(final String applicationId, final String caseId, final String hearingId, final String fileName) throws IOException {
         return postCommand(getWriteUrl("/initiate-application"),
@@ -83,10 +83,10 @@ public class ApplicationHelper {
                 getCourtApplicationJson(null, null, hearingId, masterDefendantId, fileName));
     }
 
-    public static void pollForCourtApplication(final String applicationId, final Matcher... matchers) {
-        poll(requestParams(getReadUrl("/applications/" + applicationId),
+    public static String pollForCourtApplication(final String applicationId, final Matcher... matchers) {
+        return poll(requestParams(getReadUrl("/applications/" + applicationId),
                 "application/vnd.progression.query.application+json").withHeader(USER_ID, randomUUID()))
-                .until(status().is(OK), payload().isJson(allOf(matchers)));
+                .until(status().is(OK), payload().isJson(allOf(matchers))).getPayload();
     }
 
     public static void pollForCourtApplicationCase(final String caseId) {
@@ -105,7 +105,7 @@ public class ApplicationHelper {
         }
 
         if (isNotBlank(caseId)) {
-            payload = payload.replace("CASE_ID", caseId);
+            payload = payload.replaceAll("CASE_ID", caseId);
         }
         if (isNotBlank(hearingId)) {
             payload = payload.replace("HEARING_ID", hearingId);
@@ -138,18 +138,18 @@ public class ApplicationHelper {
         return payloadJson;
     }
 
-    private static String getCourtApplicationJson3WithAddressUpdate(final String id2, final String id3, final String applicationId, final String caseId, final String defendantId,
+    private static String getCourtApplicationJson3WithAddressUpdate(final String defendantId1, final String defendantId2, final String applicationId, final String caseId, final String defendantId,
                                                                     final String masterDefendantId, final String address,
                                                                     final String hearingId, final String fileName) throws IOException {
         return Resources.toString(getResource(fileName), Charset.defaultCharset())
                 .replace("APPLICATION_ID", applicationId)
                 .replace("CASE_ID", caseId)
-                .replace("DEFENDANT_ID1", id2)
-                .replace("MASTERDEFENDANTID1", id2)
+                .replace("DEFENDANT_ID1", defendantId1)
+                .replace("MASTERDEFENDANTID1", defendantId1)
                 .replace("DEFENDANT_ID2", defendantId)
                 .replace("MASTERDEFENDANTID2", masterDefendantId)
-                .replace("DEFENDANT_ID3", id3)
-                .replace("MASTERDEFENDANTID3", id3)
+                .replace("DEFENDANT_ID3", defendantId2)
+                .replace("MASTERDEFENDANTID3", defendantId2)
                 .replace("ADDRESS", address)
                 .replace("HEARING_ID", hearingId);
     }

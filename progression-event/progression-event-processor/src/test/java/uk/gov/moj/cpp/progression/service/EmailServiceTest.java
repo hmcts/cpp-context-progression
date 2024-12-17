@@ -55,7 +55,7 @@ public class EmailServiceTest {
     private static final UUID MATERIAL_ID = UUID.fromString("5e1cc18c-76dc-47dd-99c1-d6f87385edf1");
     private static final String URN = "URN";
     private static final String MATERIAL_SECTIONS_URL = "MATERIAL_SECTIONS_URL";
-    private static final String URI_TO_MATERIAL = "defence/case/materials?caseId=%s&material=%s";
+    private static final String URI_TO_MATERIAL = "defence/case/materials/%s/%s/defending?advocate=true";
     private static final String DEFENDANT_PATH_PARAM = "&defendantId=";
 
     /*
@@ -146,7 +146,7 @@ public class EmailServiceTest {
         assertThat(emailNotificationsCaptor.getValue().get(0).getSendToAddress(), is("email@abc.com"));
         assertThat(emailNotificationsCaptor.getValue().get(0).getMaterialUrl(), nullValue());
         assertThat(emailNotificationsCaptor.getValue().get(0).getPersonalisation().getAdditionalProperties().get(URN), is(URN_VALUE));
-        final String expectedURL = "EndClientHost".concat(format(URI_TO_MATERIAL, CASE_ID, MATERIAL_ID).concat(DEFENDANT_PATH_PARAM).concat(DEFENDANT1.toString()));
+        final String expectedURL = "EndClientHost".concat(format(URI_TO_MATERIAL, URN_VALUE, CASE_ID).concat(DEFENDANT_PATH_PARAM).concat(DEFENDANT1.toString()));
         assertThat(emailNotificationsCaptor.getValue().get(0).getPersonalisation().getAdditionalProperties().get(MATERIAL_SECTIONS_URL), is(expectedURL));
     }
 

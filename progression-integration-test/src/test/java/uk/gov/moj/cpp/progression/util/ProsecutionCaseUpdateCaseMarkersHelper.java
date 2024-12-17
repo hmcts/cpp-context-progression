@@ -2,11 +2,9 @@ package uk.gov.moj.cpp.progression.util;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasToString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -17,7 +15,6 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,28 +35,15 @@ public class ProsecutionCaseUpdateCaseMarkersHelper extends AbstractTestHelper {
         this.prosecutionCaseId = prosecutionCaseId;
     }
 
-    public void updateCaseMarkers(final JmsMessageConsumerClient privateEventsConsumer) {
+    public void updateCaseMarkers() {
         request = getPayload(TEMPLATE_UPDATE_CASE_MARKERS_PAYLOAD);
         makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
-        verifyInActiveMQ(privateEventsConsumer);
 
     }
 
-    public void removeCaseMarkers(final JmsMessageConsumerClient privateEventsConsumer) {
+    public void removeCaseMarkers() {
         request = getPayload(TEMPLATE_REMOVE_CASE_MARKERS_PAYLOAD);
         makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
-        verifyInActiveMQ(privateEventsConsumer);
-
-    }
-
-    private void verifyInActiveMQ(final JmsMessageConsumerClient privateEventsConsumer) {
-        final JsonPath jsRequest = new JsonPath(request);
-        LOGGER.info("Request payload: {}", jsRequest.prettify());
-
-        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
-        LOGGER.info("message in queue payload: {}", jsonResponse.prettify());
-
-        assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
     }
 
     public void verifyInMessagingQueueForCaseMarkersUpdated(final JmsMessageConsumerClient publicEventsCaseMarkersUpdated) {

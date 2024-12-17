@@ -20,13 +20,9 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
@@ -61,6 +57,7 @@ import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
+import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
@@ -179,9 +176,6 @@ import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsReq
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.Hearing;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetCompleted;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetInvalidated;
-import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingSheetPreviouslyCompleted;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantAdded;
 import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.domain.event.defendant.Offence;
@@ -233,8 +227,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.json.Json;
@@ -1109,86 +1101,6 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldApplyCompleteSendingSheet() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-        final List<Object> objects = applySendingSheet(a -> {
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetCompleted.class));
-        assertSendingSheetCompletedValues((SendingSheetCompleted) obj);
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetWrongCourtCentre() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-        final List<Object> objects = applySendingSheet(a -> {
-            ReflectionUtil.setField(this.caseAggregate, "courtCentreId", null);
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertTrue(sendingSheetInvalidated.getDescription().contains(CC_COURT_CENTRE_ID));
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetNoDefendants() {
-        final List<Object> objects = applySendingSheet(a -> {
-            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>());
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertEquals(sendingSheetInvalidated.getCaseId(), fromString(CASE_ID));
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetWrongDefendants() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-        final List<Object> objects = applySendingSheet(a -> {
-            final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
-            defendant.setId(UUID.randomUUID());
-            ReflectionUtil.setField(this.caseAggregate, "defendants", new HashSet<>(asList(defendant)));
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertEquals(sendingSheetInvalidated.getCaseId(), fromString(CASE_ID));
-    }
-
-    @Test
-    public void shouldInvalidateSendingSheetWrongOffences() {
-        when(this.jsonObj.getJsonObject("crownCourtHearing"))
-                .thenReturn(Json.createObjectBuilder().add("ccHearingDate", CC_HEARING_DATE)
-                        .add("courtCentreName", CC_COURT_CENTRE_NAME).add("courtCentreId", CC_COURT_CENTRE_ID)
-                        .build());
-
-        final List<Object> objects = applySendingSheet(a -> {
-            final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
-            ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetInvalidated.class));
-        final SendingSheetInvalidated sendingSheetInvalidated = (SendingSheetInvalidated) obj;
-        assertEquals(sendingSheetInvalidated.getCaseId(), fromString(CASE_ID));
-        assertTrue(sendingSheetInvalidated.getDescription().contains(OFFENCE_ID));
-
-    }
-
-    @Test
     public void shouldHandleConvictionDateAdded() {
 
         final UUID caseId = randomUUID();
@@ -1218,41 +1130,6 @@ public class CaseAggregateTest {
 
         assertThat(((ConvictionDateRemoved) response).getCaseId(), is(caseId));
         assertThat(((ConvictionDateRemoved) response).getOffenceId(), is(offenceId));
-    }
-
-    private List<Object> applySendingSheet(final Consumer<CaseAggregate> adjustInternals) {
-        createCompleteSendingSheetEnvelope();
-        final SendingSheetCompleted sendingSheetCompleted = new SendingSheetCompleted();
-        final Hearing hearing = new Hearing();
-        hearing.setCaseId(UUID.fromString("4daefec6-5f77-4109-82d9-1e60544a6c05"));
-        sendingSheetCompleted.setHearing(hearing);
-        final Set<uk.gov.moj.cpp.progression.domain.event.Defendant> defendants = new HashSet<>();
-        final uk.gov.moj.cpp.progression.domain.event.Defendant defendant = new uk.gov.moj.cpp.progression.domain.event.Defendant();
-        defendants.add(defendant);
-        defendant.setId(UUID.fromString(DEFENDANT_ID));
-        final Map<UUID, Set<UUID>> offenceIdsByDefendantId = new HashMap<>();
-        offenceIdsByDefendantId.put(UUID.fromString(DEFENDANT_ID), new HashSet(asList(UUID.fromString(OFFENCE_ID))));
-        //green path internals
-        ReflectionUtil.setField(this.caseAggregate, "courtCentreId", CC_COURT_CENTRE_ID);
-        ReflectionUtil.setField(this.caseAggregate, "defendants", defendants);
-        ReflectionUtil.setField(this.caseAggregate, "offenceIdsByDefendantId", offenceIdsByDefendantId);
-        adjustInternals.accept(this.caseAggregate);
-
-        final Stream<Object> stream = this.caseAggregate.completeSendingSheet(this.envelope);
-        return stream.collect(Collectors.toList());
-
-    }
-
-    @Test
-    public void shouldApplyCompleteSendingSheetPreviouslyCompleted() {
-        final List<Object> objects = applySendingSheet(a -> {
-            final Set<UUID> caseIdsWithCompletedSendingSheet = new HashSet<>(asList(UUID.fromString(CASE_ID)));
-            ReflectionUtil.setField(this.caseAggregate, "caseIdsWithCompletedSendingSheet", caseIdsWithCompletedSendingSheet);
-        });
-        assertThat(objects.size(), is(1));
-        final Object obj = objects.get(0);
-        assertThat(obj, instanceOf(SendingSheetPreviouslyCompleted.class));
-        assertThat(CASE_ID, equalTo(((SendingSheetPreviouslyCompleted) obj).getCaseId().toString()));
     }
 
     private void createDefendant(final UUID defendantId) {
@@ -1316,13 +1193,6 @@ public class CaseAggregateTest {
                                 .add("endDate", END_DATE).build()))
                         .build()).build())
                 .build());
-    }
-
-    private void assertSendingSheetCompletedValues(final SendingSheetCompleted ssCompleted) {
-        assertThat(CC_HEARING_DATE, equalTo(ssCompleted.getCrownCourtHearing().getCcHearingDate()));
-        assertThat(CC_COURT_CENTRE_ID, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreId().toString()));
-        assertThat(CC_COURT_CENTRE_NAME, equalTo(ssCompleted.getCrownCourtHearing().getCourtCentreName()));
-        assertSendingSheetCompletedHearingValues(ssCompleted.getHearing());
     }
 
     private void assertSendingSheetCompletedHearingValues(final Hearing hearing) {
@@ -4488,11 +4358,11 @@ public class CaseAggregateTest {
 
     @Test
     public void isDefendantAddressToBeChangedWhenLeAddressIsChanged() {
-        final UUID caseId = randomUUID();
+        final UUID caseId = fromString("f824d930-9876-466a-8c2f-d23b395d8370");
         final Map<UUID, Defendant> defendantsMap = new HashMap<>();
-        final UUID defendantId1 = randomUUID();
-        final UUID defendantId2 = randomUUID();
-        final UUID masterDefendantId = randomUUID();
+        final UUID defendantId2 = fromString("a1e90b9c-22da-4055-a451-679971469b5b");
+        final UUID defendantId1 = fromString("3b3e5f94-750e-4f6e-9f6c-d7804f1a0857");
+        final UUID masterDefendantId = fromString("7e34cbbd-d973-4bd2-9727-2b33d0637703");
 
         final Defendant defendant1 = defendant()
                 .withId(defendantId1)
@@ -4720,6 +4590,7 @@ public class CaseAggregateTest {
         assertThat(defendantCustodialInformationUpdateRequested.getProsecutionCaseId(), is(caseId));
 
     }
+
 
     @Test
     public void shouldUpdateDefendantDetails_WhenSameCustodialInformationIsPresent() {
@@ -6895,6 +6766,121 @@ public class CaseAggregateTest {
         final OnlinePleasAllocation onlinePleasAllocation = caseAggregate.getOnlinePleasAllocation(defendantId);
 
         assertThat(defendantId, Matchers.is(onlinePleasAllocation.getDefendantId()));
+    }
+
+    @Test
+    public void shouldSendNewOffencesToHearingWhenOffenceAdded(){
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID offenceId4 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId);
+
+        final List<uk.gov.justice.core.courts.Offence> newOffences = singletonList(uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId4).build());
+
+        List<Object> eventStream = caseAggregate.updateOffences(newOffences, caseId, defendantId1, Optional.of(createJsonList())).collect(toList());
+
+        Optional<AllHearingOffencesUpdatedV2> event = eventStream.stream().filter(e -> e.getClass().getName().contains("AllHearingOffencesUpdatedV2")).map(AllHearingOffencesUpdatedV2.class::cast).findFirst();
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getNewOffences().size(), is(1));
+        assertThat(event.get().getNewOffences().get(0).getId(), is(offenceId4));
+        assertThat(event.get().getUpdatedOffences(), is(Matchers.nullValue()));
+
+    }
+
+    @Test
+    public void shouldSendUpdatedOffencesToHearingWhenOffenceUpdated(){
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId);
+
+        final List<uk.gov.justice.core.courts.Offence> newOffences = singletonList(uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId1).build());
+
+        List<Object> eventStream = caseAggregate.updateOffences(newOffences, caseId, defendantId1, Optional.of(createJsonList())).collect(toList());
+
+        Optional<AllHearingOffencesUpdatedV2> event = eventStream.stream().filter(e -> e.getClass().getName().contains("AllHearingOffencesUpdatedV2")).map(AllHearingOffencesUpdatedV2.class::cast).findFirst();
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getUpdatedOffences().size(), is(1));
+        assertThat(event.get().getUpdatedOffences().get(0).getId(), is(offenceId1));
+        assertThat(event.get().getNewOffences(), is(nullValue()));
+
+    }
+
+    @Test
+    public void shouldSendAllOffencesToHearingWhenOffenceAddedAndUpdated(){
+
+        final UUID caseId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        final UUID offenceId4 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(caseId).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId);
+
+        final List<uk.gov.justice.core.courts.Offence> newOffences = asList(uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId4).build(), uk.gov.justice.core.courts.Offence.offence()
+                .withId(offenceId1).build());
+
+        List<Object> eventStream = caseAggregate.updateOffences(newOffences, caseId, defendantId1, Optional.of(createJsonList())).collect(toList());
+
+        Optional<AllHearingOffencesUpdatedV2> event = eventStream.stream().filter(e -> e.getClass().getName().contains("AllHearingOffencesUpdatedV2")).map(AllHearingOffencesUpdatedV2.class::cast).findFirst();
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getNewOffences().size(), is(1));
+        assertThat(event.get().getNewOffences().get(0).getId(), is(offenceId4));
+        assertThat(event.get().getUpdatedOffences().size(), is(1));
+        assertThat(event.get().getUpdatedOffences().get(0).getId(), is(offenceId1));
+
     }
 
     @Test

@@ -33,7 +33,6 @@ import uk.gov.moj.cpp.progression.handler.CreateProsecutionCaseInHearingCommandH
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

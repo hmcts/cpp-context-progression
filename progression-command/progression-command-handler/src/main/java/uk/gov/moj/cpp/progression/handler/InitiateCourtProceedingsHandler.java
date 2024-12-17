@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.Objects.isNull;
-import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 

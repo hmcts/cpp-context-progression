@@ -54,42 +54,16 @@ public class BaseVerificationCountHelper {
         assertThat("Incorrect exceptions count", exceptionCount, is(exceptionCountExpected));
     }
 
-    public void resetCounts() {
-        caseDocumentsCount = 0;
-        partiesCount = 0;
-        aliasesCount = 0;
-        personDefendantCount = 0;
-        legalEntityDefendantCount = 0;
-        offencesCount = 0;
-        exceptionCount = 0;
-        hearingsCount = 0;
-    }
-
-    public int getHearingsCount() {
-        return hearingsCount;
-    }
-
     public int incrementHearingsCount() {
         return hearingsCount++;
-    }
-
-    public int getCaseDocumentsCount() {
-        return caseDocumentsCount;
     }
 
     public void incrementCaseDocumentsCount() {
         caseDocumentsCount++;
     }
-    public int getPartiesCount() {
-        return partiesCount;
-    }
 
     public void incrementPartiesCount() {
         partiesCount++;
-    }
-
-    public int getOffencesCount() {
-        return offencesCount;
     }
 
     public void incrementOffencesCount() {
@@ -97,32 +71,16 @@ public class BaseVerificationCountHelper {
     }
 
 
-    public int getAliasesCount() {
-        return aliasesCount;
-    }
-
     public void incrementAliasesCount() {
         aliasesCount++;
-    }
-
-    public int getPersonDefendantCount() {
-        return personDefendantCount;
     }
 
     public void incrementPersonDefendantCount() {
         personDefendantCount++;
     }
 
-    public int getLegalEntityDefendantCount() {
-        return legalEntityDefendantCount;
-    }
-
     public void incrementLegalEntityCount() {
         legalEntityDefendantCount++;
-    }
-
-    public int getExceptionCount() {
-        return exceptionCount;
     }
 
     public void incrementExceptionCount() {

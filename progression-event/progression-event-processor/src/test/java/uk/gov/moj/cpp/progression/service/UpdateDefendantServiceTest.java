@@ -8,6 +8,7 @@ import static uk.gov.justice.core.courts.CustodialEstablishment.custodialEstabli
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.utils.FileUtil.*;
 
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
@@ -17,9 +18,12 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelope;
+import uk.gov.moj.cpp.progression.utils.FileUtil;
 
 import java.util.UUID;
 
+
+import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +80,7 @@ public class UpdateDefendantServiceTest {
         assertThat(jsonEnvelopeCaptor.getValue().payloadAsJsonObject().getString("id"), is(defendant.getId().toString()));
         assertThat(jsonEnvelopeCaptor.getValue().payloadAsJsonObject().getJsonObject("defendant").getString("id"), is(defendant.getId().toString()));
     }
+
 
     private Metadata metadataFor(final String commandName, final UUID commandId) {
         return metadataBuilder()

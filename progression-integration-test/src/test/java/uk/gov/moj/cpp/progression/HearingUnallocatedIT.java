@@ -86,8 +86,7 @@ public class HearingUnallocatedIT extends AbstractIT {
                 singletonList(withJsonPath("$.prosecutionCase.id", is(prosecutionCaseId)))));
 
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        return prosecutionCaseDefendantListingStatusChanged;
+        return message.get();
     }
 
     private JsonObject getHearingMarkedAsUnallocatedObject(final String hearingId, final String offenceId) {

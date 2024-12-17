@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -105,6 +106,14 @@ public class CourtDocumentAddedProcessorTest {
                 createObjectBuilder()
                         .add("id", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27")
         ).add("courtDocument",
+                createObjectBuilder()
+                        .add("courtDocumentId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e28")
+                        .add("documentTypeId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e28")
+                        .add("name", "SJP Notice")).build();
+    }
+
+    private static JsonObject buildDocumentAddedWithoutProsecutionCaseId() {
+        return createObjectBuilder().add("courtDocument",
                 createObjectBuilder()
                         .add("courtDocumentId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e28")
                         .add("documentTypeId", "2279b2c3-b0d3-4889-ae8e-1ecc20c39e28")
@@ -361,6 +370,18 @@ public class CourtDocumentAddedProcessorTest {
 
         final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
         verifyPublicDocumentAdded(commands.get(0), requestMessage);
+    }
+
+    @Test
+    public void addDocumentWithProsecutionCaseIdShouldNotCallPublicDocumentAddedIfProsecutionCaseIsNull() {
+
+        final JsonObject documentAddedWithProsecutionCaseId = buildDocumentAddedWithoutProsecutionCaseId();
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.document-with-prosecution-case-id-added"),
+                documentAddedWithProsecutionCaseId);
+
+        eventProcessor.handleAddDocumentWithProsecutionCaseId(requestMessage);
+        verify(sender, never()).send(envelopeCaptor.capture());
     }
 
     @Test

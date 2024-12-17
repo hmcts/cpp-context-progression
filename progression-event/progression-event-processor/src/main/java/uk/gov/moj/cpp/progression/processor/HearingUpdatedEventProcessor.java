@@ -14,7 +14,9 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.getEarliestDate;
 
-import uk.gov.justice.core.courts.AllHearingOffencesUpdated;
+
+import javax.json.JsonObjectBuilder;
+import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
@@ -66,6 +68,8 @@ public class HearingUpdatedEventProcessor {
     public static final String HEARING_ID = "hearingId";
     private static final String AMENDED_HEARING_NOTIFICATION_TEMPLATE_NAME = "AmendedHearingNotification";
     public static final String PROGRESSION_COMMAND_UPDATE_APPLICATION_DEFENDANT = "progression.command.update-application-defendant";
+    public static final String UPDATED_OFFENCES = "updatedOffences";
+    public static final String NEW_OFFENCES = "newOffences";
 
     @Inject
     private ProgressionService progressionService;
@@ -197,22 +201,31 @@ public class HearingUpdatedEventProcessor {
                 .withMetadataFrom(event));
     }
 
-    @Handles("progression.event.all-hearing-offences-updated")
+    @Handles("progression.event.all-hearing-offences-updated-v2")
     public void handleAllHearingOffenceUpdated(final JsonEnvelope event) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("progression.event.all-hearing-offences-updated event received with  {}", event.toObfuscatedDebugString());
         }
         final JsonObject privateEventPayload = event.payloadAsJsonObject();
-        final AllHearingOffencesUpdated allHearingOffencesUpdated = jsonObjectToObjectConverter.convert(privateEventPayload, AllHearingOffencesUpdated.class);
-        allHearingOffencesUpdated.getHearingIds().forEach(hearingId ->
-                sender.send(envelop(Json.createObjectBuilder()
-                        .add("defendantId", allHearingOffencesUpdated.getDefendantId().toString())
-                        .add(HEARING_ID, hearingId.toString())
-                        .add("updatedOffences", privateEventPayload.get("updatedOffences"))
-                        .build()).withName("progression.command.update-offences-for-hearing").withMetadataFrom(event)));
+        final AllHearingOffencesUpdatedV2 allHearingOffencesUpdated = jsonObjectToObjectConverter.convert(privateEventPayload, AllHearingOffencesUpdatedV2.class);
+
+
+        allHearingOffencesUpdated.getHearingIds().forEach(hearingId -> {
+                   final JsonObjectBuilder payload = Json.createObjectBuilder()
+                           .add("defendantId", allHearingOffencesUpdated.getDefendantId().toString())
+                           .add(HEARING_ID, hearingId.toString());
+                   if(privateEventPayload.containsKey(UPDATED_OFFENCES)){
+                       payload.add(UPDATED_OFFENCES, privateEventPayload.get(UPDATED_OFFENCES));
+                   }
+                   if(privateEventPayload.containsKey(NEW_OFFENCES)){
+                       payload.add(NEW_OFFENCES, privateEventPayload.get(NEW_OFFENCES));
+                   }
+                    sender.send(envelop(payload.build()).withName("progression.command.update-offences-for-hearing").withMetadataFrom(event));
+                }
+        );
     }
 
-    @Handles("progression.event.hearing-offences-updated")
+    @Handles("progression.event.hearing-offences-updated-v2")
     public void handleHearingOffenceUpdated(final JsonEnvelope event) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("progression.event.hearing-offences-updated event received with  {}", event.toObfuscatedDebugString());

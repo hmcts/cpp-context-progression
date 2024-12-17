@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -18,11 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtFirstHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithCommittingCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.listNewHearing;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
@@ -34,29 +37,29 @@ import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrgan
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-
-import org.hamcrest.CoreMatchers;
-
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
+import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.jms.JMSException;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import org.hamcrest.CoreMatchers;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,115 +72,46 @@ public class ListNewHearingIT extends AbstractIT {
     private static final JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
 
 
+    private String prosecutorEmail;
+
     @BeforeEach
     public void setUp() {
         stubInitiateHearing();
         setupLoggedInUsersPermissionQueryStub();
         stubDocumentCreate(DOCUMENT_TEXT);
-    }
-
-
-    @Test
-    public void shouldCreateNewHearing() throws IOException, JMSException, JSONException {
-        final String CASE_ID = randomUUID().toString();
-        final String DEFENDANT_ID = randomUUID().toString();
-
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", DEFENDANT_ID);
-
-        addProsecutionCaseToCrownCourt(CASE_ID, DEFENDANT_ID, generateUrn());
-        verifyPostListCourtHearing(CASE_ID, DEFENDANT_ID);
-        pollProsecutionCasesProgressionFor(CASE_ID, getProsecutionCaseMatchers(CASE_ID, DEFENDANT_ID));
-        String hearingId;
-        final JmsMessageConsumerClient messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.list-hearing-requested").getMessageConsumerClient();
-
-        PreAndPostConditionHelper.listNewHearing(CASE_ID, DEFENDANT_ID);
-
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerListHearingRequested, isJson(allOf(withJsonPath("$.listNewHearing.listDefendantRequests[0].prosecutionCaseId", is(CASE_ID)), withJsonPath("$.listNewHearing.listDefendantRequests[0].defendantId", is(DEFENDANT_ID)), withJsonPath("$.listNewHearing.bookingType", is("Video")), withJsonPath("$.listNewHearing.priority", is("High")), withJsonPath("$.listNewHearing.specialRequirements", hasSize(2)), withJsonPath("$.listNewHearing.specialRequirements", hasItems("RSZ", "CELL")))));
-        assertNotNull(message);
-        hearingId = message.getString("hearingId");
-
-
-
-
-        verifyAddCourtDocument(messageConsumerCourtDocumentAddedPrivateEvent);
-        verifyPostListCourtHearing(CASE_ID, DEFENDANT_ID, "8e837de0-743a-4a2c-9db3-b2e678c48729");
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingId)), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")));
-
-    }
-
-
-    @Test
-    public void shouldCreateNewHearing_sendDefendantEmailNotification_NoCPSProsecutorNotification() throws IOException, JMSException, JSONException {
-        final JmsMessageConsumerClient messageConsumerEmailRequestPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.email-requested").getMessageConsumerClient();
-
-        final String CASE_ID = randomUUID().toString();
-        final String DEFENDANT_ID = randomUUID().toString();
-
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", DEFENDANT_ID);
-
-        addProsecutionCaseToCrownCourt(CASE_ID, DEFENDANT_ID, generateUrn());
-        verifyPostListCourtHearing(CASE_ID, DEFENDANT_ID);
-        pollProsecutionCasesProgressionFor(CASE_ID, getProsecutionCaseMatchers(CASE_ID, DEFENDANT_ID));
-        String hearingId;
-
-        final JmsMessageConsumerClient messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.list-hearing-requested").getMessageConsumerClient();
-
-        PreAndPostConditionHelper.listNewHearing(CASE_ID, DEFENDANT_ID);
-
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerListHearingRequested, isJson(allOf(withJsonPath("$.listNewHearing.listDefendantRequests[0].prosecutionCaseId", is(CASE_ID)), withJsonPath("$.listNewHearing.listDefendantRequests[0].defendantId", is(DEFENDANT_ID)), withJsonPath("$.listNewHearing.bookingType", is("Video")), withJsonPath("$.listNewHearing.priority", is("High")), withJsonPath("$.listNewHearing.specialRequirements", hasSize(2)), withJsonPath("$.listNewHearing.specialRequirements", hasItems("RSZ", "CELL")), withJsonPath("$.sendNotificationToParties", is(true)))));
-        assertNotNull(message);
-        hearingId = message.getString("hearingId");
-
-
-        verifyPostListCourtHearing(CASE_ID, DEFENDANT_ID, "8e837de0-743a-4a2c-9db3-b2e678c48729");
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingId)), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")));
-
-        verifyAddCourtDocument(messageConsumerCourtDocumentAddedPrivateEvent);
-        doVerifyListHearingRequestedPrivateEvent(messageConsumerEmailRequestPrivateEvent, CASE_ID);
+        prosecutorEmail = randomAlphanumeric(15) + "@email.com";
     }
 
     @Test
-    public void shouldCreateNewHearing_sendDefendantLetterNotification_ProsecutorEmailNotification() throws IOException, JMSException, JSONException {
+    public void shouldCreateNewHearing_sendDefendantLetterNotification_ProsecutorEmailNotification() throws IOException, JSONException {
 
-        final JmsMessageConsumerClient messageConsumerEmailRequestPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.email-requested").getMessageConsumerClient();
         final JmsMessageConsumerClient messageConsumerPrintRequestPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.print-requested").getMessageConsumerClient();
 
-        final String CASE_ID = randomUUID().toString();
-        final String DEFENDANT_ID = randomUUID().toString();
+        final String caseId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+        final String prosecutionAuthorityId = randomUUID().toString();
 
-        stubQueryProsecutorData("/restResource/referencedata.query.prosecutor-noncps.json", randomUUID());
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation-no-email.json", DEFENDANT_ID);
+        stubProsecutorData(prosecutorEmail, prosecutionAuthorityId);
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation-no-email.json", defendantId);
 
-        addProsecutionCaseToCrownCourt(CASE_ID, DEFENDANT_ID, generateUrn());
-        verifyPostListCourtHearing(CASE_ID, DEFENDANT_ID);
-        pollProsecutionCasesProgressionFor(CASE_ID, getProsecutionCaseMatchers(CASE_ID, DEFENDANT_ID));
-        String hearingId;
+        addProsecutionCaseToCrownCourt(caseId, prosecutionAuthorityId, generateUrn(), defendantId);
+        verifyPostListCourtHearing(caseId, defendantId);
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JmsMessageConsumerClient messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.list-hearing-requested").getMessageConsumerClient();
+        listNewHearing(caseId, defendantId);
 
-        PreAndPostConditionHelper.listNewHearing(CASE_ID, DEFENDANT_ID);
-
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerListHearingRequested, isJson(allOf(withJsonPath("$.listNewHearing.listDefendantRequests[0].prosecutionCaseId", is(CASE_ID)), withJsonPath("$.listNewHearing.listDefendantRequests[0].defendantId", is(DEFENDANT_ID)), withJsonPath("$.listNewHearing.bookingType", is("Video")), withJsonPath("$.listNewHearing.priority", is("High")), withJsonPath("$.listNewHearing.specialRequirements", hasSize(2)), withJsonPath("$.listNewHearing.specialRequirements", hasItems("RSZ", "CELL")))));
-        assertNotNull(message);
-        hearingId = message.getString("hearingId");
-
-
-        verifyPostListCourtHearing(CASE_ID, DEFENDANT_ID, "8e837de0-743a-4a2c-9db3-b2e678c48729");
+        verifyPostListCourtHearing(caseId, defendantId, "8e837de0-743a-4a2c-9db3-b2e678c48729");
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingId)), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")));
-
         verifyAddCourtDocument(messageConsumerCourtDocumentAddedPrivateEvent);
 
-        doVerifyListHearingRequestedPrivateEvent(messageConsumerEmailRequestPrivateEvent, CASE_ID);
-        doVerifyListHearingRequestedPrivateEvent(messageConsumerPrintRequestPrivateEvent, CASE_ID);
+        verifyEmailNotificationIsRaisedWithAttachment(newArrayList(prosecutorEmail));
+        doVerifyListHearingRequestedPrivateEvent(messageConsumerPrintRequestPrivateEvent, caseId);
 
     }
 
-
     @Test
-    public void shouldExtendAdhocHearingToExistingHearing() throws IOException, JMSException, JSONException {
+    public void shouldExtendAdhocHearingToExistingHearing() throws IOException, JSONException {
         final String CASE_ID = randomUUID().toString();
         final String DEFENDANT_ID = randomUUID().toString();
 
@@ -218,7 +152,6 @@ public class ListNewHearingIT extends AbstractIT {
         final JsonPath message = retrieveMessageAsJsonPath(publicEvent, isJson(allOf(withJsonPath("$.prosecutionCases.length()", is(2)), withJsonPath("$.hearingId", is(hearingPayload.getString("id"))))));
         assertNotNull(message);
         doVerifyListHearingRequestedPrivateEvent(messageConsumerEmailRequestPrivateEvent, CASE_ID, CASE_ID2);
-
 
         pollForResponse("/hearingSearch/" + hearingPayload.getString("id"), PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingPayload.getString("id"))), withJsonPath("$.hearingListingStatus", is("HEARING_INITIALISED")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")), withJsonPath("$.hearing.prosecutionCases.length()", is(2)));
 
@@ -267,6 +200,27 @@ public class ListNewHearingIT extends AbstractIT {
         assertThat(message2.get().getString("caseId"), anyOf(is(caseId), is(caseId2)));
         assertThat(message1.get().getString("caseId"), not(is(message2.get().getString("caseId"))));
 
+    }
+
+    private void stubProsecutorData(final String prosecutorEmail, final String prosecutionAuthorityId) {
+        final String payload = getPayload("restResource/referencedata.query.prosecutor-noncps-random-email.json")
+                .replaceAll("RANDOM_EMAIL", prosecutorEmail)
+                .replaceAll("RANDOM_PROSECUTOR_ID", prosecutionAuthorityId);
+        final JsonObject payloadAsJsonObject = new StringToJsonObjectConverter().convert(payload);
+        stubQueryProsecutorData(payloadAsJsonObject, fromString(prosecutionAuthorityId), randomUUID());
+    }
+
+    public Response addProsecutionCaseToCrownCourt(final String caseId, final String prosecutionAuthorityId, final String caseUrn, final String defendantId) throws IOException, JSONException {
+
+        final String payload = getPayload("progression.command.prosecution-case-refer-to-court-random-prosecutor.json")
+                .replaceAll("RANDOM_CASE_ID", caseId)
+                .replaceAll("RANDOM_PROSECUTION_AUTHORITY_ID", prosecutionAuthorityId)
+                .replaceAll("RANDOM_REFERENCE", caseUrn)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId);
+
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                payload);
     }
 
     private void verifyAddCourtDocument(JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent) {

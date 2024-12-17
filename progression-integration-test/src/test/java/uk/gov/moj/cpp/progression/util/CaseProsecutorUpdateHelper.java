@@ -5,7 +5,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
@@ -15,9 +14,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 
 import io.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 
 public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
 
@@ -36,19 +32,6 @@ public class CaseProsecutorUpdateHelper extends AbstractTestHelper {
     public void updateCaseProsecutor() {
         request = getPayload(TEMPLATE_UPDATE_CASE_PROSECUTOR_PAYLOAD);
         makePostCall(getWriteUrl("/prosecutioncases/" + prosecutionCaseId), WRITE_MEDIA_TYPE, request);
-    }
-
-    public void verifyInActiveMQ(final JmsMessageConsumerClient privateEventsConsumer, final JmsMessageConsumerClient caseProsecutorUpdatedPrivateEventsConsumer) {
-        final JsonPath jsRequest = new JsonPath(request);
-        JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
-        assertThat(jsonResponse.getString("prosecutionAuthorityCode"), is(jsRequest.getString("prosecutionAuthorityCode")));
-        assertThat(jsonResponse.getString("oldCpsProsecutor"), is(jsRequest.getString("oldCpsProsecutor")));
-
-        final JsonPath messageDaysMatchers = retrieveMessageAsJsonPath(caseProsecutorUpdatedPrivateEventsConsumer, isJson(Matchers.allOf(
-                withJsonPath("$.prosecutionAuthorityCode", CoreMatchers.is(jsRequest.getString("prosecutionAuthorityCode"))),
-                withJsonPath("$.oldCpsProsecutor", is(jsRequest.getString("oldCpsProsecutor"))))));
-        Assert.assertNotNull(messageDaysMatchers);
-
     }
 
     public void verifyInMessagingQueueForProsecutorUpdated(int hearingsCount, final JmsMessageConsumerClient publicEventsCaseProsecutorUpdated) {

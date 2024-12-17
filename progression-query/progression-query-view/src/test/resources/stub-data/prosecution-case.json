@@ -1,0 +1,277 @@
+{
+  "caseStatus": "INACTIVE",
+  "cpsOrganisation": "A30AB00",
+  "defendants": [
+    {
+      "courtProceedingsInitiated": "2024-11-21T15:10:24.328Z",
+      "id": "2e450409-c9fb-4a22-8a04-690345e99754",
+      "masterDefendantId": "2e450409-c9fb-4a22-8a04-690345e99754",
+      "offences": [
+        {
+          "arrestDate": "2024-02-06",
+          "chargeDate": "2024-02-07",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "ea188a8f-5435-424b-b6c4-4ac98425c794",
+          "isDisposed": true,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "canBeSubjectOfBreach": true,
+              "canBeSubjectOfVariation": true,
+              "category": "FINAL",
+              "cjsCode": "1116",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "durationElement": {
+                "durationEndDate": "21/08/2024"
+              },
+              "dvlaCode": "M",
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": true,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "7033dac4-0203-4845-b7f8-e0aa4064388a",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isDurationEndDate": true,
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                  "label": "End Date",
+                  "promptReference": "endDate",
+                  "promptSequence": 100,
+                  "type": "DATE",
+                  "usergroups": [],
+                  "value": "21/08/2024",
+                  "welshLabel": "Dyddiad terfyn",
+                  "welshValue": "21/08/2024"
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                  "label": "Responsible officer",
+                  "promptReference": "responsibleOfficer",
+                  "promptSequence": 200,
+                  "type": "FIXL",
+                  "usergroups": [],
+                  "value": "a probation officer",
+                  "welshLabel": "Swyddog cyfrifol",
+                  "welshValue": "swyddog prawf"
+                },
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                  "label": "Supervising Court",
+                  "promptReference": "supervisingCourt",
+                  "promptSequence": 300,
+                  "type": "FIXL",
+                  "usergroups": [],
+                  "value": "Lavender Hill Magistrates' Court",
+                  "welshLabel": "Llys sy’n Goruchwylio",
+                  "welshValue": "Lavender Hill Magistrates' Court"
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                  "label": "Probation team to be notified organisation name",
+                  "promptReference": "probationteamtobenotifiedOrganisationName",
+                  "promptSequence": 700,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [],
+                  "value": "HMPPS London",
+                  "welshValue": "HMPPS London"
+                },
+                {
+                  "courtExtract": "N",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                  "label": "Probation team to be notified email address 1",
+                  "promptReference": "probationteamtobenotifiedEmailAddress1",
+                  "promptSequence": 700,
+                  "type": "NAMEADDRESS",
+                  "usergroups": [],
+                  "value": "londonenforcementmanagers@justice.gov.uk",
+                  "welshValue": "londonenforcementmanagers@justice.gov.uk"
+                }
+              ],
+              "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+              "label": "Community order England / Wales",
+              "lastSharedDateTime": "2024-11-21",
+              "level": "O",
+              "lifeDuration": false,
+              "orderedDate": "2024-11-21",
+              "orderedHearingId": "73edcba8-f205-482f-952f-4fdf8baa701a",
+              "policeSubjectLineTitle": "Final Sentence",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 64000,
+              "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 21/08/2024. ",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "7033dac4-0203-4845-b7f8-e0aa4064388a",
+              "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": []
+            },
+            {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "category": "ANCILLARY",
+              "cjsCode": "3101",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "532f566d-17f3-46c7-b7de-e7476ce21d23",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                  "label": "Number of hours",
+                  "promptReference": "numberOfHours",
+                  "promptSequence": 100,
+                  "type": "INT",
+                  "usergroups": [],
+                  "value": "60 Hours",
+                  "welshLabel": "Nifer yr oriau",
+                  "welshValue": "60 Hours"
+                }
+              ],
+              "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+              "label": "Unpaid work. Requirement to be completed within 12 months.",
+              "lastSharedDateTime": "2024-11-21",
+              "level": "O",
+              "lifeDuration": false,
+              "orderedDate": "2024-11-21",
+              "orderedHearingId": "73edcba8-f205-482f-952f-4fdf8baa701a",
+              "parentJudicialResultId": "81001cbd-85d4-442f-bd11-fd73f09bbaca",
+              "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 68500,
+              "resultDefinitionGroup": "Community Requirement",
+              "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 60 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "7033dac4-0203-4845-b7f8-e0aa4064388a",
+              "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": []
+            }
+          ],
+          "listingNumber": 1,
+          "maxPenalty": "S:L3",
+          "modeOfTrial": "Summary",
+          "offenceCode": "CA03010",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+          "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+          "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+          "offenceTitle": "Use a television set without a licence",
+          "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+          "orderIndex": 1,
+          "proceedingsConcluded": true,
+          "startDate": "2024-02-01",
+          "wording": "Use / install a television set without a licence."
+        }
+      ],
+      "personDefendant": {
+        "arrestSummonsNumber": "2432NR9000009780011Y",
+        "bailConditions": "",
+        "bailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        },
+        "driverNumber": "VANFL002222OW9PI",
+        "personDetails": {
+          "address": {
+            "address1": "Addchangenonmaster",
+            "address2": "WplfoqqP",
+            "address3": "addressline 4",
+            "address4": "BtfgstQQ",
+            "address5": "Elfo",
+            "postcode": "TA1 1AT"
+          },
+          "contact": {
+            "home": "02012345679",
+            "mobile": "07771234568",
+            "primaryEmail": "test02@gmail.com"
+          },
+          "dateOfBirth": "1982-08-12",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "1",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "nonprobtest1",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "nonprobtestlast1",
+          "title": "Mr"
+        },
+        "policeBailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        }
+      },
+      "proceedingsConcluded": true,
+      "prosecutionAuthorityReference": "2432NR9000009780011Y",
+      "prosecutionCaseId": "f01cf2fa-1a5f-4198-b584-4f735a29618e"
+    }
+  ],
+  "id": "f01cf2fa-1a5f-4198-b584-4f735a29618e",
+  "initiationCode": "C",
+  "originatingOrganisation": "0450000",
+  "prosecutionCaseIdentifier": {
+    "address": {
+      "address1": "Surrey Police",
+      "address2": "Mount Browne",
+      "address3": "Sandy Lane",
+      "address4": "Guildford",
+      "postcode": "GU3 1HG"
+    },
+    "contact": {
+      "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+    },
+    "majorCreditorCode": "PO45",
+    "prosecutionAuthorityCode": "SURRPF",
+    "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+    "prosecutionAuthorityName": "Surrey Police",
+    "prosecutionAuthorityOUCode": "0450000",
+    "caseURN": "35NR080611"
+  }
+}

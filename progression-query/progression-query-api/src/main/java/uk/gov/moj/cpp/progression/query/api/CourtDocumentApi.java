@@ -106,11 +106,7 @@ public class CourtDocumentApi {
         final JsonObject prosecutionCase = appQueryResponse.payloadAsJsonObject().getJsonObject("prosecutionCase");
         final ProsecutionCase prosecutionCaseObj = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
         final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(envelope.metadata(), userId, NON_CPS_PROSECUTORS, getShortName(prosecutionCaseObj));
-        if(orgMatch.isPresent()) {
-            if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {
-                throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
-            }
-        } else {
+        if(!orgMatch.isPresent()) {
             isProsecutingCase = defenceQueryService.isUserProsecutingCase(envelope, envelope.payloadAsJsonObject().getString(CASE_ID));
         }
 

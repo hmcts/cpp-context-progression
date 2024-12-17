@@ -4,10 +4,13 @@ import static java.util.Objects.isNull;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getCourtRegisterStreamId;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtRegisterRecorded;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDefendant;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
+import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.GenerateCourtRegister;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -91,44 +94,32 @@ public class CourtRegisterHandler extends AbstractCommandHandler {
         final CourtRegisterDocumentRequest updatedCourtRegisterDocumentRequest = getUpdatedCourtRegisterDocumentRequest(courtRegisterDocumentRequest,
                                                                                                                         defendantType[0]);
 
-        final EventStream eventStream = eventSource.getStreamById(courtCentreId);
+        final UUID courtRegisterId = getCourtRegisterStreamId(courtCentreId.toString(), courtRegisterDocumentRequest.getRegisterDate().toLocalDate().toString());
+        final EventStream eventStream = eventSource.getStreamById(courtRegisterId);
 
-        final CourtCentreAggregate courtCentreAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
-
-        final Stream<Object> events = courtCentreAggregate.createCourtRegister(courtCentreId, updatedCourtRegisterDocumentRequest);
+        final Stream<Object> events = Stream.of(new CourtRegisterRecorded(courtCentreId, updatedCourtRegisterDocumentRequest));
 
         appendEventsToStream(courtRegisterDocumentRequestEnvelope, eventStream, events);
     }
 
-    private UUID getCourtApplicationId(final CourtRegisterDocumentRequest courtRegisterDocumentRequest) {
-        if (isNull(courtRegisterDocumentRequest.getDefendants()) ||
-                isEmpty(courtRegisterDocumentRequest.getDefendants()) ||
-                isEmpty(courtRegisterDocumentRequest.getDefendants().get(0).getProsecutionCasesOrApplications())
-        ) {
-            return null;
-        }
-
-        return courtRegisterDocumentRequest.getDefendants().get(0).getProsecutionCasesOrApplications().get(0).getCourtApplicationId();
-    }
-
     @Handles("progression.command.generate-court-register")
     public void handleGenerateCourtRegister(final Envelope<GenerateCourtRegister> jsonEnvelope) {
-        final Map<String, List<JsonObject>> courtRegisterDocumentRequests = this.getCourtRegisterDocumentRequests(RegisterStatus.RECORDED.name(), jsonEnvelope);
-        courtRegisterDocumentRequests.forEach((courtCentreId, courtRegisterRequest) -> processRequests(courtCentreId, courtRegisterRequest, jsonEnvelope, true));
+        final Map<UUID, List<JsonObject>> courtRegisterDocumentRequests = this.getCourtRegisterDocumentRequests(RegisterStatus.RECORDED.name(), jsonEnvelope);
+        courtRegisterDocumentRequests.forEach((courtRegisterId, courtRegisterRequest) -> processRequests(courtRegisterId, courtRegisterRequest, jsonEnvelope, true));
     }
 
     @Handles("progression.command.generate-court-register-by-date")
     public void handleGenerateCourtRegisterByDate(final Envelope<GenerateCourtRegisterByDate> jsonEnvelope) {
         final GenerateCourtRegisterByDate generateCourtRegisterByDate = jsonEnvelope.payload();
-        final Map<String, List<JsonObject>> courtRegisterDocumentRequests = this.getCourtRegisterDocumentRequestsByDate(generateCourtRegisterByDate, jsonEnvelope);
-        courtRegisterDocumentRequests.forEach((courtCentreId, courtRegisterRequest) -> processRequests(courtCentreId, courtRegisterRequest, jsonEnvelope, false));
+        final Map<UUID, List<JsonObject>> courtRegisterDocumentRequests = this.getCourtRegisterDocumentRequestsByDate(generateCourtRegisterByDate, jsonEnvelope);
+        courtRegisterDocumentRequests.forEach((courtRegisterId, courtRegisterRequest) -> processRequests(courtRegisterId, courtRegisterRequest, jsonEnvelope, false));
     }
 
     @Handles("progression.command.notify-court-register")
     public void handleNotifyCourtCentre(final Envelope<NotifyCourtRegister> jsonEnvelope) throws EventStreamException {
 
         final NotifyCourtRegister notifyCourtRegister = jsonEnvelope.payload();
-        final EventStream eventStream = eventSource.getStreamById(notifyCourtRegister.getCourtCentreId());
+        final EventStream eventStream = eventSource.getStreamById(notifyCourtRegister.getCourtRegisterId());
         final CourtCentreAggregate courtRegisterAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
 
         final Stream<Object> events = courtRegisterAggregate.notifyCourt(notifyCourtRegister);
@@ -177,32 +168,39 @@ public class CourtRegisterHandler extends AbstractCommandHandler {
                 .build();
     }
 
-    private void processRequests(final String courtCentreId, final List<JsonObject> courtRegisterRequest, final Envelope jsonEnvelope, final boolean systemGenerated) {
+    private void processRequests(final UUID courtRegisterId, final List<JsonObject> courtRegisterRequest, final Envelope jsonEnvelope, final boolean systemGenerated) {
         try {
-            final EventStream eventStream = eventSource.getStreamById(UUID.fromString(courtCentreId));
-            final CourtCentreAggregate courtRegisterAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
-            final List<CourtRegisterDocumentRequest> courtRegisterDocumentRequests = courtRegisterRequest.stream().map(r -> stringToJsonObjectConverter.convert(r.getString(("payload"))))
+            final List<CourtRegisterDocumentRequest> courtRegisterDocumentRequests = courtRegisterRequest.stream()
+                    .map(r -> stringToJsonObjectConverter.convert(r.getString(("payload"))))
                     .map(r -> jsonObjectToObjectConverter.convert(r, CourtRegisterDocumentRequest.class))
                     .collect(Collectors.toList());
-            final Stream<Object> events = courtRegisterAggregate.generateDocument(courtRegisterDocumentRequests, systemGenerated);
+
+            final EventStream eventStream = eventSource.getStreamById(courtRegisterId);
+            final Stream<Object> events = Stream.of(CourtRegisterGenerated.courtRegisterGenerated()
+                    .withCourtRegisterDocumentRequests(courtRegisterDocumentRequests)
+                    .withSystemGenerated(systemGenerated)
+                    .build());
+
             appendEventsToStream(jsonEnvelope, eventStream, events);
         } catch (EventStreamException e) {
             LOGGER.error("Generate court register stream exception -->>", e);
         }
     }
 
-    private Map<String, List<JsonObject>> getCourtRegisterDocumentRequests(final String requestStatus, final Envelope envelope) {
+    private Map<UUID, List<JsonObject>> getCourtRegisterDocumentRequests(final String requestStatus, final Envelope envelope) {
         final JsonObject courtRegisterDocumentRequests = this.queryCourtRegisterDocumentRequests(requestStatus, envelope);
 
         return courtRegisterDocumentRequests.getJsonArray(FIELD_COURT_REGISTER_DOCUMENT_REQUESTS).stream()
-                .map(r -> (JsonObject) r).collect(Collectors.groupingBy(request -> request.getString(FIELD_COURT_CENTRE_ID)));
+                .map(r -> (JsonObject) r)
+                .collect(Collectors.groupingBy(request -> getCourtRegisterStreamId(request.getString(FIELD_COURT_CENTRE_ID), request.getString(FIELD_REGISTER_DATE))));
     }
 
-    private Map<String, List<JsonObject>> getCourtRegisterDocumentRequestsByDate(final GenerateCourtRegisterByDate generateCourtRegisterByDate, final Envelope envelope) {
+    private Map<UUID, List<JsonObject>> getCourtRegisterDocumentRequestsByDate(final GenerateCourtRegisterByDate generateCourtRegisterByDate, final Envelope envelope) {
         final JsonObject courtRegisterDocumentRequests = this.queryCourtRegisterDocumentRequestsByDate(generateCourtRegisterByDate, envelope);
 
         return courtRegisterDocumentRequests.getJsonArray(FIELD_COURT_REGISTER_DOCUMENT_REQUESTS).stream()
-                .map(r -> (JsonObject) r).collect(Collectors.groupingBy(request -> request.getString(FIELD_COURT_CENTRE_ID)));
+                .map(r -> (JsonObject) r)
+                .collect(Collectors.groupingBy(request -> getCourtRegisterStreamId(request.getString(FIELD_COURT_CENTRE_ID), request.getString(FIELD_REGISTER_DATE))));
     }
 
     private JsonObject queryCourtRegisterDocumentRequests(final String requestStatus, final Envelope envelope) {
@@ -223,5 +221,16 @@ public class CourtRegisterHandler extends AbstractCommandHandler {
         final Envelope<JsonObject> requestEnvelope = envelopeFrom(metadata, queryParameters.build());
         final JsonEnvelope courtRegisterRequestEnvelope = requester.request(requestEnvelope);
         return courtRegisterRequestEnvelope.payloadAsJsonObject();
+    }
+
+    private UUID getCourtApplicationId(final CourtRegisterDocumentRequest courtRegisterDocumentRequest) {
+        if (isNull(courtRegisterDocumentRequest.getDefendants()) ||
+                isEmpty(courtRegisterDocumentRequest.getDefendants()) ||
+                isEmpty(courtRegisterDocumentRequest.getDefendants().get(0).getProsecutionCasesOrApplications())
+        ) {
+            return null;
+        }
+
+        return courtRegisterDocumentRequest.getDefendants().get(0).getProsecutionCasesOrApplications().get(0).getCourtApplicationId();
     }
 }

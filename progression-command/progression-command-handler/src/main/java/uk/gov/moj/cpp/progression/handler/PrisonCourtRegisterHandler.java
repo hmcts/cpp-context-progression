@@ -4,6 +4,7 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getPrisonCourtRegisterStreamId;
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
@@ -19,6 +20,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -56,7 +58,9 @@ public class PrisonCourtRegisterHandler extends AbstractCommandHandler {
         }
 
 
-        final EventStream eventStream = eventSource.getStreamById(prisonCourtRegisterDocumentRequest.getCourtCentreId());
+        final UUID prisonCourtRegisterId = getPrisonCourtRegisterStreamId(prisonCourtRegisterDocumentRequest.getCourtCentreId().toString(),
+                prisonCourtRegisterDocumentRequest.getHearingDate().toLocalDate().toString());
+        final EventStream eventStream = eventSource.getStreamById(prisonCourtRegisterId);
 
         final CourtCentreAggregate courtCentreAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
 
@@ -82,8 +86,10 @@ public class PrisonCourtRegisterHandler extends AbstractCommandHandler {
         final RecordPrisonCourtRegisterDocumentGenerated prisonCourtRegisterDocumentGenerated = envelope.payload();
 
         final UUID courtCentreId = prisonCourtRegisterDocumentGenerated.getCourtCentreId();
+        final ZonedDateTime hearingDate = prisonCourtRegisterDocumentGenerated.getHearingDate();
 
-        final EventStream eventStream = eventSource.getStreamById(prisonCourtRegisterDocumentGenerated.getCourtCentreId());
+        final UUID prisonCourtRegisterId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDate.toLocalDate().toString());
+        final EventStream eventStream = eventSource.getStreamById(prisonCourtRegisterId);
 
         final CourtCentreAggregate courtCentreAggregate = aggregateService.get(eventStream, CourtCentreAggregate.class);
 

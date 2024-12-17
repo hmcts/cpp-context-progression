@@ -1,24 +1,24 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -32,18 +32,16 @@ import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUER
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.sendNotification;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -56,9 +54,7 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import io.restassured.path.json.JsonPath;
 import org.apache.http.HttpStatus;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -69,20 +65,12 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
-    private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON_WITH_ROOM = "progression.command.create-court-application-send-notification-with-room.json";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
-    private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static final String DOCUMENT_TEXT = STRING.next();
-    private static final String EMAIL_REQUESTED_PRIVATE_EVENT = "progression.event.email-requested";
-    public static final String PROGRESSION_EVENT_SEND_NOTIFICATION_FOR_APPLICATION_IGNORED = "progression.event.send-notification-for-application-ignored";
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
-    public static final String PUBLIC_PROGRESSION_EVENTS_COURT_DOCUMENT_CREATED = "public.progression.events.court-document-created";
 
-    private JmsMessageConsumerClient consumerForEmailRequested;
-    private JmsMessageConsumerClient consumerForIgnoreEvent;
     private JmsMessageConsumerClient consumerForPublicEvent;
-    private JmsMessageConsumerClient consumerForPostalNotificationPublicEvent;
 
     private String userId;
     private String caseId;
@@ -126,6 +114,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
     private String prosecutionAuthorityId;
     private String prosecutionAuthorityCode;
     private String prosecutionAuthorityReference;
+    private String defenceOrganisationEmail;
 
     @BeforeEach
     public void setUp() {
@@ -133,59 +122,32 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         stubInitiateHearing();
         setupData();
         stubQueryCpsProsecutorData("/restResource/referencedata.query.cps.prosecutor.by.oucode.json", randomUUID(), HttpStatus.SC_OK);
-        consumerForEmailRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EMAIL_REQUESTED_PRIVATE_EVENT).getMessageConsumerClient();
-        consumerForIgnoreEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_SEND_NOTIFICATION_FOR_APPLICATION_IGNORED).getMessageConsumerClient();
         consumerForPublicEvent =
                 newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED).getMessageConsumerClient();
 
-        consumerForPostalNotificationPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_COURT_DOCUMENT_CREATED).getMessageConsumerClient();
-
-
-    }
-
-    @Test
-    public void shouldNotSendNotificationWhenApplicationCreatedAndRoomIdIsSet() throws Exception {
-        doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        doHearingConfirmedAndVerify();
-        final String parentApplicationId = randomUUID().toString();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON_WITH_ROOM, parentApplicationId);
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
-        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageBody(consumerForEmailRequested);
-        assertFalse(message.isPresent());
+        defenceOrganisationEmail = randomAlphanumeric(15)+"-defenceorg@email.com";
     }
 
     @Test
     public void shouldSendNotificationWhenApplicationCreated() throws Exception {
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", respondentDefendantId);
-        doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        givenDefendantIsRepresentedByDefenceOrganisation(respondentDefendantId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         doHearingConfirmedAndVerify();
         final String parentApplicationId = randomUUID().toString();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId);
         verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
-        verifyEmailRequestedPrivateEvent();
-    }
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList(defenceOrganisationEmail));
+        verifyEmailNotificationIsRaisedWithAttachment(singletonList("applicant@email.com"));
 
-    @Test
-    public void shouldSendIgnoreEventWhenApplicationCreatedWithBoxWorkRequest() throws Exception {
-        doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        doHearingConfirmedAndVerify();
-        final String parentApplicationId = randomUUID().toString();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId);
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
-        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, true, false);
-        verifyIgnorePrivateEvent();
     }
 
     @Test
     public void shouldSendPublicEventWhenApplicationCreatedWithWelshTranslationRequired() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", respondentDefendantId);
-        doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         doHearingConfirmedAndVerify();
         final String parentApplicationId = randomUUID().toString();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId);
@@ -194,14 +156,15 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         verifyPublicEvent();
     }
 
-    private void doReferCaseToCourtAndVerify() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+    private void givenDefendantIsRepresentedByDefenceOrganisation(final String defendantId) {
+        final String payload = getPayload("stub-data/defence.get-associated-organisation-random-email.json").replace("RANDOM_EMAIL", defenceOrganisationEmail);
+        final JsonObject payloadAsJsonObject = new StringToJsonObjectConverter().convert(payload);
+        stubForAssociatedOrganisation(payloadAsJsonObject, defendantId);
     }
 
     private void doHearingConfirmedAndVerify() {
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(metadataBuilder()
                         .withId(randomUUID())
                         .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
                         .withUserId(userId)
@@ -373,18 +336,6 @@ public class SendNotificationForApplicationIT extends AbstractIT {
                         )));
     }
 
-    private void verifyApplicationAtAGlance(final String applicationId) {
-
-        poll(requestParams(getReadUrl("/applications/" + applicationId), PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(TIMEOUT, SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.applicationId", equalTo(applicationId))
-                        )));
-    }
-
     private void setupData() {
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
@@ -429,40 +380,11 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         prosecutionAuthorityReference = STRING.next();
     }
 
-    private void verifyEmailRequestedPrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageBody(consumerForEmailRequested);
-        assertTrue(message.isPresent());
-        final String applicationIdFromEmailRequested = message.get().getString("applicationId");
-        assertThat(courtApplicationId, CoreMatchers.is(applicationIdFromEmailRequested));
-    }
-
-    private void verifyIgnorePrivateEvent() {
-        final Optional<JsonObject> message = QueueUtil.retrieveMessageBody(consumerForIgnoreEvent);
-        assertTrue(message.isPresent());
-        final String applicationId = message.get().getJsonObject("courtApplication").getString("id");
-        assertThat(courtApplicationId, CoreMatchers.is(applicationId));
-    }
-
     private void verifyPublicEvent() {
         final Optional<JsonObject> message = QueueUtil.retrieveMessageBody(consumerForPublicEvent);
         assertTrue(message.isPresent());
         final String applicantId = message.get().getJsonObject("welshTranslationRequired").getString("masterDefendantId");
-        assertThat("88cdf36e-93e4-41b0-8277-17d9dba7f06f", CoreMatchers.is(applicantId));
+        assertThat("88cdf36e-93e4-41b0-8277-17d9dba7f06f", is(applicantId));
     }
 
-    private void verifyPostalNotificationPublicEvent(final String expectedApplicationId) {
-        final JsonPath message = QueueUtil.retrieveMessageAsJsonPath(consumerForPostalNotificationPublicEvent, isJson(allOf(
-                withJsonPath("$.courtDocument.documentCategory.applicationDocument.applicationId", equalTo(expectedApplicationId)),
-                withJsonPath("$.courtDocument.name", equalTo("PostalNotification"))
-        )));
-        assertNotNull(message);
-    }
-
-    private void sendApplicationNotification(final String progressionCommandCreateCourtApplicationWithIndividualApplicantSendNotification) throws Exception {
-        final String parentApplicationId = randomUUID().toString();
-        doAddCourtApplicationAndVerify(progressionCommandCreateCourtApplicationWithIndividualApplicantSendNotification, parentApplicationId);
-        verifyApplicationAtAGlance(courtApplicationId);
-        doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
-        verifyPostalNotificationPublicEvent(courtApplicationId);
-    }
 }

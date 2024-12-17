@@ -1,10 +1,8 @@
 package uk.gov.moj.cpp.progression.command;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;

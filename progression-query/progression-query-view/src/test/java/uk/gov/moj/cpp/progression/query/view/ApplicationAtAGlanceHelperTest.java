@@ -17,6 +17,7 @@ import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationTy
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
@@ -119,9 +120,9 @@ public class ApplicationAtAGlanceHelperTest {
     @Test
     public void shouldGetApplicantDetailsWhenApplicantIsAnOrganisation() {
 
-        final Address address = mock(Address.class);
         final Organisation applicantOrgan = organisation()
                 .withName(STRING_GENERATOR.next())
+                .withIsProbationBreach(true)
                 .withAddress(Address.address()
                         .withAddress1("Address 1")
                         .withAddress2("Address 2")
@@ -196,6 +197,7 @@ public class ApplicationAtAGlanceHelperTest {
 
         final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication);
         assertThat(applicantDetails.getName(), is(applicantOrgan.getName()));
+        assertTrue(applicantDetails.getIsProbationBreach());
         assertThat(applicantDetails.getAddress(), is(applicantOrgan.getAddress()));
         assertThat(courtApplication.getApplicant().getOrganisationPersons(), notNullValue());
         assertThat(applicantDetails.getRepresentation(),is("Rob Paine, Ali Lawson"));
@@ -270,6 +272,7 @@ public class ApplicationAtAGlanceHelperTest {
         final Organisation organisation = organisation()
                 .withName(organisationName)
                 .withAddress(address)
+                .withIsProbationBreach(true)
                 .build();
 
         final String firstName = STRING_GENERATOR.next();
@@ -300,11 +303,12 @@ public class ApplicationAtAGlanceHelperTest {
                 .withRespondents(courtApplicationRespondents)
                 .build();
 
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.       getRespondentDetails(courtApplication);
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
         assertThat(respondentDetails.size(), is(1));
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getName(), is(organisationName));
         assertThat(details.getAddress(), is(address));
+        assertTrue(details.getIsProbationBreach());
         assertThat(details.getRespondentRepresentatives().size(), is(1));
         final RespondentRepresentatives respondentRepresentatives = details.getRespondentRepresentatives().get(0);
         assertThat(respondentRepresentatives.getRepresentativeName(), is(firstName + " " + lastName));

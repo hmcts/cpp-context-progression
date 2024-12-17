@@ -5,7 +5,7 @@
       "caseId": "CASE_ID",
       "contactId": "9549d390-74e2-4aef-a2e8-b4eec90363e9",
       "contactPersonName": "contactPersonName",
-      "primaryEmail": "defenceAdvocate@organisation.com",
+      "primaryEmail": "RANDOM_EMAIL",
       "contactType": {
         "contactTypeMapping": "Defence advocate",
         "id": "18502c3f-ee7e-4549-9934-318644c41b01"

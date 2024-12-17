@@ -6,15 +6,6 @@ import uk.gov.moj.cpp.progression.command.api.accesscontrol.RuleConstants;
 
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 
-rule "Command - Rule for update Offences For Defendant"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.command.update-offences-for-defendant");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, RuleConstants.getUpdateOffencesForDefendantActionGroups()));
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "Command - Rule for update hearing verdict action"
   when
     $outcome: Outcome();

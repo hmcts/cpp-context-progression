@@ -5,7 +5,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
-import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -17,9 +16,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
-import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
-import static uk.gov.justice.core.courts.Hearing.hearing;
-import static uk.gov.justice.progression.courts.HearingResulted.hearingResulted;
 import static uk.gov.justice.services.common.converter.ZonedDateTimes.fromJsonString;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
@@ -39,10 +35,7 @@ import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEX
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoEmailNotificationIsRaised;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getLanguagePrefix;
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.getSubjectDateOfBirth;
@@ -50,7 +43,6 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyMaterialReq
 import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePayloadValues;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.SummonsTemplateType;
@@ -68,7 +60,6 @@ import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -90,18 +81,9 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     private static final String PROSECUTOR_COST = "£245.56";
 
-    public static Stream<Arguments> applicationSummonsSuppressed() {
-        return Stream.of(
-                // summons template type, summons required, youth defendant, number of documents, isWelsh
-                Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION, "Application", true, 1, true),
-                Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", false, 1, true)
-        );
-    }
-
     public static Stream<Arguments> applicationSummonsNotSuppressed() {
         return Stream.of(
                 // summons template type, summons required, youth defendant, number of documents, isWelsh
-                Arguments.of(SummonsTemplateType.GENERIC_APPLICATION, SummonsType.APPLICATION, "Application", false, 1, false),
                 Arguments.of(SummonsTemplateType.BREACH, SummonsType.BREACH, "Breach", true, 2, false)
         );
     }
@@ -112,7 +94,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
     private static final String INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED = "progression.event.initiate-court-hearing-after-summons-approved";
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     private static final String PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED = "progression.event.nows-material-request-recorded";
-    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
 
     private static final JsonObjectToObjectConverter JSON_OBJECT_TO_OBJECT_CONVERTER = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
@@ -185,71 +166,13 @@ public class RequestApplicationSummonsIT extends AbstractIT {
         }
     }
 
-    @MethodSource("applicationSummonsSuppressed")
-    @ParameterizedTest
-    public void shouldInitiateCourtHearingAfterSummonsApproved_SummonsSuppressed(final SummonsTemplateType summonsTemplateType, final SummonsType summonsRequired, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws Exception {
-        final boolean summonsSuppressed = true;
-        final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
-        final Hearing hearing = givenApplicationInitiatedInBoxWork(summonsTemplateType, isYouth, isWelsh);
-
-        whenApplicationResultedAsApprovedAndCourtHearingInitiated(summonsSuppressed, isWelsh, hearing);
-
-        // perform following verifications
-        verifyDocumentAddedToCdes(applicationId, numberOfDocuments);
-
-        final String subjectTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + templateName;
-        verifyTemplatePayloadValues(true, subjectTemplateName, summonsRequired.toString(), PROSECUTOR_COST, personalService, firstName, middleName, lastName);
-
-        final UUID materialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
-        sendEventToConfirmMaterialAdded(materialId);
-
-        final List<String> expectedEmailDetails = newArrayList(prosecutorEmailAddress, format("%s %s %s", firstName, middleName, lastName));
-        verifyEmailNotificationIsRaisedWithAttachment(expectedEmailDetails, materialId);
-        verifyNoLetterRequested(of(materialId.toString()));
-
-        // applies only to breach application types
-        if (SummonsTemplateType.BREACH == summonsTemplateType && isYouth && numberOfDocuments > 1) {
-            verifyParentBreachSummonWhenSuppressed(summonsRequired, isWelsh, nowsMaterialRequestRecordedConsumer);
-        }
-    }
-
-    private void verifyParentBreachSummonWhenSuppressed(final SummonsType summonsRequired, final boolean isWelsh, final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer) {
-        final String parentTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + "BreachParent";
-        verifyTemplatePayloadValues(true, parentTemplateName, summonsRequired.toString(), PROSECUTOR_COST, personalService, parentFirstName, parentMiddleName, parentLastName);
-        final UUID parentMaterialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
-        sendEventToConfirmMaterialAdded(parentMaterialId);
-
-        final List<String> expectedParentEmailDetails = newArrayList(prosecutorEmailAddress,
-                format("%s %s %s (parent/guardian of %s %s %s)", parentFirstName, parentMiddleName, parentLastName,
-                        firstName, middleName, lastName));
-        verifyEmailNotificationIsRaisedWithAttachment(expectedParentEmailDetails, parentMaterialId);
-        verifyNoLetterRequested(of(parentMaterialId.toString()));
-    }
-
     private void verifyParentBreachSummonWhenNotSuppressed(final SummonsType summonsRequired, final boolean isWelsh, final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer) {
         final String parentTemplateName = "SP" + getLanguagePrefix(isWelsh) + "_" + "BreachParent";
         verifyTemplatePayloadValues(true, parentTemplateName, summonsRequired.toString(), PROSECUTOR_COST, personalService, parentFirstName, parentMiddleName, parentLastName);
         final UUID parentMaterialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
         sendEventToConfirmMaterialAdded(parentMaterialId);
 
-        final List<String> expectedParentEmailDetails = newArrayList(prosecutorEmailAddress,
-                format("%s %s %s (parent/guardian of %s %s %s)", parentFirstName, parentMiddleName, parentLastName,
-                        firstName, middleName, lastName));
-        verifyNoEmailNotificationIsRaised(expectedParentEmailDetails);
         verifyCreateLetterRequested(of("letterUrl", parentMaterialId.toString()));
-    }
-
-    private void whenApplicationResultedAsApprovedAndCourtHearingInitiated(final boolean summonsSuppressed, final boolean isWelsh, final Hearing hearing) {
-        final JmsMessageConsumerClient consumerForInitiateCourtHearingAfterSummonsApproved = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED).getMessageConsumerClient();
-        final JudicialResult summonsApprovedResult = getSummonsApprovedJudicialResult(summonsSuppressed);
-
-        sendHearingResultedPayload(createPublicHearingResulted(hearing, summonsApprovedResult));
-
-        final String courtHearingId = getNewHearingId(consumerForInitiateCourtHearingAfterSummonsApproved, hearing.getCourtApplications().get(0).getId());
-
-        verifyCourtHearingInitiate(courtHearingId);
-
-        sendPublicEventToConfirmHearingForInitiatedCase(applicationId, courtHearingId, isWelsh);
     }
 
     private void whenApplicationResultedAsApprovedAndCourtHearingInitiatedV2(final boolean summonsSuppressed,
@@ -280,14 +203,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
         final String boxworkHearingId = hearing.getId().toString();
         pollForResponse("/hearingSearch/" + boxworkHearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(boxworkHearingId)));
         return hearing;
-    }
-
-    private JsonObject createPublicHearingResulted(final Hearing hearing, final JudicialResult summonsResult) {
-        final CourtApplication courtApplication = hearing.getCourtApplications().get(0);
-        final CourtApplication courtApplicationWithResults = courtApplication().withValuesFrom(courtApplication).withJudicialResults(singletonList(summonsResult)).build();
-        final Hearing hearingWithApplicationResults = hearing().withValuesFrom(hearing).withCourtApplications(singletonList(courtApplicationWithResults)).build();
-        return OBJECT_TO_JSON_OBJECT_CONVERTER.convert(hearingResulted().withHearing(hearingWithApplicationResults)
-                .withSharedTime(ZonedDateTime.now()).build());
     }
 
     private JsonObject createPublicHearingResultedV2(final JsonObject hearing, final JsonObject summonResultJsonObject) {
@@ -380,11 +295,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
                 .replace("FIRST_NAME", firstName)
                 .replace("MIDDLE_NAME", middleName)
                 .replace("LAST_NAME", lastName);
-    }
-
-    private void sendHearingResultedPayload(final JsonObject publicHearingResultedJsonObject) {
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED, USER_ID), publicHearingResultedJsonObject);
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED, publicEventEnvelope);
     }
 
     private void sendHearingResultedPayloadV2(final JsonObject publicHearingResultedJsonObject) {

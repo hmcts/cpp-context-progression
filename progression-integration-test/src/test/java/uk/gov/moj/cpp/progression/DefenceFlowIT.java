@@ -50,7 +50,6 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("squid:S1607")
@@ -141,14 +140,6 @@ public class DefenceFlowIT extends AbstractIT {
 
     }
 
-    private void receiveRepOrder(final String laaContractNumber2) throws IOException {
-        Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber2, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
-        verifyInMessagingQueueForDefendantOffenceUpdated();
-        verifyInMessagingQueueForDefendantLegalAidStatusUpdated();
-        assertThat(isPublicCaseDefendantChangedEventExists(laaContractNumber2), is(true));
-    }
-
     @Test
     public void shouldSuccessfullyDisassociateFromDefenceWhenDefenceOrganisationAssociationFromDefencePerformedFirst() throws Exception {
         //Create case
@@ -181,6 +172,13 @@ public class DefenceFlowIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
+    private void receiveRepOrder(final String laaContractNumber2) throws IOException {
+        Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber2, userId);
+        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        verifyInMessagingQueueForDefendantOffenceUpdated();
+        verifyInMessagingQueueForDefendantLegalAidStatusUpdated();
+        assertThat(isPublicCaseDefendantChangedEventExists(laaContractNumber2), is(true));
+    }
 
     private void verifyInMessagingQueueForDefendantOffenceUpdated() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForRecordLAAReference);

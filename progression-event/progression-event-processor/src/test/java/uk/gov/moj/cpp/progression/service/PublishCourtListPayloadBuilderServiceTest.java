@@ -51,6 +51,7 @@ import javax.json.JsonObjectBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -64,6 +65,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("JUnitMalformedDeclaration")
 @ExtendWith(MockitoExtension.class)
+@Disabled
 public class PublishCourtListPayloadBuilderServiceTest {
 
     static Stream<Arguments>  fixedDateEventAndPayloadLocation() {

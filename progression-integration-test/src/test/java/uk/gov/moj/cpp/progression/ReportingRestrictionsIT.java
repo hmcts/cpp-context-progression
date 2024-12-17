@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
@@ -24,8 +25,8 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getYouthReportingRestrictionsMatchers;
@@ -33,9 +34,7 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -44,7 +43,6 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +54,6 @@ public class ReportingRestrictionsIT extends AbstractIT {
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
     private static final String MANUAL_RESTRICTION = "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999";
 
-    private ProsecutionCaseUpdateOffencesHelper updateOffencesHelper;
     private ProsecutionCaseUpdateDefendantHelper updateDefendantHelper;
     private String caseId;
     private String defendantId;
@@ -80,8 +77,6 @@ public class ReportingRestrictionsIT extends AbstractIT {
     public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
-        final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
-        updateOffencesHelper = new ProsecutionCaseUpdateOffencesHelper(caseId, defendantId, offenceId);
         updateDefendantHelper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
         userId = randomUUID().toString();
         courtCentreId = "111bdd2a-6b7a-4002-bc8c-5c6f93844f40";
@@ -89,9 +84,8 @@ public class ReportingRestrictionsIT extends AbstractIT {
         newCourtCentreId = "999bdd2a-6b7a-4002-bc8c-5c6f93844f40";
         newCourtCentreName = "Narnia Magistrate's Court";
         applicationId = randomUUID().toString();
-        cleanViewStoreTables();
         stubDocumentCreate(DOCUMENT_TEXT);
-        HearingStub.stubInitiateHearing();
+        stubInitiateHearing();
 
     }
 
@@ -116,12 +110,11 @@ public class ReportingRestrictionsIT extends AbstractIT {
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed-one-defendant-two-offences.json", caseId, hearingId1, defendantId, applicationId, hearingId2, prosecutionAuthorityReference, courtCentreId, courtCentreName);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
         String courtApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(courtApplicationId, caseId, hearingId1, "applications/progression.initiate-court-proceedings-for-court-order-linked-application-adjorn.json");
-        verifyCourtApplicationCreatedPrivateEvent();
 
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(courtApplicationId)),
@@ -183,13 +176,6 @@ public class ReportingRestrictionsIT extends AbstractIT {
                         .replaceAll("ADJOURNED_ID", adjournedHearingId)
                         .replaceAll("APPLICATION_REF", reference)
         );
-    }
-
-    private void verifyCourtApplicationCreatedPrivateEvent() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
-        assertTrue(message.isPresent());
-        final String applicationReference = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        assertThat(applicationReference, is(notNullValue()));
     }
 
     private void verifyPostHearingExtendedEvent(final String hearingId, String applicationId) {

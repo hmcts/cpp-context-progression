@@ -47,7 +47,7 @@ public class DefendantDefenceAssociationLockedListener {
     @Handles("progression.event.defendant-defence-association-locked")
     public void processDefendantAssociationLock(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("received event  progression.event.defendant-defence-association-locked {} ", event.payloadAsJsonObject());
+            LOGGER.info("received event  progression.event.defendant-defence-association-locked {} ", event.toObfuscatedDebugString());
         }
         final JsonObject payload = event.payloadAsJsonObject();
         final UUID caseId = fromString(payload.getString(PROSECUTION_CASE_ID));

@@ -7,7 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.services.test.utils.core.messaging.DeadLetterQueueBrowser;
@@ -19,10 +18,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 public class UnifiedSearchRetryIT extends AbstractIT {
     public static final Poller POLLER = new Poller(300, 1000L);
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
@@ -32,8 +32,6 @@ public class UnifiedSearchRetryIT extends AbstractIT {
     @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
-        cleanViewStoreTables();
-
     }
 
     @BeforeEach

@@ -49,7 +49,8 @@ public class SysDocGeneratorStub {
 
     public static List<JSONObject> pollSysDocGenerationRequests(final Matcher<Collection<?>> matcher) {
         try {
-            final List<JSONObject> postRequests = await().until(() ->
+
+            return await().until(() ->
                     findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))
                             .stream()
                             .map(LoggedRequest::getBodyAsString)
@@ -61,8 +62,6 @@ public class SysDocGeneratorStub {
                                 }
                             })
                             .collect(toList()), matcher);
-
-            return postRequests;
         } catch (final ConditionTimeoutException timeoutException) {
             LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
             return emptyList();

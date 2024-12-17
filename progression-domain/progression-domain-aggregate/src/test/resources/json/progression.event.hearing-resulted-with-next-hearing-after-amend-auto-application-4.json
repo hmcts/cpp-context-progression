@@ -1289,35 +1289,7 @@
                     "lastSharedDateTime": "2024-08-20",
                     "level": "O",
                     "lifeDuration": false,
-                    "nextHearing": {
-                      "adjournmentReason": "To attend or to return the plea form sent with the summons",
-                      "bookingReference": "b4cbea27-194f-423d-949e-3ac2bdc5727b",
-                      "courtCentre": {
-                        "address": {
-                          "address1": "The Magistrates' Court",
-                          "address2": "Barclay Road",
-                          "address3": "Croydon",
-                          "postcode": "CR9 3NG"
-                        },
-                        "code": "B01EF00",
-                        "courtHearingLocation": "B01EF01",
-                        "id": "31b3d313-7a7c-4598-bb4b-c1bff9b00e26",
-                        "name": "Croydon Magistrates' Court",
-                        "psaCode": 2576,
-                        "roomId": "bfb67c13-789c-373b-b442-52b82faf863e",
-                        "roomName": "Courtroom 01",
-                        "welshName": "Llys Ynadon Croydon"
-                      },
-                      "estimatedDuration": "20 MINUTES",
-                      "estimatedMinutes": 20,
-                      "jurisdictionType": "MAGISTRATES",
-                      "listedStartDateTime": "2024-08-20T09:00:00.000Z",
-                      "type": {
-                        "description": "Plea and Trial Preparation",
-                        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
-                      }
-                    },
-                    "orderedDate": "2024-08-19",
+                     "orderedDate": "2024-08-19",
                     "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
                     "policeSubjectLineTitle": "Adjourned",
                     "postHearingCustodyStatus": "A",
@@ -1696,34 +1668,6 @@
                     "lastSharedDateTime": "2024-08-20",
                     "level": "O",
                     "lifeDuration": false,
-                    "nextHearing": {
-                      "adjournmentReason": "To attend or to return the plea form sent with the summons",
-                      "bookingReference": "b4cbea27-194f-423d-949e-3ac2bdc5727b",
-                      "courtCentre": {
-                        "address": {
-                          "address1": "The Magistrates' Court",
-                          "address2": "Barclay Road",
-                          "address3": "Croydon",
-                          "postcode": "CR9 3NG"
-                        },
-                        "code": "B01EF00",
-                        "courtHearingLocation": "B01EF01",
-                        "id": "31b3d313-7a7c-4598-bb4b-c1bff9b00e26",
-                        "name": "Croydon Magistrates' Court",
-                        "psaCode": 2576,
-                        "roomId": "bfb67c13-789c-373b-b442-52b82faf863e",
-                        "roomName": "Courtroom 01",
-                        "welshName": "Llys Ynadon Croydon"
-                      },
-                      "estimatedDuration": "20 MINUTES",
-                      "estimatedMinutes": 20,
-                      "jurisdictionType": "MAGISTRATES",
-                      "listedStartDateTime": "2024-08-20T09:00:00.000Z",
-                      "type": {
-                        "description": "Plea and Trial Preparation",
-                        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
-                      }
-                    },
                     "orderedDate": "2024-08-19",
                     "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
                     "policeSubjectLineTitle": "Adjourned",

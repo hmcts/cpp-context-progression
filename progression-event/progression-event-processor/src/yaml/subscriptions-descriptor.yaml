@@ -371,8 +371,14 @@ subscriptions_descriptor:
         - name: progression.event.all-hearing-offences-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.all-hearing-offences-updated.json
 
+        - name: progression.event.all-hearing-offences-updated-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.all-hearing-offences-updated-v2.json
+
         - name: progression.event.hearing-offences-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-offences-updated.json
+
+        - name: progression.event.hearing-offences-updated-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-offences-updated-v2.json
 
         - name: progression.event.new-defendant-added-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
@@ -512,47 +518,11 @@ subscriptions_descriptor:
         - name: progression.event.cases-referred-to-court-v2
           schema_uri: http://justice.gov.uk/core/courts/cases-referred-to-court-V2.json
 
-        - name: progression.events.new-case-document-received
-          schema_uri: http://justice.gov.uk/core/courts/new-case-document-received.json
-
-        - name: progression.events.sentence-hearing-date-added
-          schema_uri: http://justice.gov.uk/core/courts/sentence-hearing-date-added.json
-
-        - name: progression.events.case-added-to-crown-court
-          schema_uri: http://justice.gov.uk/core/courts/case-added-to-crown-court.json
-
-        - name: progression.events.offences-for-defendant-updated
-          schema_uri: http://justice.gov.uk/core/courts/offences-for-defendant-updated.json
-
-        - name: progression.events.defendant-offences-does-not-have-required-modeoftrial
-          schema_uri: http://justice.gov.uk/core/courts/defendant-offences-does-not-have-required-modeoftrial.json
-
         - name: progression.event.document-review-required
           schema_uri: http://justice.gov.uk/core/courts/progression.event.document-review-required.json
 
-        - name: progression.events.defendant-addition-failed
-          schema_uri: http://justice.gov.uk/core/courts/defendant-addition-failed.json
-
-        - name: progression.events.defendant-added
-          schema_uri: http://justice.gov.uk/core/courts/defendant-added.json
-
-        - name: progression.events.defendant-updated
-          schema_uri: http://justice.gov.uk/core/courts/defendant-updated.json
-
-        - name: progression.events.sending-sheet-completed
-          schema_uri: http://justice.gov.uk/core/courts/sending-sheet-completed.json
-
-        - name: progression.events.sending-sheet-previously-completed
-          schema_uri: http://justice.gov.uk/core/courts/sending-sheet-previously-completed.json
-
-        - name: progression.events.sending-sheet-invalidated
-          schema_uri: http://justice.gov.uk/core/courts/sending-sheet-invalidated.json
-
         - name: progression.event.court-document-updated
           schema_uri: http://justice.gov.uk/core/courts/court-document-updated.json
-
-        - name: progression.event.court-document-share-failed
-          schema_uri: http://justice.gov.uk/core/courts/court-document-share-failed.json
 
         - name: progression.event.court-document-shared
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
@@ -652,9 +622,6 @@ subscriptions_descriptor:
       events:
         - name: material.material-added
           schema_uri: http://justice.gov.uk/json/schemas/domains/public/material/material-added
-
-        - name: public.progression.case-document-added
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-case-document-added.json
 
         # Listing start
         - name: public.listing.case-sent-for-listing

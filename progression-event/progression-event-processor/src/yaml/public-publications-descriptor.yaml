@@ -195,41 +195,14 @@ subscriptions_descriptor:
         # ***** Deprecated API - Start ********
         # ***** Do not add any new API in this section *****
 
-        - name: public.progression.events.sentence-hearing-date-added
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-sentence-hearing-date-added.json
-
-        - name: public.progression.case-document-added
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-case-document-added.json
-
-        - name: public.progression.events.case-added-to-crown-court
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-case-added-to-crown-court.json
-
         - name: public.progression.events.case-already-exists-in-crown-court
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-case-already-exists-in-crown-court.json
-
-        - name: public.progression.events.offences-for-defendant-updated
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-offences-for-defendant-updated.json
-
-        - name: public.progression.events.defendant-offences-does-not-have-required-modeoftrial
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendant-offences-does-not-have-required-modeoftrial.json
 
         - name: public.progression.defendant-addition-failed
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendant-addition-failed.json
 
         - name: public.progression.defendant-added
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendant-added.json
-
-        - name: public.progression.events.defendant-updated
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendant-updated.json
-
-        - name: public.progression.events.sending-sheet-completed
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-sending-sheet-completed.json
-
-        - name: public.progression.events.sending-sheet-previously-completed
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-sending-sheet-previously-completed.json
-
-        - name: public.progression.events.sending-sheet-invalidated
-          schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public-sending-sheet-invalidated.json
 
         - name: public.progression.defendant-legalaid-status-updated
           schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated.json
@@ -239,9 +212,6 @@ subscriptions_descriptor:
 
         - name: public.progression.hearing-resulted-application-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
-
-        - name: public.progression.event.court-document-share-failed
-          schema_uri: http://justice.gov.uk/core/courts/court-document-share-failed.json
 
         - name: public.progression.event.court-document-shared
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json

@@ -107,7 +107,7 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, existingHearingId);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload);
         final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
 
 
@@ -121,7 +121,7 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, existingHearingId);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2);
         final String unscheduledHearingIdNew = defendantListingStatusChangedPayload2.getString("hearing.id");
 
         doVerifyEventIsNotRaised(consumerForDefendantListingStatusChanged, existingHearingId, unscheduledHearingIdNew);
@@ -142,7 +142,7 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, existingHearingId);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload);
         final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
@@ -155,7 +155,7 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, existingHearingId);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2);
         final String unscheduledHearingIdNew = defendantListingStatusChangedPayload2.getString("hearing.id");
 
         doVerifyEventIsNotRaised(consumerForDefendantListingStatusChanged, existingHearingId, unscheduledHearingIdNew);
@@ -172,7 +172,7 @@ public class HearingResultedUnscheduledListingIT {
         };
     }
 
-    private void doVerifyDefendantListingStatusChangedPayload(final JsonPath defendantListingStatusChangedPayload, final String existingHearingId) {
+    private void doVerifyDefendantListingStatusChangedPayload(final JsonPath defendantListingStatusChangedPayload) {
         final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
         assertThat(unscheduledHearingId, is(not(nullValue())));
 

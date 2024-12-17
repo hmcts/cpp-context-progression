@@ -60,9 +60,9 @@ public class SystemDocGeneratorEventProcessor {
         if (COURT_REGISTER.equalsIgnoreCase(originatingSource)) {
             final String fileId = documentAvailablePayload.getString("documentFileServiceId");
 
-            final String courtCenterId = documentAvailablePayload.getString("sourceCorrelationId");
+            final String courtCenterStreamId = documentAvailablePayload.getString("sourceCorrelationId");
             final NotifyCourtRegister notifyCourtRegister = new NotifyCourtRegister.Builder()
-                    .withCourtCentreId(fromString(courtCenterId))
+                    .withCourtRegisterId(fromString(courtCenterStreamId))
                     .withSystemDocGeneratorId(fromString(fileId))
                     .build();
             this.sender.send(Envelope.envelopeFrom(metadataFrom(documentAvailableEvent.metadata()).withName("progression.command.notify-court-register").build(),

@@ -253,65 +253,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <artifactItems>
-                        <artifactItem>
-                            <groupId>uk.gov.moj.cpp.progression</groupId>
-                            <artifactId>
-                                progression-domain-transformation-add-listings-status-for-missing-defendant-listing-status-changed
-                            </artifactId>
-                            <version>${project.version}</version>
-                            <type>jar</type>
-                            <overWrite>true</overWrite>
-                            <outputDirectory>${project.basedir}/target/test-classes
-                            </outputDirectory>
-                        </artifactItem>
-                        <artifactItem>
-                            <groupId>uk.gov.justice</groupId>
-                            <artifactId>stream-transformations</artifactId>
-                            <version>${stream-transformation.version}</version>
-                            <type>jar</type>
-                            <overWrite>true</overWrite>
-                            <outputDirectory>${project.basedir}/target/test-classes
-                            </outputDirectory>
-                        </artifactItem>
-                        <artifactItem>
-                            <groupId>uk.gov.justice</groupId>
-                            <artifactId>stream-transformation-tool-anonymise</artifactId>
-                            <version>${stream-transformation.version}</version>
-                            <type>jar</type>
-                            <overWrite>true</overWrite>
-                            <outputDirectory>${project.basedir}/target/test-classes
-                            </outputDirectory>
-                        </artifactItem>
-                        <artifactItem>
-                            <artifactId>event-tool</artifactId>
-                            <groupId>uk.gov.justice</groupId>
-                            <version>${stream-transformation.version}</version>
-                            <type>jar</type>
-                            <classifier>swarm</classifier>
-                            <overWrite>true</overWrite>
-                            <outputDirectory>${project.basedir}/target/test-classes
-                            </outputDirectory>
-                        </artifactItem>
-                    </artifactItems>
-                    <overWriteReleases>false</overWriteReleases>
-                    <overWriteSnapshots>true</overWriteSnapshots>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>uk.gov.justice.generators</groupId>
                 <artifactId>pojo-generation-plugin</artifactId>
                 <executions>
@@ -433,41 +374,6 @@
                         </configuration>
                     </plugin>
                     <!-- Running with embedded elasticsearch by default -->
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>progression-integration-test-with-standalone-elasticsearch</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>integration-test</id>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>verify</id>
-                                <goals>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <skipITs>false</skipITs>
-                            <runOrder>alphabetical</runOrder>
-                            <systemPropertyVariables>
-                                <INTEGRATION_HOST_KEY>${INTEGRATION_HOST_KEY}</INTEGRATION_HOST_KEY>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
                 </plugins>
             </build>
         </profile>

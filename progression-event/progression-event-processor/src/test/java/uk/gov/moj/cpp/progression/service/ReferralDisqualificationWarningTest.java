@@ -66,7 +66,6 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;

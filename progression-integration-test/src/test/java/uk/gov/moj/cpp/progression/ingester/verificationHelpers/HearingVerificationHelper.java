@@ -25,7 +25,6 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
     private static final String INPUT_HEARING_JSON_PATH = "$.hearing";
     private static final String INPUT_HEARING_DAYS_JSON_PATH = "$.hearing.hearingDays";
     private static final String INPUT_JUDICIARY_JSON_PATH = "$.hearing.judiciary";
-    private static final String ROOT = "$";
     private static final String OUTPUT_HEARINGS_JSON_PATH = "hearings[%d]";
 
     public void verifyHearings(final DocumentContext inputHearing,
@@ -42,14 +41,6 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
                                                  final int outputHearingIndex) {
         verifyHearing(inputHearing, outputCase,  outputHearingIndex);
         validateHearingDaysAndDatesWithoutCourCentre(inputHearing, outputCase,  outputHearingIndex);
-        validateJudiciaryTypes(inputHearing, outputCase, outputHearingIndex);
-    }
-
-    public void verifyHearingsWithEstimatedDuration(final DocumentContext inputHearing,
-                               final JsonObject outputCase,
-                               final int outputHearingIndex) {
-        verifyHearingWithEstimatedDuration(inputHearing, outputCase,  outputHearingIndex);
-        validateHearingDaysAndDates(inputHearing, outputCase,  outputHearingIndex);
         validateJudiciaryTypes(inputHearing, outputCase, outputHearingIndex);
     }
 
