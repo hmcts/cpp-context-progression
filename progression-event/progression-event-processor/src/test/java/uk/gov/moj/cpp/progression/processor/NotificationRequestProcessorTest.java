@@ -107,7 +107,7 @@ public class NotificationRequestProcessorTest {
 
         notificationRequestProcessor.printDocument(event);
 
-        verify(notificationNotifyService).sendLetterNotification(event, notificationId, materialId, false, recipientType, caseId.toString());
+        verify(notificationNotifyService).sendLetterNotification(event, notificationId, materialId, false, recipientType);
         verify(notificationService).recordPrintRequestAccepted(event);
     }
 

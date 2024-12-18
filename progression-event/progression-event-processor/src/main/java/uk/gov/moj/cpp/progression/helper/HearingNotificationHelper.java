@@ -504,7 +504,6 @@ public class HearingNotificationHelper {
     }
 
     private String getNotificationPdfName(final String templateName, String receipientType) {
-        //return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType.toString().substring(0, 1).toUpperCase() + receipientType.toString().substring(1).toLowerCase() + " copy";
         return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType + " copy";
     }
 }

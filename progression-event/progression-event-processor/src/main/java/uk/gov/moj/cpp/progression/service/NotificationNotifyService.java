@@ -50,7 +50,7 @@ public class NotificationNotifyService {
     private MaterialUrlGenerator materialUrlGenerator;
 
     public void sendLetterNotification(final JsonEnvelope event, final UUID notificationId, final UUID materialId, final boolean postage,
-                                       final String recipientType, final String caseId) {
+                                       final String recipientType) {
 
         final String letterUrl = materialUrlGenerator.pdfFileStreamUrlFor(materialId);
 
@@ -59,9 +59,6 @@ public class NotificationNotifyService {
                 .add(FIELD_NOTIFICATION_ID, notificationId.toString())
                 .add(FIELD_RECIPIENT_TYPE, recipientType);
 
-        if (caseId != null) {
-            notificationBuilder.add(FIELD_CASE_ID, caseId);
-        }
         if (postage) {
             notificationBuilder.add(FIELD_POSTAGE, POSTAGE_TYPE);
         }

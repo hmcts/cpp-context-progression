@@ -868,6 +868,7 @@ public class NotificationService {
         emailNotification.setPersonalisation(personalisation);
 
         emailNotification.setReplyToAddress(emailChannel.getReplyToAddress());
+
         return emailNotification;
     }
 

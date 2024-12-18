@@ -2,13 +2,10 @@ package uk.gov.moj.cpp.progression.domain.event.print;
 
 import uk.gov.justice.domain.annotation.Event;
 
-import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import javax.json.JsonObject;
 
 @Event("progression.event.print-requested")
 public class PrintRequested {

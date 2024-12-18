@@ -64,7 +64,6 @@ public class NotificationListener {
         final UUID materialId = UUID.fromString(payload.getString(MATERIAL_ID));
 
         final ZonedDateTime updated = event.metadata().createdAt().get();
-        //TODO 2047
 
         final NotificationStatusEntity notificationStatus = new NotificationStatusEntity();
         notificationStatus.setNotificationId(notificationId);

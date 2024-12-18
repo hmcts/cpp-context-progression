@@ -61,7 +61,7 @@ public class NotificationNotifyServiceTest {
 
         when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(letterUrl);
 
-        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, true, recipientType, caseId.toString());
+        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, true, recipientType);
 
         final ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());

@@ -27,9 +27,6 @@
     "emailBody": {
       "type": "string"
     },
-    "caseId": {
-      "type": "string"
-    },
     "recipientType": {
       "type": "string"
     },
