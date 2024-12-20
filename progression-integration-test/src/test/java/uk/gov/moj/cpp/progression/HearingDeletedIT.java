@@ -39,7 +39,6 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -106,7 +105,6 @@ public class HearingDeletedIT extends AbstractIT {
         verifyHearingIsEmpty(hearingId);
     }
 
-    @Disabled("Failing as part of integration test refactor")
     @Test
     public void shouldDeleteHearingWhenHandlingHearingDeleted() throws IOException, JSONException {
         final String userId = randomUUID().toString();

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -11,6 +12,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
@@ -67,12 +69,14 @@ import javax.json.JsonObject;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HearingEventLogIT extends AbstractIT {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(HearingEventLogIT.class);
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
@@ -107,7 +111,7 @@ public class HearingEventLogIT extends AbstractIT {
         stubDocumentCreate(DOCUMENT_TEXT);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws JMSException {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
@@ -556,18 +560,21 @@ public class HearingEventLogIT extends AbstractIT {
     private void verifyHearingEventsLogsDocumentGenerated(final String TEMPLATE_NAME) {
         await().with().timeout(30, SECONDS)
                 .until(() -> {
-                    final Optional<JsonObject> documentGenerationRequest = getHearingEventTemplate(TEMPLATE_NAME);
-
-                    assertThat(documentGenerationRequest.isPresent(), is(true));
-                    assertThat(documentGenerationRequest, notNullValue());
-                    // only high level validation done in integration test (rest covered in unit tests)
-
-                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("courtCentre"), is(notNullValue()));
-                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("courtRoom"), is(notNullValue()));
-                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("hearingType"), is(notNullValue()));
-                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("startDate"), is(notNullValue()));
-                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getString("endDate"), is(notNullValue()));
-                    assertThat(documentGenerationRequest.get().getJsonArray("hearings").getJsonObject(0).getJsonArray("judiciary").size(), is(2));
+                    try {
+                        final Optional<JsonObject> documentGenerationRequest = getHearingEventTemplate(TEMPLATE_NAME);
+                        assertThat(documentGenerationRequest.isPresent(), is(true));
+                        assertThat(documentGenerationRequest.get(), isJson(allOf(
+                                        withJsonPath("$.hearings[0].courtCentre", is(notNullValue())),
+                                        withJsonPath("$.hearings[0].courtRoom", is(notNullValue())),
+                                        withJsonPath("$.hearings[0].hearingType", is(notNullValue())),
+                                        withJsonPath("$.hearings[0].startDate", is(notNullValue())),
+                                        withJsonPath("$.hearings[0].endDate", is(notNullValue())),
+                                        withJsonPath("$.hearings[0].judiciary[*]", hasSize(2))
+                                )));
+                    } catch (AssertionError e) {
+                        LOGGER.error(e.getMessage());
+                        return false;
+                    }
                     return true;
                 });
     }

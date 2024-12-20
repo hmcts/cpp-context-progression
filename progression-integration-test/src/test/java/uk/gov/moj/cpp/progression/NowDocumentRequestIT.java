@@ -93,10 +93,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     public void shouldAddFinancialNowDocumentRequest() throws IOException {
         final String body = prepareAddNowFinancialDocumentRequestPayload();
 
-        final Response writeResponse = postCommand(getWriteUrl("/nows"),
-                "application/vnd.progression.add-now-document-request+json",
-                body);
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+        requestNowsDocument(body);
 
         getNowDocumentRequestsFor(requestId, anyOf(
                 withJsonPath("$.nowDocumentRequests[0].requestId", equalTo(requestId)),
@@ -106,7 +103,7 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         sendPublicEventForFinancialImpositionAcknowledgement();
 
-        verifyMaterialCreated();
+        verifyMaterialCreated(materialId);
 
         sendPublicEventForMaterialAdded();
 
@@ -119,24 +116,26 @@ public class NowDocumentRequestIT extends AbstractIT {
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
         final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
 
-        final Response writeResponse = postCommand(getWriteUrl("/nows"),
-                "application/vnd.progression.add-now-document-request+json",
-                payload);
+        requestNowsDocument(payload);
 
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-
-        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
-                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
-
-        verifyMaterialCreated();
+        verifyMaterialCreated(materialId);
 
         sendPublicEventForMaterialAdded();
 
         verifyCreateLetterRequested(of("letterUrl", materialId));
 
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
         final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
+    }
+
+    private void requestNowsDocument(final String body) throws IOException {
+        final Response writeResponse = postCommand(getWriteUrl("/nows"),
+                "application/vnd.progression.add-now-document-request+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     private void sendPublicEventForMaterialAdded() {

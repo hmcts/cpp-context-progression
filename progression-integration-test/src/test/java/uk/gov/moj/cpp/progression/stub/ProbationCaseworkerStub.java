@@ -15,9 +15,13 @@ import static org.awaitility.Awaitility.await;
 
 import java.util.List;
 
+import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProbationCaseworkerStub {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProbationCaseworkerStub.class);
 
     public static final String PROBATION_HEARING_COMMAND = "/probation/api/v1/hearing/details";
     public static final String PROBATION_HEARING_DELETED_COMMAND = "/probation/api/v1/hearing/deleted";
@@ -45,12 +49,17 @@ public class ProbationCaseworkerStub {
     }
 
     private static void verifyProbationHearingStubCommandInvoked(final String commandEndPoint, final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(10, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
             );
-            verify(requestPatternBuilder);
+            try {
+                verify(requestPatternBuilder);
+            } catch (VerificationException e) {
+                LOGGER.error(e.getMessage());
+                return false;
+            }
             return true;
         });
     }

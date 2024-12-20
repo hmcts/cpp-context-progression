@@ -45,7 +45,7 @@ public class VejHearingStub {
     }
 
     public static void verifyVejHearingStubCommandInvoked(final String commandEndPoint, final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(10, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

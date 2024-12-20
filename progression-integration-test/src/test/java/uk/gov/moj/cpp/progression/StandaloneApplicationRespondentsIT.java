@@ -13,11 +13,17 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.getStandaloneCourtApplicationWithRespondentsJsonBody;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 
+import java.io.IOException;
+
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 
 public class StandaloneApplicationRespondentsIT extends AbstractIT {
@@ -27,7 +33,7 @@ public class StandaloneApplicationRespondentsIT extends AbstractIT {
     @Test
     public void shouldGetStandaloneApplicationWithMultipleRespondents() throws Exception {
         randomValues = new CourtApplicationsHelper.CourtApplicationRandomValues();
-        CourtApplicationsHelper.addStandaloneCourtApplicationWithRespondents("progression.create-court-application-with-respondents.json", randomValues);
+        addStandaloneCourtApplicationWithRespondents("progression.create-court-application-with-respondents.json", randomValues);
         poll(requestParams(getReadUrl("/applications/" + randomValues.RANDOM_APPLICATION_ID), PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
                 .withHeader(USER_ID, randomUUID()))
                 .timeout(TIMEOUT, SECONDS)
@@ -44,6 +50,12 @@ public class StandaloneApplicationRespondentsIT extends AbstractIT {
                                 withJsonPath("$.respondentDetails[1].address.address1", equalTo(randomValues.RANDOM_RESPONDENT_ORGANISATION_ADDRESS1)),
                                 withJsonPath("$.respondentDetails[1].respondentRepresentatives[0].representativeName", equalTo(randomValues.RANDOM_INDIVIDUAL_ORG_NAME))
                         )));
+    }
+
+    public static Response addStandaloneCourtApplicationWithRespondents(final String fileName, CourtApplicationsHelper.CourtApplicationRandomValues randomValues) throws IOException {
+        return postCommand(getWriteUrl("/initiate-application"),
+                "application/vnd.progression.initiate-court-proceedings-for-application+json",
+                getStandaloneCourtApplicationWithRespondentsJsonBody(fileName, randomValues));
     }
 }
 

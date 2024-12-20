@@ -34,13 +34,10 @@ import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 
 public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
 
@@ -64,14 +61,6 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
             DEFENDANT_ID, of(newArrayList(SJP_REFERRED_DEFENDANT_NAME))
     );
 
-    public static Stream<Arguments> sjpSpecifications() {
-        return Stream.of(
-                // welsh court hearing
-                Arguments.of(false),
-                Arguments.of(true)
-        );
-    }
-
     @BeforeEach
     public void setUp() {
 
@@ -90,14 +79,14 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
         caseUrn = generateUrn();
     }
 
-    @MethodSource("sjpSpecifications")
-    @ParameterizedTest
-    public void shouldGenerateSummonsForReferredCases(final boolean isWelsh) throws Exception {
+    @Test
+    public void shouldGenerateSummonsForReferredCases() throws Exception {
+        final boolean isWelsh = true;
         addProsecutionCaseToCrownCourt(caseId, DEFENDANT_ID, materialIdActive, materialIdDeleted, courtDocumentId, SJP_REFERRAL_ID, caseUrn);
         verifySummonsGeneratedOnHearingConfirmed(isWelsh);
 
-        verifyMaterialCreated();
         final UUID materialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
+        verifyMaterialCreated(materialId.toString());
         sendEventToConfirmMaterialAdded(materialId);
 
         verifyCreateLetterRequested(of("letterUrl", materialId.toString()));

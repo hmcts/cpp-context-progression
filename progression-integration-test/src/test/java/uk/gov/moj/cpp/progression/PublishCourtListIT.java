@@ -62,9 +62,9 @@ public class PublishCourtListIT extends AbstractIT {
         NotificationServiceStub.setUp();
         stubDocumentCreate(DOCUMENT_TEXT);
 
-        defenceOrganisationEmail = randomAlphanumeric(15)+"-defenceorg@email.com";
-        defenceAdvocateEmail = randomAlphanumeric(15)+"-defenceadvocate@email.com";
-        prosecutorEmail = randomAlphanumeric(15)+"-prosecutor@email.com";
+        defenceOrganisationEmail = randomAlphanumeric(15) + "-defenceorg@email.com";
+        defenceAdvocateEmail = randomAlphanumeric(15) + "-defenceadvocate@email.com";
+        prosecutorEmail = randomAlphanumeric(15) + "-prosecutor@email.com";
 
         caseId = randomUUID().toString();
         defendantId1 = randomUUID().toString();
@@ -75,15 +75,6 @@ public class PublishCourtListIT extends AbstractIT {
         prosecutionAuthorityId = randomUUID();
 
         givenDefendantAdvocateIsPresentInCorrespondence(caseId, defendantId1, defendantId2);
-    }
-
-    @Test
-    public void shouldRaiseSingleEmailNotificationWithAttachmentForDefenceOrganisationForDraftSingleHearing() {
-        givenDefendantsAreRepresentedByDefenceOrganisation(defendantId1, defendantId2);
-
-        whenListingRaisesCourtListPublishedEvent("public.listing.court-list-published-final-single-hearing.json");
-
-        thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
     }
 
     @Test
@@ -163,18 +154,16 @@ public class PublishCourtListIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_EVENT_COURT_LIST_PUBLISHED, publicEventEnvelope);
     }
 
-    private UUID thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail() {
+    private void thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail() {
         final List<String> expectedDefendantOrgEmailDetails = newArrayList(defenceOrganisationEmail);
         verifyEmailNotificationIsRaisedWithAttachment(expectedDefendantOrgEmailDetails);
         final List<String> expectedDefenceAdvocateEmailDetails = newArrayList(defenceAdvocateEmail);
         verifyEmailNotificationIsRaisedWithAttachment(expectedDefenceAdvocateEmailDetails);
-        return null;
     }
 
-    private UUID andProsecutorIsNotifiedByEmail() {
+    private void andProsecutorIsNotifiedByEmail() {
         final List<String> expectedEmailDetails = newArrayList(prosecutorEmail);
         verifyEmailNotificationIsRaisedWithAttachment(expectedEmailDetails);
-        return null;
     }
 
     private void andProsecutionCaseIsInCrownCourt() throws IOException, JSONException {

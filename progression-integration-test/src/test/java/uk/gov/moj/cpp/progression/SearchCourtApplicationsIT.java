@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,9 +38,9 @@ public class SearchCourtApplicationsIT extends AbstractIT {
 
     @BeforeEach
     public void createStandaloneApplication() throws Exception {
-        applicationId = UUID.randomUUID().toString();
+        applicationId = randomUUID().toString();
         randomValues = new CourtApplicationRandomValues();
-        addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), randomValues, "progression.command.create-standalone-court-application.json");
+        addStandaloneCourtApplication(applicationId, randomUUID().toString(), randomValues, "progression.command.create-standalone-court-application.json");
     }
 
 

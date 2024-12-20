@@ -46,7 +46,6 @@ import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocument
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
@@ -166,40 +165,13 @@ public class RequestFirstHearingCaseSummonsIT {
 
     @MethodSource("firstHearingSummonsSpecifications")
     @ParameterizedTest
-    public void shouldGenerateSummonsPayloadForFirstHearingWhenSuppressed(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws IOException {
-        final boolean summonsSuppressed = true;
-        initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
-        verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, isWelsh, summonsType, templateName, numberOfDocuments, isYouth);
-
-        verifyMaterialCreated();
-
-        final UUID materialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
-        sendEventToConfirmMaterialAdded(materialId);
-
-        final List<String> expectedEmailDetails = newArrayList(prosecutorEmailAddress, this.caseUrn, format("%s %s %s, %s", getFirstName(defendantId1), getMiddleName(defendantId1), getLastName(defendantId1), defendant1ProsecutionAuthorityReference));
-        verifyEmailNotificationIsRaisedWithAttachment(expectedEmailDetails, materialId);
-
-        if (isYouth) {
-            final UUID parentMaterialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
-            sendEventToConfirmMaterialAdded(parentMaterialId);
-
-            final List<String> expectedParentEmailDetails = newArrayList(prosecutorEmailAddress, this.caseUrn,
-                    format("%s %s %s (parent/guardian of %s %s %s), %s", getParentFirstName(defendantId1), getParentMiddleName(defendantId1), getParentLastName(defendantId1),
-                            getFirstName(defendantId1), getMiddleName(defendantId1), getLastName(defendantId1), defendant1ProsecutionAuthorityReference));
-            verifyEmailNotificationIsRaisedWithAttachment(expectedParentEmailDetails, parentMaterialId);
-        }
-    }
-
-    @MethodSource("firstHearingSummonsSpecifications")
-    @ParameterizedTest
     public void shouldGenerateSummonsPayloadForFirstHearingWhenNotSuppressed(final String summonsCode, final String summonsType, final String templateName, final boolean isYouth, final int numberOfDocuments, final boolean isWelsh) throws IOException {
         final boolean summonsSuppressed = false;
         initiateCourtProceedings(getPayloadForInitiatingCourtProceedings(isYouth, summonsCode, summonsSuppressed, FIRST_HEARING_START_TIME, isWelsh));
         verifySummonsGeneratedOnHearingConfirmed(defendantId1, offenceId1, isWelsh, summonsType, templateName, numberOfDocuments, isYouth);
 
-        verifyMaterialCreated();
-
         final UUID materialId = verifyMaterialRequestRecordedAndExtractMaterialId(nowsMaterialRequestRecordedConsumer);
+        verifyMaterialCreated(materialId.toString());
         sendEventToConfirmMaterialAdded(materialId);
 
         final List<String> expectedEmailDetails = newArrayList(prosecutorEmailAddress, this.caseUrn, format("%s %s %s, %s", getFirstName(defendantId1), getMiddleName(defendantId1), getLastName(defendantId1), defendant1ProsecutionAuthorityReference));

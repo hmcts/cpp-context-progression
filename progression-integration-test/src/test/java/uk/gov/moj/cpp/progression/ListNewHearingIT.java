@@ -7,7 +7,6 @@ import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
@@ -34,6 +33,7 @@ import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrgan
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -80,8 +80,6 @@ public class ListNewHearingIT extends AbstractIT {
     @Test
     public void shouldCreateNewHearing_sendDefendantLetterNotification_ProsecutorEmailNotification() throws IOException, JSONException {
 
-        final JmsMessageConsumerClient messageConsumerPrintRequestPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.print-requested").getMessageConsumerClient();
-
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
         final String prosecutionAuthorityId = randomUUID().toString();
@@ -100,7 +98,7 @@ public class ListNewHearingIT extends AbstractIT {
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingId)), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")));
 
         verifyEmailNotificationIsRaisedWithAttachment(newArrayList(prosecutorEmail));
-        doVerifyListHearingRequestedPrivateEvent(messageConsumerPrintRequestPrivateEvent, caseId);
+        verifyCreateLetterRequested(newArrayList("postage", "first", "letterUrl"));
 
     }
 
@@ -175,14 +173,6 @@ public class ListNewHearingIT extends AbstractIT {
         payloadBuilder.add("listNewHearing", listNewHearingBuilder);
         payloadBuilder.add("sendNotificationToParties", true);
         return payloadBuilder;
-    }
-
-    private void doVerifyListHearingRequestedPrivateEvent(final JmsMessageConsumerClient messageConsumerProgressionCommandEmail, final String caseId) {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProgressionCommandEmail);
-        assertThat(message.get(), notNullValue());
-        final JsonObject progressionCommandNotificationEvent = message.get();
-        assertThat(progressionCommandNotificationEvent.getString("caseId", EMPTY), is(caseId));
-
     }
 
     private void doVerifyListHearingRequestedPrivateEvent(final JmsMessageConsumerClient messageConsumerProgressionCommandEmail, final String caseId, final String caseId2) {

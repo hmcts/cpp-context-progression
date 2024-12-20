@@ -1,34 +1,23 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.jayway.jsonpath.Criteria.where;
-import static com.jayway.jsonpath.Filter.filter;
-import static com.jayway.jsonpath.JsonPath.compile;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
@@ -54,24 +43,19 @@ import uk.gov.moj.cpp.progression.util.FileUtil;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ReceiveRepresentationOrderIT extends AbstractIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReceiveRepresentationOrderIT.class.getCanonicalName());
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA = "public.progression.defence-association-for-laa-locked";
@@ -123,10 +107,9 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndDisassociationOfExistingOne() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        pollProsecutionCasesProgressionFor(caseId);
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
-
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
@@ -144,11 +127,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
                 ));
 
-        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-
-        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
-                .getJsonObject(0).getJsonArray("hearingIds").getString(0);
+        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
         final Matcher<? super ReadContext>[] hearingMatchers = new Matcher[]{
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
@@ -164,11 +143,11 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationNotRegister() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
         stubGetOrganisationDetailForLAAContractNumberAsEmpty(NO_LAA_CONTRACT_NUMBER_REGISTER);
+
         addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        pollProsecutionCasesProgressionFor(caseId);
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId);
-
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
@@ -185,11 +164,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
                 ));
 
-        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-
-        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
-                .getJsonObject(0).getJsonArray("hearingIds").getString(0);
+        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
         final Matcher<? super ReadContext>[] hearingMatchers = new Matcher[]{
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
@@ -204,12 +179,12 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisationAndNoAssociationAlreadyExist() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
 
-        pollProsecutionCasesProgressionFor(caseId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
-
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();
@@ -244,11 +219,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.isAssociatedByLAA", equalTo(true))
                 ));
 
-        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-
-        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
-                .getJsonObject(0).getJsonArray("hearingIds").getString(0);
+        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
         final Matcher<? super ReadContext>[] hearingMatchers = new Matcher[]{
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
@@ -265,10 +236,9 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         stubGetOrganisationDetailForLAAContractNumberAsEmpty(NO_LAA_CONTRACT_NUMBER_REGISTER);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        pollProsecutionCasesProgressionFor(caseId);
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId);
-
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
@@ -286,11 +256,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true))
                 ));
 
-        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-
-        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
-                .getJsonObject(0).getJsonArray("hearingIds").getString(0);
+        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
         final Matcher<? super ReadContext>[] hearingMatchers = new Matcher[]{
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
@@ -302,7 +268,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         getHearingForDefendant(hearingId, hearingMatchers);
     }
 
-
     @Test
     public void testReceiveRepresentationWithAssociationOfDefenceOrganisation_SendCPSNotification() throws Exception {
         final String courtCentreId = randomUUID().toString();
@@ -311,18 +276,15 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
 
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
         addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        pollProsecutionCasesProgressionFor(caseId);
-        final String hearingIdForHearing = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
-                caseId, hearingIdForHearing, defendantId, courtCentreId, courtCentreName));
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getInstructedJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE,
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-
-        verifyHearingInitialised(caseId, hearingIdForHearing);
+        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
 
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
         assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
-
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();
@@ -357,12 +319,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                         withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.isAssociatedByLAA", equalTo(true))
                 ));
 
-        final String response = pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
-        final JsonObject prosecutionCasesJsonObject = getJsonObject(response);
-
-        final String hearingId = prosecutionCasesJsonObject.getJsonObject("hearingsAtAGlance").getJsonArray("defendantHearings")
-                .getJsonObject(0).getJsonArray("hearingIds").getString(0);
-
+        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
 
         final Matcher<? super ReadContext>[] hearingMatchers = new Matcher[]{
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
@@ -429,24 +386,7 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
                 .replaceAll("COURT_CENTRE_NAME", courtCentreName)
                 .replaceAll("FUTURE_HEARING_DATE", futureHearingDate);
-        LOGGER.info("Payload: " + strPayload);
-        LOGGER.info("COURT_CENTRE_ID==" + courtCentreId);
-        LOGGER.info("COURT_CENTRE_NAME==" + courtCentreName);
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private static void verifyHearingInitialised(final String caseId, final String hearingId) {
-
-        final Filter hearingIdFilter = filter(where("id").is(hearingId)
-                .and("hearingListingStatus").is("HEARING_INITIALISED"));
-
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(60, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter))
-                        )));
-    }
 }

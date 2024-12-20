@@ -46,7 +46,7 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
@@ -79,7 +79,7 @@ public class ReferDisqualificationWarningIT extends AbstractIT {
         NotificationServiceStub.setUp();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws JMSException {
         stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
         stubQueryReferralReasons("/restResource/referencedata.query.referral-disqualification-reasons.json", randomUUID());
