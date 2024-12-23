@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Collections.emptySet;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -119,7 +121,7 @@ public class DefendantMatchingEventProcessor {
         final MatchedDefendants masterDefendant = getMasterDefendant(masterDefendantIdUpdated.getMatchedDefendants());
 
         if (Objects.nonNull(masterDefendant)) {
-            masterDefendantIdUpdated.getHearingIds().forEach(hearingId ->
+            masterDefendantIdUpdated.getHearingIds().stream().collect(Collectors.toSet()).forEach(hearingId ->
                     updateHearing(envelope, masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getDefendant(), hearingId));
         }
     }
