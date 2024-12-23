@@ -1,0 +1,57 @@
+{
+  "directionId": "34dd0d71-1c9b-44b2-8961-c3532faa67bc",
+  "text": "$attendee to secure attendance for $caseParticipant",
+  "assigneeOrganisationText": "Prosecutor",
+  "prompts": [
+    {
+      "id": "2062d38f-9801-4a91-8664-c48a5fd44006",
+      "label": "Case participant",
+      "type": "fixl",
+      "required": true,
+      "promptOrder": 100,
+      "caseParticipant": "Witness",
+      "name": "caseParticipant"
+    },
+    {
+      "id": "3acdfec5-514b-475f-b935-238972a7ab37",
+      "label": "12.4 Securing attendance CrimPR Part 17; rule 3.8(3).",
+      "type": "oneOf",
+      "header": true,
+      "required": true,
+      "promptOrder": 101,
+      "name": "attendee",
+      "children": [
+        {
+          "id": "674a034d-2486-41d6-85d6-f788920800e1",
+          "label": "Witness Summons",
+          "type": "boolean",
+          "required": true,
+          "promptOrder": 200
+        },
+        {
+          "id": "b873289f-3bd7-40e3-9013-1e8de36dfddf",
+          "label": "Warrant",
+          "type": "boolean",
+          "required": true,
+          "promptOrder": 201
+        },
+        {
+          "id": "711bd6e0-1c25-4c36-8ebd-ce2d1841f1fb",
+          "label": "Other steps to secure attendance",
+          "type": "boolean",
+          "required": true,
+          "promptOrder": 202,
+          "children": [
+            {
+              "id": "7cfba253-eedd-45dc-9976-dd0c76ae9327",
+              "label": "Other steps",
+              "type": "txt",
+              "required": true,
+              "promptOrder": 300
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

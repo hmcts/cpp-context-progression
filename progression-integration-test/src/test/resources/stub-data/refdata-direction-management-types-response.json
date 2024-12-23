@@ -1,0 +1,28 @@
+{
+  "directionManagementTypes": [
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a13333",
+      "name": "Service of evidence",
+      "welshName": "Cyflwyno tystiolaeth",
+      "sequenceNumber": 101,
+      "validFrom": "2017-10-01",
+      "validTo": "2029-09-30",
+      "formType": "PET",
+      "variant": "Standard",
+      "category": "pet_witness, pet_part_5",
+      "nonPublishable": true
+    },
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a13333",
+      "name": "Service of evidence",
+      "welshName": "Cyflwyno tystiolaeth",
+      "sequenceNumber": 101,
+      "validFrom": "2017-10-01",
+      "validTo": "2029-09-30",
+      "formType": "PTPH",
+      "variant": "Standard",
+      "category": "pet_witness, pet_part_5",
+      "nonPublishable": true
+    }
+  ]
+}

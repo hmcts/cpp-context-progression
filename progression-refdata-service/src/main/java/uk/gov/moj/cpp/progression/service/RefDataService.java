@@ -11,6 +11,7 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.common.converter.LocalDates.to;
+import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -19,14 +20,18 @@ import static uk.gov.moj.cpp.progression.service.MetadataUtil.metadataWithNewAct
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.LjaDetails;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.moj.cpp.progression.domain.pojo.Direction;
 import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
+import uk.gov.moj.cpp.progression.domain.pojo.ReferenceDataDirectionManagementType;
 import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 
 import java.io.IOException;
@@ -38,9 +43,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -50,6 +58,7 @@ import javax.json.JsonValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.moj.cpp.progression.service.exception.ReferenceDataServiceException;
 
 @SuppressWarnings({"squid:S00112", "squid:S1192", "squid:CallToDeprecatedMethod"})
 public class RefDataService {
@@ -119,6 +128,15 @@ public class RefDataService {
     private static final String PUBLIC_HOLIDAYS = "publicHolidays";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
+    public static final String REFERENCEDATA_GET_DIRECTION_MANAGEMENT_TYPES = "referencedata.query.direction-management-types";
+
+    public static final String REFERENCEDATA_GET_ALL_DIRECTIONS = "referencedata.get-all-directions";
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
+    @Inject
+    @ServiceComponent(QUERY_API)
+    private Requester requester;
 
     public Optional<DocumentTypeAccessReferenceData> getDocumentTypeAccessReferenceData(final Requester requester, final UUID documentTypeId) {
         final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDatas = getAllDocumentTypeAccess(requester);
@@ -755,6 +773,55 @@ public class RefDataService {
 
         return isNull(jsonEnvelope.payload()) ? new ArrayList<>() : jsonEnvelope.payload().getResultActionMapping();
     }
+
+
+
+    public List<ReferenceDataDirectionManagementType> getDirectionManagementTypes() {
+        final JsonObject request = createObjectBuilder().build();
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(
+                Envelope.metadataBuilder().
+                        withId(randomUUID()).
+                        withName(REFERENCEDATA_GET_DIRECTION_MANAGEMENT_TYPES),
+                request);
+
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+
+        if (isNull(response.payload())) {
+            throw new ReferenceDataServiceException("Failed to get direction-management-types from reference Data");
+        }
+        LOGGER.info("Got direction-management-types from reference data context");
+        final List<ReferenceDataDirectionManagementType> referenceDataDirectionManagementTypes = new ArrayList<>();
+        JsonArray directionManagementTypesJsonArray = response.payload().getJsonArray("directionManagementTypes");
+        IntStream.range(0, directionManagementTypesJsonArray.size()).mapToObj(caseCounter -> directionManagementTypesJsonArray.getJsonObject(caseCounter)).forEach(referenceDataDirectionManagementType ->
+                referenceDataDirectionManagementTypes.add(jsonObjectToObjectConverter.convert(referenceDataDirectionManagementType,ReferenceDataDirectionManagementType.class))
+        );
+        return referenceDataDirectionManagementTypes;
+    }
+
+    public List<Direction> getDirections() {
+        final JsonObject request = createObjectBuilder().build();
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(
+                Envelope.metadataBuilder().
+                        withId(randomUUID()).
+                        withName(REFERENCEDATA_GET_ALL_DIRECTIONS),
+                request);
+
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+
+        if (isNull(response.payload())) {
+            throw new ReferenceDataServiceException("Failed to get directions from reference Data");
+        }
+        LOGGER.info("Got directions from reference data context");
+        final List<Direction> directions = new ArrayList<>();
+        JsonArray directionsJsonArray = response.payload().getJsonArray("directions");
+        IntStream.range(0, directionsJsonArray.size()).mapToObj(caseCounter -> directionsJsonArray.getJsonObject(caseCounter)).forEach(referenceDataDirectionManagementType ->
+                directions.add(jsonObjectToObjectConverter.convert(referenceDataDirectionManagementType,Direction.class))
+        );
+        return directions;
+    }
+
 
     private Stream<JsonValue> getRefDataStream(final Requester requester, final String queryName, final String fieldName, final JsonObjectBuilder jsonObjectBuilder) {
         final JsonEnvelope envelope = envelopeFrom(getMetadataBuilder(queryName), jsonObjectBuilder);

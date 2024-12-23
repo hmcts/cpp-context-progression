@@ -180,6 +180,12 @@
             <artifactId>access-control-progression-providers</artifactId>
             <version>${cpp.platform-libraries.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-refdata-service</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- JUnit regression testing framework. -->
         <dependency>
@@ -244,5 +250,6 @@
             <version>2.10.10</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>

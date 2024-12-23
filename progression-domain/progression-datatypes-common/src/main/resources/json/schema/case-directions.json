@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/common/case-directions.json",
+  "type": "object",
+  "properties": {
+    "caseDirections": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://moj.gov.uk/cpp/progression/common/case-direction-view.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

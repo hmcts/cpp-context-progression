@@ -1,0 +1,105 @@
+{
+  "directionId": "44a07637-d501-4604-9716-1bc664ce2e70",
+  "text": "$specialMeasures ordered for $caseParticipant",
+  "assigneeOrganisationText": "Prosecutor",
+  "prompts": [
+    {
+      "id": "2062d38f-9801-4a91-8664-c48a5fd44006",
+      "label": "Case Participant",
+      "type": "fixl",
+      "required": true,
+      "promptOrder": 100,
+      "caseParticipant": "Witness,Defendants"
+    },
+    {
+      "id": "111dfce9-f783-4c0d-a5fd-4bdb506237e7",
+      "label": "Special measures, reasonable adjustments or other support",
+      "type": "checklist",
+      "required": true,
+      "promptOrder": 101,
+      "name": "specialMeasures",
+      "value": "Screens",
+      "children": [
+        {
+          "id": "73a42f39-dc52-4b72-8ae8-dd43f16efe25",
+          "label": "Screens",
+          "type": "option",
+          "promptOrder": 200,
+          "name": "screens"
+        },
+        {
+          "id": "0281e600-df19-11eb-ba80-0242ac130004",
+          "label": "Live link",
+          "type": "option",
+          "promptOrder": 201,
+          "name": "liveLink"
+        },
+        {
+          "id": "09767066-df19-11eb-ba80-0242ac130004",
+          "label": "Evidence given in private",
+          "type": "option",
+          "promptOrder": 202,
+          "name": "evidenceGivenInPrivate"
+        },
+        {
+          "id": "135b8800-df19-11eb-ba80-0242ac130004",
+          "label": "Breaks in examination",
+          "type": "option",
+          "promptOrder": 203,
+          "name": "breaksInExamination"
+        },
+        {
+          "id": "1feb8b42-df19-11eb-ba80-0242ac130004",
+          "label": "Visually recorded interview",
+          "type": "option",
+          "promptOrder": 204,
+          "name": "visuallyRecordedInterview"
+        },
+        {
+          "id": "27196862-df19-11eb-ba80-0242ac130004",
+          "label": "Pre-trial pre-recorded cross examination or re examination",
+          "type": "option",
+          "promptOrder": 205,
+          "name": "pretrialPrerecordedCrossExaminationOrReexamination"
+        },
+        {
+          "id": "2e2d500a-df19-11eb-ba80-0242ac130004",
+          "label": "Intermediary",
+          "type": "option",
+          "promptOrder": 206,
+          "name": "intermediary"
+        },
+        {
+          "id": "36e92462-df19-11eb-ba80-0242ac130004",
+          "label": "Aids to communication",
+          "type": "option",
+          "promptOrder": 207,
+          "name": "aidsToCommunication",
+          "children": [
+            {
+              "id": "470a07b2-df19-11eb-ba80-0242ac130004",
+              "name": "communication",
+              "type": "txt",
+              "promptOrder": 300
+            }
+          ]
+        },
+        {
+          "id": "3e60995a-df19-11eb-ba80-0242ac130004",
+          "label": "Others",
+          "type": "option",
+          "promptOrder": 208,
+          "name": "others",
+          "children": [
+            {
+              "id": "4f62cdea-df19-11eb-ba80-0242ac130004",
+              "name": "othersText",
+              "type": "txt",
+              "promptOrder": 400
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
