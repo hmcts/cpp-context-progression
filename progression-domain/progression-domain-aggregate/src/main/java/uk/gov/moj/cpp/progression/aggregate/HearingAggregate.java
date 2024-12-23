@@ -1799,7 +1799,7 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> populateHearingToProbationCaseWorker() {
         if (HearingListingStatus.SENT_FOR_LISTING.equals(this.hearingListingStatus)
-                || Boolean.TRUE.equals(hearing.getIsBoxHearing())
+                || isNull(hearing)  || Boolean.TRUE.equals(hearing.getIsBoxHearing())
                 || HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
             return apply(empty());
         }

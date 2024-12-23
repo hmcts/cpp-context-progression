@@ -668,6 +668,14 @@ public class HearingAggregateTest {
     }
 
     @Test
+    public void shouldNotPopulateProbationCaseWorkerIfHearingIsNull() {
+        setField(hearingAggregate, "hearingListingStatus",  HearingListingStatus.HEARING_INITIALISED);
+        setField(hearingAggregate, "hearing", null);
+        final List<Object> eventStream = hearingAggregate.populateHearingToProbationCaseWorker().toList();
+        assertThat(eventStream.size(), is(0));
+    }
+
+    @Test
     public void shouldRaiseHearingTrialVacated() {
 
         final UUID hearingId = randomUUID();
