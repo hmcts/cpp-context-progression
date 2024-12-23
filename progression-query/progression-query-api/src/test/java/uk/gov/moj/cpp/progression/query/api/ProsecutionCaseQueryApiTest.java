@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.QueryClientTestBase.readJson;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
 
 import uk.gov.QueryClientTestBase;
@@ -23,9 +24,9 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -52,6 +53,7 @@ public class ProsecutionCaseQueryApiTest {
     private static final String COTR_QUERY_API_EXPECTED_JSON = "json/cotrQueryExpectedResponse.json";
 
     private static final String PROSECUTION_CASE_QUERY = "progression.query.prosecutioncase";
+    private static final String PROSECUTION_CASE_QUERY_V2 = "progression.query.prosecutioncase-v2";
     private static final String COTR_CASE_QUERY = "progression.query.cotr.details.prosecutioncase";
     private static final String PROSECUTION_CASE_QUERY_ACTIVE_APPLICATIONS_JSON  = "json/activeApplicationsOnCaseResponse.json";
     private static final String PROSECUTION_CASE_QUERY_DETAILS = "progression.query.prosecutioncase-details";
@@ -416,5 +418,23 @@ public class ProsecutionCaseQueryApiTest {
         final JsonObject expectedProsecutionCaseResponse = readJson(PROSECUTION_CASE_QUERY_API_EXPECTED_WITH_COURT_ORDERS_AND_PROSECUTOR_JSON, JsonObject.class);
 
         assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(expectedProsecutionCaseResponse));
+    }
+
+    @Test
+    void shouldHandleProsecutionCaseQuery() {
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY_V2, randomUUID());
+        final JsonObject casePayload = readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
+        final JsonEnvelope envelope = envelopeFrom(metadata, casePayload);
+
+        final String caseId = randomUUID().toString();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonEnvelope queryEnvelope = envelopeFrom(metadata, jsonObjectPayload);
+
+        when(prosecutionCaseQuery.getProsecutionCase(queryEnvelope)).thenReturn(envelope);
+
+        final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCaseV2(queryEnvelope);
+
+        assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(casePayload));
     }
 }

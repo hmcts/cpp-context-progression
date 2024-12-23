@@ -100,6 +100,9 @@ protocols: [ HTTP, HTTPS ]
             responseType: application/vnd.progression.query.prosecutioncase+json
             name: progression.query.prosecutioncase
         (mapping):
+                    responseType: application/vnd.progression.query.prosecutioncase-v2+json
+                    name: progression.query.prosecutioncase-v2
+        (mapping):
             responseType: application/vnd.progression.query.prosecutioncase.caag+json
             name: progression.query.prosecutioncase.caag
         (mapping):
@@ -133,6 +136,9 @@ protocols: [ HTTP, HTTPS ]
                     example:  !include json/progression.query.case.json
                     schema:  !include json/schema/progression.query.case.json
                   application/vnd.progression.query.prosecutioncase+json:
+                    example:  !include json/progression.query.prosecutioncase.json
+                    schema:  !include json/schema/progression.query.prosecutioncase.json
+                  application/vnd.progression.query.prosecutioncase-v2+json:
                     example:  !include json/progression.query.prosecutioncase.json
                     schema:  !include json/schema/progression.query.prosecutioncase.json
                   application/vnd.progression.query.prosecutioncase.caag+json:
