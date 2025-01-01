@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.100.2</version>
+        <version>17.100.0.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -21,6 +21,7 @@
         <module>progression-viewstore</module>
         <module>progression-command</module>
         <module>progression-event</module>
+        <module>progression-eventprocessorstore</module>
         <module>progression-domain</module>
         <module>progression-integration-test</module>
         <module>progression-performance-test</module>
@@ -95,6 +96,7 @@
         <byte-buddy.version>1.12.22</byte-buddy.version>
         <podam>7.1.0.RELEASE</podam>
         <jgitflow.maven.developBranchName>main</jgitflow.maven.developBranchName>
+        <liquibase.core.version>3.6.1</liquibase.core.version>
     </properties>
     <build>
         <plugins>

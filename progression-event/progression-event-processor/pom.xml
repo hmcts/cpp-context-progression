@@ -65,6 +65,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>uk.gov.moj.cpp.progression</groupId>
+            <artifactId>progression-eventprocessorstore-persistence</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>uk.gov.moj.cpp.system.documentgenerator</groupId>
             <artifactId>system-documentgenerator-client</artifactId>
         </dependency>

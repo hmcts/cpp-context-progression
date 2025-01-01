@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+ http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+             version="1.0">
+
+    <persistence-unit name="progression-persistence-unit">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>java:/app/progression-event-processor/DS.progression.eventprocessorstore</jta-data-source>
+
+        <properties>
+            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>

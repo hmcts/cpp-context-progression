@@ -37,6 +37,9 @@ import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 import uk.gov.moj.cpp.progression.domain.PostalHearingCourtDetails;
+import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
+import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
+import uk.gov.moj.cpp.progression.persist.entity.NotificationInfo;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
@@ -116,6 +119,9 @@ public class HearingNotificationHelper {
 
     @Inject
     private MaterialUrlGenerator materialUrlGenerator;
+
+    @Inject
+    private NotificationInfoRepository notificationInfoRepository;
 
     @ServiceComponent(Component.EVENT_PROCESSOR)
     @Inject
@@ -306,9 +312,18 @@ public class HearingNotificationHelper {
 
         if (isNotEmpty(prosecutorEmail)) {
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId, RecipientType.PROSECUTOR);
+            //saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, NotificationType.EMAIL);
         } else {
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.PROSECUTOR);
+            //saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, NotificationType.PRINT);
         }
+    }
+
+    private void saveNotificationInfo(UUID notificationId, RecipientType recipientType, NotificationType notificationType) {
+        notificationInfoRepository.save(NotificationInfo.Builder.builder().withNotificationId(notificationId)
+                .withNotificationType(notificationType.toString())
+                .withPayload(createObjectBuilder().add("RecipientType", recipientType.getRecipientName()).build().toString())
+                .withProcessedTimestamp(ZonedDateTime.now()).build());
     }
 
 

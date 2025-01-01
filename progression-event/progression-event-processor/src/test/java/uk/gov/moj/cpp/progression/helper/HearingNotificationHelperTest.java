@@ -38,6 +38,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.RecipientType;
+import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -132,6 +133,8 @@ public class HearingNotificationHelperTest {
     @Mock
     private ReferenceDataOffenceService referenceDataOffenceService;
 
+    @Mock
+    private NotificationInfoRepository notificationInfoRepository;
 
     @Captor
     private ArgumentCaptor<List<EmailChannel>> prosecutorEmailCapture;
