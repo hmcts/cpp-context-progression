@@ -76,7 +76,7 @@
         <results.version>17.0.1</results.version>
         <notification.notify.version>17.0.1</notification.notify.version>
         <unifiedsearch.version>17.0.12</unifiedsearch.version>
-        <systemdocgenerator.version>17.0.6</systemdocgenerator.version>
+        <systemdocgenerator.version>17.0.26</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.19</applicationscourtorders.version>
         <sjp.version>17.0.6</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>

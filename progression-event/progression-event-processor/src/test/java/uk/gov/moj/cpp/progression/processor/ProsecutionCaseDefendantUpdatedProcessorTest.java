@@ -476,10 +476,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse_WithApplicationSummaries()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
 
-        final JsonObject sampleJsonObject = createObjectBuilder().build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
-
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
                         .withUserId(randomUUID().toString())
                         .withId(randomUUID())
@@ -508,10 +504,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
         when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
-
-        final JsonObject sampleJsonObject = createObjectBuilder().build();
-
-        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
 
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
                         .withUserId(randomUUID().toString())

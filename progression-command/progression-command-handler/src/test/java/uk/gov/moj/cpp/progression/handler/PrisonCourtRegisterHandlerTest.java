@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -21,16 +22,21 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getPrisonCourtRegisterStreamId;
 
+import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
+import uk.gov.justice.core.courts.PrisonCourtRegisterSent;
 import uk.gov.justice.core.courts.PrisonCourtRegisterWithoutRecipientsRecorded;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterDocumentSent;
+import uk.gov.justice.core.courts.RecordPrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterRecipient;
-import uk.gov.justice.core.courts.prisonCourtRegisterDocument.RecordPrisonCourtRegisterDocumentGenerated;
+import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -40,21 +46,26 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
+import uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CourtCentreAggregate;
 import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -62,13 +73,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class PrisonCourtRegisterHandlerTest {
 
     private static final String ADD_PRISON_COURT_REGISTER_COMMAND_NAME = "progression.command.add-prison-court-register";
-    private static final String RECORD_PRISON_COURT_REGISTER_GENERATED_COMMAND_NAME = "progression.command.record-prison-court-register-generated";
+    private static final String NOTIFY_PRISON_COURT_REGISTER_COMMAND_NAME = "progression.command.notify-prison-court-register";
+    private static final String RECORD_PRISON_COURT_REGISTER_SENT_COMMAND_NAME = "progression.command.record-prison-court-register-sent";
+    private static final String PRISON_COURT_REGISTER_FAILED_COMMAND_NAME = "progression.command.record-prison-court-register-failed";
     private static final UUID COURT_CENTRE_ID = randomUUID();
+    private static final UUID PAYLOAD_FILE_ID = randomUUID();
     private static final ZonedDateTime HEARING_DATE = ZonedDateTime.parse("2024-10-24T22:23:12.414Z");
     private static final UUID FILE_ID = randomUUID();
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID MASTER_DEFENDANT_ID = randomUUID();
     private static final UUID ID = randomUUID();
+
+    private static final UUID SYSTEM_DOCUMENT_ID = randomUUID();
 
     @Mock
     private EventSource eventSource;
@@ -83,11 +99,23 @@ public class PrisonCourtRegisterHandlerTest {
     @InjectMocks
     private PrisonCourtRegisterHandler prisonCourtRegisterHandler;
 
-    @Spy
-    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
+    private static CourtCentreAggregate aggregator;
+    private static final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+
+    private static final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
 
     @Spy
-    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(PrisonCourtRegisterRecorded.class, PrisonCourtRegisterWithoutRecipientsRecorded.class, PrisonCourtRegisterGenerated.class);
+    private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
+            PrisonCourtRegisterRecorded.class,
+            PrisonCourtRegisterWithoutRecipientsRecorded.class,
+            PrisonCourtRegisterGenerated.class,
+            PrisonCourtRegisterSent.class,
+            PrisonCourtRegisterFailed.class);
+
+    @BeforeAll
+    public static void setup() {
+        ReflectionUtil.setField(jsonToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
+    }
 
     @Test
     public void shouldHandleCommand() {
@@ -162,6 +190,71 @@ public class PrisonCourtRegisterHandlerTest {
     }
 
     @Test
+    public void shouldCreateRegisterGeneratedEvent() throws Exception {
+        aggregator = new CourtCentreAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
+
+        prisonCourtRegisterHandler.recordPrisonCourtRegisterDocumentSent(buildRecordPrisonCourtRegisterSentEnvelope());
+
+        prisonCourtRegisterHandler.handleNotifyCourtCentre(buildRecordRegisterGeneratedEnvelope());
+
+        ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
+
+        Mockito.verify(eventStream, times(2)).append(argumentCaptor.capture());
+
+        Stream<JsonEnvelope> envelopeStream = (Stream)argumentCaptor.getValue();
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata().withName("progression.event.prison-court-register-generated"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
+                                withJsonPath("$.fileId", is(SYSTEM_DOCUMENT_ID.toString())))))));
+    }
+
+    @Test
+    public void shouldRecordPrisonCourtRegisterDocumentSent() throws Exception {
+
+        aggregator = new CourtCentreAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
+
+        prisonCourtRegisterHandler.recordPrisonCourtRegisterDocumentSent(buildRecordPrisonCourtRegisterSentEnvelope());
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata().withName("progression.event.prison-court-register-sent"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
+                                withJsonPath("$.payloadFileId", is(PAYLOAD_FILE_ID.toString()))
+                        )))));
+    }
+
+    @Test
+    public void shouldHandlePrisonCourtRegisterFailed() throws Exception {
+
+        aggregator = new CourtCentreAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
+
+        prisonCourtRegisterHandler.handlePrisonCourtRegisterFailed(buildPrisonCourtRegisterFailedEnvelope());
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata().withName("progression.event.prison-court-register-failed"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
+                                withJsonPath("$.payloadFileId", is(PAYLOAD_FILE_ID.toString())),
+                                withJsonPath("$.reason", is("Test"))
+                        )))));
+    }
+
+    @Test
     public void shouldGetRecordedEventForRespondent() throws Exception {
         final JsonObject jsonObject = FileUtil.jsonFromString(FileUtil
                 .getPayload("json/progression.event.court-application-for-respondent.json")
@@ -224,27 +317,6 @@ public class PrisonCourtRegisterHandlerTest {
                         )))));
     }
 
-    @Test
-    public void shouldCreateRegisterGeneratedEvent() throws Exception {
-
-        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
-
-        prisonCourtRegisterHandler.handleRecordDocumentGenerated(buildRecordRegisterGeneratedEnvelope());
-
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata().withName("progression.event.prison-court-register-generated"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.fileId", is(FILE_ID.toString())),
-                                withJsonPath("$.id", is(ID.toString()))
-                        )))));
-    }
-
     private Envelope<PrisonCourtRegisterDocumentRequest> buildEnvelopeWithoutRecipients() {
         return buildEnvelope(null);
     }
@@ -255,7 +327,7 @@ public class PrisonCourtRegisterHandlerTest {
                 .withCourtCentreId(COURT_CENTRE_ID).withHearingDate(HEARING_DATE);
 
         if (registerRecipient != null) {
-            builder.withRecipients(asList(registerRecipient));
+            builder.withRecipients(Arrays.asList(registerRecipient));
         }
 
         final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = builder
@@ -268,17 +340,41 @@ public class PrisonCourtRegisterHandlerTest {
         return envelope(ADD_PRISON_COURT_REGISTER_COMMAND_NAME, prisonCourtRegisterDocumentRequest);
     }
 
-    private Envelope<RecordPrisonCourtRegisterDocumentGenerated> buildRecordRegisterGeneratedEnvelope() {
+    private Envelope<NotifyPrisonCourtRegister> buildRecordRegisterGeneratedEnvelope() {
 
-        final RecordPrisonCourtRegisterDocumentGenerated recordPrisonCourtRegisterDocumentGenerated = RecordPrisonCourtRegisterDocumentGenerated.recordPrisonCourtRegisterDocumentGenerated()
+        final NotifyPrisonCourtRegister notifyPrisonCourtRegister = NotifyPrisonCourtRegister.notifyPrisonCourtRegister()
                 .withCourtCentreId(COURT_CENTRE_ID)
-                .withHearingDate(HEARING_DATE)
-                .withFileId(FILE_ID)
+                .withPayloadFileId(PAYLOAD_FILE_ID)
+                .withSystemDocGeneratorId(SYSTEM_DOCUMENT_ID)
                 .withId(ID)
                 .build();
 
-        return envelope(RECORD_PRISON_COURT_REGISTER_GENERATED_COMMAND_NAME, recordPrisonCourtRegisterDocumentGenerated);
+        return envelope(NOTIFY_PRISON_COURT_REGISTER_COMMAND_NAME, notifyPrisonCourtRegister);
     }
+
+    private Envelope<RecordPrisonCourtRegisterDocumentSent> buildRecordPrisonCourtRegisterSentEnvelope() {
+
+        final RecordPrisonCourtRegisterDocumentSent recordPrisonCourtRegisterDocumentSent = RecordPrisonCourtRegisterDocumentSent
+                .recordPrisonCourtRegisterDocumentSent()
+                .withCourtCentreId(COURT_CENTRE_ID)
+                .withPayloadFileId(PAYLOAD_FILE_ID)
+                .build();
+
+        return envelope(RECORD_PRISON_COURT_REGISTER_SENT_COMMAND_NAME, recordPrisonCourtRegisterDocumentSent);
+    }
+
+    private Envelope<RecordPrisonCourtRegisterFailed> buildPrisonCourtRegisterFailedEnvelope() {
+
+        final RecordPrisonCourtRegisterFailed recordPrisonCourtRegisterFailed = RecordPrisonCourtRegisterFailed
+                .recordPrisonCourtRegisterFailed()
+                .withCourtCentreId(COURT_CENTRE_ID)
+                .withPayloadFileId(PAYLOAD_FILE_ID)
+                .withReason("Test")
+                .build();
+
+        return envelope(PRISON_COURT_REGISTER_FAILED_COMMAND_NAME, recordPrisonCourtRegisterFailed);
+    }
+
 
     private <T> Envelope<T> envelope(final String name, final T t) {
         final MetadataBuilder metadataBuilder = metadataFrom(metadataWithRandomUUID(name).withUserId(randomUUID().toString()).build());

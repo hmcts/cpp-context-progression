@@ -1,16 +1,18 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
@@ -23,32 +25,28 @@ import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegiste
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.UtcClock;
-import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.DocumentGenerationRequest;
+import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
-import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
-import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
+import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -59,37 +57,27 @@ public class PrisonCourtRegisterEventProcessorTest {
 
     @InjectMocks
     private PrisonCourtRegisterEventProcessor prisonCourtRegisterEventProcessor;
-
-    @Mock
-    private FileStorer fileStorer;
-
-    @Mock
-    private DocumentGeneratorClientProducer documentGeneratorClientProducer;
-
-    @Mock
-    private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
-
-    @Mock
-    private SystemUserProvider systemUserProvider;
-
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Mock
-    private DocumentGeneratorClient documentGeneratorClient;
+    private SystemDocGeneratorService systemDocGeneratorService;
+
+    @Mock
+    private FileService fileService;
 
     @Mock
     private ApplicationParameters applicationParameters;
-
-    @Mock
-    private MaterialUrlGenerator materialUrlGenerator;
 
     @Mock
     private NotificationNotifyService notificationNotifyService;
 
     @Mock
     private Sender sender;
+
+    @Mock
+    private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
 
     @Spy
     private UtcClock utcClock;
@@ -100,17 +88,21 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeArgumentCaptor;
 
+    @Captor
+    private ArgumentCaptor<DocumentGenerationRequest> documentGenerationRequestArgumentCaptor;
+
     @BeforeEach
     public void setup() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
-    public void shouldGeneratePrisonCourtRegister() throws IOException, FileServiceException {
-        final UUID courtCentreId = UUID.randomUUID();
+    public void shouldGeneratePrisonCourtRegister() {
+        final UUID courtCentreId = randomUUID();
+        final UUID prisonCourtRegisterStreamId = randomUUID();
         final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = PrisonCourtRegisterDocumentRequest.prisonCourtRegisterDocumentRequest()
                 .withCourtCentreId(courtCentreId)
-                .withHearingId(UUID.randomUUID())
+                .withHearingId(randomUUID())
                 .withHearingDate(ZonedDateTime.now())
                 .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
                         .withEmailAddress1("test@hmcst.net")
@@ -123,51 +115,47 @@ public class PrisonCourtRegisterEventProcessorTest {
                                 singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
                         ).build())
                 .build();
+        final UUID id = randomUUID();
 
         final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = PrisonCourtRegisterRecorded.prisonCourtRegisterRecorded()
-                .withCourtCentreId(UUID.randomUUID())
-                .withId(UUID.randomUUID())
+                .withCourtCentreId(randomUUID())
+                .withPrisonCourtRegisterStreamId(prisonCourtRegisterStreamId)
+                .withId(id)
                 .withPrisonCourtRegister(prisonCourtRegisterDocumentRequest).build();
+
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterRecorded);
 
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.prison-court-register-recorded"),
                 jsonObject);
 
-        final UUID systemUserId = UUID.randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        when(fileService.storePayload(any(JsonObject.class), anyString(), anyString())).thenReturn((randomUUID()));
 
-        final byte[] byteArray = new byte[]{};
-        when(documentGeneratorClient.generatePdfDocument(any(), eq("OEE_Layout5"), eq(systemUserId))).thenReturn(byteArray);
-        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
+        doNothing().when(systemDocGeneratorService).generateDocument(any(DocumentGenerationRequest.class), any(JsonEnvelope.class));
 
-        final UUID fileId = UUID.randomUUID();
-        when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+        when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(Json.createObjectBuilder().build());
 
         prisonCourtRegisterEventProcessor.generatePrisonCourtRegister(requestMessage);
 
-        verify(sender).send(envelopeArgumentCaptor.capture());
-        verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserId));
-        verify(this.fileStorer).store(any(JsonObject.class), any(ByteArrayInputStream.class));
-        final Envelope<JsonObject> command = envelopeArgumentCaptor.getValue();
+        verify(systemDocGeneratorService).generateDocument(documentGenerationRequestArgumentCaptor.capture(), any(JsonEnvelope.class));
 
-        assertThat(command.metadata(),
-                withMetadataEnvelopedFrom(requestMessage).withName("progression.command.record-prison-court-register-generated"));
-        JsonObject commandPayload = command.payload();
-        assertThat(commandPayload.getString("courtCentreId"), is(courtCentreId.toString()));
-        assertThat(commandPayload.getString("fileId"), is(fileId.toString()));
-        assertThat(commandPayload.getString("id"), is(prisonCourtRegisterRecorded.getId().toString()));
-        assertThat(commandPayload.getJsonObject("hearingVenue").getString("courtHouse"), is("liverpool Crown Court"));
-        assertThat(commandPayload.getJsonObject("defendant").getString("name"), is("defendant-name"));
-        assertThat(commandPayload.getJsonObject("defendant").getString("dateOfBirth"), is("dateOfBirth"));
-        assertThat(commandPayload.getJsonArray("recipients").getValuesAs(JsonObject.class).get(0).getString("emailAddress1"), is("test@hmcst.net"));
-        assertThat(commandPayload.getJsonArray("recipients").getValuesAs(JsonObject.class).get(0).getString("emailTemplateName"), is("emailTemplateName"));
+        verify(sender).send(envelopeArgumentCaptor.capture());
+
+        DocumentGenerationRequest documentGenerationRequest = documentGenerationRequestArgumentCaptor.getValue();
+
+        assertThat(documentGenerationRequest.getOriginatingSource(), is("PRISON_COURT_REGISTER"));
+        assertThat(documentGenerationRequest.getSourceCorrelationId(), is(prisonCourtRegisterStreamId.toString()));
+        assertThat(documentGenerationRequest.getAdditionalInformation(), notNullValue());
+        assertThat(documentGenerationRequest.getAdditionalInformation().size(), is(1));
+
+        assertEquals("progression.command.record-prison-court-register-document-sent", envelopeArgumentCaptor.getValue().metadata().name());
     }
+
 
     @Test
     public void shouldSendPrisonCourtRegister() {
-        final UUID fileId = UUID.randomUUID();
-        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated().withCourtCentreId(UUID.randomUUID())
+        final UUID fileId = randomUUID();
+        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated().withCourtCentreId(randomUUID())
                 .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
                         .withEmailAddress1("test@hmcst.net")
                         .withEmailTemplateName("emailTemplateName").build()))
@@ -185,7 +173,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.prison-court-register-generated"),
                 jsonObject);
-        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(UUID.randomUUID().toString());
+        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
         prisonCourtRegisterEventProcessor.sendPrisonCourtRegister(requestMessage);
         verify(notificationNotifyService).sendEmailNotification(eq(requestMessage), notificationJsonObjectCaptor.capture());
         assertThat(notificationJsonObjectCaptor.getValue().getString("fileId"), is(fileId.toString()));

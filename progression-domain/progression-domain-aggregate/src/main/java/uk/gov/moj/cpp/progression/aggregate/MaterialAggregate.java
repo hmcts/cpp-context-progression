@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -16,15 +17,24 @@ import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowsDocumentFailed;
+import uk.gov.justice.core.courts.NowsDocumentGenerated;
+import uk.gov.justice.core.courts.NowsDocumentSent;
 import uk.gov.justice.core.courts.NowsMaterialRequestRecorded;
 import uk.gov.justice.core.courts.NowsMaterialStatusUpdated;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberIgnored;
 import uk.gov.justice.core.courts.NowsRequestWithAccountNumberUpdated;
+import uk.gov.justice.core.courts.RecordNowsDocumentFailed;
+import uk.gov.justice.core.courts.RecordNowsDocumentSent;
 import uk.gov.justice.core.courts.nowdocument.FinancialOrderDetails;
+import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.NowNotificationSuppressed;
+import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
+import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.progression.courts.RecordNowsDocumentGenerated;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
@@ -36,6 +46,7 @@ import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
 import uk.gov.moj.cpp.progression.events.NowDocumentNotificationSuppressed;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,10 +64,19 @@ public class MaterialAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(MaterialAggregate.class);
 
     private static final long serialVersionUID = 101L;
+
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
     private MaterialDetails details;
     private final List<UUID> caseIds = new ArrayList<>();
     private NowDocumentRequest nowDocumentRequest;
     private boolean isAccountNumberSavedBefore = false;
+    private UUID hearingId;
+    private Boolean cpsProsecutionCase;
+    private String fileName;
+    private NowDistribution nowDistribution;
+    private OrderAddressee orderAddressee;
+    private UUID userId;
 
     @Override
     public Object apply(final Object event) {
@@ -71,10 +91,26 @@ public class MaterialAggregate implements Aggregate {
                         isAccountNumberSavedBefore = true
                 ),
                 when(NowDocumentRequested.class).apply(e -> {
-                    nowDocumentRequest = e.getNowDocumentRequest();
-                    if (isNotEmpty(e.getNowDocumentRequest().getCases())) {
-                        caseIds.addAll(e.getNowDocumentRequest().getCases());
-                    }
+                        nowDocumentRequest = e.getNowDocumentRequest();
+                        hearingId = nowDocumentRequest.getHearingId();
+                        fileName = e.getFileName();
+                        cpsProsecutionCase = e.getCpsProsecutionCase();
+
+                        if (nonNull(e.getUserId())) {
+                            userId = e.getUserId();
+                        }
+
+                        if (isNotEmpty(e.getNowDocumentRequest().getCases())) {
+                            caseIds.addAll(e.getNowDocumentRequest().getCases());
+                        }
+                 }),
+                when(NowsDocumentSent.class).apply(e -> {
+                    hearingId = e.getHearingId();
+                    cpsProsecutionCase = e.getCpsProsecutionCase();
+                    fileName = e.getFileName();
+                    nowDistribution = e.getNowDistribution();
+                    orderAddressee = e.getOrderAddressee();
+                    userId =  e.getUserId();
                 }),
                 otherwiseDoNothing()
         );
@@ -103,7 +139,7 @@ public class MaterialAggregate implements Aggregate {
             streamBuilder.add(new NowsMaterialStatusUpdated(caseSubjects, cpsDefendantIds, defendantAsn, this.details, status, welshTranslationRequired));
 
             if (nonNull(nowDocumentRequest) && welshTranslationRequired) {
-                final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(thecase -> thecase.getReference()).collect(Collectors.toList());
+                final List<String> caseUrns = this.nowDocumentRequest.getNowContent().getCases().stream().map(ProsecutionCase::getReference).collect(Collectors.toList());
                 streamBuilder.add(new NowDocumentNotificationSuppressed(new NowNotificationSuppressed(caseUrns, this.nowDocumentRequest.getNowContent().getDefendant().getName(), this.nowDocumentRequest.getMasterDefendantId(), this.details.getMaterialId(), this.nowDocumentRequest.getTemplateName())));
             }
 
@@ -112,23 +148,59 @@ public class MaterialAggregate implements Aggregate {
         return Stream.of(new MaterialStatusUpdateIgnored(materialId, status));
     }
 
-    public Stream<Object> createNowDocumentRequest(final UUID materialId, final NowDocumentRequest nowDocumentRequest) {
+    public Stream<Object> createNowDocumentRequest(final UUID materialId, final NowDocumentRequest nowDocumentRequest, final UUID userId) {
         if (isEmpty(nowDocumentRequest.getRequestId())) {
-            return apply(Stream.of(new NowDocumentRequested(materialId, nowDocumentRequest)));
+            final boolean isCps = isCpsProsecutionCase(nowDocumentRequest.getNowContent());
+            final String orderName = nowDocumentRequest.getNowContent().getOrderName();
+            final String strFileName = getTimeStampAmendedFileName(orderName);
+            final String templateName = getTemplateName(nowDocumentRequest);
+
+            return apply(Stream.of(new NowDocumentRequested(isCps, strFileName, materialId, nowDocumentRequest, templateName, userId)));
         }
         return apply(Stream.of(new NowDocumentRequestToBeAcknowledged(materialId, nowDocumentRequest)));
     }
 
-    public Stream<Object> saveAccountNumber(final UUID materialId, final UUID requestId, final String accountNumber) {
+    public Stream<Object> saveAccountNumber(final UUID materialId, final UUID requestId, final String accountNumber, final UUID userId) {
         if (isAccountNumberSavedBefore) {
             return Stream.of(new NowsRequestWithAccountNumberIgnored(accountNumber, requestId));
         }
         final NowDocumentRequest updatedNowDocumentRequest = updateFinancialOrderDetails(nowDocumentRequest, accountNumber);
-        return Stream.of(new NowsRequestWithAccountNumberUpdated(accountNumber, requestId), new NowDocumentRequested(materialId, updatedNowDocumentRequest));
+
+        final boolean isCps = isCpsProsecutionCase(updatedNowDocumentRequest.getNowContent());
+        final String orderName = updatedNowDocumentRequest.getNowContent().getOrderName();
+        final String strFileName = getTimeStampAmendedFileName(orderName);
+        final String templateName = getTemplateName(updatedNowDocumentRequest);
+
+
+        return Stream.of(new NowsRequestWithAccountNumberUpdated(accountNumber, requestId), new NowDocumentRequested(isCps, strFileName, materialId, updatedNowDocumentRequest, templateName, userId));
     }
 
     public Stream<Object> recordPrintRequest(final UUID materialId, final UUID notificationId, final boolean postage) {
         return apply(Stream.of(new PrintRequested(notificationId, null, null, materialId, postage)));
+    }
+
+    private boolean isCpsProsecutionCase(final NowDocumentContent nowContent) {
+        return nowContent.getCases().stream()
+                .filter(pc -> nonNull(pc.getIsCps()))
+                .filter(ProsecutionCase::getIsCps)
+                .findFirst()
+                .map(ProsecutionCase::getIsCps)
+                .orElse(false);
+    }
+
+    private String getTimeStampAmendedFileName(final String fileName) {
+        return format("%s_%s.pdf", fileName, ZonedDateTime.now().format(TIMESTAMP_FORMATTER));
+    }
+
+    private String getTemplateName(NowDocumentRequest nowDocumentRequest) {
+
+        final Boolean isWelshCourtCentre = nowDocumentRequest.getNowContent().getOrderingCourt().getWelshCourtCentre();
+        if (nonNull(isWelshCourtCentre) && isWelshCourtCentre
+                && nonNull(nowDocumentRequest.getBilingualTemplateName())
+                && !nowDocumentRequest.getBilingualTemplateName().isEmpty()) {
+            return nowDocumentRequest.getBilingualTemplateName();
+        }
+        return nowDocumentRequest.getTemplateName();
     }
 
     private NowDocumentRequest updateFinancialOrderDetails(final NowDocumentRequest nowDocumentRequest, final String accountNumber) {
@@ -237,7 +309,46 @@ public class MaterialAggregate implements Aggregate {
     }
 
     public List<UUID> fetchCases(){
-        LOGGER.info("fetchCases : {}", caseIds);
-        return caseIds;
+       LOGGER.info("fetchCases : {}", caseIds);
+       return new ArrayList<>(caseIds);
+    }
+
+    public Stream<Object> recordNowsDocumentSent(final UUID materialId, final UUID userId, final RecordNowsDocumentSent recordNowsDocumentSent) {
+        return apply(Stream.of(NowsDocumentSent.nowsDocumentSent()
+                        .withMaterialId(materialId)
+                        .withHearingId(recordNowsDocumentSent.getHearingId())
+                        .withPayloadFileId(recordNowsDocumentSent.getPayloadFileId())
+                        .withCpsProsecutionCase(recordNowsDocumentSent.getCpsProsecutionCase())
+                        .withFileName(recordNowsDocumentSent.getFileName())
+                        .withNowDistribution(recordNowsDocumentSent.getNowDistribution())
+                        .withOrderAddressee(recordNowsDocumentSent.getOrderAddressee())
+                        .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> recordNowsDocumentFailed(final UUID materialId, final RecordNowsDocumentFailed recordNowsDocumentFailed) {
+        return apply(Stream.of(NowsDocumentFailed.nowsDocumentFailed()
+                .withPayloadFileId(recordNowsDocumentFailed.getPayloadFileId())
+                .withReason(recordNowsDocumentFailed.getReason())
+                .withConversionFormat(recordNowsDocumentFailed.getConversionFormat())
+                .withFailedTime(recordNowsDocumentFailed.getFailedTime())
+                .withOriginatingSource(recordNowsDocumentFailed.getOriginatingSource())
+                .withRequestedTime(recordNowsDocumentFailed.getRequestedTime())
+                .withTemplateIdentifier(recordNowsDocumentFailed.getTemplateIdentifier())
+                .withMaterialId(materialId)
+                .build()));
+    }
+
+    public Stream<Object> recordNowsDocumentGenerated(final UUID materialId, final RecordNowsDocumentGenerated recordNowsDocumentGenerated) {
+        return apply(Stream.of(NowsDocumentGenerated.nowsDocumentGenerated()
+                .withMaterialId(materialId)
+                .withHearingId(hearingId)
+                .withSystemDocGeneratorId(recordNowsDocumentGenerated.getSystemDocGeneratorId())
+                .withCpsProsecutionCase(cpsProsecutionCase)
+                .withFileName(fileName)
+                .withNowDistribution(nowDistribution)
+                .withOrderAddressee(orderAddressee)
+                .withUserId(userId)
+                .build()));
     }
 }

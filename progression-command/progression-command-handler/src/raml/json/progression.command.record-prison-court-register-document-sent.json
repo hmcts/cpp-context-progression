@@ -1,0 +1,96 @@
+{
+  "courtCentreId": "3605a21c-7dc8-4c96-8fd6-d292f1144d55",
+  "defendant": {
+    "address": {
+      "address1": "Flat 1",
+      "address2": "1 Old Road",
+      "address3": "London",
+      "address4": "Merton",
+      "address5": "UK",
+      "postCode": "XY1 2AB"
+    },
+    "aliases": [
+      {
+        "firstName": "John",
+        "lastName": "Smith",
+        "middleName": "Duncan",
+        "title": "Mr"
+      }
+    ],
+    "dateOfBirth": "2001-12-27",
+    "defenceCounsels": [
+      {
+        "name": "prosecution Counsel Name",
+        "status": "status"
+      }
+    ],
+    "defendantResults": [
+      {
+        "cjsResultCode": "cjscode",
+        "resultText": "some result"
+      }
+    ],
+    "gender": "MALE",
+    "hearing": {
+      "attendingSolicitorName": "Harold Benjamin Solicitors",
+      "defendantPresent": true,
+      "hearingType": "Sentence",
+      "jurisdiction": "MAGISTRATES"
+    },
+    "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+    "name": "Fred  Smith",
+    "nationality": "British",
+    "postHearingCustodyStatus": "Not Applicable",
+    "prosecutionCasesOrApplications": [
+      {
+        "caseOrApplicationReference": "TFL4359536",
+        "offences": [
+          {
+            "allocationDecision": "",
+            "convictionDate": "2019-11-14",
+            "offenceCode": "PS90010",
+            "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+            "orderIndex": 1,
+            "pleaDate": "2019-11-14",
+            "pleaValue": "NOT_GUILTY",
+            "results": [
+              {
+                "cjsResultCode": "cjscode",
+                "resultText": "offence result"
+              }
+            ],
+            "verdictCode": "Guilty",
+            "wording": "word"
+          }
+        ],
+        "prosecutionCounsels": [
+          {
+            "name": "prosecution Counsel Name",
+            "status": "status"
+          }
+        ],
+        "results": [
+          {
+            "cjsResultCode": "cjscode",
+            "resultText": "prosecution result"
+          }
+        ]
+      }
+    ]
+  },
+  "payloadFileId": "7ae12df3-596c-4b6b-a1e2-5f26313a50f0",
+  "hearingDate": "2023-03-22T13:04:23.518Z",
+  "hearingId": "628d270d-1f83-4d82-8942-79279d06a38c",
+  "hearingVenue": {
+    "courtHouse": "liverpool crown court",
+    "ljaName": "Mersey Courts"
+  },
+  "recipients": [
+    {
+      "emailAddress1": "john.smith@hmcts.net",
+      "emailAddress2": "john.smith2@hmcts.net",
+      "emailTemplateName": "pcr_standard",
+      "recipientName": "John Smith"
+    }
+  ]
+}

@@ -71,13 +71,14 @@ public class PrisonCourtRegisterEventListenerTest {
     public void shouldSavePrisonCourtRegister() {
 
         final UUID courtCenterId = UUID.randomUUID();
+        final UUID prisonCourtRegisterStreamId = UUID.randomUUID();
         final UUID id = UUID.randomUUID();
         final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = PrisonCourtRegisterDocumentRequest.prisonCourtRegisterDocumentRequest()
                 .withCourtCentreId(courtCenterId)
                 .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().withCourtHouse("Court House").withLjaName("LJA Name").build())
                 .build();
 
-        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId,"Applicant", id, prisonCourtRegisterDocumentRequest);
+        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId,"Applicant", id, prisonCourtRegisterDocumentRequest, prisonCourtRegisterStreamId);
 
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterRecorded);
         final JsonEnvelope requestMessage = envelopeFrom(
@@ -102,12 +103,13 @@ public class PrisonCourtRegisterEventListenerTest {
     public void shouldSavePrisonCourtRegisterWithoutId() {
 
         final UUID courtCenterId = UUID.randomUUID();
+        final UUID prisonCourtRegisterStreamId = UUID.randomUUID();
         final PrisonCourtRegisterDocumentRequest prisonCourtRegisterDocumentRequest = PrisonCourtRegisterDocumentRequest.prisonCourtRegisterDocumentRequest()
                 .withCourtCentreId(courtCenterId)
                 .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().withCourtHouse("Court House").withLjaName("LJA Name").build())
                 .build();
 
-        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId, "Applicant", null, prisonCourtRegisterDocumentRequest );
+        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId, "Applicant", null, prisonCourtRegisterDocumentRequest, prisonCourtRegisterStreamId );
 
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterRecorded);
         final JsonEnvelope requestMessage = envelopeFrom(

@@ -17,6 +17,7 @@ import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -62,6 +63,50 @@ public class SysDocGeneratorStub {
                                 }
                             })
                             .collect(toList()), matcher);
+        } catch (final ConditionTimeoutException timeoutException) {
+            LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
+            return emptyList();
+        }
+    }
+
+    public static List<JSONObject> pollSysDocGenerationRequestsForPrisonCourtRegister(final Matcher<Collection<?>> matcher, final String originatingSource) {
+        try {
+            final List<JSONObject> postRequests = await().until(() ->
+            {
+                List<JSONObject> list = new ArrayList<>();
+                for (LoggedRequest loggedRequest : findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))) {
+                    String bodyAsString = loggedRequest.getBodyAsString();
+                    JSONObject j = new JSONObject(bodyAsString);
+                    if (j.getString("originatingSource").equals(originatingSource)) {
+                        list.add(j);
+                    }
+                }
+                return list;
+            }, matcher);
+
+            return postRequests;
+        } catch (final ConditionTimeoutException timeoutException) {
+            LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
+            return emptyList();
+        }
+    }
+
+    public static List<JSONObject> pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(final Matcher<Collection<?>> matcher, final String originatingSource, final String courtCentreId) {
+        try {
+            final List<JSONObject> postRequests = await().until(() ->
+            {
+                List<JSONObject> list = new ArrayList<>();
+                for (LoggedRequest loggedRequest : findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))) {
+                    String bodyAsString = loggedRequest.getBodyAsString();
+                    JSONObject j = new JSONObject(bodyAsString);
+                    if (j.getString("originatingSource").equals(originatingSource) && j.getString("sourceCorrelationId").contains(courtCentreId)) {
+                        list.add(j);
+                    }
+                }
+                return list;
+            }, matcher);
+
+            return postRequests;
         } catch (final ConditionTimeoutException timeoutException) {
             LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
             return emptyList();
