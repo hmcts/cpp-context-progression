@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
+import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
+import uk.gov.moj.cpp.progression.persist.entity.NotificationInfo;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -137,6 +140,9 @@ public class ListHearingRequestedProcessorTest {
     private DefenceService defenceService;
 
     @Mock
+    private NotificationInfoRepository notificationInfoRepository;
+
+    @Mock
     private ListCourtHearingTransformer listCourtHearingTransformer;
 
     @Mock
@@ -210,6 +216,7 @@ public class ListHearingRequestedProcessorTest {
 
         setField(this.hearingNotificationHelper, "progressionService", progressionService);
         setField(this.hearingNotificationHelper, "defenceService", defenceService);
+        setField(this.hearingNotificationHelper, "notificationInfoRepository", notificationInfoRepository);
         setField(this.hearingNotificationHelper, "referenceDataService", refDataService);
         setField(this.hearingNotificationHelper, "referenceDataOffenceService", referenceDataOffenceService);
         setField(this.hearingNotificationHelper, "notificationService", notificationService);
@@ -332,6 +339,7 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+        when(notificationInfoRepository.save(any())).thenReturn(NotificationInfo.Builder.builder().build());
 
         listHearingRequestedProcessor.handle(requestMessage);
 

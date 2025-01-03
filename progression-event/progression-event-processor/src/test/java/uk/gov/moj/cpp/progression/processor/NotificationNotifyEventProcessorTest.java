@@ -5,6 +5,7 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,7 +29,12 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.CommunicationType;
+import uk.gov.moj.cpp.progression.RecipientType;
+import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
+import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
+import uk.gov.moj.cpp.progression.persist.entity.NotificationInfo;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.SystemIdMapperService;
@@ -53,6 +59,8 @@ public class NotificationNotifyEventProcessorTest {
 
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private NotificationInfoRepository notificationInfoRepository;
 
     @Mock
     private SystemIdMapperService systemIdMapperService;
@@ -126,6 +134,8 @@ public class NotificationNotifyEventProcessorTest {
                 .withPayloadOf("defendant","recipientType")
                 .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
+        NotificationInfo notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.LETTER.getType());
+        when(notificationInfoRepository.findBy(notificationId)).thenReturn(notificationInfo);
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
@@ -169,6 +179,7 @@ public class NotificationNotifyEventProcessorTest {
     public void shouldHandleSucceededPrintOrderRequestForApplication() throws FileServiceException {
         final UUID notificationId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = of(mock(SystemIdMapping.class));
+        NotificationInfo notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.EMAIL.getType());
 
         final JsonEnvelope emailNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("EMAIL"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
@@ -182,6 +193,7 @@ public class NotificationNotifyEventProcessorTest {
                 .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
+        when(notificationInfoRepository.findBy(notificationId)).thenReturn(notificationInfo);
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(emailNotification);
 
@@ -194,20 +206,20 @@ public class NotificationNotifyEventProcessorTest {
         final UUID caseId = randomUUID();
         final Optional<SystemIdMapping> systemIdMapping = Optional.of(new SystemIdMapping(null, null, null,caseId , null , null ));
 
-        final JsonEnvelope emailNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()).withSource("EMAIL"))
+        final JsonEnvelope emailNotification = envelope().with(metadataWithRandomUUID(UUID.randomUUID().toString()))
                 .withPayloadOf(notificationId.toString(), "notificationId")
-                .withPayloadOf("defendant", "recipientType")
                 .withPayloadOf(notificationId.toString(), "caseId")
                 .withPayloadOf("emailBody", "emailBody")
                 .withPayloadOf("emailSubject", "emailSubject")
                 .withPayloadOf("sendToAddress@gmail.com", "sendToAddress")
                 .withPayloadOf("replyToAddress@gmail.com", "replyToAddress")
-                .withPayloadOf("Email","sourceType")
                 .build();
+
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
         doNothing().when(documentGeneratorService).generateNonNowDocument(eq(emailNotification), any(JsonObject.class), anyString(), any(), anyString());
         doNothing().when(hearingNotificationHelper).addCourtDocument(eq(emailNotification),any(), any(), anyString() );
-
+        NotificationInfo notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.EMAIL.getType());
+        when(notificationInfoRepository.findBy(notificationId)).thenReturn(notificationInfo);
         notificationNotifyEventProcessor.markNotificationAsSucceeded(emailNotification);
 
         verify(notificationService).recordNotificationRequestSuccess(emailNotification, systemIdMapping.get().getTargetId(), CASE);
@@ -229,6 +241,8 @@ public class NotificationNotifyEventProcessorTest {
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
+        NotificationInfo notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.LETTER.getType());
+        when(notificationInfoRepository.findBy(notificationId)).thenReturn(notificationInfo);
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
@@ -251,6 +265,8 @@ public class NotificationNotifyEventProcessorTest {
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(empty());
 
         when(systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString())).thenReturn(empty());
+        NotificationInfo notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.LETTER.getType());
+        when(notificationInfoRepository.findBy(notificationId)).thenReturn(notificationInfo);
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
@@ -338,5 +354,12 @@ public class NotificationNotifyEventProcessorTest {
 
         verify(logger).debug(format("Failed to delete file for given notification id: '%s' from FileService. This could be due to the notification not having an associated file.", notificationId), exception);
 
+    }
+
+    private NotificationInfo getNotificationInfo(final UUID notificationId, final RecipientType recipientType, final String notificationType){
+        return NotificationInfo.Builder.builder().withNotificationId(notificationId)
+                .withNotificationType(notificationType.toString())
+                .withPayload(createObjectBuilder().add("recipientType", recipientType.getRecipientName()).build().toString())
+                .withProcessedTimestamp(ZonedDateTime.now()).build();
     }
 }

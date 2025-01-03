@@ -13,6 +13,8 @@ import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.APPLICATIO
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.CASE;
 import static uk.gov.moj.cpp.progression.domain.event.email.PartyType.MATERIAL;
 
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import uk.gov.justice.core.courts.UpdateCourtDocumentPrintTime;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -21,8 +23,10 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.SourceType;
+import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
+import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
+import uk.gov.moj.cpp.progression.persist.entity.NotificationInfo;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.SystemIdMapperService;
@@ -30,10 +34,12 @@ import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -62,6 +68,9 @@ public class NotificationNotifyEventProcessor {
 
     @Inject
     private SystemIdMapperService systemIdMapperService;
+
+    @Inject
+    private NotificationInfoRepository notificationInfoRepository;
 
     @Inject
     private FileStorer fileStorer;
@@ -110,12 +119,15 @@ public class NotificationNotifyEventProcessor {
     public void markNotificationAsSucceeded(final JsonEnvelope event) {
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
+        NotificationInfo notificationInfo = notificationInfoRepository.findBy(notificationId);
+        String notificationType = notificationInfo.getNotificationType();
 
+        logger.info(">>1238 public.notificationnotify.events.notification-sent payload {} getNotificationType {} NotificationInfo {}",
+                event.asJsonObject(), notificationInfo.getNotificationType(), notificationInfo.getPayload());
         if (systemIdMapping.isPresent()) {
-            if (event.payloadAsJsonObject().containsKey(SOURCE_TYPE) &&
-                    SourceType.EMAIL.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE)) ||
-                    SourceType.LETTER.getName().equalsIgnoreCase(event.payloadAsJsonObject().getString(SOURCE_TYPE))) {
-                generateAndAddEmailDocument(event, systemIdMapping.get().getTargetId());
+            JSONObject notificationPayload = new JSONObject(notificationInfo.getPayload());
+            if (notificationPayload.has("recipientType")){
+                generateAndAddDocument(event, systemIdMapping.get().getTargetId(), notificationPayload.getString("recipientType"), notificationType);
             }
             notificationService.recordNotificationRequestSuccess(event, systemIdMapping.get().getTargetId(), CASE);
         } else {
@@ -133,19 +145,21 @@ public class NotificationNotifyEventProcessor {
         }
     }
 
-    private void generateAndAddEmailDocument(final JsonEnvelope event, final UUID caseId) {
-        final JsonObject emailDocumentJson = event.payloadAsJsonObject();
-        final String recipientType = emailDocumentJson.containsKey("recipientType") ? emailDocumentJson.getString("recipientType") :  "None";
-        final String sourceType = emailDocumentJson.getString("sourceType");
+    private void generateAndAddDocument(final JsonEnvelope event, final UUID caseId,
+                                        final String recipientType, final String notificationType) {
+        JsonObject emailDocumentJson = event.payloadAsJsonObject();
+        emailDocumentJson = Json.createObjectBuilder(emailDocumentJson)
+                .add("recipientType", recipientType)
+                .add("notificationType", notificationType).build();
 
-        if(caseId == null || recipientType.equals("None")){
+        if (caseId == null || StringUtils.isEmpty(recipientType) || recipientType.equals("None")) {
             logger.error("Email or Letter Document is not generated as case id is {} and recipient Type is {}", caseId, recipientType);
-            return ;
+            return;
         }
 
         try {
             final UUID materialId = randomUUID();
-            final String fileName = format("%s notification of hearing %s %s copy", sourceType, formatter.format(LocalDateTime.now()),
+            final String fileName = format("%s notification of hearing %s %s copy", notificationType, formatter.format(LocalDateTime.now()),
                     recipientType.substring(0, 1) + recipientType.substring(1).toLowerCase());
 
             documentGeneratorService.generateNonNowDocument(event, emailDocumentJson, EMAIL_DOCUMENT_TEMPLATE_NAME, materialId, fileName);
@@ -156,10 +170,6 @@ public class NotificationNotifyEventProcessor {
             logger.error("error :{}",e.getStackTrace());
             throw new RuntimeException(">> CCT-2047 error while generating email hearing template :{}");
         }
-    }
-
-    public static void main(String[] args) {
-
     }
 
     @Handles("progression.event.notification-request-failed")

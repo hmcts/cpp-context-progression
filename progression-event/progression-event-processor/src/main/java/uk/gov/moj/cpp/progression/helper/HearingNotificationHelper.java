@@ -32,6 +32,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.CommunicationType;
 import uk.gov.moj.cpp.progression.RecipientType;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
@@ -231,8 +232,10 @@ public class HearingNotificationHelper {
     private void sendNotificationToDefendantOrganisation(final HearingNotificationInputData hearingNotificationInputData, JsonEnvelope jsonEnvelope, final UUID caseId, final DefenceOrganisationVO defenceOrganisationVO,
                                                          final UUID materialId, final String materialUrl, final UUID notificationId) {
         if (isNotEmpty(defenceOrganisationVO.getEmail())) {
+            saveNotificationInfo(notificationId, RecipientType.DEFENCE, CommunicationType.EMAIL.getType());
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO.getEmail(), materialId, materialUrl, notificationId, RecipientType.DEFENCE);
         } else {
+            saveNotificationInfo(notificationId, RecipientType.DEFENCE, CommunicationType.LETTER.getType());
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENCE);
         }
     }
@@ -244,8 +247,10 @@ public class HearingNotificationHelper {
                 && nonNull(personDefendant.getPersonDetails().getContact())
                 && nonNull(personDefendant.getPersonDetails().getContact().getPrimaryEmail())) {
             final String defendantEmail = personDefendant.getPersonDetails().getContact().getPrimaryEmail();
+            saveNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.EMAIL.getType());
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, defendantEmail, materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
+            saveNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.LETTER.getType());
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENDANT);
         }
     }
@@ -257,8 +262,10 @@ public class HearingNotificationHelper {
                 && nonNull(legalEntityDefendant.getOrganisation().getContact())
                 && nonNull(legalEntityDefendant.getOrganisation().getContact().getPrimaryEmail())) {
             final String orgDefendantEmail = legalEntityDefendant.getOrganisation().getContact().getPrimaryEmail();
+            saveNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.EMAIL.getType());
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, orgDefendantEmail, materialId, materialUrl, notificationId, RecipientType.DEFENDANT);
         } else {
+            saveNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.LETTER.getType());
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.DEFENDANT);
         }
     }
@@ -311,18 +318,18 @@ public class HearingNotificationHelper {
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
 
         if (isNotEmpty(prosecutorEmail)) {
+            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.EMAIL.getType());
             sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId, RecipientType.PROSECUTOR);
-            //saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, NotificationType.EMAIL);
         } else {
+            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.LETTER.getType());
             notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true, RecipientType.PROSECUTOR);
-            //saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, NotificationType.PRINT);
         }
     }
 
-    private void saveNotificationInfo(UUID notificationId, RecipientType recipientType, NotificationType notificationType) {
-        notificationInfoRepository.save(NotificationInfo.Builder.builder().withNotificationId(notificationId)
-                .withNotificationType(notificationType.toString())
-                .withPayload(createObjectBuilder().add("RecipientType", recipientType.getRecipientName()).build().toString())
+    private void saveNotificationInfo(UUID notificationId, RecipientType recipientType, String notificationType) {
+        NotificationInfo res = notificationInfoRepository.save(NotificationInfo.Builder.builder().withNotificationId(notificationId)
+                .withNotificationType(notificationType)
+                .withPayload(createObjectBuilder().add("recipientType", recipientType.getRecipientName()).build().toString())
                 .withProcessedTimestamp(ZonedDateTime.now()).build());
     }
 

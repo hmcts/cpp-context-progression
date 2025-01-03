@@ -27,13 +27,7 @@
     "emailBody": {
       "type": "string"
     },
-    "recipientType": {
-      "type": "string"
-    },
     "clientContext": {
-      "type": "string"
-    },
-    "sourceType": {
       "type": "string"
     }
   },
