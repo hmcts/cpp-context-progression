@@ -5,7 +5,7 @@
 
     <changeSet author="narender.pal" id="001" logicalFilePath="001-create-table-notification-info.xml">
 
-        <createTable tableName="hearing_event">
+        <createTable tableName="notification_info">
             <column name="notification_id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
