@@ -75,7 +75,6 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
-import uk.gov.moj.cpp.progression.RecipientType;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
 import uk.gov.moj.cpp.progression.service.payloads.AssociatedDefenceOrganisation;
 import uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAddress;
@@ -213,19 +212,17 @@ public class NotificationServiceTest {
     @Test
     public void shouldExecutePrint() {
         final UUID notificationId = randomUUID();
-        final RecipientType recipientType = RecipientType.DEFENDANT ;
 
         doNothing().when(systemIdMapperService).mapNotificationIdToCaseId(caseId, notificationId);
 
-        notificationService.sendLetter(envelope, notificationId, caseId, null, materialId, false, recipientType);
+        notificationService.sendLetter(envelope, notificationId, caseId, null, materialId, false);
 
         verify(sender).send(argThat(jsonEnvelope(
                 withMetadataEnvelopedFrom(envelope).withName("progression.command.print"),
                 payloadIsJson(allOf(
                         withJsonPath("$.caseId", equalTo(caseId.toString())),
                         withJsonPath("$.notificationId", equalTo(notificationId.toString())),
-                        withJsonPath("$.materialId", equalTo(materialId.toString())),
-                        withJsonPath("$.recipientType", equalTo(recipientType.getRecipientName())))
+                        withJsonPath("$.materialId", equalTo(materialId.toString())))
                 ))));
     }
 

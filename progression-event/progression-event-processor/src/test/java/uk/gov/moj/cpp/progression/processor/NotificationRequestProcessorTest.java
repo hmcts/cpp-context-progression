@@ -92,8 +92,6 @@ public class NotificationRequestProcessorTest {
 
         final String clientId = randomUUID().toString();
         final UUID notificationId = randomUUID();
-        String recipientType = "defendant" ;
-
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.print-requested")
                         .withClientCorrelationId(clientId),
@@ -101,13 +99,12 @@ public class NotificationRequestProcessorTest {
                         .add("materialId", materialId.toString())
                         .add("notificationId", notificationId.toString())
                         .add("caseId", caseId.toString())
-                        .add("recipientType", "defendant")
                         .add("postage", false)
                         .build());
 
         notificationRequestProcessor.printDocument(event);
 
-        verify(notificationNotifyService).sendLetterNotification(event, notificationId, materialId, false, recipientType);
+        verify(notificationNotifyService).sendLetterNotification(event, notificationId, materialId, false);
         verify(notificationService).recordPrintRequestAccepted(event);
     }
 

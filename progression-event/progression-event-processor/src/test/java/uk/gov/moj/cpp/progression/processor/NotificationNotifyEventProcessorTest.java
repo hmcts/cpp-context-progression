@@ -31,7 +31,6 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.CommunicationType;
 import uk.gov.moj.cpp.progression.RecipientType;
-import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
 import uk.gov.moj.cpp.progression.persist.entity.NotificationInfo;

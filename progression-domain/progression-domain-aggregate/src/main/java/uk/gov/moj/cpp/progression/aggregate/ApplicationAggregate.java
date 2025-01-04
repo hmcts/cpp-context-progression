@@ -337,9 +337,8 @@ public class ApplicationAggregate implements Aggregate {
     public Stream<Object> recordPrintRequest(final UUID applicationId,
                                              final UUID notificationId,
                                              final UUID materialId,
-                                             final String recipientType,
                                              boolean postage) {
-        return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId, recipientType, postage)));
+        return apply(Stream.of(new PrintRequested(notificationId, applicationId, null, materialId, postage)));
     }
 
     public Stream<Object> initiateCourtApplicationProceedings(final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings,

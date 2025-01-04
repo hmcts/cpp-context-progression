@@ -389,7 +389,7 @@ public class ListHearingRequestedProcessorTest {
         listHearingRequestedProcessor.handle(requestMessage);
 
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
-        verify(notificationService, times(1)).sendLetter(any(), any(), any(), any(), any(), anyBoolean(), any());
+        verify(notificationService, times(1)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
     }
 
     @Test
@@ -423,7 +423,7 @@ public class ListHearingRequestedProcessorTest {
         listHearingRequestedProcessor.handle(requestMessage);
 
         verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
-        verify(notificationService, times(0)).sendLetter(any(), any(), any(), any(), any(), anyBoolean(), any());
+        verify(notificationService, times(0)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
 
         List<EmailChannel> prosecutorEmailData = prosecutorEmailCapture.getValue();
     }
@@ -470,7 +470,7 @@ public class ListHearingRequestedProcessorTest {
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
         listHearingRequestedProcessor.handle(requestMessage);
 
-        verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean(), any());
+        verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
     }
 
     @Test
@@ -510,7 +510,7 @@ public class ListHearingRequestedProcessorTest {
                 .build();
         listHearingRequestedProcessor.handle(requestMessage);
 
-        verify(notificationService, times(0)).sendLetter(any(), any(), any(), any(), any(), anyBoolean(), any());
+        verify(notificationService, times(0)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
         verify(notificationService, times(0)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
 
     }
@@ -553,7 +553,7 @@ public class ListHearingRequestedProcessorTest {
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
         when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
         listHearingRequestedProcessor.handle(requestMessage);
-        verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean(), any());
+        verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
     }
 
     @Test

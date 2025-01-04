@@ -102,7 +102,7 @@ public class PublishCourtListNotificationServiceTest {
         underTest.sendNotification(envelope, publishCourtListPayload, documentTemplateName);
 
         verify(notificationService).sendEmail(eq(envelope), any(UUID.class), isNull(UUID.class), isNull(UUID.class), any(), emailChannelCaptor.capture());
-        verify(notificationService, never()).sendLetter(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyBoolean(), any());
+        verify(notificationService, never()).sendLetter(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyBoolean());
 
         final EmailChannel actualEmailChannel = emailChannelCaptor.getValue().get(0);
         assertThat(actualEmailChannel.getMaterialUrl(), is(materialUrl));
@@ -126,7 +126,7 @@ public class PublishCourtListNotificationServiceTest {
 
         underTest.sendNotification(envelope, publishCourtListPayload, documentTemplateName);
 
-        verify(notificationService, never()).sendLetter(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyBoolean(), any());
+        verify(notificationService, never()).sendLetter(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyBoolean());
         verify(notificationService, never()).sendEmail(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyList());
     }
 
@@ -146,7 +146,7 @@ public class PublishCourtListNotificationServiceTest {
         underTest.sendNotification(envelope, publishCourtListPayload, documentTemplateName);
 
         verify(notificationService, never()).sendEmail(any(JsonEnvelope.class), any(UUID.class), any(UUID.class), any(UUID.class), any(UUID.class), anyList());
-        verify(notificationService).sendLetter(eq(envelope), any(UUID.class), isNull(UUID.class), isNull(UUID.class), any(), eq(true), any());
+        verify(notificationService).sendLetter(eq(envelope), any(UUID.class), isNull(UUID.class), isNull(UUID.class), any(), eq(true));
     }
 
     private JsonEnvelope prepareEnvelope() {

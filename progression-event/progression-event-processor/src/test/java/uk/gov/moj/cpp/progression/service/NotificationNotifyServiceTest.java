@@ -47,7 +47,6 @@ public class NotificationNotifyServiceTest {
         final UUID notificationId = randomUUID();
         final UUID materialId = randomUUID();
         final UUID caseId = randomUUID();
-        final String recipientType = "defendant";
 
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.print-requested")
@@ -55,13 +54,12 @@ public class NotificationNotifyServiceTest {
                 createObjectBuilder()
                         .add("materialId", materialId.toString())
                         .add("notificationId", notificationId.toString())
-                        .add("recipientType", recipientType)
                         .add("caseId", caseId.toString())
                         .build());
 
         when(materialUrlGenerator.pdfFileStreamUrlFor(materialId)).thenReturn(letterUrl);
 
-        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, true, recipientType);
+        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, true);
 
         final ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
         verify(sender).sendAsAdmin(captor.capture());

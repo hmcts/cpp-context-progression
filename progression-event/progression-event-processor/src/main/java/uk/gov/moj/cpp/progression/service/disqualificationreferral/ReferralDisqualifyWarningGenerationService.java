@@ -117,7 +117,7 @@ public class ReferralDisqualifyWarningGenerationService {
             }
             if(materialId.isPresent()) {
                 generateCourtDocument(event, caseId, defendant, filename, materialId.get());
-                notificationService.sendLetter(event, UUID.randomUUID(), caseId, null, materialId.get(), true, null);
+                notificationService.sendLetter(event, UUID.randomUUID(), caseId, null, materialId.get(), true);
             } else {
                 LOGGER.warn("ProcessPDF document getSupportingData is empty as courtHouseCode is not present ");
             }

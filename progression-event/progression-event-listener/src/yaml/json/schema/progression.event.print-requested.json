@@ -15,9 +15,6 @@
     "materialId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "recipientType": {
-      "type": "string"
-    },
     "postage": {
       "type": "boolean"
     }

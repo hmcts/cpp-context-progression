@@ -140,7 +140,6 @@ public class NotificationHandlerTest {
     public void shouldPrintResultOrder() throws EventStreamException {
 
         final UUID notificationId = randomUUID();
-        final String recipientType = "defendant" ;
 
         final JsonEnvelope printResultOrder = envelopeFrom(
                 metadataWithRandomUUID("progression.command.print"),
@@ -148,15 +147,14 @@ public class NotificationHandlerTest {
                         .add("caseId", caseId.toString())
                         .add("notificationId", notificationId.toString())
                         .add("materialId", materialId.toString())
-                        .add("recipientType", recipientType)
                         .add("postage", false)
                         .build());
 
-        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, null, caseId, materialId, recipientType,  false);
+        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, null, caseId, materialId,  false);
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-        when(caseAggregate.recordPrintRequest(caseId, notificationId, materialId, recipientType, false)).thenReturn(Stream.of(resultOrderPrintRequested));
+        when(caseAggregate.recordPrintRequest(caseId, notificationId, materialId, false)).thenReturn(Stream.of(resultOrderPrintRequested));
 
         notificationHandler.print(printResultOrder);
 
@@ -180,7 +178,6 @@ public class NotificationHandlerTest {
 
         final UUID notificationId = randomUUID();
         final UUID applicationId = randomUUID();
-        final String recipientType = "defendant" ;
 
         final JsonEnvelope printResultOrder = envelopeFrom(
                 metadataWithRandomUUID("progression.command.print"),
@@ -188,15 +185,14 @@ public class NotificationHandlerTest {
                         .add("applicationId", applicationId.toString())
                         .add("notificationId", notificationId.toString())
                         .add("materialId", materialId.toString())
-                        .add("recipientType", recipientType)
                         .add("postage", false)
                         .build());
 
-        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, applicationId, null, materialId, recipientType, false);
+        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, applicationId, null, materialId, false);
 
         when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        when(applicationAggregate.recordPrintRequest(applicationId, notificationId, materialId, recipientType,  false)).thenReturn(Stream.of(resultOrderPrintRequested));
+        when(applicationAggregate.recordPrintRequest(applicationId, notificationId, materialId,  false)).thenReturn(Stream.of(resultOrderPrintRequested));
 
         notificationHandler.print(printResultOrder);
 
@@ -219,22 +215,20 @@ public class NotificationHandlerTest {
     public void shouldPrintResultOrderForMaterial() throws EventStreamException {
 
         final UUID notificationId = randomUUID();
-        final String recipientType = "defendant" ;
 
         final JsonEnvelope printResultOrder = envelopeFrom(
                 metadataWithRandomUUID("progression.command.print"),
                 createObjectBuilder()
                         .add("notificationId", notificationId.toString())
                         .add("materialId", materialId.toString())
-                        .add("recipientType", recipientType)
                         .add("postage", false)
                         .build());
 
-        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, null, null, materialId, recipientType, false);
+        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, null, null, materialId, false);
 
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, MaterialAggregate.class)).thenReturn(materialAggregate);
-        when(materialAggregate.recordPrintRequest(materialId, notificationId, recipientType, false)).thenReturn(Stream.of(resultOrderPrintRequested));
+        when(materialAggregate.recordPrintRequest(materialId, notificationId, false)).thenReturn(Stream.of(resultOrderPrintRequested));
 
         notificationHandler.print(printResultOrder);
 

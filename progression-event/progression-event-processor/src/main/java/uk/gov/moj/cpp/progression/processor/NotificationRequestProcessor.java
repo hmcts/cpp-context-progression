@@ -34,7 +34,6 @@ public class NotificationRequestProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestProcessor.class);
     private static final String MATERIAL_ID = "materialId";
     private static final String FIELD_NOTIFICATION_ID = "notificationId";
-    private static final String FIELD_RECIPIENT_TYPE = "recipientType";
     private static final String FIELD_TEMPLATE_ID = "templateId";
     private static final String SEND_TO_ADDRESS = "sendToAddress";
     private static final String FILE_ID = "fileId";
@@ -68,11 +67,10 @@ public class NotificationRequestProcessor {
         final UUID notificationId = fromString(eventPayload.getString(FIELD_NOTIFICATION_ID));
 
         final UUID materialId = fromString(eventPayload.getString(MATERIAL_ID));
-        final String recipientType = eventPayload.getString(FIELD_RECIPIENT_TYPE);
 
         final boolean postage = eventPayload.containsKey("postage") && eventPayload.getBoolean("postage");
 
-        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, postage, recipientType);
+        notificationNotifyService.sendLetterNotification(event, notificationId, materialId, postage);
 
         notificationService.recordPrintRequestAccepted(event);
     }

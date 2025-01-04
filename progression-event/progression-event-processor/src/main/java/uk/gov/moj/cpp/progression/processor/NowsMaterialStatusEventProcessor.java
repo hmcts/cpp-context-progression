@@ -44,11 +44,11 @@ public class NowsMaterialStatusEventProcessor {
 
             ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
                     .filter(MaterialDetails::getSecondClassLetter)
-                    .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), false, null));
+                    .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), false));
 
             ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
                     .filter(MaterialDetails::getFirstClassLetter)
-                    .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), true, null));
+                    .ifPresent(materialDetails -> notificationService.sendLetter(event, UUID.randomUUID(), materialDetails.getCaseId(), materialDetails.getApplicationId(), materialDetails.getMaterialId(), true));
         }
         ofNullable(nowsMaterialStatusUpdated).map(NowsMaterialStatusUpdated::getDetails)
                 .filter(MaterialDetails::getIsNotificationApi)

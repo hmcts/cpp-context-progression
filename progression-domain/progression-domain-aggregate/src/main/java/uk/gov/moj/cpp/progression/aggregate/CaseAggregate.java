@@ -1614,9 +1614,8 @@ public class CaseAggregate implements Aggregate {
     public Stream<Object> recordPrintRequest(final UUID caseId,
                                              final UUID notificationId,
                                              final UUID materialId,
-                                             final String recipientType,
                                              boolean postage) {
-        return apply(Stream.of(new PrintRequested(notificationId, null, caseId, materialId, recipientType, postage)));
+        return apply(Stream.of(new PrintRequested(notificationId, null, caseId, materialId, postage)));
     }
 
     public Stream<Object> recordEmailRequest(final UUID caseId,
