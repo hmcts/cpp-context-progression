@@ -930,7 +930,7 @@ public class NotificationServiceTest {
                         .withPersonDetails(Person.person().withContact(ContactNumber.contactNumber()
                                 .withPrimaryEmail("thirdParties@test.com").build()).build()).build());
 
-        final CourtApplication courtApplication = CourtApplication.
+        final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withId(applicationId)
                 .withApplicationReference("URN")
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
