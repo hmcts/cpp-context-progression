@@ -1009,8 +1009,7 @@ public class NotificationService {
     public void sendNotification(final JsonEnvelope event, final CourtApplication courtApplication, final Boolean isWelshTranslationRequired, final CourtCentre courtCentre, final ZonedDateTime hearingStartDateTime, final JurisdictionType jurisdictionType, final Boolean isAmended) {
         requireNonNull(courtApplication);
         if (courtApplication.getType().getSummonsTemplateType().equals(NOT_APPLICABLE)) {
-            InformantNotificationTracker informantNotificationTracker = new InformantNotificationTracker();
-            informantNotificationTracker.setInformant(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier());
+            InformantNotificationTracker informantNotificationTracker = new InformantNotificationTracker(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier());
             final String hearingDate = hearingStartDateTime.toLocalDate().toString();
             final String hearingTime = getCourtTime(hearingStartDateTime);
 
@@ -1044,7 +1043,8 @@ public class NotificationService {
             final String hearingDate = hearingStartDateTime.toLocalDate().toString();
             final String hearingTime = getCourtTime(hearingStartDateTime);
 
-            InformantNotificationTracker informantNotificationTracker = new InformantNotificationTracker();
+            final InformantNotificationTracker informantNotificationTracker =
+                    new InformantNotificationTracker(courtApplication.getCourtApplicationCases().get(0).getProsecutionCaseIdentifier());
 
             sendNotificationToApplicant(event, courtApplication, false, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);
             sendNotificationToRespondents(event, courtApplication, isWelshTranslationRequired, courtCentre, hearingDate, hearingTime, jurisdictionType, isAmended, issueDate, informantNotificationTracker);

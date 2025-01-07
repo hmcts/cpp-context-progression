@@ -70,13 +70,13 @@
         <usersgroups.version>17.0.23</usersgroups.version>
         <defence.version>17.0.16</defence.version>
         <referencedata.offence.version>17.0.29</referencedata.offence.version>
-        <coredomain.version>17.100.2</coredomain.version>
+        <coredomain.version>17.101.0-M1</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.1</results.version>
         <notification.notify.version>17.0.1</notification.notify.version>
         <unifiedsearch.version>17.0.12</unifiedsearch.version>
-        <systemdocgenerator.version>17.0.6</systemdocgenerator.version>
+        <systemdocgenerator.version>17.0.27</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.19</applicationscourtorders.version>
         <sjp.version>17.0.6</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
