@@ -5,13 +5,14 @@
  http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
              version="1.0">
 
-    <persistence-unit name="progression-persistence-unit">
+    <persistence-unit name="progression-event-processor-store-persistence-unit">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <jta-data-source>java:/app/progression-event-processor/DS.progression.eventprocessorstore</jta-data-source>
-
+<!--
         <properties>
             <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2"/>
-        </properties>
+        </properties>-->
+
     </persistence-unit>
 
 </persistence>

@@ -36,7 +36,7 @@ function runLiquibase {
 }
 
 function buildDeployAndTest {
-#  buildWars
+  buildWars
   undeployWarsFromDocker
   buildAndStartContainersWithElasticSearch
   runLiquibase
