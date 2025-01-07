@@ -936,6 +936,7 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withThirdParties(thirdParties)
                 .withApplicant(applicant)
+                .withCourtApplicationCases(getCourtApplicationCases(UUID.randomUUID()))
                 .withRespondents(respondents)
                 .build();
         final LocalDate issueDate = LocalDate.now();
@@ -1093,6 +1094,7 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withThirdParties(thirdParties)
                 .withApplicant(applicant)
+                .withCourtApplicationCases(getCourtApplicationCases(UUID.randomUUID()))
                 .withRespondents(respondents)
                 .build();
         final LocalDate issueDate = LocalDate.now();
@@ -1168,6 +1170,7 @@ public class NotificationServiceTest {
                 .withType(CourtApplicationType.courtApplicationType().withSummonsTemplateType(NOT_APPLICABLE).build())
                 .withThirdParties(thirdParties)
                 .withApplicant(applicant)
+                .withCourtApplicationCases(getCourtApplicationCases(UUID.randomUUID()))
                 .withRespondents(respondents)
                 .build();
         final LocalDate issueDate = LocalDate.now();
