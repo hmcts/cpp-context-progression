@@ -105,7 +105,7 @@ public class InitialIndexerIngestionIT extends AbstractIT {
                 .build();
         try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameters)) {
 
-            systemCommanderClient.getRemote(CONTEXT_NAME).call(INDEXER_CATCHUP);
+            systemCommanderClient.getRemote(CONTEXT_NAME).call(INDEXER_CATCHUP, null, null, false);
         }
     }
 

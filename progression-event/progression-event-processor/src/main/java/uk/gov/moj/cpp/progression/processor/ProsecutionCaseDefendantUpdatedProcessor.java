@@ -114,38 +114,40 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     @Handles("progression.event.prosecution-case-defendant-updated")
     public void handleProsecutionCaseDefendantUpdatedEvent(final JsonEnvelope jsonEnvelope) {
-        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ProsecutionCaseDefendantUpdated.class);
-        final DefendantUpdate defendant = prosecutionCaseDefendantUpdated.getDefendant();
-        final List<UUID> hearingIds = prosecutionCaseDefendantUpdated.getHearingIds();
-        LOGGER.debug("Received prosecution case defendant updated for caseId: " + defendant.getProsecutionCaseId());
+        if(!jsonEnvelope.payloadIsNull()) {
+            final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ProsecutionCaseDefendantUpdated.class);
+            final DefendantUpdate defendant = prosecutionCaseDefendantUpdated.getDefendant();
+            final List<UUID> hearingIds = prosecutionCaseDefendantUpdated.getHearingIds();
+            LOGGER.debug("Received prosecution case defendant updated for caseId: " + defendant.getProsecutionCaseId());
 
-        final JsonObject publicEventPayload = createObjectBuilder()
-                .add(DEFENDANT, objectToJsonObjectConverter.convert(updateDefendant(defendant))).build();
-        sender.send(
-                envelop(publicEventPayload)
-                        .withName(PUBLIC_CASE_DEFENDANT_CHANGED)
-                        .withMetadataFrom(jsonEnvelope));
-        if (nonNull(hearingIds)) {
-            hearingIds.forEach(hearingId ->
-                    sendDefendantUpdate(jsonEnvelope, defendant, hearingId));
-        }
+            final JsonObject publicEventPayload = createObjectBuilder()
+                    .add(DEFENDANT, objectToJsonObjectConverter.convert(updateDefendant(defendant))).build();
+            sender.send(
+                    envelop(publicEventPayload)
+                            .withName(PUBLIC_CASE_DEFENDANT_CHANGED)
+                            .withMetadataFrom(jsonEnvelope));
+            if (nonNull(hearingIds)) {
+                hearingIds.forEach(hearingId ->
+                        sendDefendantUpdate(jsonEnvelope, defendant, hearingId));
+            }
 
-        final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, defendant.getProsecutionCaseId().toString());
+            final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, defendant.getProsecutionCaseId().toString());
 
 
-        if (nonNull(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId()) && nonNull(prosecutionCaseDefendantUpdated.getUpdatedOrganisation())) {
-            final UUID prosecutorId = fromString(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId());
-            final Optional<JsonObject> prosecutorDetails = getProsecutorById(prosecutorId, jsonEnvelope);
-            if (prosecutorDetails.isPresent()) {
-                final JsonObject prosecutorsJsonObject = prosecutorDetails.get();
-                final boolean isCpsProsecutor = prosecutorsJsonObject.getBoolean(CPS_FLAG, false);
-                if (isCpsProsecutor) {
-                    sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION);
+            if (nonNull(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId()) && nonNull(prosecutionCaseDefendantUpdated.getUpdatedOrganisation())) {
+                final UUID prosecutorId = fromString(prosecutionCaseDefendantUpdated.getProsecutionAuthorityId());
+                final Optional<JsonObject> prosecutorDetails = getProsecutorById(prosecutorId, jsonEnvelope);
+                if (prosecutorDetails.isPresent()) {
+                    final JsonObject prosecutorsJsonObject = prosecutorDetails.get();
+                    final boolean isCpsProsecutor = prosecutorsJsonObject.getBoolean(CPS_FLAG, false);
+                    if (isCpsProsecutor) {
+                        sendDefendantAssociationCPSNotification(jsonEnvelope, prosecutionCaseDefendantUpdated, prosecutionCaseOptional, EmailTemplateType.ASSOCIATION);
+                    }
                 }
             }
+            handleUpdateDefendantCustodialInformationForApplication(jsonEnvelope, defendant, prosecutionCaseOptional);
+            handleUpdateActiveApplicationsOnCase(jsonEnvelope, defendant.getProsecutionCaseId().toString(), defendant);
         }
-        handleUpdateDefendantCustodialInformationForApplication(jsonEnvelope, defendant, prosecutionCaseOptional);
-        handleUpdateActiveApplicationsOnCase(jsonEnvelope, defendant.getProsecutionCaseId().toString(), defendant);
     }
 
     public void handleUpdateActiveApplicationsOnCase(final JsonEnvelope jsonEnvelope, final String caseId, DefendantUpdate defendant) {
@@ -195,14 +197,16 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
 
     @Handles("progression.event.defendant-custodial-information-update-requested")
     public void handleDefendantCustodialInformationUpdatedEvent(final JsonEnvelope jsonEnvelope) {
-        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), DefendantCustodialInformationUpdateRequested.class);
-        final Optional<JsonObject> matchedCases = progressionService.searchLinkedCases(jsonEnvelope, defendantCustodialInformationUpdateRequested.getProsecutionCaseId().toString());
-        if (matchedCases.isPresent() && nonNull(matchedCases.get())) {
-            final JsonObject matchedCasesJsonObject = matchedCases.get();
-            if (matchedCasesJsonObject.containsKey(MATCHED_DEFENDANT_CASES)) {
-                matchedCasesJsonObject.getJsonArray(MATCHED_DEFENDANT_CASES).getValuesAs(JsonObject.class).stream()
-                        .filter(matchedCase -> defendantCustodialInformationUpdateRequested.getMasterDefendantId().toString().equalsIgnoreCase(matchedCase.getString(MATCHED_MASTER_DEFENDANT_ID)))
-                        .forEach(matchedCase -> updateMatchedDefendantCustodialInformation(jsonEnvelope, defendantCustodialInformationUpdateRequested, matchedCase));
+        if(!jsonEnvelope.payloadIsNull()) {
+            final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = jsonObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), DefendantCustodialInformationUpdateRequested.class);
+            final Optional<JsonObject> matchedCases = progressionService.searchLinkedCases(jsonEnvelope, defendantCustodialInformationUpdateRequested.getProsecutionCaseId().toString());
+            if (matchedCases.isPresent() && nonNull(matchedCases.get())) {
+                final JsonObject matchedCasesJsonObject = matchedCases.get();
+                if (matchedCasesJsonObject.containsKey(MATCHED_DEFENDANT_CASES)) {
+                    matchedCasesJsonObject.getJsonArray(MATCHED_DEFENDANT_CASES).getValuesAs(JsonObject.class).stream()
+                            .filter(matchedCase -> defendantCustodialInformationUpdateRequested.getMasterDefendantId().toString().equalsIgnoreCase(matchedCase.getString(MATCHED_MASTER_DEFENDANT_ID)))
+                            .forEach(matchedCase -> updateMatchedDefendantCustodialInformation(jsonEnvelope, defendantCustodialInformationUpdateRequested, matchedCase));
+                }
             }
         }
     }

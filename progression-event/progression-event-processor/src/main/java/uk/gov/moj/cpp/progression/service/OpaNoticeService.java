@@ -10,6 +10,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.jobstore.api.ExecutionService;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutionInfo;
+import uk.gov.moj.cpp.jobstore.persistence.Priority;
 
 import java.util.List;
 
@@ -65,7 +66,7 @@ public class OpaNoticeService {
         LOGGER.info("{} received and size of results from database is {}", command, opaNotices.size());
 
         for (final JsonObject opaNotice : opaNotices) {
-            final ExecutionInfo executionInfo = new ExecutionInfo(opaNotice, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED);
+            final ExecutionInfo executionInfo = new ExecutionInfo(opaNotice, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
 
             executionService.executeWith(executionInfo);
         }
