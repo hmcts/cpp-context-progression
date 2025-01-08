@@ -81,16 +81,16 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_STAGINGHMI_HEARING_UPDATED_FROM_HMI, publicEventEnvelope);
 
         final Matcher[] unAllocatedMatchers = {
-                withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
+                withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.hearingDays", hasSize(4)),
-                withJsonPath("$.hearing.hearingDays[0].courtCentreId", CoreMatchers.is(courtCentreId)),
+                withJsonPath("$.hearing.hearingDays[0].courtCentreId", is(courtCentreId)),
                 withoutJsonPath("$.hearing.hearingDays[0].courtRoomId"),
                 withoutJsonPath("$.hearing.hearingDays[1].courtRoomId"),
                 withoutJsonPath("$.hearing.hearingDays[2].courtRoomId"),
                 withoutJsonPath("$.hearing.hearingDays[3].courtRoomId"),
-                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", CoreMatchers.is(0)),
-                withJsonPath("$.hearing.hearingDays[0].sittingDay", CoreMatchers.is("2018-09-28T12:13:00.000Z")),
-                withJsonPath("$.hearingListingStatus", CoreMatchers.is("SENT_FOR_LISTING")),
+                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", is(0)),
+                withJsonPath("$.hearing.hearingDays[0].sittingDay", is("2018-09-28T12:13:00.000Z")),
+                withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")),
                 withoutJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].listingNumber")
         };
 
@@ -115,9 +115,9 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_STAGINGHMI_HEARING_UPDATED_FROM_HMI, publicEventEnvelope);
 
         final Matcher[] unAllocatedMatchers = {
-                withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
+                withJsonPath("$.hearing.id", is(hearingId)),
                 withoutJsonPath("$.hearing.hearingDays"),
-                withJsonPath("$.hearingListingStatus", CoreMatchers.is("SENT_FOR_LISTING")),
+                withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")),
                 withoutJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].listingNumber")
         };
 
@@ -144,12 +144,12 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_DAYS_WITHOUT_COURT_CENTRE_CORRECTED, publicEventCorrectedEnvelope);
 
         final Matcher[] hearingDaysMatchers = {
-                withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
+                withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.hearingDays", hasSize(4)),
-                withJsonPath("$.hearing.hearingDays[0].courtCentreId", CoreMatchers.is(courtCentreId)),
+                withJsonPath("$.hearing.hearingDays[0].courtCentreId", is(courtCentreId)),
                 withJsonPath("$.hearing.hearingDays[0].courtRoomId", Matchers.is(courtRoomId)),
-                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", CoreMatchers.is(0)),
-                withJsonPath("$.hearing.hearingDays[0].sittingDay", CoreMatchers.is("2018-09-28T12:13:00.000Z"))
+                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", is(0)),
+                withJsonPath("$.hearing.hearingDays[0].sittingDay", is("2018-09-28T12:13:00.000Z"))
         };
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingDaysMatchers);

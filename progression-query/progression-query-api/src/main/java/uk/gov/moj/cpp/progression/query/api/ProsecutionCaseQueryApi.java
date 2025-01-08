@@ -120,6 +120,11 @@ public class ProsecutionCaseQueryApi {
         return appQueryResponse;
     }
 
+    @Handles("progression.query.prosecutioncase-v2")
+    public JsonEnvelope getCaseProsecutionCaseV2(final JsonEnvelope query) {
+        return prosecutionCaseQuery.getProsecutionCase(query);
+    }
+
     @Handles("progression.query.prosecutioncase.caag")
     public JsonEnvelope getProsecutionCaseForCaseAtAGlance(final JsonEnvelope query) {
         final JsonEnvelope appQueryResponse = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query);

@@ -83,7 +83,7 @@ public class CaseAtAGlanceIT {
     }
 
     @Test
-    public void shouldVerifyCaseDetailsForCaseAtAGlance() throws Exception {
+    public void shouldVerifyCaseAndHearingDetails() throws Exception {
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
@@ -120,9 +120,16 @@ public class CaseAtAGlanceIT {
 
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.cpsOrganisation", equalTo("A01")));
 
+        verifyProsecutionCaseCourtOrders(caseId);
+
+        verifyCaseDefendantHearings(caseId, defendantId);
+
         verifyCaseHearings(caseId);
 
-        final Matcher[] defendantUpdatedMatchers = new Matcher[]{
+        final LocalDate HEARING_DATE_1 = LocalDate.of(2020, 07, 15);
+        verifyNoCaseHearingTypes(caseId, HEARING_DATE_1);
+
+        final Matcher[] defendantMatchers = new Matcher[]{
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailConditions", is("bail conditions...")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description", is("Remanded into Custody")),
@@ -131,7 +138,7 @@ public class CaseAtAGlanceIT {
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", is("Remanded into Custody"))
         };
 
-        pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
+        pollProsecutionCasesProgressionFor(caseId, defendantMatchers);
     }
 
     @Test
@@ -227,26 +234,8 @@ public class CaseAtAGlanceIT {
     }
 
     @Test
-    public void shouldReturnProsecutionCaseWithCourtOrders() throws Exception {
-        //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-
-        verifyProsecutionCaseCourtOrders(caseId);
-    }
-
-    @Test
-    public void shouldVerifyCaseDefendantHearings() throws Exception {
-        //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-
-        verifyCaseDefendantHearings(caseId, defendantId);
-
-    }
-
-    @Test
     public void shouldVerifyCaseAtAGlanceLinkedApplication() throws Exception {
         createApplicationLinkedToCase();
-
 
         pollProsecutionCasesProgressionForCAAG(caseId, withJsonPath("$.caseId", equalTo(caseId)),
                 withJsonPath("$.linkedApplications[0].applicationId", equalTo(linkedApplicationId)),
@@ -265,16 +254,6 @@ public class CaseAtAGlanceIT {
         final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
 
         pollCasesProgressionFor(caseId, prosecutionCaseMatchers);
-    }
-
-    @Test
-    public void shouldVerifyNoCaseHearingTypesWhenCaseNotConfirmed() throws Exception {
-        final String earliestStartDateTime = ZonedDateTimes.fromString("2020-07-15T18:32:04.238Z").toString();
-        //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-
-        final LocalDate HEARING_DATE_1 = LocalDate.of(2020, 07, 15);
-        verifyNoCaseHearingTypes(caseId, HEARING_DATE_1);
     }
 
     private void createApplicationLinkedToCase() throws Exception {

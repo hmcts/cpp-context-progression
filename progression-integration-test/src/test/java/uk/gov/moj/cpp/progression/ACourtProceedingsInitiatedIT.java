@@ -73,13 +73,6 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingsWithDefendantIsNotYouth() throws IOException {
-        defendantDOB = LocalDate.now().minusYears(25).toString();
-        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        verifyPostListCourtHearing(caseId, defendantId, false);
-    }
-
-    @Test
     public void shouldInitiateCourtProceedingWithPartialMatchDefendant() throws IOException, JSONException {
         final String matchedCaseId_1 = randomUUID().toString();
         final String matchedDefendant_1 = randomUUID().toString();

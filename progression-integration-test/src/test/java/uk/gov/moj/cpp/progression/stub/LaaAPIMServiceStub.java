@@ -20,10 +20,13 @@ import static org.awaitility.Awaitility.await;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
+import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LaaAPIMServiceStub {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(LaaAPIMServiceStub.class);
     private static final String LAA_API_ENDPOINT_URL = "/LAA/v1/caseOutcome/conclude";
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
 
@@ -48,12 +51,17 @@ public class LaaAPIMServiceStub {
     }
 
     private static void verifyLaaProceedingsConcludedCommandInvoked(final String commandEndPoint, final CountMatchingStrategy countMatchingStrategy, final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(10, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
             );
-            verify(countMatchingStrategy, requestPatternBuilder);
+            try {
+                verify(countMatchingStrategy, requestPatternBuilder);
+            } catch (VerificationException e) {
+                LOGGER.error(e.getMessage());
+                return false;
+            }
             return true;
         });
     }

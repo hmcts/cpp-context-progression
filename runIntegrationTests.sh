@@ -26,8 +26,8 @@ function runLiquibase {
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase
   runEventBufferLiquibase
-  runViewStoreLiquibase
   runEventProcessorStoreLiquibase
+  runViewStoreLiquibase
   runJobStoreLiquibase
   runSystemLiquibase
   runEventTrackingLiquibase
@@ -36,6 +36,7 @@ function runLiquibase {
 }
 
 function buildDeployAndTest {
+  loginToDockerContainerRegistry
   buildWars
   undeployWarsFromDocker
   buildAndStartContainersWithElasticSearch

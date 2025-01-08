@@ -1,0 +1,8 @@
+{
+  "petId": "733d43c3-4e04-464d-a8a7-c96fcc22bc38",
+  "formId": "d0dff4cf-c833-4758-a54a-d18ad004095d",
+  "data": "{\"data\":{\"prosecution\":{\"witnesses\":[{\"id\":\"84ec2958-8ab2-4b90-b32f-f3d5534d5ec9\",\"firstName\":\"Firstname\",\"lastName\":\"Lastname\",\"intermediaryFirstName\":\"NameofintermediaryKnownatPTPH\",\"intermediaryLastName\":\"NameofintermediaryKnownatPTPH\",\"collarNumber\":\"Theofficercollar/shouldernumber\",\"rank\":\"Theofficerrank\",\"relevantDisputedIssue\":\"Relevantdisputedissue\",\"details\":[\"INTERMEDIARY\",\"POLICE_OFFICER\"]}]},\"defence\":{}}}",
+  "lastUpdated": "2021-01-13T00:00Z[UTC]"
+}
+
+

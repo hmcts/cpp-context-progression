@@ -1,0 +1,256 @@
+{
+  "prosecutionCase": {
+    "id": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+      "prosecutionAuthorityCode": "TFL",
+      "oldProsecutionAuthorityCode": "DVLA",
+      "prosecutionAuthorityReference": "TFL12345",
+      "caseUrn": "9979b2c3-b0d3-4889-ae8e-1ecc20c39e55"
+    },
+    "originatingOrganisation": "G01FT01AB",
+    "prosecutorCosts": "300",
+    "initiationCode": "Z",
+    "hasReportingRestrictions": true,
+    "caseStatus": "SJP Referral",
+    "defendants": [
+      {
+        "id": "e1d32d9d-29ec-4934-a932-22a50f223966",
+        "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+        "numberOfPreviousConvictionsCited": 5,
+        "prosecutionAuthorityReference": "TFL12345-ABC",
+        "offences": [
+          {
+            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+            "offenceCode": "AAA",
+            "wording": "No Travel Card",
+            "section": "XDASgfE",
+            "startDate": "2018-01-01",
+            "endDate": "2018-01-01",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "orderIndex": 1,
+            "count": 0,
+            "convictionDate": "2018-02-01",
+            "offenceFacts": {
+              "vehicleRegistration": "AA12345",
+              "prosecutionFacts": "He did it",
+              "witnessStatement": "I did not do it",
+              "mitigation": "I was not there",
+              "alcoholReadingAmount": "111",
+              "alcoholReadingMethodCode": "2222",
+              "basisOfDefence": "prejudice"
+            }
+          }
+        ],
+        "associatedPersons": [
+          {
+            "person": {
+              "title": "Mr",
+              "firstName": "Harry",
+              "lastName": "Kane",
+              "dateOfBirth": "1995-01-01",
+              "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+              "nationalityCode": "GBR",
+              "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+              "additionalNationalityCode": "USA",
+              "disabilityStatus": "a",
+              "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "ethnicityCode": "IC1",
+              "nationalInsuranceNumber": "NH222222B",
+              "occupation": "Footballer",
+              "occupationCode": "F",
+              "specialNeeds": "Screen",
+              "address": {
+                "address1": "22",
+                "address2": "Acacia Avenue",
+                "address3": "Acacia Town",
+                "address4": "Acacia City",
+                "postcode": "GIR 0AA"
+              },
+              "contact": {
+                "home": "123456",
+                "work": "7891011",
+                "mobile": "45678910",
+                "primaryEmailAddress": "harry.kane@spurs.co.uk",
+                "secondaryEmailAddress": "harry.kane@hotmail.com",
+                "fax": "3425678"
+              }
+            },
+            "role": "parent"
+          }
+        ],
+        "defenceOrganisation": {
+          "id": "d5735cc8-cc97-44f2-9f41-2b44ad3788aa",
+          "name": "Franklin & Birketts LLP",
+          "address": {
+            "address1": "53 New London Road",
+            "address2": "Brierly Place",
+            "address3": "Guildford",
+            "address4": "Surrey",
+            "postcode": "GL1 5FD"
+          },
+          "contact": {
+            "work": "01652 654789",
+            "primaryEmail": "info@franklinbirketts.com"
+          }
+        },
+        "discriminator": "personDefendant",
+        "personDefendant": {
+          "arrestSummonsNumber": "efe7ij27",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "Address line 1",
+              "address2": "Address line 2",
+              "address3": "Address line 3",
+              "address4": "Address line 4",
+              "address5": "Klockoport",
+              "postcode": "TW14 9XD"
+            },
+            "contact": {
+              "mobile": "07890123456",
+              "primaryEmail": "Dudley.Rau41@example.com"
+            },
+            "dateOfBirth": "1984-08-03",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "4",
+              "observedEthnicityDescription": "4",
+              "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "title": "Mr",
+            "firstName": "Harry",
+            "lastName": "Kane Junior",
+            "gender": "FEMALE",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "British",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Corporate Usability Developer",
+            "occupationCode": "1"
+          }
+        },
+        "bailStatus": "IN_CUSTODY",
+        "custodyTimeLimit": "2018-01-01",
+        "perceivedBirthYear": 2015,
+        "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+        "observedEthnicityCode": "IC1",
+        "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+        "selfDefinedEthnicityCode": "IC1",
+        "driverLicenseNumber": "AACC12345",
+        "pncId": "1234567",
+        "arrestSummonsNumber": "arrest123",
+        "employerOrganisation": {
+          "id": "8625b50c-afc4-4d63-add2-68b9bf01b1fd",
+          "name": "Disneyland Paris",
+          "incorporationNumber": "Mickeymouse1",
+          "address": {
+            "address1": "Disney Road",
+            "address2": "Disney Town",
+            "address3": "Disney District",
+            "address4": "Paris",
+            "postcode": "DI5 9EY"
+          },
+          "contact": {
+            "work": "4444",
+            "primaryEmailAddress": "afffff",
+            "secondaryEmailAddress": "ahhhhhhhhhhhhhhhhh",
+            "fax": "agggggg"
+          }
+        }
+      },
+      {
+        "courtProceedingsInitiated": "2020-10-19T12:23:53.988Z",
+        "croNumber": "440847/45N",
+        "id": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+        "isYouth": false,
+        "masterDefendantId": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+        "offences": [
+          {
+            "arrestDate": "2020-10-17",
+            "chargeDate": "2020-10-18",
+            "count": 0,
+            "endDate": "2020-10-17",
+            "id": "ca438f25-e9a4-4a6b-a26d-467674755171",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+            "offenceTitle": "Use / install a television set without a licence",
+            "orderIndex": 1,
+            "startDate": "2020-09-19",
+            "wording": "From 19 September 2020, used a television receiver without a licence."
+          }
+        ],
+        "defenceOrganisation": {
+          "id": "d5735cc8-cc97-44f2-9f41-2b44ad3788aa",
+          "name": "Franklin & Birketts LLP",
+          "address": {
+            "address1": "53 New London Road",
+            "address2": "Brierly Place",
+            "address3": "Guildford",
+            "address4": "Surrey",
+            "postcode": "GL1 5FD"
+          },
+          "contact": {
+            "work": "01652 654789",
+            "primaryEmail": "info@franklinbirketts.com"
+          }
+        },
+        "personDefendant": {
+          "arrestSummonsNumber": "efe7ij27",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "Address line 1",
+              "address2": "Address line 2",
+              "address3": "Address line 3",
+              "address4": "Address line 4",
+              "address5": "Klockoport",
+              "postcode": "TW14 9XD"
+            },
+            "contact": {
+              "mobile": "07890123456",
+              "primaryEmail": "Dudley.Rau41@example.com"
+            },
+            "dateOfBirth": "1984-08-03",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "4",
+              "observedEthnicityDescription": "4",
+              "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Alejandra",
+            "gender": "FEMALE",
+            "lastName": "Block",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "British",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Corporate Usability Developer",
+            "occupationCode": "1",
+            "title": "Mrs."
+          }
+        },
+        "pncId": "2020602766C",
+        "prosecutionAuthorityReference": "efe7ij27",
+        "prosecutionCaseId": "63d5739e-4aa3-4d53-ae3b-4f16b2ce6c95"
+      }
+    ]
+  }
+}

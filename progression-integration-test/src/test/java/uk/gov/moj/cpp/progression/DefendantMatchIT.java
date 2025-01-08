@@ -6,21 +6,17 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForExactMatchDefendants;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForLegalEntityDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForPartialMatchDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.unmatchDefendant;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchForCJSSpec;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchForSPISpec;
@@ -28,7 +24,6 @@ import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearc
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchForSPISpec;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchersForLegalEntity;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -55,13 +50,10 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("squid:S1607")
 public class DefendantMatchIT extends AbstractIT {
 
-    private static final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
     private static final JmsMessageConsumerClient publicEventConsumerForDefendantMatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-matched").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient publicEventConsumerForCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final JmsMessageConsumerClient publicEventConsumerForDefendantUnmatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-unmatched").getMessageConsumerClient();
 
-    private static final JmsMessageConsumerClient privateEventConsumerForDefendantPartialMatchCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.defendant-partial-match-created").getMessageConsumerClient();
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private String prosecutionCaseId_1;
@@ -109,7 +101,6 @@ public class DefendantMatchIT extends AbstractIT {
                 prosecutionCaseId_1, hearingId, defendantId_1, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForProsecutionCaseCreated();
         List<Matcher<? super ReadContext>> customMatchers = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDateCode", is(4))
         );
@@ -127,43 +118,17 @@ public class DefendantMatchIT extends AbstractIT {
                 prosecutionCaseId_2, hearingId, defendantId_2, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForProsecutionCaseCreated();
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
         // match defendant2 associated to case 2
         matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
-        verifyInMessagingQueueForCaseDefendantChanged();
 
         // check master defendant id updated for defendant in case 2
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2,
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is(masterDefendantId_1))));
         verifyInMessagingQueueForDefendantMatched();
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
-
-    }
-
-    @Test
-    public void shouldNotMatchLegalEntityDefendant() throws IOException {
-        // initiation of first case
-        initiateCourtProceedingsForLegalEntityDefendantMatching(prosecutionCaseId_1, defendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime);
-        verifyInMessagingQueueForProsecutionCaseCreated();
-        List<Matcher<? super ReadContext>> customMatchers = newArrayList(
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceDateCode", is(4))
-        );
-
-        Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchersForLegalEntity(prosecutionCaseId_1, defendantId_1, customMatchers);
-        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
-
-        // initiation of second case
-        initiateCourtProceedingsForLegalEntityDefendantMatching(prosecutionCaseId_2, defendantId_2, defendantId_2, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime);
-        verifyInMessagingQueueForProsecutionCaseCreated();
-        prosecutionCaseMatchers = getProsecutionCaseMatchersForLegalEntity(prosecutionCaseId_2, defendantId_2, emptyList());
-        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
-
-        // match defendant2 associated to case 2
-        matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
-        verifyNoEventInMessagingQueueForCaseDefendantChanged();
 
     }
 
@@ -178,7 +143,6 @@ public class DefendantMatchIT extends AbstractIT {
                 prosecutionCaseId_1, hearingId, defendantId_1, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForProsecutionCaseCreated();
         Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
 
@@ -192,13 +156,11 @@ public class DefendantMatchIT extends AbstractIT {
                 prosecutionCaseId_2, hearingId2, defendantId_2, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForProsecutionCaseCreated();
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
         // match defendant2 associated to case 2
         matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
-        verifyInMessagingQueueForCaseDefendantChanged();
 
         // check master defendant id updated for defendant in case 2
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2,
@@ -209,7 +171,6 @@ public class DefendantMatchIT extends AbstractIT {
         //unmatch defendant 2
         unmatchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_2, defendantId_2, masterDefendantId_1);
         verifyInMessagingQueueForDefendantUnmatched();
-        verifyInMessagingQueueForCaseDefendantChanged();
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2,
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is(defendantId_2))));
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
@@ -220,7 +181,6 @@ public class DefendantMatchIT extends AbstractIT {
 
         // initiation of case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1, defendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        verifyInMessagingQueueForProsecutionCaseCreated();
         Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
 
@@ -233,7 +193,6 @@ public class DefendantMatchIT extends AbstractIT {
                 prosecutionCaseId_2, hearingId, defendantId_2, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForProsecutionCaseCreated();
         prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
@@ -256,7 +215,6 @@ public class DefendantMatchIT extends AbstractIT {
 
         // initiation of case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2, defendantId_2, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        verifyInMessagingQueueForProsecutionCaseCreated();
         final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
@@ -269,11 +227,6 @@ public class DefendantMatchIT extends AbstractIT {
 
     }
 
-    private void verifyInMessagingQueueForProsecutionCaseCreated() {
-        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForProsecutionCaseCreated);
-        assertTrue(message.isPresent());
-    }
-
     private void verifyInMessagingQueueForDefendantMatched() {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForDefendantMatched);
         assertTrue(message.isPresent());
@@ -282,16 +235,6 @@ public class DefendantMatchIT extends AbstractIT {
     private void verifyInMessagingQueueForDefendantUnmatched() {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForDefendantUnmatched);
         assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForCaseDefendantChanged() {
-        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForCaseDefendantChanged);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyNoEventInMessagingQueueForCaseDefendantChanged() {
-        final Optional<JsonObject> message = retrieveMessageBody(privateEventConsumerForDefendantPartialMatchCreated);
-        assertFalse(message.isPresent());
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
@@ -319,7 +262,6 @@ public class DefendantMatchIT extends AbstractIT {
 
         final String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
         initiateCourtProceedingsForExactMatchDefendants(prosecutionCaseId_1, defendantId_1, caseReceivedDate, caseType);
-        verifyInMessagingQueueForProsecutionCaseCreated();
 
         final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchersForExactMatch(pncId, "Louis");
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
@@ -360,7 +302,6 @@ public class DefendantMatchIT extends AbstractIT {
 
         final String caseReceivedDate = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now());
         initiateCourtProceedingsForPartialMatchDefendants(prosecutionCaseId_1, defendantId_1, caseReceivedDate, caseType);
-        verifyInMessagingQueueForProsecutionCaseCreated();
 
         final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchersForPartialMatch(pncId);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
@@ -371,4 +312,3 @@ public class DefendantMatchIT extends AbstractIT {
         stubUnifiedSearchQueryPartialMatchForCJSSpec(caseId, defendantId);
     }
 }
-

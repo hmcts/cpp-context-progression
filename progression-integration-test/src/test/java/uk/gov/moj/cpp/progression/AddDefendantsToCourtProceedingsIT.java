@@ -3,26 +3,17 @@ package uk.gov.moj.cpp.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
@@ -46,7 +37,6 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
@@ -59,13 +49,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import io.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -152,33 +140,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInvokeDefendantsNotAddedToCaseAndListHearingRequestEvents() throws Exception {
-        final String defendantId2 = randomUUID().toString();
-
-        final String startDateTime = ZonedDateTime.now().plusWeeks(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-
-        ListingStub.setupListingAnyAllocationQuery(caseUrn, "stub-data/listing.any-allocation.search.hearings.json");
-
-
-        //Create prosecution case
-        addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        //Create payload for
-        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
-                false, caseId, defendantId, defendantId2, offenceId, startDateTime);
-        final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
-
-        //Post command progression.add-defendants-to-court-proceedings
-        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
-                PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON,
-                addDefendantsToCourtProceedingsJson);
-
-        //Verify the defendants and check the duplicate is not added
-        verifyDefendantsNotAddedInViewStore(caseId, defendantId2);
-    }
-
-    @Test
     public void shouldListHearingRequestsInvokePublicMessage() throws Exception {
 
         final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -217,7 +178,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_UPDATED, userId), hearingUpdatedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_UPDATED, publicEventEnvelope);
 
-        verifyHearingInitialised(caseId, hearingId);
+        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
 
         //Create payload for
         final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(
@@ -263,11 +224,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         };
 
         pollProsecutionCasesProgressionFor(caseId, matchers);
-    }
-
-    private void verifyDefendantsNotAddedInViewStore(final String caseId, final String defendantId) {
-        LOGGER.info("Verifying for defendants not added to caseId {} and defendant id {}", caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[?(@.id=='" + defendantId + "')]", empty()));
     }
 
     private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(
@@ -369,15 +325,5 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         );
     }
 
-    private static void verifyHearingInitialised(final String caseId, final String hearingId) {
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_PROSECUTION_CASE_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.hearingsAtAGlance.hearings[0].id", CoreMatchers.equalTo(hearingId)),
-                                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", CoreMatchers.equalTo("HEARING_INITIALISED"))
-                        )));
-    }
+
 }

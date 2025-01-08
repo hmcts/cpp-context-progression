@@ -149,7 +149,7 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_RESULT_LIST_OPA_NOTICES = "progression.query.result-list-opa-notices";
     private static final String PROGRESSION_QUERY_SEARCH_CASES_BY_CASEURN = "progression.query.search-cases-by-caseurn";
     private static final String PROGRESSION_QUERY_CASE_EXISTS_BY_CASEURN = "progression.query.case-exist-by-caseurn";
-    private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
+    private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase-v2";
     private static final String PROGRESSION_QUERY_CASE_STATUS_FOR_APPLICATION = "progression.query.case.status-for-application";
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
     private static final String PROGRESSION_QUERY_APPLICATIONS = "progression.query.application.aaag";

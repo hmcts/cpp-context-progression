@@ -67,6 +67,11 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     }
 
     @Test
+    public void shouldAllowUserInAuthorisedGroupToGetProsecutioncaseV2() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase-v2", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders", "Eject Case Group", "CPS", "Defence Lawyers", "Advocates","Non Police Prosecutors", "Non CPS Prosecutors");
+    }
+
+    @Test
     public void shouldNotAllowUserInAuthorisedGroupToGetProsecutioncase() {
         assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.prosecutioncase", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support","Police Admin", "NCES", "Victims & Witness Care Admin","Recorders", "Eject Case Group", "CPS", "Defence Lawyers", "Advocates","Non Police Prosecutors");
     }

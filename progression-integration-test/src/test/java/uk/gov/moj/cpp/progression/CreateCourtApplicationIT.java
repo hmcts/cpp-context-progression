@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addSta
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -82,6 +83,8 @@ public class CreateCourtApplicationIT extends AbstractIT {
         };
 
         pollForApplication(firstApplicationId, firstApplicationMatchers);
+
+        verifyPostListCourtHearing(firstApplicationId);
 
         // Creating second application for the case
         String secondApplicationId = randomUUID().toString();

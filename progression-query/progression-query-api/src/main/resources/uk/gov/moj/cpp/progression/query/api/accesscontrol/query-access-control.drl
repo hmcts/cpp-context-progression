@@ -95,6 +95,16 @@ rule "Query - Access control for  progression.query.prosecutioncase"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.prosecutioncase-v2"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.prosecutioncase-v2");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors", "Non CPS Prosecutors"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.prosecutioncase-details"
   when
     $outcome: Outcome();
@@ -670,6 +680,16 @@ rule "Query - Access control for progression.query.cotr.details.prosecutioncase"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Query - API - progression.query.form-directions"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.form-directions");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"Deputies", "DJMC", "Judge", "Magistrates", "Recorders", "Defence Lawyers", "CPS", "NCES", "Court Associates", "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support","Advocates","Defence Lawyers", "Non CPS Prosecutors"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for progression.query.public-list-opa-notices"
   when
     $outcome: Outcome();

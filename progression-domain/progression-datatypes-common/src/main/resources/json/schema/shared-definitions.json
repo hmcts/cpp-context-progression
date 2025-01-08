@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json",
+  "type": "object",
+  "definitions": {
+    "refData": {
+      "type": "object",
+      "properties": {
+        "directionRefDataId": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "directionRefDataType": {
+          "type": "string"
+        },
+        "directionRefDataName": {
+          "type": "string"
+        }
+      },
+      "required": ["directionRefDataId"]
+    }
+  }
+}

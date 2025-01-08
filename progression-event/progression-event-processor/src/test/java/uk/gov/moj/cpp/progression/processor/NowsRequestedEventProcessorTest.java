@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static com.jayway.jsonassert.JsonAssert.with;
-import static java.lang.Boolean.TRUE;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.is;
@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
@@ -23,43 +23,31 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.moj.cpp.progression.processor.NowsRequestedEventProcessor.PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.ACCOUNTING_DIVISION_CODE;
 import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.FINANCIAL_ORDER_DETAILS;
-import static uk.gov.moj.cpp.progression.service.DocumentGeneratorService.PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplate;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplateWithNonVisibleUserList;
 import static uk.gov.moj.cpp.progression.test.TestTemplates.generateNowDocumentRequestTemplateWithVisibleUserList;
 
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowsDocumentGenerated;
+import uk.gov.justice.core.courts.nowdocument.NowDistribution;
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
-import uk.gov.justice.services.fileservice.api.FileServiceException;
-import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
-import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
-import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
-import uk.gov.moj.cpp.progression.service.MaterialService;
+import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
-import uk.gov.moj.cpp.progression.service.UploadMaterialContext;
-import uk.gov.moj.cpp.progression.service.UploadMaterialService;
+import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 import uk.gov.moj.cpp.progression.service.UsersGroupService;
-import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
-import uk.gov.moj.cpp.progression.service.exception.FileUploadException;
-import uk.gov.moj.cpp.progression.service.utils.NowDocumentValidator;
 import uk.gov.moj.cpp.progression.test.FileUtil;
-import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClient;
-import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientProducer;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -85,24 +73,19 @@ public class NowsRequestedEventProcessorTest {
 
     public static final UUID fileId = UUID.randomUUID();
     private static final String PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED = "public.progression.now-document-requested";
+    private static final String PROGRESSION_COMMAND_RECORD_NOWS_DOCUMENT_SENT = "progression.command.record-nows-document-sent";
     private static final String DEFENCE_USERS = "Defence Users";
     private static final String APPLICATION_PDF = "application/pdf";
     private static final String COURT_FINAL_ORDERS = "Court Final orders";
-    private static final String HTTP_MATERIAL_URL = "http://materialUrl";
-    private static final String FILE_NAME = "fileName";
     private static final String COURT_DOCUMENT = "courtDocument";
     private static final String MAGISTRATES = "Magistrates";
 
-
     @Spy
-    private final Enveloper enveloper = createEnveloper();
-    @Spy
+    @InjectMocks
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
     @Spy
-    @InjectMocks
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     @Spy
-    @InjectMocks
     private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
 
@@ -110,38 +93,21 @@ public class NowsRequestedEventProcessorTest {
     @Mock
     private Sender sender;
     @Mock
-    private UploadMaterialService uploadMaterialService;
-    @Mock
-    private MaterialService materialService;
-    @Mock
-    private ApplicationParameters applicationParameters;
-    @Mock
-    private MaterialUrlGenerator materialUrlGenerator;
-    @Mock
-    private DocumentGeneratorClientProducer documentGeneratorClientProducer;
-    @Mock
-    private DocumentGeneratorClient documentGeneratorClient;
-    @Mock
-    private FileStorer fileStorer;
-    @Mock
     private RefDataService refDataService;
     @Mock
     private UsersGroupService usersGroupService;
-    @Mock
-    private SystemUserProvider systemUserProvider;
-    @Mock
-    private NowDocumentValidator nowDocumentValidator;
-
     @Captor
     private ArgumentCaptor<DefaultEnvelope<?>> envelopeArgumentCaptor;
     @Captor
-    private ArgumentCaptor<InputStream> inputStreamArgumentCaptor;
-    @Captor
-    private ArgumentCaptor<JsonObject> jsonObjectArgumentCaptor;
-    @Captor
-    private ArgumentCaptor<UploadMaterialContext> uploadMaterialContextArgumentCaptor;
+    private ArgumentCaptor<String> stringArgumentCaptor;
     @Captor
     private ArgumentCaptor<JsonObject> nowContentArgumentCaptor;
+    @Mock
+    private FileService fileService;
+    @Mock
+    private SystemDocGeneratorService systemDocGeneratorService;
+    @Mock
+    private DocumentGeneratorService documentGeneratorService;
 
     public static NowDocumentRequest nowsRequestedTemplate() {
         return generateNowDocumentRequestTemplate(UUID.randomUUID());
@@ -161,59 +127,73 @@ public class NowsRequestedEventProcessorTest {
 
     @BeforeEach
     public void initMocks() {
-        initReferenceData();
-        initUserGroupsData();
         nowsRequestedEventProcessor = new NowsRequestedEventProcessor(
                 this.sender,
-                new DocumentGeneratorService(this.systemUserProvider,
-                        this.documentGeneratorClientProducer,
-                        this.objectToJsonObjectConverter,
-                        this.fileStorer,
-                        this.uploadMaterialService,
-                        materialUrlGenerator,
-                        applicationParameters,
-                        nowDocumentValidator,
-                        objectMapper,
-                        this.materialService),
+                this.documentGeneratorService,
                 this.jsonObjectToObjectConverter,
                 this.objectToJsonObjectConverter,
                 this.refDataService,
-                this.usersGroupService);
+                this.usersGroupService,
+                this.fileService,
+                this.systemDocGeneratorService);
     }
 
     @Test
-    public void shouldGenerateNowAndStoreWithVisibleUserGroupInFileStore() throws IOException, FileServiceException {
+    public void shouldProcessNowsDocumentGenerated() {
+        final NowsDocumentGenerated nowsDocumentGenerated = NowsDocumentGenerated.nowsDocumentGenerated()
+                .withMaterialId(randomUUID())
+                .withHearingId(randomUUID())
+                .withNowDistribution(NowDistribution.nowDistribution().build())
+                .withOrderAddressee(OrderAddressee.orderAddressee().build())
+                .withSystemDocGeneratorId(randomUUID())
+                .withUserId(fromString(USER_ID))
+                .withFileName(randomUUID().toString())
+                .build();
 
-        final UUID systemUserid = UUID.randomUUID();
+        doNothing().when(documentGeneratorService).addDocumentToMaterial(any(), any(), any());
+
+        final JsonEnvelope eventEnvelope = envelope(nowsDocumentGenerated);
+
+        this.nowsRequestedEventProcessor.processNowsDocumentGenerated(eventEnvelope);
+
+        verify(documentGeneratorService).addDocumentToMaterial(any(), any(), any());
+    }
+
+    @Test
+    public void shouldGenerateNowAndStoreWithVisibleUserGroupInFileStore() {
+        initReferenceData();
+        initUserGroupsData();
+        final UUID userId = UUID.randomUUID();
+        final String fileName = "filename";
+        final String templateName = "templateName";
+
         final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplateWithVisibleUsers();
         final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
                 .withNowDocumentRequest(nowDocumentRequest)
                 .withMaterialId(nowDocumentRequest.getMaterialId())
+                .withFileName(fileName)
+                .withCpsProsecutionCase(false)
+                .withTemplateName(templateName)
+                .withUserId(userId)
                 .build();
 
-        final byte[] bytesIn = new byte[2];
-        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
-        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
-        when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
-        when(applicationParameters.getEmailTemplateId(any())).thenReturn(randomUUID().toString());
+        UUID fileId = randomUUID();
+        when(fileService.storePayload(nowContentArgumentCaptor.capture(), any(), any())).thenReturn(fileId);
+        doNothing().when(systemDocGeneratorService).generateDocument(any(), any());
 
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
-        when(fileStorer.store(any(JsonObject.class), any(InputStream.class)))
-                .thenReturn(fileId);
         final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
-
         this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
 
-        verify(this.documentGeneratorClient).generatePdfDocument(nowContentArgumentCaptor.capture(), any(), eq(systemUserid));
-        verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
-        verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-        assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
-        assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
+        verify(systemDocGeneratorService).generateDocument(any(), any());
+        verify(fileService).storePayload(any(), any(), any());
 
-        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
-        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
-        final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
+        verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
+        final List<DefaultEnvelope<?>> jsonEnvelopeList = this.envelopeArgumentCaptor.getAllValues();
+        final DefaultEnvelope<?> JsonEnvelopeForCreateCourtDocument = jsonEnvelopeList.stream()
+                .filter(envelope -> envelope.metadata().name().equalsIgnoreCase(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT))
+                .findFirst()
+                .get();
+        final JsonObject jsonObject = (JsonObject) JsonEnvelopeForCreateCourtDocument.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
         assertThat(courtDocument.getMaterials().get(0).getUserGroups().size(), is(8));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(DEFENCE_USERS));
@@ -225,43 +205,62 @@ public class NowsRequestedEventProcessorTest {
         assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains(DEFENCE_USERS));
         assertTrue(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Defence Lawyers"));
 
-        final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = this.envelopeArgumentCaptor.getAllValues().get(2);
-        assertThat(publicNowDocumentRequestedEnvelope.metadata().name(), is(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED));
+        final DefaultEnvelope<?> nowsDocumentSentEnvelope = jsonEnvelopeList.stream()
+                .filter(envelope -> envelope.metadata().name().equalsIgnoreCase(PROGRESSION_COMMAND_RECORD_NOWS_DOCUMENT_SENT))
+                .findFirst()
+                .get();
+        assertThat(((JsonObject) nowsDocumentSentEnvelope.payload()).getString("materialId"), is(nowDocumentRequested.getMaterialId().toString()));
+        assertThat(((JsonObject) nowsDocumentSentEnvelope.payload()).getString("payloadFileId"), is(fileId.toString()));
+        assertThat(((JsonObject) nowsDocumentSentEnvelope.payload()).getString("hearingId"), is(nowDocumentRequested.getNowDocumentRequest().getHearingId().toString()));
+        assertThat(((JsonObject) nowsDocumentSentEnvelope.payload()).getBoolean("cpsProsecutionCase"), is(false));
+        assertThat(((JsonObject) nowsDocumentSentEnvelope.payload()).getJsonObject("orderAddressee").getJsonObject("address").getString("emailAddress1"), is(nowDocumentRequested.getNowDocumentRequest().getNowContent().getOrderAddressee().getAddress().getEmailAddress1()));
+
+        final DefaultEnvelope<?> publicNowDocumentRequestedEnvelope = jsonEnvelopeList.stream()
+                .filter(envelope -> envelope.metadata().name().equalsIgnoreCase(PUBLIC_PROGRESSION_NOW_DOCUMENT_REQUESTED))
+                .findFirst()
+                .get();
         assertThat(((JsonObject) publicNowDocumentRequestedEnvelope.payload()).getString("materialId"), is(nowDocumentRequested.getMaterialId().toString()));
+
         final String updatedNowContent = ((JsonObject) (nowContentArgumentCaptor.getValue().get(FINANCIAL_ORDER_DETAILS))).toString();
         with(updatedNowContent).assertThat(ACCOUNTING_DIVISION_CODE, is("077"));
     }
 
     @Test
-    public void shouldGenerateNowAndStoreWithNotVisibleUserGroupInFileStore() throws IOException, FileServiceException {
+    public void shouldGenerateNowAndStoreWithNotVisibleUserGroupInFileStore() {
 
-        final UUID systemUserid = UUID.randomUUID();
+        initReferenceData();
+        initUserGroupsData();
+        final UUID userId = UUID.randomUUID();
+        final String fileName = "filename";
+        final String templateName = "templateName";
+
         final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplateWithNonVisibleUsers();
         final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
                 .withNowDocumentRequest(nowDocumentRequest)
                 .withMaterialId(nowDocumentRequest.getMaterialId())
+                .withFileName(fileName)
+                .withCpsProsecutionCase(false)
+                .withTemplateName(templateName)
+                .withUserId(userId)
                 .build();
-        final byte[] bytesIn = new byte[2];
-        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
-        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
-        when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
-        when(applicationParameters.getEmailTemplateId(any())).thenReturn(randomUUID().toString());
 
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
-        when(fileStorer.store(any(JsonObject.class), any(InputStream.class))).thenReturn(fileId);
+        when(fileService.storePayload(nowContentArgumentCaptor.capture(), stringArgumentCaptor.capture(), any())).thenReturn(randomUUID());
+        doNothing().when(systemDocGeneratorService).generateDocument(any(), any());
+
         final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
         this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
 
-        verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserid));
-        verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
-        verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-        assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
-        assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
+        verify(systemDocGeneratorService).generateDocument(any(), any());
+        verify(fileService).storePayload(any(), any(), any());
+        assertThat(stringArgumentCaptor.getValue(), is(fileName));
 
-        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
-        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
-        final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
+        verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
+        final List<DefaultEnvelope<?>> jsonEnvelopeList = this.envelopeArgumentCaptor.getAllValues();
+        final DefaultEnvelope<?> JsonEnvelopeForCreateCourtDocument = jsonEnvelopeList.stream()
+                .filter(envelope -> envelope.metadata().name().equalsIgnoreCase(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT))
+                .findFirst()
+                .get();
+        final JsonObject jsonObject = (JsonObject) JsonEnvelopeForCreateCourtDocument.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
         assertThat(courtDocument.getMaterials().get(0).getUserGroups().size(), is(9));
         assertFalse(courtDocument.getMaterials().get(0).getUserGroups().contains("Probation Admin"));
@@ -274,40 +273,43 @@ public class NowsRequestedEventProcessorTest {
         assertFalse(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Probation Admin"));
         assertFalse(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains(DEFENCE_USERS));
         assertFalse(courtDocument.getDocumentTypeRBAC().getReadUserGroups().contains("Chambers Clerk"));
-
     }
 
     @Test
-    public void shouldGenerateNowAndStoreInFileStore() throws IOException, FileServiceException {
+    public void shouldGenerateNowAndStoreInFileStore() {
+        initReferenceData();
+        initUserGroupsData();
+        final UUID userId = randomUUID();
+        final String fileName = "filename";
+        final String templateName = "templateName";
 
-        final UUID systemUserid = UUID.randomUUID();
         final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplate();
         final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
                 .withNowDocumentRequest(nowDocumentRequest)
                 .withMaterialId(nowDocumentRequest.getMaterialId())
+                .withFileName(fileName)
+                .withCpsProsecutionCase(false)
+                .withTemplateName(templateName)
+                .withUserId(userId)
                 .build();
 
-        final byte[] bytesIn = new byte[2];
-        when(nowDocumentValidator.isPostable(any(OrderAddressee.class))).thenReturn(TRUE);
-        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
-        when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
-        when(materialUrlGenerator.pdfFileStreamUrlFor(any())).thenReturn(HTTP_MATERIAL_URL);
-        when(applicationParameters.getEmailTemplateId(any())).thenReturn(randomUUID().toString());
+        when(fileService.storePayload(nowContentArgumentCaptor.capture(), stringArgumentCaptor.capture(), any())).thenReturn(randomUUID());
+        doNothing().when(systemDocGeneratorService).generateDocument(any(), any());
 
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
-        when(fileStorer.store(any(JsonObject.class), any(InputStream.class))).thenReturn(fileId);
         final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
         this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
 
-        verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserid));
-        verify(this.uploadMaterialService).uploadFile(uploadMaterialContextArgumentCaptor.capture());
-        verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-        assertThat(jsonObjectArgumentCaptor.getValue().getString(FILE_NAME), is(startsWith(nowDocumentRequest.getNowContent().getOrderName())));
-        assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
+        verify(systemDocGeneratorService).generateDocument(any(), any());
+        verify(fileService).storePayload(any(), any(), any());
+        assertThat(stringArgumentCaptor.getValue(), is(startsWith(fileName)));
 
-        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
-        final DefaultEnvelope<?> jsonEnvelope = this.envelopeArgumentCaptor.getAllValues().get(0);
-        final JsonObject jsonObject = (JsonObject) jsonEnvelope.payload();
+        verify(this.sender, times(4)).send(this.envelopeArgumentCaptor.capture());
+        final List<DefaultEnvelope<?>> jsonEnvelopeList = this.envelopeArgumentCaptor.getAllValues();
+        final DefaultEnvelope<?> JsonEnvelopeForCreateCourtDocument = jsonEnvelopeList.stream()
+                .filter(envelope -> envelope.metadata().name().equalsIgnoreCase(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT))
+                .findFirst()
+                .get();
+        final JsonObject jsonObject = (JsonObject) JsonEnvelopeForCreateCourtDocument.payload();
         final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
 
         assertThat(courtDocument.getMaterials().get(0).getUserGroups().size(), is(13));
@@ -322,106 +324,37 @@ public class NowsRequestedEventProcessorTest {
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains(MAGISTRATES));
         assertTrue(courtDocument.getMaterials().get(0).getUserGroups().contains("Court Associate"));
 
-        DefaultEnvelope<?> addCourtDocjsonEnvelope =  envelopeArgumentCaptor.getAllValues().get(1);
-        assertThat(addCourtDocjsonEnvelope.metadata().name(), is("progression.command.add-court-document"));
+        DefaultEnvelope<?> addCourtDocjsonEnvelope =  jsonEnvelopeList.stream()
+                .filter(envelope -> envelope.metadata().name().equalsIgnoreCase("progression.command.add-court-document"))
+                .findFirst()
+                .get();
         final JsonObject addCourtDocjsonObject = (JsonObject) addCourtDocjsonEnvelope.payload();
         final CourtDocument addCourtDocument = jsonObjectToObjectConverter.convert(addCourtDocjsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
         assertThat(addCourtDocument.getDocumentTypeDescription(), is("Electronic Notifications"));
+
+        final DefaultEnvelope<?> sentCommandEnvelope = jsonEnvelopeList.stream()
+                .filter(envelope -> envelope.metadata().name().equalsIgnoreCase(PROGRESSION_COMMAND_RECORD_NOWS_DOCUMENT_SENT))
+                .findFirst()
+                .get();
+        final JsonObject sentCommand = (JsonObject)sentCommandEnvelope.payload();
+        assertThat(sentCommand.getString("fileName"), is(fileName));
+        assertThat(sentCommand.getBoolean("cpsProsecutionCase"), is(false));
     }
 
-    @Test
-    public void shouldNotGenerateNowOnDocumentGenerationException() throws IOException {
-
-        final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplate();
-        final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
-                .withNowDocumentRequest(nowDocumentRequest)
-                .withMaterialId(nowDocumentRequest.getMaterialId())
-                .build();
-        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
-        when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenThrow(new DocumentGenerationException());
-        final UUID systemUserid = UUID.randomUUID();
-
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserid));
-
-        final JsonEnvelope eventEnvelope = envelopeFrom(metadataWithRandomUUID("progression.events.nows-requested")
-                        .withUserId(USER_ID),
-                objectToJsonObjectConverter.convert(nowDocumentRequested));
-
-        try {
-            this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
-            fail();
-        } catch (final RuntimeException expected) {
-            assertThat(expected.getMessage(), is("Progression : exception while generating NOWs document "));
-        }
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
-
-        final List<DefaultEnvelope<?>> allMessagesSent = envelopeArgumentCaptor.getAllValues();
-
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(((JsonObject) allMessagesSent.get(0).payload()).getJsonObject(COURT_DOCUMENT), CourtDocument.class);
-
-        assertThat((allMessagesSent.get(0).metadata().name()), is(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT));
-        assertThat(courtDocument.getMaterials().get(0).getId().toString(), is(nowDocumentRequest.getMaterialId().toString()));
-        assertThat(courtDocument.getMimeType(), is(APPLICATION_PDF));
-        assertThat(courtDocument.getDocumentTypeDescription(), is(COURT_FINAL_ORDERS));
-        assertThat((allMessagesSent.get(1).metadata().name()), is(PROGRESSION_COMMAND_UPDATE_NOWS_MATERIAL_STATUS));
-        assertThat(((JsonObject) allMessagesSent.get(1).payload()).getString("status"), is("failed"));
-        assertThat(((JsonObject) allMessagesSent.get(1).payload()).getString("materialId"), is(nowDocumentRequest.getMaterialId().toString()));
-
-        verifyNoMoreInteractions(this.fileStorer);
-        verifyNoMoreInteractions(this.uploadMaterialService);
-
+    private JsonEnvelope envelope(final NowsDocumentGenerated nowsDocumentGenerated) {
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(nowsDocumentGenerated);
+        return envelopeFrom(
+                metadataWithRandomUUID("progression.event.nows-document-generated").withUserId(USER_ID),
+                objectToJsonObjectConverter.convert(jsonObject)
+        );
     }
 
-    public JsonEnvelope envelope(final NowDocumentRequested nowDocumentRequested) {
+    private JsonEnvelope envelope(final NowDocumentRequested nowDocumentRequested) {
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(nowDocumentRequested);
         return envelopeFrom(
                 metadataWithRandomUUID("progression.event.nows-requested").withUserId(USER_ID),
                 objectToJsonObjectConverter.convert(jsonObject)
         );
-    }
-
-    @Test
-    public void shouldNotGenerateNowOnFileUploadException() throws IOException, FileServiceException {
-
-        final NowDocumentRequest nowDocumentRequest = nowsRequestedTemplate();
-        final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested()
-                .withNowDocumentRequest(nowDocumentRequest)
-                .withMaterialId(nowDocumentRequest.getMaterialId())
-                .build();
-        final byte[] bytesIn = new byte[2];
-        when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
-        final UUID systemUserId = UUID.randomUUID();
-        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
-        when(documentGeneratorClient.generatePdfDocument(any(), any(), any())).thenReturn(bytesIn);
-        doThrow(new FileUploadException()).when(fileStorer).store(any(), any());
-
-        final JsonEnvelope eventEnvelope = envelope(nowDocumentRequested);
-
-        try {
-            this.nowsRequestedEventProcessor.processNowDocumentRequested(eventEnvelope);
-            fail();
-        } catch (final RuntimeException expected) {
-            assertThat(expected.getMessage(), is("Progression : exception while generating NOWs document "));
-        }
-
-        verify(this.documentGeneratorClient).generatePdfDocument(any(), any(), eq(systemUserId));
-        verify(this.fileStorer).store(jsonObjectArgumentCaptor.capture(), inputStreamArgumentCaptor.capture());
-        assertThat(inputStreamArgumentCaptor.getValue().read(new byte[2]), is(bytesIn.length));
-
-
-        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
-
-        final List<DefaultEnvelope<?>> allMessagesSent = envelopeArgumentCaptor.getAllValues();
-
-        final JsonObject jsonObject = (JsonObject) allMessagesSent.get(0).payload();
-
-        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject(COURT_DOCUMENT), CourtDocument.class);
-
-        assertThat(courtDocument.getMaterials().get(0).getId().toString(), is(nowDocumentRequest.getMaterialId().toString()));
-        assertThat(courtDocument.getMimeType(), is(APPLICATION_PDF));
-        assertThat(courtDocument.getDocumentTypeDescription(), is(COURT_FINAL_ORDERS));
-
-        verifyNoMoreInteractions(this.uploadMaterialService);
     }
 
     private void initReferenceData() {

@@ -100,6 +100,9 @@ protocols: [ HTTP, HTTPS ]
             responseType: application/vnd.progression.query.prosecutioncase+json
             name: progression.query.prosecutioncase
         (mapping):
+                    responseType: application/vnd.progression.query.prosecutioncase-v2+json
+                    name: progression.query.prosecutioncase-v2
+        (mapping):
             responseType: application/vnd.progression.query.prosecutioncase.caag+json
             name: progression.query.prosecutioncase.caag
         (mapping):
@@ -133,6 +136,9 @@ protocols: [ HTTP, HTTPS ]
                     example:  !include json/progression.query.case.json
                     schema:  !include json/schema/progression.query.case.json
                   application/vnd.progression.query.prosecutioncase+json:
+                    example:  !include json/progression.query.prosecutioncase.json
+                    schema:  !include json/schema/progression.query.prosecutioncase.json
+                  application/vnd.progression.query.prosecutioncase-v2+json:
                     example:  !include json/progression.query.prosecutioncase.json
                     schema:  !include json/schema/progression.query.prosecutioncase.json
                   application/vnd.progression.query.prosecutioncase.caag+json:
@@ -1295,3 +1301,42 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.cotr.details.prosecutioncase+json:
             example:  !include json/progression.query.cotr.details.prosecutioncase.json
             schema:  !include json/schema/progression.query.cotr.details.prosecutioncase.json
+
+
+/directions/{caseId}/courtform/{formId}:
+  uriParameters:
+    caseId:
+      description: Case Id
+      type: string
+      required: true
+    formId:
+      description: Form Id
+      type: string
+      required: true
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.form-directions+json
+          name: progression.query.form-directions
+      ...
+    queryParameters:
+      categories:
+        description: Comma separated string of categories
+        type: string
+        required: false
+      formType:
+        description: Form type e.g (PET, PTPH)
+        type: string
+        required: true
+      defendantIds:
+        description: Comma separated string of defendantIds
+        type: string
+        required: false
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.form-directions+json:
+            example: !include json/progression.query.form-directions.json
+            schema:  !include json/schema/progression.query.form-directions.json

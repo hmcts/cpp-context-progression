@@ -9,6 +9,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.LENIENT;
@@ -146,19 +150,16 @@ public class RemoveCaseFromGroupCasesHandlerTest {
     }
 
     @Test
-    @Disabled ("Failing upon mvn install at master also")
     public void shouldHandle_WhenGroupMasterRemoved() throws Exception {
         createCases(GROUP_ID, asList(CASE1_ID, CASE2_ID, CASE3_ID), CASE3_ID);
         addCivilCasesToGroup(GROUP_ID, asList(CASE1_ID, CASE2_ID, CASE3_ID), CASE3_ID);
 
         assertThat(groupCaseAggregate.getMemberCases().size(), is(3));
         assertThat(groupCaseAggregate.getGroupMaster(), is(CASE3_ID));
-        when(eventSource.getStreamById(GROUP_ID)).thenReturn(groupEventStream);
-        when(aggregateService.get(groupEventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        when(eventSource.getStreamById(CASE3_ID)).thenReturn(caseEventStream3);
-        when(aggregateService.get(caseEventStream3, CaseAggregate.class)).thenReturn(caseAggregate3);
-        when(eventSource.getStreamById(CASE2_ID)).thenReturn(caseEventStream2);
-        when(aggregateService.get(caseEventStream2, CaseAggregate.class)).thenReturn(caseAggregate2);
+        when(aggregateService.get(any(), eq(GroupCaseAggregate.class))).thenReturn(groupCaseAggregate);
+        when(eventSource.getStreamById(any())).thenReturn(groupEventStream, caseEventStream3, caseEventStream2);
+        when(aggregateService.get(any(), eq(CaseAggregate.class))).thenReturn(caseAggregate3,caseAggregate2);
+
         handler.handle(createRemoveCaseFromGroupCases(GROUP_ID, CASE3_ID));
 
         verifyCaseRemovedFromGroupCasesEventCreated(GROUP_ID, CASE3_ID, CASE3_ID, groupCaseAggregate.getGroupMaster());

@@ -157,14 +157,6 @@ public class ShareCourtDocumentIT extends AbstractIT {
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
-    private String getExpectedPayloadForCourtDocumentShared(final String caseLeveldocId, final String defendantLeveldocId1, final String defendantId1, final String caseId) {
-        return FileUtil.getPayload("expected/expected.progression.query-courtdocuments-for-shared-documents.json")
-                .replace("CASE-LEVEL-COURT-DOCUMENT-ID", caseLeveldocId)
-                .replace("DEFENDANT-LEVEL-COURT-DOCUMENT-ID", defendantLeveldocId1)
-                .replace("DEFENDANT_ID", defendantId1)
-                .replace("CASE-ID", caseId);
-    }
-
     @Test
     public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrialOfIssue() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
@@ -188,7 +180,6 @@ public class ShareCourtDocumentIT extends AbstractIT {
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
-
     @Test
     public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNonTrialHearingType() throws IOException, JSONException {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
@@ -207,6 +198,13 @@ public class ShareCourtDocumentIT extends AbstractIT {
         assertThat(actualDocumentJson.getJsonArray("documentIndices").size(), is(2));
     }
 
+    private String getExpectedPayloadForCourtDocumentShared(final String caseLeveldocId, final String defendantLeveldocId1, final String defendantId1, final String caseId) {
+        return FileUtil.getPayload("expected/expected.progression.query-courtdocuments-for-shared-documents.json")
+                .replace("CASE-LEVEL-COURT-DOCUMENT-ID", caseLeveldocId)
+                .replace("DEFENDANT-LEVEL-COURT-DOCUMENT-ID", defendantLeveldocId1)
+                .replace("DEFENDANT_ID", defendantId1)
+                .replace("CASE-ID", caseId);
+    }
 
     private CustomComparator getCustomComparator() {
         return new CustomComparator(STRICT,
@@ -216,7 +214,6 @@ public class ShareCourtDocumentIT extends AbstractIT {
                 new Customization("documentIndices[1].document.documentTypeRBAC", (o1, o2) -> true)
         );
     }
-
 
     private static void verifyInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumer);

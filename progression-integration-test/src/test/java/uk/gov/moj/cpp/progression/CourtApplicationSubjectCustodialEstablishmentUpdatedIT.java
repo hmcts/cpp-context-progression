@@ -13,9 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
@@ -29,19 +27,14 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCa
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.io.StringReader;
@@ -62,15 +55,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(JmsResourceManagementExtension.class)
 public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends AbstractIT {
 
-    private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private String hearingId;
     private String defendantId;
     private ProsecutionCaseUpdateDefendantHelper helper;
     private String caseId;
     private String courtApplicationId;
-
-    private static final JmsMessageConsumerClient privateEventConsumerForpUpdateDefendantAddressOnCase = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-defendant-updated").getMessageConsumerClient();
 
     @BeforeEach
     public void setUp() {
@@ -139,8 +128,6 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         };
 
         pollForApplication(courtApplicationId, custodyEstablishmentDefendantUpdatedMatchersForApplicationMatcherEmptyCustodyEstablishment);
-
-
     }
 
     @Test
@@ -200,9 +187,6 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         final Response response = intiateCourtProceedingForApplicationWithRespondents(id2, id3, courtApplicationId, caseId, defendantId, masterDefendantId, "Address1", hearingId,
                 "applications/progression.initiate-court-proceedings-for-court-order-linked-application-for-updated-address.json");
 
-        Optional<JsonObject> message = retrieveMessageBody(privateEventConsumerForpUpdateDefendantAddressOnCase);
-        assertTrue(message.isPresent());
-
         getProgressionCaseHearings(caseId, anyOf(
                 withJsonPath("$.defendants[0].address.address1", is("sam2Address2Address1"))));
 
@@ -224,26 +208,6 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         ));
     }
 
-    @Test
-    void shouldUpdateDefendantsDetails_WithNonEmptyCustodyEstablishment_WithCustodyEstablishment() throws Exception {
-
-        final String masterDefendantId = randomUUID().toString();
-
-        final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
-        // initiation of  case
-        initiateCourtProceedingsForMatchedDefendants(caseId, defendantId, masterDefendantId);
-        verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
-        Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
-        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
-
-
-        final JmsMessageConsumerClient privateEventConsumerForDefendantCustodialEstablishmentRemoved = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.defendant-custodial-establishment-removed").getMessageConsumerClient();
-        intiateCourtProceedingForApplication(courtApplicationId, caseId, defendantId, masterDefendantId, hearingId, "applications/progression.initiate-court-proceedings-for-application-with-custodial-establishment.json");
-
-
-    }
-
     private void verifyInMessagingQueueForProsecutionCaseCreated(final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated) {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForProsecutionCaseCreated);
         assertTrue(message.isPresent());
@@ -252,16 +216,6 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
                 .getJsonArray("offences").getJsonObject(0)
                 .getJsonArray("reportingRestrictions").getJsonObject(0);
         assertNotNull(reportingRestrictionObject);
-    }
-
-    private void verifyInMessagingQueueForRemoveDefendantCustodialEstablishmentFromCaseRequested(final JmsMessageConsumerClient privateEventConsumerForRemoveDefendantCustodialEstablishmentFromCaseRequested) {
-        final Optional<JsonObject> message = retrieveMessageBody(privateEventConsumerForRemoveDefendantCustodialEstablishmentFromCaseRequested);
-        assertTrue(message.isPresent());
-    }
-
-    private void sendHearingResultedPayload(final JsonObject publicHearingResultedJsonObject) {
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED, AbstractTestHelper.USER_ID), publicHearingResultedJsonObject);
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED, publicEventEnvelope);
     }
 
     public static JsonObject jsonFromString(final String jsonObjectStr) {

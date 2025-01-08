@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -21,6 +23,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdated;
+import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedIntoHearings;
 import uk.gov.moj.cpp.progression.events.MasterDefendantIdUpdatedV2;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
@@ -171,7 +174,7 @@ public class DefendantMatchingEventProcessorTest {
         final MasterDefendantIdUpdated masterDefendantIdUpdated = MasterDefendantIdUpdated.masterDefendantIdUpdated()
                 .withDefendantId(incomingDefendantId)
                 .withProsecutionCaseId(incomingProsecutionCaseId)
-                .withMatchedDefendants(Arrays.asList(MatchedDefendants.matchedDefendants()
+                .withMatchedDefendants(asList(MatchedDefendants.matchedDefendants()
                         .withDefendantId(matchedDefendantId)
                         .withProsecutionCaseId(matchedProsecutionCaseId)
                         .withMasterDefendantId(matchedMasterDefendantId)
@@ -209,7 +212,7 @@ public class DefendantMatchingEventProcessorTest {
         final MasterDefendantIdUpdated masterDefendantIdUpdated = MasterDefendantIdUpdated.masterDefendantIdUpdated()
                 .withDefendantId(incomingDefendantId)
                 .withProsecutionCaseId(incomingProsecutionCaseId)
-                .withMatchedDefendants(Arrays.asList(MatchedDefendants.matchedDefendants()
+                .withMatchedDefendants(asList(MatchedDefendants.matchedDefendants()
                                 .withDefendantId(matchedDefendantId)
                                 .withProsecutionCaseId(matchedProsecutionCaseId)
                                 .withMasterDefendantId(matchedMasterDefendantId)
@@ -287,7 +290,7 @@ public class DefendantMatchingEventProcessorTest {
                 .withDefendant(Defendant.defendant()
                         .withId(randomUUID())
                         .build())
-                .withMatchedDefendants(Arrays.asList(MatchedDefendants.matchedDefendants()
+                .withMatchedDefendants(asList(MatchedDefendants.matchedDefendants()
                         .withDefendantId(matchedDefendantId)
                         .withProsecutionCaseId(matchedProsecutionCaseId)
                         .withMasterDefendantId(matchedMasterDefendantId)
@@ -302,4 +305,71 @@ public class DefendantMatchingEventProcessorTest {
         verify(sender, times(1)).send(envelopeCaptor.capture());
         assertThat(envelopeCaptor.getValue().payload().getJsonObject("defendant").getString("masterDefendantId"), is(matchedMasterDefendantId.toString()));
     }
+
+    @Test
+    public void shouldHandleMasterDefendantIdUpdatedEventForHearingAndShouldRaiseCommandForUniqueHearingIds() {
+        final UUID incomingProsecutionCaseId = randomUUID();
+        final UUID matchedDefendantId = randomUUID();
+        final UUID matchedProsecutionCaseId = randomUUID();
+        final UUID matchedMasterDefendantId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID hearingId3 = randomUUID();
+        final ZonedDateTime courtProceedingsInitiatedDate = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z");
+
+
+        final MasterDefendantIdUpdatedIntoHearings masterDefendantIdUpdatedIntoHearings = MasterDefendantIdUpdatedIntoHearings.masterDefendantIdUpdatedIntoHearings()
+                .withProsecutionCaseId(incomingProsecutionCaseId)
+                .withDefendant(Defendant.defendant()
+                        .withId(randomUUID())
+                        .build())
+                .withMatchedDefendants(asList(MatchedDefendants.matchedDefendants()
+                        .withDefendantId(matchedDefendantId)
+                        .withProsecutionCaseId(matchedProsecutionCaseId)
+                        .withMasterDefendantId(matchedMasterDefendantId)
+                        .withCourtProceedingsInitiated(courtProceedingsInitiatedDate)
+                        .build()))
+                .withHearingIds(asList(hearingId1, hearingId2, hearingId1, hearingId3, hearingId2))
+                .build();
+
+        defendantMatchingEventProcessor.handleMasterDefendantIdUpdatedEventForHearing(JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.master-defendant-id-updated-into-hearings"),
+                objectToJsonObjectConverter.convert(masterDefendantIdUpdatedIntoHearings)));
+
+        verify(sender, times(3)).send(envelopeCaptor.capture());
+        envelopeCaptor.getAllValues().forEach(envelope -> assertThat(envelope.metadata().name(), is("progression.command.update-defendant-for-hearing")));
+
+    }
+
+    @Test
+    public void shouldHandleMasterDefendantIdUpdatedEventForHearingAndShouldNotRaiseCommandWhenHearingIdsIsEmpty() {
+        final UUID incomingProsecutionCaseId = randomUUID();
+        final UUID matchedDefendantId = randomUUID();
+        final UUID matchedProsecutionCaseId = randomUUID();
+        final UUID matchedMasterDefendantId = randomUUID();
+        final ZonedDateTime courtProceedingsInitiatedDate = ZonedDateTimes.fromString("2019-06-30T18:32:04.238Z");
+
+
+        final MasterDefendantIdUpdatedIntoHearings masterDefendantIdUpdatedIntoHearings = MasterDefendantIdUpdatedIntoHearings.masterDefendantIdUpdatedIntoHearings()
+                .withProsecutionCaseId(incomingProsecutionCaseId)
+                .withDefendant(Defendant.defendant()
+                        .withId(randomUUID())
+                        .build())
+                .withMatchedDefendants(asList(MatchedDefendants.matchedDefendants()
+                        .withDefendantId(matchedDefendantId)
+                        .withProsecutionCaseId(matchedProsecutionCaseId)
+                        .withMasterDefendantId(matchedMasterDefendantId)
+                        .withCourtProceedingsInitiated(courtProceedingsInitiatedDate)
+                        .build()))
+                .withHearingIds(emptyList())
+                .build();
+
+        defendantMatchingEventProcessor.handleMasterDefendantIdUpdatedEventForHearing(JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.master-defendant-id-updated-into-hearings"),
+                objectToJsonObjectConverter.convert(masterDefendantIdUpdatedIntoHearings)));
+
+        verify(sender, times(0)).send(envelopeCaptor.capture());
+
+    }
+
 }

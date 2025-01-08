@@ -35,7 +35,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verify
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
@@ -49,7 +48,6 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrg
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
@@ -61,7 +59,6 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.response.Response;
@@ -111,10 +108,6 @@ public class AddCourtDocumentIT extends AbstractIT {
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
-
 
         stubMaterialMetadata();
     }
@@ -454,50 +447,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @Test
     public void shouldUpdateSendToCpsToViewStore() throws IOException, JSONException {
-        stubFor(post(urlPathEqualTo("/notification-cms/v1/transformAndSendCms"))
-                .willReturn(aResponse().withStatus(SC_OK)));
-
-        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-
-        initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        //Given
-        verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
-
-        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
-
-        //Given
-        final String bodyForUpdate = prepareUpdateCourtDocumentPayload();
-        //When
-        final Response writeResponseForUpdate = postCommand(getWriteUrl("/courtdocument"),
-                "application/vnd.progression.update-court-document+json",
-                bodyForUpdate);
-        assertThat(writeResponseForUpdate.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-
-        final String actualDocumentAfterUpdate = getCourtDocumentFor(docId, allOf(
-                withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
-                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true)),
-                withJsonPath("$.courtDocument.documentTypeDescription", equalTo("Magistrate's Sending sheet"))
-        ));
-
-        final String expectedPayloadAfterUpdate = getPayload("expected/expected.progression.court-document-updated.json")
-                .replace("COURT-DOCUMENT-ID", docId)
-                .replace("DEFENDENT-ID", updatedDefendantId)
-                .replace("CASE-ID", caseId);
-
-        assertEquals(expectedPayloadAfterUpdate, actualDocumentAfterUpdate, getCustomComparator());
-
-        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-        getCourtDocumentsByCase(USER_ID, caseId);
-    }
-
-    @Test
-    public void shouldUpdateSendToCpsToViewStoreAndSetCourtDocument() throws IOException, JSONException {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of("defenceDisclosure", true);
-        FeatureStubber.clearCache(CONTEXT_NAME);
-        FeatureStubber.stubFeaturesFor(CONTEXT_NAME, features);
-
         stubFor(post(urlPathEqualTo("/notification-cms/v1/transformAndSendCms"))
                 .willReturn(aResponse().withStatus(SC_OK)));
 

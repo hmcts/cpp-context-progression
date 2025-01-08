@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression;
 import static com.google.common.collect.ImmutableList.of;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.join;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -24,26 +25,29 @@ import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
+import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegister;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
+import uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +58,9 @@ import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,9 +71,9 @@ public class NowDocumentRequestIT extends AbstractIT {
     private static final String MATERIAL_ID = "materialId";
     private static final String MATERIAL_MATERIAL_ADDED = "material.material-added";
     private static final String HEARING_ID = "%HEARING_ID%";
-    private static final String DOCUMENT_TEXT = STRING.next();
     private static final String ORIGINATOR = "originator";
     private static final String ORIGINATOR_VALUE = "court";
+    private static int counter = 1;
     private String materialId;
     private String hearingId;
     private String defendantId;
@@ -76,7 +83,7 @@ public class NowDocumentRequestIT extends AbstractIT {
 
     @BeforeAll
     public static void setupBefore() {
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
+        SysDocGeneratorStub.stubDocGeneratorEndPoint();
         NotificationServiceStub.setUp();
     }
 
@@ -90,13 +97,10 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAddFinancialNowDocumentRequest() throws IOException {
+    public void shouldAddFinancialNowDocumentRequest() throws IOException, JSONException {
         final String body = prepareAddNowFinancialDocumentRequestPayload();
 
-        final Response writeResponse = postCommand(getWriteUrl("/nows"),
-                "application/vnd.progression.add-now-document-request+json",
-                body);
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+        requestNowsDocument(body);
 
         getNowDocumentRequestsFor(requestId, anyOf(
                 withJsonPath("$.nowDocumentRequests[0].requestId", equalTo(requestId)),
@@ -106,7 +110,9 @@ public class NowDocumentRequestIT extends AbstractIT {
 
         sendPublicEventForFinancialImpositionAcknowledgement();
 
-        verifyMaterialCreated();
+        sendPublicEventForDocumentAvailable();
+
+        verifyMaterialCreated(materialId);
 
         sendPublicEventForMaterialAdded();
 
@@ -114,29 +120,34 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAddNonFinancialNowDocumentRequest() throws IOException {
+    public void shouldAddNonFinancialNowDocumentRequest() throws IOException, JSONException {
+
         final String payload = prepareAddNowNonFinancialDocumentRequestPayload("progression.add-non-financial-now-document-request.json");
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
         final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
 
-        final Response writeResponse = postCommand(getWriteUrl("/nows"),
-                "application/vnd.progression.add-now-document-request+json",
-                payload);
+        requestNowsDocument(payload);
 
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+        sendPublicEventForDocumentAvailable();
 
-        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
-                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
-
-        verifyMaterialCreated();
+        verifyMaterialCreated(materialId);
 
         sendPublicEventForMaterialAdded();
 
         verifyCreateLetterRequested(of("letterUrl", materialId));
 
+        final String nowDocumentRequestPayload = getNowDocumentRequest(hearingId,
+                anyOf(withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId))));
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
         final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
+    }
+
+    private void requestNowsDocument(final String body) throws IOException {
+        final Response writeResponse = postCommand(getWriteUrl("/nows"),
+                "application/vnd.progression.add-now-document-request+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     private void sendPublicEventForMaterialAdded() {
@@ -226,6 +237,45 @@ public class NowDocumentRequestIT extends AbstractIT {
                 .timeout(40, TimeUnit.SECONDS)
                 .until(status().is(javax.ws.rs.core.Response.Status.OK),
                         payload().isJson(allOf(matchers))).getPayload();
+    }
+
+    private void sendPublicEventForDocumentAvailable() throws JSONException {
+        System.out.println(counter);
+        final List<JSONObject> jsonObjects = pollSysDocGenerationRequestsForPrisonCourtRegister(
+                Matchers.hasSize(counter), "NOWs");
+
+        final UUID payloadFileServiceId = fromString(jsonObjects.get(counter-1).getString("payloadFileServiceId"));
+
+        final String commandName = "public.systemdocgenerator.events.document-available";
+
+        final Metadata metadata = getMetadataFrom(userId.toString(), fromString(materialId), commandName);
+
+        messageProducerClientPublic.sendMessage(commandName, JsonEnvelope.envelopeFrom(metadata, documentAvailablePayload(payloadFileServiceId, "OPE_Layout16", materialId.toString(), randomUUID())));
+        counter++;
+    }
+
+    private Metadata getMetadataFrom(final String userId, final UUID materialId, final String name) {
+        return metadataFrom(createObjectBuilder()
+                .add(ORIGINATOR, materialId.toString())
+                .add(ID, randomUUID().toString())
+                .add(HeaderConstants.USER_ID, userId)
+                .add(NAME, name)
+                .build()).build();
+    }
+
+    private JsonObject documentAvailablePayload(final UUID payloadFileServiceId, final String templateIdentifier,
+                                                final String reportId, final UUID generatedDocumentId) {
+        return createObjectBuilder()
+                .add("payloadFileServiceId", payloadFileServiceId.toString())
+                .add("templateIdentifier", templateIdentifier)
+                .add("conversionFormat", "pdf")
+                .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                .add("sourceCorrelationId", reportId)
+                .add("originatingSource", "NOWs")
+                .add("documentFileServiceId", generatedDocumentId.toString())
+                .add("generatedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                .add("generateVersion", 1)
+                .build();
     }
 
 }

@@ -46,7 +46,6 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -90,7 +89,6 @@ public class CaseLsmInfoIT extends AbstractIT {
         courtCentreId = randomUUID().toString();
     }
 
-    @Disabled("Failing as part of integration test refactor")
     @Test
     public void shouldVerifyCaseLsmInfo() throws Exception {
 
@@ -114,6 +112,8 @@ public class CaseLsmInfoIT extends AbstractIT {
         publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, randomUUID()), getHearingJsonObject("public.listing.hearing-confirmed.json",
                 prosecutionCaseId_2, hearingId, defendantId_2, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
 
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);

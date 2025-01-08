@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
@@ -80,6 +81,12 @@ public class UpdateCaseMarkersIT {
         pollProsecutionCasesProgressionFor(caseId, getCaseMarkersMatchers("DD", "Child Abuse"));
 
         helper.verifyInMessagingQueueForCaseMarkersUpdated(publicEventsCaseMarkersUpdated);
+
+        helper.removeCaseMarkers();
+
+        pollProsecutionCasesProgressionFor(caseId, withoutJsonPath("$.prosecutionCase.caseMarkers"));
+
+        helper.verifyInMessagingQueueForCaseMarkersUpdated(publicEventsCaseMarkersUpdated);
     }
 
     @Test
@@ -104,21 +111,7 @@ public class UpdateCaseMarkersIT {
 
         helper.verifyInMessagingQueueForCaseMarkersUpdated(publicEventsCaseMarkersUpdated);
 
-        verifyProbationHearingCommandInvoked(Lists.newArrayList(hearingId, "Child Abuse"));
-    }
-
-    @Test
-    public void shouldRemoveProsecutionCaseMarkers() throws Exception {
-        //given
-        initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-
-        pollProsecutionCasesProgressionFor(caseId, getCaseMarkersMatchers("WP", "Prohibited Weapons"));
-
-        helper.removeCaseMarkers();
-
-        pollProsecutionCasesProgressionFor(caseId, withoutJsonPath("$.prosecutionCase.caseMarkers"));
-
-        helper.verifyInMessagingQueueForCaseMarkersUpdated(publicEventsCaseMarkersUpdated);
+        verifyProbationHearingCommandInvoked(newArrayList(hearingId, "Child Abuse"));
     }
 
     private Matcher[] getCaseMarkersMatchers(final String caseMarkerCode, final String caseMarkerDesc) {

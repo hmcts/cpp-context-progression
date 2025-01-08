@@ -12,16 +12,14 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.service.DocumentTemplateType.getDocumentTemplateNameByType;
 
 import uk.gov.justice.core.courts.FormType;
+import uk.gov.justice.core.courts.NowsDocumentGenerated;
 import uk.gov.justice.core.courts.Personalisation;
 import uk.gov.justice.core.courts.UpdateNowsMaterialStatus;
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.core.courts.nowdocument.EmailRenderingVocabulary;
 import uk.gov.justice.core.courts.nowdocument.NowDistribution;
-import uk.gov.justice.core.courts.nowdocument.NowDocumentContent;
-import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
 import uk.gov.justice.core.courts.nowdocument.OrderAddressee;
-import uk.gov.justice.core.courts.nowdocument.ProsecutionCase;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
@@ -29,7 +27,6 @@ import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
-import uk.gov.moj.cpp.progression.formatters.AccountingDivisionCodeFormatter;
 import uk.gov.moj.cpp.progression.processor.exceptions.InvalidHearingTimeException;
 import uk.gov.moj.cpp.progression.processor.exceptions.NowsTemplateNameNotFoundException;
 import uk.gov.moj.cpp.progression.service.exception.DocumentGenerationException;
@@ -41,26 +38,18 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import javax.transaction.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +68,7 @@ public class DocumentGeneratorService {
     public static final String FINANCIAL_ORDER_DETAILS = "financialOrderDetails";
     public static final String PET_DOCUMENT_TEMPLATE_NAME = "PetNotification";
     public static final String PET_DOCUMENT_ORDER = "PetDocumentOrder";
-    public static final String STORED_MATERIAL_IN_FILE_STORE = "Stored material {} in file store {} file name{}";
+    public static final String STORED_MATERIAL_IN_FILE_STORE = "Stored material {} in file store {}";
     public static final String ERROR_WHILE_UPLOADING_FILE = "Error while uploading file {}";
     public static final String FORM_DOCUMENT_PDF_NAME = "name";
     public static final String FORM_DOCUMENT_FILE_EXTENSION_AS_PDF = ".pdf";
@@ -103,8 +92,6 @@ public class DocumentGeneratorService {
 
     private final NowDocumentValidator nowDocumentValidator;
 
-    private final ObjectMapper mapper;
-
     private final MaterialService materialService;
 
     @Inject
@@ -116,7 +103,6 @@ public class DocumentGeneratorService {
                                     final MaterialUrlGenerator materialUrlGenerator,
                                     final ApplicationParameters applicationParameters,
                                     final NowDocumentValidator nowDocumentValidator,
-                                    final ObjectMapper mapper,
                                     final MaterialService materialService) {
         this.systemUserProvider = systemUserProvider;
         this.documentGeneratorClientProducer = documentGeneratorClientProducer;
@@ -126,31 +112,24 @@ public class DocumentGeneratorService {
         this.materialUrlGenerator = materialUrlGenerator;
         this.applicationParameters = applicationParameters;
         this.nowDocumentValidator = nowDocumentValidator;
-        this.mapper = mapper;
         this.materialService = materialService;
     }
 
-    @Transactional(REQUIRES_NEW)
-    public String generateNow(final Sender sender, final JsonEnvelope originatingEnvelope,
-                            final UUID userId, final NowDocumentRequest nowDocumentRequest) {
-        final String orderName = nowDocumentRequest.getNowContent().getOrderName();
-        final String fileName = getTimeStampAmendedFileName(orderName);
+    public void addDocumentToMaterial(final Sender sender, final JsonEnvelope originatingEnvelope, final NowsDocumentGenerated nowsDocumentGenerated) {
         try {
-            final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
-            final JsonObject nowDocumentContentJson = objectToJsonObjectConverter.convert(nowDocumentRequest.getNowContent());
-            final JsonObject updatedNowContent = updateNowContentWithAccountDivisionCode(nowDocumentContentJson);
-
-            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(updatedNowContent, getTemplateName(nowDocumentRequest), getSystemUserUuid());
-            addDocumentToMaterial(sender, originatingEnvelope, getTimeStampAmendedFileName(orderName),
-                    new ByteArrayInputStream(resultOrderAsByteArray), userId, nowDocumentRequest.getHearingId().toString(), nowDocumentRequest.getMaterialId(),
-                    nowDocumentRequest.getNowDistribution(), nowDocumentRequest.getNowContent().getOrderAddressee(),
-                    isCpsProsecutionCase(nowDocumentRequest.getNowContent()));
-        } catch (IOException | RuntimeException e) {
+            addDocumentToMaterial(sender, originatingEnvelope,
+                    nowsDocumentGenerated.getSystemDocGeneratorId(),
+                    nowsDocumentGenerated.getUserId(),
+                    nowsDocumentGenerated.getHearingId().toString(),
+                    nowsDocumentGenerated.getMaterialId(),
+                    nowsDocumentGenerated.getNowDistribution(),
+                    nowsDocumentGenerated.getOrderAddressee(),
+                    nowsDocumentGenerated.getCpsProsecutionCase());
+        } catch (RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
-            updateMaterialStatusAsFailed(sender, originatingEnvelope, nowDocumentRequest.getMaterialId());
-            throw new RuntimeException("Progression : exception while generating NOWs document ", e);
+            updateMaterialStatusAsFailed(sender, originatingEnvelope, nowsDocumentGenerated.getMaterialId());
+            throw new RuntimeException("Progression : exception while saving NOWs document into material service ", e);
         }
-        return fileName;
     }
 
     @Transactional(REQUIRES_NEW)
@@ -187,19 +166,6 @@ public class DocumentGeneratorService {
 
         } catch (IOException | RuntimeException e) {
             LOGGER.error(ERROR_MESSAGE, e);
-        }
-    }
-
-    @Transactional(REQUIRES_NEW)
-    public String generatePetDocument(final JsonEnvelope originatingEnvelope, final JsonObject petForm, final UUID materialId) {
-        try {
-            final DocumentGeneratorClient documentGeneratorClient = documentGeneratorClientProducer.documentGeneratorClient();
-            final byte[] resultOrderAsByteArray = documentGeneratorClient.generatePdfDocument(petForm, PET_DOCUMENT_TEMPLATE_NAME, getSystemUserUuid());
-            final String filename = getTimeStampAmendedFileName(PET_DOCUMENT_ORDER);
-            addDocumentToMaterial(originatingEnvelope, filename, new ByteArrayInputStream(resultOrderAsByteArray), materialId);
-            return filename;
-        } catch (IOException | RuntimeException e) {
-            throw new DocumentGenerationException(e);
         }
     }
 
@@ -304,15 +270,14 @@ public class DocumentGeneratorService {
     }
 
     @Transactional(REQUIRES_NEW)
-    public void generateNonNowDocument(final JsonEnvelope envelope, final JsonObject documentPayload,
-                                       String templateName, final UUID materialId,
-                                       final String fileNameWithoutPdfExtension) {
+    public void generateNonNowDocument(final JsonEnvelope envelope, final JsonObject documentPayload, String templateName, final UUID materialId, final String fileNameWithoutPdfExtension) {
+
         final String fileName = fileNameWithoutPdfExtension+".pdf";
         try {
             final byte[] resultOrderAsByteArray = documentGeneratorClientProducer
                     .documentGeneratorClient()
                     .generatePdfDocument(documentPayload, templateName, getSystemUserUuid());
-            LOGGER.info(">> document generated:: fileName: {} template Name: {} materialId: {}",fileName,templateName,materialId);
+
             addDocumentToMaterial(
                     envelope,
                     fileName,
@@ -321,7 +286,7 @@ public class DocumentGeneratorService {
 
         } catch (IOException e) {
             LOGGER.error(ERROR_MESSAGE, e);
-            throw new RuntimeException("Error while generating non now document", e);
+            throw new InvalidHearingTimeException("Error while generating non now document", e);
         }
     }
 
@@ -335,12 +300,11 @@ public class DocumentGeneratorService {
         addDocumentToMaterial(sender, originatingEnvelope, filename, fileContent, userId, hearingId, materialId, caseId, applicationId, isRemotePrintingRequired, null);
     }
 
-    private void addDocumentToMaterial(final JsonEnvelope originatingEnvelope,
-                                       final String filename, final InputStream fileContent, final UUID materialId) {
+    private void addDocumentToMaterial(final JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent, final UUID materialId) {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
             materialService.uploadMaterial(fileId, materialId, originatingEnvelope);
         } catch (final FileServiceException e) {
             LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
@@ -358,7 +322,7 @@ public class DocumentGeneratorService {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
             final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder();
             if (nonNull(emailChannel)) {
                 uploadMaterialContextBuilder.setEmailNotifications(of(emailChannel));
@@ -390,7 +354,7 @@ public class DocumentGeneratorService {
 
         try {
             final UUID fileId = storeFile(fileContent, filename);
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
+            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId);
             final UploadMaterialContextBuilder uploadMaterialContextBuilder = new UploadMaterialContextBuilder();
             uploadMaterialService.uploadFile(uploadMaterialContextBuilder
                     .setSender(sender)
@@ -410,17 +374,12 @@ public class DocumentGeneratorService {
         }
     }
 
-    private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final String filename, final InputStream fileContent,
+    private void addDocumentToMaterial(Sender sender, JsonEnvelope originatingEnvelope, final UUID systemDocGeneratorId,
                                        final UUID userId, final String hearingId,
                                        final UUID materialId,
                                        final NowDistribution nowDistribution,
                                        final OrderAddressee orderAddressee,
                                        final boolean isCps) {
-        try {
-
-            final UUID fileId = storeFile(fileContent, filename);
-
-            LOGGER.info(STORED_MATERIAL_IN_FILE_STORE, materialId, fileId,filename);
 
             final boolean isPostable = nowDocumentValidator.isPostable(orderAddressee);
             final boolean firstClassLetter = isFirstClassLetter(nowDistribution) && isPostable;
@@ -435,7 +394,7 @@ public class DocumentGeneratorService {
                     .setUserId(userId)
                     .setHearingId(fromString(hearingId))
                     .setMaterialId(materialId)
-                    .setFileId(fileId)
+                    .setFileId(systemDocGeneratorId)
                     .setCaseId(null)
                     .setApplicationId(null)
                     .setFirstClassLetter(firstClassLetter)
@@ -448,11 +407,6 @@ public class DocumentGeneratorService {
             }
 
             uploadMaterialService.uploadFile(uploadMaterialContextBuilder.build());
-
-        } catch (final FileServiceException e) {
-            LOGGER.error(ERROR_WHILE_UPLOADING_FILE, filename);
-            throw new FileUploadException(e);
-        }
     }
 
     private List<EmailChannel> buildEmailChannel(final UUID materialId, final NowDistribution nowDistribution, final OrderAddressee orderAddressee) {
@@ -493,17 +447,6 @@ public class DocumentGeneratorService {
                 .withMaterialUrl(materialUrl)
                 .withPersonalisation(buildPersonalisation(nowDistribution.getEmailContent()))
                 .build();
-    }
-
-    private String getTemplateName(NowDocumentRequest nowDocumentRequest) {
-
-        final Boolean isWelshCourtCentre = nowDocumentRequest.getNowContent().getOrderingCourt().getWelshCourtCentre();
-        if (nonNull(isWelshCourtCentre) && isWelshCourtCentre
-                && nonNull(nowDocumentRequest.getBilingualTemplateName())
-                && !nowDocumentRequest.getBilingualTemplateName().isEmpty()) {
-            return nowDocumentRequest.getBilingualTemplateName();
-        }
-        return nowDocumentRequest.getTemplateName();
     }
 
     private Personalisation buildPersonalisation(List<EmailRenderingVocabulary> emailContents) {
@@ -554,43 +497,6 @@ public class DocumentGeneratorService {
         return systemUserProvider.getContextSystemUserId().orElseThrow(() -> new NowsTemplateNameNotFoundException("Could not find systemId "));
     }
 
-    private JsonObject updateNowContentWithAccountDivisionCode(final JsonObject jsonObject) throws JsonProcessingException {
-        final JsonNode jsonNode = mapper.valueToTree(jsonObject);
-
-        if (Objects.nonNull(jsonNode.path(FINANCIAL_ORDER_DETAILS)) && !(jsonNode.path(FINANCIAL_ORDER_DETAILS).isMissingNode())) {
-            final ObjectNode financialOrderDetailsNode = (ObjectNode) jsonNode.path(FINANCIAL_ORDER_DETAILS);
-            final String divisionCode = convertJsonNodeToString(financialOrderDetailsNode.path(ACCOUNTING_DIVISION_CODE));
-
-            financialOrderDetailsNode.put(ACCOUNTING_DIVISION_CODE, AccountingDivisionCodeFormatter
-                    .formatAccountingDivisionCode(divisionCode));
-            return jsonFromString(mapper.writeValueAsString(jsonNode));
-        }
-
-        return jsonObject;
-    }
-
-    private String convertJsonNodeToString(JsonNode jsonNode) {
-        if (jsonNode.isMissingNode()) {
-            return StringUtils.EMPTY;
-        }
-        return jsonNode.asText();
-    }
-
-    private static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-        final JsonObject object = jsonReader.readObject();
-        jsonReader.close();
-        return object;
-    }
-
-    private boolean isCpsProsecutionCase(final NowDocumentContent nowContent) {
-        return nowContent.getCases().stream()
-                .filter(pc -> nonNull(pc.getIsCps()))
-                .filter(ProsecutionCase::getIsCps)
-                .findFirst()
-                .map(ProsecutionCase::getIsCps)
-                .orElse(false);
-    }
 
     @Transactional(REQUIRES_NEW)
     public UUID generatePdfDocument(final JsonEnvelope originatingEnvelope, String filename, final byte[] referralDisqualifyWarningContent) {

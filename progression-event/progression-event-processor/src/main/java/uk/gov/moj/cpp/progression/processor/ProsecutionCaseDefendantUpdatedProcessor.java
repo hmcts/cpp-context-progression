@@ -125,7 +125,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
                         .withName(PUBLIC_CASE_DEFENDANT_CHANGED)
                         .withMetadataFrom(jsonEnvelope));
         if (nonNull(hearingIds)) {
-            hearingIds.forEach(hearingId ->
+            hearingIds.stream().collect(Collectors.toSet()).forEach(hearingId ->
                     sendDefendantUpdate(jsonEnvelope, defendant, hearingId));
         }
 

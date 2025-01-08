@@ -13,9 +13,13 @@ import uk.gov.justice.services.eventsourcing.source.core.EventSource;
 import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -55,6 +59,9 @@ public class StagingEnforcementResponseHandlerTest {
     private JsonEnvelope envelope;
 
     @Mock
+    private Metadata metadata;
+
+    @Mock
     private MaterialAggregate materialAggregate;
 
     @BeforeEach
@@ -66,6 +73,8 @@ public class StagingEnforcementResponseHandlerTest {
     public void shouldApplyEnforcementAcknowledgement() throws EventStreamException {
         final UUID requestId = UUID.randomUUID();
         final UUID materialId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         final String accountNumber = "1234";
         final JsonObject payload = Json.createObjectBuilder()
@@ -75,11 +84,13 @@ public class StagingEnforcementResponseHandlerTest {
                 .add("requestId", requestId.toString())
                 .add("materialId", materialId.toString()).build();
 
+        when(metadata.userId()).thenReturn(Optional.of(userId.toString()));
+        when(envelope.metadata()).thenReturn(metadata);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         final Stream<Object> objectStream = Stream.of(new NowsRequestWithAccountNumberUpdated(accountNumber, requestId));
-        when(materialAggregate.saveAccountNumber(materialId, requestId, accountNumber)).thenReturn(objectStream);
+        when(materialAggregate.saveAccountNumber(materialId, requestId, accountNumber, userId)).thenReturn(objectStream);
         commandHandler.applyEnforcementAcknowledgement(envelope);
-        verify(materialAggregate).saveAccountNumber(materialId, requestId, accountNumber);
+        verify(materialAggregate).saveAccountNumber(materialId, requestId, accountNumber, userId);
     }
 
     @Test

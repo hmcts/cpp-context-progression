@@ -32,7 +32,6 @@ import javax.json.JsonObject;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -51,7 +50,6 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
         HearingStub.stubInitiateHearing();
     }
 
-    @Disabled("Failing as part of integration test refactor")
     @Test
     public void shouldHearingAsMarkedDuplicate() throws IOException, JSONException {
         final String userId = randomUUID().toString();

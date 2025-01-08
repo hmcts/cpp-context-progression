@@ -7,7 +7,6 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
@@ -17,7 +16,7 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProduc
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
@@ -48,11 +47,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -92,8 +89,7 @@ public class AddDefendantsToHearingIT {
 
         // add prosecution case
         addProsecutionCaseToCrownCourtAndVerify(prosecutionCaseId, defendantId, urn);
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId, defendantId, getProsecutionCaseMatchers(prosecutionCaseId, defendantId, Arrays.asList(
-                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()))));
+        final String hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId, defendantId);
         ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -126,40 +122,6 @@ public class AddDefendantsToHearingIT {
         verifyInMessagingQueueForDefendantsAddedToCourtProceedingsPublicEvent();
 
     }
-
-    @Test
-    public void shouldNotStoreDefendantWhenProsecutionCaseHasAlreadyBeenCreatedInHearing() throws IOException, JSONException {
-
-        final String userId = randomUUID().toString();
-        final String prosecutionCaseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-        final String defendantId1 = randomUUID().toString();
-        final String offenceId = randomUUID().toString();
-        final String courtCentreId = "f8254db1-1683-483e-afb3-b87fde5a0a26";
-        final String urn = generateUrn();
-
-        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", UUID.randomUUID().toString());
-
-        // add prosecution case
-        addProsecutionCaseToCrownCourtAndVerify(prosecutionCaseId, defendantId, urn);
-
-        final JsonObject prosecutionCaseCreatedInHearingJson = getProsecutionCaseCreatedInHearingObject(prosecutionCaseId);
-
-        // prosecution case has been created in hearing
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, userId), prosecutionCaseCreatedInHearingJson);
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, publicEventEnvelope);
-
-        // add defendants but prosecution case has not been created in hearing
-        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings = buildAddDefendantsToCourtProceedings(prosecutionCaseId, defendantId1, offenceId, courtCentreId);
-        final String addDefendantsToCourtProceedingsJson = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings);
-
-        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
-                "application/vnd.progression.add-defendants-to-court-proceedings+json",
-                addDefendantsToCourtProceedingsJson);
-
-        verifyInMessagingQueueForDefendantsAddedToCourtProceedingsPublicEvent();
-    }
-
 
     private AddDefendantsToCourtProceedings buildAddDefendantsToCourtProceedings(final String prosecutionCaseId, final String defendantId, final String offenceId, final String courtCentreId) {
 

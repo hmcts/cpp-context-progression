@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.lang.Boolean.FALSE;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,8 +14,10 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -22,6 +27,7 @@ import uk.gov.justice.services.fileservice.client.FileService;
 import uk.gov.justice.services.fileservice.domain.FileReference;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 
 import java.io.ByteArrayInputStream;
@@ -50,8 +56,21 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+
 @ExtendWith(MockitoExtension.class)
 public class SystemDocGeneratorEventProcessorTest {
+
+    public static final String PRISON_COURT_REGISTER_STREAM_ID = "prisonCourtRegisterStreamId";
+    public static final String COURT_CENTRE_ID = "courtCentreId";
+    public static final String ID = "id";
+    public static final String ORIGINATING_SOURCE = "originatingSource";
+    public static final String TEMPLATE_IDENTIFIER = "templateIdentifier";
+    public static final String CONVERSION_FORMAT = "conversionFormat";
+    public static final String SOURCE_CORRELATION_ID = "sourceCorrelationId";
+    public static final String PAYLOAD_FILE_SERVICE_ID = "payloadFileServiceId";
+    public static final String DOCUMENT_FILE_SERVICE_ID = "documentFileServiceId";
+    public static final String ADDITIONAL_INFORMATION = "additionalInformation";
 
     @InjectMocks
     private SystemDocGeneratorEventProcessor systemDocGeneratorEventProcessor;
@@ -61,6 +80,9 @@ public class SystemDocGeneratorEventProcessorTest {
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+
+    @Spy
+    private JsonObjectToObjectConverter jsonObjectConverter;
 
     @Mock
     private Sender sender;
@@ -74,6 +96,7 @@ public class SystemDocGeneratorEventProcessorTest {
     @BeforeEach
     public void setUp() {
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
+        setField(this.jsonObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
     }
 
     @Test
@@ -99,10 +122,155 @@ public class SystemDocGeneratorEventProcessorTest {
         assertThrows(JsonParsingException.class, () -> systemDocGeneratorEventProcessor.handleDocumentAvailable(envelope));
     }
 
+    @Test
+    public void shouldProcessPrisonCourtRegisterDocumentAvailable() throws FileServiceException {
+
+        final UUID prisonCourtRegisterStreamId = UUID.randomUUID();
+
+        final UUID fileId = UUID.randomUUID();
+        final UUID id = UUID.randomUUID();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
+                Json.createObjectBuilder()
+                        .add(ORIGINATING_SOURCE, "PRISON_COURT_REGISTER")
+                        .add(TEMPLATE_IDENTIFIER, "OEE_Layout5")
+                        .add(CONVERSION_FORMAT, "pdf")
+                        .add(SOURCE_CORRELATION_ID, prisonCourtRegisterStreamId.toString())
+                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                        .add(DOCUMENT_FILE_SERVICE_ID, UUID.randomUUID().toString())
+                        .add(ADDITIONAL_INFORMATION, createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("propertyName", "prisonCourtRegisterId")
+                                        .add("propertyValue", id.toString())
+                                ))
+                        .build());
+
+        systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
+
+        assertThat(privateEvent.metadata().name(),
+                equalTo("progression.command.notify-prison-court-register"));
+
+        final JsonObject actualPayload = privateEvent.payload();
+        assertThat(actualPayload.getString(PRISON_COURT_REGISTER_STREAM_ID), equalTo(prisonCourtRegisterStreamId.toString()));
+        assertThat(actualPayload.containsKey(COURT_CENTRE_ID), is(FALSE));
+        assertThat(actualPayload.getString(ID), equalTo(id.toString()));
+
+    }
+
+    @Test
+    public void shouldFailedPrisonCourtRegister() {
+
+        final UUID prisonCourtRegisterStreamId = UUID.randomUUID();
+
+        final UUID fileId = UUID.randomUUID();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
+                Json.createObjectBuilder()
+                        .add(ORIGINATING_SOURCE, "PRISON_COURT_REGISTER")
+                        .add(TEMPLATE_IDENTIFIER, "OEE_Layout5")
+                        .add(CONVERSION_FORMAT, "pdf")
+                        .add(SOURCE_CORRELATION_ID, prisonCourtRegisterStreamId.toString())
+                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                        .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                        .add("failedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                        .add("reason", "Test Reason")
+                        .build());
+
+        systemDocGeneratorEventProcessor.handleDocumentGenerationFailed(jsonEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
+
+        assertThat(privateEvent.metadata().name(),
+                equalTo("progression.command.record-prison-court-register-failed"));
+
+        final JsonObject actualPayload = privateEvent.payload();
+        assertThat(actualPayload.getString(PRISON_COURT_REGISTER_STREAM_ID), equalTo(prisonCourtRegisterStreamId.toString()));
+        assertThat(actualPayload.containsKey(COURT_CENTRE_ID), is(FALSE));
+        assertThat(actualPayload.getString("reason"), equalTo("Test Reason"));
+
+    }
+
+    @Test
+    public void shouldProcessNowsDocumentAvailable() throws FileServiceException {
+
+        final UUID materialId = UUID.randomUUID();
+
+        final UUID fileId = UUID.randomUUID();
+
+        final UUID systemDocGeneratorId = UUID.randomUUID();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
+                Json.createObjectBuilder()
+                        .add(ORIGINATING_SOURCE, "NOWs")
+                        .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
+                        .add(CONVERSION_FORMAT, "pdf")
+                        .add(SOURCE_CORRELATION_ID, materialId.toString())
+                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                        .add(DOCUMENT_FILE_SERVICE_ID, systemDocGeneratorId.toString())
+                        .build());
+
+        systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
+
+        assertThat(privateEvent.metadata().name(),
+                equalTo("progression.command.record-nows-document-generated"));
+
+        final JsonObject actualPayload = privateEvent.payload();
+        assertThat(actualPayload.getString("materialId"), equalTo(materialId.toString()));
+        assertThat(actualPayload.getString("payloadFileId"), equalTo(fileId.toString()));
+        assertThat(actualPayload.getString("systemDocGeneratorId"), equalTo(systemDocGeneratorId.toString()));
+
+    }
+
+
+    @Test
+    public void shouldProcessWhenNowsFailedToGenerate() {
+
+        final UUID materialId = UUID.randomUUID();
+
+        final UUID fileId = UUID.randomUUID();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
+                Json.createObjectBuilder()
+                        .add(ORIGINATING_SOURCE, "NOWs")
+                        .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
+                        .add(CONVERSION_FORMAT, "pdf")
+                        .add(SOURCE_CORRELATION_ID, materialId.toString())
+                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                        .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                        .add("failedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                        .add("reason", "Test Reason")
+                        .build());
+
+        systemDocGeneratorEventProcessor.handleDocumentGenerationFailed(jsonEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
+
+        assertThat(privateEvent.metadata().name(),
+                equalTo("progression.command.record-nows-document-failed"));
+
+        final JsonObject actualPayload = privateEvent.payload();
+        assertThat(actualPayload.getString("materialId"), equalTo(materialId.toString()));
+        assertThat(actualPayload.getString("reason"), equalTo("Test Reason"));
+        assertThat(actualPayload.getString("payloadFileId"), equalTo(fileId.toString()));
+
+    }
+
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {
         return metadataFrom(Json.createObjectBuilder()
                 .add("court_register", courtCentreId.toString())
-                .add(ID, randomUUID().toString())
+                .add(JsonMetadata.ID, randomUUID().toString())
                 .add(HeaderConstants.USER_ID, userId)
                 .add(NAME, "public.systemdocgenerator.events.document-available")
                 .build()).build();
@@ -110,13 +278,13 @@ public class SystemDocGeneratorEventProcessorTest {
 
     private JsonObject documentAvailablePayload(final UUID templatePayloadId, final String templateIdentifier, final String reportId, final UUID generatedDocumentId, final String originatingSource) {
         return Json.createObjectBuilder()
-                .add("payloadFileServiceId", templatePayloadId.toString())
-                .add("templateIdentifier", templateIdentifier)
-                .add("conversionFormat", "pdf")
+                .add(PAYLOAD_FILE_SERVICE_ID, templatePayloadId.toString())
+                .add(TEMPLATE_IDENTIFIER, templateIdentifier)
+                .add(CONVERSION_FORMAT, "pdf")
                 .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
-                .add("sourceCorrelationId", reportId)
-                .add("originatingSource", originatingSource)
-                .add("documentFileServiceId", generatedDocumentId.toString())
+                .add(SOURCE_CORRELATION_ID, reportId)
+                .add(ORIGINATING_SOURCE, originatingSource)
+                .add(DOCUMENT_FILE_SERVICE_ID, generatedDocumentId.toString())
                 .add("generatedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
                 .add("generateVersion", 1)
                 .build();

@@ -106,7 +106,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         reportingRestrictionId = randomUUID().toString();
     }
 
-    @Disabled("Failing as part of integration test refactor")
     @Test
     public void shouldAddJudicialResultToHearingForTheGivenOrderedDate() throws Exception {
 

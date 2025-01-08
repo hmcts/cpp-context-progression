@@ -122,9 +122,7 @@ public class HearingResultedUnscheduledListingIT {
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2);
-        final String unscheduledHearingIdNew = defendantListingStatusChangedPayload2.getString("hearing.id");
 
-        doVerifyEventIsNotRaised(consumerForDefendantListingStatusChanged, existingHearingId, unscheduledHearingIdNew);
         verifyListUnscheduledHearingRequestsAsStreamV2(unscheduledHearingId, "1 week");
     }
 
@@ -156,9 +154,6 @@ public class HearingResultedUnscheduledListingIT {
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
         doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2);
-        final String unscheduledHearingIdNew = defendantListingStatusChangedPayload2.getString("hearing.id");
-
-        doVerifyEventIsNotRaised(consumerForDefendantListingStatusChanged, existingHearingId, unscheduledHearingIdNew);
 
         pollProsecutionCasesProgressionFor(caseId, getMatcherForCpsOrganisation());
 

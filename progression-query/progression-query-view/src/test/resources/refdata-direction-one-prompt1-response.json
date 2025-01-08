@@ -1,0 +1,25 @@
+{
+  "directionId": "0a18eadf-0970-42ff-b980-b7f383391391",
+  "text": "The Prosecutor must serve any further evidence by $date",
+  "dueDate": "2020-09-01",
+  "assigneeOrganisationText": "Prosecutor",
+  "prompts": [
+    {
+      "id": "3b81321f-c98b-473a-a3c0-ff5b55654138",
+      "label": "12.1 Service of direction",
+      "subHeading": "The Prosecutor must serve any further evidence by [date]",
+      "type": "label",
+      "promptOrder": 100,
+      "header": true
+    },
+    {
+      "id": "2cd85752-8329-48f5-8708-a396c8e8835f",
+      "name": "date",
+      "label": "date",
+      "type": "date",
+      "required": true,
+      "promptOrder": 101,
+      "defaultValue": "28"
+    }
+  ]
+}
