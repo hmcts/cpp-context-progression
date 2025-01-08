@@ -218,7 +218,8 @@ public class ReferenceDataOffenceServiceTest {
         MatcherAssert.assertThat(capturedEnvelope.metadata().name(), is("referencedataoffences.query.offences-list"));
 
 
-        assertThat(offencesJsonObject.isPresent(), is(false));
+        assertThat(offencesJsonObject.isPresent(), is(true));
+        assertThat(offencesJsonObject.get().size(), is(0));
     }
 
     @Test

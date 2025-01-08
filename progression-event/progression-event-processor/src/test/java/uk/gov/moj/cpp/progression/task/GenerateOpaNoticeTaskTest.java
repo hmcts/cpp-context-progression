@@ -22,6 +22,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutionInfo;
 import uk.gov.moj.cpp.jobstore.api.task.ExecutionStatus;
+import uk.gov.moj.cpp.jobstore.persistence.Priority;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -75,7 +76,7 @@ public class GenerateOpaNoticeTaskTest {
     public void shouldExecuteGeneratePublicListOpaNotice() throws IOException {
         final JsonObject payload = getPayload(GENERATE_OPA_PUBLIC_LIST_NOTICE);
 
-        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED);
+        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
         final ExecutionInfo response = generateOpaNoticeTask.execute(executionInfo);
 
         assertThat(response.getExecutionStatus(), is(ExecutionStatus.COMPLETED));
@@ -94,7 +95,7 @@ public class GenerateOpaNoticeTaskTest {
     public void shouldExecuteGeneratePressListOpaNotice() throws IOException {
         final JsonObject payload = getPayload(GENERATE_OPA_PRESS_LIST_NOTICE);
 
-        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED);
+        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
         final ExecutionInfo response = generateOpaNoticeTask.execute(executionInfo);
 
         assertThat(response.getExecutionStatus(), is(ExecutionStatus.COMPLETED));
@@ -113,7 +114,7 @@ public class GenerateOpaNoticeTaskTest {
     public void shouldExecuteGenerateResultListOpaNotice() throws IOException {
         final JsonObject payload = getPayload(GENERATE_OPA_RESULT_LIST_NOTICE);
 
-        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED);
+        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
         final ExecutionInfo response = generateOpaNoticeTask.execute(executionInfo);
 
         assertThat(response.getExecutionStatus(), is(ExecutionStatus.COMPLETED));
