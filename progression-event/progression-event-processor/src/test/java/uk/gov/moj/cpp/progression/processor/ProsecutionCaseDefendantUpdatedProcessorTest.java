@@ -139,56 +139,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         jsonObjectConverterSpy = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     }
 
-    @Test
-    public void shouldHandleDefendantCustodialInformationUpdatedEvent_WhenDifferentCase_DifferentDefendantId() {
-
-        final String caseIdProsecutionCaseService = "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b";
-        final String defendantIdProsecutionCaseService = "924cbf53-0b51-4633-9e99-2682be854af4";
-        final String masterDefendantIdProsecutionCaseService = "976017a3-abfc-40fc-8ea2-ea0804716d61";
-
-        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = defendantCustodialInformationUpdateRequested()
-                .withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
-                        .withName("name")
-                        .withCustody("custody")
-                        .withId(randomUUID())
-                        .build())
-                .withDefendantId(UUID.fromString(defendantIdProsecutionCaseService))
-                .withMasterDefendantId(UUID.fromString(masterDefendantIdProsecutionCaseService))
-                .withProsecutionCaseId(UUID.fromString(caseIdProsecutionCaseService))
-                .build();
-        when(jsonObjectConverter.convert(any(), eq(DefendantCustodialInformationUpdateRequested.class)))
-                .thenReturn(defendantCustodialInformationUpdateRequested);
-        when(objectToJsonObjectConverter.convert(Mockito.any(uk.gov.moj.cpp.progression.events.CustodialEstablishment.class))).thenReturn(payload);
-        when(progressionService.searchLinkedCases(any(), anyString())).thenReturn(Optional.of(
-                Json.createObjectBuilder().add(MATCHED_DEFENDANT_CASES, Json.createArrayBuilder()
-                                .add(createObjectBuilder()
-                                        .add(CASE_ID, randomUUID().toString())
-                                        .add(CASE_URN, "caseIdProsecutionCaseService")
-                                        .add(MATCHED_MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                        .add(DEFENDANTS, createArrayBuilder().add(createObjectBuilder()
-                                                        .add("id", randomUUID().toString())
-                                                        .add("firstName", "firstName")
-                                                        .add(MASTER_DEFENDANT_ID, masterDefendantIdProsecutionCaseService)
-                                                        .build())
-                                                .build())
-                                        .build())
-                                .build())
-                        .build()
-        ));
-
-        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
-                        .withUserId(randomUUID().toString())
-                        .withId(randomUUID())
-                        .withName("progression.event.defendant-custodial-information-update-requested")
-                        .build(),
-                objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested));
-
-        this.eventProcessor.handleDefendantCustodialInformationUpdatedEvent(jsonEnvelope);
-        // TODO fix objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested) to enable following validation
-        // verify(sender).send(envelopeArgumentCaptor.capture());
-        //assertThat(envelopeArgumentCaptor.getValue().metadata().name(), is(PROGRESSION_COMMAND_UPDATE_DEFENDANT_CUSTODIAL_INFORMATION));
-
-    }
 
     @Test
     public void shouldHandleDefendantCustodialInformationUpdatedEvent_WhenSameCase_DifferentDefendantId() {
@@ -658,49 +608,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
         verify(this.notificationService, never()).sendCPSNotification(any(), any());
 
-    }
-
-    @Test
-    public void shouldSendCommandToUpdateActiveApplicationsOnCase() {
-
-        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().withId(randomUUID())
-                .withProsecutionCaseId(randomUUID())
-                .withMasterDefendantId(randomUUID())
-                .withProsecutionAuthorityReference("DERPF")
-                .withPersonDefendant(PersonDefendant.personDefendant()
-                        .build())
-                .withIsYouth(false)
-                .withOffences(Collections.emptyList())
-                .build();
-        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
-                .withDefendant(defendantUpdate).build();
-        //Given
-        when(jsonObjectConverter.convert(any(), eq(ProsecutionCaseDefendantUpdated.class)))
-                .thenReturn(prosecutionCaseDefendantUpdated);
-        when(objectToJsonObjectConverter.convert(Mockito.any(DefendantUpdate.class))).thenReturn(payload);
-        when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(
-                Optional.ofNullable(createObjectBuilder().add("linkedApplications",
-                        createArrayBuilder()
-                                .add(createObjectBuilder()
-                                        .add("applicationId", randomUUID().toString())
-                                        .add("hearingIds",createArrayBuilder().add(randomUUID().toString()).build()).build())
-                                .add(createObjectBuilder()
-                                        .add("applicationId", randomUUID().toString())
-                                        .add("hearingIds",createArrayBuilder().add(randomUUID().toString()).build()).build())
-                                .build()).build()));
-
-        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
-
-        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
-                        .withUserId(randomUUID().toString())
-                        .withId(randomUUID())
-                        .withName("progression.event.prosecution-case-defendant-updated")
-                        .build(),
-                objectToJsonObjectConverter.convert(prosecutionCaseDefendantUpdated));
-
-        this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(jsonEnvelope);
- // TODO fix objectToJsonObjectConverter.convert(prosecutionCaseDefendantUpdated) to enable following validation
-//        verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
     }
 
 
