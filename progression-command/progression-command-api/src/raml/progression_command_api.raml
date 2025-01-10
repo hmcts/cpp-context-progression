@@ -609,6 +609,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       (mapping):
           requestType: application/vnd.progression.command.resend-laa-outcome-concluded+json
           name: progression.command.resend-laa-outcome-concluded
+      (mapping):
+          requestType: application/vnd.progression.command.patch-and-resend-laa-outcome-concluded+json
+          name: progression.command.patch-and-resend-laa-outcome-concluded
       ...
     body:
       application/vnd.progression.command.resend-laa-outcome-concluded+json:
@@ -616,6 +619,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           !include json/progression.command.resend-laa-outcome-concluded.json
         schema:
           !include json/schema/progression.command.resend-laa-outcome-concluded.json
+      application/vnd.progression.command.patch-and-resend-laa-outcome-concluded+json:
+        example:
+          !include json/progression.command.patch-and-resend-laa-outcome-concluded.json
+        schema:
+          !include json/schema/progression.command.patch-and-resend-laa-outcome-concluded.json
     responses:
       202:
         description: OK

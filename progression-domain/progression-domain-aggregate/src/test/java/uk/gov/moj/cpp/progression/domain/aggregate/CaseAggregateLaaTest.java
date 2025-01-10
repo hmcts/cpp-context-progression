@@ -13,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
@@ -86,6 +87,41 @@ public class CaseAggregateLaaTest {
         assertThat(laaDefendantProceedingConcludedResent2.getLaaDefendantProceedingConcludedChanged().getProsecutionCaseId(), is(caseId));
         assertThat(laaDefendantProceedingConcludedResent2.getLaaDefendantProceedingConcludedChanged().getHearingId(), is(hearingId2));
 
+    }
+
+    @Test
+    public void shouldSuccessfullyPatchAndResendLaaOutcomeConcluded() throws IOException {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = laaDefendantProceedingConcludedChanged()
+                .withValuesFrom(convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class, hearingId.toString()))
+                .withProsecutionCaseId(caseId)
+                .withHearingId(null).build();
+
+        final List<Object> events = caseAggregate.patchAndResendLaaOutcomeConcluded(laaDefendantProceedingConcludedChanged, hearingId).toList();
+
+        assertThat(events, contains(
+                hasProperty("laaDefendantProceedingConcludedChanged", allOf(
+                        hasProperty("prosecutionCaseId", is(caseId)),
+                        hasProperty("hearingId", is(hearingId))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldIgnorePatchAndResendLaaOutcomeConcludedWhenEventHasHearingID() throws IOException {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = laaDefendantProceedingConcludedChanged()
+                .withValuesFrom(convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class, hearingId.toString()))
+                .withProsecutionCaseId(caseId)
+                .withHearingId(randomUUID()).build();
+
+        final List<Object> events = caseAggregate.patchAndResendLaaOutcomeConcluded(laaDefendantProceedingConcludedChanged, hearingId).toList();
+
+        assertThat(events, hasSize(0));
     }
 
     @Test
