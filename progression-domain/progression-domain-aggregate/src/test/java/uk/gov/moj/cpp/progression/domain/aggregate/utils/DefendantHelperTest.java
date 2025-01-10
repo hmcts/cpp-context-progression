@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
@@ -11,9 +12,12 @@ import static uk.gov.justice.core.courts.BailStatus.bailStatus;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ContactNumber;
+import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.Ethnicity;
 import uk.gov.justice.core.courts.Gender;
 import uk.gov.justice.core.courts.HearingLanguage;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceFacts;
@@ -25,6 +29,7 @@ import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +38,10 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -350,6 +359,177 @@ public class DefendantHelperTest {
         final UUID defendantId = randomUUID();
         Optional<OffencesForDefendantChanged> offencesForDefendantUpdated = DefendantHelper.getOffencesForDefendantUpdated(updatedOffences, existingOffences, uuid, defendantId);
         assertThat(offencesForDefendantUpdated.isPresent(), is(false));
+    }
+
+    @Test
+    public void shouldIsConcludedBeTrueFinalResultInAllOffenceAndDefendantAndCaseLevel() {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+
+        final List<DefendantJudicialResult> defendantJudicialResults = Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withOffenceId(randomUUID()).build())
+                .build());
+
+        final List<JudicialResult> caseDefendantJudicialResults = Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withOffenceId(randomUUID()).build());
+        assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, caseDefendantJudicialResults));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideDefendantJudicialResultNotIncludedOffence")
+    @NullAndEmptySource
+    public void shouldIsConcludedBeTrueOffenceHasFinalResultButNotExistsInDefendantJudicialResult(List<DefendantJudicialResult> defendantJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+        assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, emptyList()));
+    }
+
+    private static Stream<Arguments> provideDefendantJudicialResultNotIncludedOffence() {
+        return Stream.of(
+                Arguments.of(Arrays.asList(DefendantJudicialResult.defendantJudicialResult().build()), Arrays.asList(JudicialResult.judicialResult().build())),
+                Arguments.of(Arrays.asList(DefendantJudicialResult.defendantJudicialResult().withJudicialResult(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).withOffenceId(randomUUID()).build()).build()), Arrays.asList(JudicialResult.judicialResult().build())),
+                Arguments.of(Arrays.asList(DefendantJudicialResult.defendantJudicialResult().withJudicialResult(JudicialResult.judicialResult().withCategory(JudicialResultCategory.ANCILLARY).withOffenceId(randomUUID()).build()).build()), Arrays.asList(JudicialResult.judicialResult().build()))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideCaseDefendantJudicialResultNotIncludedOffence")
+    @NullAndEmptySource
+    public void shouldIsConcludedBeTrueOffenceHasFinalResultButNotExistsInCaseDefendantJudicialResult(List<JudicialResult> caseDefendantJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+        assertTrue(DefendantHelper.isConcluded(offence, emptyList(), caseDefendantJudicialResults));
+    }
+
+    private static Stream<Arguments> provideCaseDefendantJudicialResultNotIncludedOffence() {
+        return Stream.of(
+                Arguments.of(Arrays.asList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).withOffenceId(randomUUID()).build())),
+                Arguments.of(Arrays.asList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.ANCILLARY).withOffenceId(randomUUID()).build()))
+        );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void shouldIsConcludedBeTrueOffenceHasFinalResultAndDefendantJudicialResultHasFinal(final List<JudicialResult> defendantCaseJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+        final List<DefendantJudicialResult> defendantJudicialResults = Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withOffenceId(offenceId)
+                        .build())
+                .build());
+        assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, defendantCaseJudicialResults));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void shouldIsConcludedBeTrueOffenceHasFinalResultAndCaseDefendantJudicialResultHasFinal(List<DefendantJudicialResult> defendantJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+        final List<JudicialResult> caseDefendantJudicialResults = Arrays.asList(JudicialResult.judicialResult()
+                .withCategory(JudicialResultCategory.FINAL)
+                .withOffenceId(offenceId)
+                .build());
+        assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, caseDefendantJudicialResults));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void shouldIsConcludedBeFalseOffenceHasFinalResultAndDefendantJudicialResultHasNotFinal(final List<JudicialResult> defendantCaseJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+        final List<DefendantJudicialResult> defendantJudicialResults = Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.ANCILLARY)
+                        .withOffenceId(offenceId)
+                        .build())
+                .build());
+        assertFalse(DefendantHelper.isConcluded(offence, defendantJudicialResults, defendantCaseJudicialResults));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void shouldIsConcludedBeFalseOffenceHasFinalResultAndCaseDefendantJudicialResultHasNotFinal(final List<DefendantJudicialResult> defendantJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence()
+                .withId(offenceId)
+                .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build()))
+                .build();
+        final List<JudicialResult> defendantCaseJudicialResults = Arrays.asList(JudicialResult.judicialResult()
+                .withCategory(JudicialResultCategory.ANCILLARY)
+                .withOffenceId(offenceId)
+                .build());
+        assertFalse(DefendantHelper.isConcluded(offence, defendantJudicialResults, defendantCaseJudicialResults));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void shouldIsConcludedBeTrueOffenceHasNoResultAndDefendantJudicialResultHasFinal(final List<JudicialResult> defendantCaseJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).build();
+        final List<DefendantJudicialResult> defendantJudicialResults = Arrays.asList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withOffenceId(offenceId)
+                        .build())
+                .build());
+        assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, defendantCaseJudicialResults));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void shouldIsConcludedBeTrueOffenceHasNoResultAndCaseDefendantJudicialResultHasFinal(final List<DefendantJudicialResult> defendantJudicialResults) {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).build();
+        final List<JudicialResult> defendantCaseJudicialResults = Arrays.asList(JudicialResult.judicialResult()
+                .withCategory(JudicialResultCategory.FINAL)
+                .withOffenceId(offenceId)
+                .build());
+        assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, defendantCaseJudicialResults));
+    }
+
+    @Test
+    public void shouldIsConcludedBeFalseOffenceHasNoResultAndDefendantJudicialResultAndCaseDefendantJudicialResultIsEmpty() {
+        final UUID offenceId = randomUUID();
+        final Offence offence = Offence.offence().withId(offenceId).build();
+
+        assertFalse(DefendantHelper.isConcluded(offence, emptyList(), emptyList()));
     }
 
     private Offence.Builder createOffenceWithMultipleReportingRestriction(final ReportingRestriction reportingRestriction1,

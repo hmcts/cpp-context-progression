@@ -129,7 +129,7 @@ public class ReferenceDataOffenceService {
                 .withName(REFERENCEDATAOFFENCE_QUERY_OFFENCES)
                 .withMetadataFrom(envelope));
 
-        if (isNull(offences.payload())) {
+        if (offences.payloadIsNull()) {
             return Optional.empty();
         }
 

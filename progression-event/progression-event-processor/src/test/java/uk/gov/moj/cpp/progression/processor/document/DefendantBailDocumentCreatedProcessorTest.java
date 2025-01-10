@@ -78,6 +78,7 @@ public class DefendantBailDocumentCreatedProcessorTest {
     public void shouldHandleDefendantBailDocumentCreatedEvent(){
         final UUID materialId = UUID.randomUUID();
         final DefendantBailDocumentCreated defendantBailDocumentCreated = new DefendantBailDocumentCreated(randomUUID(), randomUUID(), materialId,randomUUID());
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder().build());
         final JsonEnvelope requestMessage = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.defendant-bail-document-created"),
                 objectToJsonObjectConverter.convert(defendantBailDocumentCreated));
@@ -96,7 +97,6 @@ public class DefendantBailDocumentCreatedProcessorTest {
         when(materialService.getMaterialMetadata(requestMessage,defendantBailDocumentCreated.getMaterialId())).thenReturn(Optional.ofNullable(payload));
 
         when(referenceDataService.getAllDocumentsTypes(Mockito.eq(requestMessage), any(), any())).thenReturn(Optional.ofNullable(readData));
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(createObjectBuilder().build());
         when(enveloper.withMetadataFrom(any(), any())).thenReturn(enveloperFunction);
         defendantBailDocumentCreatedProcessor.handleDefendantBailDocumentCreatedEvent(requestMessage);
         verify(sender, times(1)).send(envelopeArgumentCaptor.capture());

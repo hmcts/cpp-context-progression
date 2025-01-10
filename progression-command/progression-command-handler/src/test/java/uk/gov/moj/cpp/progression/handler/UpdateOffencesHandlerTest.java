@@ -1,12 +1,13 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -43,6 +44,7 @@ import uk.gov.justice.core.courts.UpdateHearingOffenceVerdict;
 import uk.gov.justice.core.courts.UpdateOffencesForHearing;
 import uk.gov.justice.core.courts.UpdateOffencesForProsecutionCase;
 import uk.gov.justice.core.courts.Verdict;
+import uk.gov.justice.core.courts.VerdictType;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
@@ -420,6 +422,7 @@ public class UpdateOffencesHandlerTest {
                 .withHearingId(hearingId)
                 .withVerdict(Verdict.verdict()
                         .withApplicationId(applicationId)
+                        .withVerdictType(VerdictType.verdictType().withId(randomUUID()).withCategoryType("categoryType").withCategory("category").build())
                         .build())
                 .build();
 
@@ -441,6 +444,52 @@ public class UpdateOffencesHandlerTest {
         final JsonEnvelope hearingVerdictUpdatedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-verdict-updated")).findFirst().get();
         verifyHearingVerdictUpdated(hearingId, applicationId, hearingVerdictUpdatedEnvelope, "progression.event.hearing-verdict-updated");
 
+    }
+
+
+    @Test
+    public void shouldhandleUpdateHearingOffenceClearVerdict() throws EventStreamException {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        hearingAggregate = getEventStreamReadyForApplication(hearingId, applicationId);
+
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+        when(aggregateService.get(this.eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        UpdateHearingOffenceVerdict updateHearingOffenceVerdict = UpdateHearingOffenceVerdict.updateHearingOffenceVerdict()
+                .withHearingId(hearingId)
+                .withVerdict(Verdict.verdict()
+                        .withApplicationId(applicationId)
+                        .build())
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-hearing-offence-verdict")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<UpdateHearingOffenceVerdict> envelope = envelopeFrom(metadata, updateHearingOffenceVerdict);
+
+        updateOffencesHandler.handleUpdateHearingOffenceVerdict(envelope);
+
+
+        final List<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
+        final JsonEnvelope defendantListingStatusChangedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.prosecutionCase-defendant-listing-status-changed")).findFirst().get();
+        assertThat(defendantListingStatusChangedEnvelope,
+                jsonEnvelope(
+                        metadata()
+                                .withName("progression.event.prosecutionCase-defendant-listing-status-changed"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.hearing.id", is(hearingId.toString())),
+                                withJsonPath("$.hearing.courtApplications[0]", not(hasItem("verdict"))))
+                        )
+                ));
+
+        final JsonEnvelope hearingVerdictUpdatedEnvelope = envelopeStream.stream().filter(env -> env.metadata().name().equals("progression.event.hearing-verdict-updated")).findFirst().get();
+        verifyHearingVerdictUpdated(hearingId, applicationId, hearingVerdictUpdatedEnvelope, "progression.event.hearing-verdict-updated");
     }
 
     private void verifyDefendantListingStatusChanged(final UUID hearingId, final UUID applicationId, final JsonEnvelope defendantListingStatusChangedEnvelope, final String eventName) {
