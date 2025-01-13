@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.lang.String.format;
+import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
 
 @ApplicationScoped
 public class NotificationInfoJdbcRepository {
@@ -86,7 +87,7 @@ public class NotificationInfoJdbcRepository {
             ps.setObject(2, notificationInfo.getNotificationType());
             ps.setString(3, notificationInfo.getPayload());
             ps.setString(4, notificationInfo.getProcessName());
-            ps.setObject(5, notificationInfo.getProcessedTimestamp());
+            ps.setObject(5, toSqlTimestamp(notificationInfo.getProcessedTimestamp()));
             ps.setObject(6, notificationInfo.getStatus());
             ps.executeUpdate();
         } catch (final SQLException e) {
