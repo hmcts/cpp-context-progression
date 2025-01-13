@@ -3489,7 +3489,8 @@ public class CaseAggregate implements Aggregate {
                 .withDefendants(this.getProsecutionCase().getDefendants().stream()
                         .filter(def -> defendantsIds.contains(def.getId()))
                         .map(def -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(def)
-                                .withOffences(def.getOffences().stream().filter(offence -> offenceIds.contains(offence.getId())).collect(Collectors.toList()))
+                                .withOffences(this.defendantCaseOffences.get(def.getId()))
+
                                 .build())
                         .collect(Collectors.toList()))
                 .build();

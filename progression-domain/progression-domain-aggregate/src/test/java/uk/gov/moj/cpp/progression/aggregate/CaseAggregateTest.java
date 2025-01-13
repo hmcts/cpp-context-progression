@@ -73,6 +73,7 @@ import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
@@ -153,6 +154,7 @@ import uk.gov.justice.progression.courts.HearingEventLogsDocumentCreated;
 import uk.gov.justice.progression.courts.HearingMarkedAsDuplicateForCase;
 import uk.gov.justice.progression.courts.HearingRemovedForProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
+import uk.gov.justice.progression.courts.RelatedCaseRequestedForAdhocHearing;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -300,7 +302,7 @@ public class CaseAggregateTest {
     private static final uk.gov.justice.core.courts.Offence offence = offence()
             .withId(randomUUID())
             .build();
-    private static final Defendant defendant = Defendant.defendant()
+    private static final Defendant defendant = defendant()
             .withId(randomUUID())
             .withMasterDefendantId(randomUUID())
             .withPersonDefendant(PersonDefendant.personDefendant()
@@ -311,7 +313,9 @@ public class CaseAggregateTest {
                             .build())
                     .build())
             .withCourtProceedingsInitiated(ZonedDateTime.now())
-            .withOffences(singletonList(offence().withId(randomUUID()).build()))
+            .withOffences(singletonList(offence().withId(randomUUID())
+                            .withIndicatedPlea(IndicatedPlea.indicatedPlea().withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY).build())
+                    .build()))
             .build();
 
     private static final Defendant legalEntityDefendant = Defendant.defendant()
@@ -6925,6 +6929,29 @@ public class CaseAggregateTest {
         assertThat(masterDefendantIdUpdatedV2.isPresent(), is(true));
         assertThat(masterDefendantIdUpdatedV2.map(s -> (MasterDefendantIdUpdatedV2) s).get().getMatchedDefendants().size(), is(1));
         assertThat(defendantsMap.get(defendantId1).getMasterDefendantId(), is(masterDefendantId1));
+    }
+
+    @Test
+    public void shouldSetCorrectDefendantOffencesWhenRaisingRelatedCaseRequestedForAdhocHearingEvent(){
+            final UUID uuid = UUID.randomUUID();
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .withDefendants(defendants).withId(uuid).build();
+        final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+        this.caseAggregate.apply(prosecutionCaseUpdated);
+
+        final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
+                        .withListDefendantRequests(new ArrayList<>(Arrays.asList(ListDefendantRequest.listDefendantRequest()
+                                .withDefendantId(defendants.get(0).getId())
+                                .withDefendantOffences(Arrays.asList(UUID.randomUUID()))
+                                .build())))
+                .build();
+        final Stream<Object> objectStream = caseAggregate.extendCaseToExistingHearingForAdhocHearing(courtHearingRequest, true);
+        Optional<RelatedCaseRequestedForAdhocHearing> relatedCaseRequestedForAdhocHearing = objectStream.filter(s -> s instanceof RelatedCaseRequestedForAdhocHearing).map(RelatedCaseRequestedForAdhocHearing.class::cast).findFirst();
+        assertThat(relatedCaseRequestedForAdhocHearing.isPresent(), is(true));
+        assertThat(relatedCaseRequestedForAdhocHearing.get().getProsecutionCase().getDefendants().get(0).getOffences().get(0).getIndicatedPlea().getIndicatedPleaValue(),
+                equalTo(IndicatedPleaValue.INDICATED_GUILTY));
+
     }
 
     private void assertPleaAllocationsStoredCorrectly(final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations,

@@ -53,6 +53,8 @@ public class HearingResultedUnscheduledListingIT {
     private static final String DOCUMENT_TEXT = STRING.next();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing";
+    private static final String PUBLIC_HEARING_RESULTED_WITH_APPLICATION_RESULT_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing-with-application-resulted";
+
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final JmsMessageConsumerClient consumerForDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
     private static final JmsMessageConsumerClient consumerForUnscheduledHearingRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.unscheduled-hearing-recorded").getMessageConsumerClient();
@@ -107,7 +109,7 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, EXPECTED_OFFENCE_ID);
         final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
 
 
@@ -121,7 +123,7 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, EXPECTED_OFFENCE_ID);
 
         verifyListUnscheduledHearingRequestsAsStreamV2(unscheduledHearingId, "1 week");
     }
@@ -140,7 +142,7 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, EXPECTED_OFFENCE_ID);
         final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
@@ -153,11 +155,35 @@ public class HearingResultedUnscheduledListingIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
 
         final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2);
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, EXPECTED_OFFENCE_ID);
 
         pollProsecutionCasesProgressionFor(caseId, getMatcherForCpsOrganisation());
 
         verifyListUnscheduledHearingRequestsAsStreamV2(unscheduledHearingId, "1 week");
+    }
+
+    @SuppressWarnings("squid:S1607")
+    @Test
+    public void shouldListUnscheduledHearingsV2WhenApplicationResultedWithCase() throws Exception {
+        final String existingHearingId = prepareHearingForTest();
+        Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(consumerForDefendantListingStatusChanged)
+                .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
+
+        Utilities.EventListener eventListenerForHearingRecorded = listenForPrivateEvent(consumerForUnscheduledHearingRecorded)
+                .withFilter(isJson(withJsonPath("$.hearingId", is(existingHearingId))));
+
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject( PUBLIC_HEARING_RESULTED_WITH_APPLICATION_RESULT_UNSCHEDULED_LISTING_V2+ ".json", caseId,
+                existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
+
+        final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
+        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
+        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
+
+
+        final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
+        doVerifyRecordedEventPayload(recordedEventPayload, existingHearingId, unscheduledHearingId);
+
     }
 
 
@@ -167,7 +193,7 @@ public class HearingResultedUnscheduledListingIT {
         };
     }
 
-    private void doVerifyDefendantListingStatusChangedPayload(final JsonPath defendantListingStatusChangedPayload) {
+    private void doVerifyDefendantListingStatusChangedPayload(final JsonPath defendantListingStatusChangedPayload, final String expectedOffenceId) {
         final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
         assertThat(unscheduledHearingId, is(not(nullValue())));
 
@@ -182,7 +208,7 @@ public class HearingResultedUnscheduledListingIT {
 
         final List<HashMap> offences = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases[0].defendants[0].offences");
         assertThat(offences.size(), is(1));
-        assertThat(offences.get(0).get("id"), is(EXPECTED_OFFENCE_ID));
+        assertThat(offences.get(0).get("id"), is(expectedOffenceId));
 
         final List<HashMap> judicialResults = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases[0].defendants[0].offences[0].judicialResults");
         assertThat(judicialResults, is(nullValue()));
