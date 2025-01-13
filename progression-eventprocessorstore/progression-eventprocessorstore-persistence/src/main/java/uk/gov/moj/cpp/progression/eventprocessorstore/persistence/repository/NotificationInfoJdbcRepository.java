@@ -25,9 +25,9 @@ public class NotificationInfoJdbcRepository {
 
     private final String EVENT_PROCESSOR_STORE_JNDI_NAME = "java:/app/progression-event-processor/DS.progression.eventprocessorstore";
     //private final String EVENT_PROCESSOR_STORE_JNDI_NAME = "java:/app/%s-event-processor/DS.%s.eventprocessorstore";
-    private final String NOTIFICATION_INFO_INSERT_QUERY = "INSERT INTO notification_info (id, notification_type, payload, process_name, processed_timestamp, status) VALUES (?, ?, ?, ?, ?, ?)";
-    private final String NOTIFICATION_INFO_QUERY = "SELECT * FROM notification_info WHERE id = ?";
-    private final String NOTIFICATION_INFO_DELETE_QUERY = "DELETE FROM notification_info WHERE id = ?";
+    private final String NOTIFICATION_INFO_INSERT_QUERY = "INSERT INTO notification_info (notification_id, notification_type, payload, process_name, processed_timestamp, status) VALUES (?, ?, ?, ?, ?, ?)";
+    private final String NOTIFICATION_INFO_QUERY = "SELECT * FROM notification_info WHERE notification_id = ?";
+    private final String NOTIFICATION_INFO_DELETE_QUERY = "DELETE FROM notification_info notification_id = ?";
 
     @Inject
     private DefaultJdbcDataSourceProvider defaultJdbcDataSourceProvider;
