@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.persist.entity;
+package uk.gov.moj.cpp.progression.eventprocessorstore.persistence.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -142,7 +142,7 @@ public class NotificationInfo implements Serializable {
             return this;
         }
 
-        public uk.gov.moj.cpp.progression.persist.entity.NotificationInfo build() {
+        public NotificationInfo build() {
             return new NotificationInfo(this);
         }
     }
