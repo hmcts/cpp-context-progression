@@ -21,7 +21,6 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEG
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.REPORT_RESTRICT_RESULT_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
 import uk.gov.justice.core.courts.Address;
@@ -37,8 +36,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
-import uk.gov.moj.cpp.progression.RecipientType;
-import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
+import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -84,7 +82,6 @@ public class HearingNotificationHelperTest {
     private static final String TEMPLATE_NAME = "NewHearingNotificationTemplate";
     private static final String HEARING_TYPE = "Plea";
     private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
-    public static final String RECIPIENT_TYPE_ADDITION_PROPERTY = "recipient_type";
 
     @Mock
     private ProgressionService progressionService;
@@ -134,7 +131,7 @@ public class HearingNotificationHelperTest {
     private ReferenceDataOffenceService referenceDataOffenceService;
 
     @Mock
-    private NotificationInfoRepository notificationInfoRepository;
+    private NotificationInfoJdbcRepository notificationInfoRepository;
 
     @Captor
     private ArgumentCaptor<List<EmailChannel>> prosecutorEmailCapture;

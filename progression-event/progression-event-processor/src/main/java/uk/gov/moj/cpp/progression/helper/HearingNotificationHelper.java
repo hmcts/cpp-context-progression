@@ -38,8 +38,8 @@ import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 import uk.gov.moj.cpp.progression.domain.PostalHearingCourtDetails;
-import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
-import uk.gov.moj.cpp.progression.persist.entity.NotificationInfo;
+import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
+import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.entity.NotificationInfo;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
@@ -80,8 +80,6 @@ public class HearingNotificationHelper {
 
     private static final String EMPTY = "";
     private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
-    public static final String RECIPIENT_TYPE_ADDITION_PROPERTY = "recipient_type";
-    public static final String CASE_ID_ADDITION_PROPERTY = "case_id";
 
     public static final String OFFENCE_TITLE = "title";
     private static final String HEARING_DATE_PATTERN = "dd/MM/yyy HH:mm a";
@@ -122,7 +120,7 @@ public class HearingNotificationHelper {
     private MaterialUrlGenerator materialUrlGenerator;
 
     @Inject
-    private NotificationInfoRepository notificationInfoRepository;
+    private NotificationInfoJdbcRepository notificationInfoJdbcRepository;
 
     @ServiceComponent(Component.EVENT_PROCESSOR)
     @Inject
@@ -324,7 +322,7 @@ public class HearingNotificationHelper {
     }
 
     private void saveNotificationInfo(UUID notificationId, RecipientType recipientType, String notificationType) {
-        NotificationInfo res = notificationInfoRepository.save(NotificationInfo.Builder.builder().withNotificationId(notificationId)
+        notificationInfoJdbcRepository.save(NotificationInfo.Builder.builder().withNotificationId(notificationId)
                 .withNotificationType(notificationType)
                 .withPayload(createObjectBuilder().add(RECIPIENT_TYPE, recipientType.getRecipientName()).build().toString())
                 .withProcessedTimestamp(ZonedDateTime.now()).build());

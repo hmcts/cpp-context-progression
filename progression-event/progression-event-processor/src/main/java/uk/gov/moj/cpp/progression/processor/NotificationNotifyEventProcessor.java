@@ -24,8 +24,8 @@ import uk.gov.justice.services.fileservice.api.FileStorer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
-import uk.gov.moj.cpp.progression.persist.NotificationInfoRepository;
-import uk.gov.moj.cpp.progression.persist.entity.NotificationInfo;
+import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
+import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoResult;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.SystemIdMapperService;
@@ -69,7 +69,7 @@ public class NotificationNotifyEventProcessor {
     private SystemIdMapperService systemIdMapperService;
 
     @Inject
-    private NotificationInfoRepository notificationInfoRepository;
+    private NotificationInfoJdbcRepository notificationInfoJdbcRepository;
 
     @Inject
     private FileStorer fileStorer;
@@ -118,29 +118,35 @@ public class NotificationNotifyEventProcessor {
     public void markNotificationAsSucceeded(final JsonEnvelope event) {
         final UUID notificationId = fromString(event.payloadAsJsonObject().getString(NOTIFICATION_ID));
         final Optional<SystemIdMapping> systemIdMapping = systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString());
-        final NotificationInfo notificationInfo = notificationInfoRepository.findBy(notificationId);
-        final String notificationType = notificationInfo.getNotificationType();
+        final Optional<NotificationInfoResult> notificationInfoResult = notificationInfoJdbcRepository.findById(notificationId);
 
-        logger.info(">>CCT-2047 public.notificationnotify.events.notification-sent payload {} getNotificationType {} NotificationInfo {}",
-                event.asJsonObject(), notificationInfo.getNotificationType(), notificationInfo.getPayload());
-        if (systemIdMapping.isPresent()) {
-            JSONObject notificationPayload = new JSONObject(notificationInfo.getPayload());
-            if (notificationPayload.has(RECIPIENT_TYPE)){
-                generateAndAddDocument(event, systemIdMapping.get().getTargetId(), notificationPayload.getString(RECIPIENT_TYPE), notificationType);
-            }
-            notificationService.recordNotificationRequestSuccess(event, systemIdMapping.get().getTargetId(), CASE);
-        } else {
-            final Optional<SystemIdMapping> applicationSystemIdMapping = systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString());
-            if (applicationSystemIdMapping.isPresent()) {
-                notificationService.recordNotificationRequestSuccess(event, applicationSystemIdMapping.get().getTargetId(), APPLICATION);
+        if (notificationInfoResult.isPresent()) {
+            final NotificationInfoResult notificationInfo = notificationInfoResult.get();
+            final String notificationType = notificationInfo.getNotificationType();
+
+            logger.info(">>CCT-2047 public.notificationnotify.events.notification-sent payload {} getNotificationType {} NotificationInfo {}",
+                    event.asJsonObject(), notificationInfo.getNotificationType(), notificationInfo.getPayload());
+            if (systemIdMapping.isPresent()) {
+                JSONObject notificationPayload = new JSONObject(notificationInfo.getPayload());
+                if (notificationPayload.has(RECIPIENT_TYPE)){
+                    generateAndAddDocument(event, systemIdMapping.get().getTargetId(), notificationPayload.getString(RECIPIENT_TYPE), notificationType);
+                }
+                notificationService.recordNotificationRequestSuccess(event, systemIdMapping.get().getTargetId(), CASE);
             } else {
-                final Optional<SystemIdMapping> materialSystemIdMapping = systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString());
-                if (materialSystemIdMapping.isPresent()) {
-                    notificationService.recordNotificationRequestSuccess(event, materialSystemIdMapping.get().getTargetId(), MATERIAL);
+                final Optional<SystemIdMapping> applicationSystemIdMapping = systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString());
+                if (applicationSystemIdMapping.isPresent()) {
+                    notificationService.recordNotificationRequestSuccess(event, applicationSystemIdMapping.get().getTargetId(), APPLICATION);
                 } else {
-                    logger.info(format("No Case, Application or Material found for the given notification id: %s", notificationId));
+                    final Optional<SystemIdMapping> materialSystemIdMapping = systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString());
+                    if (materialSystemIdMapping.isPresent()) {
+                        notificationService.recordNotificationRequestSuccess(event, materialSystemIdMapping.get().getTargetId(), MATERIAL);
+                    } else {
+                        logger.error("No Case, Application or Material found for the given notification id: {}", notificationId);
+                    }
                 }
             }
+        } else {
+            logger.error("NotificationInfo not found for notificationId: {}", notificationId);
         }
     }
 
