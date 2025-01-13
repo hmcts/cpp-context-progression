@@ -1,18 +1,20 @@
 package uk.gov.moj.cpp.progression.eventprocessorstore.persistence.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-import java.util.UUID;
-
 @Entity
 @Table(name = "notification_info")
 public class NotificationInfo implements Serializable {
-    private static final long serialVersionUID = 1197304451156L;
+
+    private static final long serialVersionUID = 1122355349786811530L;
 
     @Id
     @Column(name = "notification_id", nullable = false)

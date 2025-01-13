@@ -91,6 +91,7 @@ public class HearingNotificationHelper {
     private static final UUID CASE_DOCUMENT_TYPE_ID = fromString("f471eb51-614c-4447-bd8d-28f9c2815c9e");
     private static final String APPLICATION_PDF = "application/pdf";
     private static final String RECIPIENT_TYPE = "recipientType";
+    private static final String HEARING_CONFIRMED = "HEARING_CONFIRMED";
 
     @Inject
     private ProgressionService progressionService;
@@ -322,8 +323,10 @@ public class HearingNotificationHelper {
     }
 
     private void saveNotificationInfo(UUID notificationId, RecipientType recipientType, String notificationType) {
-        notificationInfoJdbcRepository.save(NotificationInfo.Builder.builder().withNotificationId(notificationId)
+        notificationInfoJdbcRepository.save(NotificationInfo.Builder.builder()
+                .withNotificationId(notificationId)
                 .withNotificationType(notificationType)
+                .withProcessName(HEARING_CONFIRMED)
                 .withPayload(createObjectBuilder().add(RECIPIENT_TYPE, recipientType.getRecipientName()).build().toString())
                 .withProcessedTimestamp(ZonedDateTime.now()).build());
     }

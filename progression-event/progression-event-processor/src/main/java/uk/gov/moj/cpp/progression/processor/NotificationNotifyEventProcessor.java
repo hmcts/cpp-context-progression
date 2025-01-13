@@ -128,7 +128,7 @@ public class NotificationNotifyEventProcessor {
                     event.asJsonObject(), notificationInfo.getNotificationType(), notificationInfo.getPayload());
             if (systemIdMapping.isPresent()) {
                 JSONObject notificationPayload = new JSONObject(notificationInfo.getPayload());
-                if (notificationPayload.has(RECIPIENT_TYPE)){
+                if (notificationPayload.has(RECIPIENT_TYPE)) {
                     generateAndAddDocument(event, systemIdMapping.get().getTargetId(), notificationPayload.getString(RECIPIENT_TYPE), notificationType);
                 }
                 notificationService.recordNotificationRequestSuccess(event, systemIdMapping.get().getTargetId(), CASE);

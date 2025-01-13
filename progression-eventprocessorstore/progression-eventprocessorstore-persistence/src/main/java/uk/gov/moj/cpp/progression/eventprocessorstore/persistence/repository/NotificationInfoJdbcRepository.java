@@ -1,13 +1,12 @@
 package uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository;
 
+import static java.lang.String.format;
+import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
+
 import uk.gov.justice.services.jdbc.persistence.DefaultJdbcDataSourceProvider;
 import uk.gov.justice.services.jdbc.persistence.PreparedStatementWrapper;
 import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.entity.NotificationInfo;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,14 +16,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.lang.String.format;
-import static uk.gov.justice.services.common.converter.ZonedDateTimes.toSqlTimestamp;
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.sql.DataSource;
 
 @ApplicationScoped
 public class NotificationInfoJdbcRepository {
 
     private final String EVENT_PROCESSOR_STORE_JNDI_NAME = "java:/app/progression-event-processor/DS.progression.eventprocessorstore";
-    //private final String EVENT_PROCESSOR_STORE_JNDI_NAME = "java:/app/%s-event-processor/DS.%s.eventprocessorstore";
     private final String NOTIFICATION_INFO_INSERT_QUERY = "INSERT INTO notification_info (notification_id, notification_type, payload, process_name, processed_timestamp, status) VALUES (?, ?, ?, ?, ?, ?)";
     private final String NOTIFICATION_INFO_QUERY = "SELECT * FROM notification_info WHERE notification_id = ?";
     private final String NOTIFICATION_INFO_DELETE_QUERY = "DELETE FROM notification_info notification_id = ?";
