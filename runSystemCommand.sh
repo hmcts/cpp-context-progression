@@ -17,7 +17,7 @@
 #
 ##################################################################################################
 
-FRAMEWORK_VERSION=17.5.0
+FRAMEWORK_VERSION=17.100.4
 CONTEXT_NAME="progression"
 USER_NAME="admin"
 PASSWORD="admin"
