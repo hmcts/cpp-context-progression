@@ -59,7 +59,7 @@ public class NotificationInfoJdbcRepository {
 
 
     protected NotificationInfoResult entityFrom(ResultSet resultSet) throws SQLException {
-        final UUID notificationId = UUID.fromString(resultSet.getString("id"));
+        final UUID notificationId = UUID.fromString(resultSet.getString("notification_id"));
         final String notificationType = resultSet.getString("notification_type");
         final String payload = resultSet.getString("payload");
         final String processName = resultSet.getString("process_name");

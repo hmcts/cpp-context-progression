@@ -63,7 +63,7 @@ public class NotificationInfoJdbcRepositoryTest {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(preparedStatementWrapper.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true).thenReturn(false);
-        when(resultSet.getString("id")).thenReturn(notificationId.toString());
+        when(resultSet.getString("notification_id")).thenReturn(notificationId.toString());
         when(resultSet.getString("notification_type")).thenReturn("type");
         when(resultSet.getString("payload")).thenReturn("payload");
         when(resultSet.getString("process_name")).thenReturn("process");
