@@ -5,15 +5,20 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.api.resource.utils.FileUtil.jsonFromPath;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.api.resource.utils.FileUtil;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +28,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -125,6 +131,27 @@ public class DefenceQueryServiceTest {
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(true));
         assertThat(defenceQueryService.isUserProsecutingOrDefendingCase(jsonEnvelope, caseId), is(true));
+    }
+
+    @Test
+    public void shouldReturnAssociatedOrganisationsTrueWhenRoleInBothProsecutionAndDefence() {
+        final JsonValue associatedOrganisationsJson = jsonFromPath("defence-payload-all-associated-organisations.json");
+        final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), associatedOrganisationsJson);
+        final String defendantId = randomUUID().toString();
+
+        when(requester.request(any())).thenReturn(response);
+
+        final List<AssociatedDefenceOrganisation> allAssociatedOrganisations = defenceQueryService.getAllAssociatedOrganisations(jsonEnvelope, defendantId);
+
+        assertThat(allAssociatedOrganisations.size(), is(2));
+        assertThat(allAssociatedOrganisations.get(0).getDefenceOrganisation().getOrganisation().getName(), is("William & Co LLP"));
+        assertThat(allAssociatedOrganisations.get(0).getAssociationStartDate(), is(LocalDate.parse("2025-01-06")));
+        assertThat(allAssociatedOrganisations.get(0).getAssociationEndDate(), is(LocalDate.parse("2025-01-06")));
+        assertThat(allAssociatedOrganisations.get(0).getDefenceOrganisation().getOrganisation().getAddress().getAddress1(), is("2 Legal House"));
+
+        assertThat(allAssociatedOrganisations.get(1).getDefenceOrganisation().getOrganisation().getName(), is("Harry & Co LLP"));
+        assertThat(allAssociatedOrganisations.get(1).getAssociationStartDate(), is(LocalDate.parse("2025-01-06")));
+        assertThat(allAssociatedOrganisations.get(1).getAssociationEndDate(), is(nullValue()));
     }
 
     private MetadataBuilder getMetadataBuilder(final UUID userId) {

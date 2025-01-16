@@ -336,6 +336,13 @@
         "proceedingsConcluded": {
           "description": "Indicates that proceedings for the defendant have been concluded i.e. all offences have been disposed with final results or have been withdrawn by the prosecuting authority",
           "type": "boolean"
+        },
+        "orderIndex": {
+          "description": "The offence sequence provided by the Police",
+          "$ref": "http://justice.gov.uk/core/courts/external/apiCourtsDefinitions.json#/definitions/positiveInteger"
+        },
+        "indictmentParticular": {
+          "type": "string"
         }
       },
       "required": [

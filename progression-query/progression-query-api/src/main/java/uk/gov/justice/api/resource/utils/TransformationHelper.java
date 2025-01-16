@@ -1,6 +1,7 @@
 package uk.gov.justice.api.resource.utils;
 
 import static java.util.Comparator.comparing;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -53,6 +54,40 @@ public class TransformationHelper {
     ReferenceDataService referenceDataService;
     @Inject
     private RequestedNameMapper requestedNameMapper;
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+    private static final Comparator<HearingDays> ascendingHearingDays = (h1, h2) -> {
+        if (nonNull(h1.getDay()) && nonNull(h2.getDay())) {
+            return h1.getDay().compareTo(h2.getDay());
+        }
+        return 0;
+    };
+
+    private static final Comparator<uk.gov.justice.progression.courts.exract.Hearings> extractHearingsComparator = (hearing1, hearing2) -> {
+
+        if (nonNull(hearing1.getHearingDays()) && !hearing1.getHearingDays().isEmpty()
+                && (isNull(hearing2.getHearingDays()) || hearing2.getHearingDays().isEmpty())) {
+            hearing1.getHearingDays().sort(ascendingHearingDays);
+            return 1;
+        }
+
+        if (nonNull(hearing2.getHearingDays()) && !hearing2.getHearingDays().isEmpty()
+                && (isNull(hearing1.getHearingDays()) || hearing1.getHearingDays().isEmpty())) {
+            hearing2.getHearingDays().sort(ascendingHearingDays);
+            return -1;
+        }
+
+        if (nonNull(hearing1.getHearingDays()) && nonNull(hearing2.getHearingDays())
+                && !hearing1.getHearingDays().isEmpty() && !hearing2.getHearingDays().isEmpty()) {
+            hearing1.getHearingDays().sort(ascendingHearingDays);
+            hearing2.getHearingDays().sort(ascendingHearingDays);
+
+            return hearing1.getHearingDays().get(0).getDay().compareTo(hearing2.getHearingDays().get(0).getDay());
+        }
+        return 0;
+    };
+
 
     public String getName(final String firstName, final String middleName, final String lastName) {
         final StringBuilder sb = new StringBuilder();
@@ -125,13 +160,15 @@ public class TransformationHelper {
                 sb.append(winger++);
                 sb.append(": ");
             }
-
-            final Optional<JsonObject> jsonObject = referenceDataService.getJudiciary(judicialRole.getJudicialId());
-            jsonObject.ifPresent(judiciary -> sb.append(requestedNameMapper.getRequestedJudgeName(judiciary)));
+            sb.append(getJudgeName(judicialRole.getJudicialId()));
             sb.append(" ");
-
         }
         return sb.toString().trim();
+    }
+
+    public String getJudgeName(final UUID judicialId) {
+        final Optional<JsonObject> jsonObject = referenceDataService.getJudiciary(judicialId);
+        return jsonObject.map(object -> requestedNameMapper.getRequestedJudgeName(object)).orElse(EMPTY);
     }
 
     public String getCamelCase(final String value) {
@@ -207,11 +244,27 @@ public class TransformationHelper {
         if (hearingDaysList.size() > 2) {
             return getToAndFromHearingDays(hearingDaysList);
         }
+
         return hearingDaysList.stream().map(hd ->
                 HearingDays.hearingDays()
                         .withDay(hd.getSittingDay().toLocalDate())
+                        .withTime(hd.getSittingDay().format(formatter))
                         .build()
         ).collect(Collectors.toList());
+    }
+
+    public static List<uk.gov.justice.progression.courts.exract.Hearings> getHearingsSortedByHearingDaysAsc(final List<uk.gov.justice.progression.courts.exract.Hearings> extractHearings) {
+        if (extractHearings.isEmpty()) {
+            return extractHearings;
+        }
+        final List<uk.gov.justice.progression.courts.exract.Hearings> newExtractHearings = new ArrayList<>(extractHearings);
+        if (newExtractHearings.size() == 1) {
+            newExtractHearings.get(0).getHearingDays().sort(ascendingHearingDays);
+        } else {
+            newExtractHearings.sort(extractHearingsComparator);
+        }
+
+        return newExtractHearings;
     }
 
     private List<HearingDays> getToAndFromHearingDays(final List<HearingDay> hearingDaysList) {
@@ -234,4 +287,5 @@ public class TransformationHelper {
                 .anyMatch(applicationStatus -> applicationStatus.equals(ApplicationStatus.DRAFT) || applicationStatus.equals(ApplicationStatus.LISTED)
                         || applicationStatus.equals(ApplicationStatus.EJECTED));
     }
+
 }

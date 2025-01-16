@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
