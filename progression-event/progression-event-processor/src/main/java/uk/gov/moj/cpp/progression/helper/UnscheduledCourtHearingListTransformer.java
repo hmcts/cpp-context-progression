@@ -71,7 +71,8 @@ public class UnscheduledCourtHearingListTransformer {
                             hearingUnscheduledListingNeeds.add(item.get());
                         }
                     });
-        } else if (hearing.getProsecutionCases() != null) {
+        }
+        if(hearingUnscheduledListingNeeds.size() == 0 && nonNull(hearing.getProsecutionCases())) {
             hearing.getProsecutionCases().stream().forEach(
                     prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
                             defendant -> hearingUnscheduledListingNeeds.addAll(transformDefendantWithSeedHearing(hearing, prosecutionCase, defendant, seedingHearing))
@@ -79,7 +80,6 @@ public class UnscheduledCourtHearingListTransformer {
             );
 
         }
-
         return hearingUnscheduledListingNeeds;
     }
 

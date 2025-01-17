@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-query</artifactId>
-        <version>17.0.45-CCT-2047-SNAPSHOT</version>
+        <version>17.0.74-CCT-2047-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-api</artifactId>
     <packaging>war</packaging>
@@ -250,6 +250,31 @@
             <version>2.10.10</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.moj.cpp.listing</groupId>
+            <artifactId>listing-query-api</artifactId>
+            <version>${listing.version}</version>
+            <classifier>raml</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.moj.cpp.listing</groupId>
+            <artifactId>listing-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>uk.gov.moj.cpp.core.domain</groupId>
+                    <artifactId>common-core-domain</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 </project>

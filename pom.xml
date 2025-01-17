@@ -5,12 +5,12 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.100.0.1</version>
+        <version>17.100.3.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.0.45-CCT-2047-SNAPSHOT</version>
+    <version>17.0.74-CCT-2047-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
@@ -65,13 +65,13 @@
         <material.version>17.0.20</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.35</referencedata.version>
+        <referencedata.version>17.0.53</referencedata.version>
         <listing.version>17.0.8</listing.version>
         <hearing.version>17.0.28</hearing.version>
         <usersgroups.version>17.0.19</usersgroups.version>
-        <defence.version>17.0.16</defence.version>
+        <defence.version>17.0.44</defence.version>
         <referencedata.offence.version>17.0.17</referencedata.offence.version>
-        <coredomain.version>17.100.2</coredomain.version>
+        <coredomain.version>17.101.0</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.1</results.version>

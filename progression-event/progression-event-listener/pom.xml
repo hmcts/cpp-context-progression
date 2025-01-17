@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>17.0.45-CCT-2047-SNAPSHOT</version>
+        <version>17.0.74-CCT-2047-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-listener</artifactId>
     <packaging>war</packaging>
@@ -22,11 +22,6 @@
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.moj.cpp.progression</groupId>
-            <artifactId>progression-domain-message</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.moj.cpp.progression</groupId>
