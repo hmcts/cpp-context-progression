@@ -178,6 +178,8 @@ public class CourtExtractIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.custodyTimeLimit.daysSpent", CoreMatchers.is(44)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", CoreMatchers.is("2018-09-14")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.daysSpent", CoreMatchers.is(55)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].orderIndex", CoreMatchers.is(2)),
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].indictmentParticular", CoreMatchers.is("offence-indictmentParticular")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].id", CoreMatchers.is(reportingRestrictionId)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].judicialResultId", CoreMatchers.is("0f5b8757-e588-4b7f-806a-44dc0eb0e75e")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].reportingRestrictions[0].label", CoreMatchers.is("Reporting Restriction Label")),

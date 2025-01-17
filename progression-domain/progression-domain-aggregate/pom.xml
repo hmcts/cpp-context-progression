@@ -3,7 +3,7 @@
     <parent>
         <artifactId>progression-domain</artifactId>
         <groupId>uk.gov.moj.cpp.progression</groupId>
-        <version>17.0.45-CCT-2047-SNAPSHOT</version>
+        <version>17.0.74-CCT-2047-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>progression-domain-aggregate</artifactId>
@@ -48,6 +48,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -7,6 +7,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.SeedingHearing.seedingHearing;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -36,6 +37,8 @@ import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
+import uk.gov.justice.core.courts.Verdict;
+import uk.gov.justice.core.courts.VerdictType;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingDeleted;
@@ -112,6 +115,31 @@ public class HearingAggregateTest {
         assertThat(event3.getHearing().getDefenceCounsels().size(),is(2));
     }
 
+
+    @Test
+    public void shouldClearVerdict() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final Boolean notifyNCES = true;
+        final Hearing hearing = getHearingForVej(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_RESULTED;
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", hearingListingStatus);
+        setField(hearingAggregate, "notifyNCES", notifyNCES);
+
+       final Verdict verdict = Verdict.verdict().withOffenceId(offenceId).withVerdictType(VerdictType.verdictType().
+               withCategory("category").withId(randomUUID()).withCategoryType("categoryType").withCategory("category").build())
+               .withIsDeleted(true).build();
+
+        final List<Object> eventStream = hearingAggregate.updateHearingWithVerdict(verdict).collect(toList());
+        assertThat(eventStream.size(), is(2));
+
+        final ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) eventStream.get(1);
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getVerdict(), nullValue());
+
+    }
 
 
     @Test
@@ -433,6 +461,7 @@ public class HearingAggregateTest {
        defendantList.add(Defendant.defendant().withId(randomUUID())
                .withOffences(singletonList(Offence.offence()
                        .withId(offenceId)
+                       .withVerdict(Verdict.verdict().withOffenceId(offenceId).withVerdictType(VerdictType.verdictType().withId(randomUUID()).withCategory("test").withCategoryType("test type").build()).build())
                        .build()))
                .build());
         return asList(

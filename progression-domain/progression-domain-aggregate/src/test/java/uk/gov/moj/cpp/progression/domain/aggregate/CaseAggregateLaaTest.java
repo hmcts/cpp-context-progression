@@ -13,9 +13,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.core.courts.CourtCentre.courtCentre;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.DefendantJudicialResult.defendantJudicialResult;
+import static uk.gov.justice.core.courts.JudicialResultCategory.ANCILLARY;
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
+import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
@@ -41,6 +45,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,6 +58,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class CaseAggregateLaaTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
+    private static final String URN = "URN";
     private CaseAggregate caseAggregate = new CaseAggregate();
 
     @Test
@@ -81,6 +87,41 @@ public class CaseAggregateLaaTest {
         assertThat(laaDefendantProceedingConcludedResent2.getLaaDefendantProceedingConcludedChanged().getProsecutionCaseId(), is(caseId));
         assertThat(laaDefendantProceedingConcludedResent2.getLaaDefendantProceedingConcludedChanged().getHearingId(), is(hearingId2));
 
+    }
+
+    @Test
+    public void shouldSuccessfullyPatchAndResendLaaOutcomeConcluded() throws IOException {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = laaDefendantProceedingConcludedChanged()
+                .withValuesFrom(convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class, hearingId.toString()))
+                .withProsecutionCaseId(caseId)
+                .withHearingId(null).build();
+
+        final List<Object> events = caseAggregate.patchAndResendLaaOutcomeConcluded(laaDefendantProceedingConcludedChanged, hearingId).toList();
+
+        assertThat(events, contains(
+                hasProperty("laaDefendantProceedingConcludedChanged", allOf(
+                        hasProperty("prosecutionCaseId", is(caseId)),
+                        hasProperty("hearingId", is(hearingId))
+                ))
+        ));
+    }
+
+    @Test
+    public void shouldIgnorePatchAndResendLaaOutcomeConcludedWhenEventHasHearingID() throws IOException {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = laaDefendantProceedingConcludedChanged()
+                .withValuesFrom(convertFromFile("json/progression.event.laa-defendant-proceeding-concluded-changed.json", LaaDefendantProceedingConcludedChanged.class, hearingId.toString()))
+                .withProsecutionCaseId(caseId)
+                .withHearingId(randomUUID()).build();
+
+        final List<Object> events = caseAggregate.patchAndResendLaaOutcomeConcluded(laaDefendantProceedingConcludedChanged, hearingId).toList();
+
+        assertThat(events, hasSize(0));
     }
 
     @Test
@@ -334,6 +375,7 @@ public class CaseAggregateLaaTest {
                 .build();
         List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult()
                 .withJudicialResult(JudicialResult.judicialResult()
+                        .withOffenceId(offenceId2)
                         .withCategory(JudicialResultCategory.FINAL)
                         .withResultText("Result text")
                         .withLabel("Label")
@@ -353,6 +395,360 @@ public class CaseAggregateLaaTest {
                 hasItem(allOf(
                         hasProperty("id", is(offenceId2)),
                         hasProperty("proceedingsConcluded", is(true)))));
+    }
+
+    @Test
+    public void shouldUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshareWhenResultIsInDefendantLevel(){
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String hearingType = "Trial";
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withName("Court Name").withCode("code")
+                .withRoomId(randomUUID()).withRoomName("roomName").build();
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        Defendant updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(true)
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        ProsecutionCase updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        List<Object> eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
+        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+
+        this.caseAggregate.apply(eventList);
+
+        updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(false)
+                                .withLaaApplnReference(laaReference().withApplicationReference("test1").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test2").build())
+                                .build()))
+                .build();
+
+        updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withOrderedDate(LocalDate.now())
+                        .withOffenceId(offenceId1)
+                        .withJudicialResultId(randomUUID())
+                        .withCategory(JudicialResultCategory.ANCILLARY)
+                        .build()).build());
+
+        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
+
+        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+
+        this.caseAggregate.apply(eventList);
+
+        updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(false)
+                                .withLaaApplnReference(laaReference().withApplicationReference("test1").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test2").build())
+                                .build()))
+                .build();
+
+        updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withOrderedDate(LocalDate.now())
+                        .withOffenceId(offenceId1)
+                        .withJudicialResultId(randomUUID())
+                        .withCategory(FINAL)
+                        .build()).build());
+
+        eventList =  this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList() ).collect(toList());
+
+        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged)eventList.get(0);
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(true));
+
+
+
+
+    }
+
+    @Test
+    public void shouldUpdateProceedingConcludedWithLAAWhenCaseIsUpdatedWithReshareWhenResultIsInDefendantLevelAndOffenceLevel() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final String hearingType = "Trial";
+        final CourtCentre courtCentre = courtCentre().withId(randomUUID()).withName("Court Name").withCode("code")
+                .withRoomId(randomUUID()).withRoomName("roomName").build();
+        final Defendant defendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
+
+
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        Defendant updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(true)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(ANCILLARY).build()))
+                                .withProceedingsConcluded(true)
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test").build())
+                                .build()))
+                .build();
+
+        ProsecutionCase updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        List<Object> eventList = this.caseAggregate.updateCase(updatedProsecutionCase, emptyList(), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+
+        this.caseAggregate.apply(eventList);
+
+        updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withProceedingsConcluded(false)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(ANCILLARY).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test1").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test2").build())
+                                .build()))
+                .build();
+
+        updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        List<DefendantJudicialResult> defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withOrderedDate(LocalDate.now())
+                        .withOffenceId(offenceId1)
+                        .withJudicialResultId(randomUUID())
+                        .withCategory(JudicialResultCategory.ANCILLARY)
+                        .build()).build());
+
+        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+
+        this.caseAggregate.apply(eventList);
+
+        updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(ANCILLARY).build()))
+                                .withProceedingsConcluded(false)
+                                .withLaaApplnReference(laaReference().withApplicationReference("test1").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test2").build())
+                                .build()))
+                .build();
+
+        updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withOrderedDate(LocalDate.now())
+                        .withOffenceId(offenceId1)
+                        .withJudicialResultId(randomUUID())
+                        .withCategory(FINAL)
+                        .build()).build());
+
+        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(false));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(false));
+
+        this.caseAggregate.apply(eventList);
+
+        updatedDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withProceedingsConcluded(false)
+                .withOffences(asList(offence()
+                                .withId(offenceId1).withListingNumber(1)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult().withCategory(FINAL).build()))
+                                .withProceedingsConcluded(true)
+                                .withLaaApplnReference(laaReference().withApplicationReference("test1").build())
+                                .build(),
+                        offence()
+                                .withId(offenceId2).withListingNumber(2)
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                                        .withCategory(FINAL).build()))
+                                .withLaaApplnReference(laaReference().withApplicationReference("test2").build())
+                                .build()))
+                .build();
+
+        updatedProsecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(updatedDefendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        defendantJudicialResults = singletonList(DefendantJudicialResult.defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withOrderedDate(LocalDate.now())
+                        .withOffenceId(offenceId1)
+                        .withJudicialResultId(randomUUID())
+                        .withCategory(FINAL)
+                        .build()).build());
+
+        eventList = this.caseAggregate.updateCase(updatedProsecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        laaDefendantProceedingConcludedChanged = (LaaDefendantProceedingConcludedChanged) eventList.get(0);
+
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(0).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getOffences().get(1).getProceedingsConcluded(), is(true));
+        assertThat(laaDefendantProceedingConcludedChanged.getDefendants().get(0).getProceedingsConcluded(), is(true));
+
+
     }
 
 

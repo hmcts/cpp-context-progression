@@ -1,0 +1,46 @@
+{"hearingId": "HEARING_ID",
+  "prosecutionCasesToRemove": [
+    {
+      "caseId": "CASE_ID_1",
+      "defendantsToRemove": [
+        {
+          "defendantId": "DEFENDANT_ID_1",
+          "offencesToRemove": [
+            {
+              "offenceId": "OFFENCE_ID_1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "CASE_ID_2",
+      "defendantsToRemove": [
+        {
+          "defendantId": "DEFENDANT_ID_2",
+          "offencesToRemove": [
+            {
+              "offenceId": "OFFENCE_ID_2"
+            },
+            {
+              "offenceId": "OFFENCE_ID_3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "caseId": "CASE_ID_2",
+      "defendantsToRemove": [
+        {
+          "defendantId": "DEFENDANT_ID_3",
+          "offencesToRemove": [
+            {
+              "offenceId": "OFFENCE_ID_4"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

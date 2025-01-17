@@ -5,9 +5,9 @@ FROM crmdvrepo01.azurecr.io/hmcts/wildfly:${baseImageTag}
 
 ARG version
 ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
-ARG framework_libraries_version=17.3.1
-ARG framework_version=17.5.5
-ARG eventstore_version=17.5.4
+ARG framework_libraries_version=17.100.1
+ARG framework_version=17.100.4
+ARG eventstore_version=17.100.8
 ARG activiti_version=17.10.4
 
 ARG wildfly_home=/opt/jboss/wildfly

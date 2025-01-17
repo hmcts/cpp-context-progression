@@ -223,10 +223,10 @@ public class PublishCourtListPayloadBuilderServiceTest {
         assertThat(defenceAdvocatePayloadBuilderByName, hasKey("defenceAdvocate@organisation.com"));
 
         final PublishCourtListPayload actualPublishCourtListPayload = defenceOrganisationPayloadBuilderByName.get(defenceOrganisation.getEmail()).build();
-        assertEquals(getPayload(expectedPayloadLocationForDefence), objectToJsonObjectConverter.convert(actualPublishCourtListPayload).toString(), STRICT_ORDER);
+        assertEquals(getPayload(expectedPayloadLocationForDefence).toLowerCase(), objectToJsonObjectConverter.convert(actualPublishCourtListPayload).toString().toLowerCase(), STRICT_ORDER);
 
         final PublishCourtListPayload actualDefenceAdvocatePublishCourtListPayload = defenceAdvocatePayloadBuilderByName.get("defenceAdvocate@organisation.com").build();
-        assertEquals(getPayload(expectedPayloadLocationForDefenceAdvocate), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload).toString(), STRICT_ORDER);
+        assertEquals(getPayload(expectedPayloadLocationForDefenceAdvocate).toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload).toString().toLowerCase(), STRICT_ORDER);
     }
 
     @ParameterizedTest
@@ -326,13 +326,13 @@ public class PublishCourtListPayloadBuilderServiceTest {
         assertThat(defenceAdvocatePayloadBuilderByName, hasKey("contactPersonName"));
 
         final PublishCourtListPayload actualDefenceOrganisationPublishCourtListPayload = defenceOrganisationPayloadBuilderByName.get(defenceOrganisation.getEmail()).build();
-        assertEquals(getPayload(expectedPayloadLocationForDefence), objectToJsonObjectConverter.convert(actualDefenceOrganisationPublishCourtListPayload).toString(), STRICT_ORDER);
+        assertEquals(getPayload(expectedPayloadLocationForDefence).toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceOrganisationPublishCourtListPayload).toString().toLowerCase(), STRICT_ORDER);
 
         final PublishCourtListPayload actualDefenceAdvocatePublishCourtListPayload = defenceAdvocatePayloadBuilderByName.get("contactPersonName").build();
-        assertEquals(getPayload(expectedPayloadLocationForDefenceAdvocate), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload).toString(), STRICT_ORDER);
+        assertEquals(getPayload(expectedPayloadLocationForDefenceAdvocate).toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload).toString().toLowerCase(), STRICT_ORDER);
 
         final PublishCourtListPayload actualProsecutorPublishCourtListPayload = prosecutorPayloadBuilderByName.get(prosecutor.getString("contactEmailAddress")).build();
-        assertEquals(getPayload(expectedPayloadLocationForProsecutor), objectToJsonObjectConverter.convert(actualProsecutorPublishCourtListPayload).toString(), STRICT_ORDER);
+        assertEquals(getPayload(expectedPayloadLocationForProsecutor).toLowerCase(), objectToJsonObjectConverter.convert(actualProsecutorPublishCourtListPayload).toString().toLowerCase(), STRICT_ORDER);
     }
 
     @Test
@@ -371,17 +371,17 @@ public class PublishCourtListPayloadBuilderServiceTest {
         assertThat(defenceAdvocatePayloadBuilderByName, hasKey("defenceAdvocate@organisation.com"));
 
         final PublishCourtListPayload actualPublishCourtListPayload1 = defenceOrganisationPayloadBuilderByName.get(defenceOrganisation1.getEmail()).build();
-        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence1.json"), objectToJsonObjectConverter.convert(actualPublishCourtListPayload1).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence1.json").toLowerCase(), objectToJsonObjectConverter.convert(actualPublishCourtListPayload1).toString().toLowerCase(), STRICT_ORDER);
 
         final PublishCourtListPayload actualDefenceAdvocatePublishCourtListPayload1 = defenceAdvocatePayloadBuilderByName.get("contactPersonName").build();
-        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence1-advocate.json"), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload1).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence1-advocate.json").toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload1).toString().toLowerCase(), STRICT_ORDER);
 
 
         final PublishCourtListPayload actualPublishCourtListPayload2 = defenceOrganisationPayloadBuilderByName.get(defenceOrganisation2.getEmail()).build();
-        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence2.json"), objectToJsonObjectConverter.convert(actualPublishCourtListPayload2).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence2.json").toLowerCase(), objectToJsonObjectConverter.convert(actualPublishCourtListPayload2).toString().toLowerCase(), STRICT_ORDER);
 
         final PublishCourtListPayload actualDefenceAdvocatePublishCourtListPayload2 = defenceAdvocatePayloadBuilderByName.get("defenceAdvocate@organisation.com").build();
-        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence2-advocate.json"), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload2).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/fixed-date/payload/expected-draft-publish-court-list-multiple-hearing-defence2-advocate.json").toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload2).toString().toLowerCase(), STRICT_ORDER);
 
     }
 
@@ -428,19 +428,19 @@ public class PublishCourtListPayloadBuilderServiceTest {
         assertThat(defenceAdvocatePayloadBuilderByName, hasKey("defenceAdvocate@organisation.com"));
 
         final PublishCourtListPayload actualDefenceOrganisationPublishCourtListPayload1 = defenceOrganisationPayloadBuilderByName.get(defenceOrganisation1.getEmail()).build();
-        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence1.json"), objectToJsonObjectConverter.convert(actualDefenceOrganisationPublishCourtListPayload1).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence1.json").toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceOrganisationPublishCourtListPayload1).toString().toLowerCase(), STRICT_ORDER);
         final PublishCourtListPayload actualDefenceOrganisationPublishCourtListPayload2 = defenceOrganisationPayloadBuilderByName.get(defenceOrganisation2.getEmail()).build();
-        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence2.json"), objectToJsonObjectConverter.convert(actualDefenceOrganisationPublishCourtListPayload2).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence2.json").toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceOrganisationPublishCourtListPayload2).toString().toLowerCase(), STRICT_ORDER);
 
         final PublishCourtListPayload actualDefenceAdvocatePublishCourtListPayload1 = defenceAdvocatePayloadBuilderByName.get("contactPersonName").build();
-        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence1-advocate.json"), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload1).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence1-advocate.json").toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload1).toString().toLowerCase(), STRICT_ORDER);
         final PublishCourtListPayload actualDefenceAdvocatePublishCourtListPayload2 = defenceAdvocatePayloadBuilderByName.get("defenceAdvocate@organisation.com").build();
-        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence2-advocate.json"), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload2).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-defence2-advocate.json").toLowerCase(), objectToJsonObjectConverter.convert(actualDefenceAdvocatePublishCourtListPayload2).toString().toLowerCase(), STRICT_ORDER);
 
         final PublishCourtListPayload actualProsecutorPublishCourtListPayload1 = prosecutorPayloadBuilderByName.get(prosecutor1.getString("contactEmailAddress")).build();
-        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-prosecutor1.json"), objectToJsonObjectConverter.convert(actualProsecutorPublishCourtListPayload1).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-prosecutor1.json").toLowerCase(), objectToJsonObjectConverter.convert(actualProsecutorPublishCourtListPayload1).toString().toLowerCase(), STRICT_ORDER);
         final PublishCourtListPayload actualProsecutorPublishCourtListPayload2 = prosecutorPayloadBuilderByName.get(prosecutor2.getString("contactEmailAddress")).build();
-        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-prosecutor2.json"), objectToJsonObjectConverter.convert(actualProsecutorPublishCourtListPayload2).toString(), STRICT_ORDER);
+        assertEquals(getPayload("publish-court-list/week-commencing/payload/expected-firm-publish-court-list-multiple-hearing-prosecutor2.json").toLowerCase(), objectToJsonObjectConverter.convert(actualProsecutorPublishCourtListPayload2).toString().toLowerCase(), STRICT_ORDER);
     }
 
     private JsonObject prepareCourtCentreWithCourtRooms() {

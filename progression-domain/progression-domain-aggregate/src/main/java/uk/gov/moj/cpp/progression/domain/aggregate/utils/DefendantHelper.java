@@ -7,7 +7,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
@@ -19,6 +21,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -34,6 +37,7 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -41,9 +45,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.json.JsonObject;
 
@@ -129,29 +135,10 @@ public class DefendantHelper {
         return getDefendant(defendant, updatedOffences, proceedingConcluded);
     }
 
-    public static void updatedDefendantsWithProceedingConcludedState(ProsecutionCase inputProsecutionCase, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded, List<Defendant> updatedDefendantsForProceedingsConcludedEvent, List<DefendantJudicialResult> hearingdefendantJudicialResults) {
-        getDefendantsWithLAAAndHearingOrCaseDefendantResults(inputProsecutionCase, updatedDefendantsForProceedingsConcludedEvent, hearingdefendantJudicialResults, offenceProceedingConcluded);
-        if (CollectionUtils.isEmpty(updatedDefendantsForProceedingsConcludedEvent)) {
-            final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = new ArrayList<>();
-            getDefendantsWithLAAAndProceedingConcluded(inputProsecutionCase, updatedDefendants, offenceProceedingConcluded);
-            updateOffencesWithProceedingConcludedState(offenceProceedingConcluded, updatedDefendants, updatedDefendantsForProceedingsConcludedEvent);
-        }
-    }
-
-
-
-    public static void getDefendantsWithLAAAndHearingOrCaseDefendantResults(ProsecutionCase prosecutionCase, List<Defendant> updatedDefendants, List<DefendantJudicialResult> hearingdefendantJudicialResults, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded) {
-        prosecutionCase.getDefendants().stream().forEach(existingDefendant -> {
-            final List<Offence> updatedOffences = new ArrayList<>();
-            final List<Offence> caseOffences = offenceProceedingConcluded.get(existingDefendant.getId());
-            if (hasLaaReference(existingDefendant) || hasLaaReference(caseOffences)) {
-                if (isDefendantConcluded(hearingdefendantJudicialResults) || isCaseDefendantConcluded(existingDefendant)) {
-                    final boolean proceedingConcluded = getUpdatedDefendantsWithProceedingConcluded(existingDefendant, updatedOffences);
-                    final Defendant updatedDefendant = Defendant.defendant().withValuesFrom(existingDefendant).withOffences(updatedOffences).withProceedingsConcluded(proceedingConcluded).build();
-                    updatedDefendants.add(updatedDefendant);
-                }
-            }
-        });
+    public static void updatedDefendantsWithProceedingConcludedState(ProsecutionCase inputProsecutionCase, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded, List<Defendant> updatedDefendantsForProceedingsConcludedEvent, List<DefendantJudicialResult> hearingDefendantJudicialResults) {
+        final List<uk.gov.justice.core.courts.Defendant> updatedDefendants = new ArrayList<>();
+        getDefendantsWithLAAAndProceedingConcluded(inputProsecutionCase, updatedDefendants, offenceProceedingConcluded, hearingDefendantJudicialResults);
+        updateOffencesWithProceedingConcludedState(offenceProceedingConcluded, updatedDefendants, updatedDefendantsForProceedingsConcludedEvent);
     }
 
     public static List<Offence> getAllDefendantsOffences(final List<Defendant> defendants) {
@@ -182,13 +169,16 @@ public class DefendantHelper {
                 .collect(Collectors.toList());
     }
 
-    private static void getDefendantsWithLAAAndProceedingConcluded(ProsecutionCase prosecutionCase, List<Defendant> updatedDefendants, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded) {
+    private static void getDefendantsWithLAAAndProceedingConcluded(ProsecutionCase prosecutionCase, List<Defendant> updatedDefendants, Map<UUID, List<uk.gov.justice.core.courts.Offence>> offenceProceedingConcluded, final List<DefendantJudicialResult> hearingDefendantJudicialResults) {
+        final List<JudicialResult> defendantCaseJudicialResults = prosecutionCase.getDefendants().stream()
+                        .flatMap(defendant -> ofNullable(defendant.getDefendantCaseJudicialResults()).map(Collection::stream).orElseGet(Stream::empty))
+                                .collect(toList());
         prosecutionCase.getDefendants().stream().forEach(existingDefendant -> {
             final List<Offence> updatedOffences = new ArrayList<>();
             final List<Offence> caseOffences = offenceProceedingConcluded.get(existingDefendant.getId());
             if (hasLaaReference(existingDefendant) || hasLaaReference(caseOffences)) {
                 final boolean proceedingConcluded = existingDefendant.getOffences().stream()
-                        .map(existingOffence -> getUpdatedOffence(updatedOffences, existingOffence, isConcluded(existingOffence)))
+                        .map(existingOffence -> getUpdatedOffence(updatedOffences, existingOffence, isConcluded(existingOffence, hearingDefendantJudicialResults, defendantCaseJudicialResults)))
                         .map(Offence::getProceedingsConcluded)
                         .collect(toList()).stream().allMatch(finalCategory -> ((Boolean.TRUE).equals(finalCategory)));
                 final Defendant updatedDefendant = Defendant.defendant().withValuesFrom(existingDefendant).withOffences(updatedOffences).withProceedingsConcluded(proceedingConcluded).build();
@@ -277,26 +267,40 @@ public class DefendantHelper {
         return isChanged;
     }
 
-    private static boolean getUpdatedDefendantsWithProceedingConcluded(Defendant defendant, List<Offence> updatedOffences) {
-        return defendant.getOffences().stream()
-                .map(offence -> getUpdatedOffence(updatedOffences, offence, true))
-                .map(Offence::getProceedingsConcluded)
-                .collect(toList()).stream().allMatch((TRUE)::equals);
-    }
-
-    private static boolean isDefendantConcluded(final List<DefendantJudicialResult> defendantJudicialResults) {
-        return isNotEmpty(defendantJudicialResults) && defendantJudicialResults.stream()
-                .anyMatch(judicialResult -> judicialResult.getJudicialResult().getCategory().equals(JudicialResultCategory.FINAL));
-    }
-
-    private static boolean isCaseDefendantConcluded(final Defendant defendant) {
-        return isNotEmpty(defendant.getDefendantCaseJudicialResults()) && defendant.getDefendantCaseJudicialResults().stream()
-                .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
-    }
-
     public static boolean isConcluded(final Offence offence) {
         return isNotEmpty(offence.getJudicialResults()) && offence.getJudicialResults().stream()
                 .anyMatch(judicialResult -> judicialResult.getCategory().equals(JudicialResultCategory.FINAL));
+    }
+
+    public static boolean isConcluded(final Offence offence, final List<DefendantJudicialResult> defendantJudicialResults, final List<JudicialResult> defendantCaseJudicialResults) {
+        final List<JudicialResult> caseJudicialResultsForOffence = ofNullable(defendantCaseJudicialResults).map(Collection::stream).orElseGet(Stream::empty)
+                .filter(judicialResult -> nonNull(judicialResult) && offence.getId().equals(judicialResult.getOffenceId()))
+                .collect(toList());
+
+        final List<JudicialResult> defendantJudicialResultsForTheOffence = ofNullable(defendantJudicialResults).map(Collection::stream).orElseGet(Stream::empty)
+                .map(DefendantJudicialResult::getJudicialResult)
+                .filter(judicialResult -> nonNull(judicialResult) && offence.getId().equals(judicialResult.getOffenceId()))
+                .collect(toList());
+
+        final Optional<Boolean> caseLevelConcluded = isEmpty(caseJudicialResultsForOffence) ? empty() : of(caseJudicialResultsForOffence.stream()
+                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory())));
+
+        final Optional<Boolean> defendantLevelConcluded = isEmpty(defendantJudicialResultsForTheOffence) ? empty() : of(defendantJudicialResultsForTheOffence.stream()
+                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory())));
+
+        final Optional<Boolean> offenceLevelConcluded = isEmpty(offence.getJudicialResults()) ? empty() : of(offence.getJudicialResults().stream()
+                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory())));
+
+        if (!offenceLevelConcluded.isPresent() && !defendantLevelConcluded.isPresent() && !caseLevelConcluded.isPresent()) {
+            return false;
+        }
+
+        final AtomicBoolean result = new AtomicBoolean(true);
+        offenceLevelConcluded.ifPresent(b -> result.set(result.get() && b));
+        defendantLevelConcluded.ifPresent(b -> result.set(result.get() && b));
+        caseLevelConcluded.ifPresent(b -> result.set(result.get() && b));
+
+        return result.get();
     }
 
     public static boolean hasNewAmendment(final Offence offence) {
@@ -413,7 +417,7 @@ public class DefendantHelper {
             builder.withDeletedOffences(deletedOffences);
             defendantOffencesChanged = true;
         }
-        return defendantOffencesChanged ? of(builder.build()) : Optional.empty();
+        return defendantOffencesChanged ? of(builder.build()) : empty();
     }
 
     private static List<Offence> processReportingRestrictionForAddedOffences(final List<Offence> offencesToBeProcessed, final Optional<List<JsonObject>> referenceDataOffences) {
@@ -465,7 +469,7 @@ public class DefendantHelper {
         if (!updatedOffences.isEmpty()) {
             return buildOffencesForDefendantChanged(prosecutionCaseId, defendantId, builder, updatedOffences);
         }
-        return Optional.empty();
+        return empty();
     }
 
     private static Optional<OffencesForDefendantChanged> buildOffencesForDefendantChanged(final UUID prosecutionCaseId,
@@ -528,20 +532,20 @@ public class DefendantHelper {
                 return getTemplateType(pleadOnline, soleOffence, offences);
             }
         }
-        return Optional.empty();
+        return empty();
     }
 
     private static Optional<TemplateType> getTemplateType(final PleadOnline pleadOnline, final boolean soleOffence, final List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences) {
         if (isOnlineGuiltyPleaCourtHearing(pleadOnline, soleOffence, offences)) {
-            return Optional.of(TemplateType.ONLINEGUILTYPLEACOURTHEARING);
+            return of(TemplateType.ONLINEGUILTYPLEACOURTHEARING);
         }
         if (isOnlineNotGuiltyPlea(soleOffence, offences)) {
-            return Optional.of(TemplateType.ONLINENOTGUILTYPLEA);
+            return of(TemplateType.ONLINENOTGUILTYPLEA);
         }
         if (isOnlineGuiltyPleaNoCourtHearing(pleadOnline, soleOffence, offences)) {
-            return Optional.of(TemplateType.ONLINEGUILTYPLEANOCOURTHEARING);
+            return of(TemplateType.ONLINEGUILTYPLEANOCOURTHEARING);
         }
-        return Optional.empty();
+        return empty();
     }
 
     private static boolean isOnlineGuiltyPleaNoCourtHearing(PleadOnline pleadOnline, boolean soleOffence, List<uk.gov.moj.cpp.progression.plea.json.schemas.Offence> offences) {

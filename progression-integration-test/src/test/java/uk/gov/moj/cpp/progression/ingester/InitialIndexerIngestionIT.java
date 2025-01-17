@@ -6,6 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.eventstore.management.commands.IndexerCatchupCommand.INDEXER_CATCHUP;
+import static uk.gov.justice.services.jmx.api.mbean.CommandRunMode.FORCED;
 import static uk.gov.justice.services.jmx.system.command.client.connection.JmxParametersBuilder.jmxParameters;
 import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.getHost;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
@@ -22,6 +23,7 @@ import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -41,6 +43,8 @@ public class InitialIndexerIngestionIT extends AbstractIT {
     private static final int PORT = 9990;
     private static final String USERNAME = "admin";
     private static final String PASSWORD = "admin";
+    private static final UUID NULL_COMMAND_RUNTIME_ID = null;
+    private static final String NULL_COMMAND_RUNTIME_STRING = null;
 
     private final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
     private final TestSystemCommanderClientFactory testSystemCommanderClientFactory = new TestSystemCommanderClientFactory();
@@ -103,7 +107,10 @@ public class InitialIndexerIngestionIT extends AbstractIT {
                 .build();
         try (final SystemCommanderClient systemCommanderClient = testSystemCommanderClientFactory.create(jmxParameters)) {
 
-            systemCommanderClient.getRemote(CONTEXT_NAME).call(INDEXER_CATCHUP);
+            systemCommanderClient.getRemote(CONTEXT_NAME).call(INDEXER_CATCHUP,
+                    NULL_COMMAND_RUNTIME_ID,
+                    NULL_COMMAND_RUNTIME_STRING,
+                    FORCED.isGuarded());
         }
     }
 

@@ -198,7 +198,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667493L;
+    private static final long serialVersionUID = 9128521802762667495L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -240,6 +240,10 @@ public class HearingAggregate implements Aggregate {
                 when(HearingForApplicationCreatedV2.class).apply(e -> {
                     setHearing(e.getHearing());
                     this.hearingListingStatus = e.getHearingListingStatus();
+                }),
+
+                when(HearingVerdictUpdated.class).apply(e -> {
+                    updateVerdict(e);
                 }),
                 when(ProsecutionCaseDefendantListingStatusChanged.class).apply(e -> {
                     setHearing(e.getHearing());
@@ -1970,14 +1974,33 @@ public class HearingAggregate implements Aggregate {
         }
     }
 
+    private void updateVerdict(final HearingVerdictUpdated hearingVerdictUpdated) {
+        this.hearing = ofNullable(hearingVerdictUpdated.getVerdict().getApplicationId())
+                .map(applicationId -> getHearingWithNewVerdictForApplication(applicationId, hearingVerdictUpdated.getVerdict()))
+                .orElseGet(() -> getHearingWithNewVerdictForOffences(hearingVerdictUpdated.getVerdict()));
+    }
+
     private Hearing getHearingWithNewVerdictForApplication(final UUID applicationId, final Verdict verdict) {
-        return Hearing.hearing().withValuesFrom(hearing)
-                .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
-                        .map(courtApplication -> !courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
-                                .withValuesFrom(courtApplication)
-                                .withVerdict(verdict)
-                                .build()).collect(collectingAndThen(Collectors.toList(), getListOrNull())))
-                .build();
+        Hearing hearingObj;
+        if(nonNull(verdict.getIsDeleted()) && verdict.getIsDeleted()) {
+            hearingObj = Hearing.hearing().withValuesFrom(hearing)
+                    .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                            .map(courtApplication -> !courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
+                                    .withValuesFrom(courtApplication)
+                                    .withVerdict(null)
+                                    .build()).collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                    .build();
+        } else {
+            hearingObj = Hearing.hearing().withValuesFrom(hearing)
+                    .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                            .map(courtApplication -> !courtApplication.getId().equals(applicationId) ? courtApplication : CourtApplication.courtApplication()
+                                    .withValuesFrom(courtApplication)
+                                    .withVerdict(verdict)
+                                    .build()).collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                    .build();
+        }
+
+        return hearingObj;
     }
 
     private Hearing getHearingWithNewVerdictForOffences(final Verdict verdict) {
@@ -2030,9 +2053,15 @@ public class HearingAggregate implements Aggregate {
 
     private Offence getOffenceWithNewVerdict(final Offence offence, final Verdict verdict) {
         if (verdict.getOffenceId().equals(offence.getId())) {
-            return Offence.offence().withValuesFrom(offence)
-                    .withVerdict(verdict)
-                    .build();
+            if(nonNull(verdict.getIsDeleted()) && verdict.getIsDeleted()) {
+                return Offence.offence().withValuesFrom(offence)
+                        .withVerdict(null)
+                        .build();
+            } else {
+                return Offence.offence().withValuesFrom(offence)
+                        .withVerdict(verdict)
+                        .build();
+            }
         } else {
             return offence;
         }

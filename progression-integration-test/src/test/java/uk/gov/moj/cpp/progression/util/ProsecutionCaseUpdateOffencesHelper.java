@@ -25,6 +25,7 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
     private static final String TEMPLATE_UPDATE_SINGLE_DEFENDANT_OFFENCES_PAYLOAD = "progression.update-defendant-offences.json";
     private static final String TEMPLATE_UPDATE_OFFENCE_PLEA_PAYLOAD = "progression.update-hearing-offence-plea.json";
     private static final String TEMPLATE_UPDATE_OFFENCE_VERDICT_PAYLOAD = "progression.update-hearing-offence-verdict.json";
+    private static final String TEMPLATE_UPDATE_CLEAR_OFFENCE_VERDICT_PAYLOAD = "progression.update-hearing-offence-clear-verdict.json";
     private static final String WRITE_MEDIA_TYPE_PLEA = "application/vnd.progression.update-hearing-offence-plea+json";
     private static final String WRITE_MEDIA_TYPE_VERDICT = "application/vnd.progression.update-hearing-offence-verdict+json";
     private static final String WRITE_MEDIA_TYPE_UPDATE_DEFENDANT_OFFENCE = "application/vnd.progression.update-defendant-offences+json";
@@ -74,6 +75,16 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
 
     public void updateOffenceVerdict(final String hearingId, final String offenceId) throws JSONException {
         final String jsonString = getPayload(TEMPLATE_UPDATE_OFFENCE_VERDICT_PAYLOAD);
+        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
+        jsonObjectPayload.getJSONObject("verdict").put("offenceId", offenceId);
+        jsonObjectPayload.put("hearingId", hearingId);
+
+        request = jsonObjectPayload.toString();
+        makePostCall(getWriteUrl("/hearing/" + hearingId + "/verdict"), WRITE_MEDIA_TYPE_VERDICT, request);
+    }
+
+    public void updateClearOffenceVerdict(final String hearingId, final String offenceId) throws JSONException {
+        final String jsonString = getPayload(TEMPLATE_UPDATE_CLEAR_OFFENCE_VERDICT_PAYLOAD);
         final JSONObject jsonObjectPayload = new JSONObject(jsonString);
         jsonObjectPayload.getJSONObject("verdict").put("offenceId", offenceId);
         jsonObjectPayload.put("hearingId", hearingId);

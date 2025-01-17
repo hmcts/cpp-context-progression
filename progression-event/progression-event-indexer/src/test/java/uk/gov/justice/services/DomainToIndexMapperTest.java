@@ -3,6 +3,7 @@ package uk.gov.justice.services;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.DomainToIndexMapper.addressLines;
+import static java.util.Arrays.asList;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.Defendant;
@@ -178,6 +179,31 @@ public class DomainToIndexMapperTest {
                                 .withIndicatedPleaDate(LocalDate.now())
                                 .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
                                 .withOriginatingHearingId(UUID.randomUUID())
+                                .build())
+                        .build()))
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertThat(party.getOffences().get(0).getPleas().get(0).getOriginatingHearingId(), is(defendant.getOffences().get(0).getIndicatedPlea().getOriginatingHearingId().toString()));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaValue(), is("INDICATED_GUILTY"));
+        assertThat(party.getOffences().get(0).getPleas().get(0).getPleaDate(), is(defendant.getOffences().get(0).getIndicatedPlea().getIndicatedPleaDate().toString()));
+    }
+
+    @Test
+    public void shouldConvertIndicatedGuiltyPleaToActualGuiltyPleaIfDefendantHasOldIndicatedPlea() {
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withOffences(asList(Offence.offence()
+                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                .withIndicatedPleaDate(LocalDate.now())
+                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
+                                .withOriginatingHearingId(UUID.randomUUID())
+                                .build())
+                        .build(), Offence.offence()
+                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                .withIndicatedPleaDate(LocalDate.now())
+                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
                                 .build())
                         .build()))
                 .build();
