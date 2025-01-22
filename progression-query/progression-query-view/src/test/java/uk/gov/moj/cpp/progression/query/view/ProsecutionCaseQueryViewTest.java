@@ -37,10 +37,6 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.HearingDay;
-import uk.gov.justice.core.courts.FeeStatus;
-import uk.gov.justice.core.courts.FeeType;
-import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.FeeStatus;
 import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.HearingDay;
@@ -102,7 +98,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentReposi
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.RelatedReferenceRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SearchProsecutionCaseRepository;
 

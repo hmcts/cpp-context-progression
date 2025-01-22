@@ -66,7 +66,7 @@ public class OpaNoticeService {
         LOGGER.info("{} received and size of results from database is {}", command, opaNotices.size());
 
         for (final JsonObject opaNotice : opaNotices) {
-            final ExecutionInfo executionInfo = new ExecutionInfo(opaNotice, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
+            final ExecutionInfo executionInfo = new ExecutionInfo(opaNotice, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED,  Priority.MEDIUM);
 
             executionService.executeWith(executionInfo);
         }

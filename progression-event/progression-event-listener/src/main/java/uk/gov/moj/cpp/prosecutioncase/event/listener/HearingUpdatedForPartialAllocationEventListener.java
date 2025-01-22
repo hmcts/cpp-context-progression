@@ -1,10 +1,7 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static java.util.Objects.nonNull;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.DefendantsToRemove;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
@@ -32,9 +29,16 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.persistence.NoResultException;
+import java.io.StringReader;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 @ServiceComponent(EVENT_LISTENER)
 public class HearingUpdatedForPartialAllocationEventListener {
@@ -64,11 +68,22 @@ public class HearingUpdatedForPartialAllocationEventListener {
         final HearingUpdatedForPartialAllocation hearingUpdatedForPartialAllocation = jsonObjectToObjectConverter.convert(payload, HearingUpdatedForPartialAllocation.class);
 
         final UUID hearingId = hearingUpdatedForPartialAllocation.getHearingId();
-        final Map<UUID, Map<UUID, List<UUID>>> caseDefendantOffenceMap =
+        final Map<UUID, Map<UUID, Set<UUID>>> caseDefendantOffenceMap =
                 hearingUpdatedForPartialAllocation.getProsecutionCasesToRemove().stream()
                         .collect(toMap(ProsecutionCasesToRemove::getCaseId, defendantsToRemove -> defendantsToRemove.getDefendantsToRemove().stream()
                                 .collect(toMap(DefendantsToRemove::getDefendantId, offencesToRemove -> offencesToRemove.getOffencesToRemove().stream()
-                                        .map(OffencesToRemove::getOffenceId).collect(toList())))));
+                                        .map(OffencesToRemove::getOffenceId).collect(toSet()),// Merge function for defendantId level (combine lists for duplicate keys)
+                                        (list1,list2) -> {
+                                            Set<UUID> mergedSet = new HashSet<>(list1);
+                                            mergedSet.addAll(list2);
+                                            return mergedSet;
+                                        })),                                // Merge function for caseId level (combine maps for duplicate keys)
+                                (map1, map2) -> {
+                                    map1.putAll(map2);
+                                    return map1;
+                                }
+
+                        ));
 
         final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingId);
         final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
@@ -109,7 +124,7 @@ public class HearingUpdatedForPartialAllocationEventListener {
         return object;
     }
 
-    private void removeProsecutionCasesFromHearing(final Hearing hearing, final Map<UUID, Map<UUID, List<UUID>>> caseDefendantOffenceMap, final Set<UUID> removedDefendantIdsFromHearing) {
+    private void removeProsecutionCasesFromHearing(final Hearing hearing, final Map<UUID, Map<UUID, Set<UUID>>> caseDefendantOffenceMap, final Set<UUID> removedDefendantIdsFromHearing) {
         hearing.getProsecutionCases().forEach(prosecutionCase -> {
 
             prosecutionCase.getDefendants().forEach(defendant -> {

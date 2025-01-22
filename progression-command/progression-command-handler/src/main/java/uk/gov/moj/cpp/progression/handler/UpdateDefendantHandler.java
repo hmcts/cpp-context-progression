@@ -65,7 +65,7 @@ public class UpdateDefendantHandler {
 
     }
 
-    @Handles("progression.command.update-defendant-address-on-case")
+     @Handles("progression.command.update-defendant-address-on-case")
     public void handleUpdateDefendantAddressOnCase(final Envelope<UpdateDefendantAddressOnCase> updateDefendantEnvelope) throws EventStreamException {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("progression.command.update-defendant-address-on-case {}", updateDefendantEnvelope.payload().getProsecutionCaseId());

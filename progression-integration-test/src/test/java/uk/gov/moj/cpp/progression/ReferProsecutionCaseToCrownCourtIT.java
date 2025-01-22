@@ -9,7 +9,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithMinimumAttributes;
@@ -17,9 +16,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryEthinicityData;
@@ -37,8 +36,8 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,8 +47,6 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
 
     private static final JmsMessageConsumerClient consumerForReferToCourtRejected = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.refer-prosecution-cases-to-court-rejected").getMessageConsumerClient();
-
-    private static final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
 
     private static final String SENT_FOR_LISTING_STATUS = "SENT_FOR_LISTING";
 
@@ -103,12 +100,10 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId);
 
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is("0a5372c5-b60f-4d95-8390-8c6462e2d7af")))));
+        final Matcher<? super ReadContext>[] caseMatchers = getProsecutionCaseMatchers(caseId, defendantId,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is("0a5372c5-b60f-4d95-8390-8c6462e2d7af"))));
 
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        final String hearingId = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
+        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, caseMatchers);
 
         List<Matcher> hearingMatchers = newArrayList(
                 withJsonPath("$.hearingListingStatus", is(SENT_FOR_LISTING_STATUS)));
@@ -120,7 +115,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
                 .replace("CASE-ID", caseId);
 
 
-        assertEquals(expectedPayload, getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId), getCustomComparator());
+        assertEquals(expectedPayload, getCourtDocumentsByCase(randomUUID().toString(), caseId), getCustomComparator());
 
     }
 
@@ -130,7 +125,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId);
         // when
-        verifyInMessagingQueueForReferToCourtsRejcted();
+        verifyInMessagingQueueForReferToCourtsRejected();
     }
 
     @Test
@@ -169,7 +164,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialIdActive, materialIdDeleted, courtDocumentId, referralReasonId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
-        assertThat("Court Document Does not exist", getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId).contains(caseId));
+        assertThat("Court Document Does not exist", getCourtDocumentsByCase(randomUUID().toString(), caseId).contains(caseId));
 
         final UUID supportUserGroup = randomUUID();
         setupAsAuthorisedUser(supportUserGroup, "stub-data/usersgroups.get-support-groups-by-user.json");
@@ -178,11 +173,11 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         addRemoveCourtDocument(courtDocumentId, materialIdActive, true, supportUserGroup);
 
         //read document
-        assertThat(getCourtDocumentsByCase(UUID.randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));
+        assertThat(getCourtDocumentsByCase(randomUUID().toString(), caseId).contains("{\"documentIndices\":[]}"), is(true));
     }
 
 
-    private static void verifyInMessagingQueueForReferToCourtsRejcted() {
+    private static void verifyInMessagingQueueForReferToCourtsRejected() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForReferToCourtRejected);
         assertThat(message.isPresent(), is(true));
 

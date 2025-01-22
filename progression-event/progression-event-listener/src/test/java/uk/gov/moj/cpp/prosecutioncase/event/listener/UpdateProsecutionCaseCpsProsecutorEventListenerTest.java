@@ -33,8 +33,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.mapping.SearchProsecutionCase;
 
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 import java.util.Collections;
 import java.util.UUID;
 import static java.util.Arrays.asList;

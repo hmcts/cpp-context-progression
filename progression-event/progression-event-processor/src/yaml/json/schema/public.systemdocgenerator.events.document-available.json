@@ -23,7 +23,7 @@
       "type": "string",
       "format": "date-time"
     },
-    "generateVersion" : {
+    "generateVersion": {
       "type": "integer"
     },
     "sourceCorrelationId": {
@@ -31,6 +31,26 @@
     },
     "originatingSource": {
       "type": "string"
+    },
+    "additionalInformation": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string"
+          },
+          "propertyValue": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "propertyName",
+          "propertyValue"
+        ]
+      }
     }
   },
   "additionalProperties": false,

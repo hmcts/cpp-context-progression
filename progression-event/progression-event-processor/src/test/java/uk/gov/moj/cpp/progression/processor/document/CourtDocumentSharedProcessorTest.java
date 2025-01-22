@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentSharedProcessor.PUBLIC_COURT_DOCUMENT_SHARED;
-import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentSharedProcessor.PUBLIC_COURT_DOCUMENT_SHARE_FAILED;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
@@ -88,25 +87,6 @@ public class CourtDocumentSharedProcessorTest {
 
         final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
         assertThat(commands.get(0).metadata().name(), is(PUBLIC_COURT_DOCUMENT_SHARED));
-
-    }
-
-
-    @Test
-    public void shouldPublishPublicEventWhenCourtDocumentShareFailedEventReceived() {
-
-        final JsonObject courtDocumentPayload = buildDocumentJsonObject();
-
-        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-document-share-failed"),
-                courtDocumentPayload);
-
-
-        eventProcessor.handleCourtDocumentShareFailedEvent(requestMessage);
-        verify(sender, times(1)).send(envelopeCaptor.capture());
-
-        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
-        assertThat(commands.get(0).metadata().name(), is(PUBLIC_COURT_DOCUMENT_SHARE_FAILED));
 
     }
 

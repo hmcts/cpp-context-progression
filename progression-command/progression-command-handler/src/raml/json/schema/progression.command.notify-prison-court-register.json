@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Command schema for notifying court register document to the court center",
+  "id": "http://justice.gov.uk/progression/courts/notify-prison-court-register.json",
+  "type": "object",
+  "properties": {
+    "courtCentreId": {
+      "description": "The court centre reference data identifier",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prisonCourtRegisterStreamId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "id": {
+      "description": "The court centre reference data identifier",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "systemDocGeneratorId": {
+      "description": "The document file id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "payloadFileId": {
+      "description": "The payload file id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties": false
+}

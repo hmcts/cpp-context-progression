@@ -182,6 +182,12 @@ public class DefendantMatchingEventListener {
             updateMasterDefendant(defendantId, masterDefendantId, prosecutionCase);
 
             MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
+
+            if (isNull(matchDefendantCaseHearingEntity)) {
+                final List<MatchDefendantCaseHearingEntity> entities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCaseId, defendantId);
+                matchDefendantCaseHearingEntity = nonNull(entities) && !entities.isEmpty()? entities.get(0):null;
+            }
+
             if (nonNull(matchDefendantCaseHearingEntity)) {
                 matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
             } else {

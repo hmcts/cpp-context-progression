@@ -37,7 +37,6 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentAudit;
 import uk.gov.justice.core.courts.CourtDocumentPrintTimeUpdated;
 import uk.gov.justice.core.courts.CourtDocumentSendToCps;
-import uk.gov.justice.core.courts.CourtDocumentShareFailed;
 import uk.gov.justice.core.courts.CourtDocumentSharedV2;
 import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
 import uk.gov.justice.core.courts.CourtDocumentUpdated;
@@ -272,42 +271,6 @@ public class CourtDocumentAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentAudit.class)));
-    }
-
-    @Test
-    public void shouldReturnCourtDocumentShareFailedWhenCourtDocumentIsRemoved() {
-
-        final UUID courtDocumentId = randomUUID();
-
-        target.apply(target.addCourtDocument(CourtDocument.courtDocument().withIsRemoved(FALSE).withCourtDocumentId(courtDocumentId).build()).collect(toList()));
-        target.removeCourtDocument(randomUUID(), randomUUID(), true);
-        final List<Object> returnedEventStream = target.shareCourtDocument(randomUUID(), randomUUID(), randomUUID(), null).collect(toList());
-
-        assertThat(returnedEventStream.size(), is(1));
-        final Object returnedObject = returnedEventStream.get(0);
-        assertThat(returnedObject.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentShareFailed.class)));
-
-        final CourtDocumentShareFailed returnedEvent = (CourtDocumentShareFailed) returnedObject;
-        assertThat(returnedEvent.getCourtDocumentId(), is(courtDocumentId));
-        assertThat(returnedEvent.getFailureReason(), is(format("Document is deleted. Could not share the given court document id: %s", courtDocumentId)));
-    }
-
-    @Test
-    public void shouldReturnCourtsDocumentRemovedBdf() {
-
-        final UUID courtDocumentId = randomUUID();
-
-        target.apply(target.addCourtDocument(CourtDocument.courtDocument().withIsRemoved(FALSE).withCourtDocumentId(courtDocumentId).build()).collect(toList()));
-        target.removeCourtDocumentByBdf(randomUUID(), true);
-        final List<Object> returnedEventStream = target.shareCourtDocument(randomUUID(), randomUUID(), randomUUID(), null).collect(toList());
-
-        assertThat(returnedEventStream.size(), is(1));
-        final Object returnedObject = returnedEventStream.get(0);
-        assertThat(returnedObject.getClass(), is(CoreMatchers.<Class<?>>equalTo(CourtDocumentShareFailed.class)));
-
-        final CourtDocumentShareFailed returnedEvent = (CourtDocumentShareFailed) returnedObject;
-        assertThat(returnedEvent.getCourtDocumentId(), is(courtDocumentId));
-        assertThat(returnedEvent.getFailureReason(), is(format("Document is deleted. Could not share the given court document id: %s", courtDocumentId)));
     }
 
     @Test

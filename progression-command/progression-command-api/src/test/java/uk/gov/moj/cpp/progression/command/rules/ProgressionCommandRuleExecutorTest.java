@@ -5,7 +5,6 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.LENIENT;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.adhocHearingCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMCreatePermission;
 import static uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants.getBCMEditPermission;
@@ -37,7 +36,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.kie.api.runtime.ExecutionResults;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
 import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
@@ -104,12 +102,7 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
 
     public enum ProgressionRules {
 
-        AddCaseToCrownCourtTest("progression.command.add-case-to-crown-court", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
         DocumentUploadRuleTest("progression.command.defendant-document", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
-        RequestPSRForDefendantsTest("progression.command.request-psr-for-defendants", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
-        SendingCommittalHearingInfoTest("progression.command.sending-committal-hearing-information", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
-        SentenceHearingDateTest("progression.command.sentence-hearing-date", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
-        SendingSheetCompleteRuleTest("progression.command.complete-sending-sheet", "Crown Court Admin", "Listing Officers", "Court Clerks", "Court Administrators", "Legal Advisers", "Court Associate"),
         ReferCaseToCourtTest("progression.refer-cases-to-court", "Legal Advisers", "Magistrates"),
         UpdateDefendentDetails("progression.update-defendant-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate"),
         UpdateOffences("progression.update-offences-for-prosecution-case", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate"),

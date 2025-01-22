@@ -417,37 +417,41 @@ public class CaseAtAGlanceHelper {
     }
 
     private Optional<Plea> getPlea(final UUID defendantId, final UUID offenceId) {
-        return getResultedHearings()
-                .flatMap(hearings -> hearings.getDefendants().stream())
+        if (getResultedHearing().isPresent()) {
+            return getResultedHearing().get().getDefendants().stream()
                 .filter(defendants -> defendantId.equals(defendants.getId()))
                 .flatMap(defendants -> defendants.getOffences().stream())
                 .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getPleas()))
                 .flatMap(offences -> offences.getPleas().stream())
-                .filter(plea -> nonNull(plea.getPleaValue()) && nonNull(plea.getPleaDate()))
-                .max(comparing(Plea::getPleaDate));
+                .filter(plea -> nonNull(plea.getPleaValue()) && nonNull(plea.getPleaDate())).findFirst();
+         }
+        return Optional.empty();
     }
 
     private Optional<IndicatedPlea> getIndicatedPlea(final UUID defendantId, final UUID offenceId) {
-        return getResultedHearings()
-                .flatMap(hearings -> hearings.getDefendants().stream())
-                .filter(defendants -> defendantId.equals(defendants.getId()))
-                .flatMap(defendants -> defendants.getOffences().stream())
-                .filter(offences -> offenceId.equals(offences.getId()) && nonNull(offences.getIndicatedPlea()))
-                .map(Offences::getIndicatedPlea)
-                .filter(indicatedPlea -> nonNull(indicatedPlea.getIndicatedPleaValue()) && nonNull(indicatedPlea.getIndicatedPleaDate()))
-                .findFirst();
+        if (getResultedHearing().isPresent()) {
+            return getResultedHearing().get().getDefendants().stream()
+                    .filter(defendants -> defendantId.equals(defendants.getId()))
+                    .flatMap(defendants -> defendants.getOffences().stream())
+                    .filter(offences -> offenceId.equals(offences.getId()) && nonNull(offences.getIndicatedPlea()))
+                    .map(Offences::getIndicatedPlea)
+                    .filter(indicatedPlea -> nonNull(indicatedPlea.getIndicatedPleaValue()) && nonNull(indicatedPlea.getIndicatedPleaDate()))
+                    .findFirst();
+        }
+        return Optional.empty();
     }
 
 
     private Optional<Verdict> getVerdict(final UUID defendantId, final UUID offenceId) {
-        return getResultedHearings()
-                .flatMap(hearings -> hearings.getDefendants().stream())
-                .filter(defendants -> defendantId.equals(defendants.getId()))
-                .flatMap(defendants -> defendants.getOffences().stream())
-                .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getVerdicts()))
-                .flatMap(offences -> offences.getVerdicts().stream())
-                .filter(verdict -> nonNull(verdict.getVerdictType()) && nonNull(verdict.getVerdictDate()))
-                .max(comparing(Verdict::getVerdictDate));
+        if (getResultedHearing().isPresent()) {
+            return getResultedHearing().get().getDefendants().stream()
+                    .filter(defendants -> defendantId.equals(defendants.getId()))
+                    .flatMap(defendants -> defendants.getOffences().stream())
+                    .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getVerdicts()))
+                    .flatMap(offences -> offences.getVerdicts().stream())
+                    .filter(verdict -> nonNull(verdict.getVerdictType()) && nonNull(verdict.getVerdictDate())).findFirst();
+        }
+        return Optional.empty();
     }
 
     private List<JudicialResult> getDefendantLevelJudicialResults() {
@@ -475,6 +479,11 @@ public class CaseAtAGlanceHelper {
     private Stream<Hearings> getResultedHearings() {
         return hearingsList.stream()
                 .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus()));
+    }
+
+    private Optional<Hearings> getResultedHearing() {
+        return hearingsList.stream()
+                .filter(hearings -> HEARING_RESULTED.equals(hearings.getHearingListingStatus())).findFirst();
     }
 
     private boolean isUseResultText(final String resultText){

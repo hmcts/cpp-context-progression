@@ -48,7 +48,7 @@ public class HearingUnallocatedEventProcessor {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("{} event received with metadata {} and payload {}",
-                    PUBLIC_EVENTS_LISTING_OFFENCES_REMOVED_FROM_EXISTING_UNALLOCATED_HEARING, jsonEnvelope.metadata(), jsonEnvelope.payloadAsJsonObject());
+                    PUBLIC_EVENTS_LISTING_OFFENCES_REMOVED_FROM_EXISTING_UNALLOCATED_HEARING, jsonEnvelope.metadata(), jsonEnvelope.toObfuscatedDebugString());
         }
 
         commandRemoveOffencesFromExistingHearing(jsonEnvelope);
@@ -62,7 +62,7 @@ public class HearingUnallocatedEventProcessor {
     private void log(final String eventName, final JsonEnvelope jsonEnvelope) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("{} event received with metadata {} and payload {}",
-                    eventName, jsonEnvelope.metadata(), jsonEnvelope.payloadAsJsonObject());
+                    eventName, jsonEnvelope.metadata(), jsonEnvelope.toObfuscatedDebugString());
         }
     }
 }

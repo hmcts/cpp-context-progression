@@ -247,7 +247,7 @@ public class CourtDocumentQueryApi {
                 .withName(COURT_DOCUMENTS_SEARCH_NAME)
                 .build();
 
-        return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject(), isProsecutingCase)));
+        return courtDocumentQueryView.searchCourtDocumentsForProsecution(envelopeFrom(metadata, getUpdatedQueryPayload(query.payloadAsJsonObject(), isProsecutingCase)));
 
     }
 

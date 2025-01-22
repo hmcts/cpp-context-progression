@@ -19,7 +19,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -46,8 +45,8 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     private String caseId;
     private String applicantId;
     private String applicantDefendantId;
-    private String respondantId;
-    private String respondantDefendantId;
+    private String respondentId;
+    private String respondentDefendantId;
     private String applicationReference;
     private String applicationStatus;
 
@@ -57,8 +56,8 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
         caseId = randomUUID().toString();
         applicantId = randomUUID().toString();
         applicantDefendantId = randomUUID().toString();
-        respondantId = randomUUID().toString();
-        respondantDefendantId = randomUUID().toString();
+        respondentId = randomUUID().toString();
+        respondentDefendantId = randomUUID().toString();
         applicationReference = randomAlphanumeric(10).toUpperCase();
         applicationStatus = ApplicationStatus.DRAFT.toString();
         deleteAndCreateIndex();
@@ -68,7 +67,6 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     @AfterEach
     public void tearDown() {
         cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
     private void verifyMessageReceived(final JmsMessageConsumerClient messageConsumer) {
@@ -82,7 +80,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-edited").getMessageConsumerClient();
 
-        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
+        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondentId, respondentDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
         verifyMessageReceived(messageConsumer);
 
         final Matcher[] matchers = {withJsonPath("$.parties[?(@._party_type=='RESPONDENT')].firstName", hasItem(equalTo("updatedA")))};
@@ -104,7 +102,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-edited").getMessageConsumerClient();
 
-        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationReference, UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
+        updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondentId, respondentDefendantId, applicationReference, UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
         verifyMessageReceived(messageConsumer);
 
         final Matcher[] matchers = {withJsonPath("$.parties[?(@._party_type=='APPLICANT')].organisationName", hasItem(equalTo("updatedA")))};
@@ -120,7 +118,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     }
 
     private void setUpCourtApplication(final String payloadPath) throws IOException {
-        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondantId, respondantDefendantId, applicationStatus, payloadPath);
+        addCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondentId, respondentDefendantId, applicationStatus, payloadPath);
 
         final Matcher[] matchers = {withJsonPath("$.caseId", equalTo(applicationId))};
 
@@ -132,8 +130,8 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
                 .replaceAll("RANDOM_APPLICATION_ID", applicationId)
                 .replaceAll("RANDOM_APPLICANT_ID", applicantId)
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondentId)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId)
                 .replaceAll("APPLICATION_STATUS", applicationStatus)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
 
@@ -150,8 +148,8 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
                 .replaceAll("RANDOM_CASE_ID", caseId)
                 .replaceAll("RANDOM_APPLICANT_ID", applicantId)
                 .replaceAll("RANDOM_APPLICANT_DEFENDANT_ID", applicantDefendantId)
-                .replaceAll("RANDOM_RESPONDANT_ID", respondantId)
-                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondantDefendantId)
+                .replaceAll("RANDOM_RESPONDANT_ID", respondentId)
+                .replaceAll("RANDOM_RESPONDANT_DEFENDANT_ID", respondentDefendantId)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
 
         final JsonObject updateJson = jsonFromString(payloadUpdatedStr);

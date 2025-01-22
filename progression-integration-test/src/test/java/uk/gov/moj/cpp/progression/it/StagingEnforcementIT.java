@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.it;
 
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
@@ -9,8 +10,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.NowsRequestHelper;
-
-import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -25,16 +24,8 @@ public class StagingEnforcementIT extends AbstractIT {
     private static final JmsMessageProducerClient producer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     @Test
-    public void shouldReceiveAcknowledgement() {
-        final String requestId = UUID.randomUUID().toString();
-        final String accountNumber = "AER123451";
-        makeNowsRequest(requestId);
-        sendSuccessAcknowledgement(requestId, accountNumber);
-    }
-
-    @Test
     public void shouldNotReceiveAcknowledgementWhenRequestDoubled() {
-        final String requestId = UUID.randomUUID().toString();
+        final String requestId = randomUUID().toString();
         final String accountNumber = "AER123451";
         makeNowsRequest(requestId);
         sendSuccessAcknowledgement(requestId, accountNumber);
@@ -45,7 +36,7 @@ public class StagingEnforcementIT extends AbstractIT {
 
     @Test
     public void shouldReceiveErrorAcknowledgement() {
-        final String requestId = UUID.randomUUID().toString();
+        final String requestId = randomUUID().toString();
         makeNowsRequest(requestId);
         sendErrorAcknowledgementAndVerify(requestId);
     }
@@ -58,10 +49,10 @@ public class StagingEnforcementIT extends AbstractIT {
 
     private String prepareAddNowDocumentRequestPayload(final String requestId) {
         String body = getPayload("enforcement/progression.add-now-document-request.json");
-        body = body.replaceAll("%HEARING_ID%", UUID.randomUUID().toString())
-                .replaceAll("%MATERIAL_ID%", UUID.randomUUID().toString())
+        body = body.replaceAll("%HEARING_ID%", randomUUID().toString())
+                .replaceAll("%MATERIAL_ID%", randomUUID().toString())
                 .replaceAll("%REQUEST_ID%", requestId)
-                .replaceAll("%DEFENDANT_ID%", UUID.randomUUID().toString());
+                .replaceAll("%DEFENDANT_ID%", randomUUID().toString());
         return body;
     }
 

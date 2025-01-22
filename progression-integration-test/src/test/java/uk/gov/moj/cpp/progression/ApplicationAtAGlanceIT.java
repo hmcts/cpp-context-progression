@@ -27,6 +27,7 @@ import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUER
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
@@ -40,6 +41,7 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRole
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
@@ -48,7 +50,9 @@ import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(JmsResourceManagementExtension.class)
 public class ApplicationAtAGlanceIT extends AbstractIT {
     private static final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -113,8 +117,9 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldVerifyLinkedApplicationsInApplicationAtAGlance() throws Exception {
         doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         doHearingConfirmedAndVerify();
+
         final String firstApplicationId = courtApplicationId;
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
         verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
@@ -262,16 +267,6 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),
                                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionAuthorityCode)),
                                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference))
-//                                withJsonPath("$.linkedCases[0].offences.length()", equalTo(1)),
-//                                withJsonPath("$.linkedCases[0].offences[0].wording", equalTo("Some offence wording"))
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults.length()", equalTo(1)),
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].id", equalTo("f8e926eb-704a-457a-a794-8c3ad40d3113")),
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].label", equalTo("wording for linked case results")),
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].orderedDate", equalTo("2019-01-01")),
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].lastSharedDateTime", equalTo("2019-02-01")),
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].amendmentDate", equalTo("2019-03-01")),
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].amendmentReason", equalTo("wording for linked case amendment")),
-//                                withJsonPath("$.linkedCases[0].offences[0].aagResults[0].amendedBy", equalTo("scott dale"))
                         )));
     }
 

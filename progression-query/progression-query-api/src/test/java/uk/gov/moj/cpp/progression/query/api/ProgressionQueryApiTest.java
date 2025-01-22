@@ -8,7 +8,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.CaseNotesQueryView;
 import uk.gov.moj.cpp.progression.query.DefendantByLAAContractNumberQueryView;
 import uk.gov.moj.cpp.progression.query.HearingQueryView;
-import uk.gov.moj.cpp.progression.query.view.ProgressionQueryView;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,9 +23,6 @@ public class ProgressionQueryApiTest {
     private JsonEnvelope response;
 
     @Mock
-    private ProgressionQueryView progressionQueryView;
-
-    @Mock
     private HearingQueryView hearingQueryView;
 
     @Mock
@@ -37,24 +33,6 @@ public class ProgressionQueryApiTest {
 
     @InjectMocks
     private ProgressionQueryApi progressionHearingsQueryApi;
-
-    @Test
-    public void shouldHandleCaseprogressiondetailQuery() {
-        when(progressionQueryView.getCaseProgressionDetails(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getCaseprogressiondetail(query), equalTo(response));
-    }
-
-    @Test
-    public void shouldGetDefendantDocumentQuery() {
-        when(progressionQueryView.getDefendantDocument(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getDefendantDocument(query), equalTo(response));
-    }
-
-    @Test
-    public void shouldGetCaseSearchByMaterialId() {
-        when(progressionQueryView.searchCaseByMaterialId(query)).thenReturn(response);
-        assertThat(progressionHearingsQueryApi.getCaseSearchByMaterialId(query), equalTo(response));
-    }
 
     @Test
     public void shouldGetHearingByHearingId() {

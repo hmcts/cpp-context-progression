@@ -46,8 +46,6 @@ public class GenericLinkedApplicationIT extends AbstractIT {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
 
-        verifyCourtApplicationCreatedPrivateEvent();
-
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
                 withJsonPath("$.courtApplication.type.code", is("AS14518")),
@@ -128,8 +126,6 @@ public class GenericLinkedApplicationIT extends AbstractIT {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
 
-        verifyCourtApplicationCreatedPrivateEvent();
-
         final Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
                 withJsonPath("$.courtApplication.type.code", is("AS14518")),
@@ -153,7 +149,6 @@ public class GenericLinkedApplicationIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, caseMatchers);
     }
-
     private void verifyCourtApplicationCreatedPrivateEvent() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());

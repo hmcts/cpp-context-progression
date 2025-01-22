@@ -12,6 +12,8 @@ import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStu
 import static uk.gov.moj.cpp.progression.stub.CourtOrderStub.setupCourtOrdersStub;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFile;
+import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.stubProbationHearing;
+import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.stubProbationHearingDeleted;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceByOffenceCode;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubEnforcementArea;
@@ -64,8 +66,6 @@ public class AbstractIT {
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
     protected static final String HEARING_ID_TYPE_TRIAL = randomUUID().toString();
-
-    protected static final String DEFENDANT_ID = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_TRIAL_OF_ISSUE = randomUUID().toString();
     protected static final String HEARING_ID_TYPE_NON_TRIAL = randomUUID().toString();
     protected static final String REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON = "/restResource/ref-data-get-organisation.json";
@@ -128,7 +128,7 @@ public class AbstractIT {
         stubQueryNationalityData("/restResource/ref-data-nationalities.json", randomUUID());
         stubQueryHearingTypeData("/restResource/ref-data-hearing-types.json", randomUUID());
         stubQueryReferralReasons("/restResource/referencedata.query.referral-reasons.json", randomUUID());
-        stubQueryJudiciaries("/restResource/referencedata.query.judiciaries.json", randomUUID());
+        stubQueryJudiciaries("/restResource/referencedata.query.judiciaries.json");
         stubQueryPrisonSuites("/restResource/ref-data.prisons-custody-suites.json");
         stubEnforcementArea("/restResource/referencedata.query.enforcement-area.json");
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
@@ -145,8 +145,7 @@ public class AbstractIT {
         stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), "2099/1234567L", "1234567");
         setupCourtOrdersStub();
         IdMapperStub.setUp();
+        stubProbationHearing();
+        stubProbationHearingDeleted();
     }
-
-
-
 }

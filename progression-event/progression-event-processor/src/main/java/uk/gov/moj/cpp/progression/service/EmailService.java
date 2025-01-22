@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 public class EmailService {
-    private static final String URI_TO_MATERIAL = "defence/case/materials?caseId=%s&material=%s";
+    private static final String URI_TO_MATERIAL = "defence/case/materials/%s/%s/defending?advocate=true";
     private static final String MATERIAL_SECTIONS_URL = "MATERIAL_SECTIONS_URL";
     private static final String URN = "URN";
     private static final String DEFENDANT_PATH_PARAM = "&defendantId=";
@@ -42,7 +42,7 @@ public class EmailService {
                                        final String documentSection,
                                        final String documentName) {
         if (!defendantAndRelatedOrganisationEmail.isEmpty()) {
-            final String urlLink = format(URI_TO_MATERIAL, caseId, materialId);
+            final String urlLink = format(URI_TO_MATERIAL, urn, caseId);
             final String linkToMaterialPage = applicationParameters.getEndClientHost().concat(urlLink);
             final List<EmailChannel> emailChannelList = defendantAndRelatedOrganisationEmail.keySet()
                     .stream().map(x -> buildEmailChannel(defendantAndRelatedOrganisationEmail.get(x),

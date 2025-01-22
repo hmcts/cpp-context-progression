@@ -1,0 +1,10 @@
+{
+  "id": "2cd85752-8329-48f5-8708-a396c8e8835f",
+  "name": "date",
+  "label": "date",
+  "type": "date",
+  "required": true,
+  "promptOrder": 101,
+  "defaultValue": "28",
+  "value": "2020-07-15"
+}

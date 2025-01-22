@@ -4,11 +4,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.exactly;
+import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.notMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
@@ -21,14 +22,13 @@ import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import com.github.tomakehurst.wiremock.client.CountMatchingStrategy;
+import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
-
-/**
- * Created by satishkumar on 10/12/2018.
- */
 public class NotificationServiceStub {
     public static final String NOTIFICATION_NOTIFY_ENDPOINT = "/notificationnotify-service/command/api/rest/notificationnotify/notifications/.*";
     public static final String NOTIFICATION_NOTIFY_CONTENT_TYPE = "application/vnd.notificationnotify.letter+json";
@@ -65,120 +65,73 @@ public class NotificationServiceStub {
                         .withHeader("Ocp-Apim-Trace", "true")));
     }
 
-    public static void verifyBcmNotificationApi(final List<String> expectedValues) {
-        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
-            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/CPS/v1/notification/bcm-notification"));
-            expectedValues.forEach(
-                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
-            );
-            verify(requestPatternBuilder);
-            return true;
-        });
-    }
-
-    public static void verifyNotificationApi(final List<String> expectedValues) {
-        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
-            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/notification-cms/v1/transformAndSendCms"));
-            expectedValues.forEach(
-                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
-            );
-            verify(requestPatternBuilder);
-            return true;
-        });
-    }
-
-    public static void verifyBcmNotificationApiNotInvoked(final List<String> expectedValues) {
-        await().atMost(90, SECONDS).pollInterval(5, SECONDS).until(() -> {
-            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching("/CPS/v1/notification/bcm-notification"));
-            expectedValues.forEach(
-                    expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
-            );
-            verify(0, requestPatternBuilder);
-            return true;
-        });
-    }
-
-    public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {
+    public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues, CountMatchingStrategy expectedCount) {
+        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
             );
             requestPatternBuilder.withRequestBody(notMatching("materialUrl"));
-            verify(requestPatternBuilder);
+            try {
+                verify(expectedCount, requestPatternBuilder);
+            } catch (VerificationException e) {
+                return false;
+            }
             return true;
         });
     }
 
+    public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues, int count) {
+        verifyEmailNotificationIsRaisedWithoutAttachment(expectedValues, exactly(count));
+    }
+
+    public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues) {
+        verifyEmailNotificationIsRaisedWithoutAttachment(expectedValues, moreThanOrExactly(1));
+    }
+
+    public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues) {
+        verifyEmailNotificationIsRaisedWithAttachment(expectedValues, Optional.empty());
+    }
+
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues, final UUID materialId) {
-        await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {
+        verifyEmailNotificationIsRaisedWithAttachment(expectedValues, Optional.of(materialId));
+    }
+
+    public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues, Optional<UUID> materialId) {
+        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
             );
             requestPatternBuilder.withRequestBody(containing("materialUrl"));
-            requestPatternBuilder.withRequestBody(containing(materialId.toString()));
-            verify(requestPatternBuilder);
+            materialId.ifPresent(m -> requestPatternBuilder.withRequestBody(containing(m.toString())));
+            try {
+                verify(requestPatternBuilder);
+            } catch (VerificationException e) {
+                return false;
+            }
             return true;
         });
     }
 
     public static void verifyCreateLetterRequested(final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(5, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
             RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
             );
-            verify(requestPatternBuilder);
+            try {
+                verify(requestPatternBuilder);
+            } catch (VerificationException e) {
+                return false;
+            }
             return true;
         });
     }
 
-    public static void verifyNoLetterRequested(final List<String> notExpectedValues) {
-        await().atMost(30, SECONDS).pollDelay(5, SECONDS).pollInterval(5, SECONDS).until(() -> {
-            RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
-            notExpectedValues.forEach(
-                    notExpectedValue -> requestPatternBuilder.withRequestBody(containing(notExpectedValue))
-            );
-            requestPatternBuilder.withRequestBody(containing("letterUrl"));
-            verify(0, requestPatternBuilder);
-            return true;
-        });
-    }
-
-    public static void verifyNoEmailNotificationIsRaised(final List<String> notExpectedValues) {
-        await().atMost(30, SECONDS).pollDelay(5, SECONDS).pollInterval(5, SECONDS).until(() -> {
-            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
-            notExpectedValues.forEach(
-                    notExpectedValue -> requestPatternBuilder.withRequestBody(containing(notExpectedValue))
-            );
-            requestPatternBuilder.withRequestBody(containing("sendToAddress"));
-            requestPatternBuilder.withRequestBody(containing("templateId"));
-            verify(0, requestPatternBuilder);
-            return true;
-        });
-    }
-
-    public static void stubForApiNotification(){
-        stubFor(post(urlPathEqualTo("/notification-cms/v1/transformAndSendCms"))
-                .withRequestBody(equalToJson("{\"businessEventType\":\"now-generated-for-cps-subscription\",\"notificationDate\":\"2022-07-01T08:59:21.067Z\",\"notificationType\":\"court-now-created\",\"subjectBusinessObjectId\":\"7325fcd3-fb0a-4dbb-a876-848f6893aa09\",\"subjectDetails\":{\"material\":\"5e1cc18c-76dc-47dd-99c1-d6f87385edf1\",\"materialContentType\":\"pdf\",\"materialType\":\"SJP Notice\",\"prosecutionCaseSubject\":{\"caseUrn\":\"3cdbf809\",\"defendantSubject\":{\"asn\":\"arrest123\",\"prosecutorDefendantId\":\"TFL12345-ABC\"},\"prosecutingAuthority\":\"GB10056\"}}}"))
-                .willReturn(aResponse().withStatus(SC_OK)
-                        .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
-                        .withHeader("Ocp-Apim-Trace", "true")));
-    }
-
-    public static void studCotrFormServedNotificationCms() {
+    public static void stubCotrFormServedNotificationCms() {
         stubFor(post(urlPathEqualTo(NOTIFY_CMS_TRANSFORM_AND_SEND))
                 .withRequestBody(containing(COTR_FORM_SERVED))
                 .willReturn(aResponse().withStatus(SC_OK)));
-    }
-
-    public static void verifyCotrFormServedNotifyCms() {
-        await().atMost(60, SECONDS).pollInterval(10, SECONDS).until(() -> {
-            final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlEqualTo(NOTIFY_CMS_TRANSFORM_AND_SEND));
-            requestPatternBuilder.withRequestBody(containing(COTR_FORM_SERVED));
-            verify(requestPatternBuilder);
-            return true;
-        });
     }
 }

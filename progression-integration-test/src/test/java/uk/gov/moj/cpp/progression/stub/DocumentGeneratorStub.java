@@ -8,7 +8,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.util.Optional.empty;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.awaitility.core.ConditionTimeoutException;
 import org.json.JSONException;
@@ -43,16 +41,6 @@ public class DocumentGeneratorStub {
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withBody(documentText.getBytes())));
     }
-
-    public static void verifyCreate(List<String> expectedValues) {
-
-        RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(PATH));
-        expectedValues.forEach(
-                expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
-        );
-        verify(requestPatternBuilder);
-    }
-
 
     public static Optional<JSONObject> getCrownCourtExtractDocumentRequestByDefendant(final String defendantId) {
         return getDocumentRequestsAsStream().stream()
@@ -116,7 +104,7 @@ public class DocumentGeneratorStub {
 
     public static Optional<JSONObject> pollDocumentGenerationRequest(final Predicate<JSONObject> requestPayloadPredicate) {
         try {
-            Optional<JSONObject> jsonObject = await().until(() -> {
+            return await().until(() -> {
                             return findAll(postRequestedFor(urlPathMatching(PATH)))
                                     .stream()
                                     .map(LoggedRequest::getBodyAsString)
@@ -130,7 +118,6 @@ public class DocumentGeneratorStub {
                                     .filter(requestPayloadPredicate).findFirst();
                     },
                     is(not(empty())));
-            return jsonObject;
         } catch (final ConditionTimeoutException timeoutException) {
             return Optional.empty();
         }

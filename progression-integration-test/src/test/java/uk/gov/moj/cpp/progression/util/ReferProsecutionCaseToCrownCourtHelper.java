@@ -14,7 +14,6 @@ import java.util.List;
 
 import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
-import org.hamcrest.collection.IsCollectionWithSize;
 
 public class ReferProsecutionCaseToCrownCourtHelper {
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
@@ -134,20 +133,6 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
         return matchers.toArray(new Matcher[0]);
 
-    }
-
-    public static List<Matcher<? super ReadContext>> getCourtDocumentMatchers(final String caseId, final String courtDocumentId, final String materialIdActive, final int position) {
-        return newArrayList(
-                withJsonPath("$.courtDocuments[" + position + "].courtDocumentId", is(courtDocumentId)),
-                withJsonPath("$.courtDocuments[" + position + "].documentCategory.defendantDocument.prosecutionCaseId", is(caseId)),
-                withJsonPath("$.courtDocuments[" + position + "].name", is("Bank Statement")),
-                withJsonPath("$.courtDocuments[" + position + "].documentTypeId", is("1b7e6a7a-a571-4ab9-8895-4b1a58424d78")),
-                withJsonPath("$.courtDocuments[" + position + "].materials", IsCollectionWithSize.hasSize(2)),
-                withJsonPath("$.courtDocuments[" + position + "].materials[0].id", is(materialIdActive)),
-                withJsonPath("$.courtDocuments[" + position + "].materials[0].name", is("BankStatment.pdf")),
-                withJsonPath("$.courtDocuments[" + position + "].materials[0].uploadDateTime", is("2018-03-20T16:14:29.000Z"))
-
-        );
     }
 
     public static List<Matcher<? super ReadContext>> getDefendantMatchers(final String caseId, final String defendantId) {

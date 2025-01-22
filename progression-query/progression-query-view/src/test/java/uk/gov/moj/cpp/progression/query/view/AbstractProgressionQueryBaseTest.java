@@ -1,18 +1,11 @@
 package uk.gov.moj.cpp.progression.query.view;
 
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
-import uk.gov.moj.cpp.progression.persistence.entity.CPRDetails;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
 import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.DefendantBailDocument;
-import uk.gov.moj.cpp.progression.persistence.entity.DefendantOffenderDetails;
 import uk.gov.moj.cpp.progression.persistence.entity.InterpreterDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.OffencePlea;
 import uk.gov.moj.cpp.progression.persistence.entity.Person;
-import uk.gov.moj.cpp.progression.query.view.response.CaseProgressionDetailView;
-import uk.gov.moj.cpp.progression.query.view.response.DefendantView;
-import uk.gov.moj.cpp.progression.query.view.response.DefendantsView;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -117,39 +110,6 @@ public class AbstractProgressionQueryBaseTest {
         caseProgressionDetail.setCourtCentreId("court centre id");
 
         return caseProgressionDetail;
-    }
-
-
-    protected CaseProgressionDetailView getCaseProgressionDetailView(UUID caseId, UUID defendantId) throws Exception {
-
-        List<DefendantView> defendants = getDefendants(defendantId, caseId).stream().map(DefendantView::new).collect(Collectors.toList());
-        CaseProgressionDetailView caseProgressionDetail = CaseProgressionDetailView.createCaseView(getCaseProgressionDetail(caseId, defendantId));
-        caseProgressionDetail.setCaseId(caseId.toString());
-        caseProgressionDetail.setSendingCommittalDate(LocalDate.now());
-        caseProgressionDetail.setFromCourtCentre("From Centre Court");
-        caseProgressionDetail.setDefendants(defendants);
-        caseProgressionDetail.setCaseUrn("Case URN");
-        caseProgressionDetail.setSentenceHearingDate(LocalDate.now());
-        caseProgressionDetail.setCourtCentreId("court centre id");
-
-        return caseProgressionDetail;
-    }
-
-    protected OffenceDetail getOffenceDetail(UUID offenceId) {
-        OffenceDetail detail = new OffenceDetail();
-        detail.setOrderIndex(1);
-        detail.setCount(2);
-        detail.setId(offenceId);
-        detail.setOffencePlea(new OffencePlea(UUID.randomUUID(), "Plea", LocalDate.now()));
-        detail.setWording("Offence Wording");
-        detail.setCpr(new CPRDetails(new DefendantOffenderDetails("2018", "MOJ", "12", "4")));
-        return detail;
-    }
-
-    protected DefendantsView getDefendantsView() {
-        List<DefendantView> defendantViews = new ArrayList<>();
-        DefendantsView views = new DefendantsView(defendantViews);
-        return views;
     }
 
     private Person createPerson(final UUID personId, final String title,

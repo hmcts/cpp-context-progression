@@ -4,7 +4,6 @@ import static javax.json.Json.createArrayBuilder;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertApplicantDetails;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertDefendantDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertOrganisationDetails;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertRespondantDetails;
 
@@ -26,25 +25,6 @@ public class CourtApplicationVerificationHelper {
     public static void verifyEmbeddedApplication(final String applicationid, final JsonObject transformedJson) {
         assertEquals(applicationid, transformedJson.getString("caseId"));
         assertEquals("PROSECUTION", transformedJson.getString("_case_type"));
-    }
-
-    public static void verifyExtendHearing(final DocumentContext inputCourtApplication,
-                                           final JsonObject transformedJson) {
-
-        final JsonArray outputCourtApplications = transformedJson.getJsonArray("applications");
-        final String id = ((JsonString) inputCourtApplication.read("$.hearingRequest.courtApplications[0].id")).getString();
-        final String applicationType = ((JsonString) inputCourtApplication.read("$.hearingRequest.courtApplications[0].type.applicationType")).getString();
-        final String applicationReceivedDate = ((JsonString) inputCourtApplication.read("$.hearingRequest.courtApplications[0].applicationReceivedDate")).getString();
-        final String applicationDecisionSoughtByDate = ((JsonString) inputCourtApplication.read("$.hearingRequest.courtApplications[0].applicationDecisionSoughtByDate")).getString();
-        final JsonObject outputApplication = outputCourtApplications.getJsonObject(0);
-        assertEquals(id, outputApplication.getString("applicationId"));
-        assertEquals(applicationType, outputApplication.getString("applicationType"));
-        assertEquals(applicationReceivedDate, outputApplication.getString("receivedDate"));
-        assertEquals(applicationDecisionSoughtByDate, outputApplication.getString("decisionDate"));
-        final JsonObject applicant = inputCourtApplication.read("$.hearingRequest.courtApplications[0].applicant");
-        final JsonArray respondents = inputCourtApplication.read("$.hearingRequest.courtApplications[0].respondents");
-
-        verifyApplicationParties(transformedJson, applicant, respondents);
     }
 
     public static void verifyUpdateCourtApplication(final DocumentContext inputCourtApplication,
@@ -166,14 +146,6 @@ public class CourtApplicationVerificationHelper {
         } else {
             assertOrganisationDetails(organisation, respondentParty);
         }
-    }
-
-    private static void verifyDefendant(final JsonObject defendant,
-                                        final JsonObject defendantParty) {
-        final JsonObject legalEntityDefendant = defendant.getJsonObject("legalEntityDefendant");
-        final JsonObject organisation = legalEntityDefendant.getJsonObject("organisation");
-        final String organisationName = organisation.getString("name");
-        assertDefendantDetails(defendant, defendantParty, organisationName);
     }
 
     private static JsonArray getRespondents(final JsonObject inputApplication) {

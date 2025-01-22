@@ -81,6 +81,9 @@
         "name": {
           "type": "string"
         },
+        "isProbationBreach": {
+          "type": "boolean"
+        },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
         },
@@ -278,6 +281,9 @@
         },
         "name": {
           "type": "string"
+        },
+        "isProbationBreach": {
+          "type": "boolean"
         },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"

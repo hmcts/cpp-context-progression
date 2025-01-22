@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/common/case-direction-view.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "formId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "orderDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "trialDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "hearingDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notificationStatus": {
+      "type": "string"
+    },
+    "isNotificationSent": {
+      "type": "boolean"
+    },
+    "dueDate": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "hearingType": {
+      "type": "string"
+    },
+    "defaultDirection": {
+      "type": "boolean"
+    },
+    "sendReminder": {
+      "type": "boolean"
+    },
+    "caseURN": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "introductoryNote": {
+      "type": "string"
+    },
+    "refData": {
+      "$ref": "http://moj.gov.uk/cpp/progression/common/shared-definitions.json#/definitions/refData"
+    },
+    "assignee": {
+      "type": "string"
+    },
+    "assigneeReference": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "caseId",
+    "directionRefDataId",
+    "orderDate",
+    "sendReminder"
+  ],
+  "additionalProperties": false
+}

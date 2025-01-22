@@ -23,7 +23,7 @@ public class ProsecutionCaseQueryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseQueryService.class);
     private static final String CASE_ID = "caseId";
-    private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
+    private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase-v2";
 
     @Inject
     @ServiceComponent(COMMAND_HANDLER)

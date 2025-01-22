@@ -37,6 +37,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -68,15 +69,23 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
     private JsonObject jsonObject;
 
     private Hearing hearing;
+    private Hearing hearingWithMultipleCases;
     private UUID hearingId;
     private UUID caseId;
     private UUID defendantId;
     private UUID offenceId;
     private UUID case2Id;
     private UUID defendant2Id;
+    private UUID defendant3Id;
     private UUID offence2Id;
+    private UUID offence3Id;
+    private UUID offence4Id;
+    private UUID offence5Id;
+    private UUID offence6Id;
     private String hearingPayload;
+    private String hearingPayloadWithMultipleCases;
     private String hearingUpdatedForPartialAllocationEventPayload;
+    private String hearingUpdatedForPartialAllocationEventPayloadWithDuplicateCaseIdsInPayload;
     private final StringToJsonObjectConverter converter = new StringToJsonObjectConverter();
 
     @BeforeEach
@@ -88,8 +97,16 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
         case2Id = randomUUID();
         defendant2Id = randomUUID();
         offence2Id = randomUUID();
+        defendant3Id = randomUUID();
+        offence3Id = randomUUID();
+        offence4Id = randomUUID();
+        offence5Id = randomUUID();
+        offence6Id = randomUUID();
 
-        hearing = createHearing();
+        hearing =
+                createHearing();
+
+        hearingWithMultipleCases = createHearingWithMultipleCases();
 
         hearingPayload = createPayload("/json/hearingDataForPartialAllocation.json")
                 .replace("HEARING_ID", hearingId.toString())
@@ -100,11 +117,37 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
                 .replace("DEFENDANT2_ID", defendant2Id.toString())
                 .replace("OFFENCE2_ID", offence2Id.toString());
 
+        hearingPayloadWithMultipleCases = createPayload("/json/hearingDataForPartialAllocationWithMultipleCases.json")
+                .replace("HEARING_ID", hearingId.toString())
+                .replace("CASE_ID", caseId.toString())
+                .replace("DEFENDANT_ID", defendantId.toString())
+                .replace("OFFENCE_ID", offenceId.toString())
+                .replace("CASE2_ID", case2Id.toString())
+                .replace("DEFENDANT2_ID", defendant2Id.toString())
+                .replace("OFFENCE2_ID", offence2Id.toString())
+                .replace("DEFENDANT3_ID", defendant3Id.toString())
+                .replace("OFFENCE3_ID", offence3Id.toString())
+                .replace("OFFENCE4_ID", offence4Id.toString())
+                .replace("OFFENCE5_ID", offence5Id.toString())
+                .replace("OFFENCE6_ID", offence6Id.toString());
+
         hearingUpdatedForPartialAllocationEventPayload = createPayload("/json/hearingUpdatedForPartialAllocationEventPayload.json")
                 .replace("HEARING_ID", hearingId.toString())
                 .replace("CASE_ID", caseId.toString())
                 .replace("DEFENDANT_ID", defendantId.toString())
                 .replace("OFFENCE_ID", offenceId.toString());
+
+        hearingUpdatedForPartialAllocationEventPayloadWithDuplicateCaseIdsInPayload = createPayload("/json/hearingUpdatedForPartialAllocationEventPayload-duplicate-caseid.json")
+                .replace("HEARING_ID", hearingId.toString())
+                .replace("CASE_ID_1", caseId.toString())
+                .replace("CASE_ID_2", case2Id.toString())
+                .replace("DEFENDANT_ID_1", defendantId.toString())
+                .replace("DEFENDANT_ID_2", defendant2Id.toString())
+                .replace("DEFENDANT_ID_3", defendant3Id.toString())
+                .replace("OFFENCE_ID_1", offenceId.toString())
+                .replace("OFFENCE_ID_2", offence2Id.toString())
+                .replace("OFFENCE_ID_3", offence3Id.toString())
+                .replace("OFFENCE_ID_4", offence4Id.toString());
 
 
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
@@ -153,6 +196,29 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
         verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
     }
 
+    @Test
+    public void testHearingExtendForCaseWithDuplicateCaseIdsInPayload() {
+
+        final JsonObject payload = converter.convert(hearingUpdatedForPartialAllocationEventPayloadWithDuplicateCaseIdsInPayload);
+        final HearingUpdatedForPartialAllocation hearingUpdatedForPartialAllocation = createHearingUpdatedForPartialAllocationWithMultipleCasesAndDuplicateCaseIdsInPayload(payload);
+        final HearingEntity hearingEntity = createHearingEntityWithMultipleCases();
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = createCaseDefendantHearingEntity();
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingUpdatedForPartialAllocation).thenReturn(hearingWithMultipleCases);
+        when(objectToJsonObjectConverter.convert(hearingWithMultipleCases)).thenReturn(this.jsonObject);
+        when(caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(any(UUID.class), any(UUID.class), any(UUID.class))).thenReturn(caseDefendantHearingEntity);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        hearingUpdatedForPartialAllocationEventListener.hearingUpdatedForPartialAllocation(jsonEnvelope);
+
+        verify(hearingRepository, times(1)).findBy(hearingId);
+        verify(hearingRepository, times(1)).save(hearingEntity);
+        verify(objectToJsonObjectConverter, times(1)).convert(hearingWithMultipleCases);
+        verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
+        verify(caseDefendantHearingRepository, times(1)).remove(caseDefendantHearingEntity);
+
+    }
+
     private HearingEntity createHearingEntity() {
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
@@ -177,6 +243,15 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
         hearingEntity.setHearingId(hearingId);
         hearingEntity.setResultLines(new HashSet<>());
         hearingEntity.setPayload(hearingPayload);
+        return hearingEntity;
+    }
+
+    private HearingEntity createHearingEntityWithMultipleCases() {
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setResultLines(new HashSet<>());
+        hearingEntity.setPayload(hearingPayloadWithMultipleCases);
         return hearingEntity;
     }
 
@@ -227,6 +302,43 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
         return hearing;
     }
 
+    private Hearing createHearingWithMultipleCases() {
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>((Arrays.asList(ProsecutionCase.prosecutionCase()
+                                .withId(caseId)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                        .withId(defendantId)
+                                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                .withId(offenceId)
+                                                .build())))
+                                        .build())))
+                                .build(),
+                        ProsecutionCase.prosecutionCase()
+                                .withId(case2Id)
+                                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                                        .withId(defendant2Id)
+                                        .withOffences(new ArrayList<>((Arrays.asList(Offence.offence()
+                                                .withId(offence2Id)
+                                                .build(),Offence.offence()
+                                                .withId(offence3Id)
+                                                .build(),Offence.offence()
+                                                .withId(offence5Id)
+                                                .build()))))
+                                        .build(),Defendant.defendant()
+                                        .withId(defendant3Id)
+                                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                                .withId(offence4Id).build(),Offence.offence()
+                                                .withId(offence6Id).build())
+                                        ))
+                                        .build())))
+                                .build()))))
+                .build();
+
+
+        return hearing;
+    }
+
     private String createPayload(final String payloadPath) throws IOException {
         final StringWriter writer = new StringWriter();
         final InputStream inputStream = CourtApplicationEventListenerTest.class.getResourceAsStream(payloadPath);
@@ -271,5 +383,41 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
                 .replaceAll("OFFENCE_ID2", offence2Id.toString()));
 
         return hearingEntity;
+    }
+
+    private HearingUpdatedForPartialAllocation createHearingUpdatedForPartialAllocationWithMultipleCasesAndDuplicateCaseIdsInPayload(final JsonObject payload) {
+        final HearingUpdatedForPartialAllocation.Builder hearingUpdatedForPartialAllocationBuilder = HearingUpdatedForPartialAllocation.hearingUpdatedForPartialAllocation()
+                .withHearingId(UUID.fromString(payload.getString("hearingId")));
+        List<ProsecutionCasesToRemove> prosecutionCasesToRemoveList = new ArrayList<>();
+        payload.getJsonArray("prosecutionCasesToRemove").forEach(prosecutionCasesToRemoveJson -> {
+            final ProsecutionCasesToRemove.Builder prosecutionCasesToRemoveBuilder = ProsecutionCasesToRemove.prosecutionCasesToRemove();
+            final JsonObject prosecutionCaseToRemoveJsonObject = (JsonObject) prosecutionCasesToRemoveJson;
+            prosecutionCasesToRemoveBuilder.withCaseId(UUID.fromString(prosecutionCaseToRemoveJsonObject.getString("caseId")));
+            List<DefendantsToRemove> defendantsToRemoveList = new ArrayList<>();
+            prosecutionCaseToRemoveJsonObject.getJsonArray("defendantsToRemove").forEach(defendantsToRemoveJson -> {
+                final DefendantsToRemove.Builder defendantToRemoveBuilder = DefendantsToRemove.defendantsToRemove();
+                final JsonObject DefendantsToRemoveJsonObject = (JsonObject) defendantsToRemoveJson;
+                defendantToRemoveBuilder.withDefendantId(UUID.fromString(DefendantsToRemoveJsonObject.getString("defendantId")));
+                List<OffencesToRemove> offencesToRemoveList = new ArrayList<>();
+                DefendantsToRemoveJsonObject.getJsonArray("offencesToRemove").forEach(offencesToRemoveJson -> {
+                    final OffencesToRemove.Builder OffencesToRemoveBuilder = OffencesToRemove.offencesToRemove();
+                    final JsonObject OffencesToRemoveJsonObject = (JsonObject) offencesToRemoveJson;
+                    offencesToRemoveList.add(OffencesToRemoveBuilder
+                            .withOffenceId(UUID.fromString(OffencesToRemoveJsonObject.getString("offenceId")))
+                            .build());
+                });
+                defendantToRemoveBuilder.withOffencesToRemove(offencesToRemoveList);
+                defendantsToRemoveList.add(defendantToRemoveBuilder.build());
+            });
+            prosecutionCasesToRemoveBuilder.withDefendantsToRemove(defendantsToRemoveList);
+
+            prosecutionCasesToRemoveList.add(prosecutionCasesToRemoveBuilder.build());
+
+
+        });
+
+        return hearingUpdatedForPartialAllocationBuilder
+                .withProsecutionCasesToRemove(prosecutionCasesToRemoveList)
+                .build();
     }
 }

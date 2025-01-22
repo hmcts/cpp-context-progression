@@ -8,20 +8,15 @@ import static org.mockito.Mockito.when;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateAdded;
 import uk.gov.moj.cpp.progression.domain.event.ConvictionDateRemoved;
-import uk.gov.moj.cpp.progression.domain.event.PreSentenceReportForDefendantsRequested;
 import uk.gov.moj.cpp.progression.domain.event.SendingCommittalHearingInformationAdded;
 import uk.gov.moj.cpp.progression.domain.event.SentenceHearingDateAdded;
-import uk.gov.moj.cpp.progression.domain.event.defendant.DefendantPSR;
 import uk.gov.moj.cpp.progression.persistence.entity.CaseProgressionDetail;
-import uk.gov.moj.cpp.progression.persistence.entity.Defendant;
 import uk.gov.moj.cpp.progression.persistence.entity.OffenceDetail;
 import uk.gov.moj.cpp.progression.persistence.repository.CaseProgressionDetailRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.DefendantRepository;
 import uk.gov.moj.cpp.progression.persistence.repository.OffenceRepository;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -81,21 +76,11 @@ public class CaseServiceTest {
 
     }
 
-    @Test
-    public void preSentenceReportForDefendantsRequestedTest() {
-        final PreSentenceReportForDefendantsRequested event =
-                mock(PreSentenceReportForDefendantsRequested.class);
-        final Defendant entity = mock(Defendant.class);
-        final DefendantPSR defendantPSR = new DefendantPSR(DEFENDANT_ID, true);
-        final List<DefendantPSR> defendantPsrs = new ArrayList<>();
-        defendantPsrs.add(defendantPSR);
 
-        when(event.getDefendants()).thenReturn(defendantPsrs);
-        when(defendantRepository.findByDefendantId(DEFENDANT_ID)).thenReturn(entity);
-        service.preSentenceReportForDefendantsRequested(event);
-        verify(defendantRepository, times(1)).findByDefendantId(DEFENDANT_ID);
-        verify(defendantRepository, times(1)).save(entity);
-    }
+
+
+
+
 
     @Test
     public void caseAssignedForReviewTest() {

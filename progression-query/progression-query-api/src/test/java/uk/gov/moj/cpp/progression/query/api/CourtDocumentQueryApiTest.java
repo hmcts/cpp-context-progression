@@ -153,12 +153,12 @@ public class CourtDocumentQueryApiTest {
         final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_NAME);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
-        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(envelope);
+        when(courtDocumentQueryView.searchCourtDocumentsForProsecution(any())).thenReturn(envelope);
         when(prosecutionCaseQuery.getProsecutionCase(any())).thenReturn(createQueryResponse());
         when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),any())).thenReturn(Optional.empty());
 
         courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
-        verify(courtDocumentQueryView).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocumentsForProsecution(jsonEnvelopeArgumentCaptor.capture());
 
         assertThat(jsonEnvelopeArgumentCaptor.getValue().metadata().name(), equalTo(COURT_DOCUMENTS_SEARCH_NAME));
         assertThat(((JsonObject)jsonEnvelopeArgumentCaptor.getValue().payload()).getJsonObject(CASE_ID), nullValue());
@@ -186,14 +186,14 @@ public class CourtDocumentQueryApiTest {
         final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
         final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_NAME);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
-        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(envelope);
+        when(courtDocumentQueryView.searchCourtDocumentsForProsecution(any())).thenReturn(envelope);
         when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(true);
         when(prosecutionCaseQuery.getProsecutionCase(any())).thenReturn(createQueryResponse());
         when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),any())).thenReturn(Optional.empty());
 
         courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
 
-        verify(courtDocumentQueryView).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocumentsForProsecution(jsonEnvelopeArgumentCaptor.capture());
 
         assertThat(jsonEnvelopeArgumentCaptor.getValue().metadata().name(), equalTo(COURT_DOCUMENTS_SEARCH_NAME));
         assertThat(((JsonObject)jsonEnvelopeArgumentCaptor.getValue().payload()).getJsonString(CASE_ID).getString(), is(caseId));
@@ -206,31 +206,16 @@ public class CourtDocumentQueryApiTest {
         final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
         final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_NAME);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
-        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(envelope);
+        when(courtDocumentQueryView.searchCourtDocumentsForProsecution(any())).thenReturn(envelope);
         when(prosecutionCaseQuery.getProsecutionCase(any())).thenReturn(createQueryResponse());
         when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),any())).thenReturn(Optional.of("OrganisationMatch"));
 
         courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
 
-        verify(courtDocumentQueryView).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocumentsForProsecution(jsonEnvelopeArgumentCaptor.capture());
 
         assertThat(jsonEnvelopeArgumentCaptor.getValue().metadata().name(), equalTo(COURT_DOCUMENTS_SEARCH_NAME));
         assertThat(((JsonObject)jsonEnvelopeArgumentCaptor.getValue().payload()).getJsonString(CASE_ID).getString(), is(caseId));
-    }
-
-
-    @Test
-    public void shouldThrowFrobiddenExceptionIfNonCPSUserAndNotMatchingProsecutingAuthority() {
-
-        final String caseId = randomUUID().toString();
-        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
-        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_NAME);
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
-        when(prosecutionCaseQuery.getProsecutionCase(any())).thenReturn(createQueryResponse());
-        when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),any())).thenReturn(Optional.of("OrganisationMisMatch"));
-
-        assertThrows(ForbiddenRequestException.class, () -> courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope));
-
     }
 
     @Test
@@ -244,14 +229,14 @@ public class CourtDocumentQueryApiTest {
                 .build();
         final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_PROSECUTION);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
-        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(envelope);
+        when(courtDocumentQueryView.searchCourtDocumentsForProsecution(any())).thenReturn(envelope);
         when(defenceQueryService.isUserProsecutingCase(envelope, caseId)).thenReturn(true);
         when(prosecutionCaseQuery.getProsecutionCase(any())).thenReturn(createQueryResponse());
         when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),any())).thenReturn(Optional.empty());
 
         courtDocumentQueryApi.searchCourtDocumentsForProsecution(envelope);
 
-        verify(courtDocumentQueryView).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
+        verify(courtDocumentQueryView).searchCourtDocumentsForProsecution(jsonEnvelopeArgumentCaptor.capture());
 
         assertThat(jsonEnvelopeArgumentCaptor.getValue().metadata().name(), equalTo(COURT_DOCUMENTS_SEARCH_NAME));
         assertThat(((JsonObject)jsonEnvelopeArgumentCaptor.getValue().payload()).getJsonObject(CASE_ID), nullValue());
@@ -282,22 +267,8 @@ public class CourtDocumentQueryApiTest {
         assertThrows(ForbiddenRequestException.class, () -> courtDocumentApi.getCaseDocumentDetailsForProsecution(envelope));
     }
 
-
     @Test
-    public void shouldThrowForbiddenRequestExceptionWhenGetMaterialByIdAndUserNotInProsecutorRoleForTheCaseIdOfNonCps() {
-
-        String caseId = randomUUID().toString();
-        final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();
-        final Metadata metadata = QueryClientTestBase.metadataFor(MATERIAL_CONTENT_FOR_PROSECUTION);
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
-        when(prosecutionCaseQuery.getProsecutionCase(any())).thenReturn(createQueryResponse());
-        when(usersGroupQueryService.validateNonCPSUserOrg(any(),any(),any(),any())).thenReturn(Optional.of("OrganisationMisMatch"));
-
-        assertThrows(ForbiddenRequestException.class, () -> courtDocumentApi.getCaseDocumentDetailsForProsecution(envelope));
-    }
-
-    @Test
-    public void shouldCallQueryViewWhenGetMaterialByIdAndUserInProsecutorRoleForTheCaseId() { //srivani
+    public void shouldCallQueryViewWhenGetMaterialByIdAndUserInProsecutorRoleForTheCaseId() {
 
         String caseId = randomUUID().toString();
         final JsonObject jsonObjectPayload = createObjectBuilder().add(CASE_ID, caseId).build();

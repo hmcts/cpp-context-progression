@@ -31,11 +31,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.moj.cpp.progression</groupId>
-            <artifactId>progression-domain-message</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>

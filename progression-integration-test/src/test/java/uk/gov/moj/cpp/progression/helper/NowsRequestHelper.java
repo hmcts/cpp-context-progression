@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_ENFORCEMENT_
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
@@ -66,7 +67,7 @@ public class NowsRequestHelper extends AbstractTestHelper {
     public static String getNowDocumentRequestsFor(final String requestId, final Matcher... matchers) {
         return poll(requestParams(getReadUrl(join("", "/nows/request/", requestId)), "application/vnd.progression.query.now-document-requests-by-request-id+json")
                 .withHeader(HeaderConstants.USER_ID, USER_ID))
-                .timeout(40, TimeUnit.SECONDS)
+                .timeout(TIMEOUT, TimeUnit.SECONDS)
                 .until(
                         status().is(OK),
                         payload().isJson(allOf(

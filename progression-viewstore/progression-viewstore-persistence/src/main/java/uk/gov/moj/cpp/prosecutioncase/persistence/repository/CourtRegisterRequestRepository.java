@@ -46,6 +46,9 @@ public interface CourtRegisterRequestRepository extends EntityRepository<CourtRe
     @Query("select courtRegister FROM CourtRegisterRequestEntity courtRegister where courtCentreId=:courtCentreId and status='GENERATED'")
     List<CourtRegisterRequestEntity> findByCourtCenterIdAndStatusGenerated(@QueryParam("courtCentreId") final UUID courtCentreId);
 
+    @Query("select courtRegister FROM CourtRegisterRequestEntity courtRegister where courtCentreId=:courtCentreId and registerDate=:registerDate and status='GENERATED'")
+    List<CourtRegisterRequestEntity> findByCourtCenterIdForRegisterDateAndStatusGenerated(@QueryParam("courtCentreId") final UUID courtCentreId, @QueryParam("registerDate") final LocalDate requestDate);
+
     @Query("select courtRegister from CourtRegisterRequestEntity courtRegister " +
             " where courtRegister.hearingId = :hearingId and courtRegister.status = 'RECORDED'")
     List<CourtRegisterRequestEntity> findByHearingIdAndStatusRecorded(@QueryParam("hearingId") UUID hearingId);

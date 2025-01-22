@@ -197,7 +197,7 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
     private Optional<InputStream> getWordDocument(final JsonObject payload, final String templateName, final UUID systemUser) {
         final byte[] resultOrderAsByteArray;
         try {
-            LOGGER.info("Calling document generation with UshersList payload: {}, systemUser: {}", payload, systemUser);
+            LOGGER.info("Calling document generation with UsersList payload: {}, systemUser: {}", payload, systemUser);
             resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generateWordDocument(payload, templateName, systemUser);
             return of(new ByteArrayInputStream(resultOrderAsByteArray));
 

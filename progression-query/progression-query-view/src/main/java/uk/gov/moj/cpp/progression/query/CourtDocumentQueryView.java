@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -83,7 +84,6 @@ import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +102,7 @@ public class CourtDocumentQueryView {
     public static final String COURT_DOCUMENTS_SEARCH_NAME_ALL = "progression.query.courtdocuments-all";
     public static final String COURT_DOCUMENTS_SEARCH_WITH_PAGINATION_NAME = "progression.query.courtdocuments.with.pagination";
     public static final String COURT_DOCUMENTS_NOW_SEARCH_NAME = "progression.query.courtdocuments.now";
+    private static final String COURT_DOCUMENTS_SEARCH_PROSECUTION = "progression.query.courtdocuments.for.prosecution";
     public static final String COURT_DOCUMENT_RESULT_FIELD = "courtDocument";
     public static final String CASE_ID_SEARCH_PARAM = "caseId";
     private static final String IS_PROSECUTING_CASE = "prosecutingCase";
@@ -137,6 +138,10 @@ public class CourtDocumentQueryView {
     private static final long DEFAULT_PAGE = 1L;
     public static final String MIME_TYPE_PDF = "application/pdf";
     public static final String MATERIAL_TYPE_PDF = "pdf";
+    private static final String PERMISSIONS = "permissions";
+    private static final String CDES_EXCLUDE_NON_CPS_ROLE = "CDES_EXCLUDE_NON_CPS_ROLE";
+    private static final String USERSGROUPS_GET_LOGGED_IN_USER_PERMISSIONS = "usersgroups.get-logged-in-user-permissions";
+    private static final String OBJECT = "object";
 
 
     @Inject
@@ -200,6 +205,22 @@ public class CourtDocumentQueryView {
 
     @Handles(COURT_DOCUMENTS_SEARCH_NAME)
     public JsonEnvelope searchCourtDocuments(final JsonEnvelope envelope) {
+        final List<String> userGroupsByUserId = getUserGroupsByUserId(envelope);
+        if(isUserHasNonCPSProsecutorExcludePermission(envelope)){
+            userGroupsByUserId.removeIf(userGroup-> "Non CPS Prosecutors".equalsIgnoreCase(userGroup));
+        }
+
+
+        return searchCourtDocuments(userGroupsByUserId, envelope);
+    }
+
+    @Handles(COURT_DOCUMENTS_SEARCH_PROSECUTION)
+    public JsonEnvelope searchCourtDocumentsForProsecution(final JsonEnvelope envelope) {
+        final List<String> userGroupsByUserId = getUserGroupsByUserId(envelope);
+        return searchCourtDocuments(userGroupsByUserId, envelope);
+    }
+
+    private JsonEnvelope searchCourtDocuments(final List<String> userGroupsByUserId, final JsonEnvelope envelope) {
         final String strCaseIds =
                 JsonObjects.getString(envelope.payloadAsJsonObject(), CASE_ID_SEARCH_PARAM)
                         .orElse(null);
@@ -289,9 +310,6 @@ public class CourtDocumentQueryView {
 
         final List<DocumentTypeAccessReferenceData> documentTypeAccessReferenceDataList = getAllDocumentTypeAccess();
 
-        final List<String> userGroupsByUserId = getUserGroupsByUserId(envelope);
-
-
         courtDocumentEntities.stream()
                 .filter(entity -> !entity.isRemoved())
                 .map(this::courtDocument)
@@ -305,7 +323,7 @@ public class CourtDocumentQueryView {
                         : m.getUserGroups().stream())
                 .collect(Collectors.toSet());
 
-        final Set<String> permittedGroups = getPermittedGroups(usergroupsInDocuments, envelope);
+        final Set<String> permittedGroups = getPermittedGroups(usergroupsInDocuments, userGroupsByUserId);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format(DOCUMENT_USER_GROUP_LOGGER, strCaseIds, usergroupsInDocuments,
@@ -426,7 +444,7 @@ public class CourtDocumentQueryView {
                 .flatMap(m -> m.getUserGroups() == null ? Stream.empty() : m.getUserGroups().stream())
                 .collect(Collectors.toSet());
 
-        final Set<String> permittedGroups = getPermittedGroups(allowedUserGroupsInDocuments, envelope);
+        final Set<String> permittedGroups = getPermittedGroups(allowedUserGroupsInDocuments, groupNamesForUser);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format(DOCUMENT_USER_GROUP_LOGGER,
@@ -457,6 +475,22 @@ public class CourtDocumentQueryView {
 
 
         return envelopeFrom(envelope.metadata(), objectToJsonObjectConverter.convert(result));
+    }
+
+    private boolean isUserHasNonCPSProsecutorExcludePermission(final JsonEnvelope envelope) {
+        final Metadata metadata = metadataFrom(envelope.metadata())
+                .withName(USERSGROUPS_GET_LOGGED_IN_USER_PERMISSIONS).build();
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadata, createObjectBuilder().build());
+        final JsonEnvelope response = requester.request(requestEnvelope);
+
+        if (nonNull(response) && nonNull(response.payload())) {
+            final JsonObject responseJson = response.payloadAsJsonObject();
+            if (nonNull(responseJson) && CollectionUtils.isNotEmpty(responseJson.getJsonArray(PERMISSIONS))) {
+                return responseJson.getJsonArray(PERMISSIONS).getValuesAs(JsonObject.class).stream()
+                        .anyMatch(permission -> CDES_EXCLUDE_NON_CPS_ROLE.equalsIgnoreCase(permission.getJsonString(OBJECT).getString()));
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("squid:S3655")
@@ -752,20 +786,24 @@ public class CourtDocumentQueryView {
 
     private Set<String> getPermittedGroups(final Set<String> userGroupsInDocuments,
                                            final JsonEnvelope envelope) {
-        final JsonObject userGroupsByUserId = getUserGroupsByUserId(new Action(envelope));
+        final List<String> userGroupsByUserId = getUserGroupsByUserId(envelope);
         return userGroupsInDocuments.stream()
                 .filter(userGroup -> isMemberInGroups(userGroupsByUserId, userGroup))
                 .collect(Collectors.toSet());
     }
 
-    private boolean isMemberInGroups(final JsonObject userGroupsJson, final String userGroup) {
+    private Set<String> getPermittedGroups(final Set<String> userGroupsInDocuments,
+                                           final List<String> userGroupsByUserId) {
+        return userGroupsInDocuments.stream()
+                .filter(userGroup -> isMemberInGroups(userGroupsByUserId, userGroup))
+                .collect(Collectors.toSet());
+    }
+
+    private boolean isMemberInGroups(final List<String> userGroupsByUserId, final String userGroup) {
         boolean isMember = false;
-        if (StringUtils.isNotEmpty(userGroup) && userGroupsJson != null
-                && !userGroupsJson.getJsonArray(GROUPS).isEmpty()) {
-            isMember = userGroupsJson.getJsonArray(GROUPS).stream()
-                    .map(groupJson -> (JsonObject) groupJson)
-                    .anyMatch(groupJsonObj -> userGroup.equalsIgnoreCase(
-                            groupJsonObj.getString(GROUP_NAME, null)));
+        if (CollectionUtils.isNotEmpty(userGroupsByUserId)) {
+            isMember = userGroupsByUserId.stream()
+                    .anyMatch(u -> userGroup.equalsIgnoreCase(u));
         }
         return isMember;
     }

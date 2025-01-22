@@ -1,8 +1,5 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static java.util.Objects.nonNull;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;

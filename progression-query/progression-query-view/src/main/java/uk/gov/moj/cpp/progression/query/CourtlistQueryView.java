@@ -79,6 +79,9 @@ public class CourtlistQueryView {
     private static final String DATE_OF_BIRTH = "dateOfBirth";
     private static final String APPLICANT = "applicant";
     private static final String RESPONDENTS = "respondents";
+    private static final DateTimeFormatter DATE_FORMATTER = ofPattern(STANDARD.getValue());
+    private static final DateTimeFormatter DOB_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy");
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourtlistQueryView.class);
     private final String ID = "id";
     private final String CASE_ID = "caseId";
     private final String DEFENDANTS = "defendants";
@@ -93,29 +96,18 @@ public class CourtlistQueryView {
     private final String PROSECUTOR_TYPE = "prosecutorType";
     private final String DEFENCE_COUNSELS = "defenceCounsels";
     private final String PROSECUTION_COUNSELS = "prosecutionCounsels";
-
-
-    private static final DateTimeFormatter DATE_FORMATTER = ofPattern(STANDARD.getValue());
-    private static final DateTimeFormatter DOB_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy");
     @Inject
     private ListingService listingService;
-
     @Inject
     private HearingQueryView hearingQueryView;
-
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
     @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
-
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
-
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CourtlistQueryView.class);
 
     @Handles("progression.search.court.list")
     public JsonEnvelope searchCourtlist(final JsonEnvelope query) {
@@ -311,17 +303,18 @@ public class CourtlistQueryView {
         return singletonList(prosecutionCaseFromDb);
     }
 
-    private JsonObject enrichHearingFromCourtApplication(JsonObject hearingJson, final Hearing hearing, final UUID courtApplicationId) {
+    private JsonObject enrichHearingFromCourtApplication(JsonObject hearingFromListing, final Hearing hearing, final UUID courtApplicationId) {
 
-        final List<UUID> offencesForApplications = getApplicationOffenceListingNumbers(hearingJson);
+        final List<UUID> offencesForApplications = getApplicationOffenceListingNumbers(hearingFromListing);
 
         final JsonArrayBuilder defendantsArray = createArrayBuilder();
 
         if (isNotEmpty(hearing.getCourtApplications())) {
+            final JsonObject finalHearingFromListing = hearingFromListing;
             hearing.getCourtApplications()
                     .forEach(courtApplication -> {
                         if (courtApplication.getId().equals(courtApplicationId)) {
-                            defendantsArray.add(buildDefendantFromCourtApplication(courtApplication, hearing, offencesForApplications));
+                            defendantsArray.add(buildDefendantFromCourtApplication(finalHearingFromListing, courtApplication, hearing, offencesForApplications));
                         }
                     });
 
@@ -338,12 +331,12 @@ public class CourtlistQueryView {
                     courtApplicationBuilder.add(RESPONDENTS, respondentsBuilder.build());
                 });
             });
-            hearingJson = addProperty(hearingJson, COURT_APPLICATION, courtApplicationBuilder.build());
+            hearingFromListing = addProperty(hearingFromListing, COURT_APPLICATION, courtApplicationBuilder.build());
 
         }
 
-        hearingJson = addProperty(hearingJson, DEFENDANTS, defendantsArray.build());
-        return hearingJson;
+        hearingFromListing = addProperty(hearingFromListing, DEFENDANTS, defendantsArray.build());
+        return hearingFromListing;
     }
 
     private JsonObject buildCourtApplicationParty(final CourtApplicationParty applicant) {
@@ -385,7 +378,7 @@ public class CourtlistQueryView {
         }
     }
 
-    private JsonObject buildDefendantFromCourtApplication(final CourtApplication courtApplication, final Hearing hearing, final List<UUID> offencesForApplications) {
+    private JsonObject buildDefendantFromCourtApplication(JsonObject hearingFromListing, final CourtApplication courtApplication, final Hearing hearing, final List<UUID> offencesForApplications) {
 
         final JsonObjectBuilder defendantBuilder = Json.createObjectBuilder();
         final JsonArrayBuilder offencesArray = createArrayBuilder();
@@ -428,10 +421,32 @@ public class CourtlistQueryView {
         final MasterDefendant masterDefendant = courtApplication.getSubject().getMasterDefendant();
         if (nonNull(masterDefendant) && nonNull(masterDefendant.getPersonDefendant())) {
             final Person person = masterDefendant.getPersonDefendant().getPersonDetails();
+
+            final JsonObjectBuilder defendantFromListingBuilder = Json.createObjectBuilder();
+            if (isNotEmpty(hearingFromListing.getJsonArray(DEFENDANTS))){
+                hearingFromListing.getJsonArray(DEFENDANTS)
+                        .stream()
+                        .map(defendant -> (JsonObject) defendant)
+                        .forEach(defFromListing -> {
+                            final UUID defendantId = fromString((defFromListing).getString(ID));
+                            if(defendantId.equals(masterDefendant.getMasterDefendantId()) || defendantId.equals(courtApplication.getSubject().getId())){
+                                defFromListing.forEach((name, value) -> defendantFromListingBuilder.add(name, value));
+                            }
+                        });
+            }
             defendantBuilder.add(ID, masterDefendant.getMasterDefendantId().toString());
             ofNullable(person.getFirstName()).ifPresent(firstName -> defendantBuilder.add("firstName", firstName));
             defendantBuilder.add("surname", person.getLastName());
             defendantBuilder.add("gender", person.getGender().toString());
+
+            //Replace defendant name found from Listing
+            final JsonObject defeFromListingJsonObject = defendantFromListingBuilder.build();
+            if(!defeFromListingJsonObject.isEmpty() && nonNull(defeFromListingJsonObject.getString(ID))){
+                final UUID defendantId = fromString(defeFromListingJsonObject.getString(ID));
+                if(defendantId.equals(masterDefendant.getMasterDefendantId()) || defendantId.equals(courtApplication.getSubject().getId())){
+                    defeFromListingJsonObject.forEach((name, value) -> defendantBuilder.add(name, value));
+                }
+            }
 
             final Integer defendantAge = getAge(person.getDateOfBirth());
             if (nonNull(defendantAge)) {

@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
@@ -674,6 +675,40 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         eventListener.processHearingDefendantUpdated(envelope);
 
         verify(hearingRepository).save(hearingArgumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldNotProcessHearingDefendantUpdatedWhenProsecutionCasesIsNull() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingDefendantUpdated.class)).thenReturn(hearingDefendantUpdated);
+
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID selfDefinedEthnicityId = randomUUID();
+        final UUID observedEthnicityId = randomUUID();
+
+        final LocalDate updatedDoB = LocalDate.of(2005, 12, 27);
+        final DefendantUpdate defendantUpdate = prepareDefendantUpdate(randomUUID(), updatedDoB, defendantId);
+
+        final JsonObject jsonObject = Json.createObjectBuilder().build();
+        final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
+        final List<Defendant> defendants =new ArrayList<>();
+        defendants.add(defendant1);
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .build();
+        when(jsonObjectToObjectConverter.convert(jsonObject, Hearing.class)).thenReturn(hearing);
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(hearingEntity.getPayload()).thenReturn(jsonObject.toString());
+        when(hearingDefendantUpdated.getDefendant()).thenReturn(defendantUpdate);
+        when(hearingDefendantUpdated.getHearingId()).thenReturn(hearingId);
+
+        eventListener.processHearingDefendantUpdated(envelope);
+
+        verify(hearingRepository, never()).save(hearingArgumentCaptor.capture());
     }
 
     private List<Defendant> getDefendants(final UUID defendantId1, final UUID defendantId2, final UUID defendantId3, final UUID prosecutionCaseId, final List<UUID> offenceIds) {
