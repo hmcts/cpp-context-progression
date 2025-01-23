@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +28,8 @@ public class NotificationInfoJdbcRepository {
     private final String EVENT_PROCESSOR_STORE_JNDI_NAME = "java:/app/progression-event-processor/DS.progression.eventprocessorstore";
     private final String NOTIFICATION_INFO_INSERT_QUERY = "INSERT INTO notification_info (notification_id, notification_type, payload, process_name, processed_timestamp, status) VALUES (?, ?, ?, ?, ?, ?)";
     private final String NOTIFICATION_INFO_QUERY = "SELECT * FROM notification_info WHERE notification_id = ?";
-    private final String NOTIFICATION_INFO_DELETE_QUERY = "DELETE FROM notification_info notification_id = ?";
+    private final String NOTIFICATION_INFO_DELETE_QUERY = "DELETE FROM notification_info where notification_id = ? AND status = 'PROCESSED' AND processed_timestamp <= ?";
+    private final String NOTIFICATION_INFO_UPDATE_QUERY = "UPDATE notification_info SET processed_timestamp = ?, status = ? WHERE notification_id = ?";
 
     @Inject
     private DefaultJdbcDataSourceProvider defaultJdbcDataSourceProvider;
@@ -94,4 +96,32 @@ public class NotificationInfoJdbcRepository {
             throw new NotificationInfoJdbcException(format("Exception while inserting: %s", NOTIFICATION_INFO_INSERT_QUERY), e);
         }
     }
+
+    public void deleteNotifications(final UUID notificationId, final String status, final ZonedDateTime processedTimestamp) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(NOTIFICATION_INFO_DELETE_QUERY)) {
+            ps.setObject(1, notificationId);
+            ps.setString(2, status);
+            ps.setTimestamp(3, toSqlTimestamp(processedTimestamp));
+            ps.executeUpdate();
+        } catch (final SQLException e) {
+            throw new NotificationInfoJdbcException(format("Exception while deleting: %s", NOTIFICATION_INFO_DELETE_QUERY), e);
+        }
+    }
+
+    public void update(final UUID notificationId, final String status, final ZonedDateTime processedTimestamp) {
+
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(NOTIFICATION_INFO_UPDATE_QUERY)) {
+            ps.setObject(1, toSqlTimestamp(processedTimestamp));
+            ps.setObject(2, status);
+            ps.setObject(3, notificationId);
+
+            ps.executeUpdate();
+        } catch (final SQLException e) {
+            throw new NotificationInfoJdbcException(format("Exception while updating: %s", NOTIFICATION_INFO_UPDATE_QUERY), e);
+        }
+    }
+
+
 }

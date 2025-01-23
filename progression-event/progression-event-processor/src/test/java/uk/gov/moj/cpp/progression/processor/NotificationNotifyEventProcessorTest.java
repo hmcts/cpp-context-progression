@@ -192,7 +192,6 @@ public class NotificationNotifyEventProcessorTest {
                 .build();
         when(systemIdMapperService.getCppCaseIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
-        when(notificationInfoRepository.findById(notificationId)).thenReturn(of(notificationInfo));
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(emailNotification);
 
@@ -241,7 +240,6 @@ public class NotificationNotifyEventProcessorTest {
         when(systemIdMapperService.getCppApplicationIdForNotificationId(notificationId.toString())).thenReturn(empty());
         when(systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString())).thenReturn(systemIdMapping);
         NotificationInfoResult notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.LETTER.getType());
-        when(notificationInfoRepository.findById(notificationId)).thenReturn(of(notificationInfo));
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
@@ -265,11 +263,10 @@ public class NotificationNotifyEventProcessorTest {
 
         when(systemIdMapperService.getCppMaterialIdForNotificationId(notificationId.toString())).thenReturn(empty());
         NotificationInfoResult notificationInfo = getNotificationInfo(notificationId, RecipientType.DEFENDANT, CommunicationType.LETTER.getType());
-        when(notificationInfoRepository.findById(notificationId)).thenReturn(of(notificationInfo));
 
         notificationNotifyEventProcessor.markNotificationAsSucceeded(letterNotification);
 
-        verify(logger).error("No Case, Application or Material found for the given notification id: {}", notificationId);
+        verify(logger).info(format("No Case, Application or Material found for the given notification id: %s", notificationId));
     }
 
     @Test
@@ -301,7 +298,6 @@ public class NotificationNotifyEventProcessorTest {
     public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenCompletionTimeNotAvailable() throws FileServiceException {
         final UUID notificationId = randomUUID();
         final UUID materialId = randomUUID();
-        final UUID courtDocumentId = randomUUID();
         final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf(materialId.toString(), "materialId")
@@ -316,7 +312,6 @@ public class NotificationNotifyEventProcessorTest {
     public void shouldOnlyDeleteAssociatedFileAndNotUpdatePrintDateTimeWhenMaterialIsNotAvailable() throws FileServiceException {
         final UUID notificationId = randomUUID();
         final ZonedDateTime completedAt = now();
-        final UUID courtDocumentId = randomUUID();
         final JsonEnvelope notificationSucceededEvent = envelope().with(metadataWithRandomUUID("progression.event.notification-request-succeeded"))
                 .withPayloadOf(notificationId.toString(), "notificationId")
                 .withPayloadOf(completedAt.toString(), "completedAt")

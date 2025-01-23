@@ -33,6 +33,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
 import uk.gov.moj.cpp.progression.CommunicationType;
+import uk.gov.moj.cpp.progression.NotificationInfoStatus;
 import uk.gov.moj.cpp.progression.RecipientType;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
@@ -328,9 +329,10 @@ public class HearingNotificationHelper {
                 .withNotificationType(notificationType)
                 .withProcessName(HEARING_CONFIRMED)
                 .withPayload(createObjectBuilder().add(RECIPIENT_TYPE, recipientType.getRecipientName()).build().toString())
-                .withProcessedTimestamp(ZonedDateTime.now()).build());
+                .withProcessedTimestamp(ZonedDateTime.now())
+                .withStatus(NotificationInfoStatus.PENDING.getType())
+                .build());
     }
-
 
     private UUID getProsecutorId(final ProsecutionCase prosecutionCase) {
         UUID prosecutorId = null;
