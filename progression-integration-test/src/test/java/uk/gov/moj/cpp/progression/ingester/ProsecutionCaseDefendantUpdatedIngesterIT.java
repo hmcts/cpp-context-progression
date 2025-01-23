@@ -16,6 +16,7 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantAliases;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantUpdate;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
+import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -64,6 +65,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
     @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
+        cleanViewStoreTables();
     }
 
     @Test
