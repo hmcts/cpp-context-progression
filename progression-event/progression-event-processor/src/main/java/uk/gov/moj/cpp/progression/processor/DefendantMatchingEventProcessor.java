@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Collections.emptySet;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
@@ -36,7 +38,6 @@ import javax.json.JsonObject;
 public class DefendantMatchingEventProcessor {
 
     private static final String DEFENDANT_ID_FIELD = "defendantId";
-    private static final String MASTER_DEFENDANT_ID_FIELD = "masterDefendantId";
     private static final String PROSECUTION_CASE_ID_FIELD = "prosecutionCaseId";
 
     @Inject
@@ -111,13 +112,6 @@ public class DefendantMatchingEventProcessor {
 
         if (Objects.nonNull(masterDefendant)) {
             sendPublicCaseDefendantChangedEvent(envelope, masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getDefendant());
-
-            masterDefendantIdUpdated.getMatchedDefendants()
-                    .forEach(matchedDefendant -> {
-                        if (!masterDefendant.getMasterDefendantId().equals(matchedDefendant.getMasterDefendantId())) {
-                            sendUpdateMasterDefendantCommand(envelope, matchedDefendant.getProsecutionCaseId(), matchedDefendant.getDefendantId(), masterDefendant.getMasterDefendantId());
-                        }
-                    });
         }
     }
 
@@ -127,7 +121,7 @@ public class DefendantMatchingEventProcessor {
         final MatchedDefendants masterDefendant = getMasterDefendant(masterDefendantIdUpdated.getMatchedDefendants());
 
         if (Objects.nonNull(masterDefendant)) {
-            masterDefendantIdUpdated.getHearingIds().forEach(hearingId ->
+            masterDefendantIdUpdated.getHearingIds().stream().collect(Collectors.toSet()).forEach(hearingId ->
                     updateHearing(envelope, masterDefendant.getMasterDefendantId(), masterDefendantIdUpdated.getDefendant(), hearingId));
         }
     }
@@ -136,19 +130,6 @@ public class DefendantMatchingEventProcessor {
     public void handleDefendantsMasterDefendantIdUpdatedEvent(final JsonEnvelope envelope) {
         final DefendantsMasterDefendantIdUpdated masterDefendantIdUpdated = jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), DefendantsMasterDefendantIdUpdated.class);
         sendPublicCaseDefendantChangedEvent(envelope, masterDefendantIdUpdated.getDefendant().getMasterDefendantId(), masterDefendantIdUpdated.getDefendant());
-    }
-
-    private void sendUpdateMasterDefendantCommand(final JsonEnvelope envelope, final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId) {
-
-        final JsonObject publicEventPayload = createObjectBuilder()
-                .add(PROSECUTION_CASE_ID_FIELD, prosecutionCaseId.toString())
-                .add(DEFENDANT_ID_FIELD, defendantId.toString())
-                .add(MASTER_DEFENDANT_ID_FIELD, masterDefendantId.toString())
-                .build();
-
-        sender.send(Enveloper.envelop(publicEventPayload)
-                .withName("progression.command.update-matched-defendant")
-                .withMetadataFrom(envelope));
     }
 
     private static MatchedDefendants getMasterDefendant(final List<MatchedDefendants> matchedDefendants) {

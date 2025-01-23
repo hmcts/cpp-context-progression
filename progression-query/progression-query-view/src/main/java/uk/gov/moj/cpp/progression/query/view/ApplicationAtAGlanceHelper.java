@@ -136,6 +136,7 @@ public class ApplicationAtAGlanceHelper {
             remandStatus.ifPresent(applicantDetailsBuilder::withRemandStatus);
         } else if (nonNull(organisation)) {
             applicantDetailsBuilder.withName(organisation.getName());
+            applicantDetailsBuilder.withIsProbationBreach(organisation.getIsProbationBreach());
             applicantDetailsBuilder.withAddress(organisation.getAddress());
             if (nonNull(applicant.getOrganisationPersons())) {
                 applicantDetailsBuilder.withRepresentation(getOrganisationPersons(applicant.getOrganisationPersons()));
@@ -252,6 +253,7 @@ public class ApplicationAtAGlanceHelper {
         if (nonNull(organisation)) {
             respondentDetailsBuilder.withName(organisation.getName());
             respondentDetailsBuilder.withAddress(organisation.getAddress());
+            respondentDetailsBuilder.withIsProbationBreach(organisation.getIsProbationBreach());
             final List<AssociatedPerson> organisationPersons = respondent.getOrganisationPersons();
             if (nonNull(organisationPersons)) {
                 respondentDetailsBuilder.withRespondentRepresentatives(getRespondentRepresentatives(organisationPersons));

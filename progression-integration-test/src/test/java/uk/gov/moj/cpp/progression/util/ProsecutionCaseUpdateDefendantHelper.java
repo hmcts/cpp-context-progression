@@ -2,10 +2,8 @@ package uk.gov.moj.cpp.progression.util;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -19,7 +17,6 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
-import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -160,20 +157,7 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    /**
-     * Retrieve message from queue and do additional verifications
-     */
-    public void verifyInActiveMQ(final JmsMessageConsumerClient privateEventsConsumer) {
-        final JsonPath jsRequest = new JsonPath(request);
-        LOGGER.info("Request payload: {}", jsRequest.prettify());
-
-        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
-        LOGGER.info("message in queue payload: {}", jsonResponse.prettify());
-
-        assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
-    }
-
-    public void verifyInMessagingQueueForDefendentChanged(final JmsMessageConsumerClient publicEventsCaseDefendantChanged) {
+    public void verifyInMessagingQueueForDefendantChanged(final JmsMessageConsumerClient publicEventsCaseDefendantChanged) {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventsCaseDefendantChanged);
         assertTrue(message.isPresent());
         assertThat(message.get(), isJson(withJsonPath("$.defendant.prosecutionCaseId",

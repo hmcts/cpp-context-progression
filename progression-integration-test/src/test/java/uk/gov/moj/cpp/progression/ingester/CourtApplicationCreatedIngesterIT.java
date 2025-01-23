@@ -13,7 +13,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtAppli
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -48,7 +47,6 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
     @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
     @BeforeEach

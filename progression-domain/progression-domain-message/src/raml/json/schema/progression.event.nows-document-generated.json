@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nows-document-generated.json",
+  "type": "object",
+  "properties": {
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "systemDocGeneratorId": {
+      "description": "The system doc generator file id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "description": "The hearing id of the hearing shared",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "fileName": {
+      "description": "The file name",
+      "type": "string"
+    },
+    "nowDistribution": {
+      "description": "The details for distributing the Now",
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-distribution.json"
+    },
+    "orderAddressee": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/order-addressee.json"
+    },
+    "cpsProsecutionCase": {
+      "type": "boolean"
+    },
+    "userId": {
+      "description": "The user Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "materialId",
+    "systemDocGeneratorId",
+    "hearingId",
+    "fileName",
+    "cpsProsecutionCase",
+    "userId"
+  ]
+}

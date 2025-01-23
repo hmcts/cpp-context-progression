@@ -9,20 +9,18 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
+
+import javax.json.JsonObject;
 
 import org.apache.http.HttpHeaders;
 
 
 public class CorrespondenceStub {
 
-    public static void stubForCorrespondenceCaseContacts(final String resourceName, final String caseId, final String defendantId1, final String defendantId2) {
+    public static void stubForCorrespondenceCaseContacts(final JsonObject payload) {
         stubPingFor("correspondence-service");
-        String body = getPayload(resourceName)
-                .replaceAll("CASE_ID", caseId)
-                .replaceAll("DEFENDANT_ID_1", defendantId1)
-                .replaceAll("DEFENDANT_ID_2", defendantId2);
+        String body = payload.toString();
 
         stubFor(get(urlPathEqualTo("/correspondence-service/query/api/rest/correspondence/contacts"))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -32,4 +30,5 @@ public class CorrespondenceStub {
 
         waitForStubToBeReady("/correspondence-service/query/api/rest/correspondence/contacts", "application/vnd.correspondence.query.contacts+json");
     }
+
 }

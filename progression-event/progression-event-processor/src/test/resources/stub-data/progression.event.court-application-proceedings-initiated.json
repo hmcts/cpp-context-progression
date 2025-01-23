@@ -1,0 +1,143 @@
+{
+  "applicationReferredToNewHearing": true,
+  "courtApplication": {
+    "applicant": {
+      "id": "3fff72d9-9d60-4b14-bd9f-c37b65c73a98",
+      "masterDefendant": {
+        "masterDefendantId": "%MASTER_DEFENDANT_ID%",
+        "defendantCase": [
+          {
+            "caseId": "%CASEID%",
+            "caseReference": "28NR8577800",
+            "defendantId": "%DEFENDANT_ID%"
+          }
+        ],
+        "personDefendant": {
+          "personDetails": {
+            "address": {
+              "address1": "new adress one",
+              "postcode": "TK2 9MD"
+            }
+          }
+        }
+      },
+      "prosecutingAuthority": {
+        "prosecutionAuthorityCode": "Code_2dabae70-8fa4-4d1d-9197-24858ad30267",
+        "prosecutionAuthorityId": "2dabae70-8fa4-4d1d-9197-24858ad30267"
+      },
+      "updatedOn": "2024-11-18"
+    },
+    "applicationReference": "null",
+    "courtOrder": {
+      "courtOrderOffences": [
+        {
+          "offence": {
+            "id": "89634393-88ea-408c-bcd9-36292ce1e561",
+            "offenceCode": "AJ0001",
+            "wording": "Original CaseURN: null, Re-sentenced Original code : OFC0001, Original details: On 12/10/2020 at 10:100am on the corner of the hugh street outside the dog and duck in Croydon you did something wrong",
+            "wordingWelsh": "Original CaseURN: null, Re-sentenced Original code : OFC0001, Original details: On 12/10/2020 at 10:100am on the corner of the hugh street outside the"
+          },
+          "prosecutionCaseId": "c31ba71c-5987-4b30-bedc-d6cb8459ea86",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "P2nhnH2e5X",
+            "prosecutionAuthorityId": "bb58745f-439f-46b5-9eec-01fb1b989543"
+          }
+        }
+      ],
+      "id": "a68e6b78-5554-4802-baef-f6de9dd0bdeb",
+      "judicialResultTypeId": "31d6ba5e-0001-49d3-9b95-92ad0d5f0d5f"
+    },
+    "id": "e66a83bf-3eb7-43fd-8899-433769934acd",
+    "respondents": [
+      {
+        "id": "35c10ab5-0358-4af2-9094-a3335e8979c9",
+        "masterDefendant": {
+          "masterDefendantId": "%MASTER_DEFENDANT_ID%",
+          "defendantCase": [
+            {
+              "caseId": "%CASEID%",
+              "caseReference": "28NR8577800",
+              "defendantId": "%DEFENDANT_ID%"
+            }
+          ],
+          "personDefendant": {
+            "personDetails": {
+              "address": {
+                "address1": "new adress one",
+                "postcode": "TK2 9MD"
+              }
+            }
+          }
+        },
+        "prosecutingAuthority": {
+          "prosecutionAuthorityCode": "Code_dc61987e-dd40-488b-a1ea-c3de988a32c2",
+          "prosecutionAuthorityId": "dc61987e-dd40-488b-a1ea-c3de988a32c2"
+        },
+        "updatedOn": "2024-11-18"
+      }
+    ],
+    "subject": {
+      "id": "b4f55289-7ed3-4d77-a1a2-06e035de337c",
+      "masterDefendant": {
+        "masterDefendantId": "%MASTER_DEFENDANT_ID%",
+        "defendantCase": [
+          {
+            "caseId": "%CASEID%",
+            "caseReference": "28NR8577800",
+            "defendantId": "%DEFENDANT_ID%"
+          }
+        ],
+        "personDefendant": {
+          "personDetails": {
+            "address": {
+              "address1": "new adress one",
+              "postcode": "TK2 9MD"
+            }
+          }
+        }
+      },
+      "prosecutingAuthority": {
+        "prosecutionAuthorityCode": "Code_99369760-9fa8-42f3-8b7a-c40cd16ae2da",
+        "prosecutionAuthorityId": "99369760-9fa8-42f3-8b7a-c40cd16ae2da"
+      },
+      "updatedOn": "2024-11-18"
+    },
+    "thirdParties": [
+      {
+        "id": "f3a9fd5a-6851-4ad0-8fff-f37e4d37e5f6",
+        "notificationRequired": true,
+        "prosecutingAuthority": {
+          "prosecutionAuthorityCode": "P2nhnH2e5X",
+          "prosecutionAuthorityId": "bb58745f-439f-46b5-9eec-01fb1b989543"
+        },
+        "summonsRequired": true
+      }
+    ],
+    "type": {
+      "linkType": "LINKED",
+      "prefix": "Resentenced",
+      "prosecutorThirdPartyFlag": true,
+      "resentencingActivationCode": "AJ0001",
+      "summonsTemplateType": "NOT_APPLICABLE"
+    }
+  },
+  "courtHearing": {
+    "courtCentre": {
+      "code": "COURTCENTER"
+    },
+    "earliestStartDateTime": "2020-06-26T07:51:00.000Z",
+    "estimatedMinutes": 20,
+    "id": "ae67aaa2-27e5-4276-8779-76b8048fde2d",
+    "judiciary": [
+      {
+        "judicialId": "861ba0d8-a35c-4de7-92ac-71f5bff1d896"
+      }
+    ],
+    "jurisdictionType": "CROWN",
+    "weekCommencingDate": {
+      "duration": 20
+    }
+  },
+  "isSJP": false,
+  "summonsApprovalRequired": false
+}

@@ -162,10 +162,10 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final byte[] resultOrderAsByteArray;
         final InputStream documentInputStream;
         try {
-            LOGGER.info("transform court extract payload : {}", document.payloadAsJsonObject());
+            LOGGER.info("transform court extract payload : {}", document.toObfuscatedDebugString());
             final JsonObject payload = transformToTemplateConvert(document.payloadAsJsonObject(), defendantId, extractType, hearingIdList);
             LOGGER.info("create court extract with payload : {}", payload);
-            JsonObject newPayload = pleaValueDescriptionBuilder.rebuildWithPleaValueDescription(payload);
+            JsonObject newPayload = pleaValueDescriptionBuilder.rebuildPleaWithDescription(payload);
             newPayload = resultTextFlagBuilder.rebuildWithResultTextFlag(newPayload);
             resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(newPayload, COURT_EXTRACT, systemUser);
             documentInputStream = new ByteArrayInputStream(resultOrderAsByteArray);

@@ -226,7 +226,9 @@ public class DomainToIndexMapper {
         final Plea plea = new  uk.gov.justice.services.unifiedsearch.client.domain.Plea();
         plea.setPleaValue("INDICATED_GUILTY");
         plea.setPleaDate(indicatedPlea.getIndicatedPleaDate().toString());
-        plea.setOriginatingHearingId(indicatedPlea.getOriginatingHearingId().toString());
+        if(indicatedPlea.getOriginatingHearingId() != null) {
+            plea.setOriginatingHearingId(indicatedPlea.getOriginatingHearingId().toString());
+        }
         return Collections.singletonList(plea);
 
     }

@@ -5,6 +5,7 @@ import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
 import uk.gov.justice.progression.courts.CourtRegisterGenerated;
 import uk.gov.justice.progression.courts.CourtRegisterNotified;
+import uk.gov.justice.progression.courts.CourtRegisterNotifiedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -76,6 +77,19 @@ public class CourtRegisterDocumentRequestListener {
         final JsonObject payload = event.payloadAsJsonObject();
         final CourtRegisterNotified registerNotified = jsonObjectConverter.convert(payload, CourtRegisterNotified.class);
         final List<CourtRegisterRequestEntity> courtRegisters = repository.findByCourtCenterIdAndStatusGenerated(registerNotified.getCourtCentreId());
+        courtRegisters.forEach(courtRegisterRequestEntity -> {
+                    courtRegisterRequestEntity.setStatus(RegisterStatus.NOTIFIED);
+                    courtRegisterRequestEntity.setSystemDocGeneratorId(registerNotified.getSystemDocGeneratorId());
+                    courtRegisterRequestEntity.setProcessedOn(ZonedDateTime.now());
+                }
+        );
+    }
+
+    @Handles("progression.event.court-register-notified-v2")
+    public void notifyCourtRegisterV2(final JsonEnvelope event) {
+        final JsonObject payload = event.payloadAsJsonObject();
+        final CourtRegisterNotifiedV2 registerNotified = jsonObjectConverter.convert(payload, CourtRegisterNotifiedV2.class);
+        final List<CourtRegisterRequestEntity> courtRegisters = repository.findByCourtCenterIdForRegisterDateAndStatusGenerated(registerNotified.getCourtCentreId(), registerNotified.getRegisterDate());
         courtRegisters.forEach(courtRegisterRequestEntity -> {
                     courtRegisterRequestEntity.setStatus(RegisterStatus.NOTIFIED);
                     courtRegisterRequestEntity.setSystemDocGeneratorId(registerNotified.getSystemDocGeneratorId());

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 /**
- * 
+ *
  * @deprecated This is deprecated for Release 2.4
  *
  */
@@ -58,7 +58,7 @@ public class CaseAddedToCrownCourtEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CaseAddedToCrownCourt.class))
                 .thenReturn(caseAddedToCrownCourt);
         when(repository.findByCaseId(caseAddedToCrownCourt.getCaseId())).thenReturn(caseProgressionDetail);
-         
+
         eventListener.addedToCrownCourt(envelope);
 
 

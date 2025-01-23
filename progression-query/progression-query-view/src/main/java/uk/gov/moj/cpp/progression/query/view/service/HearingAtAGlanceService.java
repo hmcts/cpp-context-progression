@@ -181,6 +181,7 @@ public class HearingAtAGlanceService {
                     if (!hearingIds.contains(hearingApplicationEntity.getId().getHearingId())) {
                         hearingEntities.add(hearingApplicationEntity.getHearing());
                         hearingIds.add(hearingApplicationEntity.getId().getHearingId());
+                        LOGGER.info("Added court application hearingId {}", hearingApplicationEntity.getId().getHearingId());
                     }
                 }
             }
@@ -225,7 +226,7 @@ public class HearingAtAGlanceService {
         hearingEntities.forEach(hearingEntity -> {
             final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
             final Hearing hearing = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
-
+            LOGGER.info("Create hearing for hearingId {}", hearing.getId());
             final Hearings hearingsView = Hearings.hearings()
                     .withId(hearing.getId())
                     .withType(hearing.getType())
@@ -561,6 +562,7 @@ public class HearingAtAGlanceService {
         defendant.getOffences().forEach(offence -> {
             final Offences offences = Offences.offences()
                     .withId(offence.getId())
+                    .withOrderIndex(offence.getOrderIndex())
                     .withOffenceDefinitionId(offence.getOffenceDefinitionId())
                     .withOffenceCode(offence.getOffenceCode())
                     .withOffenceTitle(offence.getOffenceTitle())
@@ -582,6 +584,7 @@ public class HearingAtAGlanceService {
                     .withAcquittalDate(offence.getAquittalDate())
                     .withLaaApplnReference(offence.getLaaApplnReference())
                     .withProceedingsConcluded(offence.getProceedingsConcluded())
+                    .withIndictmentParticular(offence.getIndictmentParticular())
                     .build();
             offencesList.add(offences);
         });

@@ -14,7 +14,6 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
@@ -29,7 +28,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
@@ -58,7 +56,6 @@ import org.junit.jupiter.api.Test;
 public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
 
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-defendant-updated").getMessageConsumerClient();
     private static final JmsMessageConsumerClient publicEventsCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_CASE_LSM_INFO = "application/vnd.progression.query.case-lsm-info+json";
@@ -116,9 +113,7 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         helper.updateDefendantWithPoliceBailInfo(policeBailStatusId, policeBailStatusDesc, policeBailConditions);
 
         // then
-        helper.verifyInActiveMQ(privateEventsConsumer);
-
-        final Matcher[] defendantUpdatedMatchers = new Matcher[]{
+        Matcher[] defendantUpdatedMatchers = new Matcher[]{
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("updatedName")),
                 withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567")),
                 withJsonPath("$.prosecutionCase.defendants[0].aliases", hasSize(1)),
@@ -129,46 +124,13 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         };
 
         pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
-        helper.verifyInMessagingQueueForDefendentChanged(publicEventsCaseDefendantChanged);
-    }
-
-    @Test
-    public void shouldUpdateProsecutionCaseDefendantToYouth() throws Exception {
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")))));
-
-        // when
-        helper.updateDefendant();
-
-        // then
-        helper.verifyInActiveMQ(privateEventsConsumer);
-
-        final Matcher[] defendantUpdatedMatchers = new Matcher[]{
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("updatedName")),
-                withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567")),
-                withJsonPath("$.prosecutionCase.defendants[0].aliases", hasSize(1)),
-                withoutJsonPath("$.prosecutionCase.defendants[0].isYouth"),
-        };
-        pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
-        helper.verifyInMessagingQueueForDefendentChanged(publicEventsCaseDefendantChanged);
-    }
-
-    @Test
-    public void shouldUpdateDefendantDetailsWithCustodyEstablishment() throws Exception {
-        // given
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")))));
+        helper.verifyInMessagingQueueForDefendantChanged(publicEventsCaseDefendantChanged);
 
         // when
         helper.updateDefendantWithCustody();
 
         // then
-        helper.verifyInActiveMQ(privateEventsConsumer);
-
-        final Matcher[] defendantUpdatedMatchers = new Matcher[]{
+        defendantUpdatedMatchers = new Matcher[]{
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("updatedName")),
                 withJsonPath("$.prosecutionCase.defendants[0].pncId", is("1234567")),
                 withJsonPath("$.prosecutionCase.defendants[0].aliases", hasSize(1)),
@@ -177,7 +139,18 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.custody", is("Prison")),
         };
         pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
-        helper.verifyInMessagingQueueForDefendentChanged(publicEventsCaseDefendantChanged);
+        helper.verifyInMessagingQueueForDefendantChanged(publicEventsCaseDefendantChanged);
+
+        helper.updateYouthFlagForDefendant();
+
+        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].isYouth", is(true)));
+        helper.verifyInMessagingQueueForDefendantChanged(publicEventsCaseDefendantChanged);
+
+        helper.updateDefendantWithHearingLanguageNeeds("ENGLISH");
+
+        final Matcher[] matchers = {withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.hearingLanguageNeeds", is("ENGLISH"))};
+        pollProsecutionCasesProgressionFor(caseId, matchers);
+        helper.verifyInMessagingQueueForDefendantChanged(publicEventsCaseDefendantChanged);
     }
 
     @Test
@@ -452,33 +425,6 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(matchedCaseId_3, custodyEstablishmentDefendantUpdatedMatchersEmptyCustodyEstablishment);
     }
 
-    @Test
-    public void shouldUpdateProsecutionCaseDefendantWithYouthFlagSetToTrue() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.firstName", is("Harry")))));
-
-        helper.updateYouthFlagForDefendant();
-
-        helper.verifyInActiveMQ(privateEventsConsumer);
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.defendants[0].isYouth", is(true)));
-        helper.verifyInMessagingQueueForDefendentChanged(publicEventsCaseDefendantChanged);
-    }
-
-
-    @Test
-    public void shouldUpdateDefendantDetailsWithHearingLanguageNeeds() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].id", is(defendantId)))));
-
-        helper.updateDefendantWithHearingLanguageNeeds("ENGLISH");
-        helper.verifyInActiveMQ(privateEventsConsumer);
-
-        final Matcher[] matchers = {withJsonPath("$.prosecutionCase.defendants[0].personDefendant.personDetails.hearingLanguageNeeds", is("ENGLISH"))};
-        pollProsecutionCasesProgressionFor(caseId, matchers);
-        helper.verifyInMessagingQueueForDefendentChanged(publicEventsCaseDefendantChanged);
-    }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId) {

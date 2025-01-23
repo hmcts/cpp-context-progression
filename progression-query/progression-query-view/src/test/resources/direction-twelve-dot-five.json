@@ -1,0 +1,62 @@
+{
+  "directionId": "44a07637-d501-4604-9716-1bc664ce2e69",
+  "text": "$language interpretation ordered for $caseParticipant to be arranged by the $arrangedBy.",
+  "assigneeOrganisationText": "Prosecutor",
+  "prompts": [
+    {
+      "id": "2062d38f-9801-4a91-8664-c48a5fd44006",
+      "label": "Case Participant",
+      "type": "fixl",
+      "required": true,
+      "promptOrder": 100,
+      "caseParticipant": "Witness,Defendants",
+      "name": "caseParticipant"
+    },
+    {
+      "id": "3b81321f-c98b-473a-a3c0-ff5b55654138",
+      "name": "interpretationLabel",
+      "label": "12.5 Interpretation ordered",
+      "type": "label",
+      "promptOrder": 101,
+      "header": true
+    },
+    {
+      "id": "9b1b362e-edc0-4e40-b6d9-31fe24d1047c",
+      "name": "language",
+      "label": "Language and dialect",
+      "type": "fixl",
+      "promptOrder": 102
+    },
+    {
+      "id": "602ff24c-eb1b-4a60-9d10-225ae3b82d63",
+      "name": "arrangedBy",
+      "label": "To be arranged by",
+      "type": "checklist",
+      "required": true,
+      "promptOrder": 103,
+      "children": [
+        {
+          "id": "cd62b4ea-856c-40da-9a35-87730c1b067f",
+          "label": "Court Staff",
+          "type": "option",
+          "promptOrder": 200,
+          "name": "courtStaff"
+        },
+        {
+          "id": "f28cee94-8ba9-4d29-854b-2c25ed750ab8",
+          "label": "Prosecution",
+          "type": "option",
+          "promptOrder": 201,
+          "name": "prosecution"
+        },
+        {
+          "id": "b0c08193-e0b4-48c6-a669-9a126a5a359a",
+          "label": "Defendant",
+          "type": "option",
+          "promptOrder": 202,
+          "name": "defendant"
+        }
+      ]
+    }
+  ]
+}

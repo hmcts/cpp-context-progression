@@ -27,7 +27,7 @@ public class ProsecutionCaseQueryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseQueryService.class);
     public static final String CASE_ID = "caseId";
-    private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase";
+    private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase-v2";
     private static final String PROGRESSION_QUERY_ALL_CASE_HEARINGS = "progression.query.case.allhearings";
     private static final String ALL_CASE_HEARINGS = "allCaseHearings";
     private static final String HEARINGS = "hearings";

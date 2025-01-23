@@ -13,6 +13,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatch
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
 import static uk.gov.moj.cpp.jobstore.api.task.ExecutionStatus.STARTED;
+import static uk.gov.moj.cpp.jobstore.persistence.Priority.MEDIUM;
 import static uk.gov.moj.cpp.progression.task.Task.GENERATE_OPA_NOTICE;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -76,7 +77,7 @@ public class GenerateOpaNoticeTaskTest {
     public void shouldExecuteGeneratePublicListOpaNotice() throws IOException {
         final JsonObject payload = getPayload(GENERATE_OPA_PUBLIC_LIST_NOTICE);
 
-        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
+        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, MEDIUM);
         final ExecutionInfo response = generateOpaNoticeTask.execute(executionInfo);
 
         assertThat(response.getExecutionStatus(), is(ExecutionStatus.COMPLETED));
@@ -95,7 +96,7 @@ public class GenerateOpaNoticeTaskTest {
     public void shouldExecuteGeneratePressListOpaNotice() throws IOException {
         final JsonObject payload = getPayload(GENERATE_OPA_PRESS_LIST_NOTICE);
 
-        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
+        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, MEDIUM);
         final ExecutionInfo response = generateOpaNoticeTask.execute(executionInfo);
 
         assertThat(response.getExecutionStatus(), is(ExecutionStatus.COMPLETED));
@@ -114,7 +115,7 @@ public class GenerateOpaNoticeTaskTest {
     public void shouldExecuteGenerateResultListOpaNotice() throws IOException {
         final JsonObject payload = getPayload(GENERATE_OPA_RESULT_LIST_NOTICE);
 
-        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, Priority.MEDIUM);
+        final ExecutionInfo executionInfo = new ExecutionInfo(payload, GENERATE_OPA_NOTICE.getTaskName(), utcClock.now(), STARTED, MEDIUM);
         final ExecutionInfo response = generateOpaNoticeTask.execute(executionInfo);
 
         assertThat(response.getExecutionStatus(), is(ExecutionStatus.COMPLETED));

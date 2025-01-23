@@ -6,22 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_SAC;
 
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JudicialResultPrompt;
-import uk.gov.justice.core.courts.JudicialResultPromptDurationElement;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.NextHearing;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.core.courts.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,7 +82,7 @@ public class UnscheduledCourtHearingListTransformerTest {
      *
      */
     @Test
-    public void shouldReturnHearingSheduleNeedWhenHearingHasApplicationAndCases() {
+    public void shouldReturnHearingUnscheduledListingNeedsWhenHearingHasApplicationAndCases() {
         final Offence offence = createOffenceWithJR(asList(wofnResult()));
         final Hearing hearing = creatingHearingWithCaseAndApplication(asList(offence));
         final UUID seedingHearingId = randomUUID();
@@ -104,8 +92,24 @@ public class UnscheduledCourtHearingListTransformerTest {
                 .withSeedingHearingId(seedingHearingId)
                 .build());
         assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getCourtApplications().size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getProsecutionCases().size(), is(1));
 
+    }
 
+    @Test
+    public void shouldReturnHearingUnscheduledListingNeedsWhenHearingHasApplicationAndCasesAndApplicationHasNoJudicialResults() {
+        final Offence offence = createOffenceWithJR(asList(wofnResult()));
+        final Hearing hearing = creatingHearingWithCaseAndApplicationAndApplicationHasNoJudicialResults(asList(offence));
+        final UUID seedingHearingId = randomUUID();
+
+        final List<HearingUnscheduledListingNeeds> unscheduledListingNeedsList = unscheduledCourtHearingListTransformer.transformWithSeedHearing(hearing, SeedingHearing
+                .seedingHearing()
+                .withSeedingHearingId(seedingHearingId)
+                .build());
+        assertThat(unscheduledListingNeedsList.size(), is(1));
+        assertThat(unscheduledListingNeedsList.get(0).getProsecutionCases().size(), is(1));
+        assertNull(unscheduledListingNeedsList.get(0).getCourtApplications());
     }
 
 
@@ -400,6 +404,8 @@ public class UnscheduledCourtHearingListTransformerTest {
                 .build();
     }
 
+
+
     private Hearing creatingHearingWithCaseAndApplication(final List<Offence> offences) {
         return Hearing.hearing()
                 .withJurisdictionType(JurisdictionType.MAGISTRATES)
@@ -438,6 +444,38 @@ public class UnscheduledCourtHearingListTransformerTest {
                                 .build()))
                         .build()))
                 .build();
+
+    }
+
+    private Hearing creatingHearingWithCaseAndApplicationAndApplicationHasNoJudicialResults(final List<Offence> offences) {
+        return Hearing.hearing()
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
+                        .withId(randomUUID())
+                        .withCpsOrganisation("A01")
+                        .withDefendants(asList(Defendant.defendant()
+                                .withId(randomUUID())
+                                .withOffences(offences)
+                                .build()))
+                        .build()))
+                .withCourtApplications(asList(CourtApplication.courtApplication()
+                        .withId(randomUUID())
+                        .withApplicant(CourtApplicationParty.courtApplicationParty()
+                                .withId(randomUUID())
+                                .withPersonDetails(Person.person()
+                                        .withFirstName("John")
+                                        .build())
+                                .build())
+                        .withSubject(CourtApplicationParty.courtApplicationParty()
+                                .withId(randomUUID())
+                                .withPersonDetails(Person.person()
+                                        .withFirstName("XXX")
+                                        .build())
+                                .build())
+                                .build()))
+                .build();
+
+
 
     }
 

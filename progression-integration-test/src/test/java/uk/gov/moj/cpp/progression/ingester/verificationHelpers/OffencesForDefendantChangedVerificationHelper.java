@@ -22,7 +22,7 @@ public class OffencesForDefendantChangedVerificationHelper extends BaseVerificat
                                              final String inputOffencesIdentifier) {
 
         BaseVerificationHelper verificationHelper = new BaseVerificationHelper();
-        verificationHelper.validateOffences(inputProsecutionCaseJsonObject,outputCase, inputPartyIndex, outputPartyIndex, refferedOffence, inputOffencesIdentifier);
+        verificationHelper.validateOffences(inputProsecutionCaseJsonObject,outputCase, inputOffencesIdentifier);
 
 
     }

@@ -16,7 +16,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -33,7 +32,6 @@ import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
@@ -47,7 +45,6 @@ public class ProsecutorUpdatedIT extends AbstractIT {
     @AfterAll
     public static void tearDown() {
         cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
     @BeforeEach
@@ -109,12 +106,11 @@ public class ProsecutorUpdatedIT extends AbstractIT {
     }
 
     private String prepareAddCourtDocumentPayload() {
-        String body = getPayload("progression.add-court-document-with-cpscase.json")
+        return getPayload("progression.add-court-document-with-cpscase.json")
                 .replaceAll("%RANDOM_DOCUMENT_ID%", documentId)
                 .replaceAll("%RANDOM_CASE_ID%", caseId)
                 .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId)
                 .replaceAll("\"isCpsCase\": false", "\"isCpsCase\": true");
-        return body;
     }
 
 

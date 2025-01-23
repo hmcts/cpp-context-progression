@@ -21,11 +21,11 @@ public class ProbationCaseworkerProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProbationCaseworkerProcessor.class.getName());
 
     @Inject
-    @Value(key = "probationHearingDetailsUrl", defaultValue = "https://spnl-apim-int-gw.cpp.nonlive/probation/api/v1/hearing/details")
+    @Value(key = "probationHearingDetailsUrl", defaultValue = "http://localhost:8080/probation/api/v1/hearing/details")
     private String probationHearingDetailsUrl;
 
     @Inject
-    @Value(key = "probationHearingDeleteUrl", defaultValue = "https://spnl-apim-int-gw.cpp.nonlive/probation/api/v1/hearing/deleted")
+    @Value(key = "probationHearingDeleteUrl", defaultValue = "http://localhost:8080/probation/api/v1/hearing/deleted")
     private String probationHearingDeleteUrl;
 
     @Inject

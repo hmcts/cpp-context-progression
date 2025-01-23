@@ -190,8 +190,7 @@ public class PartialAllocationOfHearingIT {
         doHearingConfirmedAndVerify(existingHearingId, caseId3, defendantId3, courtCentreId1, userId1, extendedHearingId);
 
         doVerifyProgressionHearingExtendedEvent(extendedHearingId, caseId3);
-        await().atMost(TIMEOUT, SECONDS).pollInterval(Duration.ofMillis(500)).until(() -> queryAndVerifyHearingIsExtended(extendedHearingId, 3)
-        );
+        await().atMost(TIMEOUT, SECONDS).pollInterval(Duration.ofMillis(500)).until(() -> queryAndVerifyHearingIsExtended(extendedHearingId, 3));
     }
 
     private void doHearingConfirmedAndVerifyForOneDefendantAndTwoOffences(String hearingId, String caseId, String defendantId, String courtCentreId, String userId) {

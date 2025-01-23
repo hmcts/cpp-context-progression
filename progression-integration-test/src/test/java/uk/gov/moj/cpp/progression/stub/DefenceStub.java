@@ -11,18 +11,21 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayloadAsJsonObject;
 import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
 
 import java.text.MessageFormat;
+
+import javax.json.JsonObject;
 
 import org.apache.http.HttpHeaders;
 
 
 public class DefenceStub {
 
-    public static void stubForAssociatedOrganisation(final String resourceName, final String defendantId) {
+    public static void stubForAssociatedOrganisation(final JsonObject payload, final String defendantId) {
         stubPingFor("defence-service");
-        String body = getPayload(resourceName);
+        String body = payload.toString();
 
         stubFor(get(urlPathEqualTo(MessageFormat.format("/defence-service/query/api/rest/defence/defendants/{0}/associatedOrganisation", defendantId)))
                 .willReturn(aResponse().withStatus(SC_OK)
@@ -31,6 +34,10 @@ public class DefenceStub {
                         .withBody(body)));
 
         waitForStubToBeReady(MessageFormat.format("/defence-service/query/api/rest/defence/defendants/{0}/associatedOrganisation", defendantId), "application/vnd.defence.query.associated-organisation+json");
+    }
+
+    public static void stubForAssociatedOrganisation(final String resourceName, final String defendantId) {
+        stubForAssociatedOrganisation(getPayloadAsJsonObject(resourceName), defendantId);
     }
 
     public static void stubForAssociatedCaseDefendantsOrganisation(final String resourceName, final String caseId) {

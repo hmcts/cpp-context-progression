@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getCourtRegisterStreamId;
 import static uk.gov.moj.cpp.progression.processor.CourtRegisterEventProcessor.COURT_REGISTER_TEMPLATE;
 
 import uk.gov.justice.core.courts.courtRegisterDocument.CourtRegisterDocumentRequest;
@@ -32,6 +33,7 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -98,8 +100,11 @@ public class CourtRegisterEventProcessorTest {
     @Test
     public void shouldGenerateCourtRegister() throws IOException, FileServiceException {
         final UUID courtCentreId = UUID.randomUUID();
+        final ZonedDateTime registerDate = ZonedDateTime.parse("2024-10-24T22:23:12.414Z");
+
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest = CourtRegisterDocumentRequest.courtRegisterDocumentRequest()
                 .withCourtCentreId(courtCentreId)
+                .withRegisterDate(registerDate)
                 .withDefendantType("applicant")
                 .withFileName("some file name").build();
         final CourtRegisterGenerated courtRegisterGenerated = CourtRegisterGenerated.courtRegisterGenerated()
@@ -115,6 +120,7 @@ public class CourtRegisterEventProcessorTest {
 
         final UUID fileId = UUID.randomUUID();
         when(fileStorer.store(any(JsonObject.class), any(ByteArrayInputStream.class))).thenReturn(fileId);
+
         courtRegisterEventProcessor.generateCourtRegister(requestMessage);
         verify(fileStorer).store(filestorerMetadata.capture(), any(ByteArrayInputStream.class));
         ArgumentCaptor<Envelope> captor = ArgumentCaptor.forClass(Envelope.class);
@@ -123,7 +129,7 @@ public class CourtRegisterEventProcessorTest {
         assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("originatingSource"), is("CourtRegister"));
         assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("templateIdentifier"), is(COURT_REGISTER_TEMPLATE));
         assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("conversionFormat"), is("pdf"));
-        assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("sourceCorrelationId"), is(courtCentreId.toString()));
+        assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("sourceCorrelationId"), is(getCourtRegisterStreamId(courtCentreId.toString(), registerDate.toLocalDate().toString()).toString()));
         assertThat(objectToJsonObjectConverter.convert(captor.getValue().payload()).getString("payloadFileServiceId"), is(fileId.toString()));
     }
 
@@ -142,6 +148,31 @@ public class CourtRegisterEventProcessorTest {
                 notificationObject);
         when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(templateId);
         courtRegisterEventProcessor.notifyCourt(requestEnvelope);
+        verify(notificationNotifyService).sendEmailNotification(eq(requestEnvelope), notificationJson.capture());
+        assertThat(notificationJson.getValue().getString("notificationId"), is(notNullValue()));
+        assertThat(notificationJson.getValue().getString("templateId"), is(templateId));
+        assertThat(notificationJson.getValue().getString("sendToAddress"), is(emailAddress1));
+        assertThat(notificationJson.getValue().getString("fileId"), is("some uuid"));
+
+    }
+
+    @Test
+    public void shouldNotifyCourtV2() {
+        final JsonArrayBuilder recipientJsonArray = Json.createArrayBuilder();
+        final String templateId = UUID.randomUUID().toString();
+        final String emailAddress1 = "abc@test.com";
+        recipientJsonArray.add(Json.createObjectBuilder().add("templateId", templateId)
+                .add("recipientName", "yots court center")
+                .add("emailTemplateName", "some template")
+                .add("emailAddress1", emailAddress1).build());
+        final JsonObject notificationObject = Json.createObjectBuilder().add("recipients", recipientJsonArray).add("systemDocGeneratorId", "some uuid").build();
+        final JsonEnvelope requestEnvelope = JsonEnvelope.envelopeFrom(
+                metadataWithRandomUUID("progression.event.court-register-notified").withUserId(UUID.randomUUID().toString()),
+                notificationObject);
+        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(templateId);
+
+        courtRegisterEventProcessor.notifyCourtV2(requestEnvelope);
+
         verify(notificationNotifyService).sendEmailNotification(eq(requestEnvelope), notificationJson.capture());
         assertThat(notificationJson.getValue().getString("notificationId"), is(notNullValue()));
         assertThat(notificationJson.getValue().getString("templateId"), is(templateId));

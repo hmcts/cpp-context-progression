@@ -50,9 +50,9 @@ public class UnallocateHearingCommandHandler {
         eventStream.append(events.map(Enveloper.toEnvelopeWithMetadataFrom(removeHearingForProsecutionCaseEnvelope)));
     }
 
-    private void log(final String eventName, final String payload) {
+    private void log(final String eventName, final String hearingId) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("{} event received with hearingId {}", eventName, payload);
+            LOGGER.debug("{} event received with hearingId {}", eventName, hearingId);
         }
     }
 }

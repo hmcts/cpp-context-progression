@@ -4,31 +4,27 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeAccessQueryData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import javax.jms.JMSException;
-import javax.json.JsonObject;
 
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
@@ -36,9 +32,11 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
+@ExtendWith(JmsResourceManagementExtension.class)
 public class ApplicationExtractIT extends AbstractIT {
     private String hearingId;
     private String courtApplicationId;
@@ -47,8 +45,6 @@ public class ApplicationExtractIT extends AbstractIT {
     private String updatedDefendantId;
 
     private static final String DOCUMENT_TEXT = STRING.next();
-
-    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-created").getMessageConsumerClient();
 
     @BeforeEach
     public void setUp() {
@@ -70,7 +66,7 @@ public class ApplicationExtractIT extends AbstractIT {
     public void shouldAddDocumentInStandAloneApplicationAndThenUpdateIt() throws Exception {
         // given
         addStandaloneCourtApplication(courtApplicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
-        verifyInMessagingQueueForStandaloneCourtApplicationCreated();
+        pollForApplication(courtApplicationId);
         // when
         final String documentContentResponse = getApplicationExtractPdf(courtApplicationId, hearingId);
         // then
@@ -142,10 +138,4 @@ public class ApplicationExtractIT extends AbstractIT {
         return body;
     }
 
-    private void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
-
-        String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");
-        assertThat(referenceResponse.length(), is(10));
-    }
 }

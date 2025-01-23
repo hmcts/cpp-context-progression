@@ -64,13 +64,13 @@
         <material.version>17.0.20</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.34</referencedata.version>
-        <listing.version>17.0.6</listing.version>
-        <hearing.version>8.0.150</hearing.version>
+        <referencedata.version>17.0.53</referencedata.version>
+        <listing.version>17.0.8</listing.version>
+        <hearing.version>17.0.28</hearing.version>
         <usersgroups.version>17.0.23</usersgroups.version>
-        <defence.version>17.0.16</defence.version>
+        <defence.version>17.0.44</defence.version>
         <referencedata.offence.version>17.0.29</referencedata.offence.version>
-        <coredomain.version>17.100.2</coredomain.version>
+        <coredomain.version>17.101.0</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.1</results.version>
@@ -90,8 +90,6 @@
         <dbunit-maven-plugin.version>1.0-beta-3</dbunit-maven-plugin.version>
         <jmeter-maven-plugin.version>1.10.1</jmeter-maven-plugin.version>
         <jmeter-plugins-standard.version>1.3.1</jmeter-plugins-standard.version>
-
-
         <jmeter-lightning-maven-plugin>0.1.1</jmeter-lightning-maven-plugin>
         <powermock-reflect>2.0.2</powermock-reflect>
         <byte-buddy.version>1.12.22</byte-buddy.version>
@@ -146,11 +144,6 @@
             <dependency>
                 <groupId>uk.gov.justice</groupId>
                 <artifactId>stream-transformation-tool-anonymise</artifactId>
-                <version>${stream-transformation-tool.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>uk.gov.justice</groupId>
-                <artifactId>stream-transformation-tool-api</artifactId>
                 <version>${stream-transformation-tool.version}</version>
             </dependency>
             <dependency>

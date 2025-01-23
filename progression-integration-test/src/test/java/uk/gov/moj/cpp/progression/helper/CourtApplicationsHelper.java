@@ -46,12 +46,6 @@ public class CourtApplicationsHelper {
                 .replaceAll("RANDOM_RESPONDENT_REPRESENTATIVE_POSITION", randomValues.RANDOM_RESPONDENT_REPRESENTATIVE_POSITION);
     }
 
-    public static Response addStandaloneCourtApplicationWithRespondents(final String fileName, CourtApplicationsHelper.CourtApplicationRandomValues randomValues) throws IOException {
-        return postCommand(getWriteUrl("/initiate-application"),
-                "application/vnd.progression.initiate-court-proceedings-for-application+json",
-                getStandaloneCourtApplicationWithRespondentsJsonBody(fileName, randomValues));
-    }
-
     public static class CourtApplicationRandomValues {
 
         final public String APPLICANT_FIRSTNAME = new StringGenerator().next();
@@ -81,8 +75,6 @@ public class CourtApplicationsHelper {
         final public String RANDOM_RESPONDENT_REPRESENTATIVE_LAST_NAME = new StringGenerator().next();
         final public String RANDOM_RESPONDENT_REPRESENTATIVE_POSITION = new StringGenerator().next();
 
-        final public String RANDOM_INDIVIDUAL_ID = UUID.randomUUID().toString();
-        final public String RANDOM_ORG_ID = UUID.randomUUID().toString();
         final public String RANDOM_APPLICATION_ID = UUID.randomUUID().toString();
         final public String RANDOM_PARENT_APPLICATION_ID = UUID.randomUUID().toString();
 

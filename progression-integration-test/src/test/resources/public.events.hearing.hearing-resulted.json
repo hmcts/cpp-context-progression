@@ -81,7 +81,8 @@
                 "arrestDate": "2018-01-01",
                 "chargeDate": "2018-01-01",
                 "dateOfInformation": "2018-01-01",
-                "orderIndex": 0,
+                "orderIndex": 2,
+                "indictmentParticular": "offence-indictmentParticular",
                 "count": 0,
                 "convictionDate": "2018-01-01",
                 "notifiedPlea": {

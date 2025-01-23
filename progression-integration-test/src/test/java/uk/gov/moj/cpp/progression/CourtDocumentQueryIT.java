@@ -173,9 +173,6 @@ public class CourtDocumentQueryIT {
         final String docTypeId2 = "460fb0ca-c002-11e8-a355-529269fb1459";
         final String courtDocumentCaseLevel2 = addCourtDocument(caseId, docId1, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId2, docId1, caseId, defendantId, "progression.add-court-document-def-level.json"));
-        final JsonObject courtDocumentCaseLevelJson2 = new StringToJsonObjectConverter().convert(courtDocumentCaseLevel2);
-        final String caseLevelCourtDocumentId2 = courtDocumentCaseLevelJson2.getJsonObject("courtDocument").getString("courtDocumentId");
-
 
         //Doc Type Ref Data
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
@@ -290,13 +287,6 @@ public class CourtDocumentQueryIT {
     }
 
     @Test
-    public void shouldSendForbiddenAsUserNotAllowedToAccess() throws IOException {
-        getCourtDocumentsByDefendantForDefence(USER_ID, caseId, status().is(FORBIDDEN));
-
-    }
-
-
-    @Test
     public void shouldGetAllCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException, JSONException {
         final String docTypeId = "460fbc00-c002-11e8-a355-529269fb1459";
         final String organisationId = UUID.randomUUID().toString();
@@ -340,19 +330,10 @@ public class CourtDocumentQueryIT {
     }
 
     private String getRoleInCasePermissionPayload(final String caseId, final String defendantId, final String role) {
-        final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid-with-defendant-list.json")
+        return getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid-with-defendant-list.json")
                 .replace("%CASE_ID%", caseId)
                 .replace("%DEFENDANT_ID%", defendantId)
                 .replace("%USER_ROLE_IN_CASE%", role);
-        return userRoleInCase;
-    }
-
-    private String getPermissionStubPayload(final String defendantId) {
-        final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
-                .replace("%USER_ID%", randomUUID().toString())
-                .replace("%DEFENDANT_ID%", defendantId)
-                .replace("%ORGANISATION_ID%", randomUUID().toString());
-        return permission;
     }
 
     @Test

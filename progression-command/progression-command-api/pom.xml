@@ -155,6 +155,9 @@
                                 <include>
                                     progression.add-further-info-defence-cotr.json
                                 </include>
+                                <include>
+                                    progression.command.patch-and-resend-laa-outcome-concluded.json
+                                </include>
                             </includes>
                             <generatorProperties implementation="uk.gov.justice.generation.pojo.core.PojoGeneratorProperties">
                                 <plugins>

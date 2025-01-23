@@ -43,6 +43,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
@@ -71,8 +72,10 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 @SuppressWarnings("squid:S1607")
+@ExtendWith(JmsResourceManagementExtension.class)
 public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
@@ -369,7 +372,7 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
 
     private void verifyInMQForCaseGroupInfoUpdated(final String removedCaseId, final String groupId, final boolean groupMasterChanged) {
         final Optional<JsonObject> message1 = retrieveMessageBody(consumerForCaseGroupInfoUpdated);
-        final Optional<JsonObject> message2 = groupMasterChanged ? retrieveMessageBody(consumerForCaseGroupInfoUpdated) : null;
+        final Optional<JsonObject> message2 = groupMasterChanged ? retrieveMessageBody(consumerForCaseGroupInfoUpdated) : Optional.empty();
 
         assertTrue(message1.isPresent());
         assertTrue(!groupMasterChanged || message2.isPresent());

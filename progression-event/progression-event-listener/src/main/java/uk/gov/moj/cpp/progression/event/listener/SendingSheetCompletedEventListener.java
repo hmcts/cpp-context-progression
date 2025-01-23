@@ -13,7 +13,7 @@ import uk.gov.moj.cpp.progression.domain.event.completedsendingsheet.SendingShee
 import uk.gov.moj.cpp.progression.event.service.CaseService;
 
 /**
- * 
+ *
  * @deprecated This is deprecated for Release 2.4
  *
  */
@@ -31,7 +31,7 @@ public class SendingSheetCompletedEventListener {
     @Handles("progression.events.sending-sheet-completed")
     public void processEvent(final JsonEnvelope event) {
         final SendingSheetCompleted sendingSheetCompleted = jsonObjectConverter
-                        .convert(event.payloadAsJsonObject(), SendingSheetCompleted.class);
+                .convert(event.payloadAsJsonObject(), SendingSheetCompleted.class);
         caseService.caseAssignedForReview(sendingSheetCompleted.getHearing().getCaseId(), CaseStatusEnum.READY_FOR_REVIEW);
     }
 

@@ -117,7 +117,7 @@ public class UpdateOffencesHandler {
         final UpdateOffencesForHearing updateOffencesForHearing = updateOffencesForHearingEnvelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateOffencesForHearing.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
-        final Stream<Object> events = hearingAggregate.updateOffence(updateOffencesForHearing.getDefendantId(), dedupAllReportingRestrictions(updateOffencesForHearing.getUpdatedOffences()));
+        final Stream<Object> events = hearingAggregate.updateOffence(updateOffencesForHearing.getDefendantId(), dedupAllReportingRestrictions(updateOffencesForHearing.getUpdatedOffences()), dedupAllReportingRestrictions(updateOffencesForHearing.getNewOffences()));
         appendEventsToStream(updateOffencesForHearingEnvelope, eventStream, events);
     }
 

@@ -30,7 +30,6 @@ public class AddCourtDocumentHelper {
                 "application/vnd.progression.add-court-document+json",
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        final ZonedDateTime uploadedTime = ZonedDateTime.now();
         //Then
         return getCourtDocumentFor(docId, allOf(
                 withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),

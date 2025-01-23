@@ -24,7 +24,6 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.json.JsonObject;
@@ -37,7 +36,6 @@ public class LinkCasesIT extends AbstractIT {
 
     public static final String LINKED_CASES = "linkedCases";
     public static final String MERGED_CASES = "mergedCases";
-    public static final String SPLIT_CASES = "splitCases";
     private final String linkCasesPayloadJson = "progression.command.link-cases.json";
     private final String mergeCasePayloadJson = "progression.command.merge-cases.json";
     private final String splitCasesPayloadJson = "progression.command.split-cases.json";
@@ -96,7 +94,6 @@ public class LinkCasesIT extends AbstractIT {
         initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS_WITH_MULTIPLE_DEFENDANTS, prosecutionCaseId_3, defendantId_3, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_3, listedStartDateTime, earliestStartDateTime, defendantDOB);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_3, getProsecutionCaseMatchers(prosecutionCaseId_3, defendantId_3, emptyList()));
 
-
         //link cases
         linkCases(prosecutionCaseId_1, caseUrn_2, caseUrn_3, linkCasesPayloadJson);
 
@@ -140,11 +137,6 @@ public class LinkCasesIT extends AbstractIT {
         mergeCase(prosecutionCaseId_2, caseUrn_3, mergeCasePayloadJson);
 
         splitCase(prosecutionCaseId_1, caseUrn_1 + "/1", caseUrn_1 + "/2", splitCasesPayloadJson);
-
-        final Matcher[] lsmSplitResponseMatchers = getLsmQueryMatchers(SPLIT_CASES,
-                1,
-                new String[]{prosecutionCaseId_1},
-                new String[]{defendantId_1});
     }
 
     @Test
@@ -153,9 +145,10 @@ public class LinkCasesIT extends AbstractIT {
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITH_RELATED_URN_JSON, prosecutionCaseId_2, defendantId_2, randomUUID().toString(), materialIdActive, materialIdDeleted, referralReasonId, caseUrn_2, listedStartDateTime, earliestStartDateTime, defendantDOB, caseUrn_1);
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList()));
 
-        final List<Matcher> matchers = new ArrayList<>();
-        matchers.add(withJsonPath("$.relatedReferenceList[0].prosecutionCaseId", is(prosecutionCaseId_2)));
-        final Matcher[] relatedReferenceMatchers = matchers.toArray(new Matcher[matchers.size()]);
+        List<Matcher> matchers = List.of(
+                withJsonPath("$.relatedReferenceList[0].prosecutionCaseId", is(prosecutionCaseId_2))
+        );
+        Matcher[] relatedReferenceMatchers = matchers.toArray(new Matcher[0]);
 
         JsonObject responseAsJson = new StringToJsonObjectConverter().convert(getRelatedReference(prosecutionCaseId_2, relatedReferenceMatchers));
         final String relatedReference = responseAsJson.getJsonArray("relatedReferenceList").getJsonObject(0).getString("relatedReference");

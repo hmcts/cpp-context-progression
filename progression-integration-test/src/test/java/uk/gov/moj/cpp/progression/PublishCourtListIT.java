@@ -1,92 +1,80 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
-import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasToString;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.CorrespondenceStub.stubForCorrespondenceCaseContacts;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyNoLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.QueueReaderUtil;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import io.restassured.response.Response;
 import org.json.JSONException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class PublishCourtListIT extends AbstractIT {
 
     private static final String PUBLIC_EVENT_COURT_LIST_PUBLISHED = "public.listing.court-list-published";
-    private static final String PRIVATE_EVENT_EMAIL_REQUESTED = "progression.event.email-requested";
 
     private static final String DOCUMENT_TEXT = STRING.next();
-    private static final String DEFENCE_ORGANISATION_EMAIL = "email@email.com";
-    private static final String DEFENCE_ADVOCATE_EMAIL = "defenceAdvocate@organisation.com";
-    private static final String PROSECUTOR_EMAIL = "test@test.com";
-    private final String caseId = randomUUID().toString();
-    private final String defendantId1 = randomUUID().toString();
-    private final String defendantId2 = randomUUID().toString();
-    private final String userId = randomUUID().toString();
-    private final String caseUrn = generateUrn();
+
+    private String defenceOrganisationEmail;
+    private String defenceAdvocateEmail;
+    private String prosecutorEmail;
+
+    private String caseId;
+    private String defendantId1;
+    private String defendantId2;
+    private String userId;
+    private String caseUrn;
+
+    private UUID prosecutionAuthorityId;
 
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static JmsMessageConsumerClient messageConsumerClientEmailRequested;
-    private static final QueueReaderUtil queueReaderUtil = new QueueReaderUtil();
-
-    @BeforeAll
-    public static void setupOnce()  {
-        messageConsumerClientEmailRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_EMAIL_REQUESTED).getMessageConsumerClient();
-        queueReaderUtil.startListeningToPrivateEvents(messageConsumerClientEmailRequested, PRIVATE_EVENT_EMAIL_REQUESTED);
-    }
-
 
     @BeforeEach
     public void setup() {
         NotificationServiceStub.setUp();
         stubDocumentCreate(DOCUMENT_TEXT);
-        givenDefendantAdvocateIsPresentInCorrespondence(caseId, defendantId1,defendantId2);
-    }
 
-    @Test
-    public void shouldRaiseSingleEmailNotificationWithAttachmentForDefenceOrganisationForDraftSingleHearing() {
-        givenDefendantsAreRepresentedByDefenceOrganisation(defendantId1, defendantId2);
+        defenceOrganisationEmail = randomAlphanumeric(15) + "-defenceorg@email.com";
+        defenceAdvocateEmail = randomAlphanumeric(15) + "-defenceadvocate@email.com";
+        prosecutorEmail = randomAlphanumeric(15) + "-prosecutor@email.com";
 
-        whenListingRaisesCourtListPublishedEvent("public.listing.court-list-published-final-single-hearing.json");
+        caseId = randomUUID().toString();
+        defendantId1 = randomUUID().toString();
+        defendantId2 = randomUUID().toString();
+        userId = randomUUID().toString();
+        caseUrn = generateUrn();
 
-        final UUID materialId = thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
-        andNoPostalNotificationIsRaised(materialId);
+        prosecutionAuthorityId = randomUUID();
+
+        givenDefendantAdvocateIsPresentInCorrespondence(caseId, defendantId1, defendantId2);
     }
 
     @Test
@@ -95,8 +83,7 @@ public class PublishCourtListIT extends AbstractIT {
 
         whenListingRaisesCourtListPublishedEvent("public.listing.court-list-published-final-single-hearing_with_mandatory_fields_only.json");
 
-        final UUID materialId = thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
-        andNoPostalNotificationIsRaised(materialId);
+        thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
     }
 
     @Test
@@ -105,36 +92,31 @@ public class PublishCourtListIT extends AbstractIT {
 
         whenListingRaisesCourtListPublishedEvent("public.listing.court-list-published-final-single-hearing.json");
 
-        final UUID materialId = thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
-        andNoPostalNotificationIsRaised(materialId);
+        thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
     }
 
     @Test
-    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForWarnSingleHearing() throws Exception, JSONException {
+    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForWarnSingleHearing() throws Exception {
         givenDefendantIsRepresentedByDefenceOrganisation(defendantId1);
-        andProsecutionCaseIsPresentInCrownCourt();
+        andProsecutionCaseIsInCrownCourt();
         andNonCPSProsecutorIsPresent();
 
         whenListingRaisesCourtListPublishedEvent("public.listing.court-list-published-warn-single-hearing.json");
 
-        final UUID defenceOrganisationMaterialId = thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
-        final UUID prosecutorMaterialId = andProsecutorIsNotifiedByEmail();
-        andNoPostalNotificationIsRaised(defenceOrganisationMaterialId);
-        andNoPostalNotificationIsRaised(prosecutorMaterialId);
+        thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
+        andProsecutorIsNotifiedByEmail();
     }
 
     @Test
-    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForFirmSingleHearing() throws Exception, JSONException {
+    public void shouldRaiseEmailNotificationWithAttachmentForDefenceOrganisationAndForProsecutorForFirmSingleHearing() throws Exception {
         givenDefendantIsRepresentedByDefenceOrganisation(defendantId1);
-        andProsecutionCaseIsPresentInCrownCourt();
+        andProsecutionCaseIsInCrownCourt();
         andNonCPSProsecutorIsPresent();
 
         whenListingRaisesCourtListPublishedEvent("public.listing.court-list-published-firm-single-hearing.json");
 
-        final UUID defenceOrganisationMaterialId = thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
-        final UUID prosecutorMaterialId = andProsecutorIsNotifiedByEmail();
-        andNoPostalNotificationIsRaised(defenceOrganisationMaterialId);
-        andNoPostalNotificationIsRaised(prosecutorMaterialId);
+        thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail();
+        andProsecutorIsNotifiedByEmail();
     }
 
     private void givenDefendantsAreRepresentedByDefenceOrganisation(final String... defendantIds) {
@@ -144,70 +126,73 @@ public class PublishCourtListIT extends AbstractIT {
     }
 
     private void givenDefendantIsRepresentedByDefenceOrganisation(final String defendantId) {
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+        final String payload = getPayload("stub-data/defence.get-associated-organisation-random-email.json").replace("RANDOM_EMAIL", defenceOrganisationEmail);
+        final JsonObject payloadAsJsonObject = new StringToJsonObjectConverter().convert(payload);
+        stubForAssociatedOrganisation(payloadAsJsonObject, defendantId);
     }
 
     private void givenDefendantAdvocateIsPresentInCorrespondence(final String caseId, final String defendantId1, final String defendantId2) {
-        stubForCorrespondenceCaseContacts("stub-data/correspondence.query.contacts.json", caseId, defendantId1, defendantId2);
+        final String payload = getPayload("stub-data/correspondence.query.contacts.json")
+                .replace("RANDOM_EMAIL", defenceAdvocateEmail)
+                .replace("CASE_ID", caseId)
+                .replace("DEFENDANT_ID_1", defendantId1)
+                .replace("DEFENDANT_ID_2", defendantId2);
+        final JsonObject payloadAsJsonObject = new StringToJsonObjectConverter().convert(payload);
+        stubForCorrespondenceCaseContacts(payloadAsJsonObject);
     }
 
-    private void andProsecutionCaseIsPresentInCrownCourt() throws IOException, JSONException {
-        addProsecutionCaseToCrownCourtAndVerify(caseId, defendantId1, caseUrn);
-    }
-
-    private static void andNonCPSProsecutorIsPresent() {
-        stubQueryProsecutorData("/restResource/referencedata.query.prosecutor-noncps.json", randomUUID());
+    private void andNonCPSProsecutorIsPresent() {
+        final String payload = getPayload("restResource/referencedata.query.prosecutor-noncps-random-email.json")
+                .replaceAll("RANDOM_EMAIL", prosecutorEmail)
+                .replaceAll("RANDOM_PROSECUTOR_ID", prosecutionAuthorityId.toString());
+        final JsonObject payloadAsJsonObject = new StringToJsonObjectConverter().convert(payload);
+        stubQueryProsecutorData(payloadAsJsonObject, prosecutionAuthorityId, randomUUID());
     }
 
     private void whenListingRaisesCourtListPublishedEvent(final String eventLocation) {
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENT_COURT_LIST_PUBLISHED, userId), getContentsAsJsonObject(eventLocation));
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENT_COURT_LIST_PUBLISHED, userId), getCourtListPublishedPayloadAsJsonObject(eventLocation));
         messageProducerClientPublic.sendMessage(PUBLIC_EVENT_COURT_LIST_PUBLISHED, publicEventEnvelope);
     }
 
-    private UUID thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail() {
-        final UUID materialIdDefenceOrg = verifyEmailRequestedPrivateEvent(DEFENCE_ORGANISATION_EMAIL);
-        final List<String> expectedDefendantOrgEmailDetails = newArrayList(DEFENCE_ORGANISATION_EMAIL);
-        verifyEmailNotificationIsRaisedWithAttachment(expectedDefendantOrgEmailDetails, materialIdDefenceOrg);
-        final UUID materialIdDefenceAdvocate = verifyEmailRequestedPrivateEvent(DEFENCE_ADVOCATE_EMAIL);
-        final List<String> expectedDefenceAdvocateEmailDetails = newArrayList(DEFENCE_ADVOCATE_EMAIL);
-        verifyEmailNotificationIsRaisedWithAttachment(expectedDefenceAdvocateEmailDetails, materialIdDefenceAdvocate);
-        return materialIdDefenceOrg;
+    private void thenDefenceOrganisationAndDefenceAdvocateIsNotifiedByEmail() {
+        final List<String> expectedDefendantOrgEmailDetails = newArrayList(defenceOrganisationEmail);
+        verifyEmailNotificationIsRaisedWithAttachment(expectedDefendantOrgEmailDetails);
+        final List<String> expectedDefenceAdvocateEmailDetails = newArrayList(defenceAdvocateEmail);
+        verifyEmailNotificationIsRaisedWithAttachment(expectedDefenceAdvocateEmailDetails);
     }
 
-    private UUID andProsecutorIsNotifiedByEmail() {
-        final UUID materialId = verifyEmailRequestedPrivateEvent(PROSECUTOR_EMAIL);
-        final List<String> expectedEmailDetails = newArrayList(PROSECUTOR_EMAIL);
-        verifyEmailNotificationIsRaisedWithAttachment(expectedEmailDetails, materialId);
-        return materialId;
+    private void andProsecutorIsNotifiedByEmail() {
+        final List<String> expectedEmailDetails = newArrayList(prosecutorEmail);
+        verifyEmailNotificationIsRaisedWithAttachment(expectedEmailDetails);
     }
 
-    private static void andNoPostalNotificationIsRaised(final UUID materialId) {
-        verifyNoLetterRequested(of(materialId.toString()));
-    }
+    private void andProsecutionCaseIsInCrownCourt() throws IOException, JSONException {
+        addProsecutionCaseToCrownCourt();
 
-    private UUID verifyEmailRequestedPrivateEvent(final String emailAddress) {
-        final Optional<JsonObject> message = queueReaderUtil.retrieveMessageBody(PRIVATE_EVENT_EMAIL_REQUESTED, emailAddress);
-        assertThat(message.isPresent(), is(true));
-        assertThat(message.get(), isJson(withJsonPath("$.notifications[0].sendToAddress",
-                hasToString(containsString(emailAddress)))));
-
-        return fromString(message.get().getString("materialId"));
-    }
-
-    private void addProsecutionCaseToCrownCourtAndVerify(final String caseId, final String defendantId, final String urn) throws IOException, JSONException {
-        addProsecutionCaseToCrownCourt(caseId, defendantId, urn);
-
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1,
                 singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
     }
 
-    private JsonObject getContentsAsJsonObject(final String path) {
+    private JsonObject getCourtListPublishedPayloadAsJsonObject(final String path) {
         final String strPayload = getPayload(path)
                 .replaceAll("DEFENDANT_ID_1", defendantId1)
                 .replaceAll("DEFENDANT_ID_2", defendantId2)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("CASE_URN", caseUrn);
         return stringToJsonObjectConverter.convert(strPayload);
+    }
+
+    public Response addProsecutionCaseToCrownCourt() throws IOException, JSONException {
+
+        final String payload = getPayload("progression.command.prosecution-case-refer-to-court-random-prosecutor.json")
+                .replaceAll("RANDOM_CASE_ID", caseId)
+                .replaceAll("RANDOM_PROSECUTION_AUTHORITY_ID", prosecutionAuthorityId.toString())
+                .replaceAll("RANDOM_REFERENCE", caseUrn)
+                .replaceAll("RANDOM_DEFENDANT_ID", defendantId1);
+
+        return postCommand(getWriteUrl("/refertocourt"),
+                "application/vnd.progression.refer-cases-to-court+json",
+                payload);
     }
 
 }

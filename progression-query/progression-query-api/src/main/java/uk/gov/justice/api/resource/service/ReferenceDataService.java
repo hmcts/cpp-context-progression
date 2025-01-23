@@ -3,6 +3,7 @@ package uk.gov.justice.api.resource.service;
 import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -11,6 +12,7 @@ import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.exract.ProsecutingAuthority;
@@ -26,6 +28,7 @@ import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +58,7 @@ public class ReferenceDataService {
     private static final String REFERENCEDATA_QUERY_JUDICIARIES = "referencedata.query.judiciaries";
     private static final String REFERENCEDATA_QUERY_CLUSTER = "referencedata.query.cluster-org-units";
     private static final String REFERENCEDATA_QUERY_DOCUMENTS_TYPE_ACCESS = "referencedata.get-all-document-type-access";
+    public static final String REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS = "referencedata.query-result-definitions-by-ids";
 
     private static final String ADDRESS_1 = "address1";
     private static final String ADDRESS_2 = "address2";
@@ -71,6 +75,8 @@ public class ReferenceDataService {
     private static final String FIELD_DOCUMENTS_TYPE_ACCESS = "documentsTypeAccess";
     private static final String FIELD_ID = "id";
     private static final String DEFAULT_VALUE = null;
+
+    private static final String FIELD_RESULT_DEFINITIONS = "resultDefinitions";
 
     @Inject
     @ServiceComponent(QUERY_API)
@@ -147,11 +153,37 @@ public class ReferenceDataService {
 
     }
 
+    public List<ResultDefinition> getResultDefinitionsByIds(final JsonEnvelope jsonEnvelope, final List<UUID> resultDefinitionIdList) {
+        final String idsValue = resultDefinitionIdList.stream().map(UUID::toString).collect(Collectors.joining(","));
+        final JsonObject payload = createObjectBuilder().add("ids", idsValue).build();
+
+        LOGGER.info("Calling referenceDataService queryResultDefinitionsByIds with list of resultDefinitionIds: {}", payload);
+
+        final Metadata metadata = metadataFrom(jsonEnvelope.metadata())
+                .withName(REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS)
+                .build();
+
+        final JsonEnvelope jsonEnvelop = requester.request(envelopeFrom(metadata, payload));
+        List<ResultDefinition> resultDefinitionList = new ArrayList<>();
+
+        final JsonArray resultDefinitions = Optional.of(jsonEnvelop.payloadAsJsonObject())
+                .map(respPayload -> respPayload.getJsonArray(FIELD_RESULT_DEFINITIONS))
+                .orElseThrow(RuntimeException::new);
+
+        resultDefinitions.forEach(respPayload -> resultDefinitionList.add(
+                ResultDefinition.builder()
+                        .withId(fromString(((JsonObject) respPayload).getString("id")))
+                        .withResultDefinitionGroup(((JsonObject) respPayload).getString("resultDefinitionGroup", null))
+                        .withCategory(((JsonObject) respPayload).getString("category")).build()));
+
+        return resultDefinitionList;
+    }
+
     public ProsecutingAuthority getProsecutor(final JsonEnvelope event, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
 
         final ProsecutingAuthority.Builder prosecutingAuthorityBuilder = ProsecutingAuthority.prosecutingAuthority();
 
-        if (isNameInformationEmpty(prosecutionCaseIdentifier)) {
+        if (isBlank(prosecutionCaseIdentifier.getProsecutionAuthorityName())) {
             final JsonObject prosecutorJson = getProsecutorById(event, prosecutionCaseIdentifier.getProsecutionAuthorityId().toString()).orElseThrow(RuntimeException::new);
             final JsonObject addressJson = prosecutorJson.getJsonObject("address");
             prosecutingAuthorityBuilder
@@ -165,15 +197,13 @@ public class ReferenceDataService {
                                     .withAddress5(addressJson.getString(ADDRESS_5, null))
                                     .withPostcode(addressJson.getString(POSTCODE, null))
                                     .build());
-
+        } else {
+            prosecutingAuthorityBuilder.withName(prosecutionCaseIdentifier.getProsecutionAuthorityName());
+            prosecutingAuthorityBuilder.withAddress(prosecutionCaseIdentifier.getAddress());
         }
 
         return prosecutingAuthorityBuilder.build();
 
-    }
-
-    private boolean isNameInformationEmpty(final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
-        return isBlank(prosecutionCaseIdentifier.getProsecutionAuthorityName());
     }
 
     public Map<UUID, ReferenceHearingDetails> getHearingTypes(final JsonEnvelope event) {
@@ -224,7 +254,7 @@ public class ReferenceDataService {
         return isNull(judiciaries) || judiciaries.isEmpty() ? empty() : of(judiciaries.getJsonObject(0));
     }
 
-    public JsonEnvelope getCourtCentreIdsByClusterId( final UUID clusterId) {
+    public JsonEnvelope getCourtCentreIdsByClusterId(final UUID clusterId) {
         final JsonObject payload = createObjectBuilder().add("clusterId", clusterId.toString()).build();
 
         final Metadata metadata = metadataBuilder()
@@ -236,7 +266,7 @@ public class ReferenceDataService {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("'referencedata.query.cluster-org-units' {} received with payload {}", clusterId, jsonEnvelop.toObfuscatedDebugString());
         }
-        return  jsonEnvelop;
+        return jsonEnvelop;
     }
 
     public List<DocumentTypeAccessReferenceData> getDocumentsTypeAccess() {

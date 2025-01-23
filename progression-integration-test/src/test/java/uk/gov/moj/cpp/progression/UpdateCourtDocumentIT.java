@@ -13,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.USER_ID;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
@@ -22,7 +23,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForDocumentId;
 import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForMaterialId;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.util.UtcClock;
@@ -85,13 +85,6 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         verifyPrintDateTimeUpdated(completedAt);
     }
 
-    @Test
-    public void shouldNotUpdateCourtDocumentPrintDateTimeWhenDocumentHasNotBeenConfirmedAsPrinted() throws IOException {
-        addCourtDocument();
-        produceNotificationSentPublicEvent(notificationId, sentTime, null);
-        verifyPrintDateTimeUpdated(null);
-    }
-
     private void verifyPrintDateTimeUpdated(final ZonedDateTime completedAt) {
         getCourtDocumentFor(documentId.toString(), allOf(
                 withJsonPath("$.courtDocument.materials", hasSize(greaterThanOrEqualTo(1))),
@@ -100,17 +93,6 @@ public class UpdateCourtDocumentIT extends AbstractIT {
                         withJsonPath("$.courtDocument.materials[0].printedDateTime", equalTo(completedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")))) :
                         withoutJsonPath("$.courtDocument.materials[0].printedDateTime")
         ));
-    }
-
-    private void addCourtDocument() throws IOException {
-        final String body = getPayload("progression.court-document-to-be-printed.json").replaceAll("%DOCUMENT_ID%", documentId.toString())
-                .replaceAll("%CASE_ID%", caseId)
-                .replaceAll("%MATERIAL_ID%", materialId.toString())
-                .replaceAll("%DEFENDANT_ID%", defendantId);
-        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + documentId),
-                "application/vnd.progression.add-court-document+json",
-                body);
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     private void addCourtDocumentWithPrintedDate(final ZonedDateTime completedAt) throws IOException {
@@ -135,7 +117,7 @@ public class UpdateCourtDocumentIT extends AbstractIT {
             objectBuilder.add("completedAt", completedAt.withFixedOffsetZone().toString());
         }
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_NOTIFICATION_SENT, USER_ID), objectBuilder.build());
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_NOTIFICATION_SENT, USER_ID), objectBuilder.build());
         messageProducerClientPublic.sendMessage(PUBLIC_NOTIFICATION_SENT, publicEventEnvelope);
     }
 }

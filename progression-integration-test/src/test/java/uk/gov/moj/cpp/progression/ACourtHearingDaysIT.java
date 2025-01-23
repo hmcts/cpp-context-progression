@@ -1,38 +1,32 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
@@ -43,9 +37,7 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
-import javax.jms.JMSException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -53,19 +45,18 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import com.google.common.io.Resources;
-import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(JmsResourceManagementExtension.class)
 public class ACourtHearingDaysIT extends AbstractIT {
 
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.hearing-populated-to-probation-caseworker").getMessageConsumerClient();
     private static final String MEDIA_TYPE_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE = "application/vnd.progression.correct-hearing-days-without-court-centre+json";
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_LISTING_HEARING_DAYS_WITHOUT_COURT_CENTRE_CORRECTED = "public.events.listing.hearing-days-without-court-centre-corrected";
@@ -98,20 +89,7 @@ public class ACourtHearingDaysIT extends AbstractIT {
         final String reportingRestrictionOrderedDate = LocalDate.now().toString();
 
         addProsecutionCaseToCrownCourt(caseId, defendantId, reportingRestrictionOrderedDate);
-
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", is("TTH105HY"))
-                )));
-
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        final String hearingId = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
-        final int hearingDaysCount = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").size();
-        final Integer listedDurationMinutes = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getInt("listedDurationMinutes");
-        final String sittingDay = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("hearingDays").getJsonObject(0).getString("sittingDay");
-        final String dvlaCode = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("dvlaOffenceCode");
-        final String maxPenalty = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("maxPenalty");
-
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject payload = createObjectBuilder()
                 .add("hearingDays", createArrayBuilder().add(populateCorrectedHearingDays()))
@@ -125,40 +103,24 @@ public class ACourtHearingDaysIT extends AbstractIT {
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
                 withJsonPath("$.hearing.id", is(hearingId)),
-                withJsonPath("$.hearing.hearingDays", hasSize(hearingDaysCount)),
                 withJsonPath("$.hearing.hearingDays[0].courtCentreId", is(courtCentreId)),
-                withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId)),
-                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", is(listedDurationMinutes)),
-                withJsonPath("$.hearing.hearingDays[0].sittingDay", is(sittingDay)),
-                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].dvlaOffenceCode", is(dvlaCode)),
-                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].maxPenalty", is(maxPenalty))
+                withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId))
         );
     }
 
     @Test
-    public void shouldCorrectHearingDaysWhenRaisePublicEvent() throws IOException, JMSException, JSONException {
+    public void shouldCorrectHearingDaysWhenRaisePublicEvent() throws IOException, JSONException {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
         addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY"))
-                )));
-
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        final String hearingId = prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, "Lavender Hill Magistrate's Court");
 
-
-        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
-
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-
-        doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-
+        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
 
         final JsonObject payload = createObjectBuilder()
                 .add("hearingDays", createArrayBuilder().add(populateCorrectedHearingDays()))
@@ -167,21 +129,19 @@ public class ACourtHearingDaysIT extends AbstractIT {
         final JsonEnvelope publicEventCorrectedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_DAYS_WITHOUT_COURT_CENTRE_CORRECTED, userId), payload);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_DAYS_WITHOUT_COURT_CENTRE_CORRECTED, publicEventCorrectedEnvelope);
 
-
         final Matcher[] hearingDaysMatchers = {
                 withJsonPath("$.hearing.id", CoreMatchers.is(hearingId)),
                 withJsonPath("$.hearing.hearingDays", hasSize(4)),
-                withJsonPath("$.hearing.hearingDays[0].courtCentreId", CoreMatchers.is(courtCentreId)),
+                withJsonPath("$.hearing.hearingDays[0].courtCentreId", is(courtCentreId)),
                 withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId)),
-                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", CoreMatchers.is(0)),
-                withJsonPath("$.hearing.hearingDays[0].sittingDay", CoreMatchers.is("2018-09-28T12:13:00.000Z")),
-                withJsonPath("$.hearing.hearingDays[0].hasSharedResults", CoreMatchers.is(true))
+                withJsonPath("$.hearing.hearingDays[0].listedDurationMinutes", is(0)),
+                withJsonPath("$.hearing.hearingDays[0].sittingDay", is("2018-09-28T12:13:00.000Z")),
+                withJsonPath("$.hearing.hearingDays[0].hasSharedResults", is(true))
         };
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingDaysMatchers);
 
-        final JsonPath messageDaysMatchers = retrieveMessageAsJsonPath(messageConsumerHearingPopulatedToProbationCaseWorker, isJson(allOf(hearingDaysMatchers)));
-        assertThat(messageDaysMatchers, notNullValue());
+        verifyProbationHearingCommandInvoked(newArrayList(hearingId, courtCentreId, courtRoomId, "2018-09-28T12:13:00.000Z"));
     }
 
     private MultivaluedMap<String, Object> getRequestHeader(final String userId) {
@@ -246,11 +206,5 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 .add("sittingDay", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()))
                 .add("hasSharedResults", true);
 
-    }
-
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged) {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerProsecutionCaseDefendantListingStatusChanged);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
 }

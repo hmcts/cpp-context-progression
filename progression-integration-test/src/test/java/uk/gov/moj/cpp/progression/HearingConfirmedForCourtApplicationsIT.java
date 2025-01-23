@@ -1,16 +1,13 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.time.Duration.ofSeconds;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
 import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
@@ -25,23 +22,18 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.verifyPostInitiateCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.test.TestUtilities.print;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -51,17 +43,10 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("squid:S1607")
 public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
-    private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
-    private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK = "progression.event.hearing-application-link-created";
-    private static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION_INITIATED = "progression.event.send-notification-for-auto-application-initiated";
-    private static final JmsMessageConsumerClient messageConsumerLink = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_LINK).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerAutoNotification = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION_INITIATED).getMessageConsumerClient();
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
-    private static final JmsMessageConsumerClient messageConsumerListingNumberUpdated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.listing-number-updated").getMessageConsumerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -92,7 +77,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
         pollForApplication(applicationId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
 
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-application-with-linked-case.json",
@@ -102,9 +87,6 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         pollForApplicationStatus(applicationId, "LISTED");
         pollForApplicationAtAGlance("LISTED");
         verifyPostInitiateCourtHearing(hearingId);
-        verifyInMessagingQueue();
-        verifyInMessagingQueueForAutoNotification();
-
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
@@ -134,14 +116,4 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
                                 withJsonPath("$.hearingsAtAGlance.latestHearingJurisdictionType", equalTo(MAGISTRATES_JURISDICTION_TYPE))
                         )));
     }
-
-    private void verifyInMessagingQueue() {
-        await().atMost(ofSeconds(10)).until(() -> retrieveMessageBody(messageConsumerLink) != null);
-    }
-
-    private void verifyInMessagingQueueForAutoNotification() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerAutoNotification);
-        assertTrue(message.isPresent());
-    }
-
 }

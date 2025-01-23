@@ -16,7 +16,6 @@ import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnabl
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatus;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
@@ -24,6 +23,7 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
@@ -32,12 +32,12 @@ import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -85,8 +85,6 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
     public void shouldTestLaaApplicationReferenceAddedToNewlyAddedOffenceIfOneOfTheOffencesAlreadyHasLaaApplicationReference() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-no-associated-organisation.json", defendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        verifyPostListCourtHearing(caseId, defendantId);
-
         pollProsecutionCasesProgressionFor(caseId);
 
         final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
@@ -121,7 +119,7 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[1].laaApplnReference.applicationReference", is("AB746921")),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[2].id", Objects::nonNull));
-                withJsonPath("$.prosecutionCase.defendants[0].offences[2].laaApplnReference", Objects::isNull);
+        withJsonPath("$.prosecutionCase.defendants[0].offences[2].laaApplnReference", Objects::isNull);
     }
 
 
@@ -150,6 +148,4 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
     private void assertInMessagingQueueForAssociationLockedForLAA() {
         assertThat(retrieveMessageBody(messageConsumerClientPublicForAssociationLockedReference).isPresent(), is(true));
     }
-
-
 }

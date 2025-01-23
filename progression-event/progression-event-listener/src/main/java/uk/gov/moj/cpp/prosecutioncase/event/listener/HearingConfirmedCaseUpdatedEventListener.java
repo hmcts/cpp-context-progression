@@ -52,7 +52,7 @@ public class HearingConfirmedCaseUpdatedEventListener {
 
     @Handles("progression.event.hearing-confirmed-case-status-updated")
     public void updateProsecutionCaseStatus(final JsonEnvelope event) {
-        LOGGER.debug("progression.event.hearing-confirmed-case-status-updated {}", event.payload());
+        LOGGER.debug("progression.event.hearing-confirmed-case-status-updated {}", event.toObfuscatedDebugString());
 
         final HearingConfirmedCaseStatusUpdated caseStatusUpdated = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingConfirmedCaseStatusUpdated.class);
         final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseStatusUpdated.getProsecutionCase().getId());

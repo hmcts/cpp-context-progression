@@ -93,7 +93,6 @@ public class MaterialService {
                 .withMetadataFrom(envelope, MATERIAL_METADETA_QUERY)
                 .apply(requestParameter));
 
-        LOGGER.info("material {} metadata {}", materialId, materialMetadata.payload());
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("materialId {} material metadata ref data payload {}", materialId, materialMetadata.toObfuscatedDebugString());
         }

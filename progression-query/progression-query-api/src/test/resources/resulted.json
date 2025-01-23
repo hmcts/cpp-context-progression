@@ -320,7 +320,8 @@
         "type": {
           "description": "Sentence",
           "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04"
-        }
+        },
+        "prosecutionCounsels": []
       }
     ],
     "id": "8d68d068-4d29-4f2b-9cd7-b162529ee4f3",

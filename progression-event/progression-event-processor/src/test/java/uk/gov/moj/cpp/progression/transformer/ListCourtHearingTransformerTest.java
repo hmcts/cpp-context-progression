@@ -79,7 +79,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 

@@ -1,7 +1,11 @@
 package uk.gov.justice.api.resource.utils.payload;
 
+import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
+
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
+import uk.gov.justice.services.core.requester.Requester;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,22 +21,28 @@ public class PleaValueDescriptionBuilder {
     private static final String DESCRIPTION = "description";
     private static final String DEFENDANT = "defendant";
     private static final String OFFENCES = "offences";
+    private static final String HEARINGS = "hearings";
     private static final String PLEAS = "pleas";
     private static final String PLEA_VALUE = "pleaValue";
 
     @Inject
     private ReferenceDataService referenceDataService;
 
-    public JsonObject rebuildWithPleaValueDescription(final JsonObject payload) throws IOException {
+    @Inject
+    @ServiceComponent(QUERY_API)
+    private Requester requester;
+
+    public JsonObject rebuildPleaWithDescription(final JsonObject payload) throws IOException {
         final Map<String, String> pleaTypeDescriptions = referenceDataService.retrievePleaTypeDescriptions();
         final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
         final JsonNode jsonNode = objectMapper.valueToTree(payload);
-        jsonNode.path(DEFENDANT).path(OFFENCES).forEach(offence ->
-            offence.path(PLEAS).forEach(plea ->
-                ((ObjectNode)plea).put(DESCRIPTION, pleaTypeDescriptions.get(plea.get(PLEA_VALUE).asText()))
-            )
-        );
+        jsonNode.path(DEFENDANT).path(HEARINGS).forEach(hearing ->
+                hearing.path(OFFENCES).forEach(offence ->
+                        offence.path(PLEAS).forEach(plea -> {
+                            ((ObjectNode) plea).put(DESCRIPTION, pleaTypeDescriptions.get(plea.get(PLEA_VALUE).asText()));
+                        }
+                )
+        ));
         return objectMapper.treeToValue(jsonNode, JsonObject.class);
     }
-
 }

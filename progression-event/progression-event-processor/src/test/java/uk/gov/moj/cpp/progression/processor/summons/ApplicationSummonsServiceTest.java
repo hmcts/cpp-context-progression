@@ -10,8 +10,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.isEmptyString;
-import static uk.gov.justice.core.courts.Address.address;
-import static uk.gov.justice.core.courts.AssociatedPerson.associatedPerson;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
@@ -32,8 +30,6 @@ import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProce
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getAddress;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getAssociatedPerson;
 
-import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;

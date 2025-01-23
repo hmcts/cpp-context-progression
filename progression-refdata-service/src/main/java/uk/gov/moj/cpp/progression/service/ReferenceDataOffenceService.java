@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -129,7 +128,7 @@ public class ReferenceDataOffenceService {
                 .withName(REFERENCEDATAOFFENCE_QUERY_OFFENCES)
                 .withMetadataFrom(envelope));
 
-        if (isNull(offences.payload())) {
+        if (offences.payloadIsNull()) {
             return Optional.empty();
         }
 

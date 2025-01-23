@@ -19,8 +19,6 @@ import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.clea
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-
-import javax.ws.rs.core.Response;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
@@ -30,6 +28,7 @@ import java.util.Optional;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.json.JSONException;
@@ -72,7 +71,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
     @Test
     public void shouldUpdateDefendant() throws IOException, JSONException {
 
-        final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
+        createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 courtDocumentId, randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
 
         setUpCaseAndDefendants();

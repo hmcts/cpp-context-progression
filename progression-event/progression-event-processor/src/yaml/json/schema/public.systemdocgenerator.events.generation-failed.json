@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/generation-failed.json",
+  "type": "object",
+  "properties": {
+    "payloadFileServiceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "templateIdentifier": {
+      "type": "string"
+    },
+    "conversionFormat": {
+      "type": "string"
+    },
+    "requestedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "failedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceCorrelationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "originatingSource": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "additionalInformation": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string"
+          },
+          "propertyValue": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "propertyName",
+          "propertyValue"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "payloadFileServiceId",
+    "failedTime",
+    "requestedTime",
+    "templateIdentifier",
+    "conversionFormat",
+    "reason"
+  ]
+}

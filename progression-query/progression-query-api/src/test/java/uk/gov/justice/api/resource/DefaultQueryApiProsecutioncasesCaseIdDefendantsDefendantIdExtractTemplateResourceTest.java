@@ -12,8 +12,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.api.resource.service.ListingQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
+import uk.gov.justice.api.resource.utils.CourtExtractHelper;
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
+import uk.gov.justice.api.resource.utils.RequestedNameMapper;
 import uk.gov.justice.api.resource.utils.TransformationHelper;
 import uk.gov.justice.api.resource.utils.payload.PleaValueDescriptionBuilder;
 import uk.gov.justice.api.resource.utils.payload.ResultTextFlagBuilder;
@@ -38,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -96,6 +100,12 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     @Mock
     private TransformationHelper transformationHelper;
 
+    @Mock
+    private CourtExtractHelper courtExtractHelper;
+
+    @Mock
+    private ListingQueryService listingQueryService;
+
     @Spy
     private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
 
@@ -122,6 +132,9 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.courtExtractTransformer, "transformationHelper", transformationHelper);
+        setField(this.courtExtractTransformer, "courtExtractHelper", courtExtractHelper);
+        setField(this.courtExtractTransformer, "listingQueryService", listingQueryService);
+        setField(this.courtExtractTransformer, "referenceDataService", referenceDataService);
         setField(this.pleaValueDescriptionBuilder, "referenceDataService", referenceDataService);
         setField(this.defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource, "pleaValueDescriptionBuilder", pleaValueDescriptionBuilder);
 
@@ -131,7 +144,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         try (final InputStream stream = loader.getResourceAsStream("resulted.json");
              final JsonReader jsonReader = Json.createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
-            final String newPayload = Resources.toString(getResource("payload-with-description.json"), Charset.defaultCharset());
+            final String newPayload = Resources.toString(getResource("payload-with-plea-description.json"), Charset.defaultCharset());
 
             when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
             when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
@@ -139,9 +152,11 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
             when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
             when(interceptorChainProcessor.process(any())).thenReturn(of(jsonEnvelope));
             when(referenceDataService.retrievePleaTypeDescriptions()).thenReturn(buildPleaStatusTypeDescriptions());
+
             defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.getCourtExtractByCaseIdContent(caseId, defendantId, template, hearingIds, userId);
+
             verify(documentGeneratorClient).generatePdfDocument(jsonObjectArgumentCaptor.capture(), anyString(), any());
-            assertThat(newPayload, is(jsonObjectArgumentCaptor.getValue().toString()));
+            assertThat(jsonObjectArgumentCaptor.getValue().toString(), is(newPayload));
         }
     }
 

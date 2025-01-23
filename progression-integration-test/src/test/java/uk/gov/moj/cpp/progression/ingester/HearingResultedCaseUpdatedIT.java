@@ -23,7 +23,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -73,14 +72,12 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
 
         cleanEventStoreTables();
-        cleanViewStoreTables();
         deleteAndCreateIndex();
     }
 
     @AfterEach
     public void tearDown() throws JMSException {
         cleanEventStoreTables();
-        cleanViewStoreTables();
     }
 
 

@@ -124,7 +124,7 @@
         "defendantCase": [
           {
             "defendantId": "8b9bda84-b75c-4bd2-ae7e-60a7a84d434e",
-            "caseId": "c25573fc-8578-4a76-902e-530eb80931ac",
+            "caseId": "CASE_ID",
             "caseReference": "68GD7174721"
           }
         ]
@@ -240,7 +240,7 @@
         "defendantCase": [
           {
             "defendantId": "8b9bda84-b75c-4bd2-ae7e-60a7a84d434e",
-            "caseId": "c25573fc-8578-4a76-902e-530eb80931ac",
+            "caseId": "CASE_ID",
             "caseReference": "68GD7174721"
           }
         ]

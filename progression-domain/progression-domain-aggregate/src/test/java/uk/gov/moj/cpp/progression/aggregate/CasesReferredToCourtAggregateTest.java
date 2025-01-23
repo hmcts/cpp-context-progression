@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.core.courts.NextHearing.nextHearing;
 
 
-import java.util.UUID;
 import uk.gov.justice.core.courts.CasesReferredToCourt;
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;

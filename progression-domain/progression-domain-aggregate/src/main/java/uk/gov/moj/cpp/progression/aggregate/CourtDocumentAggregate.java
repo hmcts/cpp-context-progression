@@ -20,15 +20,11 @@ import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import uk.gov.justice.core.courts.AddCourtDocumentV2;
 import uk.gov.justice.core.courts.AddMaterialV2;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentAudit;
 import uk.gov.justice.core.courts.CourtDocumentSendToCps;
-import uk.gov.justice.core.courts.CourtDocumentShareFailed;
 import uk.gov.justice.core.courts.CourtDocumentShared;
 import uk.gov.justice.core.courts.CourtDocumentSharedV2;
 import uk.gov.justice.core.courts.CourtDocumentUpdateFailed;
@@ -45,8 +41,6 @@ import uk.gov.justice.core.courts.SharedCourtDocument;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
 
-import javax.json.JsonObject;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +51,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CourtDocumentAggregate implements Aggregate {
 
@@ -176,11 +175,6 @@ public class CourtDocumentAggregate implements Aggregate {
 
 
     public Stream<Object> shareCourtDocument(final UUID courtDocumentId, final UUID hearingId, final UUID userGroupId, final UUID userId) {
-
-        if (this.isRemoved) {
-            return shareCourtDocumentFailed(courtDocument.getCourtDocumentId(), format("Document is deleted. Could not share the given court document id: %s", courtDocument.getCourtDocumentId()));
-        }
-
         LOGGER.debug("court document is being shared .");
         final Stream.Builder<Object> builder = builder();
         final List<UUID> defendants = this.courtDocument.getDocumentCategory().getDefendantDocument() != null ? this.courtDocument.getDocumentCategory().getDefendantDocument().getDefendants() : emptyList();
@@ -223,11 +217,6 @@ public class CourtDocumentAggregate implements Aggregate {
         } else {
             return Collections.emptyList();
         }
-    }
-
-    public Stream<Object> shareCourtDocumentFailed(final UUID courtDocumentId, final String failureReason) {
-        LOGGER.debug("court document share failed ");
-        return apply(Stream.of(CourtDocumentShareFailed.courtDocumentShareFailed().withCourtDocumentId(courtDocumentId).withFailureReason(failureReason).build()));
     }
 
     private void addEvents(final Stream.Builder<Object> builder, final SharedCourtDocument sharedCourtDocument) {

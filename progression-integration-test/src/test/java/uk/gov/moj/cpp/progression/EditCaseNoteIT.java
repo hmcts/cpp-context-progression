@@ -19,6 +19,7 @@ import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMat
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -37,11 +38,6 @@ public class EditCaseNoteIT extends AbstractIT {
     private final String caseId = randomUUID().toString();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
-    private static void verifyInMessageIsPresentInPublicEvent() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCaseNoteEdited);
-        assertTrue(message.isPresent());
-    }
-
     @Test
     public void shouldEditCaseNote() throws Exception {
 
@@ -55,7 +51,7 @@ public class EditCaseNoteIT extends AbstractIT {
                 body);
 
         //Then
-        assertThat(writeResponse.getStatusCode(), equalTo(SC_ACCEPTED));
+        assertThatRequestIsAccepted(writeResponse);
         verifyInMessageIsPresentInPublicEvent();
         verifyCaseNotesAndGetCaseNoteId(caseId, true);
 
@@ -66,11 +62,9 @@ public class EditCaseNoteIT extends AbstractIT {
                 bodyForFalse);
 
         //Then
-        assertThat(writeResponseForFalse.getStatusCode(), equalTo(SC_ACCEPTED));
+        assertThatRequestIsAccepted(writeResponseForFalse);
         verifyInMessageIsPresentInPublicEvent();
         verifyCaseNotesAndGetCaseNoteId(caseId, false);
-
-
     }
 
     private String verifyCaseNotesAndGetCaseNoteId(final String caseId, final boolean isPinned) {
@@ -102,5 +96,12 @@ public class EditCaseNoteIT extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(SC_ACCEPTED));
         return verifyCaseNotesAndGetCaseNoteId(caseId, false);
     }
+
+    private static void verifyInMessageIsPresentInPublicEvent() {
+        final Optional<JsonObject> message = retrieveMessageBody(consumerForCaseNoteEdited);
+        assertTrue(message.isPresent());
+    }
+
+
 
 }
