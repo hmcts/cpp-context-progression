@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
-import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -57,6 +56,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.service.MaterialService;
 
 @ExtendWith(MockitoExtension.class)
 public class SystemDocGeneratorEventProcessorTest {
@@ -77,6 +77,8 @@ public class SystemDocGeneratorEventProcessorTest {
 
     @Mock
     private JsonEnvelope envelope;
+    @Mock
+    private MaterialService materialService;
 
     @Spy
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;

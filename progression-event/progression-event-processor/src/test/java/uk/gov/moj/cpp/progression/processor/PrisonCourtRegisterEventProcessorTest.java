@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.helper.LinkSplitMergeHelper.CASE_ID;
 
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
@@ -22,6 +23,7 @@ import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegiste
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterHearingVenue;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterRecipient;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -29,13 +31,16 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DocumentGenerationRequest;
 import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -79,6 +84,10 @@ public class PrisonCourtRegisterEventProcessorTest {
     @Mock
     private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
 
+    @Spy
+    private final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectConvertersFactory().jsonObjectToObjectConverter();
+    @Mock
+    private ProgressionService progressionService;
     @Spy
     private UtcClock utcClock;
 
@@ -134,7 +143,9 @@ public class PrisonCourtRegisterEventProcessorTest {
         doNothing().when(systemDocGeneratorService).generateDocument(any(DocumentGenerationRequest.class), any(JsonEnvelope.class));
 
         when(prisonCourtRegisterPdfPayloadGenerator.mapPayload(any(JsonObject.class))).thenReturn(Json.createObjectBuilder().build());
-
+        when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of(
+                Json.createObjectBuilder().add(CASE_ID, randomUUID().toString()).build()
+        ));
         prisonCourtRegisterEventProcessor.generatePrisonCourtRegister(requestMessage);
 
         verify(systemDocGeneratorService).generateDocument(documentGenerationRequestArgumentCaptor.capture(), any(JsonEnvelope.class));
@@ -146,7 +157,7 @@ public class PrisonCourtRegisterEventProcessorTest {
         assertThat(documentGenerationRequest.getOriginatingSource(), is("PRISON_COURT_REGISTER"));
         assertThat(documentGenerationRequest.getSourceCorrelationId(), is(prisonCourtRegisterStreamId.toString()));
         assertThat(documentGenerationRequest.getAdditionalInformation(), notNullValue());
-        assertThat(documentGenerationRequest.getAdditionalInformation().size(), is(1));
+        assertThat(documentGenerationRequest.getAdditionalInformation().size(), is(3));
 
         assertEquals("progression.command.record-prison-court-register-document-sent", envelopeArgumentCaptor.getValue().metadata().name());
     }

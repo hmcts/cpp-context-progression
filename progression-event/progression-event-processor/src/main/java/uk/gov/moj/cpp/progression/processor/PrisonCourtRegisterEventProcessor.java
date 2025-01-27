@@ -1,9 +1,12 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
-import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -14,23 +17,26 @@ import uk.gov.moj.cpp.progression.service.ConversionFormat;
 import uk.gov.moj.cpp.progression.service.DocumentGenerationRequest;
 import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.NotificationNotifyService;
+import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
-
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.UUID.fromString;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
 
 @ServiceComponent(EVENT_PROCESSOR)
@@ -56,8 +62,10 @@ public class PrisonCourtRegisterEventProcessor {
     public static final String PAYLOAD_FILE_ID = "payloadFileId";
     public static final String PIPE_CHARACTER = "|";
     public static final String PRISON_COURT_REGISTER_ID = "prisonCourtRegisterId";
+    public static final String PRISON_COURT_DEFENDANT_NAME = "defendantName";
+    public static final String PRISON_COURT_CASE_ID = "caseId";
     public static final String PRISON_COURT_REGISTER_STREAM_ID = "prisonCourtRegisterStreamId";
-
+    private static final String CASE_ID = "caseId";
     @Inject
     private Sender sender;
 
@@ -77,6 +85,10 @@ public class PrisonCourtRegisterEventProcessor {
     @Inject
     private FileService fileService;
 
+    @Inject
+    private JsonObjectToObjectConverter converter;
+    @Inject
+    private ProgressionService progressionService;
     @Inject
     private PrisonCourtRegisterPdfPayloadGenerator prisonCourtRegisterPdfPayloadGenerator;
 
@@ -98,7 +110,14 @@ public class PrisonCourtRegisterEventProcessor {
 
         final String prisonCourtRegisterId = payload.getString(ID);
 
-        sendRequestToGenerateDocumentAsync(envelope, prisonCourtRegisterStreamId, fileId, prisonCourtRegisterId);
+        String defendantName = "";
+        if (prisonCourtRegister.containsKey("defendant") &&
+                prisonCourtRegister.getJsonObject("defendant").containsKey("name")) {
+            defendantName = prisonCourtRegister.getJsonObject("defendant").getString("name");
+        }
+        final String caseId = getCaseUUID(envelope, payload);
+        sendRequestToGenerateDocumentAsync(envelope, prisonCourtRegisterStreamId, fileId, prisonCourtRegisterId,
+                defendantName, caseId);
 
         final JsonObjectBuilder payloadBuilder = createObjectBuilder()
                 .add(COURT_CENTRE_ID, prisonCourtRegister.getString(COURT_CENTRE_ID))
@@ -110,13 +129,32 @@ public class PrisonCourtRegisterEventProcessor {
                 .add(PRISON_COURT_REGISTER_STREAM_ID, prisonCourtRegisterStreamId)
                 .add(FIELD_RECIPIENTS, prisonCourtRegister.getJsonArray(FIELD_RECIPIENTS));
 
-        if(payload.containsKey(ID)){
+        if (payload.containsKey(ID)) {
             payloadBuilder.add(ID, payload.getString(ID));
         }
 
         sender.send(envelop(payloadBuilder.build())
                 .withName(PROGRESSION_COMMAND_RECORD_PRISON_COURT_REGISTER_DOCUMENT_SENT)
                 .withMetadataFrom(envelope));
+    }
+
+    private String getCaseUUID(JsonEnvelope envelope, JsonObject mappedPayload) {
+        List<Optional<UUID>> caseUUIDList = new ArrayList<>();
+        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = converter.convert(mappedPayload, PrisonCourtRegisterRecorded.class);
+        List<PrisonCourtRegisterCaseOrApplication> pcoaList = Optional.ofNullable(prisonCourtRegisterRecorded).map(pcr -> pcr.getPrisonCourtRegister())
+                .map(def -> def.getDefendant())
+                .map(pcoa -> pcoa.getProsecutionCasesOrApplications()).stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        List<String> caseUrnList = pcoaList.stream().map(ar -> ar.getCaseOrApplicationReference()).distinct().collect(Collectors.toList());
+        caseUrnList.stream().forEach(cu -> {
+            Optional<JsonObject> caseIdJsonObject = progressionService.caseExistsByCaseUrn(envelope, cu);
+            if (caseIdJsonObject.isPresent() && caseIdJsonObject.get().containsKey(CASE_ID)) {
+                caseUUIDList.add(Optional.of(fromString(caseIdJsonObject.get().getString(CASE_ID))));
+            }
+
+        });
+        return caseUUIDList.size() > 0 ? caseUUIDList.get(0).toString() : null;
     }
 
     @SuppressWarnings("squid:S1160")
@@ -156,9 +194,12 @@ public class PrisonCourtRegisterEventProcessor {
     }
 
     private void sendRequestToGenerateDocumentAsync(
-            final JsonEnvelope envelope, final String prisonCourtRegisterStreamId, final UUID fileId, final String prisonCourtRegisterId) {
+            final JsonEnvelope envelope, final String prisonCourtRegisterStreamId, final UUID fileId, final String prisonCourtRegisterId,
+            String defendantName, String caseId) {
 
-        Map<String, String> additionalInformation = ImmutableMap.of(PRISON_COURT_REGISTER_ID, prisonCourtRegisterId.toString());
+        Map<String, String> additionalInformation = ImmutableMap.of(PRISON_COURT_REGISTER_ID, prisonCourtRegisterId.toString(),
+                PRISON_COURT_DEFENDANT_NAME, defendantName,
+                PRISON_COURT_CASE_ID, caseId);
 
         final DocumentGenerationRequest documentGenerationRequest = new DocumentGenerationRequest(
                 PRISON_COURT_REGISTER,
