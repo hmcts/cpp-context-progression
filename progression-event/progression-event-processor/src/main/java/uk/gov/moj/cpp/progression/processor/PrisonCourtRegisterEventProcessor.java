@@ -111,9 +111,9 @@ public class PrisonCourtRegisterEventProcessor {
         final String prisonCourtRegisterId = payload.getString(ID);
 
         String defendantName = "";
-        if (prisonCourtRegister.containsKey("defendant") &&
-                prisonCourtRegister.getJsonObject("defendant").containsKey("name")) {
-            defendantName = prisonCourtRegister.getJsonObject("defendant").getString("name");
+        if (prisonCourtRegister.containsKey(DEFENDANT) &&
+                prisonCourtRegister.getJsonObject(DEFENDANT).containsKey("name")) {
+            defendantName = prisonCourtRegister.getJsonObject(DEFENDANT).getString("name");
         }
         final String caseId = getCaseUUID(envelope, payload);
         sendRequestToGenerateDocumentAsync(envelope, prisonCourtRegisterStreamId, fileId, prisonCourtRegisterId,

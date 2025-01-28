@@ -30,6 +30,7 @@ import uk.gov.justice.services.fileservice.client.FileService;
 import uk.gov.justice.services.fileservice.domain.FileReference;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
@@ -195,7 +196,7 @@ public class SystemDocGeneratorEventProcessor {
                     sourceCorrelationId, payloadFileId, reason);
 
             final JsonObjectBuilder payloadBuilder = createObjectBuilder()
-                    .add("materialId", sourceCorrelationId)
+                    .add(MATERIAL_ID, sourceCorrelationId)
                     .add(PAYLOAD_FILE_ID, payloadFileId.toString())
                     .add(TEMPLATE_IDENTIFIER, documentAvailablePayload.getString(TEMPLATE_IDENTIFIER))
                     .add(CONVERSION_FORMAT, documentAvailablePayload.getString(CONVERSION_FORMAT))
@@ -231,7 +232,7 @@ public class SystemDocGeneratorEventProcessor {
     }
 
     private void processPrisonCourtRegisterDocumentAvailable(final JsonEnvelope documentAvailableEvent, String fileId) {
-
+        LOGGER.info(">>2047 processPrisonCourtRegisterDocumentAvailable - {}", documentAvailableEvent.asJsonObject());
         final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();
 
         final String documentFileServiceId = documentAvailablePayload.getString(DOCUMENT_FILE_SERVICE_ID);
@@ -273,7 +274,9 @@ public class SystemDocGeneratorEventProcessor {
         }
 
         final UUID materialId = randomUUID();
-        materialService.uploadMaterial(UUID.fromString(fileId), materialId, documentAvailableEvent);
+        final JsonEnvelope envelopeForMaterialUpload = getJsonEnvelopeForMaterialUpload(documentAvailableEvent, prisonCourtRegisterStreamId);
+
+        materialService.uploadMaterial(UUID.fromString(fileId), materialId, envelopeForMaterialUpload);
         String fileName = prisonCourtDefendantName.isPresent() ?
                 String.format(PCR_FILE_NAME_FORMAT, prisonCourtDefendantName, utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD))
                 : null;
@@ -292,6 +295,14 @@ public class SystemDocGeneratorEventProcessor {
                         .withName("progression.command.notify-prison-court-register")
                         .build(),
                 this.objectToJsonObjectConverter.convert(notifyPrisonCourtRegister)));
+    }
+
+    private static JsonEnvelope getJsonEnvelopeForMaterialUpload(final JsonEnvelope documentAvailableEvent, final String prisonCourtRegisterStreamId) {
+        final Metadata metadataForMaterialUpload = JsonEnvelope.metadataFrom(documentAvailableEvent.metadata())
+                .withUserId(prisonCourtRegisterStreamId)
+                .build();
+        final JsonEnvelope enveolpeForMaterialUpload = JsonEnvelope.envelopeFrom(metadataForMaterialUpload, documentAvailableEvent.payload());
+        return enveolpeForMaterialUpload;
     }
 
     private void addCourtDocument(final JsonEnvelope envelope, final UUID caseUUID, final UUID materialId, final String filename) {
@@ -341,7 +352,7 @@ public class SystemDocGeneratorEventProcessor {
         final UUID payloadFileId = fromString(documentAvailablePayload.getString(PAYLOAD_FILE_SERVICE_ID));
 
         final JsonObject jsonObject = createObjectBuilder()
-                .add("materialId", materialId)
+                .add(MATERIAL_ID, materialId)
                 .add(PAYLOAD_FILE_ID, payloadFileId.toString())
                 .add("systemDocGeneratorId", documentFileServiceId)
                 .build();
