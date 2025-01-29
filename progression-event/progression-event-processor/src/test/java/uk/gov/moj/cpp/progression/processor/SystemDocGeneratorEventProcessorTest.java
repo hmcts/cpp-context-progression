@@ -20,6 +20,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.client.FileService;
@@ -36,8 +37,10 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.stream.JsonParsingException;
@@ -92,6 +95,10 @@ public class SystemDocGeneratorEventProcessorTest {
     @Mock
     private FileService fileService;
 
+    @Mock
+    private SystemUserProvider userProvider;
+
+
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
@@ -131,6 +138,7 @@ public class SystemDocGeneratorEventProcessorTest {
 
         final UUID fileId = UUID.randomUUID();
         final UUID id = UUID.randomUUID();
+        final UUID systemUserId = UUID.randomUUID();
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
@@ -147,6 +155,7 @@ public class SystemDocGeneratorEventProcessorTest {
                                         .add("propertyValue", id.toString())
                                 ))
                         .build());
+        when(userProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
 
         systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
 
