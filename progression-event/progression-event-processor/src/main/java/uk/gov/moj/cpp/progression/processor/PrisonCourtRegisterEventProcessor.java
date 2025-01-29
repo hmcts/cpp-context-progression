@@ -139,22 +139,32 @@ public class PrisonCourtRegisterEventProcessor {
     }
 
     private String getCaseUUID(JsonEnvelope envelope, JsonObject mappedPayload) {
-        List<Optional<UUID>> caseUUIDList = new ArrayList<>();
+        List<UUID> caseUUIDList = new ArrayList<>();
         final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = converter.convert(mappedPayload, PrisonCourtRegisterRecorded.class);
-        List<PrisonCourtRegisterCaseOrApplication> pcoaList = Optional.ofNullable(prisonCourtRegisterRecorded).map(pcr -> pcr.getPrisonCourtRegister())
+
+        List<PrisonCourtRegisterCaseOrApplication> pcoaList = Optional.ofNullable(prisonCourtRegisterRecorded)
+                .map(pcr -> pcr.getPrisonCourtRegister())
                 .map(def -> def.getDefendant())
-                .map(pcoa -> pcoa.getProsecutionCasesOrApplications()).stream()
+                .map(pcoa -> pcoa.getProsecutionCasesOrApplications())
+                .stream()
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-        List<String> caseUrnList = pcoaList.stream().map(ar -> ar.getCaseOrApplicationReference()).distinct().collect(Collectors.toList());
+
+        List<String> caseUrnList = pcoaList.stream()
+                .map(PrisonCourtRegisterCaseOrApplication::getCaseOrApplicationReference)
+                .distinct()
+                .collect(Collectors.toList());
+
         caseUrnList.stream().forEach(cu -> {
             Optional<JsonObject> caseIdJsonObject = progressionService.caseExistsByCaseUrn(envelope, cu);
-            if (caseIdJsonObject.isPresent() && caseIdJsonObject.get().containsKey(CASE_ID)) {
-                caseUUIDList.add(Optional.of(fromString(caseIdJsonObject.get().getString(CASE_ID))));
-            }
-
+            caseIdJsonObject.ifPresent(jsonObject -> {
+                if (jsonObject.containsKey(CASE_ID)) {
+                    caseUUIDList.add(fromString(jsonObject.getString(CASE_ID)));
+                }
+            });
         });
-        return caseUUIDList.size() > 0 ? caseUUIDList.get(0).toString() : null;
+
+        return caseUUIDList.isEmpty() ? null : caseUUIDList.get(0).toString();
     }
 
     @SuppressWarnings("squid:S1160")
@@ -195,9 +205,9 @@ public class PrisonCourtRegisterEventProcessor {
 
     private void sendRequestToGenerateDocumentAsync(
             final JsonEnvelope envelope, final String prisonCourtRegisterStreamId, final UUID fileId, final String prisonCourtRegisterId,
-            String defendantName, String caseId) {
+            final String defendantName, final String caseId) {
 
-        Map<String, String> additionalInformation = ImmutableMap.of(PRISON_COURT_REGISTER_ID, prisonCourtRegisterId.toString(),
+        Map<String, String> additionalInformation = ImmutableMap.of(PRISON_COURT_REGISTER_ID, prisonCourtRegisterId,
                 PRISON_COURT_DEFENDANT_NAME, defendantName,
                 PRISON_COURT_CASE_ID, caseId);
 

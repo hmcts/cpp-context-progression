@@ -253,7 +253,7 @@ public class SystemDocGeneratorEventProcessor {
 
         Optional<UUID> prisonCourtRegisterId = Optional.empty();
         Optional<String> prisonCourtDefendantName = Optional.empty();
-        Optional<String> prisonCourtCaseId = Optional.empty();
+        Optional<UUID> prisonCourtCaseId = Optional.empty();
 
         if (documentAvailablePayload.containsKey(ADDITIONAL_INFORMATION)) {
             final JsonArray additionalInformation = documentAvailablePayload.getJsonArray(ADDITIONAL_INFORMATION);
@@ -272,7 +272,7 @@ public class SystemDocGeneratorEventProcessor {
                 prisonCourtCaseId = additionalInformation.getValuesAs(JsonObject.class).stream()
                         .filter(jsonObj -> PRISON_COURT_CASE_ID.equalsIgnoreCase(jsonObj.getString(PROPERTY_NAME, EMPTY)))
                         .filter(jsonObj -> nonNull(jsonObj.getString(PROPERTY_VALUE, null)) && isNotEmpty(jsonObj.getString(PROPERTY_VALUE, EMPTY)))
-                        .map(prisonObj -> prisonObj.getString(PROPERTY_VALUE))
+                        .map(prisonObj -> UUID.fromString(prisonObj.getString(PROPERTY_VALUE)))
                         .findFirst();
 
             }
@@ -287,7 +287,7 @@ public class SystemDocGeneratorEventProcessor {
                 : null;
         LOGGER.info(">>2047 filename {} prisonCourtDefendantName {} prisonCourtCaseId {}", fileName, prisonCourtDefendantName, prisonCourtCaseId);
         if (fileName != null && prisonCourtCaseId.isPresent()) {
-            addCourtDocument(documentAvailableEvent, UUID.fromString(prisonCourtCaseId.get()), materialId, fileName);
+            addCourtDocument(documentAvailableEvent, prisonCourtCaseId.get(), materialId, fileName);
         }
         if (prisonCourtRegisterId.isPresent()) {
             notifyPrisonCourtRegisterBuilder.withId(prisonCourtRegisterId.get());
