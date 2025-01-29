@@ -35,6 +35,7 @@ import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -715,7 +716,7 @@ public class CourtExtractTransformer {
         }
 
         if (hearing.getJudiciary() != null) {
-            final CrownCourtDecisions crownCourtDecisions = getCourtDecisions(hearing.getJudiciary());
+            final CrownCourtDecisions crownCourtDecisions = getCourtDecisions(hearing.getJudiciary(), hearing.getHearingDays());
             hearingBuilder.withCrownCourtDecisions(crownCourtDecisions);
         }
 
@@ -739,7 +740,7 @@ public class CourtExtractTransformer {
         return emptyList();
     }
 
-    private CrownCourtDecisions getCourtDecisions(final List<JudicialRole> judiciary) {
+    private CrownCourtDecisions getCourtDecisions(final List<JudicialRole> judiciary, final List<HearingDay> hearingDays) {
 
         final List<JudiciaryNamesByRole> judiciaryNamesByRoleList = new ArrayList<>();
         judiciary.stream()
@@ -757,6 +758,7 @@ public class CourtExtractTransformer {
 
         return CrownCourtDecisions.crownCourtDecisions()
                 .withJudiciaryNamesByRole(judiciaryNamesByRoleList)
+                .withDates(transformationHelper.transformDates(hearingDays))
                 .build();
     }
 

@@ -48,6 +48,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import com.google.common.io.Resources;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

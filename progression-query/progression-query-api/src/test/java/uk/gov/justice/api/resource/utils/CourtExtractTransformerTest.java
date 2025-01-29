@@ -82,6 +82,7 @@ import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.Respondents;
 import uk.gov.justice.progression.courts.exract.AttendanceDayAndType;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
+import uk.gov.justice.progression.courts.exract.CrownCourtDecisions;
 import uk.gov.justice.progression.courts.exract.JudiciaryNamesByRole;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -653,10 +654,13 @@ public class CourtExtractTransformerTest {
             assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getHearingDays().get(1).getDay(), is((ZonedDateTimes.fromString(hearingDate2).toLocalDate())));
 
             //court decision
-            final List<JudiciaryNamesByRole> judiciaryNamesByRole = courtExtractRequested.getDefendant().getHearings().get(0).getCrownCourtDecisions().getJudiciaryNamesByRole();
+            final CrownCourtDecisions crownCourtDecisions = courtExtractRequested.getDefendant().getHearings().get(0).getCrownCourtDecisions();
+            final List<JudiciaryNamesByRole> judiciaryNamesByRole = crownCourtDecisions.getJudiciaryNamesByRole();
             assertThat(judiciaryNamesByRole.size(), is(3));
             assertThat(judiciaryNamesByRole.get(0).getRole(), is("District Judge"));
             assertThat(judiciaryNamesByRole.get(0).getNames(), is(List.of("Denial")));
+
+            assertThat(crownCourtDecisions.getDates().size(), is(2));
 
             //results
             assertThat(courtExtractRequested.getDefendant().getResults().size(), is(resultsCount));
