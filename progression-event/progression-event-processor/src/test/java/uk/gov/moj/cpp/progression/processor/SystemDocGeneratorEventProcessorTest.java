@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
@@ -20,6 +21,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
@@ -40,8 +42,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.stream.JsonParsingException;
 
@@ -59,6 +61,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.service.MaterialService;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,6 +77,9 @@ public class SystemDocGeneratorEventProcessorTest {
     public static final String PAYLOAD_FILE_SERVICE_ID = "payloadFileServiceId";
     public static final String DOCUMENT_FILE_SERVICE_ID = "documentFileServiceId";
     public static final String ADDITIONAL_INFORMATION = "additionalInformation";
+    public static final String PROPERTY_NAME = "propertyName";
+    public static final String PROPERTY_VALUE = "propertyValue";
+
 
     @InjectMocks
     private SystemDocGeneratorEventProcessor systemDocGeneratorEventProcessor;
@@ -98,6 +104,11 @@ public class SystemDocGeneratorEventProcessorTest {
     @Mock
     private SystemUserProvider userProvider;
 
+    @Spy
+    private HearingNotificationHelper hearingNotificationHelper;
+
+    @Spy
+    private UtcClock utcClock;
 
     @Captor
     private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
@@ -135,42 +146,50 @@ public class SystemDocGeneratorEventProcessorTest {
     public void shouldProcessPrisonCourtRegisterDocumentAvailable() throws FileServiceException {
 
         final UUID prisonCourtRegisterStreamId = UUID.randomUUID();
-
         final UUID fileId = UUID.randomUUID();
         final UUID id = UUID.randomUUID();
         final UUID systemUserId = UUID.randomUUID();
 
+        final JsonArray additionalInfo = createArrayBuilder()
+                .add(createObjectBuilder().add(PROPERTY_NAME, "prisonCourtRegisterId").add(PROPERTY_VALUE, id.toString()))
+                .add(createObjectBuilder().add(PROPERTY_NAME, "defendantName").add(PROPERTY_VALUE, "Test User"))
+                .add(createObjectBuilder().add(PROPERTY_NAME, "caseId").add(PROPERTY_VALUE, randomUUID().toString()))
+                .build();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add(ORIGINATING_SOURCE, "PRISON_COURT_REGISTER")
+                .add(TEMPLATE_IDENTIFIER, "OEE_Layout5")
+                .add(CONVERSION_FORMAT, "pdf")
+                .add(SOURCE_CORRELATION_ID, prisonCourtRegisterStreamId.toString())
+                .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                .add(DOCUMENT_FILE_SERVICE_ID, UUID.randomUUID().toString())
+                .add(ADDITIONAL_INFORMATION, additionalInfo)
+                .build();
+
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
-                Json.createObjectBuilder()
-                        .add(ORIGINATING_SOURCE, "PRISON_COURT_REGISTER")
-                        .add(TEMPLATE_IDENTIFIER, "OEE_Layout5")
-                        .add(CONVERSION_FORMAT, "pdf")
-                        .add(SOURCE_CORRELATION_ID, prisonCourtRegisterStreamId.toString())
-                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
-                        .add(DOCUMENT_FILE_SERVICE_ID, UUID.randomUUID().toString())
-                        .add(ADDITIONAL_INFORMATION, createArrayBuilder()
-                                .add(createObjectBuilder()
-                                        .add("propertyName", "prisonCourtRegisterId")
-                                        .add("propertyValue", id.toString())
-                                ))
-                        .build());
+                payload);
+
         when(userProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
 
         systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
 
-        verify(sender).send(envelopeCaptor.capture());
-        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        final Envelope<JsonObject> addCourtDocumentCommand = envelopeCaptor.getAllValues().get(0);
+        assertThat(addCourtDocumentCommand.metadata().name(),
+                equalTo("progression.command.add-court-document"));
 
-        assertThat(privateEvent.metadata().name(),
+        final Envelope<JsonObject> notifyPcrCommand = envelopeCaptor.getAllValues().get(1);
+        assertThat(notifyPcrCommand.metadata().name(),
                 equalTo("progression.command.notify-prison-court-register"));
 
-        final JsonObject actualPayload = privateEvent.payload();
-        assertThat(actualPayload.getString(PRISON_COURT_REGISTER_STREAM_ID), equalTo(prisonCourtRegisterStreamId.toString()));
-        assertThat(actualPayload.containsKey(COURT_CENTRE_ID), is(FALSE));
-        assertThat(actualPayload.getString(ID), equalTo(id.toString()));
+        final JsonObject notifyPcrCommandPayload = notifyPcrCommand.payload();
+        assertThat(notifyPcrCommandPayload.getString(PRISON_COURT_REGISTER_STREAM_ID), equalTo(prisonCourtRegisterStreamId.toString()));
+        assertThat(notifyPcrCommandPayload.containsKey(COURT_CENTRE_ID), is(FALSE));
+        assertThat(notifyPcrCommandPayload.getString(ID), equalTo(id.toString()));
 
     }
+
 
     @Test
     public void shouldFailedPrisonCourtRegister() {

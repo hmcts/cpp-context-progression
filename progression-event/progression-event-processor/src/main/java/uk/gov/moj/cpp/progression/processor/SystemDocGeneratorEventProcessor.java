@@ -9,13 +9,11 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
+import static uk.gov.moj.cpp.progression.Originator.assembleEnvelopeWithPayloadAndMetaDetails;
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaDocument;
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaFinancialDocument;
 
 import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.DocumentCategory;
-import uk.gov.justice.core.courts.CaseDocument;
-import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
@@ -29,16 +27,13 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.fileservice.api.FileServiceException;
 import uk.gov.justice.services.fileservice.client.FileService;
 import uk.gov.justice.services.fileservice.domain.FileReference;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.command.handler.HandleOnlinePleaDocumentCreation;
+import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -83,9 +78,6 @@ public class SystemDocGeneratorEventProcessor {
     private static final String MATERIAL_ID = "materialId" ;
     private static final String COURT_DOCUMENT = "courtDocument" ;
     private static final String PROGRESSION_COMMAND_ADD_COURT_DOCUMENT = "progression.command.add-court-document" ;
-    private static final String DOCUMENT_TYPE_DESCRIPTION = "Electronic Notifications" ;
-    private static final UUID CASE_DOCUMENT_TYPE_ID = fromString("f471eb51-614c-4447-bd8d-28f9c2815c9e");
-    private static final String APPLICATION_PDF = "application/pdf";
     public static final String PROPERTY_NAME = "propertyName";
     public static final String PROPERTY_VALUE = "propertyValue";
     public static final String ID = "id";
@@ -109,6 +101,9 @@ public class SystemDocGeneratorEventProcessor {
 
     @Inject
     private SystemUserProvider userProvider;
+
+    @Inject
+    private HearingNotificationHelper hearingNotificationHelper;
 
 
     @Handles(PUBLIC_DOCUMENT_AVAILABLE_EVENT_NAME)
@@ -274,7 +269,6 @@ public class SystemDocGeneratorEventProcessor {
                         .filter(jsonObj -> nonNull(jsonObj.getString(PROPERTY_VALUE, null)) && isNotEmpty(jsonObj.getString(PROPERTY_VALUE, EMPTY)))
                         .map(prisonObj -> UUID.fromString(prisonObj.getString(PROPERTY_VALUE)))
                         .findFirst();
-
             }
         }
 
@@ -282,12 +276,12 @@ public class SystemDocGeneratorEventProcessor {
         final Optional<UUID> contextSystemUserId = userProvider.getContextSystemUserId();
 
         materialService.uploadMaterial(UUID.fromString(fileId), materialId, contextSystemUserId.orElse(null));
-        String fileName = prisonCourtDefendantName.isPresent() ?
+        final String fileName = prisonCourtDefendantName.isPresent() ?
                 String.format(PCR_FILE_NAME_FORMAT, prisonCourtDefendantName, utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD))
                 : null;
         LOGGER.info(">>2047 filename {} prisonCourtDefendantName {} prisonCourtCaseId {}", fileName, prisonCourtDefendantName, prisonCourtCaseId);
         if (fileName != null && prisonCourtCaseId.isPresent()) {
-            addCourtDocument(documentAvailableEvent, prisonCourtCaseId.get(), materialId, fileName);
+            addCourtDocument(documentAvailableEvent, prisonCourtCaseId.get(), materialId, fileName, contextSystemUserId.orElse(null));
         }
         if (prisonCourtRegisterId.isPresent()) {
             notifyPrisonCourtRegisterBuilder.withId(prisonCourtRegisterId.get());
@@ -302,42 +296,17 @@ public class SystemDocGeneratorEventProcessor {
                 this.objectToJsonObjectConverter.convert(notifyPrisonCourtRegister)));
     }
 
-    private void addCourtDocument(final JsonEnvelope envelope, final UUID caseUUID, final UUID materialId, final String filename) {
-        CourtDocument courtDocument = buildCourtDocument(caseUUID, materialId, filename);
+    private void addCourtDocument(final JsonEnvelope envelope, final UUID caseUUID, final UUID materialId, final String filename, final UUID userId) {
+        CourtDocument courtDocument = hearingNotificationHelper.buildCourtDocument(caseUUID, materialId, filename);
         final JsonObject jsonObject = createObjectBuilder()
                 .add(MATERIAL_ID, materialId.toString())
                 .add(COURT_DOCUMENT, objectToJsonObjectConverter.convert(courtDocument))
                 .build();
         LOGGER.info(">>2047 adding court document for {}", jsonObject);
 
-        final Envelope<JsonObject> data = envelopeFrom(JsonEnvelope.metadataFrom(envelope.metadata())
-                .withName(PROGRESSION_COMMAND_ADD_COURT_DOCUMENT), jsonObject);
-        sender.send(data);
+        sender.send(assembleEnvelopeWithPayloadAndMetaDetails(jsonObject, PROGRESSION_COMMAND_ADD_COURT_DOCUMENT, userId.toString()));
     }
 
-    private CourtDocument buildCourtDocument(final UUID caseUUID, final UUID materialId, final String filename) {
-        final DocumentCategory documentCategory = DocumentCategory.documentCategory()
-                .withCaseDocument(CaseDocument.caseDocument()
-                        .withProsecutionCaseId(caseUUID)
-                        .build())
-                .build();
-
-        final Material material = Material.material().withId(materialId)
-                .withReceivedDateTime(ZonedDateTime.now())
-                .build();
-
-        return CourtDocument.courtDocument()
-                .withCourtDocumentId(randomUUID())
-                .withDocumentCategory(documentCategory)
-                .withDocumentTypeDescription(DOCUMENT_TYPE_DESCRIPTION)
-                .withDocumentTypeId(CASE_DOCUMENT_TYPE_ID)
-                .withMimeType(APPLICATION_PDF)
-                .withName(filename)
-                .withMaterials(Collections.singletonList(material))
-                .withSendToCps(false)
-                .withContainsFinancialMeans(false)
-                .build();
-    }
     private void processNowsDocumentAvailable(final JsonEnvelope documentAvailableEvent) {
 
         final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();

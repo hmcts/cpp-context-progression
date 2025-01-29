@@ -205,7 +205,7 @@ public class HearingNotificationHelper {
         sender.send(data);
     }
 
-    private CourtDocument buildCourtDocument(final UUID caseId, final UUID materialId, final String fileName) {
+    public CourtDocument buildCourtDocument(final UUID caseId, final UUID materialId, final String fileName) {
         final DocumentCategory documentCategory = DocumentCategory.documentCategory()
                 .withCaseDocument(CaseDocument.caseDocument()
                         .withProsecutionCaseId(caseId)
