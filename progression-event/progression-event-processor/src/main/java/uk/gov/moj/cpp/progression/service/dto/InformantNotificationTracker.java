@@ -18,8 +18,8 @@ public class InformantNotificationTracker {
         isNotificationAlreadySent = true;
     }
 
-    public Boolean shouldSendNotificationToInformant() {
-       return !isNotificationAlreadySent;
+    public Boolean isNotificationAlreadySent() {
+       return isNotificationAlreadySent;
     }
 
 
