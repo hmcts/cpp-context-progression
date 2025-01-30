@@ -277,7 +277,7 @@ public class SystemDocGeneratorEventProcessor {
 
         materialService.uploadMaterial(UUID.fromString(fileId), materialId, contextSystemUserId.orElse(null));
         final String fileName = prisonCourtDefendantName.isPresent() ?
-                String.format(PCR_FILE_NAME_FORMAT, prisonCourtDefendantName, utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD))
+                String.format(PCR_FILE_NAME_FORMAT, prisonCourtDefendantName.get(), utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD))
                 : null;
         LOGGER.info(">>2047 filename {} prisonCourtDefendantName {} prisonCourtCaseId {}", fileName, prisonCourtDefendantName, prisonCourtCaseId);
         if (fileName != null && prisonCourtCaseId.isPresent()) {
