@@ -243,14 +243,13 @@ public class CourtExtractTransformerTest {
         final List<String> selectedHearingIds = asList(HEARING_ID.toString(), HEARING_ID_2.toString());
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
         final uk.gov.justice.progression.courts.exract.Defendant defendant = courtExtractRequested.getDefendant();
-        final List<AttendanceDayAndType> attendanceDays = defendant.getAttendanceDays();
 
-        assertValues(courtExtractRequested, extractType, HEARING_DATE_1, HEARING_DATE_2, 4, "resultWording", "Fine");
-        assertThat(attendanceDays.size(), is((2)));
-        attendanceDays.forEach(ad -> anyOf(is(CourtExtractTransformer.PRESENT_BY_POLICE_VIDEO_LINK),
-                is(CourtExtractTransformer.PRESENT_BY_PRISON_VIDEO_LINK),
-                is(CourtExtractTransformer.PRESENT_BY_VIDEO_DEFAULT),
-                is(CourtExtractTransformer.PRESENT_IN_PERSON)));
+        final List<AttendanceDayAndType> attendanceDays = defendant.getAttendanceDays();
+        final List<AttendanceDayAndType> hearingLevelAttendanceDays = defendant.getHearings().get(0).getAttendanceDays();
+        assertAttendanceDays(attendanceDays);
+        assertAttendanceDays(hearingLevelAttendanceDays);
+
+        assertValues(courtExtractRequested, extractType, HEARING_DATE_1, HEARING_DATE_2, 2, "resultWording", "Fine");
         final uk.gov.justice.progression.courts.exract.Hearings hearing1 = defendant.getHearings().get(0);
         assertThat(courtExtractRequested.getCompanyRepresentatives().size(), is(2));
         assertThat(hearing1.getCourtApplications().size(), is((1)));
@@ -262,8 +261,16 @@ public class CourtExtractTransformerTest {
         assertThat(defendant.getHearings().get(1).getOffences().get(0).getResults().size(), is(1));
 
         final CourtExtractRequested courtExtract2ndDefendant = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID_2ND.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
-        final List<JudicialResult> defendant2ndResults = courtExtract2ndDefendant.getDefendant().getResults();
+        final List<JudicialResult> defendant2ndResults = courtExtract2ndDefendant.getDefendant().getHearings().stream().flatMap(h -> h.getDefendantResults().stream()).toList();
         assertThat(defendant2ndResults.size(), is(2));
+    }
+
+    private static void assertAttendanceDays(final List<AttendanceDayAndType> attendanceDays) {
+        assertThat(attendanceDays.size(), is((2)));
+        attendanceDays.forEach(ad -> anyOf(is(CourtExtractTransformer.PRESENT_BY_POLICE_VIDEO_LINK),
+                is(CourtExtractTransformer.PRESENT_BY_PRISON_VIDEO_LINK),
+                is(CourtExtractTransformer.PRESENT_BY_VIDEO_DEFAULT),
+                is(CourtExtractTransformer.PRESENT_IN_PERSON)));
     }
 
     @Test
@@ -313,6 +320,7 @@ public class CourtExtractTransformerTest {
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getWording(), is(("Original CaseURN: 28DI8505400, Re-sentenced Original code : CA03012, Original details: Micaela Marks have set up a TV cable without a valid license.")));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getResultTextList().size(), is((2)));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getPlea().getPleaValue(), is(("GUILTY")));
+        assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getIndicatedPlea().getIndicatedPleaValue().name(), is(("INDICATED_GUILTY")));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getId().toString(), is((selectedHearingIds.get(1))));
         assertThat(courtExtractRequested.getIsAppealPending(), is(false));
     }
@@ -478,7 +486,11 @@ public class CourtExtractTransformerTest {
 
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createCaseAtAGlance(judicialResultsByMasterDefendantId), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
         verifyDefendantLevelResults(courtExtractRequested);
+        verifyDefendantHearingsLevelResults(courtExtractRequested);
+
         verifyCaseLevelResult(courtExtractRequested);
+        verifyCaseHearingsLevelResult(courtExtractRequested);
+
         verifyOffenceLevelResult(courtExtractRequested);
     }
 
@@ -559,6 +571,35 @@ public class CourtExtractTransformerTest {
 
     private void verifyCaseLevelResult(final CourtExtractRequested courtExtractRequested) {
         //Case Level Does Not Exist
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING)), is(true));
+
+        //Defendant Level Exist
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER)), is(true));
+
+
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
+
+        // Prompt Should not exist
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
+    }
+
+    private void verifyCaseHearingsLevelResult(final CourtExtractRequested courtExtractRequested) {
+        //Case Level Does Not Exist
         assertThat(courtExtractRequested.getDefendant().getResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION)), is(true));
         assertThat(courtExtractRequested.getDefendant().getResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING)), is(true));
 
@@ -616,6 +657,36 @@ public class CourtExtractTransformerTest {
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
     }
 
+    private void verifyDefendantHearingsLevelResults(final CourtExtractRequested courtExtractRequested) {
+        //Defendant Level Not Exist
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING_DEFENDANT_LEVEL)), is(true));
+
+        //Defendant Level Exist
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL)), is(true));
+
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
+
+
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
+
+        // Prompt Should not exist
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
+    }
+
     private void assertGetCourtExtractRequested(final CourtExtractRequested courtExtractRequested, String extractType, int resultsCount) {
         assertThat(courtExtractRequested.getIsAppealPending(), is((true)));
         assertValues(courtExtractRequested, extractType, HEARING_DATE_1, HEARING_DATE_2, resultsCount, "resultWording", "Fine");
@@ -663,14 +734,14 @@ public class CourtExtractTransformerTest {
             assertThat(crownCourtDecisions.getDates().size(), is(2));
 
             //results
-            assertThat(courtExtractRequested.getDefendant().getResults().size(), is(resultsCount));
-            assertThat(courtExtractRequested.getDefendant().getResults().get(0).getIsAvailableForCourtExtract(), is(true));
-            assertThat(courtExtractRequested.getDefendant().getResults().get(0).getLabel(), is(label));
-            assertThat(courtExtractRequested.getDefendant().getResults().get(0).getDelegatedPowers().getFirstName(), is(FIRST_NAME));
-            assertThat(courtExtractRequested.getDefendant().getResults().get(0).getDelegatedPowers().getLastName(), is(LAST_NAME));
-            assertThat(courtExtractRequested.getDefendant().getResults().get(0).getJudicialResultPrompts().get(0).getLabel(), is(LABEL));
-            assertThat(courtExtractRequested.getDefendant().getResults().get(0).getJudicialResultPrompts().get(0).getValue(), is(PROMPT_VALUE));
-            assertThat(courtExtractRequested.getDefendant().getResults().get(0).getResultText(), is("resultText"));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().size(), is(resultsCount));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getIsAvailableForCourtExtract(), is(true));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getLabel(), is(label));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getDelegatedPowers().getFirstName(), is(FIRST_NAME));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getDelegatedPowers().getLastName(), is(LAST_NAME));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getJudicialResultPrompts().get(0).getLabel(), is(LABEL));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getJudicialResultPrompts().get(0).getValue(), is(PROMPT_VALUE));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResultText(), is("resultText"));
 
 
             //offences

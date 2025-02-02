@@ -174,7 +174,7 @@ public class CourtExtractTransformer {
                 .filter(COURT_EXTRACT.equals(extractType) ? h -> selectedHearingIdList.contains(h.getId().toString()) : h -> true)
                 .toList();
 
-        if (caseDefendant.isPresent() && masterDefendantId.isPresent()) {
+        if (caseDefendant.isPresent() && masterDefendantId.isPresent() && isNotEmpty(hearingsList)) {
             extractHearingDetails(hearingsAtAGlance, fromString(defendantId), userId, courtExtract, defendantBuilder, hearingsList, caseDefendant.get());
         }
 
@@ -331,6 +331,7 @@ public class CourtExtractTransformer {
                             .withOffenceTitleWelsh(coo.getOffence().getOffenceTitleWelsh())
                             .withWording(coo.getOffence().getWording())
                             .withWordingWelsh(coo.getOffence().getWordingWelsh())
+                            .withIndicatedPlea(coo.getOffence().getIndicatedPlea())
                             .withOffenceDefinitionId(coo.getOffence().getOffenceDefinitionId())
                             .withResultTextList(nonNull(coo.getOffence().getJudicialResults()) && !coo.getOffence().getJudicialResults().isEmpty() ?
                                     coo.getOffence().getJudicialResults().stream().map(JudicialResult::getResultText).filter(StringUtils::isNotEmpty).toList() : emptyList())
@@ -495,11 +496,13 @@ public class CourtExtractTransformer {
             defendantBuilder.withAddress(toAddress(defendant.getAddress()));
 
             final List<uk.gov.justice.progression.courts.exract.Hearings> extractHearings = hearingsList.stream()
-                    .map(h -> getExtractHearing(defendantId, userId, h, hearingsAtAGlance))
+                    .map(h -> getExtractHearing(defendant, masterDefendantId, userId, h, hearingsAtAGlance))
                     .toList();
             defendantBuilder.withHearings(getHearingsSortedByHearingDaysAsc(extractHearings));
+            //used for certificates generation
             defendantBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendanceDay(hearingsList, defendant)));
             defendantBuilder.withResults(transformJudicialResults(hearingsList, masterDefendantId, defendantId));
+            //used for certificates generation
 
             if (nonNull(caseDefendant.getAssociatedDefenceOrganisation())) {
                 final List<AssociatedDefenceOrganisation> associatedOrganisations = defenceQueryService.getAllAssociatedOrganisations(getDefenceQueryJsonEnvelop(userId), defendantId.toString());
@@ -538,28 +541,38 @@ public class CourtExtractTransformer {
 
     private List<JudicialResult> transformJudicialResults(final List<Hearings> hearingsList, final UUID masterDefendantId, final UUID defendantId) {
         final List<JudicialResult> judicialResultsList = new ArrayList<>();
-        final List<JudicialResult> defendantLevelJudicialResults = hearingsList.stream()
-                .map(Hearings::getDefendantJudicialResults)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .filter(defendantJudicialResult -> masterDefendantId.equals(defendantJudicialResult.getMasterDefendantId()))
-                .map(DefendantJudicialResult::getJudicialResult)
-                .filter(Objects::nonNull)
-                .filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract())
+        hearingsList.forEach(hearings -> {
+            judicialResultsList.addAll(transformJudicialResults(hearings, masterDefendantId, defendantId));
+        });
+        return judicialResultsList.stream()
+                .map(JudicialResultTransformer::toCourtJudicialResult)
                 .toList();
-        judicialResultsList.addAll(defendantLevelJudicialResults);
+    }
 
-        final List<JudicialResult> caseLevelJudicialResults = hearingsList.stream().map(Hearings::getDefendants)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .filter(defendants -> defendantId.equals(defendants.getId()))
-                .map(Defendants::getJudicialResults)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract())
-                .toList();
+    private List<JudicialResult> transformJudicialResults(final Hearings hearings, final UUID masterDefendantId, final UUID defendantId) {
+        final List<JudicialResult> judicialResultsList = new ArrayList<>();
+        if (isNotEmpty(hearings.getDefendantJudicialResults())) {
+            final List<JudicialResult> defendantLevelJudicialResults = hearings.getDefendantJudicialResults().stream()
+                    .filter(Objects::nonNull)
+                    .filter(defendantJudicialResult -> masterDefendantId.equals(defendantJudicialResult.getMasterDefendantId()))
+                    .map(DefendantJudicialResult::getJudicialResult)
+                    .filter(Objects::nonNull)
+                    .filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract())
+                    .toList();
+            judicialResultsList.addAll(defendantLevelJudicialResults);
+        }
 
-        judicialResultsList.addAll(caseLevelJudicialResults);
+        if (isNotEmpty(hearings.getDefendants())) {
+            final List<JudicialResult> caseLevelJudicialResults = hearings.getDefendants().stream()
+                    .filter(Objects::nonNull)
+                    .filter(defendants -> defendantId.equals(defendants.getId()))
+                    .map(Defendants::getJudicialResults)
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
+                    .filter(jr -> nonNull(jr.getIsAvailableForCourtExtract()) && jr.getIsAvailableForCourtExtract())
+                    .toList();
+            judicialResultsList.addAll(caseLevelJudicialResults);
+        }
 
         return judicialResultsList.stream()
                 .map(JudicialResultTransformer::toCourtJudicialResult)
@@ -631,21 +644,30 @@ public class CourtExtractTransformer {
                 .map(JudicialResult::getJudicialResultTypeId).collect(toList());
     }
 
+    private List<AttendanceDayAndType> transformDefendantAttendanceDay(final Hearings hearings, final Defendants defendant) {
+        if (isNotEmpty(hearings.getDefendantAttendance())) {
+            return hearings.getDefendantAttendance().stream()
+                    .filter(Objects::nonNull)
+                    .filter(da -> da.getDefendantId().toString().equals(defendant.getId().toString()))
+                    .map(DefendantAttendance::getAttendanceDays)
+                    .flatMap(Collection::stream)
+                    .filter(ad -> !ad.getAttendanceType().equals(AttendanceType.NOT_PRESENT))
+                    .map(ad -> AttendanceDayAndType.attendanceDayAndType()
+                            .withDay(ad.getDay())
+                            .withAttendanceType(ad.getAttendanceType().toString().equals(AttendanceType.IN_PERSON.toString())
+                                    ? PRESENT_IN_PERSON : extractAttendanceType(defendant)).build())
+                    .toList();
+        }
+
+        return emptyList();
+    }
+
     private List<AttendanceDayAndType> transformDefendantAttendanceDay(final List<Hearings> hearingsList, final Defendants defendant) {
-
-        return hearingsList.stream()
-                .filter(h -> nonNull(h.getDefendantAttendance()))
-                .flatMap((h -> h.getDefendantAttendance().stream()))
-                .filter(Objects::nonNull)
-                .filter(da -> da.getDefendantId().toString().equals(defendant.getId().toString()))
-                .map(DefendantAttendance::getAttendanceDays)
-                .flatMap(Collection::stream)
-                .filter(ad -> !ad.getAttendanceType().equals(AttendanceType.NOT_PRESENT))
-                .map(ad -> AttendanceDayAndType.attendanceDayAndType()
-                        .withDay(ad.getDay())
-                        .withAttendanceType(ad.getAttendanceType().toString().equals(AttendanceType.IN_PERSON.toString()) ? PRESENT_IN_PERSON : extractAttendanceType(defendant)).build())
-                .toList();
-
+        final List<AttendanceDayAndType> attendanceDayAndTypeList = new ArrayList<>();
+        hearingsList.forEach(hearings -> {
+            attendanceDayAndTypeList.addAll(transformDefendantAttendanceDay(hearings, defendant));
+        });
+        return attendanceDayAndTypeList;
     }
 
     private String extractAttendanceType(final Defendants defendant) {
@@ -693,12 +715,12 @@ public class CourtExtractTransformer {
         return judicialResults;
     }
 
-    private uk.gov.justice.progression.courts.exract.Hearings getExtractHearing(final UUID defendantId, final UUID userId, final Hearings hearing, final GetHearingsAtAGlance hearingsAtAGlance) {
+    private uk.gov.justice.progression.courts.exract.Hearings getExtractHearing(final Defendants defendant, final UUID masterDefendantId, final UUID userId, final Hearings hearing, final GetHearingsAtAGlance hearingsAtAGlance) {
         final uk.gov.justice.progression.courts.exract.Hearings.Builder hearingBuilder = uk.gov.justice.progression.courts.exract.Hearings.hearings()
                 .withHearingDays(transformationHelper.transformHearingDays(hearing.getHearingDays()))
                 .withId(hearing.getId())
                 .withJurisdictionType(hearing.getJurisdictionType() != null ? JurisdictionType.valueOf(hearing.getJurisdictionType().toString()) : null)
-                .withCourtCentre(transformCourtCenter(hearing, defendantId))
+                .withCourtCentre(transformCourtCenter(hearing, defendant.getId()))
                 .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                 .withType(hearing.getType().getDescription());
 
@@ -710,7 +732,7 @@ public class CourtExtractTransformer {
             hearingBuilder.withProsecutionCounsels(transformProsecutionCounsel(hearing.getProsecutionCounsels()));
         }
 
-        List<DefenceCounsels> defenceCounselList = getDefendantDefenceCounsels(hearing, defendantId);
+        List<DefenceCounsels> defenceCounselList = getDefendantDefenceCounsels(hearing, defendant.getId());
         if (nonNull(defenceCounselList) && isNotEmpty(defenceCounselList)) {
             hearingBuilder.withDefenceCounsels(defenceCounselList);
         }
@@ -720,11 +742,14 @@ public class CourtExtractTransformer {
             hearingBuilder.withCrownCourtDecisions(crownCourtDecisions);
         }
 
-        final List<uk.gov.justice.progression.courts.exract.Offences> offences = transformOffence(hearing, defendantId, userId, hearingsAtAGlance.getHearings());
+        final List<uk.gov.justice.progression.courts.exract.Offences> offences = transformOffence(hearing, defendant.getId(), userId, hearingsAtAGlance.getHearings());
         if (!offences.isEmpty()) {
             hearingBuilder.withOffences(offences);
             hearingBuilder.withAuthorisedLegalAdvisors(courtExtractHelper.getAuthorisedLegalAdvisors(offences));
         }
+
+        hearingBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendanceDay(hearing, defendant)));
+        hearingBuilder.withDefendantResults(transformJudicialResults(hearing, masterDefendantId, defendant.getId()));
 
         return hearingBuilder.build();
     }

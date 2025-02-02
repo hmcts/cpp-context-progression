@@ -58,7 +58,6 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -434,7 +433,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
 
     @Test
-    @Disabled
     public void shouldSendUpdateDefendantAssociationNotification_whenFutureHearingExists() {
         final UUID PROSECUTOR_ID = randomUUID();
         final String PROSECUTOR_CODE = "D24AW";
@@ -470,9 +468,7 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
     }
 
 
-
     @Test
-    @Disabled
     public void shouldSendUpdateDefendantToApplication_whenApplicationSummariesExists() {
         final UUID PROSECUTOR_ID = randomUUID();
         final String PROSECUTOR_CODE = "D24AW";
@@ -504,7 +500,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
 
     @Test
-    @Disabled
     public void shouldNotSendUpdateDefendantAssociationNotification_whenFutureHearingExists_AndCpsEmailDoesNotExists() {
         final UUID PROSECUTOR_ID = randomUUID();
         final String PROSECUTOR_CODE = "D24AW";
