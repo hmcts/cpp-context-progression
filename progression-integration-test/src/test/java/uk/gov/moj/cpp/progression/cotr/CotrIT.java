@@ -2,28 +2,22 @@ package uk.gov.moj.cpp.progression.cotr;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.progression.courts.ChangeDefendantsCotr.changeDefendantsCotr;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrAccessControl.mockCourtsUserCotrAccessControl;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrAccessControl.mockDefenceUserCotrAccessControl;
@@ -42,7 +36,6 @@ import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyCotrAn
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyInMessagingQueue;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyServeDefendant;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyServeProsecution;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
@@ -56,6 +49,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStructuredPetQueryForCotr;
@@ -93,8 +87,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementEx
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.PolarQuestion;
 import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
-import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.DefenceStub;
 import uk.gov.moj.cpp.progression.stub.DirectionsManagementStub;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
@@ -105,9 +97,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 
@@ -173,7 +165,6 @@ public class CotrIT {
     private static final JmsMessageConsumerClient consumerForPublicCourtDocumentAdded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
     private static final JmsMessageConsumerClient consumerForCourDocumentNotified = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-send-to-cps").getMessageConsumerClient();
 
-    private static final JmsMessageConsumerClient consumerForPetFormCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-created").getMessageConsumerClient();
     private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
     private String caseId;
     private String materialIdActive;
@@ -187,7 +178,7 @@ public class CotrIT {
     @BeforeAll
     public static void setUpClass() {
         stubDocumentCreate(DOCUMENT_TEXT);
-        MaterialStub.stubMaterialMetadata();
+        stubMaterialMetadata();
         stubCotrFormServedNotificationCms();
         stubCotrReviewNotes();
     }
@@ -273,11 +264,11 @@ public class CotrIT {
                 .withPdfContent(CotrPdfContent.cotrPdfContent()
                         .withHeading("heading")
                         .withSubHeading("subheading")
-                        .withSummary(Arrays.asList(Summary.summary().withTitle("summaryTile").withTitleDescription("withDesc")
-                                .withFields(Arrays.asList(Fields.fields().withLabel("Label1").withValue("value").withDetails("details")
+                        .withSummary(singletonList(Summary.summary().withTitle("summaryTile").withTitleDescription("withDesc")
+                                .withFields(singletonList(Fields.fields().withLabel("Label1").withValue("value").withDetails("details")
                                         .build())).build()))
-                        .withDefence(Arrays.asList(Defence.defence().withTitle("defenceTile").withTitleDescription("withDesc")
-                                .withFields(Arrays.asList(Fields.fields().withLabel("Label1").withValue("value").withDetails("details")
+                        .withDefence(singletonList(Defence.defence().withTitle("defenceTile").withTitleDescription("withDesc")
+                                .withFields(singletonList(Fields.fields().withLabel("Label1").withValue("value").withDetails("details")
                                         .build())).build()))
                         .build())
                 .build();
@@ -316,14 +307,11 @@ public class CotrIT {
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, prosecutionCaseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
-        poll(requestParams(getReadUrl("/prosecutioncases/" + prosecutionCaseId + "/cotr-trial-hearings"), PROGRESSION_QUERY_TRIAL_HEARINGS_FOR_PROSECUTION_CASE)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.trialHearings.length()", is(1))
-                        )));
+        pollForResponse("/prosecutioncases/" + prosecutionCaseId + "/cotr-trial-hearings",
+                PROGRESSION_QUERY_TRIAL_HEARINGS_FOR_PROSECUTION_CASE,
+                randomUUID().toString(),
+                withJsonPath("$.trialHearings.length()", is(1))
+        );
     }
 
     @Test
@@ -357,7 +345,7 @@ public class CotrIT {
                 .withHearingDate(LocalDate.now().toString())
                 .withJurisdictionType(JurisdictionType.CROWN)
                 .withCourtCenter("Lavender hill mags")
-                .withDefendantIds(Arrays.asList(defendantId1))
+                .withDefendantIds(List.of(defendantId1))
                 .withSubmissionId(cotrId)
                 .withHasAllEvidenceToBeReliedOnBeenServed(PolarQuestion.polarQuestion()
                         .withDetails("HasAllEvidenceToBeReliedOnBeenServed")
@@ -373,7 +361,7 @@ public class CotrIT {
         final ChangeDefendantsCotr changeAddDefendantToCotr = changeDefendantsCotr()
                 .withCotrId(cotrId)
                 .withHearingId(UUID.fromString(hearingId))
-                .withAddedDefendantIds(Arrays.asList(defendantId2))
+                .withAddedDefendantIds(List.of(defendantId2))
                 .build();
 
         changeCotrDefendants(changeAddDefendantToCotr, DEFENCE_USER_ID);
@@ -384,7 +372,7 @@ public class CotrIT {
         final ChangeDefendantsCotr changeRemoveDefendantToCotr = changeDefendantsCotr()
                 .withCotrId(cotrId)
                 .withHearingId(UUID.fromString(hearingId))
-                .withRemovedDefendantIds(Arrays.asList(defendantId1))
+                .withRemovedDefendantIds(List.of(defendantId1))
                 .build();
         mockDefenceUserCotrAccessControl(DEFENCE_USER_ID);
         stubForAssociatedDefendantsForDefenceOrganisation("stub-data/defence.query.get-associated-defendants.json", DEFENCE_USER_ID);
@@ -408,9 +396,9 @@ public class CotrIT {
         // Update review notes on COTR form
         final UpdateReviewNotes updateReviewNotes = UpdateReviewNotes.updateReviewNotes()
                 .withCotrId(cotrId)
-                .withCotrNotes(Arrays.asList(CotrNotes.cotrNotes()
+                .withCotrNotes(singletonList(CotrNotes.cotrNotes()
                         .withReviewNoteType(ReviewNoteType.CASE_PROGRESSION)
-                        .withReviewNotes(Arrays.asList(ReviewNotes.reviewNotes()
+                        .withReviewNotes(singletonList(ReviewNotes.reviewNotes()
                                 .withId(UUID.fromString("05acfc09-f672-41b9-afa0-acc74e4b2b8a"))
                                 .withComment("Value 1")
                                 .build()))
@@ -579,40 +567,32 @@ public class CotrIT {
 
     }
 
-    public static void queryAndVerifyPetCaseDetail(final UUID caseId, final UUID petId, final UUID defendantId) {
-        poll(requestParams(AbstractTestHelper.getReadUrl(String.format("/prosecutioncases/%s/pet", caseId)),
-                "application/vnd.progression.query.pets-for-case+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(30, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                Matchers.allOf(
-                                        withJsonPath("$.pets[0].defendants[0].caseId", Matchers.is(caseId.toString())),
-                                        withJsonPath("$.pets[0].defendants[0].defendantId", is(defendantId.toString())),
-                                        withJsonPath("$.pets[0].petId", is(petId.toString()))
-                                )));
+    public void queryAndVerifyPetCaseDetail(final UUID caseId, final UUID petId, final UUID defendantId) {
+        pollForResponse(format("/prosecutioncases/%s/pet", caseId),
+                "application/vnd.progression.query.pets-for-case+json",
+                randomUUID().toString(),
+                withJsonPath("$.pets[0].defendants[0].caseId", Matchers.is(caseId.toString())),
+                withJsonPath("$.pets[0].defendants[0].defendantId", is(defendantId.toString())),
+                withJsonPath("$.pets[0].petId", is(petId.toString()))
+        );
     }
 
-    private static String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl("/prosecutioncases/" + caseId),
-                PROGRESSION_QUERY_GET_CASE_HEARINGS)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(OK), payload().isJson(allOf(matchers)))
-                .getPayload();
+    private String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
+        return pollForResponse("/prosecutioncases/" + caseId,
+                PROGRESSION_QUERY_GET_CASE_HEARINGS,
+                randomUUID().toString(),
+                matchers);
     }
 
-    private static String getCotrCaseDetails(final String caseId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl("/prosecutioncases/" + caseId + "/cotr-details-prosecutioncase"),
-                "application/vnd.progression.query.cotr.details.prosecutioncase+json")
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(OK), payload().isJson(allOf(matchers)))
-                .getPayload();
+    private String getCotrCaseDetails(final String caseId, final Matcher... matchers) {
+        return pollForResponse("/prosecutioncases/" + caseId + "/cotr-details-prosecutioncase",
+                "application/vnd.progression.query.cotr.details.prosecutioncase+json",
+                randomUUID().toString(),
+                matchers);
 
     }
 
-    private JsonObject buildPayloadForCpsServeCotrSubmitted(final String cpsDefendantId) throws IOException {
+    private JsonObject buildPayloadForCpsServeCotrSubmitted(final String cpsDefendantId) {
         final String inputEvent = getPayload("stub-data/cps-serve-cotr-submitted.json")
                 .replace("%CASE_ID%", caseId)
                 .replace("%DEFENDANT_ID%", defendantId)
@@ -623,7 +603,7 @@ public class CotrIT {
         return stringToJsonObjectConverter.convert(inputEvent);
     }
 
-    private JsonObject buildPayloadForCpsUpdateCotrSubmitted(final String submissionId) throws IOException {
+    private JsonObject buildPayloadForCpsUpdateCotrSubmitted(final String submissionId) {
         final String inputEvent = getPayload("stub-data/cps-serve-cotr-update.json")
                 .replace("%CASE_ID%", caseId)
                 .replace("%SUBMISSION_ID%", randomUUID().toString())

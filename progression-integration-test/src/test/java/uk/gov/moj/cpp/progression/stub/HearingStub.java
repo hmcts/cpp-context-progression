@@ -13,9 +13,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
-import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
-
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -31,8 +28,6 @@ public class HearingStub {
     public static final String HEARING_RESPONSE_TYPE = "application/vnd.hearing.initiate+json";
 
     public static void stubInitiateHearing() {
-        InternalEndpointMockUtils.stubPingFor("hearing-service");
-
         stubFor(post(urlPathEqualTo(HEARING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", UUID.randomUUID().toString())
@@ -40,8 +35,6 @@ public class HearingStub {
 
         stubFor(get(urlPathEqualTo(HEARING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_OK)));
-
-        waitForStubToBeReady(HEARING_COMMAND, HEARING_RESPONSE_TYPE);
     }
 
     public static void verifyPostInitiateCourtHearing(final String hearingId) {

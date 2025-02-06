@@ -10,7 +10,6 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetCountryBy
 import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.nio.file.Path;
-import java.time.format.DateTimeFormatter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +18,6 @@ import org.json.JSONObject;
 public class DocumentGenerationHelper {
     public static final String ENGLISH_TEMPLATE_NAME = "NPE_RefferalDisqualificationWarning";
     public static final String WELSE_TEMPLATE_NAME = "NPB_RefferalDisqualificationWarning";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
     private static String defendantPostCode = "W1T 1JY";
 
     public static void validateEnglishReferalDisqualifyWarning(final JSONObject documentGenerationRequest, final Path testResourceBasePath, final String caseUrn, final Boolean hasWelshPostCode,  final Boolean hasPostCode) {

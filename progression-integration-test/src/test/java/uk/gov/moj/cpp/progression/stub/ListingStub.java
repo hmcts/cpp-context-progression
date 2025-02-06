@@ -22,12 +22,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
-import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
-
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -50,17 +46,13 @@ public class ListingStub {
 
     private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2 = "application/vnd.listing.list-unscheduled-next-hearings+json";
 
-    private static final String LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
     private static final String LISTING_NEXT_HEARING_V2_TYPE = "application/vnd.listing.next-hearings-v2+json";
-    private static final String LISTING_COTR_SEARCH_QUERY_TYPE = "application/vnd.listing.search.hearings+json";
     public static final String LISTING_DELETE_NEXT_HEARINGS = "listing.delete-next-hearings";
     private static final String LISTING_DELETE_HEARING_TYPE = "application/vnd.listing.delete-hearing+json";
     private static final String LISTING_DELETE_NEXT_HEARINGS_TYPE = "application/vnd.listing.delete-next-hearings+json";
     public static final String  LISTING_RELATED_HEARING_JSON = "application/vnd.listing.related-hearing+json";
 
     public static void stubListCourtHearing() {
-        InternalEndpointMockUtils.stubPingFor("listing-service");
-
         stubFor(post(urlPathEqualTo(LISTING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
                         .withHeader("CPPID", UUID.randomUUID().toString())
@@ -109,8 +101,6 @@ public class ListingStub {
 
         stubFor(get(urlPathEqualTo(LISTING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_OK)));
-
-        waitForStubToBeReady(LISTING_COMMAND, LISTING_COMMAND_TYPE);
     }
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId) {
@@ -407,35 +397,25 @@ public class ListingStub {
     }
 
     public static void setupListingAnyAllocationQuery(final String caseUrn, String resource) {
-        stubPingFor("hearing-service");
-
         final String urlPath = format("/listing-service/query/api/rest/listing/{0}", caseUrn);
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource))));
-
-        waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }
 
     public static void setupListingAnyFutureAllocationQuery(final String resource, final String startDateTime ) {
-        stubPingFor("listing-service");
-
         final String urlPath = "/listing-service/query/api/rest/listing/hearings/any-allocation";
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource).replaceAll("START_TIME",startDateTime))));
-
-        waitForStubToBeReady(urlPath, "application/vnd.listing.search.hearings+json");
     }
 
     public static void stubListingSearchHearingsQuery(final String resource,
                                                       final String hearingId) {
-
-        stubPingFor("listing-service");
 
         final String urlPath = format("/listing-service/query/api/rest/listing/hearings/any-allocation");
         stubFor(get(urlPathEqualTo(urlPath))
@@ -443,13 +423,9 @@ public class ListingStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
-
-        waitForStubToBeReady(urlPath, LISTING_ANY_ALLOCATION_HEARING_QUERY_TYPE);
     }
 
     public static void stubListingCotrSearch(final String resource, final String hearingId) {
-
-        stubPingFor("listing-service");
 
         final String urlPath = format("/listing-service/query/api/rest/listing/hearings/cotr-search");
         stubFor(get(urlPathEqualTo(urlPath))
@@ -457,41 +433,37 @@ public class ListingStub {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(getPayload(resource).replaceAll("HEARING_ID", hearingId))));
-
-        waitForStubToBeReady(urlPath, LISTING_COTR_SEARCH_QUERY_TYPE);
     }
 
     public static void verifyPostListCourtHearingWithProsecutorInfo(final String caseId, final String defendantId, final String courtScheduleId) {
         try {
-            waitAtMost(Duration.ofMinutes(2)).until(() -> {
-                        return getListCourtHearingRequestsAsStream()
-                                .anyMatch(
-                                        payload -> {
-                                            try {
-                                                if (payload.has("hearings") && payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases") &&
-                                                        payload.getJSONArray("hearings").getJSONObject(0).has("bookedSlots") &&
-                                                        payload.getJSONArray("hearings").getJSONObject(0).has("bookingType") &&
-                                                        payload.getJSONArray("hearings").getJSONObject(0).has("priority") &&
-                                                        payload.getJSONArray("hearings").getJSONObject(0).has("specialRequirements") &&
-                                                        payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(0).equals("RSZ") &&
-                                                        payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(1).equals("CELL") &&
-                                                        payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0).has("prosecutor")
-                                                ) {
-                                                    JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
-                                                    JSONObject prosecutor = prosecutionCase.getJSONObject("prosecutor");
-                                                    String id = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("bookedSlots").getJSONObject(0).getString("courtScheduleId");
-                                                    return prosecutionCase.getString("id").equals(caseId) &&
-                                                            prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
-                                                            courtScheduleId.equals(id) && prosecutor.getString("prosecutorCode").equals("CPS-EM");
-                                                } else {
-                                                    return false;
-                                                }
-                                            }catch (JSONException e) {
-                                                return false;
-                                            }
-                                        }
-                                );
-                    }
+            waitAtMost(Duration.ofMinutes(2)).until(() -> getListCourtHearingRequestsAsStream()
+                    .anyMatch(
+                            payload -> {
+                                try {
+                                    if (payload.has("hearings") && payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases") &&
+                                            payload.getJSONArray("hearings").getJSONObject(0).has("bookedSlots") &&
+                                            payload.getJSONArray("hearings").getJSONObject(0).has("bookingType") &&
+                                            payload.getJSONArray("hearings").getJSONObject(0).has("priority") &&
+                                            payload.getJSONArray("hearings").getJSONObject(0).has("specialRequirements") &&
+                                            payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(0).equals("RSZ") &&
+                                            payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("specialRequirements").getString(1).equals("CELL") &&
+                                            payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0).has("prosecutor")
+                                    ) {
+                                        JSONObject prosecutionCase = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("prosecutionCases").getJSONObject(0);
+                                        JSONObject prosecutor = prosecutionCase.getJSONObject("prosecutor");
+                                        String id = payload.getJSONArray("hearings").getJSONObject(0).getJSONArray("bookedSlots").getJSONObject(0).getString("courtScheduleId");
+                                        return prosecutionCase.getString("id").equals(caseId) &&
+                                                prosecutionCase.getJSONArray("defendants").getJSONObject(0).getString("id").equals(defendantId) &&
+                                                courtScheduleId.equals(id) && prosecutor.getString("prosecutorCode").equals("CPS-EM");
+                                    } else {
+                                        return false;
+                                    }
+                                }catch (JSONException e) {
+                                    return false;
+                                }
+                            }
+                    )
 
             );
 

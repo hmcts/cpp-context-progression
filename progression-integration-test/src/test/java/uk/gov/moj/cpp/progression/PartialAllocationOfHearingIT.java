@@ -15,7 +15,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithTwoProsecutionCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT_IN_SECONDS;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -139,7 +139,7 @@ public class PartialAllocationOfHearingIT {
 
         // Extending hearing for one offence
         doHearingConfirmed(existingHearingId, caseId3, defendantId3, courtCentreId1, userId1, extendedHearingId);
-        await().atMost(TIMEOUT, SECONDS).pollInterval(Duration.ofMillis(500)).until(() -> queryAndVerifyHearingIsExtended(extendedHearingId, 3));
+        await().atMost(TIMEOUT_IN_SECONDS, SECONDS).pollInterval(Duration.ofMillis(500)).until(() -> queryAndVerifyHearingIsExtended(extendedHearingId, 3));
     }
 
     private void doHearingConfirmedForOneDefendantAndTwoOffences(String hearingId, String caseId, String defendantId, String courtCentreId, String userId) {

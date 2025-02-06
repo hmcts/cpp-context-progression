@@ -87,7 +87,7 @@ public class ApplicationExtractIT extends AbstractIT {
         ));
         final String expectedPayloadAfterUpdate = getPayload("expected/expected.progression.court-document-updated-for-standalone.json")
                 .replace("COURT-DOCUMENT-ID", docId)
-                .replace("%RANDOM_APPLICATION_ID%", courtApplicationId.toString());
+                .replace("%RANDOM_APPLICATION_ID%", courtApplicationId);
 
         assertEquals(expectedPayloadAfterUpdate, actualDocumentAfterUpdate, getCustomComparator());
     }
@@ -108,17 +108,17 @@ public class ApplicationExtractIT extends AbstractIT {
         );
 
         final String expectedPayload = getPayload("expected/expected.progression.add-court-document-for-standalone.json")
-                .replace("%RANDOM_DOCUMENT_ID%", docId.toString())
-                .replace("%RANDOM_APPLICATION_ID%", courtApplicationId.toString());
+                .replace("%RANDOM_DOCUMENT_ID%", docId)
+                .replace("%RANDOM_APPLICATION_ID%", courtApplicationId);
 
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
     private String prepareAddCourtDocumentPayload() {
         String body = getPayload("progression.add-court-document-for-standalone.json");
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
-                .replaceAll("%RANDOM_APPLICATION_ID%", courtApplicationId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString());
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
+                .replaceAll("%RANDOM_APPLICATION_ID%", courtApplicationId)
+                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId);
         return body;
     }
 
@@ -131,7 +131,7 @@ public class ApplicationExtractIT extends AbstractIT {
     private String prepareUpdateCourtDocumentPayload() {
 
         String body = getPayload("progression.update-court-document-for-standalone.json");
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
                 .replaceAll("%RANDOM_APPLICATION_ID%", courtApplicationId)
                 .replaceAll("%DEFENDENT-ID2%", updatedDefendantId);
 

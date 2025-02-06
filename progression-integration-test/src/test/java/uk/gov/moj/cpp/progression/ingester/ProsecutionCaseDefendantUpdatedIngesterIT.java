@@ -155,7 +155,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
         verifyCaseCreated(1l, prosecutionCase, outputCase);
     }
 
-    private DocumentContext documentContextForProsecutionCase() throws IOException {
+    private DocumentContext documentContextForProsecutionCase() {
 
         final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 courtDocumentId, randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);

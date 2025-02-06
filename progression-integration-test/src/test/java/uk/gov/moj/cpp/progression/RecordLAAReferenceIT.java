@@ -154,8 +154,9 @@ public class RecordLAAReferenceIT extends AbstractIT {
 
         //Receive Representation Order
         //when
-        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, "PENDING", laaContractNumber, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(SC_ACCEPTED));
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, "PENDING", laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(SC_ACCEPTED));
+        }
 
 
         //Then
@@ -187,8 +188,9 @@ public class RecordLAAReferenceIT extends AbstractIT {
         stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", "WD", "Withdrawn");
         stubGetOrganisationDetailsForUser(userId, organisationId, organisationName);
 
-        Response withdrawResponse = recordLAAReferenceWithUserId(caseId, defendantId, offenceId, statusCode, "Withdrawn", userId);
-        assertThat(withdrawResponse.getStatus(), equalTo(SC_ACCEPTED));
+        try (Response withdrawResponse = recordLAAReferenceWithUserId(caseId, defendantId, offenceId, statusCode, "Withdrawn", userId)) {
+            assertThat(withdrawResponse.getStatus(), equalTo(SC_ACCEPTED));
+        }
 
         //Then
         verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference2);

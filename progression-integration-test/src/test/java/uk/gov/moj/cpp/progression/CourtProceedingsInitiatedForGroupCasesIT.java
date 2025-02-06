@@ -7,23 +7,15 @@ import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.civilCaseInitiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForGroupCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollGroupMemberCases;
@@ -45,12 +37,12 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.Pair;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +50,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -183,7 +174,7 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         sendPublicHearingResultedEventForGroupCases(masterCaseId, hearingId, masterCaseDefendantId);
         verifyInMessagingQueueForNumberOfTimes(caseCount, consumerForHearingResultedCaseUpdated);
 
-        final List<UUID> caseIds = caseDefendantOffence.keySet().stream().collect(Collectors.toList());
+        final List<UUID> caseIds = new ArrayList<>(caseDefendantOffence.keySet());
         verifyInMessagingQueueForLinkProsecutionCaseToHearingEvent(caseIds, hearingId);
 
         final UUID caseRemoved = removeNonMasterCaseAndVerifyMasterIsNotChanged(caseDefendantOffence, groupMasterId);
@@ -302,7 +293,7 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         removeCaseFromGroupCases(caseIdToBeRemoved, fromString(groupId));
         verifyInMQForCaseRemovedFromGroupCases(caseIdToBeRemoved.toString(), groupId, groupMasterId.toString(), false);
         verifyInMQForCaseGroupInfoUpdated(caseIdToBeRemoved.toString(), groupId, false);
-        final UUID newGroupMasterId = verifyCasesAndGetGroupMasterId(caseDefendantOffence.keySet(), Arrays.asList(caseIdToBeRemoved));
+        final UUID newGroupMasterId = verifyCasesAndGetGroupMasterId(caseDefendantOffence.keySet(), List.of(caseIdToBeRemoved));
         assertThat(newGroupMasterId, is(groupMasterId));
         return caseIdToBeRemoved;
     }
@@ -421,19 +412,16 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         return groupMasterId;
     }
 
-    private static void verifyCaseHearings(final String caseId, final String hearingId) {
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_GET_CASE_HEARINGS)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.hearings.length()", is(1)),
-                                withJsonPath("$.hearings[0].hearingId", is(hearingId))
-                        )));
+    private void verifyCaseHearings(final String caseId, final String hearingId) {
+        pollForResponse("/prosecutioncases/" + caseId,
+                PROGRESSION_QUERY_GET_CASE_HEARINGS,
+                randomUUID().toString(),
+                withJsonPath("$.hearings.length()", is(1)),
+                withJsonPath("$.hearings[0].hearingId", is(hearingId))
+        );
     }
 
-    private static void verifyHearing(final String hearingId, final List<String> groupCaseIds, final String hearingListingStatus) {
+    private void verifyHearing(final String hearingId, final List<String> groupCaseIds, final String hearingListingStatus) {
         Matcher[] hearingMatchers = {
                 withJsonPath("$", notNullValue()),
                 withJsonPath("$.hearing.id", is(hearingId)),

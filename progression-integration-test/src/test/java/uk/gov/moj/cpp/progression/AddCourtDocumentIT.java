@@ -101,7 +101,7 @@ public class AddCourtDocumentIT extends AbstractIT {
 
 
     @BeforeEach
-    public void setup() throws JSONException, IOException {
+    public void setup() throws JSONException {
 
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
@@ -238,7 +238,7 @@ public class AddCourtDocumentIT extends AbstractIT {
                 .replace("%ORGANISATION_ID%", organisationId);
 
         stubUserGroupOrganisation(CHAMBER_USER_ID, organisation);
-        stubUserGroupDefenceClientPermission(defendantId, permission);
+        stubUserGroupDefenceClientPermission(permission);
 
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json");
@@ -355,9 +355,9 @@ public class AddCourtDocumentIT extends AbstractIT {
         } else {
             body = getPayload("progression.add-court-document-with-cpscase.json");
         }
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
-                .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
+                .replaceAll("%RANDOM_CASE_ID%", caseId)
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId);
         if (isCpsCase != null && isCpsCase == true) {
             body = body.replaceAll("\"isCpsCase\": false", "\"isCpsCase\": true");
         }
@@ -366,16 +366,16 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     private String prepareAddCourtDocumentPayloadV2() {
         String body = getPayload("progression.add-court-document-v2.json");
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
-                .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId.toString());
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
+                .replaceAll("%RANDOM_CASE_ID%", caseId)
+                .replaceAll("%RANDOM_DEFENDANT_ID1%", defendantId);
         return body;
     }
 
     private String prepareUpdateCourtDocumentPayload() {
 
         String body = getPayload("progression.update-court-document.json");
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
                 .replaceAll("%CASE_ID%", caseId)
                 .replaceAll("%DEFENDENT-ID2%", updatedDefendantId);
 
@@ -405,10 +405,10 @@ public class AddCourtDocumentIT extends AbstractIT {
         );
 
         final String expectedPayload = getPayload("expected/expected.progression.add-court-document.json")
-                .replace("COURT-DOCUMENT-ID", docId.toString())
-                .replace("DEFENDENT-ID", defendantId.toString())
+                .replace("COURT-DOCUMENT-ID", docId)
+                .replace("DEFENDENT-ID", defendantId)
                 .replace("DOCUMENT-TYPE-ID", documentTypeId)
-                .replace("CASE-ID", caseId.toString());
+                .replace("CASE-ID", caseId);
 
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
@@ -438,10 +438,10 @@ public class AddCourtDocumentIT extends AbstractIT {
     private String prepareAddCourtDocumentWithDocTypePayload(final String docTypeId, final String docId, final String caseId, final String defendantId, final String addCourtDocumentResource) throws IOException {
         String body = Resources.toString(Resources.getResource(addCourtDocumentResource),
                 Charset.defaultCharset());
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
-                .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString())
-                .replaceAll("%RANDOM_DOC_TYPE%", docTypeId.toString());
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
+                .replaceAll("%RANDOM_CASE_ID%", caseId)
+                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId)
+                .replaceAll("%RANDOM_DOC_TYPE%", docTypeId);
         return body;
     }
 

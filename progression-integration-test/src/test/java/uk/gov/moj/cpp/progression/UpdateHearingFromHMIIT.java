@@ -30,7 +30,6 @@ import javax.jms.JMSException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONException;

@@ -109,8 +109,9 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();
@@ -147,8 +148,9 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();
@@ -183,8 +185,9 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();
@@ -238,8 +241,9 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, NO_LAA_CONTRACT_NUMBER_REGISTER, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();
@@ -283,8 +287,9 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
         pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
 
-        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();

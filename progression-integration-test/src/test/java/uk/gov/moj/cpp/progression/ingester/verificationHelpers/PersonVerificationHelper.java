@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.AddressVerificationHelper.assertAddressDetails;
 
 import javax.json.JsonObject;
@@ -15,33 +14,6 @@ public class PersonVerificationHelper {
     public static void assertRespondantDetails(final JsonObject personDetails, final JsonObject party, final String organisationName) {
         assertPersonDetails(personDetails, party, organisationName);
         assertAddressDetailsForSpecificTypeOfPerson(personDetails, party);
-    }
-
-    public static void assertDefendantDetails(final JsonObject defendantJsonObject, final JsonObject party, final String organisationName) {
-        assertNotNull(party);
-        assertNotNull(defendantJsonObject);
-
-        final JsonObject personDefendant = defendantJsonObject.getJsonObject("personDefendant");
-        final JsonObject personDetails = personDefendant.getJsonObject("personDetails");
-        final String defendantId = defendantJsonObject.getString("id");
-        assertEquals(defendantId.toUpperCase(), party.getString("partyId").toUpperCase());
-        assertPersonDetails(personDetails, party, organisationName);
-        assertAddressDetailsForSpecificTypeOfPerson(personDetails, party);
-        assertAddressDetailsForSpecificTypeOfPerson(personDetails, party);
-        final String arrestSummonsNumber = personDefendant.getString("arrestSummonsNumber");
-        assertEquals(arrestSummonsNumber, party.getString("arrestSummonsNumber"));
-
-        final String pncId = defendantJsonObject.getString("pncId");
-        assertEquals(pncId, party.getString("pncId"));
-
-        final String masterDefendantId = defendantJsonObject.getString("masterDefendantId");
-        assertEquals(masterDefendantId.toUpperCase(), party.getString("masterPartyId").toUpperCase());
-
-        final String croNumber = defendantJsonObject.getString("croNumber");
-        assertEquals(croNumber, party.getString("croNumber"));
-
-        final String courtProceedingsInitiated = defendantJsonObject.getString("courtProceedingsInitiated");
-        assertEquals(courtProceedingsInitiated, party.getString("courtProceedingsInitiated"));
     }
 
     private static void assertPersonDetails(final JsonObject personDetails, final JsonObject party, final String organisationName) {

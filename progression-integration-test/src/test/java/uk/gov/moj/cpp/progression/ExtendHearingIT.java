@@ -219,7 +219,7 @@ public class ExtendHearingIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
-    private void verifyListingNumberForCase(final String caseId, final String defendantId, final int listingNumber) throws IOException {
+    private void verifyListingNumberForCase(final String caseId, final String defendantId, final int listingNumber) {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].listingNumber", CoreMatchers.is(listingNumber))
         )));

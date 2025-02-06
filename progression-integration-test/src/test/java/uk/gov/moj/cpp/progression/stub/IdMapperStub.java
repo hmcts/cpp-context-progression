@@ -7,12 +7,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.UUID.randomUUID;
-import static org.awaitility.Awaitility.waitAtMost;
-import static org.awaitility.Durations.TEN_SECONDS;
-import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
-import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.BASE_URI;
-
-import uk.gov.justice.services.test.utils.core.rest.RestClient;
 
 import java.util.UUID;
 
@@ -21,15 +15,10 @@ import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpHeaders;
 
-/**
- * Created by satishkumar on 10/12/2018.
- */
 public class IdMapperStub {
     private static final String SYSTEM_ID_MAPPER_ENDPOINT = "/system-id-mapper-api/rest/systemid/mappings/*";
 
     public static void setUp() {
-        stubPingFor("system-id-mapper-api");
-
         stubFor(get(urlPathMatching(SYSTEM_ID_MAPPER_ENDPOINT))
                 .willReturn(aResponse()
                         .withStatus(404)));
@@ -91,16 +80,5 @@ public class IdMapperStub {
                         .withBody(Json.createObjectBuilder().add("id", id.toString()).build().toString())
                 )
         );
-
-        waitForPostStubToBeReady(path, mime, status);
-    }
-
-    public static void stubForIdMapperSuccess(final Response.Status status) {
-        stubForIdMapperSuccess(status, UUID.randomUUID());
-    }
-
-    private static void waitForPostStubToBeReady(final String resource, final String mediaType, final Response.Status expectedStatus) {
-        final RestClient restClient = new RestClient();
-        waitAtMost(TEN_SECONDS).until(() -> restClient.postCommand(BASE_URI + resource, mediaType, "").getStatus() == expectedStatus.getStatusCode());
     }
 }

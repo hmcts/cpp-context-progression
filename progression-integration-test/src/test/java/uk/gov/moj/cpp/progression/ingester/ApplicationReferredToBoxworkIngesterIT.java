@@ -29,7 +29,7 @@ public class ApplicationReferredToBoxworkIngesterIT extends AbstractIT {
     private String caseId;
 
     @BeforeEach
-    public void setup() throws IOException {
+    public void setup() {
         caseId = randomUUID().toString();
         applicationId = randomUUID().toString();
         deleteAndCreateIndex();

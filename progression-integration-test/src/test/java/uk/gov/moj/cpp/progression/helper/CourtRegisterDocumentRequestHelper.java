@@ -7,10 +7,7 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProduc
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -21,11 +18,9 @@ import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import org.apache.commons.lang3.StringUtils;
@@ -85,15 +80,11 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
     }
 
     private String getCourtRegisterDocumentRequests(final String requestStatus, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl(StringUtils.join("/court-register/request/", requestStatus)),
-                "application/vnd.progression.query.court-register-document-request+json")
-                .withHeader(HeaderConstants.USER_ID, USER_ID))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(
-                        status().is(Response.Status.OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        return pollForResponse(StringUtils.join("/court-register/request/", requestStatus),
+                "application/vnd.progression.query.court-register-document-request+json",
+                USER_ID.toString(),
+                matchers
+        );
     }
 
     public void verifyCourtRegisterIsNotified(final UUID courtCentreId) {

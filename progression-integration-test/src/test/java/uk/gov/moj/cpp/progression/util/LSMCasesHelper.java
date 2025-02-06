@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 public class LSMCasesHelper {
 
@@ -22,8 +23,8 @@ public class LSMCasesHelper {
             throw new IllegalArgumentException(String.format("The count of defendantIds does not match with numberOfCase parameter (%d)", numberOfCase));
         }
 
-        final Matcher<String> caseMatcher = anyOf(Arrays.stream(prosecutionCaseIds).map(s -> equalTo(s)).collect(Collectors.toList()));
-        final Matcher<String> defendantMatcher = anyOf(Arrays.stream(defendantIds).map(s -> equalTo(s)).collect(Collectors.toList()));
+        final Matcher<String> caseMatcher = anyOf(Arrays.stream(prosecutionCaseIds).map(Matchers::equalTo).collect(Collectors.toList()));
+        final Matcher<String> defendantMatcher = anyOf(Arrays.stream(defendantIds).map(Matchers::equalTo).collect(Collectors.toList()));
 
         final List<Matcher> matchers = new ArrayList<>();
         final String prefix = "$." + linkType;

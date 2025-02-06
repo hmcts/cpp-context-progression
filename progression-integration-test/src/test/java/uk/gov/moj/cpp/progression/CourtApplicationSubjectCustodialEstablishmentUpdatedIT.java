@@ -4,23 +4,15 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplicationWithRespondents;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
@@ -28,6 +20,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
@@ -37,16 +30,11 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
-import java.io.StringReader;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 
-import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -184,7 +172,7 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
 
         // initiation of  application
-        final Response response = intiateCourtProceedingForApplicationWithRespondents(id2, id3, courtApplicationId, caseId, defendantId, masterDefendantId, "Address1", hearingId,
+        intiateCourtProceedingForApplicationWithRespondents(id2, id3, courtApplicationId, caseId, defendantId, masterDefendantId, "Address1", hearingId,
                 "applications/progression.initiate-court-proceedings-for-court-order-linked-application-for-updated-address.json");
 
         getProgressionCaseHearings(caseId, anyOf(
@@ -218,31 +206,13 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         assertNotNull(reportingRestrictionObject);
     }
 
-    public static JsonObject jsonFromString(final String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
-        final JsonObject object = jsonReader.readObject();
-        jsonReader.close();
-
-        return object;
+    private String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
+        return pollForResponse("/prosecutioncases/" + caseId,
+                PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON, randomUUID().toString(), matchers);
     }
 
-    private static String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl("/prosecutioncases/" + caseId),
-                PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(OK), payload().isJson(allOf(matchers)))
-                .getPayload();
+    private String getProgressionQueryForApplicationAtAaag(final String applicationId, final Matcher... matchers) {
+        return pollForResponse("/applications/" + applicationId,
+                PROGRESSION_QUERY_APPLICATION_AAAG_JSON, randomUUID().toString(), matchers);
     }
-
-    private static String getProgressionQueryForApplicationAtAaag(final String applicationId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl("/applications/" + applicationId),
-                PROGRESSION_QUERY_APPLICATION_AAAG_JSON)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(OK), payload().isJson(allOf(matchers)))
-                .getPayload();
-    }
-
-
 }

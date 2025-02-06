@@ -64,7 +64,7 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
 
         addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId, urn);
         List<String> allHearingIds = newArrayList(pollCaseAndGetHearingsForDefendant(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds.length()", is(2))));
-        allHearingIds.remove(allHearingIds.indexOf(duplicateHearingId));
+        allHearingIds.remove(duplicateHearingId);
         final String hearingId = allHearingIds.get(0);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, duplicateHearingId, defendantId, courtCentreId, "Lavender Hill Magistrate's Court");
