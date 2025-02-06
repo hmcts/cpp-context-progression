@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -92,5 +93,14 @@ public class NotificationInfoJdbcRepositoryTest {
         repository.save(notificationInfo);
 
         verify(connection, Mockito.times(1)).prepareStatement(anyString());
+    }
+
+    @Test
+    public void shouldDeleteNotifications() throws SQLException {
+        when(connection.prepareStatement(anyString())).thenReturn(mock(PreparedStatement.class));
+
+        repository.deleteNotifications("PROCESSED", ZonedDateTime.now());
+
+        verify(connection, times(1)).prepareStatement(anyString());
     }
 }

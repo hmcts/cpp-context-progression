@@ -1454,3 +1454,24 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
     responses:
       202:
         description: OK
+
+/delete-notification-info:
+  post:
+      description:  |
+        Delete notification info records based on retention period
+        ...
+        (mapping):
+            requestType: application/vnd.progression.delete-notification-info+json
+            name: progression.delete-notification-info
+        ...
+      body:
+        application/vnd.progression.delete-notification-info+json:
+          example:
+            !include json/progression.delete-notification-info.json
+          schema:
+            !include json/schema/progression.delete-notification-info.json
+      responses:
+            202:
+                description: OK
+            500:
+                description: Internal Server Error

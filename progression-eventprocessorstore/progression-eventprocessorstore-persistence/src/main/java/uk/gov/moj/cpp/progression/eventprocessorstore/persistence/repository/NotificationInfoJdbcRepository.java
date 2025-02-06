@@ -28,7 +28,7 @@ public class NotificationInfoJdbcRepository {
     private final String EVENT_PROCESSOR_STORE_JNDI_NAME = "java:/app/progression-event-processor/DS.progression.eventprocessorstore";
     private final String NOTIFICATION_INFO_INSERT_QUERY = "INSERT INTO notification_info (notification_id, notification_type, payload, process_name, processed_timestamp, status) VALUES (?, ?, ?, ?, ?, ?)";
     private final String NOTIFICATION_INFO_QUERY = "SELECT * FROM notification_info WHERE notification_id = ?";
-    private final String NOTIFICATION_INFO_DELETE_QUERY = "DELETE FROM notification_info where notification_id = ? AND status = 'PROCESSED' AND processed_timestamp <= ?";
+    private final String NOTIFICATION_INFO_DELETE_QUERY = "DELETE FROM notification_info where status = ? AND processed_timestamp <= ?";
     private final String NOTIFICATION_INFO_UPDATE_QUERY = "UPDATE notification_info SET processed_timestamp = ?, status = ? WHERE notification_id = ?";
 
     @Inject
@@ -97,12 +97,11 @@ public class NotificationInfoJdbcRepository {
         }
     }
 
-    public void deleteNotifications(final UUID notificationId, final String status, final ZonedDateTime processedTimestamp) {
+    public void deleteNotifications(final String status, final ZonedDateTime cutoffDate) {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(NOTIFICATION_INFO_DELETE_QUERY)) {
-            ps.setObject(1, notificationId);
-            ps.setString(2, status);
-            ps.setTimestamp(3, toSqlTimestamp(processedTimestamp));
+            ps.setString(1, status);
+            ps.setTimestamp(2, toSqlTimestamp(cutoffDate));
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new NotificationInfoJdbcException(format("Exception while deleting: %s", NOTIFICATION_INFO_DELETE_QUERY), e);
