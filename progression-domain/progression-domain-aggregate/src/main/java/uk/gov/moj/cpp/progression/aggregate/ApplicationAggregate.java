@@ -67,7 +67,6 @@ import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.FutureSummonsHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
-import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
@@ -163,15 +162,6 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(
                 ApplicationReferredToCourt.applicationReferredToCourt()
                         .withHearingRequest(hearingListingNeeds)
-                        .build()));
-    }
-
-    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds) {
-        LOGGER.debug("hearing has been extended");
-        return apply(Stream.of(
-                HearingExtended.hearingExtended()
-                        .withHearingRequest(hearingListingNeeds)
-                        .withIsAdjourned(Boolean.FALSE)
                         .build()));
     }
 

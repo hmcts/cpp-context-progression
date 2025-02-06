@@ -508,6 +508,14 @@ baseUri:  message://command/handler/message/progression
             schema: !include json/schema/progression.command.publish-court-list.json
             example: !include json/progression.command.publish-court-list.json
 
+        application/vnd.progression.command.move-offences-from-old-next-hearing+json:
+            schema: !include json/schema/progression.command.move-offences-from-old-next-hearing.json
+            example: !include json/progression.command.move-offences-from-old-next-hearing.json
+
+        application/vnd.progression.command.move-offences-to-new-next-hearing+json:
+            schema: !include json/schema/progression.command.move-offences-to-new-next-hearing.json
+            example: !include json/progression.command.move-offences-to-new-next-hearing.json
+
 # COTR
         application/vnd.progression.command.create-cotr+json:
             schema: !include json/schema/progression.command.create-cotr.json

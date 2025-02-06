@@ -255,7 +255,7 @@ public class HearingAggregateTest {
                 .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase1, prosecutionCase2, prosecutionCase3))).build();
         setField(hearingAggregate, "hearing", hearing);
 
-        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1)).collect(toList());
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1), false).collect(toList());
 
         assertThat(eventStream1.size(), is(1));
 
@@ -301,7 +301,7 @@ public class HearingAggregateTest {
                 .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase))).build();
         setField(hearingAggregate, "hearing", hearing);
 
-        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1, offence2)).collect(toList());
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1, offence2), false).collect(toList());
 
         assertThat(eventStream1.size(), is(1));
 
@@ -347,7 +347,7 @@ public class HearingAggregateTest {
                 .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase))).build();
         setField(hearingAggregate, "hearing", hearing);
 
-        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1)).collect(toList());
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1), false).collect(toList());
 
         assertThat(eventStream1.size(), is(1));
 
@@ -392,7 +392,7 @@ public class HearingAggregateTest {
                 .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase))).build();
         setField(hearingAggregate, "hearing", hearing);
 
-        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(randomUUID())).collect(toList());
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(randomUUID()), false).collect(toList());
 
         assertThat(eventStream1.size(), is(0));
 

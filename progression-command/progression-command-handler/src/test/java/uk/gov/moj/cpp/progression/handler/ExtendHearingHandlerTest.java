@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,6 +17,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatc
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
+import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
+
 
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -23,6 +27,7 @@ import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingExtendedProcessed;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ProcessHearingExtended;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.HearingResulted;
@@ -35,8 +40,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
-import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import java.util.ArrayList;
@@ -50,6 +53,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 
 @ExtendWith(MockitoExtension.class)
 public class ExtendHearingHandlerTest {
@@ -83,12 +87,19 @@ public class ExtendHearingHandlerTest {
     @Test
     public void shouldProcessCommand() throws Exception {
 
-        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        final HearingAggregate hearingAggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        final Hearing hearing = CoreTestTemplates.hearingForApplication(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+
+        hearingAggregate.enrichInitiateHearing(hearing);
 
         final ExtendHearing extendHearing = createExtendHearingForApplication();
-        applicationAggregate.extendHearing(extendHearing.getHearingRequest());
+        hearingAggregate.extendHearing(extendHearing.getHearingRequest());
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -116,13 +127,19 @@ public class ExtendHearingHandlerTest {
     @Test
     public void shouldProcessCommandForProsecutionCase() throws Exception {
 
-        final CaseAggregate caseAggregate = new CaseAggregate();
-
+        final HearingAggregate hearingAggregate = new HearingAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
+
+        final Hearing hearing = CoreTestTemplates.hearingForApplication(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+
+        hearingAggregate.enrichInitiateHearing(hearing);
 
         final ExtendHearing extendHearing = createExtendHearingForProsecutionCase();
-        caseAggregate.extendHearing(extendHearing.getHearingRequest(), extendHearing);
+        hearingAggregate.extendHearing(extendHearing.getHearingRequest(), extendHearing);
         final Metadata metadata = Envelope
                 .metadataBuilder()
                 .withName("progression.command.extend-hearing")

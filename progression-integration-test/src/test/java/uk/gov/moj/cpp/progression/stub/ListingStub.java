@@ -56,6 +56,7 @@ public class ListingStub {
     public static final String LISTING_DELETE_NEXT_HEARINGS = "listing.delete-next-hearings";
     private static final String LISTING_DELETE_HEARING_TYPE = "application/vnd.listing.delete-hearing+json";
     private static final String LISTING_DELETE_NEXT_HEARINGS_TYPE = "application/vnd.listing.delete-next-hearings+json";
+    public static final String  LISTING_RELATED_HEARING_JSON = "application/vnd.listing.related-hearing+json";
 
     public static void stubListCourtHearing() {
         InternalEndpointMockUtils.stubPingFor("listing-service");
@@ -90,6 +91,12 @@ public class ListingStub {
 
         stubFor(post(urlPathMatching(LISTING_DELETE_HEARING_COMMAND))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_HEARING_TYPE))
+                .willReturn(aResponse()
+                        .withStatus(ACCEPTED.getStatusCode())
+                        .withHeader(ID, UUID.randomUUID().toString())));
+
+        stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_RELATED_HEARING_JSON))
                 .willReturn(aResponse()
                         .withStatus(ACCEPTED.getStatusCode())
                         .withHeader(ID, UUID.randomUUID().toString())));
