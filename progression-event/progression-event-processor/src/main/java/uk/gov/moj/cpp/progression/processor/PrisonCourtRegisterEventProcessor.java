@@ -142,21 +142,21 @@ public class PrisonCourtRegisterEventProcessor {
         List<UUID> caseUUIDList = new ArrayList<>();
         final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = converter.convert(mappedPayload, PrisonCourtRegisterRecorded.class);
 
-        List<PrisonCourtRegisterCaseOrApplication> pcoaList = Optional.ofNullable(prisonCourtRegisterRecorded)
+        List<PrisonCourtRegisterCaseOrApplication> pcrCaseOrApplicationList = Optional.ofNullable(prisonCourtRegisterRecorded)
                 .map(pcr -> pcr.getPrisonCourtRegister())
-                .map(def -> def.getDefendant())
-                .map(pcoa -> pcoa.getProsecutionCasesOrApplications())
+                .map(defendant -> defendant.getDefendant())
+                .map(pcrCaseOrApplication -> pcrCaseOrApplication.getProsecutionCasesOrApplications())
                 .stream()
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
-        List<String> caseUrnList = pcoaList.stream()
+        List<String> urnList = pcrCaseOrApplicationList.stream()
                 .map(PrisonCourtRegisterCaseOrApplication::getCaseOrApplicationReference)
                 .distinct()
                 .collect(Collectors.toList());
 
-        caseUrnList.stream().forEach(cu -> {
-            Optional<JsonObject> caseIdJsonObject = progressionService.caseExistsByCaseUrn(envelope, cu);
+        urnList.stream().forEach(urn -> {
+            Optional<JsonObject> caseIdJsonObject = progressionService.caseExistsByCaseUrn(envelope, urn);
             caseIdJsonObject.ifPresent(jsonObject -> {
                 if (jsonObject.containsKey(CASE_ID)) {
                     caseUUIDList.add(fromString(jsonObject.getString(CASE_ID)));
@@ -164,7 +164,7 @@ public class PrisonCourtRegisterEventProcessor {
             });
         });
 
-        return caseUUIDList.isEmpty() ? null : caseUUIDList.get(0).toString();
+        return caseUUIDList.isEmpty() ? "" : caseUUIDList.get(0).toString();
     }
 
     @SuppressWarnings("squid:S1160")

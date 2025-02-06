@@ -280,7 +280,7 @@ public class SystemDocGeneratorEventProcessor {
                 String.format(PCR_FILE_NAME_FORMAT, prisonCourtDefendantName.get(), utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD))
                 : null;
         LOGGER.info(">>2047 filename {} prisonCourtDefendantName {} prisonCourtCaseId {}", fileName, prisonCourtDefendantName, prisonCourtCaseId);
-        if (fileName != null && prisonCourtCaseId.isPresent()) {
+        if (nonNull(fileName) && prisonCourtCaseId.isPresent()) {
             addCourtDocument(documentAvailableEvent, prisonCourtCaseId.get(), materialId, fileName, contextSystemUserId.orElse(null));
         }
         if (prisonCourtRegisterId.isPresent()) {
