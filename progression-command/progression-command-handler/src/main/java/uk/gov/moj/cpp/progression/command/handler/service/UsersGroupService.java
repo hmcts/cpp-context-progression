@@ -179,7 +179,7 @@ public class UsersGroupService {
                 .withAddressLine3(getOptionalJsonString(orgResponse, ADDRESS_3))
                 .withAddressLine4(orgResponse.getString(ADDRESS_4))
                 .withAddressPostcode(orgResponse.getString(POSTCODE))
-                .withEmail(orgResponse.getString(EMAIL))
+                .withEmail(getOptionalJsonString(orgResponse, EMAIL))
                 .withId(fromString(orgResponse.getString(ORGANISATION_ID)))
                 .withLaaContractNumber(getOptionalJsonString(orgResponse, LAA_CONTRACT_NUMBER))
                 .withName(orgResponse.getString(ORGANISATION_NAME))

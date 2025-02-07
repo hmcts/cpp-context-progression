@@ -27,6 +27,7 @@ function runLiquibase {
   runEventLogAggregateSnapshotLiquibase
   runEventBufferLiquibase
   runViewStoreLiquibase
+  runEventProcessorStoreLiquibase
   runSystemLiquibase
   runJobStoreLiquibase
   runEventTrackingLiquibase

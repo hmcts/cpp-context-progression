@@ -22,6 +22,7 @@ RUN chown ${wildfly_user}:${wildfly_user} ${wildfly_home}/standalone/deployments
 
 # liquibase jars & config
 RUN mkdir /tmp/liquibase
+ADD ${repo_loc}/uk/gov/moj/cpp/${context_group_name}/${context_name}-eventprocessorstore-liquibase/${version}/${context_name}-eventprocessorstore-liquibase-${version}.jar /tmp/liquibase/${context_name}-eventprocessorstore-liquibase.jar
 ADD ${repo_loc}/uk/gov/moj/cpp/${context_group_name}/${context_name}-viewstore-liquibase/${version}/${context_name}-viewstore-liquibase-${version}.jar /tmp/liquibase/${context_name}-viewstore-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/event-repository-liquibase/${eventstore_version}/event-repository-liquibase-${eventstore_version}.jar  /tmp/liquibase/event-repository-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/aggregate-snapshot-repository-liquibase/${eventstore_version}/aggregate-snapshot-repository-liquibase-${eventstore_version}.jar  /tmp/liquibase/aggregate-snapshot-repository-liquibase.jar

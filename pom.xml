@@ -21,6 +21,7 @@
         <module>progression-viewstore</module>
         <module>progression-command</module>
         <module>progression-event</module>
+        <module>progression-eventprocessorstore</module>
         <module>progression-domain</module>
         <module>progression-integration-test</module>
         <module>progression-performance-test</module>
@@ -64,7 +65,7 @@
         <material.version>17.0.20</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.53</referencedata.version>
+        <referencedata.version>17.0.59</referencedata.version>
         <listing.version>17.0.8</listing.version>
         <hearing.version>17.0.34</hearing.version>
         <usersgroups.version>17.0.19</usersgroups.version>
@@ -76,7 +77,7 @@
         <results.version>17.0.1</results.version>
         <notification.notify.version>17.0.1</notification.notify.version>
         <unifiedsearch.version>17.0.12</unifiedsearch.version>
-        <systemdocgenerator.version>17.0.26</systemdocgenerator.version>
+        <systemdocgenerator.version>17.0.27</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.19</applicationscourtorders.version>
         <sjp.version>17.0.6</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
@@ -95,6 +96,7 @@
         <byte-buddy.version>1.12.22</byte-buddy.version>
         <podam>7.1.0.RELEASE</podam>
         <jgitflow.maven.developBranchName>main</jgitflow.maven.developBranchName>
+        <liquibase.core.version>3.6.1</liquibase.core.version>
     </properties>
     <build>
         <plugins>
