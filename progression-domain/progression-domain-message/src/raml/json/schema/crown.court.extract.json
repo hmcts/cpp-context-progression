@@ -105,6 +105,13 @@
           "items": {
             "$ref": "#/definitions/judicialRoleNames"
           }
+        },
+        "dates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/sittingDay"
+          }
         }
       },
       "required": [
@@ -308,6 +315,21 @@
           "minItems": 1,
           "items": {
             "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+          }
+        },
+        "attendanceDays": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/attendanceDayAndType"
+          }
+        },
+        "defendantResults": {
+          "description": "defendant and case level results",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
           }
         }
       },
@@ -675,6 +697,9 @@
         },
         "plea": {
           "$ref": "http://justice.gov.uk/core/courts/plea.json"
+        },
+        "indicatedPlea": {
+          "$ref": "http://justice.gov.uk/core/courts/indicatedPlea.json"
         }
       },
       "required": [

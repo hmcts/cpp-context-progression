@@ -81,6 +81,8 @@ import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
@@ -123,6 +125,7 @@ import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -2449,7 +2452,7 @@ public class CourtApplicationHandlerTest {
                 .withId(randomUUID())
                 .build();
 
-        final HearingResultedUpdateApplication hearingResultedUpdateApplication = hearingResultedUpdateApplication().withCourtApplication(courtApplication().withId(applicationId).build()).build();
+        final HearingResultedUpdateApplication hearingResultedUpdateApplication = hearingResultedUpdateApplication().withCourtApplication(courtApplication().withId(applicationId).withJudicialResults(asList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build())).build()).build();
 
         final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);

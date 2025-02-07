@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-eventprocessorstore</artifactId>
-        <version>17.0.80-CCT-2047-SNAPSHOT</version>
+        <version>17.0.79-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>progression-eventprocessorstore-liquibase</artifactId>
@@ -11,34 +11,4 @@
     <properties>
         <sonar.skip>true</sonar.skip>
     </properties>
-
-<!--
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.liquibase</groupId>
-                <artifactId>liquibase-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>Create progression event log</id>
-                        <configuration>
-                            <propertyFile>src/main/resources/liquibase.properties</propertyFile>
-                            <contexts>${liquibase.context}</contexts>
-                        </configuration>
-                        <goals>
-                            <goal>update</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.liquibase</groupId>
-                        <artifactId>liquibase-core</artifactId>
-                        <version>${liquibase.core.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
--->
 </project>

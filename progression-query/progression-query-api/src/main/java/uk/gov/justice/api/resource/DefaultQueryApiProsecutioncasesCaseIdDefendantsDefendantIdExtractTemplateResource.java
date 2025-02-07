@@ -66,6 +66,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
 
     public static final String PROGRESSION_QUERY_PROSECUTION_CASE = "progression.query.prosecutioncase";
     public static final String COURT_EXTRACT = "CrownCourtExtract";
+    public static final String CERTIFICATE_OF_ACQUITTAL_CONVICTION = "CertificateOfAcquittalConviction";
 
     @Inject
     RestProcessor restProcessor;
@@ -167,13 +168,21 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
             LOGGER.info("create court extract with payload : {}", payload);
             JsonObject newPayload = pleaValueDescriptionBuilder.rebuildPleaWithDescription(payload);
             newPayload = resultTextFlagBuilder.rebuildWithResultTextFlag(newPayload);
-            resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(newPayload, COURT_EXTRACT, systemUser);
+            resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(newPayload, getTemplateName(extractType), systemUser);
             documentInputStream = new ByteArrayInputStream(resultOrderAsByteArray);
         } catch (IOException e) {
             LOGGER.error("Court extract generate Pdf document failed ", e);
             throw new DocumentGeneratorException();
         }
         return documentInputStream;
+    }
+
+    public String getTemplateName(String template) {
+        if(COURT_EXTRACT.equals(template)) {
+            return COURT_EXTRACT;
+        }
+
+        return CERTIFICATE_OF_ACQUITTAL_CONVICTION;
     }
 
     private JsonObject transformToTemplateConvert(JsonObject jsonObject, final String defendantId, final String extractType, final List<String> hearingIdList) {
