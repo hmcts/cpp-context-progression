@@ -97,7 +97,7 @@ public class RemoveOffencesHandlerTest {
                 .withOffenceIds(offenceIds)
                 .withHearingId(hearingId)
                 .build();
-        when(hearingAggregate.removeOffenceFromHearing(eq(hearingId), eq(offenceIds)))
+        when(hearingAggregate.removeOffenceFromHearing(eq(hearingId), eq(offenceIds), eq(null)))
                 .thenReturn(Stream.of(build));
 
         removeOffencesHandler.removeOffencesFromExistingHearing(envelope);

@@ -18,8 +18,6 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
-import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 
 import javax.inject.Inject;
@@ -31,7 +29,7 @@ import java.util.stream.Stream;
 public class ExtendHearingHandler {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(ReferApplicationToCourtHandler.class.getName());
+            LoggerFactory.getLogger(ExtendHearingHandler.class.getName());
 
     @Inject
     private EventSource eventSource;
@@ -49,16 +47,14 @@ public class ExtendHearingHandler {
         final ExtendHearing extendHearing = extendHearingEnvelope.payload();
         final HearingListingNeeds hearingRequest = extendHearing.getHearingRequest();
         final EventStream eventStream = eventSource.getStreamById(hearingRequest.getId());
-
+        final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
+        final Stream<Object> events;
         if (isNotEmpty(hearingRequest.getProsecutionCases())) {
-            final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-            final Stream<Object> events = caseAggregate.extendHearing(hearingRequest, extendHearing);
-            appendEventsToStream(extendHearingEnvelope, eventStream, events);
+            events = hearingAggregate.extendHearing(hearingRequest, extendHearing);
         } else {
-            final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
-            final Stream<Object> events = applicationAggregate.extendHearing(hearingRequest);
-            appendEventsToStream(extendHearingEnvelope, eventStream, events);
+            events = hearingAggregate.extendHearing(hearingRequest);
         }
+        appendEventsToStream(extendHearingEnvelope, eventStream, events);
     }
 
     @Handles("progression.command.process-hearing-extended")

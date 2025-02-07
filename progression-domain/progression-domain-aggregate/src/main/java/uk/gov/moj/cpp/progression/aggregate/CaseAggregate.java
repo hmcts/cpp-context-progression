@@ -121,7 +121,6 @@ import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
 import uk.gov.justice.core.courts.EditFormRequested;
 import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
-import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.FinancialDataAdded;
 import uk.gov.justice.core.courts.FinancialMeansDeleted;
 import uk.gov.justice.core.courts.FormCreated;
@@ -132,8 +131,6 @@ import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.FundingType;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
-import uk.gov.justice.core.courts.HearingExtended;
-import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -2336,20 +2333,6 @@ public class CaseAggregate implements Aggregate {
                 .add(casesUnlinked)
                 .build());
     }
-
-    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds, final ExtendHearing extendHearing) {
-        LOGGER.debug("hearing has been extended");
-        return apply(Stream.of(
-                HearingExtended.hearingExtended()
-                        .withExtendedHearingFrom(extendHearing.getExtendedHearingFrom())
-                        .withHearingRequest(hearingListingNeeds)
-                        .withIsAdjourned(extendHearing.getIsAdjourned())
-                        .withIsPartiallyAllocated(extendHearing.getIsPartiallyAllocated())
-                        .withShadowListedOffences(extendHearing.getShadowListedOffences())
-                        .withIsUnAllocatedHearing(extendHearing.getIsUnAllocatedHearing())
-                        .build()));
-    }
-
     public Stream<Object> updateHearingForPartialAllocation(final UUID hearingId, final List<ProsecutionCasesToRemove> prosecutionCasesToRemove) {
         LOGGER.debug("hearing has been updated for partial allocation");
         return apply(Stream.of(HearingUpdatedForPartialAllocation.hearingUpdatedForPartialAllocation()

@@ -47,7 +47,6 @@ import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
-import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
@@ -484,13 +483,7 @@ public class ApplicationAggregateTest {
         assertThat(hearingDeletedForCourtApplication.getCourtApplicationId(), is(equalTo(courtApplicationId)));
     }
 
-    @Test
-    public void shouldExtendHearing() {
-        final List<Object> eventStream = aggregate.extendHearing(hearingListingNeeds).collect(toList());
-        assertThat(eventStream.size(), is(1));
-        final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(HearingExtended.class)));
-    }
+
 
     @Test
     public void shouldBookSlotsForApplication() {

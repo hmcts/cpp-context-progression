@@ -1030,6 +1030,12 @@ public class ProgressionService {
                     .add(HEARING, objectToJsonObjectConverter.convert(unscheduledHearing))
                     .build();
             sender.send(Enveloper.envelop(hearingListingStatusCommand).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).withMetadataFrom(jsonEnvelope));
+
+            unscheduledHearing.getProsecutionCases().forEach(prosecutionCase ->
+                    sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName("progression.command-link-prosecution-cases-to-hearing"),
+                            createObjectBuilder().add("caseId", prosecutionCase.getId().toString()).add("hearingId", unscheduledHearing.getId().toString()).build())));
+
+
         });
     }
 

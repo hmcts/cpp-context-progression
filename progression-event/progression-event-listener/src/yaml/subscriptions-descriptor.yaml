@@ -8,6 +8,9 @@ subscriptions_descriptor:
         - name: progression.event.prosecution-case-created
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
 
+        - name: progression.event.hearing-offences-updated-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-offences-updated-v2.json
+
         - name: progression.event.court-document-removed
           schema_uri: http://justice.gov.uk/core/courts/courts-document-removed.json
 
