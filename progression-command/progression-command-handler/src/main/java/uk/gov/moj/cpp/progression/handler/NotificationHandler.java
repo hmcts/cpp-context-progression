@@ -30,7 +30,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
 import javax.json.JsonObject;
 
 /**

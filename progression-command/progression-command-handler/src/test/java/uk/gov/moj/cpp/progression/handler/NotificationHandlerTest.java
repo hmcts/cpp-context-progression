@@ -150,7 +150,7 @@ public class NotificationHandlerTest {
                         .add("postage", false)
                         .build());
 
-        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, null, caseId, materialId,  false);
+        final PrintRequested resultOrderPrintRequested = new PrintRequested(notificationId, null, caseId, materialId, false);
 
         when(eventSource.getStreamById(caseId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
@@ -192,7 +192,7 @@ public class NotificationHandlerTest {
 
         when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
         when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        when(applicationAggregate.recordPrintRequest(applicationId, notificationId, materialId,  false)).thenReturn(Stream.of(resultOrderPrintRequested));
+        when(applicationAggregate.recordPrintRequest(applicationId, notificationId, materialId, false)).thenReturn(Stream.of(resultOrderPrintRequested));
 
         notificationHandler.print(printResultOrder);
 

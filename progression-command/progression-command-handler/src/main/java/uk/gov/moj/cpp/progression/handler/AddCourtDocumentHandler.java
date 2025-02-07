@@ -69,7 +69,7 @@ public class AddCourtDocumentHandler {
 
     @Handles("progression.command.add-court-document")
     public void handle(final Envelope<AddCourtDocument> addCourtDocumentEnvelope) throws EventStreamException {
-        logger.info("progression.command.add-court-document {}", addCourtDocumentEnvelope);
+        logger.debug("progression.command.add-court-document {}", addCourtDocumentEnvelope);
 
             final CourtDocument courtDocument = defaultCourtDocumentFactory.createDefaultCourtDocument(
 

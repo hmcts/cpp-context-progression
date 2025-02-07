@@ -92,6 +92,7 @@ public class NotificationRequestProcessorTest {
 
         final String clientId = randomUUID().toString();
         final UUID notificationId = randomUUID();
+
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.print-requested")
                         .withClientCorrelationId(clientId),

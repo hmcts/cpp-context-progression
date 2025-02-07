@@ -58,8 +58,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.JsonObject;
-
 @SuppressWarnings("squid:S1948")
 public class MaterialAggregate implements Aggregate {
 
@@ -177,8 +175,7 @@ public class MaterialAggregate implements Aggregate {
         return Stream.of(new NowsRequestWithAccountNumberUpdated(accountNumber, requestId), new NowDocumentRequested(isCps, strFileName, materialId, updatedNowDocumentRequest, templateName, userId));
     }
 
-    public Stream<Object> recordPrintRequest(final UUID materialId, final UUID notificationId,
-                                             final boolean postage) {
+    public Stream<Object> recordPrintRequest(final UUID materialId, final UUID notificationId, final boolean postage) {
         return apply(Stream.of(new PrintRequested(notificationId, null, null, materialId, postage)));
     }
 

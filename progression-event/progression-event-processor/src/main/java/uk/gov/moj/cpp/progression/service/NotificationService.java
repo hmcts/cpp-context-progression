@@ -98,7 +98,6 @@ public class NotificationService {
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class.getName());
     private static final String APPLICATION_ID = "applicationId";
-
     private static final String ACCEPTED_TIME = "acceptedTime";
     private static final String NOTIFICATIONS = "notifications";
     private static final String FAILED_TIME = "failedTime";

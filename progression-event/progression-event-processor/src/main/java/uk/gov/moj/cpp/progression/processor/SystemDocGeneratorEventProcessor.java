@@ -232,7 +232,6 @@ public class SystemDocGeneratorEventProcessor {
     }
 
     private void processPrisonCourtRegisterDocumentAvailable(final JsonEnvelope documentAvailableEvent, String fileId) {
-        LOGGER.info(">>2047 processPrisonCourtRegisterDocumentAvailable - {}", documentAvailableEvent.asJsonObject());
         final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();
 
         final String documentFileServiceId = documentAvailablePayload.getString(DOCUMENT_FILE_SERVICE_ID);
@@ -279,10 +278,11 @@ public class SystemDocGeneratorEventProcessor {
         final String fileName = prisonCourtDefendantName.isPresent() ?
                 String.format(PCR_FILE_NAME_FORMAT, prisonCourtDefendantName.get(), utcClock.now().format(TIMESTAMP_FORMATTER_FOR_FILE_UPLOAD))
                 : null;
-        LOGGER.info(">>2047 filename {} prisonCourtDefendantName {} prisonCourtCaseId {}", fileName, prisonCourtDefendantName, prisonCourtCaseId);
+
         if (nonNull(fileName) && prisonCourtCaseId.isPresent()) {
             addCourtDocument(documentAvailableEvent, prisonCourtCaseId.get(), materialId, fileName, contextSystemUserId.orElse(null));
         }
+
         if (prisonCourtRegisterId.isPresent()) {
             notifyPrisonCourtRegisterBuilder.withId(prisonCourtRegisterId.get());
         }
@@ -302,7 +302,6 @@ public class SystemDocGeneratorEventProcessor {
                 .add(MATERIAL_ID, materialId.toString())
                 .add(COURT_DOCUMENT, objectToJsonObjectConverter.convert(courtDocument))
                 .build();
-        LOGGER.info(">>2047 adding court document for {}", jsonObject);
 
         sender.send(assembleEnvelopeWithPayloadAndMetaDetails(jsonObject, PROGRESSION_COMMAND_ADD_COURT_DOCUMENT, userId.toString()));
     }
@@ -324,7 +323,6 @@ public class SystemDocGeneratorEventProcessor {
                 .build();
 
         LOGGER.info("progression.command.record-nows-document-generated - {}", jsonObject);
-
         this.sender.send(envelopeFrom(metadataFrom(documentAvailableEvent.metadata())
                         .withName("progression.command.record-nows-document-generated")
                         .build(),

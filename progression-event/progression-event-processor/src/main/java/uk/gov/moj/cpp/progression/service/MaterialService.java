@@ -24,8 +24,6 @@ import uk.gov.moj.cpp.progression.processor.exceptions.MaterialNotFoundException
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,7 +70,7 @@ public class MaterialService {
         if (isNull(userId)) {
             throw new RuntimeException("UserId missing from event.");
         }
-        LOGGER.info("material being uploaded '{}' file service id '{}' userid {} time {}", materialId, fileServiceId, userId,LocalDateTime.now());
+        LOGGER.info("material being uploaded '{}' file service id '{}'", materialId, fileServiceId);
         final JsonObject uploadMaterialPayload = Json.createObjectBuilder()
                 .add(FIELD_MATERIAL_ID, materialId.toString())
                 .add("fileServiceId", fileServiceId.toString())
