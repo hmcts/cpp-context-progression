@@ -36,7 +36,7 @@ public abstract class AbstractTestHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTestHelper.class);
 
-    public static final String USER_ID = UUID.randomUUID().toString();
+    public static final String USER_ID = randomUUID().toString();
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     protected static final String BASE_URI = System.getProperty("baseUri", "http://" + HOST + ":8080");
     private static final String WRITE_BASE_URL = "/progression-service/command/api/rest/progression";
@@ -52,13 +52,6 @@ public abstract class AbstractTestHelper {
         return Joiner.on("").join(BASE_URI, READ_BASE_URL, resource);
     }
 
-    static {
-        doAllStubbing();
-    }
-
-    public static void doAllStubbing() {
-    }
-
     protected void makePostCall(final String url, final String mediaType, final String payload) {
         makePostCall(url, mediaType, payload, Response.Status.ACCEPTED.getStatusCode());
     }
@@ -71,8 +64,9 @@ public abstract class AbstractTestHelper {
         LOGGER.info("Post call made: \n\n\tURL = {} \n\tMedia type = {} \n\tPayload = {}\n\nUser ID = {}", url, mediaType, payload, USER_ID);
         final MultivaluedMap<String, Object> map = new MultivaluedHashMap<>();
         map.add(HeaderConstants.USER_ID, userId.toString());
-        final Response response = restClient.postCommand(url, mediaType, payload, map);
-        assertThat(response.getStatus(), is(statusCode));
+        try (Response response = restClient.postCommand(url, mediaType, payload, map)) {
+            assertThat(response.getStatus(), is(statusCode));
+        }
     }
 
     protected UUID makeMultipartFormPostCall(final UUID userId, final String url, final String fileFieldName, final String fileName) {
@@ -83,19 +77,18 @@ public abstract class AbstractTestHelper {
         headers.add(HeaderConstants.CLIENT_CORRELATION_ID, correlationId);
         final MultipartFormDataOutput mdo = new MultipartFormDataOutput();
         mdo.addFormData(fileFieldName, file, MediaType.MULTIPART_FORM_DATA_TYPE, file.getName());
-        final GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(mdo) {
+        final GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<>(mdo) {
         };
-        final Response response = ResteasyClientBuilderFactory.clientBuilder().build().target(getWriteUrl(url)).request().headers(headers).post(
-                Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE)
-        );
-        response.close();
-        assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+        try (Response response = ResteasyClientBuilderFactory.clientBuilder().build().target(getWriteUrl(url)).request().headers(headers).post(
+                Entity.entity(entity, MediaType.MULTIPART_FORM_DATA_TYPE))) {
+            assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
+        }
         return correlationId;
     }
 
     public void stubForDefence(UUID defendantId) {
 
-        final String organisationId = UUID.randomUUID().toString();
+        final String organisationId = randomUUID().toString();
 
         setupAsAuthorisedUser(fromString(USER_ID), "stub-data/usersgroups.get-chamber-groups-by-user.json");
         final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
@@ -108,7 +101,7 @@ public abstract class AbstractTestHelper {
                 .replace("%ORGANISATION_ID%", randomUUID().toString());
 
         stubUserGroupOrganisation(USER_ID, organisation);
-        stubUserGroupDefenceClientPermission(defendantId.toString(), permission);
+        stubUserGroupDefenceClientPermission(permission);
 
     }
 

@@ -2,10 +2,10 @@ package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -13,14 +13,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
@@ -28,7 +22,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -38,13 +34,11 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 
@@ -166,7 +160,7 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
-        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
+        stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
 
         // initiation of second case
@@ -192,27 +186,25 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
                 prosecutionCaseId_2, hearingId, defendantId_2, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        poll(requestParams(getReadUrl(String.format("/prosecutioncases/%s/lsm-info", prosecutionCaseId_2)), PROGRESSION_QUERY_CASE_LSM_INFO).withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(anyOf(allOf(withJsonPath("$.matchedDefendantCases[0].caseId", equalTo(prosecutionCaseId_2)),
-                                        withJsonPath("$.matchedDefendantCases[0].defendants[0].firstName", equalTo("Harry")),
-                                        withJsonPath("$.matchedDefendantCases[0].defendants[0].middleName", equalTo("Jack")),
-                                        withJsonPath("$.matchedDefendantCases[0].defendants[0].lastName", equalTo("Kane Junior")),
-                                        withJsonPath("$.matchedDefendantCases[0].defendants[0].id", equalTo(defendantId_2)),
-                                        withJsonPath("$.matchedDefendantCases[0].defendants[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                        withJsonPath("$.matchedDefendantCases[0].defendants[0].offences[0].offenceTitle", equalTo("ROBBERY"))),
+        pollForResponse(format("/prosecutioncases/%s/lsm-info", prosecutionCaseId_2),
+                PROGRESSION_QUERY_CASE_LSM_INFO,
+                randomUUID().toString(),
+                anyOf(allOf(withJsonPath("$.matchedDefendantCases[0].caseId", equalTo(prosecutionCaseId_2)),
+                                withJsonPath("$.matchedDefendantCases[0].defendants[0].firstName", equalTo("Harry")),
+                                withJsonPath("$.matchedDefendantCases[0].defendants[0].middleName", equalTo("Jack")),
+                                withJsonPath("$.matchedDefendantCases[0].defendants[0].lastName", equalTo("Kane Junior")),
+                                withJsonPath("$.matchedDefendantCases[0].defendants[0].id", equalTo(defendantId_2)),
+                                withJsonPath("$.matchedDefendantCases[0].defendants[0].masterDefendantId", equalTo(masterDefendantId_1)),
+                                withJsonPath("$.matchedDefendantCases[0].defendants[0].offences[0].offenceTitle", equalTo("ROBBERY"))),
 
-                                allOf(withJsonPath("$.matchedDefendantCases[1].caseId", equalTo(prosecutionCaseId_2)),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].firstName", equalTo("Harry")),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].middleName", equalTo("Jack")),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].lastName", equalTo("Kane Junior")),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].id", equalTo(defendantId_2)),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                        withJsonPath("$.matchedDefendantCases[1].defendants[0].offences[0].offenceTitle", equalTo("ROBBERY")))
-                        ))
-                );
+                        allOf(withJsonPath("$.matchedDefendantCases[1].caseId", equalTo(prosecutionCaseId_2)),
+                                withJsonPath("$.matchedDefendantCases[1].defendants[0].firstName", equalTo("Harry")),
+                                withJsonPath("$.matchedDefendantCases[1].defendants[0].middleName", equalTo("Jack")),
+                                withJsonPath("$.matchedDefendantCases[1].defendants[0].lastName", equalTo("Kane Junior")),
+                                withJsonPath("$.matchedDefendantCases[1].defendants[0].id", equalTo(defendantId_2)),
+                                withJsonPath("$.matchedDefendantCases[1].defendants[0].masterDefendantId", equalTo(masterDefendantId_1)),
+                                withJsonPath("$.matchedDefendantCases[1].defendants[0].offences[0].offenceTitle", equalTo("ROBBERY")))
+                ));
         helper.updateDefendantWithCustodyEstablishmentInfo(prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
 
         // then
@@ -257,7 +249,7 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1, emptyList());
         pollProsecutionCasesProgressionFor(matchedCaseId_1, prosecutionCaseMatchers);
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(matchedCaseId_1, matchedDefendant_1, getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1));
-        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
+        stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
         // initiation of second case
         final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated2 = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
@@ -344,7 +336,7 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1, emptyList());
         hearingId = pollProsecutionCasesProgressionAndReturnHearingId(matchedCaseId_1, matchedDefendant_1, getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1));
-        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
+        stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
         // initiation of second case
         final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated2 = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();

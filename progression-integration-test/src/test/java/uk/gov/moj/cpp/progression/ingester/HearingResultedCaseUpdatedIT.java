@@ -6,6 +6,7 @@ import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -156,10 +157,10 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
     private static void verifyInMessagingQueue() {
         final JsonPath message = retrieveMessageAsJsonPath(messageConsumer);
-        assertTrue(message != null);
+        assertNotNull(message);
     }
 
-    private DocumentContext initialCase() throws IOException {
+    private DocumentContext initialCase() {
         final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);

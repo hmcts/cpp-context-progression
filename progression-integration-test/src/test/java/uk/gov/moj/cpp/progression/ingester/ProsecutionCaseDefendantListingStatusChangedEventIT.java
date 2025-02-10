@@ -36,6 +36,7 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingVerificationHelper;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -200,7 +201,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         final JsonObject outputHearing = outputCase.getJsonArray("hearings").getJsonObject(0);
         final JsonObject inputHearing = prosecutionCaseDefendantListingStatusChangedEvent.getJsonObject("hearing");
 
-        assertCase(outputCase, asList(firstCaseId));
+        assertCase(outputCase, Collections.singletonList(firstCaseId));
         assertHearing(outputHearing, inputHearing, prosecutionCaseDefendantListingStatusChangedEvent, false);
 
         final JsonArray outputJudiciaryTypesArray = outputHearing.getJsonArray("judiciaryTypes");
@@ -343,7 +344,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
             final JsonObject outputApplicationJsonObject = (JsonObject) outputApplication;
             final String applicationId = outputApplicationJsonObject.getString("applicationId");
             final Optional<JsonObject> inputCourtApplication = inputCourtApplications.stream().map(p -> (JsonObject) p).filter(p -> p.getString("id").equals(applicationId)).findFirst();
-            if (!inputCourtApplication.isPresent()) {
+            if (inputCourtApplication.isEmpty()) {
                 fail("Could not find input application for application " + applicationId);
             }
 

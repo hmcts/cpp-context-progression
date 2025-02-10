@@ -48,7 +48,7 @@ public class Utilities {
                 message = ofNullable(retrieveMessageAsJsonPath(messageConsumer));
             }
 
-            if (!message.isPresent()) {
+            if (message.isEmpty()) {
                 fail("Expected message to emit on the private.event topic: " + description);
             }
             return message.orElse(null);

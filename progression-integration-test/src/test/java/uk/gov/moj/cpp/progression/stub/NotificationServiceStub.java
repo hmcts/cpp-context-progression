@@ -18,7 +18,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
-import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 
 import java.util.List;
@@ -38,7 +37,6 @@ public class NotificationServiceStub {
     static final String COTR_FORM_SERVED = "cotr-form-served";
 
     public static void setUp() {
-        stubPingFor("notificationnotify-service");
         stubFor(post(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
                 .withHeader(CONTENT_TYPE, equalTo(NOTIFICATION_NOTIFY_CONTENT_TYPE))
                 .willReturn(aResponse()
@@ -91,10 +89,6 @@ public class NotificationServiceStub {
 
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues) {
         verifyEmailNotificationIsRaisedWithAttachment(expectedValues, Optional.empty());
-    }
-
-    public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues, final UUID materialId) {
-        verifyEmailNotificationIsRaisedWithAttachment(expectedValues, Optional.of(materialId));
     }
 
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues, Optional<UUID> materialId) {

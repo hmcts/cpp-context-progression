@@ -5,6 +5,15 @@ subscriptions_descriptor:
   subscriptions:
     - name: event processor subscription
       events:
+        - name: progression.event.offences-moved-to-new-next-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.offences-moved-to-new-next-hearing.json
+
+        - name: progression.event.added-offences-moved-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.added-offences-moved-to-hearing.json
+
+        - name: progression.event.added-defendants-moved-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.added-defendants-moved-to-hearing.json
+
         - name: progression.event.prosecution-case-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-defendant-updated.json
 
@@ -644,6 +653,9 @@ subscriptions_descriptor:
 
         - name: public.listing.new-defendant-added-for-court-proceedings
           schema_uri: http://justice.gov.uk/listing/events/public-listing-new-defendant-added-for-court-proceedings.json
+
+        - name: public.listing.offences-moved-to-next-hearing
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.offences-moved-to-next-hearing.json
 
         # Hearing start
         - name: public.hearing.adjourned

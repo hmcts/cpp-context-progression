@@ -87,8 +87,9 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId);
 
-        final Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();

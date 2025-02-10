@@ -28,6 +28,7 @@ import javax.json.JsonReader;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.Response;
@@ -37,7 +38,8 @@ import org.hamcrest.Matcher;
 
 public class RestHelper {
 
-    public static final int TIMEOUT = 60;
+    public static final int TIMEOUT_IN_SECONDS = 40;
+    public static final int INTERVAL_IN_MILLISECONDS = 300;
     public static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final int PORT = 8080;
     private static final String BASE_URI = "http://" + HOST + ":" + PORT;
@@ -60,29 +62,19 @@ public class RestHelper {
         return pollForResponse(path, mediaType, randomUUID().toString(), payloadMatchers);
     }
 
-    public static String pollForResponse(final String path, final String mediaType, final int timeOutInSeconds, final Matcher... payloadMatchers) {
-        return pollForResponse(path, mediaType, randomUUID().toString(), timeOutInSeconds, payloadMatchers);
+    public static String pollForResponse(final String path, final String mediaType, final String userId, final Status status, final Matcher... payloadMatchers) {
+        return pollForResponse(path, mediaType, userId, status().is(status), payloadMatchers);
     }
 
     public static String pollForResponse(final String path, final String mediaType, final String userId, final Matcher... payloadMatchers) {
         return pollForResponse(path, mediaType, userId, status().is(OK), payloadMatchers);
     }
 
-    public static String pollForResponse(final String path, final String mediaType, final String userId, final int timeOutInSeconds, final Matcher... payloadMatchers) {
-        return pollForResponse(path, mediaType, userId, status().is(OK), timeOutInSeconds, payloadMatchers);
-    }
-
-
     public static String pollForResponse(final String path, final String mediaType, final String userId, final ResponseStatusMatcher responseStatusMatcher, final Matcher... payloadMatchers) {
-        return pollForResponse(path, mediaType, userId, responseStatusMatcher, TIMEOUT, payloadMatchers);
-    }
-
-
-    public static String pollForResponse(final String path, final String mediaType, final String userId, final ResponseStatusMatcher responseStatusMatcher, final int timeOutInSeconds, final Matcher... payloadMatchers) {
-
         return poll(requestParams(getReadUrl(path), mediaType)
                 .withHeader(USER_ID, userId).build())
-                .timeout(timeOutInSeconds, TimeUnit.SECONDS)
+                .pollInterval(INTERVAL_IN_MILLISECONDS, TimeUnit.MILLISECONDS)
+                .timeout(TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)
                 .until(
                         responseStatusMatcher,
                         payload().isJson(allOf(payloadMatchers))
@@ -104,7 +96,7 @@ public class RestHelper {
     }
 
     public static Response postCommandWithUserId(final String uri, final String mediaType,
-                                                 final String jsonStringBody, final String userId) throws IOException {
+                                                 final String jsonStringBody, final String userId) {
         return given().spec(REQUEST_SPECIFICATION).and().contentType(mediaType).body(jsonStringBody)
                 .header(USER_ID, userId).when().post(uri).then()
                 .extract().response();

@@ -5,24 +5,16 @@ import static com.google.common.io.Resources.getResource;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsPerCase;
@@ -40,7 +32,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.justice.services.test.utils.core.http.ResponseData;
 import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.io.IOException;
@@ -52,7 +43,6 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
@@ -78,7 +68,7 @@ public class ReferBoxWorkApplicationIT {
     private String defendantId;
 
     @BeforeAll
-    public static void setUpClass() throws IOException, JSONException {
+    public static void setUpClass() throws JSONException {
         stubInitiateHearing();
         stubDocumentCreate(STRING.next());
         NotificationServiceStub.setUp();
@@ -118,8 +108,7 @@ public class ReferBoxWorkApplicationIT {
         editCourtProceedingsForCourtApplication(applicationId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing-edit.json");
         verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, "TS12345");
         verifyPublicEventForHearingExtended("2020-01-12T05:27:17.210Z", "B01LY00", "MAGISTRATES");
-        final ResponseData responseData = verifyCourtApplicationViewStoreUpdated(applicationId, "2022-02-02");
-        final String payload = responseData.getPayload();
+        final String payload = verifyCourtApplicationViewStoreUpdated(applicationId, "2022-02-02");
         final JSONObject thirdParties = new JSONObject(payload).getJSONArray("thirdParties").getJSONObject(0);
         assertThat(thirdParties.getString("name"), is("David lloyd"));
     }
@@ -141,23 +130,27 @@ public class ReferBoxWorkApplicationIT {
     }
 
     private void verifyInitiateCourtProceedingsViewStoreUpdated(final String applicationId, final String courtApplicationTypeCode) {
-        poll(requestParams(getReadUrl("/court-proceedings/application/" + applicationId),
-                "application/vnd.progression.query.court-proceedings-for-application+json").withHeader(USER_ID, randomUUID()))
-                .until(status().is(OK), payload().isJson(allOf(withJsonPath("$.courtApplication.id", is(applicationId)),
-                        withJsonPath("$.courtApplication.type.code", is(courtApplicationTypeCode)))));
+        pollForResponse("/court-proceedings/application/" + applicationId,
+                "application/vnd.progression.query.court-proceedings-for-application+json",
+                randomUUID().toString(),
+                withJsonPath("$.courtApplication.id", is(applicationId)),
+                withJsonPath("$.courtApplication.type.code", is(courtApplicationTypeCode))
+        );
 
     }
 
-    private ResponseData verifyCourtApplicationViewStoreUpdated(final String applicationId, final String applicationReceivedDate) {
-        return poll(requestParams(getReadUrl("/applications/" + applicationId),
-                "application/vnd.progression.query.application.aaag+json").withHeader(USER_ID, randomUUID()))
-                .until(status().is(OK), payload().isJson(allOf(withJsonPath("$.applicationId", is(applicationId)),
-                        withJsonPath("$.applicationDetails.applicationReceivedDate", is(applicationReceivedDate)))));
+    private String verifyCourtApplicationViewStoreUpdated(final String applicationId, final String applicationReceivedDate) {
+        return pollForResponse("/applications/" + applicationId,
+                "application/vnd.progression.query.application.aaag+json",
+                randomUUID().toString(),
+                withJsonPath("$.applicationId", is(applicationId)),
+                withJsonPath("$.applicationDetails.applicationReceivedDate", is(applicationReceivedDate))
+        );
 
     }
 
-    public Response editCourtProceedingsForCourtApplication(final String applicationId, final String boxHearingId, final String fileName) throws IOException {
-        return postCommand(getWriteUrl("/initiate-application"),
+    private void editCourtProceedingsForCourtApplication(final String applicationId, final String boxHearingId, final String fileName) throws IOException {
+        postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.edit-court-proceedings-for-application+json",
                 getCourtApplicationJson(applicationId, boxHearingId, fileName));
     }

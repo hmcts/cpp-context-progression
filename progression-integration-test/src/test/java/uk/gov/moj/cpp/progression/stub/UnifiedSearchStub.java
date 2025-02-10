@@ -11,16 +11,11 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_OK;
-import static uk.gov.moj.cpp.progression.util.WiremockTestHelper.waitForStubToBeReady;
-
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 
 
 public class UnifiedSearchStub {
 
     private static final String SEARCH_QUERY = "/unifiedsearchquery-service/query/api/rest/unifiedsearchquery/defendant-cases";
-    private static final String SEARCH_QUERY_TYPE = "application/vnd.unifiedsearch.query.defendant.cases+json";
-    private static final String SERVICE_NAME = "unifiedsearchquery-service";
 
     public static void removeStub() {
         listAllStubMappings()
@@ -29,8 +24,6 @@ public class UnifiedSearchStub {
     }
 
     public static void stubUnifiedSearchQueryExactMatchWithEmptyResults() {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("EXACT_IS_EMPTY_PARTIAL_HAS_RECORD")
                 .whenScenarioStateIs(STARTED)
@@ -47,15 +40,10 @@ public class UnifiedSearchStub {
                         .withBody(getUnifiedSearchEmptyResult())
                 )
         .willSetStateTo("PARTIAL"));
-
-        waitForStubToBeReady(SEARCH_QUERY +
-                "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=25&startFrom=0&pncId=12345&lastName=TIM", SEARCH_QUERY_TYPE);
     }
 
     public static void stubUnifiedSearchQueryExactMatchWithResults(final String caseId_1, final String caseId_2, final String defendantId_1, final String defendantId_2,
                                                                    final String pncId, final String croNumber) {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("EXACT_IS_NOT_EMPTY")
                 .withQueryParam("proceedingsConcluded", matching("false"))
@@ -70,14 +58,10 @@ public class UnifiedSearchStub {
                         .withBody(getUnifiedSearchResult(caseId_1, caseId_2, defendantId_1, defendantId_2, pncId, croNumber))
                 ));
 
-        waitForStubToBeReady(SEARCH_QUERY +
-                "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=25&startFrom=0&pncId=TIM", SEARCH_QUERY_TYPE);
     }
 
     public static void stubUnifiedSearchQueryPartialMatch(final String caseId_1, final String caseId_2, final String defendantId_1, final String defendantId_2,
                                                           final String pncId, final String croNumber) {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("EXACT_IS_EMPTY_PARTIAL_HAS_RECORD")
                 .whenScenarioStateIs("PARTIAL")
@@ -91,15 +75,9 @@ public class UnifiedSearchStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(getUnifiedSearchResult(caseId_1, caseId_2, defendantId_1, defendantId_2, pncId, croNumber))
                 ).willSetStateTo(STARTED));
-
-        waitForStubToBeReady(SEARCH_QUERY +
-                        "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=25&startFrom=0&pncId=1234",
-                SEARCH_QUERY_TYPE);
     }
 
     public static void stubUnifiedSearchQueryPartialMatchWithEmptyResults() {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("EXACT_IS_EMPTY_PARTIAL_IS_EMPTY")
                 .whenScenarioStateIs("PARTIAL")
@@ -113,16 +91,15 @@ public class UnifiedSearchStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(getUnifiedSearchEmptyResult())
                 ).willSetStateTo(STARTED));
-
-        waitForStubToBeReady(SEARCH_QUERY +
-                        "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=25&startFrom=0&pncId=1234",
-                SEARCH_QUERY_TYPE);
     }
+
     private static String getUnifiedSearchEmptyResult() {
-        return "{\n" +
-                "  \"totalResults\": 0,\n" +
-                "  \"cases\": []\n" +
-                "  }\n";
+        return """
+                {
+                  "totalResults": 0,
+                  "cases": []
+                  }
+                """;
     }
 
     private static String getUnifiedSearchResult(final String caseId_1, final String caseId_2, final String defendantId_1, final String defendantId_2,
@@ -183,8 +160,6 @@ public class UnifiedSearchStub {
     }
 
     public static void stubUnifiedSearchQueryExactMatchForSPISpec(final String caseId_1, final String defendantId_1) {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("EXACT_MATCH")
                 .withQueryParam("proceedingsConcluded", matching("false"))
@@ -198,9 +173,6 @@ public class UnifiedSearchStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(getUnifiedSearchResultForSPISpec(caseId_1, defendantId_1))
                 ));
-
-        waitForStubToBeReady(SEARCH_QUERY +
-                "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=2&startFrom=0&pncId=20160000233W&lastName=Louis", SEARCH_QUERY_TYPE);
     }
 
     private static String getUnifiedSearchResultForSPISpec(final String caseId_1, final String defendantId_1) {
@@ -237,8 +209,6 @@ public class UnifiedSearchStub {
     }
 
     public static void stubUnifiedSearchQueryExactMatchForCJSSpec(final String caseId_1, final String defendantId_1) {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("EXACT_MATCH")
                 .withQueryParam("proceedingsConcluded", matching("false"))
@@ -252,9 +222,6 @@ public class UnifiedSearchStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(getUnifiedSearchResultForCJSSpec(caseId_1,defendantId_1))
                 ));
-
-        waitForStubToBeReady(SEARCH_QUERY +
-                "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=2&startFrom=0&pncId=2016%2F0000233W&lastName=Louis", SEARCH_QUERY_TYPE);
     }
 
     private static String getUnifiedSearchResultForCJSSpec(final String caseId_1, final String defendantId_1) {
@@ -291,8 +258,6 @@ public class UnifiedSearchStub {
     }
 
     public static void stubUnifiedSearchQueryPartialMatchForSPISpec(final String caseId_1, final String defendantId_1) {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("PARTIAL_MATCH")
                 .withQueryParam("proceedingsConcluded", matching("false"))
@@ -306,9 +271,6 @@ public class UnifiedSearchStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(getUnifiedSearchPartialResultForSPISpec(caseId_1, defendantId_1))
                 ));
-
-        waitForStubToBeReady(SEARCH_QUERY +
-                "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=2&startFrom=0&pncId=20160000234W", SEARCH_QUERY_TYPE);
     }
 
     private static String getUnifiedSearchPartialResultForSPISpec(final String caseId_1, final String defendantId_1) {
@@ -345,8 +307,6 @@ public class UnifiedSearchStub {
     }
 
     public static void stubUnifiedSearchQueryPartialMatchForCJSSpec(final String caseId_1, final String defendantId_1) {
-        InternalEndpointMockUtils.stubPingFor(SERVICE_NAME);
-
         stubFor(get(urlPathMatching(SEARCH_QUERY))
                 .inScenario("PARTIAL_MATCH")
                 .withQueryParam("proceedingsConcluded", matching("false"))
@@ -360,9 +320,6 @@ public class UnifiedSearchStub {
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody(getUnifiedSearchPartialResultForCJSSpec(caseId_1, defendantId_1))
                 ));
-
-        waitForStubToBeReady(SEARCH_QUERY +
-                "?proceedingsConcluded=false&crownOrMagistrates=true&pageSize=2&startFrom=0&pncId=2016%2F0000234W", SEARCH_QUERY_TYPE);
     }
 
     private static String getUnifiedSearchPartialResultForCJSSpec(final String caseId_1, final String defendantId_1) {

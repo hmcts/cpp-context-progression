@@ -477,10 +477,16 @@ public class ProgressionServiceTest {
         final List<Hearing> hearings = Arrays.asList(Hearing.hearing().withProsecutionCases(asList(ProsecutionCase.prosecutionCase().withId(randomUUID()).build())).withId(randomUUID()).build());
         final JsonEnvelope envelope = getEnvelope(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND);
         progressionService.sendUpdateDefendantListingStatusForUnscheduledListing(envelope, hearings, new HashSet<>());
-        verify(sender).send(envelopeCaptor.capture());
-        assertThat(envelopeCaptor.getValue().metadata().name(), is(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND));
-        JsonObject jsonObject = envelopeCaptor.getValue().payload();
+        verify(sender, times(2)).send(envelopeCaptor.capture());
+        assertThat(envelopeCaptor.getAllValues().get(0).metadata().name(), is(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND));
+        JsonObject jsonObject = (JsonObject) envelopeCaptor.getAllValues().get(0).payload();
         assertThat(jsonObject.getJsonObject("hearing").getString("id"), is(hearings.get(0).getId().toString()));
+
+        assertThat(envelopeCaptor.getAllValues().get(1).metadata().name(), is("progression.command-link-prosecution-cases-to-hearing"));
+        jsonObject = (JsonObject) envelopeCaptor.getAllValues().get(1).payload();
+        assertThat(jsonObject.getString("hearingId"), is(hearings.get(0).getId().toString()));
+        assertThat(jsonObject.getString("caseId"), is(hearings.get(0).getProsecutionCases().get(0).getId().toString()));
+
     }
 
     @Test

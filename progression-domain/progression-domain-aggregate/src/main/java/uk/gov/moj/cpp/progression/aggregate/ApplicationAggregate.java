@@ -70,11 +70,11 @@ import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.FutureSummonsHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
-import uk.gov.justice.core.courts.HearingExtended;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -106,6 +106,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +148,7 @@ public class ApplicationAggregate implements Aggregate {
                 when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
                 when(HearingResultedApplicationUpdated.class).apply(e -> {
                     setCourtApplication(e.getCourtApplication());
-                    this.applicationStatus = FINALISED;
+                    this.applicationStatus = e.getCourtApplication().getApplicationStatus();
                 }),
                 when(ApplicationEjected.class).apply(
                         e ->
@@ -164,15 +165,6 @@ public class ApplicationAggregate implements Aggregate {
         return apply(Stream.of(
                 ApplicationReferredToCourt.applicationReferredToCourt()
                         .withHearingRequest(hearingListingNeeds)
-                        .build()));
-    }
-
-    public Stream<Object> extendHearing(final HearingListingNeeds hearingListingNeeds) {
-        LOGGER.debug("hearing has been extended");
-        return apply(Stream.of(
-                HearingExtended.hearingExtended()
-                        .withHearingRequest(hearingListingNeeds)
-                        .withIsAdjourned(Boolean.FALSE)
                         .build()));
     }
 
@@ -313,7 +305,13 @@ public class ApplicationAggregate implements Aggregate {
         LOGGER.debug("Hearing Application link been created");
         return apply(Stream.of(
                 HearingApplicationLinkCreated.hearingApplicationLinkCreated()
-                        .withHearing(hearing)
+                        .withHearing(Hearing.hearing().withValuesFrom(hearing)
+                                .withCourtApplications(ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
+                                        .map(c -> applicationId.equals(c.getId())
+                                                ? CourtApplication.courtApplication().withValuesFrom(c).withApplicationStatus(applicationStatus).build()
+                                                : c)
+                                        .collect(Collectors.toList()))
+                                .build())
                         .withApplicationId(applicationId)
                         .withHearingListingStatus(hearingListingStatus)
                         .build()));
@@ -586,7 +584,28 @@ public class ApplicationAggregate implements Aggregate {
     }
 
     public Stream<Object> hearingResulted(CourtApplication courtApplication) {
-        return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(courtApplication().withValuesFrom(courtApplication).withApplicationStatus(FINALISED).build()).build()));
+        if (FINALISED.equals(courtApplication.getApplicationStatus()) && CollectionUtils.isEmpty(courtApplication.getJudicialResults())) {
+            return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(
+                            courtApplication()
+                                    .withValuesFrom(courtApplication)
+                                    .withJudicialResults(this.courtApplication.getJudicialResults())
+                                    .withApplicationStatus(getApplicationStatusAfterHearingResulted(courtApplication))
+                                    .build())
+                    .build()));
+        }
+
+        return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(
+                        courtApplication()
+                                .withValuesFrom(courtApplication)
+                                .withApplicationStatus(getApplicationStatusAfterHearingResulted(courtApplication))
+                                .build())
+                .build()));
+    }
+
+    private ApplicationStatus getApplicationStatusAfterHearingResulted(final CourtApplication courtApplication) {
+        return ofNullable(courtApplication.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
+                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory()))
+                ? FINALISED : this.applicationStatus;
     }
 
     public Stream<Object> deleteHearingRelatedToCourtApplication(final UUID hearingId, final UUID courtApplicationId) {

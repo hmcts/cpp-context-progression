@@ -81,7 +81,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
                 .replace("%ORGANISATION_ID%", organisationId.toString());
 
         stubUserGroupOrganisation(userId.toString(), organisation);
-        stubUserGroupDefenceClientPermission(defendantId, permission);
+        stubUserGroupDefenceClientPermission(permission);
 
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());
@@ -112,7 +112,7 @@ public class ReadCourtDocumentIT extends AbstractIT {
                 .replace("%ORGANISATION_ID%", permittedOrganisationId.toString());
 
         stubUserGroupOrganisation(userId.toString(), organisation);
-        stubUserGroupDefenceClientPermission(defendantId, permission);
+        stubUserGroupDefenceClientPermission(permission);
 
         // given
         addProsecutionCaseToCrownCourt(caseId, defendantId, materialId.toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString());

@@ -15,8 +15,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonP
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
 
-import java.util.UUID;
-
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;

@@ -7,23 +7,16 @@ import static java.lang.String.format;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
@@ -31,6 +24,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initia
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
@@ -46,7 +40,6 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.helper.CpsServeMaterialHelper;
 import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
@@ -110,7 +103,7 @@ public class PetFormIT extends AbstractIT {
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         setupLoggedInUsersPermissionQueryStub();
         setupMaterialStructuredPetQuery(petId.toString());
         stubDocumentCreate(DOCUMENT_TEXT);
@@ -371,7 +364,7 @@ public class PetFormIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAutomaticallySendToCpsOnFinaliseWhenProsecutorSsCps() throws IOException, JSONException  {
+    public void shouldAutomaticallySendToCpsOnFinaliseWhenProsecutorSsCps() throws IOException, JSONException {
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final UUID caseId = randomUUID();
@@ -449,7 +442,7 @@ public class PetFormIT extends AbstractIT {
     }
 
     @Test
-    public void shouldReleasePetForm() throws IOException, JSONException  {
+    public void shouldReleasePetForm() throws IOException, JSONException {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID formId = randomUUID();
@@ -576,7 +569,6 @@ public class PetFormIT extends AbstractIT {
     }
 
 
-
     private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final JsonObject event) {
         assertThat(event, Matchers.notNullValue());
         assertThat(caseId.toString(), Matchers.is(event.getString("caseId")));
@@ -611,17 +603,13 @@ public class PetFormIT extends AbstractIT {
     }
 
     public void queryAndVerifyPetCaseDetail(final UUID caseId, final UUID petId, final UUID defendantId, final boolean isYouth) {
-        poll(requestParams(AbstractTestHelper.getReadUrl(format("/prosecutioncases/%s/pet", caseId)),
-                "application/vnd.progression.query.pets-for-case+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(60, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.pets[0].defendants[0].caseId", Matchers.is(caseId.toString())),
-                                        withJsonPath("$.pets[0].defendants[0].defendantId", is(defendantId.toString())),
-                                        withJsonPath("$.pets[0].petId", is(petId.toString())),
-                                        withJsonPath("$.pets[0].isYouth", is(isYouth))
-                                )));
+        pollForResponse(format("/prosecutioncases/%s/pet", caseId),
+                "application/vnd.progression.query.pets-for-case+json",
+                randomUUID().toString(),
+                withJsonPath("$.pets[0].defendants[0].caseId", Matchers.is(caseId.toString())),
+                withJsonPath("$.pets[0].defendants[0].defendantId", is(defendantId.toString())),
+                withJsonPath("$.pets[0].petId", is(petId.toString())),
+                withJsonPath("$.pets[0].isYouth", is(isYouth))
+        );
     }
 }

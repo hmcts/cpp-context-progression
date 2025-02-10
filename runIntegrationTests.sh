@@ -4,9 +4,9 @@
 
 CONTEXT_NAME=progression
 
-FRAMEWORK_LIBRARIES_VERSION=17.100.1
-FRAMEWORK_VERSION=17.100.4
-EVENT_STORE_VERSION=17.100.8
+FRAMEWORK_LIBRARIES_VERSION=17.101.2
+FRAMEWORK_VERSION=17.101.6
+EVENT_STORE_VERSION=17.101.5
 
 DOCKER_CONTAINER_REGISTRY_HOST_NAME=crmdvrepo01
 
@@ -26,6 +26,7 @@ function runLiquibase {
   runEventLogLiquibase
   runEventLogAggregateSnapshotLiquibase
   runEventBufferLiquibase
+  runEventProcessorStoreLiquibase
   runViewStoreLiquibase
   runJobStoreLiquibase
   runSystemLiquibase

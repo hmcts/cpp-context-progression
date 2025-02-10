@@ -5,12 +5,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
-import javax.json.JsonValue;
 
 public class ProsecutionCaseDefendantListingStatusChangedEventHelper {
 
@@ -52,8 +50,8 @@ public class ProsecutionCaseDefendantListingStatusChangedEventHelper {
 
     public static void assertJudiciaryTypes(JsonArray judiciaryTypesArrayOutput, JsonArray judiciaryTypesArrayInput) {
 
-        final List<String> judiciaryTypesOutput = judiciaryTypesArrayOutput.stream().map(JsonValue.class::cast).map(JsonString.class::cast)
-                .map(JsonString::getString).collect(Collectors.toList());
+        final List<String> judiciaryTypesOutput = judiciaryTypesArrayOutput.stream().map(jsonValue -> jsonValue).map(JsonString.class::cast)
+                .map(JsonString::getString).toList();
 
         assertThat(judiciaryTypesOutput.size(), is(2));
 

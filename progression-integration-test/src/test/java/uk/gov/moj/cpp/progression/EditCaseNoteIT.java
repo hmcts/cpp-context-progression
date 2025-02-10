@@ -3,23 +3,15 @@ package uk.gov.moj.cpp.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -68,18 +60,14 @@ public class EditCaseNoteIT extends AbstractIT {
     }
 
     private String verifyCaseNotesAndGetCaseNoteId(final String caseId, final boolean isPinned) {
-        String payload = poll(requestParams(getReadUrl(format("/cases/%s/notes", caseId)),
-                "application/vnd.progression.query.case-notes+json")
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.caseNotes[0].author.firstName", equalTo("testy")),
-                                withJsonPath("$.caseNotes[0].author.lastName", equalTo("testx")),
-                                withJsonPath("$.caseNotes[0].note", equalTo("test note")),
-                                withJsonPath("$.caseNotes[0].isPinned", equalTo(isPinned))
-                        ))).getPayload();
+        String payload = pollForResponse(format("/cases/%s/notes", caseId),
+                "application/vnd.progression.query.case-notes+json",
+                randomUUID().toString(),
+                withJsonPath("$.caseNotes[0].author.firstName", equalTo("testy")),
+                withJsonPath("$.caseNotes[0].author.lastName", equalTo("testx")),
+                withJsonPath("$.caseNotes[0].note", equalTo("test note")),
+                withJsonPath("$.caseNotes[0].isPinned", equalTo(isPinned))
+        );
 
         JsonObject json = stringToJsonObjectConverter.convert(payload);
         return json.getJsonArray("caseNotes").getJsonObject(0).getString("id");
@@ -101,7 +89,6 @@ public class EditCaseNoteIT extends AbstractIT {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCaseNoteEdited);
         assertTrue(message.isPresent());
     }
-
 
 
 }

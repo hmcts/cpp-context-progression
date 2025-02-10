@@ -12,7 +12,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
 import uk.gov.justice.services.common.http.HeaderConstants;
 
 import java.util.UUID;
@@ -29,7 +28,6 @@ public class StubUtil {
     private static final String MATERIAL_QUERY_URL = "/material-service/query/api/rest/material";
 
     public static void setupUsersGroupQueryStub() {
-        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/.*"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -39,7 +37,6 @@ public class StubUtil {
     }
 
     public static void setupHmctsUsersGroupQueryStub(final String payload) {
-        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -49,7 +46,6 @@ public class StubUtil {
     }
 
     public static void setupLoggedInUsersPermissionQueryStub() {
-        InternalEndpointMockUtils.stubPingFor("usersgroups-service");
         stubFor(get(urlPathEqualTo("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -60,7 +56,6 @@ public class StubUtil {
 
 
     public static void setupListingQueryStub() {
-        InternalEndpointMockUtils.stubPingFor("listing-service");
         stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -70,7 +65,6 @@ public class StubUtil {
     }
 
     public static void setupForUshersMagistrateListQueryStub() {
-        InternalEndpointMockUtils.stubPingFor("listing-service");
         stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -80,7 +74,6 @@ public class StubUtil {
     }
 
     public static void setupForUshersCrownListQueryStub() {
-        InternalEndpointMockUtils.stubPingFor("listing-service");
         stubFor(get(urlPathEqualTo("/listing-service/query/api/rest/listing/courtlistpayload"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -90,7 +83,6 @@ public class StubUtil {
     }
 
     public static void setupStagingPubHubCommandStub() {
-        InternalEndpointMockUtils.stubPingFor("stagingpubhub-service");
         stubFor(post(urlPathEqualTo("/stagingpubhub-service/command/api/rest/stagingpubhub/pubhub"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_ACCEPTED)
                         .withHeader("CPPID", randomUUID().toString())
@@ -99,7 +91,6 @@ public class StubUtil {
     }
 
     public static void setupReferenceDataQueryCourtCenterDataByCourtNameStub() {
-        InternalEndpointMockUtils.stubPingFor("referencedata-service");
         stubFor(get(urlPathEqualTo("/referencedata-service/query/api/rest/referencedata/courtrooms"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -109,7 +100,6 @@ public class StubUtil {
     }
 
     public static void setupMaterialStub(String materialId) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
         stubFor(get(urlMatching("/material-service/query/api/rest/material/material/" + materialId + "/metadata"))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -118,8 +108,6 @@ public class StubUtil {
     }
 
     public static void stubMaterialContent(final UUID materialId, final String materialContent, final String mimeType) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
-
         stubFor(get(urlPathEqualTo(MATERIAL_QUERY_URL + "/material/" + materialId))
                 .withQueryParam("stream", equalTo("true"))
                 .withQueryParam("requestPdf", equalTo("false"))
@@ -130,7 +118,6 @@ public class StubUtil {
     }
 
     public static void setupMaterialStructuredPetQuery(final String structuredFormId) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
         stubFor(get(urlMatching(MATERIAL_QUERY_URL + "/structured-form/" + structuredFormId))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())
@@ -139,7 +126,6 @@ public class StubUtil {
     }
 
     public static void setupMaterialStructuredPetQueryForCotr(final String structuredFormId) {
-        InternalEndpointMockUtils.stubPingFor("material-service");
         stubFor(get(urlMatching(MATERIAL_QUERY_URL + "/structured-form/" + structuredFormId))
                 .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
                         .withHeader("CPPID", randomUUID().toString())

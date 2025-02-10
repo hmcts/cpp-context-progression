@@ -21,8 +21,8 @@ import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationTy
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;

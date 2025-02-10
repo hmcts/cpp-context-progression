@@ -18,7 +18,7 @@ import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.referencedata.json.schemas.DocumentTypeAccess;
 
 import java.util.UUID;
-
+import org.slf4j.Logger;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -38,6 +38,9 @@ public class DocumentTypeAccessProviderTest {
 
     @Mock
     private DocumentTypeAccessConverter documentTypeAccessConverter;
+
+    @Mock
+    private Logger logger;
 
     @InjectMocks
     private DocumentTypeAccessProvider documentTypeAccessProvider;

@@ -16,13 +16,10 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_SELECTOR_PRISON_COURT_REGISTER_DOCUMENT_REQUEST_FAILED;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -37,13 +34,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+
 import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import io.restassured.path.json.JsonPath;
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 
 public class PrisonCourtRegisterDocumentRequestHelper extends AbstractTestHelper {
@@ -187,26 +182,18 @@ public class PrisonCourtRegisterDocumentRequestHelper extends AbstractTestHelper
     }
 
     private String getPrisonCourtRegisterDocumentRequests(final String requestStatus, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl(StringUtils.join("/prison-court-register/request/", requestStatus)),
-                "application/vnd.progression.query.prison-court-register-document-by-court-centre+json")
-                .withHeader(HeaderConstants.USER_ID, USER_ID))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(
-                        status().is(Response.Status.OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        return pollForResponse("/prison-court-register/request/" + requestStatus,
+                "application/vnd.progression.query.prison-court-register-document-by-court-centre+json",
+                USER_ID.toString(),
+                matchers
+        );
     }
 
     private String getPrisonCourtRegisterDocumentRequests(final UUID courtCentreId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl(StringUtils.join("/prison-court-register/request/", courtCentreId)),
-                "application/vnd.progression.query.prison-court-register-document-by-court-centre+json")
-                .withHeader(HeaderConstants.USER_ID, USER_ID))
-                .timeout(60, TimeUnit.SECONDS)
-                .until(
-                        status().is(javax.ws.rs.core.Response.Status.OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        return pollForResponse("/prison-court-register/request/" + courtCentreId,
+                "application/vnd.progression.query.prison-court-register-document-by-court-centre+json",
+                USER_ID.toString(),
+                matchers
+        );
     }
 }

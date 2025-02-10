@@ -6572,20 +6572,6 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void shouldExtendHearing() {
-        caseAggregate.createProsecutionCase(prosecutionCase).collect(toList());
-        caseAggregate.linkProsecutionCaseToHearing(randomUUID(), prosecutionCase.getId()).collect(toList());
-
-        final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds().build();
-        final ExtendHearing extendHearing = ExtendHearing.extendHearing().build();
-
-        final Stream<Object> eventStream = caseAggregate.extendHearing(hearingListingNeeds, extendHearing);
-
-        final List events = eventStream.collect(toList());
-        assertThat(events.get(0), instanceOf(HearingExtended.class));
-    }
-
-    @Test
     public void shouldCreateOnlinePleaPcqVisited() {
         final PleadOnlinePcqVisited pleadOnlinePcqVisited = PleadOnlinePcqVisited.pleadOnlinePcqVisited().build();
 

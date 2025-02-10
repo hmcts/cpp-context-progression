@@ -175,7 +175,8 @@ public class ApplicationAtAGlanceHelper {
 
             final UUID subjectMasterDefendantId = courtApplication.getSubject().getMasterDefendant().getMasterDefendantId();
 
-            for(final CourtApplicationCase courtApplicationCase : courtApplication.getCourtApplicationCases()){
+            if (courtApplication.getCourtApplicationCases() != null) {
+            for(final CourtApplicationCase courtApplicationCase : courtApplication.getCourtApplicationCases()) {
                 final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(courtApplicationCase.getProsecutionCaseId());
                 final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
                 final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
@@ -185,7 +186,7 @@ public class ApplicationAtAGlanceHelper {
                         .map(Defendant::getId)
                         .findFirst();
 
-                if(optionalMatchingDefendantId.isPresent()){
+                if (optionalMatchingDefendantId.isPresent()) {
                     final JsonObject associatedCaseDefendants = organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(envelope,
                             courtApplicationCase.getProsecutionCaseId().toString());
                     final JsonArray associatedDefendants = associatedCaseDefendants.getJsonArray(DEFENDANTS);
@@ -198,6 +199,7 @@ public class ApplicationAtAGlanceHelper {
                         break;
                     }
                 }
+            }
             }
         }
     }

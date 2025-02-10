@@ -48,9 +48,5 @@ public interface DMConstants {
     String PROMPT_1 = "3b81321f-c98b-473a-a3c0-ff5b55654138";
 
     String ID = "id";
-    String PROSECUTION_CASE_URL = "/progression-service/query/api/rest/progression/prosecutioncases/.*";
-    String PROSECUTION_CASE_URL_WITH_CASE_ID = "/progression-/query/api/rest/progression/prosecutioncases/{0}";
-    String PROSECUTION_PET_FORM_URL = "/progression-service/query/api/rest/progression/pet/{0}?.*";
-    String PROSECUTION_PTPH_FORM_URL = "/progression-service/query/api/rest/progression/prosecutioncases/{0}/form/{1}?.*";
 
 }

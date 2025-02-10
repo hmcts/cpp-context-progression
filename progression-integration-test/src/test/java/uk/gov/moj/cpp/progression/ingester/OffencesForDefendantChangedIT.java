@@ -24,7 +24,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Random;
 
@@ -57,7 +56,7 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     private String caseUrn;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         caseUrn = generateUrn();
@@ -138,7 +137,7 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
 
     }
 
-    private DocumentContext getInitialOffenceDetails(final String caseUrn, final String initialoffenceId1, final String initialoffenceId2, final String initialToBeUpdatedOffenceId3, final String initialToBeDeletedOffenceId4) throws IOException {
+    private DocumentContext getInitialOffenceDetails(final String caseUrn, final String initialoffenceId1, final String initialoffenceId2, final String initialToBeUpdatedOffenceId3, final String initialToBeDeletedOffenceId4) {
         final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION, initialoffenceId1, initialoffenceId2, initialToBeUpdatedOffenceId3, initialToBeDeletedOffenceId4);
 

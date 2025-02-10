@@ -14,6 +14,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -33,24 +34,29 @@ import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MOD
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
-
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingOffencesUpdated;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdated;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.notification.EmailChannel;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
@@ -514,6 +520,83 @@ public class HearingUpdatedEventProcessorTest {
     }
 
     @Test
+    public void shouldHandleHearingUpdatedForApplication_NotificationSendTrue() {
+
+        setField(this.eventProcessor, "jsonObjectToObjectConverter", new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper()));
+        setField(this.eventProcessor, "objectToJsonObjectConverter", new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper()));
+
+        final UUID offenceId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        final JsonObject payload = FileUtil.jsonFromString(FileUtil.getPayload("public.listing.hearing-updated-inactive-case-application.json")
+                .replaceAll("%APPLICATION_ID%", applicationId.toString())
+                .replaceAll("%HEARING_ID%", hearingId.toString())
+                .replaceAll("%HEARING_TYPE%", "Plea"));
+
+        JsonEnvelope jsonEnvelope = envelopeFrom(metadataBuilder()
+                        .withName("public.listing.hearing-updated")
+                        .withId(randomUUID())
+                        .build(),
+                payload);
+
+        JsonObject prosecutionCaseJson = createProsecutionCaseJson(offenceId, defendantId, caseId);
+        JsonObject prosecutionCaseJson2 = createObjectBuilder()
+                .add("prosecutionCase", prosecutionCaseJson).build();
+
+        final Hearing hearingInProgression = Hearing.hearing()
+                .withId(hearingId)
+                .withCourtApplications(singletonList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withCourtApplicationCases(singletonList(CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(caseId)
+                                .withCaseStatus("INACTIVE")
+                                .withOffences(singletonList(Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build()))
+                        .build()))
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(caseId)
+                        .build()))
+                .build();
+
+
+        final Optional<JsonObject> hearingJson = of(createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearingInProgression))
+                .add("hearingListingStatus", "SENT_FOR_LISTING")
+                .build());
+
+        when(progressionService.getProsecutionCaseById(any(), any())).thenReturn(prosecutionCaseJson2);
+        when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(("e4648583-eb0f-438e-aab5-5eff29f3f7b4"));
+        when(progressionService.updateHearingForHearingUpdated(any(), any(), any())).thenReturn(
+                Hearing.hearing()
+                        .withId(hearingId)
+                        .withHearingDays(singletonList(HearingDay.hearingDay().withSittingDay(new UtcClock().now()).build()))
+                        .withType(HearingType.hearingType().withId(randomUUID()).withDescription("First hearing").build())
+                        .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase().withId(caseId)
+                                .withDefendants(singletonList(Defendant.defendant().withId(defendantId)
+                                        .withOffences(singletonList(Offence.offence().withId(offenceId)
+                                                .build())).build())).build()))
+                        .withCourtApplications(hearingInProgression.getCourtApplications())
+                        .build());
+
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJson);
+
+        eventProcessor.processHearingUpdated(jsonEnvelope);
+
+        verify(hearingNotificationHelper, times(1)).sendHearingNotificationsToRelevantParties(any(), hearingInputDataEnvelopeCaptor.capture());
+        HearingNotificationInputData inputData = hearingInputDataEnvelopeCaptor.getValue();
+        assertThat(inputData.getHearingId(), is(hearingId));
+        assertThat(inputData.getHearingType(), is("Plea"));
+        assertTrue(inputData.getCaseIds().contains(caseId));
+        assertTrue(inputData.getDefendantIds().contains(defendantId));
+        assertTrue(inputData.getDefendantOffenceListMap().get(defendantId).contains(offenceId));
+    }
+
+    @Test
     public void shouldNotSendHearingNotificationsToDefenceAndProsecutor_NotificationFlagFalse() {
         final UUID hearingId = UUID.randomUUID();
         final UUID caseId = randomUUID();
@@ -552,6 +635,19 @@ public class HearingUpdatedEventProcessorTest {
         verify(hearingNotificationHelper, times(0)).sendHearingNotificationsToRelevantParties(any(), any());
     }
 
+    private JsonObject createProsecutionCaseJson(final UUID offenceId, final UUID defendantId, final UUID caseId) {
+        return createObjectBuilder()
+                .add("id", caseId.toString())
+                .add("defendants", Json.createArrayBuilder().add(createObjectBuilder()
+                                .add("id", defendantId.toString())
+                                .add("offences", Json.createArrayBuilder().add(createObjectBuilder()
+                                                .add("id", offenceId.toString())
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+    }
 
     private JsonEnvelope getJsonEnvelopeForHearingUpdatedProcessed(final HearingUpdatedProcessed hearingUpdatedProcessed) {
         return JsonEnvelope.envelopeFrom(

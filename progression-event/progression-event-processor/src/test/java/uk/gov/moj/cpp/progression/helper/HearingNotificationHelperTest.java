@@ -36,6 +36,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
@@ -129,6 +130,8 @@ public class HearingNotificationHelperTest {
     @Mock
     private ReferenceDataOffenceService referenceDataOffenceService;
 
+    @Mock
+    private NotificationInfoJdbcRepository notificationInfoRepository;
 
     @Captor
     private ArgumentCaptor<List<EmailChannel>> prosecutorEmailCapture;
@@ -224,6 +227,7 @@ public class HearingNotificationHelperTest {
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
         verify(notificationService, times(2)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
 
     }
 
