@@ -67,26 +67,26 @@
             "offences": [
               {
                 "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
-                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
-                "offenceCode": "a",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "offenceCode": "TTH105HY",
                 "offenceTitle": "a",
                 "offenceTitleWelsh": "a",
                 "offenceLegislation": "a",
                 "offenceLegislationWelsh": "a",
                 "modeOfTrial": "a",
-                "wording": "a",
-                "wordingWelsh": "a",
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh",
                 "startDate": "2018-01-01",
                 "endDate": "2018-01-01",
                 "arrestDate": "2018-01-01",
                 "chargeDate": "2018-01-01",
                 "dateOfInformation": "2018-01-01",
-                "orderIndex": 0,
+                "orderIndex": 1,
                 "count": 0,
                 "convictionDate": "2018-01-01",
                 "notifiedPlea": {
-                  "offenceId": "00000000-0000-0000-0000-000000000000",
-                  "notifiedPleaDate": "2018-01-01",
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "notifiedPleaDate": "2018-04-01",
                   "notifiedPleaValue": "NOTIFIED_GUILTY"
                 },
                 "custodyTimeLimit": {
@@ -145,8 +145,9 @@
                   }
                 },
                 "offenceFacts": {
-                  "vehicleRegistration": "a",
-                  "alcoholReadingAmount": 123
+                  "vehicleRegistration": "AA12345",
+                  "alcoholReadingAmount": 111,
+                  "alcoholReadingMethodCode" : "2222"
                 },
                 "judicialResults": [
                   {
@@ -217,38 +218,38 @@
                 "person": {
                   "title": "DR",
                   "firstName": "a",
-                  "middleName": "a",
-                  "lastName": "a",
-                  "dateOfBirth": "2018-01-01",
-                  "nationalityId": "00000000-0000-0000-0000-000000000000",
+                  "middleName": "Jack",
+                  "lastName": "Kane",
+                  "dateOfBirth": "1995-01-01",
+                  "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                   "nationalityCode": "a",
                   "nationalityDescription": "a",
-                  "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                  "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
                   "additionalNationalityCode": "a",
                   "additionalNationalityDescription": "a",
                   "disabilityStatus": "a",
                   "gender": "MALE",
-                  "interpreterLanguageNeeds": "a",
-                  "documentationLanguageNeeds": "ENGLISH",
-                  "nationalInsuranceNumber": "NH182858B",
-                  "occupation": "a",
-                  "occupationCode": "a",
+                  "interpreterLanguageNeeds": "Hindi",
+                  "documentationLanguageNeeds": "WELSH",
+                  "nationalInsuranceNumber": "NH222222B",
+                  "occupation": "Footballer",
+                  "occupationCode": "F",
                   "specificRequirements": "a",
                   "address": {
-                    "address1": "a",
-                    "address2": "a",
-                    "address3": "a",
-                    "address4": "a",
-                    "address5": "a",
-                    "postcode": "GIR0AA"
+                    "address1": "22",
+                    "address2": "Acacia Avenue",
+                    "address3": "Acacia Town",
+                    "address4": "Acacia City",
+                    "address5": "Acacia Country",
+                    "postcode": "CR7 0AA"
                   },
                   "contact": {
-                    "home": " ",
-                    "work": "a",
-                    "mobile": " ",
-                    "primaryEmail": "!.!@00.00",
-                    "secondaryEmail": "!.!@00.00",
-                    "fax": "a"
+                    "home": "123456",
+                    "work": "7891011",
+                    "mobile": "+45678910",
+                    "primaryEmail": "harry.kane@spurs.co.uk",
+                    "secondaryEmail": "harry.kane@hotmail.com",
+                    "fax": "3425678"
                   }
                 },
                 "role": "a"
@@ -279,8 +280,8 @@
               "personDetails": {
                 "title": "DR",
                 "firstName": "a",
-                "middleName": "a",
-                "lastName": "a",
+                "middleName": "Jack",
+                "lastName": "Kane Junior",
                 "dateOfBirth": "2018-01-01",
                 "nationalityId": "00000000-0000-0000-0000-000000000000",
                 "nationalityCode": "a",
@@ -311,12 +312,16 @@
                   "primaryEmail": "!.!@00.00",
                   "secondaryEmail": "!.!@00.00",
                   "fax": "a"
+                },
+                "ethnicity" : {
+                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
                 }
               },
               "bailStatus": {
-                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
-                "code": "B",
-                "description": "Conditional Bail",
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+                "code": "C",
+                "description": "Remanded into Custody",
                 "custodyTimeLimit": {
                   "timeLimit": "2018-09-10",
                   "daysSpent": 44
@@ -324,11 +329,11 @@
               },
               "custodyTimeLimit": "2018-01-01",
               "perceivedBirthYear": 0,
-              "driverNumber": "a",
+              "driverNumber": "AACC12345",
               "arrestSummonsNumber": "a",
               "employerOrganisation": {
-                "name": "a",
-                "incorporationNumber": "a",
+                "name": "Disneyland Paris",
+                "incorporationNumber": "Mickeymouse1",
                 "registeredCharityNumber": "a",
                 "address": {
                   "address1": "a",
