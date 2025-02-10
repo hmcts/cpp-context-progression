@@ -16,12 +16,8 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matchers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ProsecutionCaseUpdateCaseMarkersHelper extends AbstractTestHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseUpdateCaseMarkersHelper.class);
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.update-case-markers+json";
 

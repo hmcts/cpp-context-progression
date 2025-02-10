@@ -6,27 +6,20 @@ import static java.lang.String.join;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
@@ -49,13 +42,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import io.restassured.response.Response;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -221,36 +212,31 @@ public class NowDocumentRequestIT extends AbstractIT {
         return randomNumeric(8) + randomAlphabetic(1).toUpperCase();
     }
 
-    private static String getNowDocumentRequestsFor(final String requestId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl(join("", "/nows/request/", requestId)),
-                "application/vnd.progression.query.now-document-requests-by-request-id+json")
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(OK), payload().isJson(allOf(matchers)))
-                .getPayload();
+    private String getNowDocumentRequestsFor(final String requestId, final Matcher... matchers) {
+        return pollForResponse(join("", "/nows/request/", requestId),
+                "application/vnd.progression.query.now-document-requests-by-request-id+json",
+                randomUUID().toString(),
+                matchers);
     }
 
     private String getNowDocumentRequest(final String hearingId, final Matcher... matchers) {
-        return poll(requestParams(getReadUrl(StringUtils.join("/nows/hearing/", hearingId)),
-                "application/vnd.progression.query.now-document-request-by-hearing+json")
-                .withHeader(HeaderConstants.USER_ID, UUID.randomUUID()))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(status().is(javax.ws.rs.core.Response.Status.OK),
-                        payload().isJson(allOf(matchers))).getPayload();
+        return pollForResponse("/nows/hearing/" + hearingId,
+                "application/vnd.progression.query.now-document-request-by-hearing+json",
+                randomUUID().toString(),
+                matchers);
     }
 
     private void sendPublicEventForDocumentAvailable() throws JSONException {
-        System.out.println(counter);
         final List<JSONObject> jsonObjects = pollSysDocGenerationRequestsForPrisonCourtRegister(
                 Matchers.hasSize(counter), "NOWs");
 
-        final UUID payloadFileServiceId = fromString(jsonObjects.get(counter-1).getString("payloadFileServiceId"));
+        final UUID payloadFileServiceId = fromString(jsonObjects.get(counter - 1).getString("payloadFileServiceId"));
 
         final String commandName = "public.systemdocgenerator.events.document-available";
 
         final Metadata metadata = getMetadataFrom(userId.toString(), fromString(materialId), commandName);
 
-        messageProducerClientPublic.sendMessage(commandName, JsonEnvelope.envelopeFrom(metadata, documentAvailablePayload(payloadFileServiceId, "OPE_Layout16", materialId.toString(), randomUUID())));
+        messageProducerClientPublic.sendMessage(commandName, JsonEnvelope.envelopeFrom(metadata, documentAvailablePayload(payloadFileServiceId, "OPE_Layout16", materialId, randomUUID())));
         counter++;
     }
 

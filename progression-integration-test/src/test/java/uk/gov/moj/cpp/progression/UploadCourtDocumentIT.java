@@ -1,10 +1,8 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -14,12 +12,10 @@ import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.core.courts.CourtDocument.courtDocument;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseWithMatchers;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getUploadCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
@@ -41,9 +37,8 @@ import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.text.MessageFormat;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -115,7 +110,10 @@ public class UploadCourtDocumentIT extends AbstractIT {
                 withJsonPath("$.courtDocuments[0].name", CoreMatchers.is("SJP Notice"))
         };
 
-        final String courtDocumentsByCaseStatus = pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments.with.pagination+json", randomUUID().toString(), status().is(OK), matcher);
+        final String courtDocumentsByCaseStatus = pollForResponse("/courtdocumentsearch?caseId=" + caseId,
+                "application/vnd.progression.query.courtdocuments.with.pagination+json",
+                randomUUID().toString(),
+                matcher);
         final String expectedPayload = getPayload("expected/expected.progression.upload.court-document-with-pagination.json")
                 .replace("COURT-DOCUMENT-ID1", docId)
                 .replace("CASE-ID", caseId)
@@ -145,7 +143,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                Arrays.asList(allOf(withJsonPath("$.prosecutionCase.defendants[0].cpsDefendantId", is(cpsDefendantId)),
+                List.of(allOf(withJsonPath("$.prosecutionCase.defendants[0].cpsDefendantId", is(cpsDefendantId)),
                         withJsonPath("$.prosecutionCase.prosecutor.prosecutorCode", is("TFL"))))));
 
         getCourtDocumentsByCaseWithMatchers(UUID.randomUUID().toString(), docId, caseId);
@@ -199,11 +197,11 @@ public class UploadCourtDocumentIT extends AbstractIT {
                 .withDocumentTypeDescription("test document")
                 .withName("test")
                 .withMimeType("mimeType")
-                .withMaterials(asList(
+                .withMaterials(singletonList(
                         Material.material()
                                 .withId(materialId)
                                 .withName("immaterial")
-                                .withUserGroups(asList("Court Admin"))
+                                .withUserGroups(List.of("Court Admin"))
                                 .withUploadDateTime(uploadTime)
                                 .build()
                 ))
@@ -229,7 +227,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
 
 
     private void assertCourtDocumentByApplication(String documentId, String documentTypeId, String materialId, String applicationId) throws JSONException {
-        final String courtDocumentsByApplication = getCourtDocumentsByApplication(USER_ID_VALUE.toString(), applicationId.toString());
+        final String courtDocumentsByApplication = getCourtDocumentsByApplication(USER_ID_VALUE.toString(), applicationId);
         final String expectedPayload = getPayload("expected/expected.progression.upload.court-document-1.json")
                 .replace("%DOCUMENT_ID%", documentId)
                 .replace("%APPLICATION_ID%", applicationId)

@@ -95,11 +95,12 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 .add("hearingDays", createArrayBuilder().add(populateCorrectedHearingDays()))
                 .add("id", hearingId).build();
 
-        final Response response = restClient.postCommand(getWriteUrl("/correct-hearing-days-without-court-centre"),
+        try (Response response = restClient.postCommand(getWriteUrl("/correct-hearing-days-without-court-centre"),
                 MEDIA_TYPE_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE,
-                payload.toString(), getRequestHeader(userId));
+                payload.toString(), getRequestHeader(userId))) {
 
-        assertThat(response.getStatus(), equalTo(SC_ACCEPTED));
+            assertThat(response.getStatus(), equalTo(SC_ACCEPTED));
+        }
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
                 withJsonPath("$.hearing.id", is(hearingId)),

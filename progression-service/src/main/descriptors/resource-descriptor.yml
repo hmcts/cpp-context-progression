@@ -20,6 +20,16 @@ resource_descriptor:
             type: jar
             version: '${project.version}'
 
+    - name: java:/app/progression-event-processor/DS.progression.eventprocessorstore
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.moj.cpp.progression
+            artifactId: progression-eventprocessorstore-liquibase
+            type: jar
+            version: '${project.version}'
+
     - name: java:/DS.progression
       type: xa-datasource
       setup:

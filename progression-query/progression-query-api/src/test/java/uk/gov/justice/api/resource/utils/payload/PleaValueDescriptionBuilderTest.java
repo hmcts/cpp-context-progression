@@ -72,10 +72,27 @@ public class PleaValueDescriptionBuilderTest {
         assertThat(newPayload, is(payload));
     }
 
+    @Test
+    public void shouldRebuildWithPleaValueDescriptionForCourtOrderOffencePlea() throws Exception {
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try (final InputStream stream = loader.getResourceAsStream("payload-courtapplications-courtorder-courtorderoffence-plea.json");
+             final JsonReader jsonReader = Json.createReader(stream);
+
+             final InputStream streamResult = loader.getResourceAsStream("payload-courtapplications-courtorder-courtorderoffence-plea-with-description.json");
+             final JsonReader jsonResultReader = Json.createReader(streamResult)) {
+            final JsonObject result = jsonResultReader.readObject();
+
+            final JsonObject payload = jsonReader.readObject();
+            final JsonObject newPayload = pleaValueDescriptionBuilder.rebuildPleaWithDescription(payload);
+            assertThat(newPayload, is(result));
+        }
+    }
+
     private Map<String, String> buildPleaTypeDescriptions() {
         final Map<String, String> pleaStatusTypeDescriptions = new HashMap<>();
         pleaStatusTypeDescriptions.put("CHANGE_TO_GUILTY_AFTER_SWORN_IN", "Change of Plea: Not Guilty to Guilty (After Jury sworn in)");
         pleaStatusTypeDescriptions.put("CHANGE_TO_GUILTY_NO_SWORN_IN", "Change of Plea: Not Guilty to Guilty (No Jury sworn in)");
+        pleaStatusTypeDescriptions.put("GUILTY", "Guilty");
         return pleaStatusTypeDescriptions;
     }
 

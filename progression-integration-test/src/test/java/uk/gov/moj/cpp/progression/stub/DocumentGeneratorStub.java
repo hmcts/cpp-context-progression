@@ -104,19 +104,17 @@ public class DocumentGeneratorStub {
 
     public static Optional<JSONObject> pollDocumentGenerationRequest(final Predicate<JSONObject> requestPayloadPredicate) {
         try {
-            return await().until(() -> {
-                            return findAll(postRequestedFor(urlPathMatching(PATH)))
-                                    .stream()
-                                    .map(LoggedRequest::getBodyAsString)
-                                    .map(t -> {
-                                        try {
-                                            return new JSONObject(t);
-                                        } catch (JSONException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                    })
-                                    .filter(requestPayloadPredicate).findFirst();
-                    },
+            return await().until(() -> findAll(postRequestedFor(urlPathMatching(PATH)))
+                    .stream()
+                    .map(LoggedRequest::getBodyAsString)
+                    .map(t -> {
+                        try {
+                            return new JSONObject(t);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .filter(requestPayloadPredicate).findFirst(),
                     is(not(empty())));
         } catch (final ConditionTimeoutException timeoutException) {
             return Optional.empty();

@@ -11,21 +11,12 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getMaterialContentResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
@@ -49,7 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -60,7 +50,6 @@ import com.google.common.io.Resources;
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.json.JSONArray;
@@ -228,21 +217,6 @@ public class PreAndPostConditionHelper {
     }
 
 
-    public static Response addProsecutionCaseToCrownCourtNullPostCode(final String caseId, final String defendantId, final String caseUrn) throws IOException, JSONException {
-        final JSONObject jsonPayload = new JSONObject(
-                createReferProsecutionCaseToCrownCourtJsonBodyNullPostCode(
-                        caseId,
-                        defendantId,
-                        randomUUID().toString(),
-                        randomUUID().toString(),
-                        randomUUID().toString(),
-                        randomUUID().toString(),
-                        caseUrn));
-        jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
-        return postCommand(getWriteUrl("/refertocourt"),
-                APPLICATION_VND_PROGRESSION_REFER_CASES_TO_COURT_JSON,
-                jsonPayload.toString());
-    }
 
     public static Response addProsecutionCaseToCrownCourtWithDefendantAsAdult(final String caseId, final String defendantId, final String caseUrn) throws IOException, JSONException {
         final JSONObject jsonPayload = new JSONObject(
@@ -342,17 +316,6 @@ public class PreAndPostConditionHelper {
                 payload);
     }
 
-    public static Response initiateCourtProceedingsWithUrn(final String caseId, final String defendantId, final String materialIdOne,
-                                                           final String materialIdTwo,
-                                                           final String referralId,
-                                                           final String listedStartDateTime, final String earliestStartDateTime, final String dob,
-                                                           final String urn,
-                                                           final String id) throws IOException {
-        return postCommand(getWriteUrl("/initiatecourtproceedings"),
-                "application/vnd.progression.initiate-court-proceedings+json",
-                getInitiateCourtProceedingsJsonBodyWithId(caseId, defendantId, materialIdOne, materialIdTwo, referralId, urn, listedStartDateTime, earliestStartDateTime, dob, id));
-
-    }
 
 
     public static Response initiateCourtProceedings(final String commandPayload) throws IOException {
@@ -656,7 +619,7 @@ public class PreAndPostConditionHelper {
                 .replaceAll("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
                 .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
-                .replace("RANDOM_REFERRAL_ID", referralId).toString();
+                .replace("RANDOM_REFERRAL_ID", referralId);
 
         if (nonNull(postCode)) {
             payload = payload.replace("POST_CODE", postCode);
@@ -741,24 +704,6 @@ public class PreAndPostConditionHelper {
         return StringUtils.wrap(join, "\"");
     }
 
-
-    private static String createReferProsecutionCaseToCrownCourtJsonBodyNullPostCode(
-            final String caseId,
-            final String defendantId,
-            final String materialIdOne,
-            final String materialIdTwo, final String courtDocumentId,
-            final String referralId,
-            final String caseUrn) {
-
-        return createReferProsecutionCaseToCrownCourtJsonBody(caseId,
-                defendantId,
-                materialIdOne,
-                materialIdTwo,
-                courtDocumentId,
-                referralId,
-                caseUrn,
-                "progression.command.prosecution-case-refer-to-court-null-postcode.json");
-    }
 
     private static String createReferProsecutionCaseToCrownCourtWithDefendantAsAdult(
             final String caseId,
@@ -1007,17 +952,6 @@ public class PreAndPostConditionHelper {
     }
 
 
-    private static String getInitiateCourtProceedingsJsonBodyWithId(final String caseId, final String defendantId, final String materialIdOne,
-                                                                    final String materialIdTwo,
-                                                                    final String referralId, final String caseUrn,
-                                                                    final String listedStartDateTime, final String earliestStartDateTime,
-                                                                    final String dob,
-                                                                    final String streamId) {
-        return getInitiateCourtProceedingsJsonFromResourceWithId("progression.command.initiate-court-proceedings-with-id.json", caseId,
-                defendantId, materialIdOne, materialIdTwo, referralId, caseUrn, listedStartDateTime, earliestStartDateTime, dob, streamId);
-
-    }
-
     private static String getInitiateCourtProceedingsJsonBodyForDefendantMatching(final String caseId, final String defendantId, final String masterDefendantId, final String materialIdOne,
                                                                                   final String materialIdTwo,
                                                                                   final String referralId, final String caseUrn,
@@ -1120,20 +1054,19 @@ public class PreAndPostConditionHelper {
 
 
     public static String getCaseLsmInfoFor(final String caseId, final Matcher<? super ReadContext>[] matchers) {
-        return poll(requestParams(getReadUrl(format("/prosecutioncases/%s/lsm-info", caseId)), "application/vnd.progression.query.case-lsm-info+json").withHeader(USER_ID, randomUUID()))
-                .timeout(60L, TimeUnit.SECONDS).until(status().is(OK), payload().isJson(allOf(
-                        matchers
-                ))).getPayload();
+        return pollForResponse(format("/prosecutioncases/%s/lsm-info", caseId),
+                "application/vnd.progression.query.case-lsm-info+json",
+                randomUUID().toString(),
+                matchers
+        );
     }
 
     public static String getRelatedReference(final String caseId, final Matcher<? super ReadContext>[] matchers) {
-        return poll(requestParams(getReadUrl(format("/prosecutioncases/%s", caseId)),
-                "application/vnd.progression.query.related-references+json").withHeader(USER_ID, randomUUID()))
-                .timeout(60L, TimeUnit.SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        return pollForResponse(format("/prosecutioncases/%s", caseId),
+                "application/vnd.progression.query.related-references+json",
+                randomUUID().toString(),
+                matchers
+        );
     }
 
     public static String getHearingForDefendant(final String hearingId) {
@@ -1142,12 +1075,11 @@ public class PreAndPostConditionHelper {
 
 
     public static String getHearingForDefendant(final String hearingId, final Matcher<? super ReadContext>[] matchers) {
-        return poll(requestParams(getReadUrl("/hearingSearch/" + hearingId), "application/vnd.progression.query.hearing+json").withHeader(USER_ID, randomUUID()))
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        return pollForResponse("/hearingSearch/" + hearingId,
+                "application/vnd.progression.query.hearing+json",
+                randomUUID().toString(),
+                matchers
+        );
     }
 
     public static String pollHearingWithStatus(final String hearingId, final String hearingStatus) {
@@ -1155,12 +1087,11 @@ public class PreAndPostConditionHelper {
     }
 
     public static void verifyHearingIsEmpty(final String hearingId) {
-        poll(requestParams(getReadUrl("/hearingSearch/" + hearingId), "application/vnd.progression.query.hearing+json").withHeader(USER_ID, randomUUID()))
-                .until(
-                        status().is(OK),
-                        payload().isJson(
-                                withJsonPath(".$", emptyCollection())
-                        ));
+        pollForResponse("/hearingSearch/" + hearingId,
+                "application/vnd.progression.query.hearing+json",
+                randomUUID().toString(),
+                withJsonPath(".$", emptyCollection())
+        );
     }
 
     @SafeVarargs
@@ -1240,23 +1171,19 @@ public class PreAndPostConditionHelper {
     }
 
     public static void verifyCasesForSearchCriteria(final String searchCriteria, final Matcher<? super ReadContext>[] matchers) {
-        poll(requestParams(getReadUrl(join("", "/search?q=", searchCriteria)), "application/vnd.progression.query.search-cases+json").withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        pollForResponse("/search?q=" + searchCriteria,
+                "application/vnd.progression.query.search-cases+json",
+                randomUUID().toString(),
+                matchers
+        );
     }
 
     public static void verifyCasesByCaseUrn(final String caseUrn, final Matcher<? super ReadContext>[] matchers) {
-        poll(requestParams(getReadUrl(join("", "/search?caseUrn=", caseUrn)), "application/vnd.progression.query.search-cases-by-caseurn+json").withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        pollForResponse("/search?caseUrn=" + caseUrn,
+                "application/vnd.progression.query.search-cases-by-caseurn+json",
+                randomUUID().toString(),
+                matchers
+        );
     }
 
     public static String getCourtDocuments(final String userId, final String... args) {
@@ -1269,10 +1196,6 @@ public class PreAndPostConditionHelper {
 
     public static String getCourtDocumentsPerCase(final String userId, final String caseId, final Matcher[] matchers) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments-all+json", userId, matchers);
-    }
-
-    public static String getUploadCourtDocumentsByCase(final String userId, final String caseId) {
-        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments+json", userId, status().is(OK), withJsonPath("$.documentIndices[0].caseIds[0]", CoreMatchers.is(caseId)));
     }
 
     public static String getCourtDocumentsByCaseWithMatchers(final String userId, final String caseDocumentId, final String caseId) {
@@ -1680,14 +1603,6 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_REFERENCE", applicationReference);
     }
 
-    private static String getCourtApplicationJsonBody(final String caseId, final String defendantId, final String applicationId, final String applicationReference, final String fileName) {
-        return getPayload(fileName)
-                .replace("RANDOM_CASE_ID", caseId)
-                .replace("RANDOM_DEFENDANT_ID", defendantId)
-                .replace("RANDOM_APPLICATION_ID", applicationId)
-                .replace("RANDOM_REFERENCE", applicationReference);
-    }
-
     private static String getShareCourtDocumentJsonBody(final String courtDocumentId, final String hearingId, final String userGroup, final String fileName) {
         return getPayload(fileName)
                 .replace("COURT_DOCUMENT_ID", courtDocumentId)
@@ -1736,23 +1651,21 @@ public class PreAndPostConditionHelper {
 
     @SafeVarargs
     public static String getCourtDocumentFor(final String courtDocumentId, final Matcher<? super ReadContext>... matchers) {
-        return poll(requestParams(getReadUrl(join("", "/courtdocuments/", courtDocumentId)), "application/vnd.progression.query.courtdocument+json").withHeader(USER_ID, randomUUID()))
-                .timeout(160, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                matchers
-                        ))).getPayload();
+        return pollForResponse("/courtdocuments/" + courtDocumentId,
+                "application/vnd.progression.query.courtdocument+json",
+                randomUUID().toString(),
+                matchers
+        );
     }
 
     @SafeVarargs
     public static String verifyQueryResultsForbidden(final String courtDocumentId, final String userId, final Matcher<? super ReadContext>... matchers) {
-        return poll(requestParams(getReadUrl(join("", "/courtdocuments/", courtDocumentId)), "application/vnd.progression.query.courtdocument+json")
-                .withHeader(USER_ID, userId))
-                .timeout(40, TimeUnit.SECONDS)
-                .until(
-                        status().is(FORBIDDEN), payload().isJson(allOf(
-                                matchers))).getPayload();
+        return pollForResponse("/courtdocuments/" + courtDocumentId,
+                "application/vnd.progression.query.courtdocument+json",
+                userId.toString(),
+                FORBIDDEN,
+                matchers
+        );
     }
 
     public static void pollForApplicationStatus(final String applicationId, final String status) {
@@ -1763,20 +1676,20 @@ public class PreAndPostConditionHelper {
     }
 
     public static void pollForApplication(final String applicationId) {
-        poll(requestParams(getReadUrl("/applications/" + applicationId),
-                "application/vnd.progression.query.application+json").withHeader(USER_ID, randomUUID()))
-                .timeout(TIMEOUT, TimeUnit.SECONDS)
-                .until(status().is(OK));
+        pollForResponse("/applications/" + applicationId,
+                "application/vnd.progression.query.application+json",
+                randomUUID().toString()
+        );
 
     }
 
     @SafeVarargs
     public static void pollForApplication(final String applicationId, final Matcher<? super ReadContext>... matchers) {
-        poll(requestParams(getReadUrl("/applications/" + applicationId),
-                "application/vnd.progression.query.application+json").withHeader(USER_ID, randomUUID()))
-                .until(status().is(OK),
-                        payload().isJson(allOf(matchers)
-                        ));
+        pollForResponse("/applications/" + applicationId,
+                "application/vnd.progression.query.application+json",
+                randomUUID().toString(),
+                matchers
+        );
 
     }
 

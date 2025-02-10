@@ -51,7 +51,7 @@ public class InitialIndexerIngestionIT extends AbstractIT {
 
 
     @BeforeEach
-    public void setup() throws IOException {
+    public void setup() {
         databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
         databaseCleaner.cleanSystemTables(CONTEXT_NAME);
         databaseCleaner.cleanStreamStatusTable(CONTEXT_NAME);
@@ -97,7 +97,7 @@ public class InitialIndexerIngestionIT extends AbstractIT {
         }
     }
 
-    private void runIndexerCatchup() throws Exception {
+    private void runIndexerCatchup() {
         final JmxParameters jmxParameters = jmxParameters()
                 .withContextName(CONTEXT_NAME)
                 .withHost(HOST)

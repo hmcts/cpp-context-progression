@@ -2,21 +2,15 @@ package uk.gov.moj.cpp.progression.cotr.cotrHelper;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
 import uk.gov.justice.core.courts.CreateCotr;
@@ -27,7 +21,6 @@ import uk.gov.justice.progression.courts.ChangeDefendantsCotr;
 import uk.gov.justice.progression.courts.UpdateReviewNotes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
-import uk.gov.moj.cpp.progression.helper.AbstractTestHelper;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
@@ -130,15 +123,11 @@ public class CotrHelper {
     }
 
     public static void queryAndVerifyCotrForm(final UUID caseId, final UUID cotrId) {
-        poll(requestParams(AbstractTestHelper.getReadUrl(String.format("/prosecutioncases/%s/cotr/%s", caseId, cotrId)),
-                "application/vnd.progression.query.cotr-form+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(30, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.cotrForm.caseId", Matchers.is(caseId.toString())),
-                                        withJsonPath("$.cotrForm.id", is(cotrId.toString()))
-                                )));
+        pollForResponse(String.format("/prosecutioncases/%s/cotr/%s", caseId, cotrId),
+                "application/vnd.progression.query.cotr-form+json",
+                randomUUID().toString(),
+                withJsonPath("$.cotrForm.caseId", Matchers.is(caseId.toString())),
+                withJsonPath("$.cotrForm.id", is(cotrId.toString()))
+        );
     }
 }

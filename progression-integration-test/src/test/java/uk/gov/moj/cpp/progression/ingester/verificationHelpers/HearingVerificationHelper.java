@@ -156,34 +156,6 @@ public class HearingVerificationHelper extends BaseVerificationHelper {
         }
     }
 
-    private void verifyHearingWithEstimatedDuration(final DocumentContext event,
-                                                    final JsonObject outputCases,
-                                                    final int outputHearingIndex) {
-        try {
-            final String hearingOutputIndexPath = format(OUTPUT_HEARINGS_JSON_PATH, outputHearingIndex);
-
-            with(outputCases.toString())
-                    .assertThat(hearingOutputIndexPath + ".hearingId", is(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".id")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".jurisdictionType", is(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".jurisdictionType")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".courtId", is(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.id")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".courtCentreName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.name")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".courtCentreRoomId", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.roomId")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".courtCentreRoomName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.roomName")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".courtCentreWelshName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.welshName")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".courtCentreRoomWelshName", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.welshRoomName")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".courtCentreCode", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".courtCentre.code")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".hearingTypeId", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.id")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".hearingTypeLabel", equalTo(((JsonString) event.read(INPUT_HEARING_JSON_PATH + ".type.description")).getString()))
-                    .assertThat(hearingOutputIndexPath + ".isBoxHearing", equalTo(valueOf(event.read(INPUT_HEARING_JSON_PATH + ".isBoxHearing").toString()).booleanValue()))
-                    .assertThat(hearingOutputIndexPath + ".isVirtualBoxHearing", equalTo(valueOf(event.read(INPUT_HEARING_JSON_PATH + ".isVirtualBoxHearing").toString()).booleanValue()))
-                    .assertThat(hearingOutputIndexPath + ".estimatedDuration", equalTo(((JsonString) (event.read(INPUT_HEARING_JSON_PATH + ".estimatedDuration"))).getString()));
-            incrementHearingsCount();
-        } catch (Exception e) {
-            incrementExceptionCount();
-            logger.log(WARNING, format("Exception validating Hearing", e.getMessage()));
-        }
-    }
-
     private void verifyHearingWithDefenceCounsels(final DocumentContext inputParties,
                                                   final JsonObject outputCases,
                                                   final int outputHearingIndex){

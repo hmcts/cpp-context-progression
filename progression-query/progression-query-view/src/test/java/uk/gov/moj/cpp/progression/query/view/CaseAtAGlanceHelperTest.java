@@ -449,7 +449,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(secondDefendantOffences.get(0).getOffenceCode(), is(OFFENCE_CODE));
         final List<CaagResults> secondDefendantFirstOffenceJudicialResults = secondDefendantOffences.get(0).getCaagResults();
         assertThat(secondDefendantFirstOffenceJudicialResults, is(empty()));
-        assertThat(secondDefendant.getDefendantJudicialResults(), notNullValue());
+        assertThat(secondDefendant.getDefendantJudicialResults(), nullValue());
         assertThat(secondDefendant.getDefendantCaseJudicialResults(), nullValue());
 
         final List<CaagDefendantOffences> thirdDefendantOffences = thirdDefendant.getCaagDefendantOffences();
@@ -457,7 +457,7 @@ public class CaseAtAGlanceHelperTest {
         assertThat(thirdDefendantOffences.get(0).getOffenceCode(), is(OFFENCE_CODE));
         final List<CaagResults> thirdCaagResults = thirdDefendantOffences.get(0).getCaagResults();
         assertThat(thirdCaagResults, is(empty()));
-        assertThat(thirdDefendant.getDefendantJudicialResults(), notNullValue());
+        assertThat(thirdDefendant.getDefendantJudicialResults(), nullValue());
         assertThat(thirdDefendant.getDefendantCaseJudicialResults(), nullValue());
     }
 

@@ -3,8 +3,6 @@ package uk.gov.moj.cpp.progression.ingester;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -13,29 +11,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-
-import io.restassured.path.json.JsonPath;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.Is;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -44,14 +32,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.unifiedsearch.test.util.constant.ApplicationExternalCreatorType;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 
+import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -79,7 +70,7 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
     private String newCourtCentreName;
 
     @BeforeEach
-    public void setup() throws IOException {
+    public void setup() {
         caseId = randomUUID().toString();
         applicationId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -131,7 +122,7 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
 
         final String outApplicationStatus = courtApplicationResponseJsonObject.get().getJsonArray("applications").getJsonObject(0).getJsonString("applicationStatus").getString();
         final String outapplicationExternalCreatorType = courtApplicationResponseJsonObject.get().getJsonArray("applications").getJsonObject(0).getJsonString("applicationExternalCreatorType").getString();
-        final String outputCaseId = courtApplicationResponseJsonObject.get().getJsonString("caseId").getString().toString();
+        final String outputCaseId = courtApplicationResponseJsonObject.get().getJsonString("caseId").getString();
 
         assertEquals(ApplicationStatus.FINALISED.toString(), outApplicationStatus);
         assertEquals(ApplicationExternalCreatorType.PROSECUTOR.name(), outapplicationExternalCreatorType);
@@ -167,17 +158,10 @@ public class HearingResultedApplicationUpdatedIT extends AbstractIT {
         // THEN
         verifyDriverNumberUpdatedEvents(caseId, defendantId, driverNumber);
 
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), "application/vnd.progression.query.prosecutioncase+json")
-                .withHeader(USER_ID, userId).build())
-                .timeout(30, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.prosecutionCase.id", is(caseId)),
-                                        withJsonPath("$.prosecutionCase.defendants[0].personDefendant.driverNumber", is("DVL12345"))
-                                )
-                        ));
+        pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase+json", userId,
+                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.driverNumber", is("DVL12345"))
+        );
 
     }
 

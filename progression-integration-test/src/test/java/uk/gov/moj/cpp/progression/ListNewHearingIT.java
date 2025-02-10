@@ -10,6 +10,9 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -66,6 +69,8 @@ public class ListNewHearingIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String DOCUMENT_TEXT = new StringGenerator().next();
     private static final String PROGRESSION_EVENT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
+    private static final JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
+
 
     private String prosecutorEmail;
 
@@ -96,6 +101,7 @@ public class ListNewHearingIT extends AbstractIT {
         verifyPostListCourtHearing(caseId, defendantId, "8e837de0-743a-4a2c-9db3-b2e678c48729");
 
         pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingId)), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")));
+        verifyAddCourtDocument(messageConsumerCourtDocumentAddedPrivateEvent);
 
         verifyEmailNotificationIsRaisedWithAttachment(newArrayList(prosecutorEmail));
         verifyCreateLetterRequested(newArrayList("postage", "first", "letterUrl"));
@@ -205,5 +211,16 @@ public class ListNewHearingIT extends AbstractIT {
         return postCommand(getWriteUrl("/refertocourt"),
                 "application/vnd.progression.refer-cases-to-court+json",
                 payload);
+    }
+
+    private void verifyAddCourtDocument(JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent) {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerCourtDocumentAddedPrivateEvent);
+        assertThat(message.get(), notNullValue());
+        final JsonObject progressionCourtDocumentAddedEvent = message.get();
+        JsonObject courtDocument = progressionCourtDocumentAddedEvent.getJsonObject("courtDocument");
+        assertThat(courtDocument.getString("documentTypeDescription"), containsString("Electronic Notifications"));
+        assertThat(courtDocument.getString("name"), containsString("NewHearingNotification"));
+        assertThat(courtDocument.getBoolean("containsFinancialMeans"), is(false));
+        assertThat(courtDocument.getBoolean("sendToCps"), is(false));
     }
 }

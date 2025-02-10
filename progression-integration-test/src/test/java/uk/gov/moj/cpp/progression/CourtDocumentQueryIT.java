@@ -171,7 +171,7 @@ public class CourtDocumentQueryIT {
         //Case Level Document 2
         final String docId1 = UUID.randomUUID().toString();
         final String docTypeId2 = "460fb0ca-c002-11e8-a355-529269fb1459";
-        final String courtDocumentCaseLevel2 = addCourtDocument(caseId, docId1, defendantId,
+        addCourtDocument(caseId, docId1, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId2, docId1, caseId, defendantId, "progression.add-court-document-def-level.json"));
 
         //Doc Type Ref Data
@@ -217,12 +217,12 @@ public class CourtDocumentQueryIT {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId2);
 
 
-        final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId.toString());
+        final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId);
 
         final String expectedPayload = FileUtil.getPayload("expected/expected.progression.court-document.json")
                 .replace("CASE-LEVEL-COURT-DOCUMENT-ID", caseLevelCourtDocumentId2)
                 .replace("DOCUMENT-TYPE-ID1", docTypeId2)
-                .replace("CASE-ID", caseId.toString());
+                .replace("CASE-ID", caseId);
 
         JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
@@ -247,7 +247,7 @@ public class CourtDocumentQueryIT {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId);
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId2);
 
-        final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId.toString());
+        final String actualDocument = getCourtDocumentsByCase(USER_ID, caseId);
 
         final String expectedPayload = "{\"documentIndices\":[]}";
 
@@ -302,7 +302,7 @@ public class CourtDocumentQueryIT {
                 .replace("%ORGANISATION_ID%", organisationId);
 
         stubUserGroupOrganisation(CHAMBER_USER_ID, organisation);
-        stubUserGroupDefenceClientPermission(defendantId, permission);
+        stubUserGroupDefenceClientPermission(permission);
 
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json");
@@ -337,12 +337,12 @@ public class CourtDocumentQueryIT {
     }
 
     @Test
-    public void shouldBadRequestWhenNoCaseAndDefendantForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+    public void shouldBadRequestWhenNoCaseAndDefendantForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() {
         getCourtDocumentsByDefendantForDefenceWithNoCaseAndDefenceId(CHAMBER_USER_ID, status().is(BAD_REQUEST));
     }
 
     @Test
-    public void shouldBadRequestWhenNoCaseForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() throws IOException {
+    public void shouldBadRequestWhenNoCaseForCourtDocumentsForGivenCaseAndDefendantToDefenceUser() {
         getCourtDocumentsByDefendantForDefenceWithNoCaseId(CHAMBER_USER_ID, UUID.randomUUID().toString(), status().is(BAD_REQUEST));
     }
 
@@ -428,10 +428,10 @@ public class CourtDocumentQueryIT {
     private String prepareAddCourtDocumentWithDocTypePayload(final String docTypeId, final String docId, final String caseId, final String defendantId, final String addCourtDocumentResource) throws IOException {
         String body = Resources.toString(Resources.getResource(addCourtDocumentResource),
                 Charset.defaultCharset());
-        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId.toString())
-                .replaceAll("%RANDOM_CASE_ID%", caseId.toString())
-                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId.toString())
-                .replaceAll("%RANDOM_DOC_TYPE%", docTypeId.toString());
+        body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
+                .replaceAll("%RANDOM_CASE_ID%", caseId)
+                .replaceAll("%RANDOM_DEFENDANT_ID%", defendantId)
+                .replaceAll("%RANDOM_DOC_TYPE%", docTypeId);
         return body;
     }
 }

@@ -5,36 +5,26 @@ import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.sendNotification;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
@@ -125,7 +115,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         consumerForPublicEvent =
                 newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED).getMessageConsumerClient();
 
-        defenceOrganisationEmail = randomAlphanumeric(15)+"-defenceorg@email.com";
+        defenceOrganisationEmail = randomAlphanumeric(15) + "-defenceorg@email.com";
     }
 
     @Test
@@ -140,7 +130,6 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
         verifyEmailNotificationIsRaisedWithAttachment(singletonList(defenceOrganisationEmail));
         verifyEmailNotificationIsRaisedWithAttachment(singletonList("applicant@email.com"));
-
     }
 
     @Test
@@ -284,56 +273,53 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
     private void verifyApplicationAtAGlance(final String applicationId, final String mediaType) {
 
-        poll(requestParams(getReadUrl("/applications/" + applicationId), mediaType)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(TIMEOUT, SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.applicationId", equalTo(applicationId)),
-                                withJsonPath("$.applicationDetails.applicationReference", notNullValue()),
-                                withJsonPath("$.applicationDetails.applicationParticulars", equalTo(particulars)),
-                                withJsonPath("$.applicationDetails.applicationReceivedDate", equalTo(applicantReceivedDate)),
-                                withJsonPath("$.applicationDetails.applicationType", equalTo(applicationType)),
-                                withJsonPath("$.applicationDetails.appeal", equalTo(appeal)),
-                                withJsonPath("$.applicationDetails.applicantAppellantFlag", equalTo(applicantAppellantFlag)),
-                                withJsonPath("$.applicationDetails.aagResults.length()", equalTo(1)),
-                                withJsonPath("$.applicationDetails.aagResults[0].id", equalTo("f8e926eb-704a-457a-a794-8c3ad40d3113")),
-                                withJsonPath("$.applicationDetails.aagResults[0].label", equalTo("wording for results")),
-                                withJsonPath("$.applicationDetails.aagResults[0].orderedDate", equalTo("2019-01-01")),
-                                withJsonPath("$.applicationDetails.aagResults[0].lastSharedDateTime", equalTo("2019-02-01")),
-                                withJsonPath("$.applicationDetails.aagResults[0].amendmentDate", equalTo("2019-03-01")),
-                                withJsonPath("$.applicationDetails.aagResults[0].amendmentReason", equalTo("wording for amendment")),
-                                withJsonPath("$.applicationDetails.aagResults[0].amendedBy", equalTo("delegatedPowers a delegatedPowers b")),
-                                withJsonPath("$.applicationDetails.aagResults[0].resultText", equalTo("code - resultText")),
-                                withJsonPath("$.applicationDetails.aagResults[0].useResultText", equalTo(true)),
-                                withJsonPath("$.applicationDetails.paymentReference", equalTo(paymentReference)),
-                                withJsonPath("$.applicantDetails.address.address1", equalTo(applicantAddress1)),
-                                withJsonPath("$.applicantDetails.address.address2", equalTo(applicantAddress2)),
-                                withJsonPath("$.applicantDetails.address.address3", equalTo(applicantAddress3)),
-                                withJsonPath("$.applicantDetails.address.address4", equalTo(applicantAddress4)),
-                                withJsonPath("$.applicantDetails.address.address5", equalTo(applicantAddress5)),
-                                withJsonPath("$.applicantDetails.address.postcode", equalTo(applicantPostCode)),
-                                withJsonPath("$.applicantDetails.interpreterLanguageNeeds", equalTo(interpreterLanguageNeeds)),
-                                withJsonPath("$.applicantDetails.name", equalTo(format("%s %s", applicantFirstName, applicantLastName))),
-                                withJsonPath("$.applicantDetails.representation", equalTo(applicantRepresentation)),
-                                withJsonPath("$.respondentDetails[0].name", equalTo(respondentOrganisationName)),
-                                withJsonPath("$.respondentDetails.length()", equalTo(2)),
-                                withJsonPath("$.respondentDetails[0].address.address1", equalTo(respondentOrganisationAddress1)),
-                                withJsonPath("$.respondentDetails[0].address.address2", equalTo(respondentOrganisationAddress2)),
-                                withJsonPath("$.respondentDetails[0].address.address3", equalTo(respondentOrganisationAddress3)),
-                                withJsonPath("$.respondentDetails[0].address.address4", equalTo(respondentOrganisationAddress4)),
-                                withJsonPath("$.respondentDetails[0].address.address5", equalTo(respondentOrganisationAddress5)),
-                                withJsonPath("$.respondentDetails[0].address.postcode", equalTo(respondentOrganisationPostcode)),
-                                withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativeName", equalTo(format("%s %s", respondentRepresentativeFirstName, respondentRepresentativeLastName))),
-                                withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativePosition", equalTo(respondentRepresentativePosition)),
-                                withJsonPath("$.respondentDetails[1].name", equalTo("David lloyd")),
-                                withJsonPath("$.respondentDetails[1].address.address1", equalTo("44, Wilson Patten Street")),
-                                withJsonPath("$.linkedCases[0].prosecutionCaseId", equalTo(prosecutionCaseId)),
-                                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),
-                                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionAuthorityCode)),
-                                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference))
-                        )));
+        pollForResponse("/applications/" + applicationId,
+                mediaType,
+                randomUUID().toString(),
+                withJsonPath("$.applicationId", equalTo(applicationId)),
+                withJsonPath("$.applicationDetails.applicationReference", notNullValue()),
+                withJsonPath("$.applicationDetails.applicationParticulars", equalTo(particulars)),
+                withJsonPath("$.applicationDetails.applicationReceivedDate", equalTo(applicantReceivedDate)),
+                withJsonPath("$.applicationDetails.applicationType", equalTo(applicationType)),
+                withJsonPath("$.applicationDetails.appeal", equalTo(appeal)),
+                withJsonPath("$.applicationDetails.applicantAppellantFlag", equalTo(applicantAppellantFlag)),
+                withJsonPath("$.applicationDetails.aagResults.length()", equalTo(1)),
+                withJsonPath("$.applicationDetails.aagResults[0].id", equalTo("f8e926eb-704a-457a-a794-8c3ad40d3113")),
+                withJsonPath("$.applicationDetails.aagResults[0].label", equalTo("wording for results")),
+                withJsonPath("$.applicationDetails.aagResults[0].orderedDate", equalTo("2019-01-01")),
+                withJsonPath("$.applicationDetails.aagResults[0].lastSharedDateTime", equalTo("2019-02-01")),
+                withJsonPath("$.applicationDetails.aagResults[0].amendmentDate", equalTo("2019-03-01")),
+                withJsonPath("$.applicationDetails.aagResults[0].amendmentReason", equalTo("wording for amendment")),
+                withJsonPath("$.applicationDetails.aagResults[0].amendedBy", equalTo("delegatedPowers a delegatedPowers b")),
+                withJsonPath("$.applicationDetails.aagResults[0].resultText", equalTo("code - resultText")),
+                withJsonPath("$.applicationDetails.aagResults[0].useResultText", equalTo(true)),
+                withJsonPath("$.applicationDetails.paymentReference", equalTo(paymentReference)),
+                withJsonPath("$.applicantDetails.address.address1", equalTo(applicantAddress1)),
+                withJsonPath("$.applicantDetails.address.address2", equalTo(applicantAddress2)),
+                withJsonPath("$.applicantDetails.address.address3", equalTo(applicantAddress3)),
+                withJsonPath("$.applicantDetails.address.address4", equalTo(applicantAddress4)),
+                withJsonPath("$.applicantDetails.address.address5", equalTo(applicantAddress5)),
+                withJsonPath("$.applicantDetails.address.postcode", equalTo(applicantPostCode)),
+                withJsonPath("$.applicantDetails.interpreterLanguageNeeds", equalTo(interpreterLanguageNeeds)),
+                withJsonPath("$.applicantDetails.name", equalTo(format("%s %s", applicantFirstName, applicantLastName))),
+                withJsonPath("$.applicantDetails.representation", equalTo(applicantRepresentation)),
+                withJsonPath("$.respondentDetails[0].name", equalTo(respondentOrganisationName)),
+                withJsonPath("$.respondentDetails.length()", equalTo(2)),
+                withJsonPath("$.respondentDetails[0].address.address1", equalTo(respondentOrganisationAddress1)),
+                withJsonPath("$.respondentDetails[0].address.address2", equalTo(respondentOrganisationAddress2)),
+                withJsonPath("$.respondentDetails[0].address.address3", equalTo(respondentOrganisationAddress3)),
+                withJsonPath("$.respondentDetails[0].address.address4", equalTo(respondentOrganisationAddress4)),
+                withJsonPath("$.respondentDetails[0].address.address5", equalTo(respondentOrganisationAddress5)),
+                withJsonPath("$.respondentDetails[0].address.postcode", equalTo(respondentOrganisationPostcode)),
+                withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativeName", equalTo(format("%s %s", respondentRepresentativeFirstName, respondentRepresentativeLastName))),
+                withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativePosition", equalTo(respondentRepresentativePosition)),
+                withJsonPath("$.respondentDetails[1].name", equalTo("David lloyd")),
+                withJsonPath("$.respondentDetails[1].address.address1", equalTo("44, Wilson Patten Street")),
+                withJsonPath("$.linkedCases[0].prosecutionCaseId", equalTo(prosecutionCaseId)),
+                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),
+                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionAuthorityCode)),
+                withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference))
+        );
     }
 
     private void setupData() {

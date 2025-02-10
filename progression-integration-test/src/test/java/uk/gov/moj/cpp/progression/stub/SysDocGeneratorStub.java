@@ -13,7 +13,6 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.awaitility.Awaitility.await;
-import static uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils.stubPingFor;
 
 import uk.gov.justice.services.common.http.HeaderConstants;
 
@@ -38,8 +37,6 @@ public class SysDocGeneratorStub {
     private final static Logger LOGGER = LoggerFactory.getLogger(SysDocGeneratorStub.class);
 
     public static void stubDocGeneratorEndPoint() {
-        stubPingFor("systemdocgenerator-service");
-
         stubFor(post(urlPathMatching(SYS_DOC_GENERATOR_URL))
                 .withHeader(CONTENT_TYPE, equalTo(GENERATE_DOCUMENT_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)

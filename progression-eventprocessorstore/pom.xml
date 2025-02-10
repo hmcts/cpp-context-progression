@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>progression-parent</artifactId>
+        <groupId>uk.gov.moj.cpp.progression</groupId>
+        <version>17.0.43-cct1343-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>progression-eventprocessorstore</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>progression-eventprocessorstore-liquibase</module>
+        <module>progression-eventprocessorstore-persistence</module>
+    </modules>
+
+</project>

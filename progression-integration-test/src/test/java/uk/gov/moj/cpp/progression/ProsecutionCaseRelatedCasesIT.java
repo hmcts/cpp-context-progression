@@ -1,26 +1,20 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsMapWithSize.anEmptyMap;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -30,11 +24,9 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
 
@@ -78,7 +70,6 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
         defendantId_1_forMasterDefendantId_1 = randomUUID().toString();
         defendantId_2_forMasterDefendantId_1 = randomUUID().toString();
 
-
         materialIdActive = randomUUID().toString();
         materialIdDeleted = randomUUID().toString();
         referralReasonId = randomUUID().toString();
@@ -116,61 +107,41 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
         // match defendantId_2_forMasterDefendantId_1 associated to case 2
         matchDefendant(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1);
 
-        poll(requestParams(getReadUrl(String.format("/prosecutioncases/%s", prosecutionCaseId_1)), PROGRESSION_QUERY_CASE).withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
-                                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("ACTIVE")),
-                                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY")),
-                                withJsonPath("$.relatedCases[0].cases[0].offences[0].maxPenalty", equalTo("Max Penalty"))
-                        ))
-                );
+        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_1), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
+                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
+                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
+                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("ACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY")),
+                withJsonPath("$.relatedCases[0].cases[0].offences[0].maxPenalty", equalTo("Max Penalty"))
+        );
 
-        poll(requestParams(getReadUrl(String.format("/prosecutioncases/%s", prosecutionCaseId_2)), PROGRESSION_QUERY_CASE).withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
-                                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("ACTIVE")),
-                                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
-                        ))
-                );
+        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_2), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
+                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
+                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
+                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("ACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
+        );
 
         closeTheCase(prosecutionCaseId_1, masterDefendantId_1, hearingId1);
         closeTheCase(prosecutionCaseId_2, masterDefendantId_1, hearingId2);
 
-        poll(requestParams(getReadUrl(String.format("/prosecutioncases/%s", prosecutionCaseId_1)), PROGRESSION_QUERY_CASE).withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
-                                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("INACTIVE")),
-                                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
-                        ))
-                );
+        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_1), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
+                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
+                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
+        );
 
-        poll(requestParams(getReadUrl(String.format("/prosecutioncases/%s", prosecutionCaseId_2)), PROGRESSION_QUERY_CASE).withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
-                                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
-                                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("INACTIVE")),
-                                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
-                        ))
-                );
+        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_2), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
+                withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
+                withJsonPath("$.relatedCases[0].cases[0].caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
+        );
     }
 
 
@@ -189,25 +160,15 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
 
         closeTheCase(prosecutionCaseId_1, masterDefendantId_1, hearingId1);
 
-        poll(requestParams(getReadUrl(String.format("/prosecutioncases/%s", prosecutionCaseId_1)), PROGRESSION_QUERY_CASE).withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
-                                withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
-                        ))
-                );
+        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_1), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
+                withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
+        );
 
-        poll(requestParams(getReadUrl(String.format("/prosecutioncases/%s", prosecutionCaseId_2)), PROGRESSION_QUERY_CASE).withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
-                                withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
-                        ))
-                );
+        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_2), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+                withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
+                withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
+        );
     }
 
     private void closeTheCase(final String caseId, final String defendantId, final String hearingId) {
