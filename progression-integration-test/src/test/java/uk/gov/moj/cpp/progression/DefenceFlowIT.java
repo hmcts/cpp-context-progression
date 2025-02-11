@@ -172,9 +172,10 @@ public class DefenceFlowIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
     }
 
-    private void receiveRepOrder(final String laaContractNumber2) throws IOException {
-        Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber2, userId);
-        assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+    private void receiveRepOrder(final String laaContractNumber2) {
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, statusCode, laaContractNumber2, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(HttpStatus.SC_ACCEPTED));
+        }
         verifyInMessagingQueueForDefendantOffenceUpdated();
         verifyInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertThat(isPublicCaseDefendantChangedEventExists(laaContractNumber2), is(true));

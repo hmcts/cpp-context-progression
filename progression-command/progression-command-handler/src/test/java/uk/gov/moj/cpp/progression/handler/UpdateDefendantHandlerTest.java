@@ -25,6 +25,7 @@ import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingDefendantUpdated;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -57,6 +58,7 @@ import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -470,6 +472,7 @@ public class UpdateDefendantHandlerTest {
                         .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
                                 .withId(defendantId)
                                 .withMasterDefendantId(masterDefendantId)
+                                        .withOffences(Collections.singletonList(Offence.offence().withId(randomUUID()).build()))
                                 .build())))
                         .build()))
                 .build();

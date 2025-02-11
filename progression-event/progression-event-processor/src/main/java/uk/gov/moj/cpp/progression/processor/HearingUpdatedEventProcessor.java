@@ -4,7 +4,6 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -14,12 +13,9 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.moj.cpp.progression.service.ProgressionService.getEarliestDate;
 
-
-import javax.json.JsonObjectBuilder;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ConfirmedHearing;
 import uk.gov.justice.core.courts.ConfirmedOffence;
-import uk.gov.justice.core.courts.ConfirmedProsecutionCase;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantUpdate;
@@ -54,6 +50,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,30 +129,50 @@ public class HearingUpdatedEventProcessor {
                     .withMetadataFrom(jsonEnvelope));
         }
         if (sendNotificationToParties && isNotificationAllocationFieldUpdated) {
-            sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedUpdatedHearing);
+            sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, confirmedUpdatedHearing, updatedHearing);
         } else {
             LOGGER.info("Notification is not sent for HearingId {}  , Notification flag {} and notificationAllocatedFieldsUpdated flag {}", updatedHearing.getId(), sendNotificationToParties, isNotificationAllocationFieldUpdated);
         }
     }
 
-    private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing) {
+    private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing, Hearing updatedHearing) {
         final HearingNotificationInputData hearingNotificationInputData = new HearingNotificationInputData();
 
-        final Set<UUID> caseIds = confirmedUpdatedHearing.getProsecutionCases()
-                .stream().map(ConfirmedProsecutionCase::getId).collect(toSet());
-
+        final Set<UUID> caseIds = new HashSet<>();
         final Map<UUID, List<UUID>> defendantOffenceListMap = new HashMap<>();
         final Set<UUID> defendantIdSet = new HashSet<>();
 
-        confirmedUpdatedHearing.getProsecutionCases().stream()
-                .flatMap(confirmedProsecutionCase -> confirmedProsecutionCase.getDefendants().stream())
-                .forEach(defendant -> {
-                    defendantIdSet.add(defendant.getId());
-                    defendantOffenceListMap.put(defendant.getId(),
-                            defendant.getOffences().stream()
-                                    .map(ConfirmedOffence::getId)
-                                    .collect(toList()));
-                });
+        if(isNotEmpty(confirmedUpdatedHearing.getProsecutionCases())) {
+            confirmedUpdatedHearing.getProsecutionCases().stream().forEach(prosecutionCase -> {
+                caseIds.add(prosecutionCase.getId());
+                prosecutionCase.getDefendants().stream()
+                        .forEach(defendant -> {
+                            defendantIdSet.add(defendant.getId());
+                            defendantOffenceListMap.put(defendant.getId(),
+                                    defendant.getOffences().stream()
+                                            .map(ConfirmedOffence::getId)
+                                            .collect(toList()));
+                        });
+            });
+        } else if (isNotEmpty(updatedHearing.getCourtApplications())) {
+            updatedHearing.getCourtApplications().stream().filter(courtApplication -> isNotEmpty(courtApplication.getCourtApplicationCases()))
+                    .flatMap(courtApplication -> courtApplication.getCourtApplicationCases().stream())
+                    .forEach(courtApplicationCase -> caseIds.add(courtApplicationCase.getProsecutionCaseId()));
+
+            caseIds.stream().forEach(applicationCaseId -> {
+                final JsonObject prosecutionCaseJson = progressionService.getProsecutionCaseById(jsonEnvelope, applicationCaseId.toString());
+                if (nonNull(prosecutionCaseJson)) {
+                    final ProsecutionCase prosecutionCaseEntity = jsonObjectToObjectConverter.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                    prosecutionCaseEntity.getDefendants().stream().forEach(defendant -> {
+                        defendantIdSet.add(defendant.getId());
+                        defendantOffenceListMap.put(defendant.getId(),
+                                defendant.getOffences().stream()
+                                        .map(Offence::getId)
+                                        .collect(toList()));
+                    });
+                }
+            });
+        }
 
         final ZonedDateTime hearingStartDateTime = getEarliestDate(confirmedUpdatedHearing.getHearingDays());
 

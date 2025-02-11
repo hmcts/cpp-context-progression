@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.exactly;
-import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -40,10 +39,6 @@ public class LaaAPIMServiceStub {
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                 ));
-    }
-
-    public static void verifyLaaProceedingsConcludedCommandInvoked(final List<String> expectedValues) {
-        verifyLaaProceedingsConcludedCommandInvoked(LAA_API_ENDPOINT_URL, moreThanOrExactly(1), expectedValues);
     }
 
     public static void verifyLaaProceedingsConcludedCommandInvoked(final int count, final List<String> expectedValues) {

@@ -64,10 +64,6 @@ public class QueueUtil {
         return consumer.retrieveMessageAsJsonPath(retrieveTimeout);
     }
 
-    public static Optional<String> retrieveMessageAsString(final JmsMessageConsumerClient consumer) {
-        return consumer.retrieveMessage(RETRIEVE_TIMEOUT);
-    }
-
     public static Metadata buildMetadata(final String publicListingHearingConfirmed, final UUID userId) {
         return buildMetadata(publicListingHearingConfirmed, userId.toString());
     }

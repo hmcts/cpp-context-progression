@@ -20,13 +20,9 @@ import javax.ws.rs.core.Response;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProsecutionCaseUpdateDefendantHelper.class);
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.update-defendant-for-prosecution-case+json";
 
@@ -44,11 +40,6 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
     public ProsecutionCaseUpdateDefendantHelper(final String caseId, final String defendantId) {
         this.defendantId = defendantId;
         this.caseId = caseId;
-    }
-
-    public void updateDefendant() throws JSONException {
-        final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
-        updateDefendant(jsonString);
     }
 
     public void updateDefendantWithCustody() throws JSONException {

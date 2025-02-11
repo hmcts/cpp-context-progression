@@ -9,8 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentCaseLevel;
 import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtDocumentDefendantLevel;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_COURT_DOCUMENT_SHARED;
@@ -19,20 +17,13 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.shareCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
-import static uk.gov.moj.cpp.progression.test.matchers.BeanMatcher.isBean;
-import static uk.gov.moj.cpp.progression.test.matchers.ElementAtListMatcher.first;
-import static uk.gov.moj.cpp.progression.util.QueryUtil.waitForQueryMatch;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
-import uk.gov.justice.core.courts.CourtDocument;
-import uk.gov.justice.core.courts.CourtDocumentIndex;
-import uk.gov.justice.courts.progression.query.Courtdocuments;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.test.utils.core.http.RequestParams;
-import uk.gov.moj.cpp.progression.test.matchers.BeanMatcher;
 import uk.gov.moj.cpp.progression.util.FileUtil;
 
 import java.io.IOException;
@@ -41,7 +32,6 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
-import org.hamcrest.core.Is;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,24 +79,13 @@ public class ShareCourtDocumentIT extends AbstractIT {
         shareCourtDocument(defendantLevelDocumentId1, HEARING_ID_TYPE_TRIAL, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
         verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
 
-        final BeanMatcher<Courtdocuments> courtDocumentMatchers = isBean(Courtdocuments.class)
-                .withValue(cds -> cds.getDocumentIndices().size(), 1)
-                .with(Courtdocuments::getDocumentIndices, first(Is.is(isBean(CourtDocumentIndex.class)
-                        .with(CourtDocumentIndex::getDocument, isBean(CourtDocument.class)
-                                .withValue(cd -> cd.getCourtDocumentId().toString(), defendantLevelDocumentId1)
-                                .withValue(cd -> cd.getDocumentCategory().getDefendantDocument().getProsecutionCaseId().toString(), caseId)
-                                .withValue(cd -> cd.getDocumentCategory().getDefendantDocument().getDefendants().get(0).toString(), defendantId1)
-                        )
-                )));
-
-        final String queryUrl = getReadUrl(MessageFormat.format(PROGRESSION_QUERY_COURTDOCUMENTSSEARCH, caseId, defendantId1, HEARING_ID_TYPE_TRIAL));
-        final RequestParams preGeneratedRequestParams = requestParams(queryUrl,
-                APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON)
-                .withHeader(CPP_UID_HEADER.getName(), USER_ID)
-                .build();
-
-        waitForQueryMatch(preGeneratedRequestParams, 45, courtDocumentMatchers, Courtdocuments.class);
-
+        pollForResponse(MessageFormat.format(PROGRESSION_QUERY_COURTDOCUMENTSSEARCH, caseId, defendantId1, HEARING_ID_TYPE_TRIAL),
+                APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON,
+                USER_ID.toString(),
+                withJsonPath("$.documentIndices[0].document.courtDocumentId", is(defendantLevelDocumentId1)),
+                withJsonPath("$.documentIndices[0].document.documentCategory.defendantDocument.prosecutionCaseId", is(caseId)),
+                withJsonPath("$.documentIndices[0].document.documentCategory.defendantDocument.defendants[0]", is(defendantId1))
+        );
     }
 
     @Test

@@ -118,21 +118,6 @@ public class HearingEventLogIT extends AbstractIT {
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
     }
 
-    public void verifyInMessagingQueueForCasesReferredToCourts() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
-        assertThat(message.isPresent(), is(true));
-    }
-
-    public void verifyInMessagingQueueForHearingEventLogsDocumentSuccess() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingEventsLogsDocumentSucess);
-        assertTrue(message.isPresent());
-    }
-
-    public void verifyInMessagingQueueForHearingEventLogsDocumentFailed() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingEventsLogsDocumentFailed);
-        assertTrue(message.isPresent());
-    }
-
     @Test
     public void shouldGenerateCAAGHearingEventLogDocumentForInActiveCaseIfNoApplicationExists() throws Exception {
         final String userId = randomUUID().toString();
@@ -497,7 +482,7 @@ public class HearingEventLogIT extends AbstractIT {
         verifyCaagHearingEventLog(caseId);
         //Then
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingLogDocumentCreated, 1L);
-        assertThat(!message.isPresent(), is(true));
+        assertThat(message.isEmpty(), is(true));
     }
 
     private void verifyCaagHearingEventLog(final String caseId) throws IOException {
@@ -564,13 +549,13 @@ public class HearingEventLogIT extends AbstractIT {
                         final Optional<JsonObject> documentGenerationRequest = getHearingEventTemplate(TEMPLATE_NAME);
                         assertThat(documentGenerationRequest.isPresent(), is(true));
                         assertThat(documentGenerationRequest.get(), isJson(allOf(
-                                        withJsonPath("$.hearings[0].courtCentre", is(notNullValue())),
-                                        withJsonPath("$.hearings[0].courtRoom", is(notNullValue())),
-                                        withJsonPath("$.hearings[0].hearingType", is(notNullValue())),
-                                        withJsonPath("$.hearings[0].startDate", is(notNullValue())),
-                                        withJsonPath("$.hearings[0].endDate", is(notNullValue())),
-                                        withJsonPath("$.hearings[0].judiciary[*]", hasSize(2))
-                                )));
+                                withJsonPath("$.hearings[0].courtCentre", is(notNullValue())),
+                                withJsonPath("$.hearings[0].courtRoom", is(notNullValue())),
+                                withJsonPath("$.hearings[0].hearingType", is(notNullValue())),
+                                withJsonPath("$.hearings[0].startDate", is(notNullValue())),
+                                withJsonPath("$.hearings[0].endDate", is(notNullValue())),
+                                withJsonPath("$.hearings[0].judiciary[*]", hasSize(2))
+                        )));
                     } catch (AssertionError e) {
                         LOGGER.error(e.getMessage());
                         return false;
@@ -612,7 +597,7 @@ public class HearingEventLogIT extends AbstractIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final String actualDocument = getCourtDocumentFor(courtDocumentId, allOf(
+        getCourtDocumentFor(courtDocumentId, allOf(
                         withJsonPath("$.courtDocument.courtDocumentId", equalTo(courtDocumentId)),
                         withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(false))
                 )
@@ -675,4 +660,21 @@ public class HearingEventLogIT extends AbstractIT {
 
         };
     }
+
+    private void verifyInMessagingQueueForCasesReferredToCourts() {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
+        assertThat(message.isPresent(), is(true));
+    }
+
+    private void verifyInMessagingQueueForHearingEventLogsDocumentSuccess() {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingEventsLogsDocumentSucess);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForHearingEventLogsDocumentFailed() {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingEventsLogsDocumentFailed);
+        assertTrue(message.isPresent());
+    }
+
+
 }

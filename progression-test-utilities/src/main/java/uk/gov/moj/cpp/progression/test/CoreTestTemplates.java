@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -45,6 +46,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.Source;
 import uk.gov.justice.services.test.utils.core.random.RandomGenerator;
 
@@ -84,6 +86,8 @@ public class CoreTestTemplates {
         private boolean minimumOffence;
         private boolean reportingRestrictions;
         private List<CourtApplication> courtApplications;
+
+        private Map<UUID,UUID> seedingHearingIds;
 
         private Map<UUID, Map<UUID, List<UUID>>> structure = toMap(randomUUID(), toMap(randomUUID(), asList(randomUUID())));
 
@@ -135,6 +139,11 @@ public class CoreTestTemplates {
         @SuppressWarnings("squid:S2384")
         public CoreTemplateArguments setCourtApplication(List<CourtApplication> courtApplications) {
             this.courtApplications = courtApplications;
+            return this;
+        }
+
+        public CoreTemplateArguments setSeedingHearingIds(Map<UUID,UUID> seedingHearingIds){
+            this.seedingHearingIds = seedingHearingIds;
             return this;
         }
 
@@ -288,6 +297,14 @@ public class CoreTestTemplates {
     public static Offence.Builder offenceWithReportingRestrictions(CoreTemplateArguments args, UUID offenceId, List<ReportingRestriction> reportingRestrictions) {
         final Offence.Builder offencebuilder = offence(args, offenceId);
         offencebuilder.withReportingRestrictions(reportingRestrictions);
+        if(nonNull(args.seedingHearingIds) && !args.seedingHearingIds.isEmpty()){
+            final UUID seedingHearingId = args.seedingHearingIds.get(offenceId);
+            if(nonNull(seedingHearingId)) {
+                offencebuilder.withSeedingHearing(SeedingHearing.seedingHearing()
+                        .withSeedingHearingId(seedingHearingId)
+                        .build());
+            }
+        }
         return offencebuilder;
     }
 
@@ -336,6 +353,14 @@ public class CoreTestTemplates {
         if(args.convicted) {
             final LocalDate convictionDate = PAST_LOCAL_DATE.next();
             result.withConvictionDate((convictionDate));
+        }
+        if( nonNull(args.seedingHearingIds) && !args.seedingHearingIds.isEmpty()){
+            final UUID seedingHearingId = args.seedingHearingIds.get(offenceId);
+            if(nonNull(seedingHearingId)) {
+                result.withSeedingHearing(SeedingHearing.seedingHearing()
+                        .withSeedingHearingId(seedingHearingId)
+                        .build());
+            }
         }
         return result;
     }

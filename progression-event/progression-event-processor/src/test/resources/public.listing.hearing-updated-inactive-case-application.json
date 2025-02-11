@@ -1,0 +1,32 @@
+{
+  "updatedHearing" : {
+    "courtApplicationIds" : [
+      "%APPLICATION_ID%"
+    ],
+    "courtCentre" : {
+      "code" : "C01CY00",
+      "id" : "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+      "name" : "Croydon Crown Court",
+      "roomId" : "731816c1-5ee4-373a-9bda-840e13a5bcb0"
+    },
+    "hearingDays" : [
+      {
+      "courtCentreId" : "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+      "courtRoomId" : "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+      "isCancelled" : false,
+      "listedDurationMinutes" : 45,
+      "listingSequence" : 1,
+      "sittingDay" : "2024-12-17T11:00:00.000Z"
+    }
+    ],
+    "hearingLanguage" : "ENGLISH",
+    "id": "%HEARING_ID%",
+    "jurisdictionType" : "CROWN",
+    "type" : {
+      "description": "%HEARING_TYPE%",
+      "id" : "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+    }
+  },
+  "sendNotificationToParties" : true,
+  "isNotificationAllocationFieldUpdated" : true
+}

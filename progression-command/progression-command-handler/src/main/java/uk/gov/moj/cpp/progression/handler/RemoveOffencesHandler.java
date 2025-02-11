@@ -46,7 +46,7 @@ public class RemoveOffencesHandler {
         final EventStream eventStream = eventSource.getStreamById(removeOffencesFromExistingHearing.getHearingId());
         final HearingAggregate hearingAggregate = aggregateService.get(eventStream, HearingAggregate.class);
 
-        final Stream<Object> events = hearingAggregate.removeOffenceFromHearing(removeOffencesFromExistingHearing.getHearingId(), removeOffencesFromExistingHearing.getOffenceIds());
+        final Stream<Object> events = hearingAggregate.removeOffenceFromHearing(removeOffencesFromExistingHearing.getHearingId(), removeOffencesFromExistingHearing.getOffenceIds(), removeOffencesFromExistingHearing.getIsNextHearingDeleting());
         appendEventsToStream(removeOffencesEnvelope, eventStream, events);
     }
 

@@ -29,7 +29,6 @@ import java.time.LocalDate;
 
 import javax.json.JsonObject;
 
-import com.google.common.collect.Lists;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -185,7 +185,7 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         return indexData.containsKey("parties") && (indexData.getJsonArray("parties").size() == partySize);
     }
 
-    private DocumentContext documentContext(final String caseUrn) throws IOException {
+    private DocumentContext documentContext(final String caseUrn) {
         final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 courtDocumentId, randomUUID().toString(), caseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);

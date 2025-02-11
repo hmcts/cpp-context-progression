@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.allOf;
@@ -73,7 +74,8 @@ public class HearingUnallocatedEventProcessorTest {
         assertThat(commandEvent.payload().toString(), isJson(allOf(
                 withJsonPath("$.hearingId", equalTo(hearingId)),
                 withJsonPath("$.offenceIds.[0]", equalTo(offenceId1.toString())),
-                withJsonPath("$.offenceIds.[1]", equalTo(offenceId2.toString()))
+                withJsonPath("$.offenceIds.[1]", equalTo(offenceId2.toString())),
+                withJsonPath("$.isNextHearingDeleting", equalTo(true))
                 )));
     }
 
@@ -103,7 +105,8 @@ public class HearingUnallocatedEventProcessorTest {
         assertThat(commandEvent.payload().toString(), isJson(allOf(
                 withJsonPath("$.hearingId", equalTo(hearingId)),
                 withJsonPath("$.offenceIds.[0]", equalTo(offenceId1.toString())),
-                withJsonPath("$.offenceIds.[1]", equalTo(offenceId2.toString()))
+                withJsonPath("$.offenceIds.[1]", equalTo(offenceId2.toString())),
+                withJsonPath("$.isNextHearingDeleting", equalTo(true))
         )));
     }
 
@@ -133,6 +136,8 @@ public class HearingUnallocatedEventProcessorTest {
         assertThat(commandEventResponse.metadata().name(), is("progression.command.remove-offences-from-existing-hearing"));
         assertThat(commandEventResponse.payload().toString(), isJson(allOf(
                 withJsonPath("$.hearingId", equalTo(hearingId.toString())),
-                withJsonPath("$.offenceIds[0:2]", containsInAnyOrder(offenceId1.toString(),offenceId2.toString())))));
+                withJsonPath("$.offenceIds[0:2]", containsInAnyOrder(offenceId1.toString(),offenceId2.toString())),
+                withoutJsonPath("$.isNextHearingDeleting")
+        )));
     }
 }

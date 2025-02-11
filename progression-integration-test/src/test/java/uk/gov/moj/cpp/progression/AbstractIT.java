@@ -39,7 +39,6 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUse
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupHearingQueryStub;
 
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
@@ -73,7 +72,6 @@ public class AbstractIT {
     protected static ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil = null;
     protected static ElasticSearchIndexFinderUtil elasticSearchIndexFinderUtil;
     protected static final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
-    protected static final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
     protected static final JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     protected static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -113,6 +111,7 @@ public class AbstractIT {
 
 
     protected static void defaultStubs() {
+
         setupAsAuthorisedUser(USER_ID_VALUE);
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
         mockMaterialUpload();

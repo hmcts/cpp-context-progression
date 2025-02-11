@@ -10,8 +10,6 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 
-import uk.gov.justice.service.wiremock.testutil.InternalEndpointMockUtils;
-
 public class NotifyStub {
 
     private static final String COMMAND_URL = "/notificationnotify-service/command/api/rest/notificationnotify/notifications/";
@@ -20,8 +18,6 @@ public class NotifyStub {
     private static final String COMMAND_PRINT_MEDIA_TYPE = "application/vnd.notificationnotify.letter+json";
 
     public static void stubNotifications() {
-        InternalEndpointMockUtils.stubPingFor("notificationnotify-service");
-
         stubFor(post(urlPathMatching(COMMAND_URL + ".*"))
                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())
@@ -30,8 +26,6 @@ public class NotifyStub {
     }
 
     public static void stubLetterNotifications() {
-        InternalEndpointMockUtils.stubPingFor("notificationnotify-service");
-
         stubFor(post(urlPathMatching(COMMAND_URL + ".*"))
                 .withHeader(CONTENT_TYPE, equalTo(COMMAND_PRINT_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(ACCEPTED.getStatusCode())

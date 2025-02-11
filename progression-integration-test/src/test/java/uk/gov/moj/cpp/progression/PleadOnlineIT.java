@@ -51,7 +51,7 @@ public class PleadOnlineIT extends AbstractIT {
     private static final JmsMessageConsumerClient messageConsumerOnlinePleaPcqVisitedRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.online-plea-pcq-visited-recorded").getMessageConsumerClient();
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         setupLoggedInUsersPermissionQueryStub();
 
         pleadOnlineHelper = new PleadOnlineHelper();

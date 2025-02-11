@@ -1,8 +1,6 @@
 package uk.gov.moj.cpp.progression.helper;
 
 import static com.google.common.io.Resources.getResource;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 
@@ -11,7 +9,6 @@ import java.nio.charset.Charset;
 import java.util.UUID;
 
 import com.google.common.io.Resources;
-import io.restassured.response.Response;
 
 public class CourtApplicationsHelper {
 

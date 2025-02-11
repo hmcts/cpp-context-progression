@@ -23,11 +23,13 @@ import java.util.Collections;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingUpdatedProcessed;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.SeedingHearing;
+import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing;
@@ -100,12 +102,7 @@ public class RelatedHearingCommandHandlerTest {
         final UUID offenceId = randomUUID();
 
         final UpdateRelatedHearingCommand command = createUpdateRelatedHearingCommand(hearingId, seedingHearingId, prosecutionCaseId, offenceId);
-
-        final HearingAggregate hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-
-        hearingAggregate.updateRelatedHearing(command.getHearingRequest(), command.getIsAdjourned(), command.getExtendedHearingFrom(), command.getIsPartiallyAllocated(), command.getSeedingHearing(), command.getShadowListedOffences());
+        hearingAggregate.apply(HearingForApplicationCreated.hearingForApplicationCreated().withHearingListingStatus(HearingListingStatus.HEARING_RESULTED).build());
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -114,6 +111,8 @@ public class RelatedHearingCommandHandlerTest {
                 .build();
 
         final Envelope<UpdateRelatedHearingCommand> envelope = envelopeFrom(metadata, command);
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
         relatedHearingCommandHandler.handleUpdateRelatedHearingCommand(envelope);
         final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
 

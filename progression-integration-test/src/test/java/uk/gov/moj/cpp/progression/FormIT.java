@@ -12,13 +12,10 @@ import static java.lang.String.format;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
-import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -29,21 +26,17 @@ import static uk.gov.justice.core.courts.FormType.BCM;
 import static uk.gov.justice.core.courts.FormType.PTPH;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.PetFormIT.DATA;
 import static uk.gov.moj.cpp.progression.PetFormIT.NAME;
 import static uk.gov.moj.cpp.progression.PetFormIT.UPDATED_BY;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
@@ -122,7 +115,6 @@ public class FormIT extends AbstractIT {
     public static final String GROUPS_BY_LOGGEDIN_USER = "/users/logged-in-user/groups";
     public static final String GET_GROUPS_BY_LOGGEDIN_USER_QUERY = BASE_QUERY + GROUPS_BY_LOGGEDIN_USER;
 
-
     public static final String SUBMISSION_ID_VALUE = "e85d2c62-af1f-4674-863a-0891e67e325b";
 
     private static final JmsMessageConsumerClient consumerForFormCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-created").getMessageConsumerClient();
@@ -195,7 +187,7 @@ public class FormIT extends AbstractIT {
 
         // update form
         final JsonObject payloadForUpdate = createObjectBuilder()
-                .add("formData", UPDATED_FORM_DATA.toString()).build();
+                .add("formData", UPDATED_FORM_DATA).build();
         final String updateFormEndpointUrl = UPDATE_FORM_ENDPOINT.replaceAll("%caseId%", caseId.toString()).replaceAll("%courtFormId%", courtFormId.toString());
         final Response responseForUpdateForm = postCommand(getWriteUrl(updateFormEndpointUrl), UPDATE_FORM_MEDIA_TYPE, payloadForUpdate.toString());
 
@@ -501,64 +493,47 @@ public class FormIT extends AbstractIT {
     }
 
     private static void queryAndVerifyFormDetailWithCaseId(final UUID courtFormId, final UUID caseId, final UUID defendantId, FormType formType) {
-        poll(requestParams(getReadUrl(format("/prosecutioncases/%s/form", caseId)),
-                "application/vnd.progression.query.forms-for-case+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(30, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.forms[0].courtFormId", is(courtFormId.toString())),
-                                        withJsonPath("$.caseId", is(caseId.toString())),
-                                        withJsonPath("$.forms[0].formType", is(formType.name())),
-                                        withJsonPath("$.forms[0].defendants[0].defendantId", is(defendantId.toString()))
-                                )));
+        pollForResponse(format("/prosecutioncases/%s/form", caseId),
+                "application/vnd.progression.query.forms-for-case+json",
+                randomUUID().toString(),
+                withJsonPath("$.forms[0].courtFormId", is(courtFormId.toString())),
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.forms[0].formType", is(formType.name())),
+                withJsonPath("$.forms[0].defendants[0].defendantId", is(defendantId.toString()))
+        );
     }
 
     private static void queryAndVerifyNoOfForms(final UUID caseId, int size) {
-        poll(requestParams(getReadUrl(format("/prosecutioncases/%s/form", caseId)),
-                "application/vnd.progression.query.forms-for-case+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(30, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.forms", hasSize(size))
-                                )));
+        pollForResponse(format("/prosecutioncases/%s/form", caseId),
+                "application/vnd.progression.query.forms-for-case+json",
+                randomUUID().toString(),
+                withJsonPath("$.forms", hasSize(size))
+        );
     }
 
     private static void queryAndVerifyFormDetailsWithCaseIdAndFormType(final UUID courtFormId, final UUID caseId, FormType formType, final UUID defendantId) {
-        poll(requestParams(getReadUrl(format("/prosecutioncases/%s/form".concat("?formType=").concat(formType.name()), caseId)),
-                "application/vnd.progression.query.forms-for-case+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(30, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.forms[0].courtFormId", is(courtFormId.toString())),
-                                        withJsonPath("$.caseId", is(caseId.toString())),
-                                        withJsonPath("$.forms[0].formType", is(formType.name())),
-                                        withJsonPath("$.forms[0].defendants[0].defendantId", is(defendantId.toString()))
-
-                                )));
+        pollForResponse(format("/prosecutioncases/%s/form".concat("?formType=").concat(formType.name()), caseId),
+                "application/vnd.progression.query.forms-for-case+json",
+                randomUUID().toString(),
+                withJsonPath("$.forms[0].courtFormId", is(courtFormId.toString())),
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.forms[0].formType", is(formType.name())),
+                withJsonPath("$.forms[0].defendants[0].defendantId", is(defendantId.toString()))
+        );
     }
 
     private static void queryAndVerifyForm(final UUID courtFormId, final UUID caseId, final UUID defendantId, final String offenceId) {
-        poll(requestParams(getReadUrl(format("/prosecutioncases/%s/form/%s", caseId, courtFormId)),
-                "application/vnd.progression.query.form+json")
-                .withHeader("CJSCPPUID", randomUUID()))
-                .timeout(30, SECONDS)
-                .until(status().is(OK),
-                        payload().isJson(
-                                allOf(
-                                        withJsonPath("$.courtFormId", is(courtFormId.toString())),
-                                        withJsonPath("$.caseId", is(caseId.toString())),
-                                        withJsonPath("$.lastUpdated", notNullValue()),
-                                        withJsonPath("$.formData", is("{\"name\":\"updated name\",\"offence\":\"burglary\"}")),
-                                        withJsonPath("$.formType", is(BCM.name())),
-                                        withJsonPath("$.defendants", hasSize(1)),
-                                        withJsonPath("$.defendants[0].defendantId", is(defendantId.toString()))
-                                )));
+        pollForResponse(format("/prosecutioncases/%s/form/%s", caseId, courtFormId),
+                "application/vnd.progression.query.form+json",
+                randomUUID().toString(),
+                withJsonPath("$.courtFormId", is(courtFormId.toString())),
+                withJsonPath("$.caseId", is(caseId.toString())),
+                withJsonPath("$.lastUpdated", notNullValue()),
+                withJsonPath("$.formData", is("{\"name\":\"updated name\",\"offence\":\"burglary\"}")),
+                withJsonPath("$.formType", is(BCM.name())),
+                withJsonPath("$.defendants", hasSize(1)),
+                withJsonPath("$.defendants[0].defendantId", is(defendantId.toString()))
+        );
     }
 
     private void assertEditFormRequestedFromEventStream(final UUID caseId, final UUID courtFormId, final UUID lockedBy, final UUID lockRequestedBy, final boolean isLocked, final JsonObject event) {

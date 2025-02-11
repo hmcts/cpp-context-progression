@@ -171,7 +171,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
         };
     }
 
-    private DocumentContext initialCase() throws IOException {
+    private DocumentContext initialCase() {
         final String commandJson = createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(), randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), initialCaseUrn, REFER_TO_CROWN_COMMAND_RESOURCE_LOCATION);
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);

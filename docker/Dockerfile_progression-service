@@ -5,9 +5,9 @@ FROM crmdvrepo01.azurecr.io/hmcts/wildfly:${baseImageTag}
 
 ARG version
 ARG repo_loc=https://libraries-internal.mdv.cpp.nonlive/artifactory/repocentral
-ARG framework_libraries_version=17.100.1
-ARG framework_version=17.100.4
-ARG eventstore_version=17.100.8
+ARG framework_libraries_version=17.101.2
+ARG framework_version=17.101.6
+ARG eventstore_version=17.101.5
 ARG activiti_version=17.10.4
 
 ARG wildfly_home=/opt/jboss/wildfly
@@ -22,6 +22,7 @@ RUN chown ${wildfly_user}:${wildfly_user} ${wildfly_home}/standalone/deployments
 
 # liquibase jars & config
 RUN mkdir /tmp/liquibase
+ADD ${repo_loc}/uk/gov/moj/cpp/${context_group_name}/${context_name}-eventprocessorstore-liquibase/${version}/${context_name}-eventprocessorstore-liquibase-${version}.jar /tmp/liquibase/${context_name}-eventprocessorstore-liquibase.jar
 ADD ${repo_loc}/uk/gov/moj/cpp/${context_group_name}/${context_name}-viewstore-liquibase/${version}/${context_name}-viewstore-liquibase-${version}.jar /tmp/liquibase/${context_name}-viewstore-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/event-repository-liquibase/${eventstore_version}/event-repository-liquibase-${eventstore_version}.jar  /tmp/liquibase/event-repository-liquibase.jar
 ADD ${repo_loc}/uk/gov/justice/event-store/aggregate-snapshot-repository-liquibase/${eventstore_version}/aggregate-snapshot-repository-liquibase-${eventstore_version}.jar  /tmp/liquibase/aggregate-snapshot-repository-liquibase.jar

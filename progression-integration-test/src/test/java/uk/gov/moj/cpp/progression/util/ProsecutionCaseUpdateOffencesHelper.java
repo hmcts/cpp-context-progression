@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.progression.util;
 
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -13,6 +16,7 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import io.restassured.path.json.JsonPath;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -101,6 +105,17 @@ public class ProsecutionCaseUpdateOffencesHelper extends AbstractTestHelper {
 
         request = jsonObjectPayload.toString();
         makePostCall(getWriteUrl("/hearing/" + hearingId + "/plea"), WRITE_MEDIA_TYPE_PLEA, request);
+    }
+
+    /**
+     * Retrieve message from queue and do additional verifications
+     */
+    public void verifyInActiveMQ(final JmsMessageConsumerClient privateEventsConsumer) {
+        final JsonPath jsRequest = new JsonPath(request);
+
+        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
+
+        assertThat(jsonResponse.getString("id"), is(jsRequest.getString("id")));
     }
 
     public void updateMultipleOffences(final String offenceId, final String secondOffenceId, final String offenceCode) throws JSONException {

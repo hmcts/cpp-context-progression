@@ -332,6 +332,13 @@
                 "count": 0,
                 "endorsableFlag": false,
                 "id": "7eb97448-a4ee-4aab-8c71-ccc641222193",
+                "indicatedPlea": {
+                  "indicatedPleaDate": "2025-01-28",
+                  "indicatedPleaValue": "INDICATED_GUILTY",
+                  "offenceId": "11232d26-f775-430a-94c4-ccf8bb4aeb92",
+                  "originatingHearingId": "11d927e2-843e-41be-9572-e5b9504869f2",
+                  "source": "IN_COURT"
+                },
                 "isDisposed": true,
                 "judicialResults": [
                   {

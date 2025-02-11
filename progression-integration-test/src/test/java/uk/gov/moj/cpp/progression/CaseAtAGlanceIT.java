@@ -4,19 +4,11 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
-import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
-import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithPoliceBailInfo;
@@ -24,19 +16,18 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCa
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.moj.cpp.progression.helper.RestHelper;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -270,36 +261,26 @@ public class CaseAtAGlanceIT {
     }
 
     private void verifyCaseHearings(final String caseId) {
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId), PROGRESSION_QUERY_GET_CASE_HEARINGS)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.hearings.length()", is(1)),
-                                withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
-                                withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
-                                withJsonPath("$.hearings[0].courtCentre.name", is("Lavender Hill Magistrate's Court")),
-                                withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
-                                withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01"))
-                        )));
+        pollForResponse("/prosecutioncases/" + caseId, PROGRESSION_QUERY_GET_CASE_HEARINGS, randomUUID().toString(),
+                withJsonPath("$.hearings.length()", is(1)),
+                withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
+                withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
+                withJsonPath("$.hearings[0].courtCentre.name", is("Lavender Hill Magistrate's Court")),
+                withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
+                withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01"))
+        );
     }
 
     private void verifyCaseDefendantHearings(final String caseId, final String defendantId) {
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), PROGRESSION_QUERY_GET_CASE_DEFENDANT_HEARINGS)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.hearings.length()", is(1)),
-                                withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
-                                withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
-                                withJsonPath("$.hearings[0].courtCentre.name", is("Lavender Hill Magistrate's Court")),
-                                withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
-                                withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01")),
-                                withJsonPath("$.hearings[0].hearingDays[0].sittingDay", is("2019-05-30T18:32:04.238Z"))
-                        )));
+        pollForResponse("/prosecutioncases/" + caseId + "/defendants/" + defendantId, PROGRESSION_QUERY_GET_CASE_DEFENDANT_HEARINGS, randomUUID().toString(),
+                withJsonPath("$.hearings.length()", is(1)),
+                withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
+                withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
+                withJsonPath("$.hearings[0].courtCentre.name", is("Lavender Hill Magistrate's Court")),
+                withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
+                withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01")),
+                withJsonPath("$.hearings[0].hearingDays[0].sittingDay", is("2019-05-30T18:32:04.238Z"))
+        );
     }
 
     private void verifyCaseAtAGlanceForNonStdProsecutor(final String caseId, final String address1, final String address2, final String postCode) {
@@ -339,14 +320,9 @@ public class CaseAtAGlanceIT {
                 withJsonPath("$.activeCourtOrders[0].courtOrders[0].id", equalTo("2fc69990-bf59-4c4a-9489-d766b9abde9a")));
     }
 
-    private static void verifyNoCaseHearingTypes(final String caseId, final LocalDate orderDate) {
-        poll(requestParams(getReadUrl("/prosecutioncases/" + caseId + "?orderDate=" + orderDate.toString()), PROGRESSION_QUERY_GET_CASE_HEARING_TYPES)
-                .withHeader(USER_ID, randomUUID()))
-                .timeout(RestHelper.TIMEOUT, TimeUnit.SECONDS)
-                .until(
-                        status().is(OK),
-                        payload().isJson(allOf(
-                                withJsonPath("$.hearingTypes.length()", is(0)))));
+    private void verifyNoCaseHearingTypes(final String caseId, final LocalDate orderDate) {
+        pollForResponse("/prosecutioncases/" + caseId + "?orderDate=" + orderDate.toString(), PROGRESSION_QUERY_GET_CASE_HEARING_TYPES, randomUUID().toString(),
+                withJsonPath("$.hearingTypes.length()", is(0)));
     }
 }
 

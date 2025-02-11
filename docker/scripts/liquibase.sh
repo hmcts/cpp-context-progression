@@ -38,6 +38,13 @@ then
 else
     echo success!
 fi
+java -jar progression-eventprocessorstore-liquibase.jar --url=jdbc:postgresql://${dbServerName}:${dbPort}/progressioneventprocessorstore?sslmode=require --username=${dbUserName} --password=${dbPassword} --logLevel=info update
+if [ $? -ne 0 ]
+then
+    exit 1
+else
+    echo success!
+fi
 java -jar framework-system-liquibase.jar --url=jdbc:postgresql://${dbServerName}:${dbPort}/progressionsystem?sslmode=require --username=${dbUserName} --password=${dbPassword} --logLevel=info update
 if [ $? -ne 0 ]
 then
