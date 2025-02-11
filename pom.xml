@@ -98,6 +98,7 @@
         <jgitflow.maven.developBranchName>main</jgitflow.maven.developBranchName>
         <liquibase.core.version>3.6.1</liquibase.core.version>
     </properties>
+
     <build>
         <plugins>
             <plugin>
