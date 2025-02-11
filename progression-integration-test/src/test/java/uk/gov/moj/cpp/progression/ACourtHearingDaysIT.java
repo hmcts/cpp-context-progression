@@ -14,22 +14,21 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createHttpHeaders;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
 import java.net.URL;
@@ -51,14 +50,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 public class ACourtHearingDaysIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String MEDIA_TYPE_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE = "application/vnd.progression.correct-hearing-days-without-court-centre+json";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_LISTING_HEARING_DAYS_WITHOUT_COURT_CENTRE_CORRECTED = "public.events.listing.hearing-days-without-court-centre-corrected";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
@@ -74,7 +70,6 @@ public class ACourtHearingDaysIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        HearingStub.stubInitiateHearing();
         courtCentreId = fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         courtRoomId = randomUUID().toString();
         listedDurationMinutes = 20;
@@ -97,12 +92,12 @@ public class ACourtHearingDaysIT extends AbstractIT {
 
         try (Response response = restClient.postCommand(getWriteUrl("/correct-hearing-days-without-court-centre"),
                 MEDIA_TYPE_CORRECT_HEARING_DAYS_WITHOUT_COURT_CENTRE,
-                payload.toString(), getRequestHeader(userId))) {
+                payload.toString(), createHttpHeaders(userId))) {
 
             assertThat(response.getStatus(), equalTo(SC_ACCEPTED));
         }
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.hearingDays[0].courtCentreId", is(courtCentreId)),
                 withJsonPath("$.hearing.hearingDays[0].courtRoomId", is(courtRoomId))
@@ -140,15 +135,9 @@ public class ACourtHearingDaysIT extends AbstractIT {
                 withJsonPath("$.hearing.hearingDays[0].hasSharedResults", is(true))
         };
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingDaysMatchers);
+        pollForHearing(hearingId, hearingDaysMatchers);
 
         verifyProbationHearingCommandInvoked(newArrayList(hearingId, courtCentreId, courtRoomId, "2018-09-28T12:13:00.000Z"));
-    }
-
-    private MultivaluedMap<String, Object> getRequestHeader(final String userId) {
-        final MultivaluedMap<String, Object> headersMap = new MultivaluedHashMap<>();
-        headersMap.add(CPP_UID_HEADER.getName(), userId);
-        return headersMap;
     }
 
     public static io.restassured.response.Response addProsecutionCaseToCrownCourt(final String caseId, final String defendantId, final String reportingRestrictionOrderedDate) throws IOException, JSONException {

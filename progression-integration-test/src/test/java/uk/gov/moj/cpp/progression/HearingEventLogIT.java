@@ -15,7 +15,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -29,8 +28,8 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsPerCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithCommittingCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
@@ -38,11 +37,8 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupHmctsUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.CourtSchedulerServiceStub.stubGetProvisionalBookedSlotsForExistingBookingId;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getHearingEventTemplate;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
@@ -57,7 +53,6 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -89,13 +84,11 @@ public class HearingEventLogIT extends AbstractIT {
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private final UUID documentTypeId = UUID.fromString("460fae22-c002-11e8-a355-529269fb1459");
     private final String TEMPLATE_NAME = "HearingEventLog";
-    private static final String DOCUMENT_TEXT = new StringGenerator().next();
 
     private JmsMessageProducerClient messageProducerClientPublic;
     private JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated;
     private JmsMessageConsumerClient messageConsumerClientPublicForHearingEventsLogsDocumentSucess;
     private JmsMessageConsumerClient messageConsumerClientPublicForHearingEventsLogsDocumentFailed;
-    private JmsMessageConsumerClient messageConsumerHearingLogDocumentCreated;
 
     @BeforeEach
     public void setUp() {
@@ -103,12 +96,9 @@ public class HearingEventLogIT extends AbstractIT {
         messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).getMessageConsumerClient();
         messageConsumerClientPublicForHearingEventsLogsDocumentSucess = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_HEARING_EVENTS_LOGS_DOCUMENT_SUCCESS).getMessageConsumerClient();
         messageConsumerClientPublicForHearingEventsLogsDocumentFailed = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_HEARING_EVENTS_LOGS_DOCUMENT_FAILED).getMessageConsumerClient();
-        messageConsumerHearingLogDocumentCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.hearing-event-logs-document-created").getMessageConsumerClient();
-        stubInitiateHearing();
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", documentTypeId.toString());
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
-        stubDocumentCreate(DOCUMENT_TEXT);
     }
 
     @AfterEach
@@ -144,8 +134,7 @@ public class HearingEventLogIT extends AbstractIT {
         final String earliestStartDateTime = ZonedDateTimes.fromString("2020-12-15T18:32:04.238Z").toString();
 
         initiateCourtProceedingsWithCommittingCourt(caseId, defendantId, listedStartDateTime, earliestStartDateTime);
-
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
@@ -201,7 +190,7 @@ public class HearingEventLogIT extends AbstractIT {
         final String listedStartDateTime = ZonedDateTimes.fromString("2020-12-15T18:32:04.238Z").toString();
         final String earliestStartDateTime = ZonedDateTimes.fromString("2020-12-15T18:32:04.238Z").toString();
         initiateCourtProceedingsWithCommittingCourt(caseId, defendantId, listedStartDateTime, earliestStartDateTime);
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
@@ -235,7 +224,7 @@ public class HearingEventLogIT extends AbstractIT {
         stubHearingEventLogs(caseId, hearingEventLogResponsePayload);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JmsMessageConsumerClient publicHearingDetailChangedConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.hearing-detail-changed").getMessageConsumerClient();
 
@@ -270,7 +259,7 @@ public class HearingEventLogIT extends AbstractIT {
         final String hearinEventLogResponsePayload = getPayload("stub-data/hearing.get-no-hearing-event-log-document-application.json");
         stubAaagHearingEventLogs(applicationId.get(), hearinEventLogResponsePayload);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JmsMessageConsumerClient publicHearingDetailChangedConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.hearing-detail-changed").getMessageConsumerClient();
 
@@ -319,7 +308,7 @@ public class HearingEventLogIT extends AbstractIT {
         stubAaagHearingEventLogs(applicationId.get(), hearinEventLogResponsePayload);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", documentTypeId.toString());
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
@@ -379,7 +368,7 @@ public class HearingEventLogIT extends AbstractIT {
         stubAaagHearingEventLogs(applicationId.get(), hearinEventLogResponsePayload);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED + ".json", caseId,
                 hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"));
@@ -417,7 +406,7 @@ public class HearingEventLogIT extends AbstractIT {
                 .replace("%ORGANISATION_ID%", loggedInUserObject.getString("organisationId"));
         stubGetUserOrganisation(loggedInUserObject.getString("organisationId"), organisation);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JmsMessageConsumerClient publicHearingDetailChangedConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.hearing-detail-changed").getMessageConsumerClient();
 
@@ -471,7 +460,7 @@ public class HearingEventLogIT extends AbstractIT {
         final String earliestStartDateTime = ZonedDateTimes.fromString("2020-12-15T18:32:04.238Z").toString();
         initiateCourtProceedingsWithCommittingCourt(caseId, defendantId, listedStartDateTime, earliestStartDateTime);
 
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
@@ -480,9 +469,6 @@ public class HearingEventLogIT extends AbstractIT {
 
         verifyInMessagingQueueForCasesReferredToCourts();
         verifyCaagHearingEventLog(caseId);
-        //Then
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingLogDocumentCreated, 1L);
-        assertThat(message.isEmpty(), is(true));
     }
 
     private void verifyCaagHearingEventLog(final String caseId) throws IOException {
@@ -503,25 +489,17 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
     private void verifyHearingEventsLogsDocumentRequested(final String courtDocumentId, final String caseId, final String defendantId, final String materialId, final Optional<String> applicationId, final String caseStatus) throws Exception {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerHearingLogDocumentCreated);
-        assertThat(message.isPresent(), is(true));
 
+        verifyHearingEventsLogsDocumentGenerated(TEMPLATE_NAME);
         if (applicationId.isPresent() && !applicationId.get().isEmpty()) {
-            assertThat(message.get().getString("caseId"), is(notNullValue()));
-            assertThat(message.get().getString("applicationId"), is(notNullValue()));
-            verifyHearingEventsLogsDocumentGenerated(TEMPLATE_NAME);
             verifyAddApplicationCourtDocument(courtDocumentId, caseId, defendantId, materialId, applicationId.get());
-            final String actualDocument = getCourtDocumentsByApplication(UUID.randomUUID().toString(), applicationId.get());
+            final String actualDocument = getCourtDocumentsByApplication(randomUUID().toString(), applicationId.get());
             verifyApplicationDocIndices(applicationId.get(), actualDocument);
         } else {
-            assertThat(message.get().getString("caseId"), is(notNullValue()));
-            verifyHearingEventsLogsDocumentGenerated(TEMPLATE_NAME);
             verifyAddCourtDocument(courtDocumentId, caseId, defendantId, materialId);
-            getCourtDocumentsPerCase(UUID.randomUUID().toString(), caseId, verifyCaseDocIndices(caseId));
+            getCourtDocumentsPerCase(randomUUID().toString(), caseId, verifyCaseDocIndices(caseId));
         }
-
         verifyMaterialCreated();
-
     }
 
     private Matcher[] verifyCaseDocIndices(final String caseId) {

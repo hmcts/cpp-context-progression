@@ -9,7 +9,7 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
@@ -19,18 +19,16 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import javax.json.JsonObject;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
     private String caseId;
@@ -40,7 +38,6 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -51,8 +48,7 @@ public class HearingUpdateForCaseAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldUpdateCaseAtAGlance() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId,
-                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", CoreMatchers.notNullValue()));
+        String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JmsMessageConsumerClient publicHearingDetailChangedConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.hearing-detail-changed").getMessageConsumerClient();
 

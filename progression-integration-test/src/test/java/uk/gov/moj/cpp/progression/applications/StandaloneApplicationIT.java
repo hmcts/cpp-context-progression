@@ -6,20 +6,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.util.UUID;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class StandaloneApplicationIT {
-
+public class StandaloneApplicationIT extends AbstractIT {
 
     @Test
     public void shouldInitiateCourtProceedingsForCourtHearing() throws Exception {
@@ -78,7 +74,6 @@ public class StandaloneApplicationIT {
 
     @Test
     public void shouldInitiateCourtProceedingsForBoxHearing() throws Exception {
-        stubInitiateHearing();
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, UUID.randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
         final Matcher[] applicationMatchers = createMatchersForAssertion(applicationId, "IN_PROGRESS");

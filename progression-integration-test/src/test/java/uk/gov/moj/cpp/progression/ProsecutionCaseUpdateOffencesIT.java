@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("java:S2699")
 public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
 
-    private static final JmsMessageConsumerClient publicEventsConsumerForOffencesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventsConsumerForOffencesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient();
 
     private ProsecutionCaseUpdateOffencesHelper helper;
     private String caseId;
@@ -156,7 +156,7 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
             final int orderIndex = Integer.parseInt(jsonObjectPayload.getJSONObject("prosecutionCase").getJSONArray("defendants").getJSONObject(0).getJSONArray("offences").getJSONObject(0).get("orderIndex").toString());
             final String hearingId = jsonObjectPayload.getJSONObject("hearingsAtAGlance").getJSONArray("defendantHearings").getJSONObject(0).getJSONArray("hearingIds").get(0).toString();
             // Add new offence and check orderIndex is incremented
-            updateOffenceClearVerdictAndVerify(hearingId, orderIndex, offenceId, consumerForDefendantListingStatusChanged);
+            updateOffenceClearVerdictAndVerify(hearingId, orderIndex, offenceId);
             return true;
         });
 
@@ -228,7 +228,7 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
     }
 
 
-    private void updateOffenceClearVerdictAndVerify(final String hearingId, final int orderIndex, final String offenceId, final JmsMessageConsumerClient consumerForDefendantListingStatusChanged) throws JSONException {
+    private void updateOffenceClearVerdictAndVerify(final String hearingId, final int orderIndex, final String offenceId) throws JSONException {
         // when
         helper.updateClearOffenceVerdict(hearingId, offenceId);
 
@@ -256,9 +256,6 @@ public class ProsecutionCaseUpdateOffencesIT extends AbstractIT {
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].plea", notNullValue())
         };
 
-        // then
-       // helper.verifyVerdictInActiveMQ(consumerForDefendantListingStatusChanged, matchers); //srivani
-        // then
         getHearingForDefendant(hearingId, matchers);
     }
 

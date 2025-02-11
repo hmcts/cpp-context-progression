@@ -40,12 +40,11 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
 
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
-    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-proceedings-initiated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-proceedings-initiated").getMessageConsumerClient();
 
     @BeforeEach
     public void setup() {
         stringToJsonObjectConverter = new StringToJsonObjectConverter();
-        SysDocGeneratorStub.stubDocGeneratorEndPoint();
     }
 
     @Test

@@ -25,15 +25,13 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STR
 import static uk.gov.moj.cpp.progression.applications.SummonsResultUtil.getSummonsApprovedResult;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.USER_ID;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.MaterialHelper.sendEventToConfirmMaterialAdded;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByApplication;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
@@ -55,8 +53,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.io.IOException;
@@ -70,7 +66,6 @@ import javax.json.JsonString;
 
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -90,7 +85,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     private static final String PUBLIC_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED = "progression.event.initiate-court-hearing-after-summons-approved";
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     private static final String PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED = "progression.event.nows-material-request-recorded";
@@ -117,10 +112,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
-        stubDocumentCreate(randomAlphanumeric(20));
-        IdMapperStub.setUp();
-        NotificationServiceStub.setUp();
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         caseId = randomUUID().toString();
@@ -188,7 +179,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
 
         final String courtHearingId = getNewHearingId(consumerForInitiateCourtHearingAfterSummonsApproved, hearing.getCourtApplications().get(0).getId());
-        verifyCourtHearingInitiate(courtHearingId);
+        pollForHearing(courtHearingId, withJsonPath("$.hearing.id", is(courtHearingId)));
 
         sendPublicEventToConfirmHearingForInitiatedCase(applicationId, courtHearingId, isWelsh);
     }
@@ -201,7 +192,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
         final Hearing hearing = getHearingInMessagingQueueForBoxWorkReferred(messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated, applicationId);
         final String boxworkHearingId = hearing.getId().toString();
-        pollForResponse("/hearingSearch/" + boxworkHearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(boxworkHearingId)));
+        pollForHearing(boxworkHearingId, withJsonPath("$.hearing.id", is(boxworkHearingId)));
         return hearing;
     }
 
@@ -241,11 +232,6 @@ public class RequestApplicationSummonsIT extends AbstractIT {
                 .build();
     }
 
-
-    private void verifyCourtHearingInitiate(String newHearingId) {
-        pollForResponse("/hearingSearch/" + newHearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(newHearingId)));
-    }
-
     private String getNewHearingId(final JmsMessageConsumerClient consumerForInitiateCourtHearingAfterSummonsApproved, final UUID applicationId) {
         final JsonPath message = retrieveMessageAsJsonPath(consumerForInitiateCourtHearingAfterSummonsApproved, isJson(allOf(withJsonPath("$.application.id", is(applicationId.toString())))));
         assertThat(ofNullable(message).isPresent(), is(true));
@@ -253,7 +239,7 @@ public class RequestApplicationSummonsIT extends AbstractIT {
 
     }
 
-    public Hearing getHearingInMessagingQueueForBoxWorkReferred(final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated, final String applicationId) {
+    private Hearing getHearingInMessagingQueueForBoxWorkReferred(final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated, final String applicationId) {
         final JsonPath message = retrieveMessageAsJsonPath(messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated, isJson(allOf(withJsonPath("$.hearing.courtApplications[0].id", is(applicationId)))));
         assertThat(ofNullable(message).isPresent(), is(true));
         return JSON_OBJECT_TO_OBJECT_CONVERTER.convert(STRING_TO_JSON_OBJECT_CONVERTER.convert(message.prettify()).getJsonObject("hearing"), Hearing.class);

@@ -18,7 +18,7 @@ import org.apache.http.HttpHeaders;
 public class IdMapperStub {
     private static final String SYSTEM_ID_MAPPER_ENDPOINT = "/system-id-mapper-api/rest/systemid/mappings/*";
 
-    public static void setUp() {
+    public static void setupIdMapperStub() {
         stubFor(get(urlPathMatching(SYSTEM_ID_MAPPER_ENDPOINT))
                 .willReturn(aResponse()
                         .withStatus(404)));

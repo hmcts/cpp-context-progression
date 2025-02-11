@@ -13,6 +13,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -31,26 +33,26 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 public class NotificationServiceStub {
     public static final String NOTIFICATION_NOTIFY_ENDPOINT = "/notificationnotify-service/command/api/rest/notificationnotify/notifications/.*";
     public static final String NOTIFICATION_NOTIFY_CONTENT_TYPE = "application/vnd.notificationnotify.letter+json";
-    public static final String NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON = "application/vnd.notificationnotify.send-email-notification+json";
+    public static final String NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON = "application/vnd.notificationnotify.email+json";
 
     static final String NOTIFY_CMS_TRANSFORM_AND_SEND = "/notification-cms/v1/transformAndSendCms";
     static final String COTR_FORM_SERVED = "cotr-form-served";
 
-    public static void setUp() {
+    public static void stubPostCallsNotificationNotify() {
         stubFor(post(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
                 .withHeader(CONTENT_TYPE, equalTo(NOTIFICATION_NOTIFY_CONTENT_TYPE))
                 .willReturn(aResponse()
                         .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString()))
+                        .withHeader(ID, randomUUID().toString()))
         );
         stubFor(post(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT))
                 .withHeader(CONTENT_TYPE, equalTo(NOTIFICATIONNOTIFY_SEND_EMAIL_NOTIFICATION_JSON))
                 .willReturn(aResponse()
                         .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString()))
+                        .withHeader(ID, randomUUID().toString()))
         );
 
-        stubFor(post(urlPathEqualTo("/notification-cms/v1/transformAndSendCms"))
+        stubFor(post(urlPathEqualTo(NOTIFY_CMS_TRANSFORM_AND_SEND))
                 .withRequestBody(equalToJson("{\"businessEventType\":\"defence-requested-to-notify-cps-of-material\",\"subjectBusinessObjectId\":\"7325fcd3-fb0a-4dbb-a876-848f6893aa09\",\"subjectDetails\":{\"material\":\"5e1cc18c-76dc-47dd-99c1-d6f87385edf1\",\"materialContentType\":\"pdf\",\"materialType\":\"SJP Notice\",\"prosecutionCaseSubject\":{\"caseUrn\":\"3cdbf809\",\"defendantSubject\":{\"asn\":\"arrest123\",\"prosecutorDefendantId\":\"TFL12345-ABC\"},\"prosecutingAuthority\":\"GB10056\"}}}"))
                 .willReturn(aResponse().withStatus(SC_OK)
                         .withHeader("Ocp-Apim-Subscription-Key", "3674a16507104b749a76b29b6c837352")
@@ -64,7 +66,7 @@ public class NotificationServiceStub {
     }
 
     public static void verifyEmailNotificationIsRaisedWithoutAttachment(final List<String> expectedValues, CountMatchingStrategy expectedCount) {
-        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
@@ -92,7 +94,7 @@ public class NotificationServiceStub {
     }
 
     public static void verifyEmailNotificationIsRaisedWithAttachment(final List<String> expectedValues, Optional<UUID> materialId) {
-        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
@@ -109,7 +111,7 @@ public class NotificationServiceStub {
     }
 
     public static void verifyCreateLetterRequested(final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
             RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(NOTIFICATION_NOTIFY_ENDPOINT));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

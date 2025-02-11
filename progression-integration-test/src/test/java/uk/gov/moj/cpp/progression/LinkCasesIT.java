@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.mergeC
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.splitCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.unlinkCases;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.LSMCasesHelper.getLsmQueryMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -63,7 +62,6 @@ public class LinkCasesIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
         prosecutionCaseId_1 = randomUUID().toString();
         defendantId_1 = randomUUID().toString();
         caseUrn_1 = generateUrn();

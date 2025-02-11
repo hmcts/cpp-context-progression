@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getMaterialContentResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
@@ -97,7 +98,7 @@ public class PreAndPostConditionHelper {
                 createReferProsecutionCaseToMagsCourtJsonBody(caseId, defendantId, referralId, caseUrn, postCode));
     }
 
-    public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved, final UUID userId) throws IOException {
+    public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved, final UUID userId) {
         return postCommandWithUserId(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
                 "application/vnd.progression.remove-court-document+json",
                 Json.createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
@@ -842,26 +843,6 @@ public class PreAndPostConditionHelper {
 
     }
 
-    private static String getInitiateCourtProceedingsJsonFromResourceWithId(final String resourceLocation, final String caseId, final String defendantId, final String materialIdOne,
-                                                                            final String materialIdTwo,
-                                                                            final String referralId, final String caseUrn,
-                                                                            final String listedStartDateTime, final String earliestStartDateTime,
-                                                                            final String dob,
-                                                                            final String streamID) {
-        return getPayload(resourceLocation)
-                .replace("RANDOM_CASE_ID", caseId)
-                .replace("RANDOM_REFERENCE", caseUrn)
-                .replaceAll("RANDOM_DEFENDANT_ID", defendantId)
-                .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
-                .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
-                .replace("RANDOM_REFERRAL_ID", referralId)
-                .replace("LISTED_START_DATE_TIME", listedStartDateTime)
-                .replace("EARLIEST_START_DATE_TIME", earliestStartDateTime)
-                .replace("DOB", dob)
-                .replace("STREAM_ID", streamID);
-
-    }
-
     private static String getInitiateCourtProceedingsJsonFromResource(final String resourceLocation, final String caseId, final String defendantId, final String defendantId2, final String materialIdOne,
                                                                       final String materialIdTwo,
                                                                       final String referralId, final String caseUrn,
@@ -1075,11 +1056,7 @@ public class PreAndPostConditionHelper {
 
 
     public static String getHearingForDefendant(final String hearingId, final Matcher<? super ReadContext>[] matchers) {
-        return pollForResponse("/hearingSearch/" + hearingId,
-                "application/vnd.progression.query.hearing+json",
-                randomUUID().toString(),
-                matchers
-        );
+        return pollForHearing(hearingId, matchers);
     }
 
     public static String pollHearingWithStatus(final String hearingId, final String hearingStatus) {
@@ -1087,11 +1064,7 @@ public class PreAndPostConditionHelper {
     }
 
     public static void verifyHearingIsEmpty(final String hearingId) {
-        pollForResponse("/hearingSearch/" + hearingId,
-                "application/vnd.progression.query.hearing+json",
-                randomUUID().toString(),
-                withJsonPath(".$", emptyCollection())
-        );
+        pollForHearing(hearingId, withJsonPath(".$", emptyCollection()));
     }
 
     @SafeVarargs
@@ -1101,6 +1074,11 @@ public class PreAndPostConditionHelper {
 
     @SafeVarargs
     public static String pollProsecutionCasesProgressionFor(final String caseId, final Matcher<? super ReadContext>... matchers) {
+        return pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase-v2+json", matchers);
+    }
+
+    @SafeVarargs
+    public static String pollProsecutionCasesWithCourtOrdersFor(final String caseId, final Matcher<? super ReadContext>... matchers) {
         return pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase+json", matchers);
     }
 
@@ -1134,7 +1112,7 @@ public class PreAndPostConditionHelper {
     @SafeVarargs
     public static String pollProsecutionCasesProgressionAndReturnHearingId(final String caseId, final String defendantId, final Matcher<? super ReadContext>... additionalMatchers) {
         // Adding this to the matchers to ensure that the defendant has at least one hearing as later we try to extract the hearing, which sometimes fail with array index out of bounds error.
-        final List<Matcher<? super ReadContext>> matchers = newArrayList(withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds[*]", hasSize(greaterThan(0))));
+        final List<Matcher<? super ReadContext>> matchers = newArrayList(withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds", hasSize(greaterThan(0))));
         if (additionalMatchers.length > 0) {
             matchers.addAll(asList(additionalMatchers));
         }
@@ -1209,8 +1187,8 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/search-trial-readiness?courtCentreId={0}&startDate={1}&endDate={2}&trailWithOverdueDirection={3}", courtCentreId, startDate, endDate, trailWithOverdueDirection), "application/vnd.progression.query.search-trial-readiness+json");
     }
 
-    public static String pollForGetTrialReadinessHearingDetails(final String hearingId) {
-        return pollForResponse(MessageFormat.format("/trial-readiness-hearings/{0}", hearingId), "application/vnd.progression.query.trial-readiness-details+json");
+    public static String pollForGetTrialReadinessHearingDetails(final String hearingId, Matcher... matchers) {
+        return pollForResponse(MessageFormat.format("/trial-readiness-hearings/{0}", hearingId), "application/vnd.progression.query.trial-readiness-details+json", matchers);
     }
 
     public static String getCourtDocumentsByCaseWithMatchers(final String userId, final String caseId, final Matcher[] matchers) {

@@ -4,19 +4,23 @@ import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
-import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubLetterNotifications;
-import static uk.gov.moj.cpp.progression.helper.NotifyStub.stubNotifications;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.HOST;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.stub.CourtOrderStub.setupCourtOrdersStub;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubSynchronousDocumentGeneratorEndpoint;
+import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.stub.IdMapperStub.setupIdMapperStub;
+import static uk.gov.moj.cpp.progression.stub.LaaAPIMServiceStub.stubPostLaaAPI;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialUploadFile;
+import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.stubPostCallsNotificationNotify;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.stubProbationHearing;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.stubProbationHearingDeleted;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceByOffenceCode;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubEnforcementArea;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubPleaTypes;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryAllResultDefinitions;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtOURoom;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtsCodeData;
@@ -31,9 +35,9 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganis
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryPrisonSuites;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
+import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.stubAsyncDocumentGeneratorEndPoint;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
-import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.mockMaterialUpload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsSystemUser;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupHearingQueryStub;
@@ -42,7 +46,6 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchClient;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexFinderUtil;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
@@ -51,7 +54,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.http.Header;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +63,6 @@ public class AbstractIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIT.class);
 
     protected static final UUID USER_ID_VALUE = randomUUID();
-    public static final Header CPP_UID_HEADER = new Header(USER_ID, USER_ID_VALUE.toString());
     protected static final UUID USER_ID_VALUE_AS_ADMIN = randomUUID();
     protected static final String APPLICATION_VND_PROGRESSION_QUERY_SEARCH_COURTDOCUMENTS_JSON = "application/vnd.progression.query.courtdocuments+json";
     protected static final String HEARING_ID_TYPE_TRIAL = randomUUID().toString();
@@ -114,7 +115,6 @@ public class AbstractIT {
 
         setupAsAuthorisedUser(USER_ID_VALUE);
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
-        mockMaterialUpload();
         setupUsersGroupQueryStub();
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");
         stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
@@ -133,8 +133,6 @@ public class AbstractIT {
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
         stubQueryCourtOURoom();
         stubQueryOrganisation(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
-        stubNotifications();
-        stubLetterNotifications();
         stubMaterialUploadFile();
         stubQueryEthinicityData("/restResource/ref-data-ethnicities.json", randomUUID());
         setupHearingQueryStub(fromString(HEARING_ID_TYPE_TRIAL), "stub-data/hearing.get-hearing-of-type-trial.json");
@@ -143,8 +141,15 @@ public class AbstractIT {
         stubUnifiedSearchQueryExactMatchWithEmptyResults();
         stubUnifiedSearchQueryPartialMatch(randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), "2099/1234567L", "1234567");
         setupCourtOrdersStub();
-        IdMapperStub.setUp();
+        setupIdMapperStub();
         stubProbationHearing();
         stubProbationHearingDeleted();
+        stubInitiateHearing();
+        stubSynchronousDocumentGeneratorEndpoint();
+        stubAsyncDocumentGeneratorEndPoint();
+        stubPleaTypes();
+        stubPostCallsNotificationNotify();
+        stubPostLaaAPI();
+        stubMaterialMetadata();
     }
 }

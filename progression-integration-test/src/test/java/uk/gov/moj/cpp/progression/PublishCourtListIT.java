@@ -7,7 +7,6 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
@@ -15,7 +14,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.CorrespondenceStub.stubForCorrespondenceCaseContacts;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -24,7 +22,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,8 +38,6 @@ public class PublishCourtListIT extends AbstractIT {
 
     private static final String PUBLIC_EVENT_COURT_LIST_PUBLISHED = "public.listing.court-list-published";
 
-    private static final String DOCUMENT_TEXT = STRING.next();
-
     private String defenceOrganisationEmail;
     private String defenceAdvocateEmail;
     private String prosecutorEmail;
@@ -55,13 +50,10 @@ public class PublishCourtListIT extends AbstractIT {
 
     private UUID prosecutionAuthorityId;
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     @BeforeEach
     public void setup() {
-        NotificationServiceStub.setUp();
-        stubDocumentCreate(DOCUMENT_TEXT);
-
         defenceOrganisationEmail = randomAlphanumeric(15) + "-defenceorg@email.com";
         defenceAdvocateEmail = randomAlphanumeric(15) + "-defenceadvocate@email.com";
         prosecutorEmail = randomAlphanumeric(15) + "-prosecutor@email.com";

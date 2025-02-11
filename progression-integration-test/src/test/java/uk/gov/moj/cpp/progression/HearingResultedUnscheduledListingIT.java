@@ -3,9 +3,7 @@ package uk.gov.moj.cpp.progression;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.ArrayUtils.addAll;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -13,35 +11,28 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.extractHearingIdFromProsecutionCasesProgression;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingsForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStreamV2;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.Utilities.listenForPrivateEvent;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.util.HashMap;
@@ -53,23 +44,20 @@ import javax.json.JsonObject;
 
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class HearingResultedUnscheduledListingIT {
-    private static final String DOCUMENT_TEXT = STRING.next();
+public class HearingResultedUnscheduledListingIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing";
     private static final String PUBLIC_HEARING_RESULTED_WITH_APPLICATION_RESULT_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing-with-application-resulted";
 
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
-    private static final JmsMessageConsumerClient consumerForUnscheduledHearingRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.unscheduled-hearing-recorded").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForUnscheduledHearingRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.unscheduled-hearing-recorded").getMessageConsumerClient();
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-cases-referred-to-court").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-cases-referred-to-court").getMessageConsumerClient();
     public static final String EXPECTED_OFFENCE_ID = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -81,13 +69,6 @@ public class HearingResultedUnscheduledListingIT {
     private String courtCentreName;
     private String newCourtCentreId;
     private String newCourtCentreName;
-
-    @BeforeAll
-    public static void setUpClass() {
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
-        HearingStub.stubInitiateHearing();
-        ListingStub.stubListCourtHearing();
-    }
 
     @BeforeEach
     public void setUp() {
@@ -101,7 +82,6 @@ public class HearingResultedUnscheduledListingIT {
         newCourtCentreName = "Narnia Magistrate's Court";
     }
 
-
     @SuppressWarnings("squid:S1607")
     @Test
     public void shouldListUnscheduledHearingsV2() throws Exception {
@@ -110,7 +90,7 @@ public class HearingResultedUnscheduledListingIT {
         Utilities.EventListener eventListenerForHearingRecorded = listenForPrivateEvent(consumerForUnscheduledHearingRecorded)
                 .withFilter(isJson(withJsonPath("$.hearingId", is(existingHearingId))));
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -120,14 +100,12 @@ public class HearingResultedUnscheduledListingIT {
                 .stream().filter(s -> ! s.equals(existingHearingId)).findFirst().get();
         getHearingForDefendant(unscheduledHearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
 
-
-
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
         doVerifyRecordedEventPayload(recordedEventPayload, existingHearingId, unscheduledHearingId);
 
         //amendment/resharing: should not raise any event
 
-        final JsonEnvelope publicEventEnvelope2 = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
+        final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
         final String unscheduledHearingId2 = pollCaseAndGetHearingsForDefendant(caseId, defendantId,
@@ -146,7 +124,7 @@ public class HearingResultedUnscheduledListingIT {
         Utilities.EventListener eventListenerForHearingRecorded = listenForPrivateEvent(consumerForUnscheduledHearingRecorded)
                 .withFilter(isJson(withJsonPath("$.hearingId", is(existingHearingId))));
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -161,7 +139,7 @@ public class HearingResultedUnscheduledListingIT {
 
         //amendment/resharing: should not raise any event
 
-        final JsonEnvelope publicEventEnvelope2 = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
+        final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
 
@@ -184,7 +162,7 @@ public class HearingResultedUnscheduledListingIT {
         Utilities.EventListener eventListenerForHearingRecorded = listenForPrivateEvent(consumerForUnscheduledHearingRecorded)
                 .withFilter(isJson(withJsonPath("$.hearingId", is(existingHearingId))));
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject( PUBLIC_HEARING_RESULTED_WITH_APPLICATION_RESULT_UNSCHEDULED_LISTING_V2+ ".json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject( PUBLIC_HEARING_RESULTED_WITH_APPLICATION_RESULT_UNSCHEDULED_LISTING_V2+ ".json", caseId,
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -239,38 +217,27 @@ public class HearingResultedUnscheduledListingIT {
     private String prepareHearingForTest() throws Exception {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
-        JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
-
-        String hearingIdInResponse = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
+        String hearingIdInResponse = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingIdInResponse, defendantId, courtCentreId, courtCentreName);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForCasesReferredToCourts();
+        verifyPublicEventCasesReferredToCourts();
         return hearingIdInResponse;
     }
 
     private String prepareHearingForTestWithInitiate() throws Exception {
 
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-
-        String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
-        JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
-        String hearingIdInResponse = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
+        String hearingIdInResponse = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingIdInResponse, defendantId, courtCentreId, courtCentreName);
-
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForCasesReferredToCourts();
+        verifyPublicEventCasesReferredToCourts();
         return hearingIdInResponse;
     }
 
@@ -286,29 +253,14 @@ public class HearingResultedUnscheduledListingIT {
         );
     }
 
-    private void verifyInMessagingQueueForCasesReferredToCourts() {
+    private void verifyPublicEventCasesReferredToCourts() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
     }
 
-    private static void doVerifyEventIsNotRaised(final JmsMessageConsumerClient messageConsumer, final String originalHearingId, final String hearingId) {
-
-        JsonPath message;
-        do {
-            message = retrieveMessageAsJsonPath(messageConsumer);
-        } while (ofNullable(message).isPresent() && hearingIdIsOneOf(message, originalHearingId, hearingId));
-
-        assertFalse(ofNullable(message).isPresent());
-    }
-
-    private static boolean hearingIdIsOneOf(JsonPath jsonPath, String h1, String h2) {
-        final String s = jsonPath.getString("hearing.id");
-        return h1.equals(s) || h2.equals(s);
-    }
-
     private Matcher[] getHearingsAtAGlanceMatchers(final String defendantId) {
         final List<Matcher> newMatchers = newArrayList();
-        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].defendantId", Matchers.is(defendantId)));
+        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].defendantId", is(defendantId)));
         newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds", hasSize(greaterThan(0))));
         return newMatchers.toArray(new Matcher[0]);
     }

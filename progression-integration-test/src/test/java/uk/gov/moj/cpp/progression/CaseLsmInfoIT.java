@@ -28,9 +28,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -40,13 +38,11 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 public class CaseLsmInfoIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_CASE_LSM_INFO = "application/vnd.progression.query.case-lsm-info+json";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
     private String prosecutionCaseId_1;
@@ -66,7 +62,6 @@ public class CaseLsmInfoIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
         prosecutionCaseId_1 = randomUUID().toString();
         defendantId_1 = randomUUID().toString();
         masterDefendantId_1 = randomUUID().toString();

@@ -40,7 +40,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialStructuredFormQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubEndpoint;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -93,8 +92,7 @@ public class FormIT extends AbstractIT {
     private static final String MESSAGE_FOR_DUPLICATE_COURT_FORM_ID = "courtFormId already exists";
     private static final String MESSAGE_FOR_COURT_FORM_ID_NOT_PRESENT = "courtFormId (%s) does not exists.";
     private static final String UPDATE_BCM_DEFENDANT_OPERATION_IS_FAILED = "update BCM defendant operation is failed";
-    private static final String DOCUMENT_TEXT = STRING.next();
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     public static final String FORM_DATA = "formData";
     public static final String SUBMISSION_ID = "submissionId";
     public static final String CASE_ID = "caseId";
@@ -117,19 +115,18 @@ public class FormIT extends AbstractIT {
 
     public static final String SUBMISSION_ID_VALUE = "e85d2c62-af1f-4674-863a-0891e67e325b";
 
-    private static final JmsMessageConsumerClient consumerForFormCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-created").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForFormFinalised = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-finalised").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForPublicCourtDocumentAdded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForFormCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-created").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForFormFinalised = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-finalised").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicCourtDocumentAdded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
 
-    private static final JmsMessageConsumerClient consumerForFormOperationFailed = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-operation-failed").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForFormUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForEditFormRequested = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.edit-form-requested").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForFormOperationFailed = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-operation-failed").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForFormUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.form-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForEditFormRequested = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.edit-form-requested").getMessageConsumerClient();
     private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @BeforeAll
     public static void setUpClass() {
         setupLoggedInUsersPermissionQueryStub();
-        stubDocumentCreate(DOCUMENT_TEXT);
         stubMaterialStructuredFormQuery(UPDATED_FORM_DATA);
     }
 

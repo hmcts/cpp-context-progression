@@ -7,7 +7,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
@@ -20,7 +19,6 @@ import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.f
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingResultedCaseUpdatedVerificationHelper.verifyInitialElasticSearchCase;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
@@ -30,8 +28,6 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 import uk.gov.moj.cpp.unifiedsearch.test.util.ingest.ElasticSearchIndexRemoverUtil;
 
 import java.io.IOException;
@@ -53,7 +49,6 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated2";
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String DOCUMENT_TEXT = STRING.next();
     final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -71,9 +66,7 @@ public class HearingConfirmedForCourtApplicationsIngestIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() throws IOException {
-        HearingStub.stubInitiateHearing();
-        IdMapperStub.setUp();
-        stubDocumentCreate(DOCUMENT_TEXT);
+
         userId = randomUUID().toString();
 
         elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();

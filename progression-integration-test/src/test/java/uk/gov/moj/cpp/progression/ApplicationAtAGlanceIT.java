@@ -9,29 +9,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_FOR_DEFENCE_JSON;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRoleInCaseByCaseId;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import java.time.LocalDate;
@@ -40,17 +36,13 @@ import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 public class ApplicationAtAGlanceIT extends AbstractIT {
-    private static final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-aaag.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final String DOCUMENT_TEXT = STRING.next();
 
     private String userId;
     private String caseId;
@@ -97,8 +89,6 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubInitiateHearing();
         setupData();
     }
 
@@ -111,12 +101,20 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
 
         final String firstApplicationId = courtApplicationId;
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
+        verifyApplicationAtAGlance(courtApplicationId);
 
         setupData();
         final String linkedApplicationId = courtApplicationId;
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, firstApplicationId);
-        verifyLinkedApplications(firstApplicationId, linkedApplicationId);
+        pollForApplicationAtAGlance(firstApplicationId,
+                withJsonPath("$.applicationId", equalTo(firstApplicationId)),
+                withJsonPath("$.linkedApplications[0].applicationId", equalTo(linkedApplicationId)),
+                withJsonPath("$.linkedApplications[0].applicantDisplayName", notNullValue()),
+                withJsonPath("$.linkedApplications[0].applicationReference", notNullValue()),
+                withJsonPath("$.linkedApplications[0].applicationStatus", notNullValue()),
+                withJsonPath("$.linkedApplications[0].applicationTitle", notNullValue()),
+                withJsonPath("$.linkedApplications[0].respondentDisplayNames", notNullValue())
+        );
     }
 
     @Test
@@ -127,11 +125,11 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
 
         stubAdvocateRoleInCaseByCaseId(prosecutionCaseId, userRoleInCase);
         doReferCaseToCourtAndVerify();
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         doHearingConfirmedAndVerify();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
 
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_FOR_DEFENCE_JSON);
+        verifyApplicationAtAGlance(courtApplicationId);
     }
 
     private void doReferCaseToCourtAndVerify() throws Exception {
@@ -140,13 +138,9 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     }
 
     private void doHearingConfirmedAndVerify() {
-
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE, caseId, hearingId, defendantId, courtCentreId));
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject(PUBLIC_LISTING_HEARING_CONFIRMED_FILE, caseId, hearingId, defendantId, courtCentreId));
         publicMessageProducerClient.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", is(hearingId))
-        );
+        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
@@ -205,9 +199,9 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         assertThat(caseResponse, is(notNullValue()));
     }
 
-    private void verifyApplicationAtAGlance(final String applicationId, final String mediaType) {
+    private void verifyApplicationAtAGlance(final String applicationId) {
 
-        pollForResponse("/applications/" + applicationId, mediaType, randomUUID().toString(),
+        pollForApplicationAtAGlance(applicationId,
                 withJsonPath("$.applicationId", equalTo(applicationId)),
                 withJsonPath("$.applicationDetails.applicationReference", notNullValue()),
                 withJsonPath("$.applicationDetails.applicationParticulars", equalTo(particulars)),
@@ -251,21 +245,6 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionAuthorityCode)),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference))
-        );
-    }
-
-    private void verifyLinkedApplications(final String applicationId, final String linkedApplicationId) {
-
-        pollForResponse("/applications/" + applicationId,
-                PROGRESSION_QUERY_APPLICATION_AAAG_JSON,
-                randomUUID().toString(),
-                withJsonPath("$.applicationId", equalTo(applicationId)),
-                withJsonPath("$.linkedApplications[0].applicationId", equalTo(linkedApplicationId)),
-                withJsonPath("$.linkedApplications[0].applicantDisplayName", notNullValue()),
-                withJsonPath("$.linkedApplications[0].applicationReference", notNullValue()),
-                withJsonPath("$.linkedApplications[0].applicationStatus", notNullValue()),
-                withJsonPath("$.linkedApplications[0].applicationTitle", notNullValue()),
-                withJsonPath("$.linkedApplications[0].respondentDisplayNames", notNullValue())
         );
     }
 

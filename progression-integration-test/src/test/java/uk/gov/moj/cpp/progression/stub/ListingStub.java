@@ -15,6 +15,7 @@ import static java.text.MessageFormat.format;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -26,7 +27,6 @@ import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import java.time.Duration;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
@@ -50,54 +50,54 @@ public class ListingStub {
     public static final String LISTING_DELETE_NEXT_HEARINGS = "listing.delete-next-hearings";
     private static final String LISTING_DELETE_HEARING_TYPE = "application/vnd.listing.delete-hearing+json";
     private static final String LISTING_DELETE_NEXT_HEARINGS_TYPE = "application/vnd.listing.delete-next-hearings+json";
-    public static final String  LISTING_RELATED_HEARING_JSON = "application/vnd.listing.related-hearing+json";
+    public static final String LISTING_RELATED_HEARING_JSON = "application/vnd.listing.related-hearing+json";
 
     public static void stubListCourtHearing() {
         stubFor(post(urlPathEqualTo(LISTING_COMMAND))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_COMMAND_TYPE))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
-                        .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader(CONTENT_TYPE, LISTING_COMMAND_TYPE)));
+                        .withHeader("CPPID", randomUUID().toString())));
 
         stubFor(post(urlPathEqualTo(LISTING_COMMAND))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
-                        .withHeader("CPPID", UUID.randomUUID().toString())
-                        .withHeader(CONTENT_TYPE, LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE)));
+                        .withHeader("CPPID", randomUUID().toString())));
 
         stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_NEXT_HEARING_V2_TYPE))
                 .willReturn(aResponse()
-                        .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString())));
+                        .withStatus(SC_ACCEPTED)
+                        .withHeader(ID, randomUUID().toString())));
 
         stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2))
                 .willReturn(aResponse()
-                        .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString())));
+                        .withStatus(SC_ACCEPTED)
+                        .withHeader(ID, randomUUID().toString())));
 
         stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_NEXT_HEARINGS))
                 .willReturn(aResponse()
-                        .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString())));
+                        .withStatus(SC_ACCEPTED)
+                        .withHeader(ID, randomUUID().toString())));
 
         stubFor(post(urlPathMatching(LISTING_DELETE_HEARING_COMMAND))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_HEARING_TYPE))
                 .willReturn(aResponse()
-                        .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString())));
+                        .withStatus(SC_ACCEPTED)
+                        .withHeader(ID, randomUUID().toString())));
 
         stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_RELATED_HEARING_JSON))
                 .willReturn(aResponse()
-                        .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString())));
+                        .withStatus(SC_ACCEPTED)
+                        .withHeader(ID, randomUUID().toString())));
 
         stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_NEXT_HEARINGS_TYPE))
                 .willReturn(aResponse()
-                        .withStatus(ACCEPTED.getStatusCode())
-                        .withHeader(ID, UUID.randomUUID().toString())));
+                        .withStatus(SC_ACCEPTED)
+                        .withHeader(ID, randomUUID().toString())));
 
         stubFor(get(urlPathEqualTo(LISTING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_OK)));
@@ -175,7 +175,7 @@ public class ListingStub {
                                     try {
                                         return payload.has("hearings") &&
                                                 payload.getJSONArray("hearings").getJSONObject(0).has("prosecutionCases");
-                                    }catch (JSONException e) {
+                                    } catch (JSONException e) {
                                         return false;
                                     }
                                 })
@@ -193,7 +193,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String caseId, final String defendantId, final boolean isYouth) {
         try {
-            waitAtMost(ofMinutes(1)).until(() ->
+            waitAtMost(ofMinutes(1)).pollInterval(500, MILLISECONDS).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -224,7 +224,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearing(final String applicationId) {
         try {
-            waitAtMost(ofSeconds(10)).until(() ->
+            waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() ->
                     getListCourtHearingRequestsAsStream()
                             .anyMatch(
                                     payload -> {
@@ -265,7 +265,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingV2() {
         try {
-            waitAtMost(ofSeconds(10)).until(() ->
+            waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() ->
                     getListCourtHearingRequestsAsStreamV2()
                             .anyMatch(
                                     payload -> payload.has("hearings")
@@ -278,7 +278,7 @@ public class ListingStub {
     }
 
     public static void verifyListNextHearingRequestsAsStreamV2(final String hearingId, final String estimatedDuration) {
-        waitAtMost(ofSeconds(10)).until(() -> {
+        waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStreamV2();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {
@@ -302,7 +302,7 @@ public class ListingStub {
 
     public static String getPostListCourtHearing(final String applicationId) {
         try {
-            return waitAtMost(ofSeconds(10)).until(() ->
+            return waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() ->
                     {
                         final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                         return listCourtHearingRequestsAsStream
@@ -332,7 +332,7 @@ public class ListingStub {
 
     public static void verifyListUnscheduledHearingRequestsAsStreamV2(final String hearingId,
                                                                       final String estimatedDuration) {
-        waitAtMost(ofSeconds(10)).until(() -> {
+        waitAtMost(ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListUnscheduledHearingRequestsAsStreamV2();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {
@@ -405,13 +405,13 @@ public class ListingStub {
                         .withBody(getPayload(resource))));
     }
 
-    public static void setupListingAnyFutureAllocationQuery(final String resource, final String startDateTime ) {
+    public static void setupListingAnyFutureAllocationQuery(final String resource, final String startDateTime) {
         final String urlPath = "/listing-service/query/api/rest/listing/hearings/any-allocation";
         stubFor(get(urlPathEqualTo(urlPath))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody(getPayload(resource).replaceAll("START_TIME",startDateTime))));
+                        .withBody(getPayload(resource).replaceAll("START_TIME", startDateTime))));
     }
 
     public static void stubListingSearchHearingsQuery(final String resource,
@@ -437,7 +437,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingWithProsecutorInfo(final String caseId, final String defendantId, final String courtScheduleId) {
         try {
-            waitAtMost(Duration.ofMinutes(2)).until(() -> getListCourtHearingRequestsAsStream()
+            waitAtMost(Duration.ofMinutes(2)).pollInterval(500, MILLISECONDS).until(() -> getListCourtHearingRequestsAsStream()
                     .anyMatch(
                             payload -> {
                                 try {
@@ -459,7 +459,7 @@ public class ListingStub {
                                     } else {
                                         return false;
                                     }
-                                }catch (JSONException e) {
+                                } catch (JSONException e) {
                                     return false;
                                 }
                             }

@@ -44,11 +44,11 @@ import org.junit.jupiter.api.Test;
 
 public class PleadOnlineIT extends AbstractIT {
 
-    private static final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
     private PleadOnlineHelper pleadOnlineHelper;
 
-    private static final JmsMessageConsumerClient messageConsumerOnlinePleaRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.online-plea-recorded").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerOnlinePleaPcqVisitedRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.online-plea-pcq-visited-recorded").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerOnlinePleaRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.online-plea-recorded").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerOnlinePleaPcqVisitedRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.online-plea-pcq-visited-recorded").getMessageConsumerClient();
 
     @BeforeEach
     public void setUp() {

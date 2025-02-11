@@ -10,6 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -46,7 +47,7 @@ public class LaaAPIMServiceStub {
     }
 
     private static void verifyLaaProceedingsConcludedCommandInvoked(final String commandEndPoint, final CountMatchingStrategy countMatchingStrategy, final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

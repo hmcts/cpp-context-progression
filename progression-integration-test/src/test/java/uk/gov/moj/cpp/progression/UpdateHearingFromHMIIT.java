@@ -10,16 +10,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -43,7 +42,6 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_DAYS_WITHOUT_COURT_CENTRE_CORRECTED = "public.events.listing.hearing-days-without-court-centre-corrected";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     public static final String PUBLIC_STAGINGHMI_HEARING_UPDATED_FROM_HMI = "public.staginghmi.hearing-updated-from-hmi";
     private String courtCentreId;
@@ -54,7 +52,6 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        HearingStub.stubInitiateHearing();
         courtCentreId = fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
         courtRoomId = randomUUID().toString();
         listedDurationMinutes = 20;
@@ -93,7 +90,7 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
                 withoutJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].listingNumber")
         };
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, unAllocatedMatchers);
+        pollForHearing(hearingId, unAllocatedMatchers);
 
     }
 
@@ -120,7 +117,7 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
                 withoutJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].listingNumber")
         };
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, unAllocatedMatchers);
+        pollForHearing(hearingId, unAllocatedMatchers);
     }
 
     private String createHearing(final String userId, final String caseId, final String defendantId) throws IOException, JMSException, JSONException {
@@ -151,7 +148,7 @@ public class UpdateHearingFromHMIIT extends AbstractIT {
                 withJsonPath("$.hearing.hearingDays[0].sittingDay", is("2018-09-28T12:13:00.000Z"))
         };
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingDaysMatchers);
+        pollForHearing(hearingId, hearingDaysMatchers);
         return hearingId;
     }
 

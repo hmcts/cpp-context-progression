@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 public class ACourtProceedingsInitiatedIT extends AbstractIT {
 
-    private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
 
     private String caseId;
     private String materialIdActive;
@@ -64,11 +64,8 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     @Test
     public void shouldInitiateCourtProceedingsWithDefendantAsYouth() throws IOException {
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        verifyInMessagingQueueForProsecutionCaseCreated();
-
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
-        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
-
+        verifyPublicEventProsecutionCaseCreated();
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
         verifyPostListCourtHearing(caseId, defendantId, true);
     }
 
@@ -122,7 +119,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is("0a5372c5-b60f-4d95-8390-8c6462e2d7af")))));
     }
 
-    private void verifyInMessagingQueueForProsecutionCaseCreated() {
+    private void verifyPublicEventProsecutionCaseCreated() {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumer);
         assertTrue(message.isPresent());
     }

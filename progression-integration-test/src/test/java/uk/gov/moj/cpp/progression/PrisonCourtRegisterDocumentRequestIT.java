@@ -9,8 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.setUp;
-import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.stubDocGeneratorEndPoint;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 
@@ -25,6 +23,7 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
+
 import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -32,19 +31,10 @@ import org.hamcrest.Matchers;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 
 public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
   private ProsecutionCaseUpdateDefendantHelper helper;
-
-
-    @BeforeEach
-    public void setup() {
-        stubDocGeneratorEndPoint();
-        setUp();
-    }
 
     @Test
     public void shouldGeneratePrisonCourtDocumentAsynchronously() throws IOException, JSONException {

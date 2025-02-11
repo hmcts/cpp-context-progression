@@ -7,7 +7,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.FUTURE_LOCAL_DATE;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addDefenceCounsel;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
@@ -15,14 +15,11 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHe
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.removeDefenceCounsel;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateDefenceCounsel;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -33,21 +30,17 @@ import java.util.stream.Stream;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DefenceCounselIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final String DOCUMENT_TEXT = STRING.next();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED = "public.hearing.defence-counsel-added";
     private static final String PUBLIC_HEARING_DEFENCE_COUNSEL_UPDATED = "public.hearing.defence-counsel-updated";
     private static final String PUBLIC_HEARING_DEFENCE_COUNSEL_REMOVED = "public.hearing.defence-counsel-removed";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-
 
     private String userId;
     private String hearingId;
@@ -58,8 +51,6 @@ public class DefenceCounselIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubDocumentCreate(DOCUMENT_TEXT);
-        HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -82,14 +73,14 @@ public class DefenceCounselIT extends AbstractIT {
         final JsonEnvelope publicEventAddedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED, userId), hearingAddDefenceCounselJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED, publicEventAddedEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.defenceCounsels[0].id", Matchers.is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d")),
-                withJsonPath("$.hearing.defenceCounsels[0].firstName", Matchers.is("JOHN")),
-                withJsonPath("$.hearing.defenceCounsels[0].status", Matchers.is("QC")),
-                withJsonPath("$.hearing.defenceCounsels[0].title", Matchers.is("Mr")),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[0]", Matchers.is("2018-07-17")),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[1]", Matchers.is("2018-07-18"))
+        pollForHearing(hearingId,
+                withJsonPath("$.hearing.id", is(hearingId)),
+                withJsonPath("$.hearing.defenceCounsels[0].id", is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d")),
+                withJsonPath("$.hearing.defenceCounsels[0].firstName", is("JOHN")),
+                withJsonPath("$.hearing.defenceCounsels[0].status", is("QC")),
+                withJsonPath("$.hearing.defenceCounsels[0].title", is("Mr")),
+                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[0]", is("2018-07-17")),
+                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[1]", is("2018-07-18"))
         );
 
         //UPDATE
@@ -97,14 +88,14 @@ public class DefenceCounselIT extends AbstractIT {
         final JsonEnvelope publicEventUpdatedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_DEFENCE_COUNSEL_UPDATED, userId), hearingUpdateDefenceCounselJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_DEFENCE_COUNSEL_UPDATED, publicEventUpdatedEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.defenceCounsels[0].id", Matchers.is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d")),
-                withJsonPath("$.hearing.defenceCounsels[0].firstName", Matchers.is("DOE")),
-                withJsonPath("$.hearing.defenceCounsels[0].status", Matchers.is("QC")),
-                withJsonPath("$.hearing.defenceCounsels[0].title", Matchers.is("Mr")),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[0]", Matchers.is("2018-07-17")),
-                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[1]", Matchers.is("2018-07-18"))
+        pollForHearing(hearingId,
+                withJsonPath("$.hearing.id", is(hearingId)),
+                withJsonPath("$.hearing.defenceCounsels[0].id", is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d")),
+                withJsonPath("$.hearing.defenceCounsels[0].firstName", is("DOE")),
+                withJsonPath("$.hearing.defenceCounsels[0].status", is("QC")),
+                withJsonPath("$.hearing.defenceCounsels[0].title", is("Mr")),
+                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[0]", is("2018-07-17")),
+                withJsonPath("$.hearing.defenceCounsels[0].attendanceDays[1]", is("2018-07-18"))
         );
 
         //REMOVE
@@ -112,8 +103,8 @@ public class DefenceCounselIT extends AbstractIT {
         final JsonEnvelope publicEventRemovedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_DEFENCE_COUNSEL_REMOVED, userId), hearingRemovedDefenceCounselJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_DEFENCE_COUNSEL_REMOVED, publicEventRemovedEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
+        pollForHearing(hearingId,
+                withJsonPath("$.hearing.id", is(hearingId)),
                 withoutJsonPath("$.hearing.defenceCounsels")
         );
 
@@ -128,7 +119,6 @@ public class DefenceCounselIT extends AbstractIT {
         final List<String> updatedDefendantList = Stream.of(randomUUID().toString(), randomUUID().toString()).collect(Collectors.toList());
         final List<String> updatedAttendanceDaysList = Stream.of(FUTURE_LOCAL_DATE.next().toString(), FUTURE_LOCAL_DATE.next().toString()).collect(Collectors.toList());
 
-
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
@@ -140,7 +130,7 @@ public class DefenceCounselIT extends AbstractIT {
 
         addDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.add-hearing-defence-counsel.json");
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.defenceCounsels[0].id", is(defenceCounselId)),
                 withJsonPath("$.hearing.defenceCounsels[0].firstName", is("Eric")),
@@ -153,7 +143,7 @@ public class DefenceCounselIT extends AbstractIT {
         );
 
         updateDefenceCounsel(hearingId, defenceCounselId, updatedDefendantList, updatedAttendanceDaysList, "progression.add-hearing-defence-counsel.json");
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.defenceCounsels[0].id", is(defenceCounselId)),
                 withJsonPath("$.hearing.defenceCounsels[0].firstName", is("Eric")),
@@ -166,7 +156,7 @@ public class DefenceCounselIT extends AbstractIT {
         );
 
         removeDefenceCounsel(hearingId, defenceCounselId, defendantList, attendanceDaysList, "progression.remove-hearing-defence-counsel.json");
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withoutJsonPath("$.hearing.defenceCounsels.*")
         );
@@ -197,7 +187,7 @@ public class DefenceCounselIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private static String getPayloadForCreatingRequest(final String ramlPath) {
+    private String getPayloadForCreatingRequest(final String ramlPath) {
         String request = null;
         try {
             request = Resources.toString(

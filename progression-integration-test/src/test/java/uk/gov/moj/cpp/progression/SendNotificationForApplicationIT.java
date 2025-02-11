@@ -19,16 +19,14 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOO
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.sendNotification;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -50,14 +48,12 @@ import org.junit.jupiter.api.Test;
 
 public class SendNotificationForApplicationIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-send-notification.json";
     public static final String PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON = "progression.command.send-notification-for-application.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final String DOCUMENT_TEXT = STRING.next();
     private static final String PUBLIC_PROGRESSION_EVENTS_WELSH_TRANSLATION_REQUIRED = "public.progression.welsh-translation-required";
 
     private JmsMessageConsumerClient consumerForPublicEvent;
@@ -108,8 +104,6 @@ public class SendNotificationForApplicationIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubInitiateHearing();
         setupData();
         stubQueryCpsProsecutorData("/restResource/referencedata.query.cps.prosecutor.by.oucode.json", randomUUID(), HttpStatus.SC_OK);
         consumerForPublicEvent =
@@ -126,7 +120,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         doHearingConfirmedAndVerify();
         final String parentApplicationId = randomUUID().toString();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId);
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
+        verifyApplicationAtAGlance(courtApplicationId);
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
         verifyEmailNotificationIsRaisedWithAttachment(singletonList(defenceOrganisationEmail));
         verifyEmailNotificationIsRaisedWithAttachment(singletonList("applicant@email.com"));
@@ -140,7 +134,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         doHearingConfirmedAndVerify();
         final String parentApplicationId = randomUUID().toString();
         doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId);
-        verifyApplicationAtAGlance(courtApplicationId, PROGRESSION_QUERY_APPLICATION_AAAG_JSON);
+        verifyApplicationAtAGlance(courtApplicationId);
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, true);
         verifyPublicEvent();
     }
@@ -162,7 +156,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
                         caseId, hearingId, defendantId, courtCentreId));
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId))
         );
     }
@@ -271,11 +265,8 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         assertThat(caseResponse, is(notNullValue()));
     }
 
-    private void verifyApplicationAtAGlance(final String applicationId, final String mediaType) {
-
-        pollForResponse("/applications/" + applicationId,
-                mediaType,
-                randomUUID().toString(),
+    private void verifyApplicationAtAGlance(final String applicationId) {
+        pollForApplicationAtAGlance(applicationId,
                 withJsonPath("$.applicationId", equalTo(applicationId)),
                 withJsonPath("$.applicationDetails.applicationReference", notNullValue()),
                 withJsonPath("$.applicationDetails.applicationParticulars", equalTo(particulars)),

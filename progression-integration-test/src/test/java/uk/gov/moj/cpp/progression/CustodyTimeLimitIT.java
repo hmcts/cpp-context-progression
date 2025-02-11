@@ -12,14 +12,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithTwoProsecutionCases;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
@@ -30,7 +32,6 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -42,23 +43,21 @@ import javax.json.JsonObject;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class CustodyTimeLimitIT extends AbstractIT {
 
-    private static final String HEARING_QUERY = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION = "public.events.hearing.hearing-resulted-with-ctl-extension";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FOR_TWO_CASE_ONE_DEFENDANT_FILE = "public.listing.hearing-confirmed-two-cases-one-defendant.json";
     private static final String PUBLIC_EVENTS_LISTING_HEARING_DELETED = "public.events.listing.hearing-deleted";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient prosecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient custodyTimeLimitExtendedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames("public.events.progression.custody-time-limit-extended").getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient prosecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
+    private final JmsMessageConsumerClient custodyTimeLimitExtendedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames("public.events.progression.custody-time-limit-extended").getMessageConsumerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -75,7 +74,6 @@ public class CustodyTimeLimitIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -87,25 +85,22 @@ public class CustodyTimeLimitIT extends AbstractIT {
     }
 
     @Test
-    @Disabled("Flaky tests - passed locally failed at pipeline")
     public void shouldUpdateOffenceCustodyTimeLimitAndCpsDefendantId() throws Exception {
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
         final String extendedCustodyTimeLimit = "2022-09-10";
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        final String initialHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        verifyAddCourtDocumentForCase();
+        addCourtDocumentAndVerify();
 
-        final String initialHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
         final String hearingIdForCTLExtension = randomUUID().toString();
 
-
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION + ".json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION + ".json", caseId,
                 hearingIdForCTLExtension, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
-        final Matcher[] defendantMatchers = new Matcher[] {
+        final Matcher[] defendantMatchers = new Matcher[]{
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.timeLimit", equalTo(extendedCustodyTimeLimit)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].custodyTimeLimit.isCtlExtended", equalTo(true)),
@@ -144,7 +139,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        verifyAddCourtDocumentForCase();
+        addCourtDocumentAndVerify();
 
         final String initialHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged();
 
@@ -160,19 +155,19 @@ public class CustodyTimeLimitIT extends AbstractIT {
         // Then case1 was removed from hearing2
         final JsonObject hearingOffenceRemovedJson = getOffenceRemovedFromExistngHearingJsonObject(extendedHearingId, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
 
-        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata("public.events.listing.offences-removed-from-allocated-hearing", userId), hearingOffenceRemovedJson);
+        JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata("public.events.listing.offences-removed-from-allocated-hearing", userId), hearingOffenceRemovedJson);
         messageProducerClientPublic.sendMessage("public.events.listing.offences-removed-from-allocated-hearing", publicEventEnvelope);
 
         // When hearing2 was deleted
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(extendedHearingId);
 
-        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENTS_LISTING_HEARING_DELETED, userId), hearingDeletedJson);
+        publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_EVENTS_LISTING_HEARING_DELETED, userId), hearingDeletedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_EVENTS_LISTING_HEARING_DELETED, publicEventEnvelope);
 
         final String hearingIdForCTLExtension = randomUUID().toString();
 
         // Then Hearing1 resulted with custody time limit extended
-        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION + ".json", caseId,
+        publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_WITH_CTL_EXTENSION + ".json", caseId,
                 hearingIdForCTLExtension, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -238,18 +233,15 @@ public class CustodyTimeLimitIT extends AbstractIT {
 
         final Matcher[] hearingMatchers = {
                 withJsonPath("$", notNullValue()),
-                withJsonPath("$.hearing.id", Matchers.is(hearingId))
+                withJsonPath("$.hearing.id", is(hearingId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].custodyTimeLimit.isCtlExtended", is(true)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].custodyTimeLimit.timeLimit", is(extendedCustodyTimeLimit)),
         };
 
-        final String dbHearing = pollForResponse("/hearingSearch/" + hearingId, HEARING_QUERY, hearingMatchers);
-        final JsonObject hearing = stringToJsonObjectConverter.convert(dbHearing);
-        final JsonObject custodyTimeLimit = hearing.getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getJsonObject("custodyTimeLimit");
-        assertThat(custodyTimeLimit.getBoolean("isCtlExtended"), is(true));
-        assertThat(custodyTimeLimit.getString("timeLimit"), is(extendedCustodyTimeLimit));
-
+        pollForHearing(hearingId, hearingMatchers);
     }
 
-    private void verifyAddCourtDocumentForCase() throws IOException {
+    private void addCourtDocumentAndVerify() throws IOException {
         final String body = prepareAddCourtDocumentPayload();
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document-v2+json", body);
@@ -280,12 +272,12 @@ public class CustodyTimeLimitIT extends AbstractIT {
                         .replaceAll("DEFENDANT_ID_2", defendantId2)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId));
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
     }
 
-    private JsonObject getOffenceRemovedFromExistngHearingJsonObject(final String hearingId,final String offenceIdToRemove) {
+    private JsonObject getOffenceRemovedFromExistngHearingJsonObject(final String hearingId, final String offenceIdToRemove) {
         return stringToJsonObjectConverter.convert(
                 getPayload("public.hearing.selected-offences-removed-from-existing-hearing.json")
                         .replaceAll("HEARING_ID", hearingId)

@@ -17,7 +17,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.unmatchDefendant;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchForCJSSpec;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchForSPISpec;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatchForCJSSpec;
@@ -50,11 +49,11 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("squid:S1607")
 public class DefendantMatchIT extends AbstractIT {
 
-    private static final JmsMessageConsumerClient publicEventConsumerForDefendantMatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-matched").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventConsumerForDefendantMatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-matched").getMessageConsumerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final JmsMessageConsumerClient publicEventConsumerForDefendantUnmatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-unmatched").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventConsumerForDefendantUnmatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-unmatched").getMessageConsumerClient();
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private String prosecutionCaseId_1;
     private String defendantId_1;
@@ -72,7 +71,6 @@ public class DefendantMatchIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
         prosecutionCaseId_1 = randomUUID().toString();
         defendantId_1 = randomUUID().toString();
         masterDefendantId_1 = randomUUID().toString();

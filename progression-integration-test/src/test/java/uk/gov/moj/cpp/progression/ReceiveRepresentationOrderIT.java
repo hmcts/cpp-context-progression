@@ -9,7 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
@@ -20,8 +19,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatus;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
@@ -36,8 +33,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.util.FileUtil;
 
 import java.time.LocalDate;
@@ -64,13 +59,13 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED = "public.progression.defence-organisation-for-laa-associated";
     private static final String NO_LAA_CONTRACT_NUMBER_REGISTER = "LAA12345";
 
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForAssociationLockedReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForLaaContractAssociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForDefenceOrganisationDisassociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForDefenceOrganisationAssociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED).getMessageConsumerClient();
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForAssociationLockedReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForLaaContractAssociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_LAA_CONTRACT_ASSOCIATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForDefenceOrganisationDisassociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_DISASSOCIATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForDefenceOrganisationAssociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED).getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed-cps-notification.json";
 
@@ -96,11 +91,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
         stubGetGroupsForLoggedInQuery(userId);
         stubEnableAllCapabilities();
-
-        IdMapperStub.setUp();
-        stubInitiateHearing();
-        stubDocumentCreate(STRING.next());
-        NotificationServiceStub.setUp();
     }
 
     @Test

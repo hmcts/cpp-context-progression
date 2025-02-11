@@ -14,6 +14,7 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static uk.gov.justice.services.common.http.HeaderConstants.ID;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -26,7 +27,6 @@ public class WireMockStubUtils {
     public static final String MATERIAL_UPLOAD_COMMAND =
             "/material-service/command/api/rest/material/material";
     private static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
-    public static final String BASE_URI = "http://" + HOST + ":8080";
     private static final String CONTENT_TYPE_QUERY_PERMISSION = "application/vnd.usersgroups.permissions+json";
     private static final String CONTENT_TYPE_QUERY_DEFENCE_SERVICE_USER_ROLE_IN_CASE = "application/vnd.advocate.query.role-in-case-by-caseid+json";
 
@@ -96,7 +96,7 @@ public class WireMockStubUtils {
     public static void stubGetUserOrganisation(final String organisationId, final String responsePayLoad) {
 
         stubFor(get(urlPathEqualTo(format("/usersgroups-service/query/api/rest/usersgroups/organisations/{0}", organisationId)))
-                        .willReturn(aResponse().withStatus(OK.getStatusCode())
+                .willReturn(aResponse().withStatus(OK.getStatusCode())
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responsePayLoad)));
@@ -128,13 +128,6 @@ public class WireMockStubUtils {
                         .withHeader(ID, randomUUID().toString())
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(responsePayLoad)));
-    }
-
-    public static void mockMaterialUpload() {
-        stubFor(post(urlMatching(MATERIAL_UPLOAD_COMMAND))
-                .willReturn(aResponse().withStatus(HttpStatus.SC_ACCEPTED)
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody("")));
     }
 
 }

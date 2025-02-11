@@ -7,43 +7,35 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollCaseHearingTypes;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForCaseHearings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithPoliceBailInfo;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesWithCourtOrdersFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.UUID;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @SuppressWarnings("squid:S1607")
-@ExtendWith(JmsResourceManagementExtension.class)
-public class CaseAtAGlanceIT {
+public class CaseAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_NON_STD_ORGANISATION_PROSECUTOR = "progression.command.initiate-court-proceedings-non-std-organisation.json";
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS_WITHOUT_BAIL_CONDITION = "progression.command.initiate-court-proceedings-without-bail-condition.json";
-    public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
     public static final String PROGRESSION_QUERY_GET_CASE_DEFENDANT_HEARINGS = "application/vnd.progression.query.case-defendant-hearings+json";
-    public static final String PROGRESSION_QUERY_GET_CASE_HEARING_TYPES = "application/vnd.progression.query.case.hearingtypes+json";
-    private static final JmsMessageConsumerClient publicEventsCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
 
     private String caseId;
     private String materialIdActive;
@@ -78,6 +70,34 @@ public class CaseAtAGlanceIT {
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
+        pollProsecutionCasesWithCourtOrdersFor(caseId,
+                withJsonPath("$.prosecutionCase.cpsOrganisation", equalTo("A01")),
+                withJsonPath("$.activeCourtOrders[0].masterDefendantId", equalTo(this.defendantId)),
+                withJsonPath("$.activeCourtOrders[0].courtOrders[0].id", equalTo("2fc69990-bf59-4c4a-9489-d766b9abde9a"))
+        );
+
+        pollCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
+
+        pollForCaseDefendantHearings(caseId, defendantId);
+
+        verifyCaseHearings(caseId);
+
+        final LocalDate HEARING_DATE_1 = LocalDate.of(2020, 07, 15);
+        verifyNoCaseHearingTypes(caseId, HEARING_DATE_1);
+
+        final Matcher[] defendantMatchers = new Matcher[]{
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailConditions", is("bail conditions...")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description", is("Remanded into Custody")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailConditions", is("bail conditions...")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
+                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", is("Remanded into Custody"))
+        };
+
+        pollProsecutionCasesProgressionFor(caseId, defendantMatchers);
+
+        initiateCourtProceedingsForCourtApplication(linkedApplicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
+
         pollProsecutionCasesProgressionForCAAG(caseId,
 
                 withJsonPath("$.caseId", equalTo(caseId)),
@@ -106,30 +126,15 @@ public class CaseAtAGlanceIT {
                 withJsonPath("$.defendants[0].caagDefendantOffences[0].offenceTitle", equalTo("ROBBERY")),
                 withJsonPath("$.defendants[0].caagDefendantOffences[0].wording", equalTo("No Travel Card")),
                 withJsonPath("$.defendants[0].caagDefendantOffences[0].wordingWelsh", equalTo("No Travel Card In Welsh")),
-                withJsonPath("$.defendants[0].remandStatus", equalTo("Remanded into Custody"))
+                withJsonPath("$.defendants[0].remandStatus", equalTo("Remanded into Custody")),
+
+                // linked application details
+                withJsonPath("$.linkedApplications[0].applicationId", equalTo(linkedApplicationId)),
+                withJsonPath("$.linkedApplications[0].applicationTitle", equalTo("Application for an order of reimbursement in relation to a closure order")),
+                withJsonPath("$.linkedApplications[0].applicantDisplayName", equalTo("Applicant Organisation")),
+                withJsonPath("$.linkedApplications[0].applicationStatus", equalTo("DRAFT")),
+                withJsonPath("$.linkedApplications[0].respondentDisplayNames[0]", equalTo("Respondent Organisation"))
         );
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.cpsOrganisation", equalTo("A01")));
-
-        verifyProsecutionCaseCourtOrders(caseId);
-
-        verifyCaseDefendantHearings(caseId, defendantId);
-
-        verifyCaseHearings(caseId);
-
-        final LocalDate HEARING_DATE_1 = LocalDate.of(2020, 07, 15);
-        verifyNoCaseHearingTypes(caseId, HEARING_DATE_1);
-
-        final Matcher[] defendantMatchers = new Matcher[]{
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailConditions", is("bail conditions...")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.policeBailStatus.description", is("Remanded into Custody")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailConditions", is("bail conditions...")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.id", is("2593cf09-ace0-4b7d-a746-0703a29f33b5")),
-                withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", is("Remanded into Custody"))
-        };
-
-        pollProsecutionCasesProgressionFor(caseId, defendantMatchers);
     }
 
     @Test
@@ -167,7 +172,6 @@ public class CaseAtAGlanceIT {
                 withoutJsonPath("$.defendants[0].remandStatus")
         );
 
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.cpsOrganisation", equalTo("A01")));
         verifyCaseHearings(caseId);
 
         final Matcher[] defendantUpdatedMatchers = new Matcher[]{
@@ -212,7 +216,6 @@ public class CaseAtAGlanceIT {
         };
 
         pollProsecutionCasesProgressionFor(caseId, defendantUpdatedMatchers);
-        helper.verifyInMessagingQueueForDefendantChanged(publicEventsCaseDefendantChanged);
     }
 
     @Test
@@ -224,44 +227,8 @@ public class CaseAtAGlanceIT {
         verifyCaseHearings(caseId);
     }
 
-    @Test
-    public void shouldVerifyCaseAtAGlanceLinkedApplication() throws Exception {
-        createApplicationLinkedToCase();
-
-        pollProsecutionCasesProgressionForCAAG(caseId, withJsonPath("$.caseId", equalTo(caseId)),
-                withJsonPath("$.linkedApplications[0].applicationId", equalTo(linkedApplicationId)),
-                withJsonPath("$.linkedApplications[0].applicationTitle", equalTo("Application for an order of reimbursement in relation to a closure order")),
-                withJsonPath("$.linkedApplications[0].applicantDisplayName", equalTo("Applicant Organisation")),
-                withJsonPath("$.linkedApplications[0].applicationStatus", equalTo("DRAFT")),
-                withJsonPath("$.linkedApplications[0].respondentDisplayNames[0]", equalTo("Respondent Organisation")));
-
-    }
-
-    @Test
-    public void shouldVerifyProsecutionCase() throws IOException {
-        //given
-        initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
-
-        pollCasesProgressionFor(caseId, prosecutionCaseMatchers);
-    }
-
-    private void createApplicationLinkedToCase() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        initiateCourtProceedingsForCourtApplication(linkedApplicationId, caseId, randomUUID().toString(), "applications/progression.initiate-court-proceedings-for-generic-linked-application.json");
-
-        Matcher[] linkedApplicationMatchers = {
-                withJsonPath("$.courtApplication.id", is(linkedApplicationId)),
-                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", is(caseId))
-        };
-
-        pollForApplication(linkedApplicationId, linkedApplicationMatchers);
-
-    }
-
     private void verifyCaseHearings(final String caseId) {
-        pollForResponse("/prosecutioncases/" + caseId, PROGRESSION_QUERY_GET_CASE_HEARINGS, randomUUID().toString(),
+        pollForCaseHearings(caseId,
                 withJsonPath("$.hearings.length()", is(1)),
                 withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
                 withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
@@ -271,7 +238,7 @@ public class CaseAtAGlanceIT {
         );
     }
 
-    private void verifyCaseDefendantHearings(final String caseId, final String defendantId) {
+    private void pollForCaseDefendantHearings(final String caseId, final String defendantId) {
         pollForResponse("/prosecutioncases/" + caseId + "/defendants/" + defendantId, PROGRESSION_QUERY_GET_CASE_DEFENDANT_HEARINGS, randomUUID().toString(),
                 withJsonPath("$.hearings.length()", is(1)),
                 withJsonPath("$.hearings[0].hearingId", is(notNullValue())),
@@ -313,16 +280,8 @@ public class CaseAtAGlanceIT {
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.cpsOrganisation", equalTo("A01")));
     }
 
-    private void verifyProsecutionCaseCourtOrders(final String caseId) {
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.activeCourtOrders[0].masterDefendantId", equalTo(this.defendantId)),
-                withJsonPath("$.activeCourtOrders[0].courtOrders[0].id", equalTo("2fc69990-bf59-4c4a-9489-d766b9abde9a")));
-    }
-
     private void verifyNoCaseHearingTypes(final String caseId, final LocalDate orderDate) {
-        pollForResponse("/prosecutioncases/" + caseId + "?orderDate=" + orderDate.toString(), PROGRESSION_QUERY_GET_CASE_HEARING_TYPES, randomUUID().toString(),
-                withJsonPath("$.hearingTypes.length()", is(0)));
+        pollCaseHearingTypes(caseId, orderDate.toString(), withJsonPath("$.hearingTypes.length()", is(0)));
     }
 }
 

@@ -9,6 +9,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -30,7 +32,7 @@ public class HearingStub {
     public static void stubInitiateHearing() {
         stubFor(post(urlPathEqualTo(HEARING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
-                        .withHeader("CPPID", UUID.randomUUID().toString())
+                        .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", HEARING_RESPONSE_TYPE)));
 
         stubFor(get(urlPathEqualTo(HEARING_COMMAND))
@@ -38,7 +40,7 @@ public class HearingStub {
     }
 
     public static void verifyPostInitiateCourtHearing(final String hearingId) {
-        waitAtMost(Duration.ofSeconds(10)).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).pollInterval(500, MILLISECONDS).until(() -> {
                     final Stream<JSONObject> listCourtHearingRequestsAsStream = getListCourtHearingRequestsAsStream();
                     return listCourtHearingRequestsAsStream.anyMatch(
                             payload -> {

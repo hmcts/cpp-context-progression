@@ -26,12 +26,12 @@ import org.junit.jupiter.api.Test;
 
 public class EditCaseNoteIT extends AbstractIT {
 
-    private static final JmsMessageConsumerClient consumerForCaseNoteEdited = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-note-edited").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForCaseNoteEdited = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-note-edited").getMessageConsumerClient();
     private final String caseId = randomUUID().toString();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Test
-    public void shouldEditCaseNote() throws Exception {
+    public void shouldAddAndEditCaseNote() throws Exception {
 
         //Given
         String caseNotesId = addCaseNotesAndVerify();
@@ -85,7 +85,7 @@ public class EditCaseNoteIT extends AbstractIT {
         return verifyCaseNotesAndGetCaseNoteId(caseId, false);
     }
 
-    private static void verifyInMessageIsPresentInPublicEvent() {
+    private void verifyInMessageIsPresentInPublicEvent() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCaseNoteEdited);
         assertTrue(message.isPresent());
     }

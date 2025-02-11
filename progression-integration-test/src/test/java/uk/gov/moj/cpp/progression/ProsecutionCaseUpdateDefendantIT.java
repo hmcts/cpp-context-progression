@@ -18,12 +18,11 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProduc
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
@@ -34,7 +33,6 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.time.LocalDate;
@@ -49,8 +47,8 @@ import org.junit.jupiter.api.Test;
 
 public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient publicEventsCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient publicEventsCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PROGRESSION_QUERY_CASE_LSM_INFO = "application/vnd.progression.query.case-lsm-info+json";
     ProsecutionCaseUpdateDefendantHelper helper;
@@ -76,7 +74,6 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
-        stubInitiateHearing();
         prosecutionCaseId_1 = randomUUID().toString();
         defendantId_1 = randomUUID().toString();
         masterDefendantId_1 = randomUUID().toString();
@@ -159,7 +156,7 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
+        hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
 
@@ -248,7 +245,7 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1, emptyList());
         pollProsecutionCasesProgressionFor(matchedCaseId_1, prosecutionCaseMatchers);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(matchedCaseId_1, matchedDefendant_1, getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1));
+        hearingId = pollCaseAndGetHearingForDefendant(matchedCaseId_1, matchedDefendant_1);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
         // initiation of second case
@@ -335,7 +332,7 @@ public class ProsecutionCaseUpdateDefendantIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
         verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1, emptyList());
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(matchedCaseId_1, matchedDefendant_1, getProsecutionCaseMatchers(matchedCaseId_1, matchedDefendant_1));
+        hearingId = pollCaseAndGetHearingForDefendant(matchedCaseId_1, matchedDefendant_1);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
         // initiation of second case

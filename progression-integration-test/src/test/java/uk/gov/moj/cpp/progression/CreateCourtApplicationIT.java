@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 public class CreateCourtApplicationIT extends AbstractIT {
     private static final String COURT_APPLICATION_CREATED = "public.progression.court-application-created";
 
-    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames(COURT_APPLICATION_CREATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames(COURT_APPLICATION_CREATED).getMessageConsumerClient();
 
     private String caseId;
     private String defendantId;
@@ -109,14 +109,14 @@ public class CreateCourtApplicationIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, caseMatchers);
     }
 
-    private static void verifyInMessagingQueueForCourtApplicationCreated(String applicationId) {
+    private void verifyInMessagingQueueForCourtApplicationCreated(String applicationId) {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         String idResponse = message.get().getJsonObject("courtApplication").getString("id");
         assertThat(idResponse, equalTo(applicationId));
     }
 
-    private static void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
+    private void verifyInMessagingQueueForStandaloneCourtApplicationCreated() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtApplicationCreated);
         assertTrue(message.isPresent());
         String referenceResponse = message.get().getJsonObject("courtApplication").getString("applicationReference");

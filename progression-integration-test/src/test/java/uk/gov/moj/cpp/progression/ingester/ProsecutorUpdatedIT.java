@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initia
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -31,7 +30,6 @@ import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
@@ -41,11 +39,6 @@ public class ProsecutorUpdatedIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String documentId;
-
-    @AfterAll
-    public static void tearDown() {
-        cleanEventStoreTables();
-    }
 
     @BeforeEach
     public void setup() {

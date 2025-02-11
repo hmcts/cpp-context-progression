@@ -7,20 +7,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.DOCUMENT_TEXT;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeAccessQueryData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.io.IOException;
 
@@ -32,11 +30,9 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 public class ApplicationExtractIT extends AbstractIT {
     private String hearingId;
     private String courtApplicationId;
@@ -44,13 +40,10 @@ public class ApplicationExtractIT extends AbstractIT {
     private String defendantId;
     private String updatedDefendantId;
 
-    private static final String DOCUMENT_TEXT = STRING.next();
-
     @BeforeEach
     public void setUp() {
         hearingId = randomUUID().toString();
         courtApplicationId = randomUUID().toString();
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();

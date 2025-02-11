@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtFirstHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithCommittingCourt;
@@ -25,13 +26,10 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCa
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
@@ -42,7 +40,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.io.IOException;
@@ -63,17 +60,13 @@ import org.junit.jupiter.api.Test;
 
 public class ListNewHearingIT extends AbstractIT {
 
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-    private static final String DOCUMENT_TEXT = new StringGenerator().next();
     private static final String PROGRESSION_EVENT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
 
     private String prosecutorEmail;
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
         setupLoggedInUsersPermissionQueryStub();
-        stubDocumentCreate(DOCUMENT_TEXT);
         prosecutorEmail = randomAlphanumeric(15) + "@email.com";
     }
 
@@ -95,7 +88,7 @@ public class ListNewHearingIT extends AbstractIT {
 
         verifyPostListCourtHearing(caseId, defendantId, "8e837de0-743a-4a2c-9db3-b2e678c48729");
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingId)), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")));
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", is(hearingId)), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")));
 
         verifyEmailNotificationIsRaisedWithAttachment(newArrayList(prosecutorEmail));
         verifyCreateLetterRequested(newArrayList("postage", "first", "letterUrl"));
@@ -145,7 +138,7 @@ public class ListNewHearingIT extends AbstractIT {
         assertNotNull(message);
         doVerifyListHearingRequestedPrivateEvent(messageConsumerEmailRequestPrivateEvent, CASE_ID, CASE_ID2);
 
-        pollForResponse("/hearingSearch/" + hearingPayload.getString("id"), PROGRESSION_QUERY_HEARING_JSON, withJsonPath("$.hearing.id", is(hearingPayload.getString("id"))), withJsonPath("$.hearingListingStatus", is("HEARING_INITIALISED")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")), withJsonPath("$.hearing.prosecutionCases.length()", is(2)));
+        pollForHearing(hearingPayload.getString("id"), withJsonPath("$.hearing.id", is(hearingPayload.getString("id"))), withJsonPath("$.hearingListingStatus", is("HEARING_INITIALISED")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")), withJsonPath("$.hearing.prosecutionCases.length()", is(2)));
 
     }
 

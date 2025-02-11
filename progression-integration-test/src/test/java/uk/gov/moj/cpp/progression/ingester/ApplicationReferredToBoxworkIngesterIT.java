@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -19,7 +18,6 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,11 +31,6 @@ public class ApplicationReferredToBoxworkIngesterIT extends AbstractIT {
         caseId = randomUUID().toString();
         applicationId = randomUUID().toString();
         deleteAndCreateIndex();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        cleanEventStoreTables();
     }
 
     @Test

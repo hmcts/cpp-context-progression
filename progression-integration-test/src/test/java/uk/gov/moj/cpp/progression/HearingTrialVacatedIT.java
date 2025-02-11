@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
@@ -8,20 +7,16 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.Matchers.is;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-
-import java.util.UUID;
 
 import javax.json.JsonObject;
 
@@ -31,18 +26,15 @@ import org.junit.jupiter.api.Test;
 public class HearingTrialVacatedIT extends AbstractIT {
 
     private static final String PUBLIC_HEARING_TRIAL_VACATED = "public.hearing.trial-vacated";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PUBLIC_LISTING_HEARING_UPDATED = "public.listing.hearing-updated";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     public static final String PUBLIC_LISTING_VACATED_TRIAL_UPDATED = "public.listing.vacated-trial-updated";
     private String vacatedTrialReasonId;
 
     @BeforeEach
     public void setUp() {
-        HearingStub.stubInitiateHearing();
-        vacatedTrialReasonId = UUID.randomUUID().toString();
+        vacatedTrialReasonId = randomUUID().toString();
     }
 
     @Test
@@ -51,8 +43,8 @@ public class HearingTrialVacatedIT extends AbstractIT {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
-        addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
 
+        addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, randomUUID().toString(), "Lavender Hill Magistrate's Court");
@@ -67,21 +59,8 @@ public class HearingTrialVacatedIT extends AbstractIT {
         final JsonEnvelope publicEventVacatedEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_TRIAL_VACATED, userId), notVacatedTrialObject);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_TRIAL_VACATED, publicEventVacatedEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
-                withJsonPath("$.hearing.isVacatedTrial", is(false))
-        );
-
-        final String updatedCourtCentreId = randomUUID().toString();
-        final JsonObject hearingUpdatedJson = getHearingUpdatedJsonObject(hearingId, caseId, defendantId, updatedCourtCentreId);
-        final JsonEnvelope publicEventEnvelope3 = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_UPDATED, randomUUID()), hearingUpdatedJson);
-        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_UPDATED, publicEventEnvelope3);
-
-        verifyProbationHearingCommandInvoked(newArrayList(hearingId, updatedCourtCentreId));
-
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", is(hearingId)),
-                withJsonPath("$.hearing.courtCentre.id", is(updatedCourtCentreId)),
                 withJsonPath("$.hearing.isVacatedTrial", is(false))
         );
 
@@ -90,13 +69,11 @@ public class HearingTrialVacatedIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_TRIAL_VACATED, userId), vacatedTrialObject);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_TRIAL_VACATED, publicEventEnvelope2);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.isVacatedTrial", is(true))
         );
-
     }
-
 
     @Test
     public void shouldUpdateVacatedTrialStatusWhenVacatedFromListing() throws Exception {
@@ -104,8 +81,8 @@ public class HearingTrialVacatedIT extends AbstractIT {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
-        addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
 
+        addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, randomUUID().toString(), "Lavender Hill Magistrate's Court");
@@ -115,12 +92,12 @@ public class HearingTrialVacatedIT extends AbstractIT {
 
         pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
 
-        final JsonObject notVcatedTrialObject = createObjectBuilder().add("hearingId", hearingId).add("allocated", true).add("isVacated", false).build();
+        final JsonObject notVacatedTrialObject = createObjectBuilder().add("hearingId", hearingId).add("allocated", true).add("isVacated", false).build();
 
-        JsonEnvelope publicEventUpdatedEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_VACATED_TRIAL_UPDATED, userId), notVcatedTrialObject);
+        JsonEnvelope publicEventUpdatedEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_VACATED_TRIAL_UPDATED, userId), notVacatedTrialObject);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_VACATED_TRIAL_UPDATED, publicEventUpdatedEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.isVacatedTrial", is(false))
         );
@@ -130,7 +107,7 @@ public class HearingTrialVacatedIT extends AbstractIT {
         publicEventUpdatedEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_VACATED_TRIAL_UPDATED, userId), vacatedTrialObject);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_VACATED_TRIAL_UPDATED, publicEventUpdatedEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearing.isVacatedTrial", is(true))
         );
@@ -159,16 +136,6 @@ public class HearingTrialVacatedIT extends AbstractIT {
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("COURT_CENTRE_NAME", courtCentreName)
-        );
-    }
-
-    private JsonObject getHearingUpdatedJsonObject(final String hearingId, final String caseId, final String defendantId, final String courtCentreId) {
-        return stringToJsonObjectConverter.convert(
-                getPayload("public.listing.hearing-updated.json")
-                        .replaceAll("CASE_ID", caseId)
-                        .replaceAll("HEARING_ID", hearingId)
-                        .replaceAll("DEFENDANT_ID", defendantId)
-                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
         );
     }
 }

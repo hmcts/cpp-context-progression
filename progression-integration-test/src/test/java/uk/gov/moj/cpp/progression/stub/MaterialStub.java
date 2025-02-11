@@ -10,6 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -76,7 +77,7 @@ public class MaterialStub {
     }
 
     public static void verifyMaterialCreated(String... expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
             RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(UPLOAD_MATERIAL_COMMAND));
             Arrays.stream(expectedValues).forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

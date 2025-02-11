@@ -38,9 +38,7 @@ public class ReferenceDataDirectionStub {
     }
 
     private static void stubGetReferenceDataDirectionManagementType(final String fileName, final String... args) {
-        final String urlPath = REFERENCE_DATA_DIRECTION_MANAGEMENT_TYPE_URL;
-
-        stubFor(get(urlPathMatching(urlPath))
+        stubFor(get(urlPathMatching(REFERENCE_DATA_DIRECTION_MANAGEMENT_TYPE_URL))
                 .willReturn(aResponse()
                         .withStatus(SC_OK)
                         .withHeader(ID, randomUUID().toString())

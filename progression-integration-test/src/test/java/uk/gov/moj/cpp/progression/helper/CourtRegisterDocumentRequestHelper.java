@@ -32,7 +32,7 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
 
     private static final String ORIGINATOR = "court_register";
 
-    private static final JmsMessageProducerClient publicMessageProducer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient publicMessageProducer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     public void verifyCourtRegisterRequestsExists(final UUID courtCentreId) {
         getCourtRegisterDocumentRequests(RegisterStatus.RECORDED.name(), allOf(

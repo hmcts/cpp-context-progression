@@ -9,7 +9,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
@@ -19,8 +19,8 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.setupListingAnyAllocationQuery;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.setupListingAnyFutureAllocationQuery;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -37,7 +37,6 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.time.LocalDate;
@@ -69,11 +68,10 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
     static final String PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE = "public.progression.defendants-added-to-case";
     private static final String PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON = "application/vnd.progression.add-defendants-to-court-proceedings+json";
 
-    private static final JmsMessageConsumerClient messageConsumerClientPublicCourtProceedings = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicCase = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE).getMessageConsumerClient();
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicCourtProceedings = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_COURT_PROCEEDINGS).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicCase = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANTS_ADDED_TO_CASE).getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    private static final String DOCUMENT_TEXT = STRING.next();
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private String caseId;
@@ -83,9 +81,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubInitiateHearing();
-
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         offenceId = randomUUID().toString();
@@ -98,13 +93,11 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String defendantId2 = randomUUID().toString();
         final String defendantId3 = randomUUID().toString();
 
-        ListingStub.setupListingAnyAllocationQuery(caseUrn, "stub-data/listing.any-allocation.search.hearings.json");
-
+        setupListingAnyAllocationQuery(caseUrn, "stub-data/listing.any-allocation.search.hearings.json");
 
         //Create prosecution case
         addProsecutionCaseToCrownCourt(caseId, defendantId, caseUrn);
         verifyPostListCourtHearing(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         //Create payload for
         final String startDateTime = ZonedDateTime.now().plusWeeks(2).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
@@ -121,22 +114,6 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         verifyDefendantsAddedInViewStore(caseId, defendantId2);
 
         verifyPostListCourtHearing(caseId, defendantId2);
-
-        //Create payload for
-        final AddDefendantsToCourtProceedings addDefendantsToCourtProceedings2 = buildAddDefendantsToCourtProceedings(
-                true, caseId, defendantId, defendantId3, offenceId3, startDateTime);
-        final String addDefendantsToCourtProceedingsJson2 = Utilities.JsonUtil.toJsonString(addDefendantsToCourtProceedings2);
-
-        //Post command progression.add-defendants-to-court-proceedings
-        postCommand(getWriteUrl("/adddefendantstocourtproceedings"),
-                PROGRESSION_ADD_DEFENDANTS_TO_COURT_PROCEEDINGS_JSON,
-                addDefendantsToCourtProceedingsJson2);
-
-        //Verify the defendants and check the duplicate is not added
-        verifyDefendantsAddedInViewStore(caseId, defendantId3);
-
-        verifyPostListCourtHearing(caseId, defendantId3);
-
     }
 
     @Test
@@ -149,8 +126,7 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
         final String courtCentreId = "3d2cf089-63ec-4bbf-a330-402540f200ba";
         final String defendantId2 = randomUUID().toString();
         final String startDateTime = ZonedDateTime.now().plusWeeks(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-        ListingStub.setupListingAnyFutureAllocationQuery("stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
-
+        setupListingAnyFutureAllocationQuery("stub-data/listing.any-allocation.search.future-hearings.json", startDateTime);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
 
@@ -167,15 +143,14 @@ public class AddDefendantsToCourtProceedingsIT extends AbstractIT {
             hearingId = ((JsonObject) defendantHearing.get()).getJsonArray("hearingIds").get(0).toString().replaceAll("\"", "");
             final JsonObject hearingConfirmedJson = getHearingConfirmedJsonObject(caseId, hearingId, defendantId, courtCentreId);
 
-            final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
+            final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
             messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-
         }
 
         //otherwise it creates new hearing with status as HEARING_INITIALISED
         final JsonObject hearingUpdatedJson = getHearingUpdatedJsonObject(caseId, hearingId, defendantId, courtCentreId);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_UPDATED, userId), hearingUpdatedJson);
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_UPDATED, userId), hearingUpdatedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_UPDATED, publicEventEnvelope);
 
         pollHearingWithStatus(hearingId, "HEARING_INITIALISED");

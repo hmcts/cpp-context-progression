@@ -9,11 +9,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.Optional.empty;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PdfTestHelper.asPdf;
 
 import java.io.StringReader;
@@ -33,7 +36,13 @@ import org.json.JSONObject;
 
 public class DocumentGeneratorStub {
 
-    public static final String PATH = "/systemdocgenerator-service/command/api/rest/systemdocgenerator/render";
+    private static final String PATH = "/systemdocgenerator-service/command/api/rest/systemdocgenerator/render";
+
+    public static final String DOCUMENT_TEXT = STRING.next();
+
+    public static void stubSynchronousDocumentGeneratorEndpoint() {
+        stubDocumentCreate(DOCUMENT_TEXT);
+    }
 
     public static void stubDocumentCreate(String documentText) {
         stubFor(post(urlPathMatching(PATH))
@@ -104,7 +113,7 @@ public class DocumentGeneratorStub {
 
     public static Optional<JSONObject> pollDocumentGenerationRequest(final Predicate<JSONObject> requestPayloadPredicate) {
         try {
-            return await().until(() -> findAll(postRequestedFor(urlPathMatching(PATH)))
+            return await().timeout(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> findAll(postRequestedFor(urlPathMatching(PATH)))
                     .stream()
                     .map(LoggedRequest::getBodyAsString)
                     .map(t -> {

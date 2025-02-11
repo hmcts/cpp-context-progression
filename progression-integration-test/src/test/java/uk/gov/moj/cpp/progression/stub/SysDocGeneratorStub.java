@@ -36,7 +36,7 @@ public class SysDocGeneratorStub {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SysDocGeneratorStub.class);
 
-    public static void stubDocGeneratorEndPoint() {
+    public static void stubAsyncDocumentGeneratorEndPoint() {
         stubFor(post(urlPathMatching(SYS_DOC_GENERATOR_URL))
                 .withHeader(CONTENT_TYPE, equalTo(GENERATE_DOCUMENT_MEDIA_TYPE))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED)
@@ -68,7 +68,8 @@ public class SysDocGeneratorStub {
 
     public static List<JSONObject> pollSysDocGenerationRequestsForPrisonCourtRegister(final Matcher<Collection<?>> matcher, final String originatingSource) {
         try {
-            final List<JSONObject> postRequests = await().until(() ->
+
+            return await().until(() ->
             {
                 List<JSONObject> list = new ArrayList<>();
                 for (LoggedRequest loggedRequest : findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))) {
@@ -80,8 +81,6 @@ public class SysDocGeneratorStub {
                 }
                 return list;
             }, matcher);
-
-            return postRequests;
         } catch (final ConditionTimeoutException timeoutException) {
             LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
             return emptyList();
@@ -90,7 +89,8 @@ public class SysDocGeneratorStub {
 
     public static List<JSONObject> pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(final Matcher<Collection<?>> matcher, final String originatingSource, final String courtCentreId) {
         try {
-            final List<JSONObject> postRequests = await().until(() ->
+
+            return await().until(() ->
             {
                 List<JSONObject> list = new ArrayList<>();
                 for (LoggedRequest loggedRequest : findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))) {
@@ -102,8 +102,6 @@ public class SysDocGeneratorStub {
                 }
                 return list;
             }, matcher);
-
-            return postRequests;
         } catch (final ConditionTimeoutException timeoutException) {
             LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
             return emptyList();

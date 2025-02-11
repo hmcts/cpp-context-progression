@@ -4,11 +4,9 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetOrganisationById;
@@ -17,8 +15,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import javax.jms.JMSException;
 import javax.json.JsonObject;
@@ -31,7 +27,7 @@ import org.junit.jupiter.api.Test;
 public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -48,9 +44,7 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        DocumentGeneratorStub.stubDocumentCreate(STRING.next());
         stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_WITHOUT_POSTCODE_JSON);
-        HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -62,7 +56,7 @@ public class HearingConfirmedForCaseAtAGlanceIT extends AbstractIT {
     public void shouldUpdateCaseAtAGlance() throws Exception {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed.json",
                 caseId, hearingId, defendantId, courtCentreId));

@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
@@ -25,8 +24,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.sendCu
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getYouthReportingRestrictionsMatchers;
@@ -48,7 +45,6 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 public class ReportingRestrictionsIT extends AbstractIT {
     public static final String APPLICATION_REFERRED_AND_HEARING_EXTENDED = "public.progression.events.hearing-extended";
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
@@ -58,7 +54,7 @@ public class ReportingRestrictionsIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
-    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static String userId;
     private String hearingId1;
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -67,7 +63,6 @@ public class ReportingRestrictionsIT extends AbstractIT {
     private String newCourtCentreId;
     private String newCourtCentreName;
     private String applicationId;
-    private static final String DOCUMENT_TEXT = STRING.next();
 
 
     @BeforeEach
@@ -81,8 +76,6 @@ public class ReportingRestrictionsIT extends AbstractIT {
         newCourtCentreId = "999bdd2a-6b7a-4002-bc8c-5c6f93844f40";
         newCourtCentreName = "Narnia Magistrate's Court";
         applicationId = randomUUID().toString();
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubInitiateHearing();
 
     }
 

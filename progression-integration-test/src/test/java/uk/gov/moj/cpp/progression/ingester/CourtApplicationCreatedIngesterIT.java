@@ -12,7 +12,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtAppli
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -25,7 +24,6 @@ import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -43,11 +41,6 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
     private String respondantDefendantId;
     private String caseId;
     private String applicationStatus;
-
-    @AfterAll
-    public static void tearDown() {
-        cleanEventStoreTables();
-    }
 
     @BeforeEach
     public void setup() {
@@ -99,7 +92,6 @@ public class CourtApplicationCreatedIngesterIT extends AbstractIT {
                 withJsonPath("$._is_magistrates", equalTo(true))};
 
         final Optional<JsonObject> courApplicationCreatedResponseJsonObject = findBy(matchers);
-
         assertTrue(courApplicationCreatedResponseJsonObject.isPresent());
     }
 }

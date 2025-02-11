@@ -4,7 +4,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -25,7 +24,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStub;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetOrganisationById;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
@@ -33,12 +31,8 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorise
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
 import java.io.IOException;
@@ -56,22 +50,20 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 @SuppressWarnings("squid:S1607")
-@ExtendWith(JmsResourceManagementExtension.class)
 public class CourtDocumentEmailNotificationIT extends AbstractIT {
 
     private static final String USER_GROUP_NOT_PRESENT_DROOL = randomUUID().toString();
     private static final String USER_GROUP_NOT_PRESENT_RBAC = randomUUID().toString();
-    private static final JmsMessageConsumerClient consumerForProgressionCommandEmail = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.email-requested").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForProgressionSendToCpsFlag = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.send-to-cps-flag-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForProgressionCommandEmail = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.email-requested").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForProgressionSendToCpsFlag = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.send-to-cps-flag-updated").getMessageConsumerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String caseId;
     private String docId;
@@ -84,16 +76,12 @@ public class CourtDocumentEmailNotificationIT extends AbstractIT {
     public static void init() {
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_DROOL), "stub-data/usersgroups.get-invalid-groups-by-user.json");
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
-        stubDocumentCreate(randomAlphanumeric(20));
     }
 
     @BeforeEach
     public void setup() {
         final String materialId = "5e1cc18c-76dc-47dd-99c1-d6f87385edf1";
-        HearingStub.stubInitiateHearing();
-        NotificationServiceStub.setUp();
         setupMaterialStub(materialId);
-        IdMapperStub.setUp();
         stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
         caseId = randomUUID().toString();
         defendantId1 = randomUUID().toString();

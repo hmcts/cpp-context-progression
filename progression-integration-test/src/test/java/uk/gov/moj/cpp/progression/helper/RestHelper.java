@@ -17,7 +17,6 @@ import uk.gov.justice.services.common.http.HeaderConstants;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +37,7 @@ import org.hamcrest.Matcher;
 
 public class RestHelper {
 
-    public static final int TIMEOUT_IN_SECONDS = 40;
+    public static final int TIMEOUT_IN_SECONDS = 30;
     public static final int INTERVAL_IN_MILLISECONDS = 300;
     public static final String HOST = System.getProperty("INTEGRATION_HOST_KEY", "localhost");
     private static final int PORT = 8080;
@@ -91,7 +90,7 @@ public class RestHelper {
     }
 
     public static Response postCommand(final String uri, final String mediaType,
-                                       final String jsonStringBody) throws IOException {
+                                       final String jsonStringBody) {
         return postCommandWithUserId(uri, mediaType, jsonStringBody, randomUUID().toString());
     }
 

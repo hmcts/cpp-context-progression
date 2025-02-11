@@ -16,7 +16,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.OffencesForDefendantChangedVerificationHelper.verifyInitialOffence;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.OffencesForDefendantChangedVerificationHelper.verifyUpdatedOffences;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -27,13 +26,11 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.util.Optional;
 import java.util.Random;
 
-import javax.jms.JMSException;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +42,7 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
     private static final String PAYLOAD_LOCATION_ADD = "ingestion/progression.update-offences-for-prosecution-case-add.json";
     private static final String PAYLOAD_LOCATION_DELETE = "ingestion/progression.update-offences-for-prosecution-case-delete.json";
 
-    private static final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
     private String caseId;
     private String defendantId;
     private String initialoffenceId1;
@@ -67,15 +64,8 @@ public class OffencesForDefendantChangedIT extends AbstractIT {
         initialToBeDeletedOffenceId4 = "70018321-3798-4ae2-a7ef-82ec0d61dae6";
         addedOffenceId6 = "208127fd-c8d9-4cfd-83c5-9d07d492159d";
 
-        cleanEventStoreTables();
         deleteAndCreateIndex();
     }
-
-    @AfterAll
-    public static void tearDown() throws JMSException {
-        cleanEventStoreTables();
-    }
-
 
     @Test
     public void shouldIndexProgressionCaseCreatedEventUpdateOffence() throws Exception {

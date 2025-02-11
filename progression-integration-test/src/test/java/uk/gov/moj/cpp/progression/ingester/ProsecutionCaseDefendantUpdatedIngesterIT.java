@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantAliases;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyDefendantUpdate;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -31,7 +30,6 @@ import javax.ws.rs.core.Response;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.json.JSONException;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -59,11 +57,6 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
         helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
         caseUrn = PreAndPostConditionHelper.generateUrn();
         deleteAndCreateIndex();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        cleanEventStoreTables();
     }
 
     @Test
@@ -112,7 +105,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
     private Optional<JsonObject> pollAfterDefendantUpdated() {
         return getPoller().pollUntilFound(() -> {
             try {
-                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findAll("crime_case_index");
+                final JsonObject jsonObject = elasticSearchIndexFinderUtil.findByCaseIds("crime_case_index", caseId);
                 final JsonObject outputCase = jsonFromString(getJsonArray(jsonObject, "index").get().getString(0));
 
                 if (jsonObject.getInt("totalResults") == 1

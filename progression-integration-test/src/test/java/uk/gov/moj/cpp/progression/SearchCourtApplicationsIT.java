@@ -25,11 +25,10 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings({"squid:S1607"})
 public class SearchCourtApplicationsIT extends AbstractIT {
 
-
     private static final String JSON_RESULTS_DEFENDANT_PATH = "$.searchResults[0].defendantName";
     private static final String JSON_RESULTS_PROSECUTOR_PATH = "$.searchResults[0].prosecutor";
 
-    private static final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-created").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-created").getMessageConsumerClient();
 
     private static CourtApplicationRandomValues randomValues;
     private static String applicationId;

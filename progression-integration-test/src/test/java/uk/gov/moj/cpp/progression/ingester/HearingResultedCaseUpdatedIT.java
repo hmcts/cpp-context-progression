@@ -23,7 +23,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingRes
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -37,14 +36,12 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Random;
 
-import javax.jms.JMSException;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,8 +51,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String HEARING_RESULTED_EVENT = "progression.event.hearing-resulted-case-updated";
     private static final String EVENT_LOCATION = "ingestion/progression.event.hearing-resulted-case-updated.json";
 
-    private static final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(HEARING_RESULTED_EVENT).getMessageConsumerClient();
-    private static final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(HEARING_RESULTED_EVENT).getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
 
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
 
@@ -71,16 +68,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         elasticSearchIndexRemoverUtil = new ElasticSearchIndexRemoverUtil();
         elasticSearchIndexRemoverUtil.deleteAndCreateCaseIndex();
-
-        cleanEventStoreTables();
         deleteAndCreateIndex();
     }
-
-    @AfterEach
-    public void tearDown() throws JMSException {
-        cleanEventStoreTables();
-    }
-
 
     @Test
     public void shouldIndexHearingResultedCaseUpdatedEvent() throws Exception {
@@ -155,7 +144,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 .build();
     }
 
-    private static void verifyInMessagingQueue() {
+    private void verifyInMessagingQueue() {
         final JsonPath message = retrieveMessageAsJsonPath(messageConsumer);
         assertNotNull(message);
     }

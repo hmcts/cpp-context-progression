@@ -14,7 +14,7 @@ import javax.json.JsonReader;
 import com.google.common.io.Resources;
 
 public class IngesterUtil {
-    private static final Poller poller = new Poller(100, 1000L);
+    private static final Poller poller = new Poller(1000, 10L);
     
     public static JsonObject jsonFromString(final String jsonObjectStr) {
         JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));

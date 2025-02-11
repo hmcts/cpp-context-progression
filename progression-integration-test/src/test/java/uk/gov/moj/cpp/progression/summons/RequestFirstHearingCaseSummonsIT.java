@@ -30,7 +30,6 @@ import static uk.gov.justice.core.courts.SummonsApprovedOutcome.summonsApprovedO
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.integer;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.USER_ID;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
@@ -42,8 +41,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
@@ -69,10 +66,8 @@ import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 
 import java.io.IOException;
@@ -90,13 +85,11 @@ import com.google.common.collect.ImmutableMap;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class RequestFirstHearingCaseSummonsIT {
+public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
 
     private static final String PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED = "progression.event.nows-material-request-recorded";
     private static final String PUBLIC_LISTING_DEFENDANTS_ADDED = "public.listing.new-defendant-added-for-court-proceedings";
@@ -120,12 +113,9 @@ public class RequestFirstHearingCaseSummonsIT {
 
     private final String prosecutorCost = "£300.00";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    private static final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
-
-    private static final String DOCUMENT_TEXT = STRING.next();
-
+    private final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
 
     public static Stream<Arguments> firstHearingSummonsSpecifications() {
         return Stream.of(
@@ -144,10 +134,6 @@ public class RequestFirstHearingCaseSummonsIT {
 
     @BeforeAll
     public static void setUpClass() {
-        stubInitiateHearing();
-        stubDocumentCreate(DOCUMENT_TEXT);
-        IdMapperStub.setUp();
-        NotificationServiceStub.setUp();
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
     }
 

@@ -11,34 +11,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.extractHearingIdFromProsecutionCasesProgression;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.AzureSteCaseFilterServiceStub.stubPostSetCaseEjected;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,11 +52,9 @@ public class EjectCaseApplicationIT extends AbstractIT {
     private static final String CASE_OR_APPLICATION_EJECTED
             = "public.progression.events.case-or-application-ejected";
 
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String REMOVAL_REASON = "Legal";
     private static final String STATUS_EJECTED = "EJECTED";
     private static final String STATUS_DRAFT = "DRAFT";
@@ -76,8 +70,6 @@ public class EjectCaseApplicationIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
-        DocumentGeneratorStub.stubDocumentCreate(STRING.next());
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         userId = randomUUID().toString();
@@ -85,7 +77,6 @@ public class EjectCaseApplicationIT extends AbstractIT {
         courtCentreName = "Lavender Hill Magistrate's Court";
 
     }
-
 
     @SuppressWarnings("squid:S1607")
     @Test
@@ -126,9 +117,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
                 hearingId, defendantId, courtCentreId, applicationId, prosecutionAuthorityReference, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
-        pollForResponse("/hearingSearch/" + hearingId,
-                PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.courtApplications[0].applicationStatus", is(STATUS_EJECTED)));
+        pollForHearing(hearingId, withJsonPath("$.hearing.courtApplications[0].applicationStatus", is(STATUS_EJECTED)));
     }
 
     @Test
@@ -158,7 +147,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         stubPostSetCaseEjected();
         // when
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         // Creating first application for the case
         String firstApplicationId = randomUUID().toString();
@@ -195,8 +184,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_EJECTED));
         verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrApplicationEjected);
 
-        pollForResponse("/hearingSearch/" + hearingId,
-                PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.prosecutionCases[0].caseStatus", is(STATUS_EJECTED))
         );
 

@@ -10,16 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendPublicEvent;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -45,9 +42,8 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("squid:S1607")
 public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
     private String prosecutionCaseId_1;
     private String defendantId_1;
@@ -59,8 +55,6 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
-        stubDocumentCreate(STRING.next());
         prosecutionCaseId_1 = randomUUID().toString();
         defendantId_1 = randomUUID().toString();
         masterDefendantId_1 = randomUUID().toString();
@@ -76,7 +70,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
         // initiation of first case
         initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
+        hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
         sendPublicEvent(
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -88,7 +82,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
 
         // initiation of second case
         initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_2, defendantId_2, defendantId_2);
-        String hearingId2 = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1));
+        String hearingId2 = pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId2);
         sendPublicEvent(
                 PUBLIC_LISTING_HEARING_CONFIRMED, getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -117,7 +111,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
                 withJsonPath("$.hearing.prosecutionCases.[*].defendants.[*].id", hasItems(defendantId_1, defendantId_2))
         };
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingMatchers);
+        pollForHearing(hearingId, hearingMatchers);
 
         // Update Multiple Defendant on Same Hearing
         ProsecutionCaseUpdateDefendantWithMatchedHelper prosecutionCaseUpdateDefendantWithMatchedHelper = new ProsecutionCaseUpdateDefendantWithMatchedHelper();
@@ -132,7 +126,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
 
         Matcher[] hearingDefendantMatchers = getUpdatedDefendantMatchers("$.hearing.prosecutionCases[0]", prosecutionCaseId_1, defendantId_1, emptyList());
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingDefendantMatchers);
+        pollForHearing(hearingId, hearingDefendantMatchers);
 
         verifyProbationHearingCommandInvoked(Lists.newArrayList(hearingId));
     }
@@ -144,7 +138,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
         initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
 
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1, prosecutionCaseMatchers);
+        hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1);
 
         // initiation of second case
         initiateCourtProceedingsForMatchedDefendants(prosecutionCaseId_2, defendantId_2, defendantId_2);
@@ -173,7 +167,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
                 withJsonPath("$.hearing.prosecutionCases.[*].defendants.[*].id", hasItems(defendantId_1, defendantId_2))
         };
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, hearingMatchers);
+        pollForHearing(hearingId, hearingMatchers);
 
 
         // Update Multiple Defendant on Same Hearing
@@ -194,7 +188,7 @@ public class ProsecutionCaseUpdateDefendantWithMatchedIT extends AbstractIT {
                 withJsonPath("$.hearing.prosecutionCases[1].defendants[0].offences[0].id", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1"))
         };
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON, lastMatchers);
+        pollForHearing(hearingId, lastMatchers);
 
         verifyProbationHearingCommandInvoked(Lists.newArrayList(hearingId));
     }

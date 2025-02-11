@@ -4,6 +4,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
@@ -21,7 +22,7 @@ import org.hamcrest.Matcher;
 
 public class QueueUtil {
 
-    private static final long RETRIEVE_TIMEOUT = 90000;
+    private static final long RETRIEVE_TIMEOUT = 15000;
     private static final long MESSAGE_RETRIEVE_TRIAL_TIMEOUT = 20000;
 
 
@@ -69,7 +70,7 @@ public class QueueUtil {
     }
 
     public static Metadata buildMetadata(final String publicListingHearingConfirmed, final String userId) {
-        return JsonEnvelope.metadataBuilder()
+        return metadataBuilder()
                 .withId(randomUUID())
                 .withName(publicListingHearingConfirmed)
                 .withUserId(userId)

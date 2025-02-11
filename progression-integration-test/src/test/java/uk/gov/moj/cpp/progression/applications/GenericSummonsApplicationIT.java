@@ -24,13 +24,13 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.int
 import static uk.gov.moj.cpp.progression.applications.SummonsResultUtil.getSummonsApprovedResult;
 import static uk.gov.moj.cpp.progression.applications.SummonsResultUtil.getSummonsRejectedResult;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.getPostBoxWorkApplicationReferredHearing;
@@ -39,10 +39,8 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,17 +55,14 @@ import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class GenericSummonsApplicationIT {
+public class GenericSummonsApplicationIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED = "progression.event.initiate-court-hearing-after-summons-approved";
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     private static final String PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED = "public.progression.court-application-summons-approved";
@@ -76,22 +71,15 @@ public class GenericSummonsApplicationIT {
 
     private static final String PROSECUTOR_EMAIL_ADDRESS = randomAlphanumeric(20) + "@random.com";
 
-    private static final JmsMessageConsumerClient messageConsumerClientPublicSummonsApproved = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicSummonsRejected = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForInitiateCourtHearingAfterSummonsApproved = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicSummonsApproved = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicSummonsRejected = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_REJECTED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForInitiateCourtHearingAfterSummonsApproved = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(INITIATE_COURT_HEARING_AFTER_SUMMONS_APPROVED).getMessageConsumerClient();
 
     private String rejectionReason;
     private String prosecutionCost;
     private boolean personalService;
     private boolean summonsSuppressed;
-
-    @BeforeAll
-    public static void setUpClass() {
-        stubInitiateHearing();
-        IdMapperStub.setUp();
-        NotificationServiceStub.setUp();
-    }
 
     @BeforeEach
     public void setUp() {
@@ -117,7 +105,7 @@ public class GenericSummonsApplicationIT {
 
         final String hearingId = hearing.getString("id");
 
-        pollForResponse("/hearingSearch/" + hearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(hearingId)));
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", is(hearingId)));
 
         final String requestOfHearing = getPostBoxWorkApplicationReferredHearing(applicationId);
 
@@ -138,11 +126,11 @@ public class GenericSummonsApplicationIT {
 
         final String newHearingId = getNewHearingId(applicationId);
 
-        verifyCourtHearingInitiate(newHearingId);
+        pollForHearing(newHearingId, withJsonPath("$.hearing.id", is(newHearingId)));
 
         final Matcher<ReadContext> applicationMatcher = allOf(withJsonPath("$.applicationId", is(applicationId)),
                 withJsonPath("$.applicationDetails.aagResults[0].label", is("Summons approved")));
-        verifyCourtApplicationViewStoreUpdated(applicationId, applicationMatcher);
+        pollForApplicationAtAGlance(applicationId, applicationMatcher);
     }
 
     @Test
@@ -160,7 +148,7 @@ public class GenericSummonsApplicationIT {
 
         final String hearingId = hearing.getString("id");
 
-        pollForResponse("/hearingSearch/" + hearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(hearingId)));
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", is(hearingId)));
 
         final String requestOfHearing = getPostBoxWorkApplicationReferredHearing(applicationId);
 
@@ -181,7 +169,7 @@ public class GenericSummonsApplicationIT {
 
         final Matcher<ReadContext> applicationMatcher = allOf(withJsonPath("$.applicationId", is(applicationId)),
                 withJsonPath("$.applicationDetails.aagResults[0].label", is("Summons rejected")));
-        verifyCourtApplicationViewStoreUpdated(applicationId, applicationMatcher);
+        pollForApplicationAtAGlance(applicationId, applicationMatcher);
 
         final List<String> expectedEmailDetails = newArrayList(PROSECUTOR_EMAIL_ADDRESS, "Robert12 Smith12, randomreference123", rejectionReason);
         verifyEmailNotificationIsRaisedWithoutAttachment(expectedEmailDetails);
@@ -202,7 +190,7 @@ public class GenericSummonsApplicationIT {
 
         final String hearingId = hearing.getString("id");
 
-        pollForResponse("/hearingSearch/" + hearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", is(hearingId)));
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", is(hearingId)));
 
         final String requestOfHearing = getPostBoxWorkApplicationReferredHearing(applicationId);
 
@@ -239,7 +227,7 @@ public class GenericSummonsApplicationIT {
 
         final String hearingId = hearing.getString("id");
 
-        pollForResponse("/hearingSearch/" + hearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(hearingId)));
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", is(hearingId)));
 
         final String requestOfHearing = getPostBoxWorkApplicationReferredHearing(applicationId);
 
@@ -302,10 +290,6 @@ public class GenericSummonsApplicationIT {
                 .build();
     }
 
-    private void verifyCourtHearingInitiate(String newHearingId) {
-        pollForResponse("/hearingSearch/" + newHearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(newHearingId)));
-    }
-
     private String getNewHearingId(final String applicationId) {
         final JsonPath message = retrieveMessageAsJsonPath(consumerForInitiateCourtHearingAfterSummonsApproved, isJson(Matchers.allOf(
                         withJsonPath("$.application.id", CoreMatchers.is(applicationId))
@@ -346,12 +330,5 @@ public class GenericSummonsApplicationIT {
                 new Customization("hearing.id", (o1, o2) -> o1 != null && o2 != null),
                 new Customization("hearing.courtApplications[0].id", (o1, o2) -> applicationId.equals(o1))
         );
-    }
-
-    private void verifyCourtApplicationViewStoreUpdated(final String applicationId, final Matcher<ReadContext> matcher) {
-        pollForResponse("/applications/" + applicationId,
-                "application/vnd.progression.query.application.aaag+json",
-                randomUUID().toString(),
-                matcher);
     }
 }

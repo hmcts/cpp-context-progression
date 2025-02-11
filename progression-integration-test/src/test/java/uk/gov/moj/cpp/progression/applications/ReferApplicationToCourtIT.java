@@ -28,6 +28,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import javax.json.JsonObject;
 
@@ -37,8 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class ReferApplicationToCourtIT {
+public class ReferApplicationToCourtIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
@@ -52,13 +52,8 @@ public class ReferApplicationToCourtIT {
     private String caseId;
     private String defendantId;
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient publicEventsConsumerForHearingExtended = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.hearing-extended").getMessageConsumerClient();
-
-    @BeforeAll
-    public static void setUpClass() {
-        stubInitiateHearing();
-    }
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient publicEventsConsumerForHearingExtended = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.hearing-extended").getMessageConsumerClient();
 
     @BeforeEach
     public void setUp() {

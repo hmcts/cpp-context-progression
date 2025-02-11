@@ -30,7 +30,6 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferra
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.moj.cpp.progression.helper.DocumentGenerationHelper;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -76,7 +75,6 @@ public class ReferDisqualificationWarningIT extends AbstractIT {
         stubEnforcementArea("/restResource/referencedata.query.enforcement-area-v1.json");
         stubQueryDocumentTypeData("/restResource/ref-data-orders-document-type.json");
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-        NotificationServiceStub.setUp();
     }
 
     @AfterEach

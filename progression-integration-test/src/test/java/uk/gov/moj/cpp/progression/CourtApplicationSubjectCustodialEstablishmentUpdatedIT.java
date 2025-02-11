@@ -6,28 +6,25 @@ import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplicationWithRespondents;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_APPLICATION_AAAG_JSON;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import java.util.Optional;
@@ -38,9 +35,7 @@ import javax.json.JsonObject;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends AbstractIT {
 
     private String hearingId;
@@ -55,7 +50,6 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         defendantId = randomUUID().toString();
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
         helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
-        stubInitiateHearing();
         hearingId = randomUUID().toString();
         courtApplicationId = UUID.randomUUID().toString();
     }
@@ -132,10 +126,10 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         intiateCourtProceedingForApplicationWithRespondents(defendantId1, defendantId2, courtApplicationId, caseId, defendantId, masterDefendantId, "Address1", hearingId,
                 "applications/progression.initiate-court-proceedings-for-application-with-respondents.json");
 
-        getProgressionCaseHearings(caseId, anyOf(
+        pollProsecutionCasesProgressionForCAAG(caseId, anyOf(
                 withJsonPath("$.defendants[0].address.address1", is("sam2Address2Address1"))));
 
-        getProgressionQueryForApplicationAtAaag(courtApplicationId, anyOf(
+        pollForApplicationAtAGlance(courtApplicationId, anyOf(
                 withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address1"))));
 
         // initiation of  other application
@@ -143,12 +137,12 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         intiateCourtProceedingForApplicationWithRespondents(defendantId1, defendantId2, courtApplicationId1, caseId, defendantId, masterDefendantId, "Address2", hearingId,
                 "applications/progression.initiate-court-proceedings-for-application-with-respondents.json");
 
-        getProgressionCaseHearings(caseId, anyOf(
+        pollProsecutionCasesProgressionForCAAG(caseId, anyOf(
                 withJsonPath("$.defendants[0].address.address1", is("sam2Address2Address2"))));
 
-        getProgressionQueryForApplicationAtAaag(courtApplicationId1, anyOf(
+        pollForApplicationAtAGlance(courtApplicationId1, anyOf(
                 withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address2"))));
-        getProgressionQueryForApplicationAtAaag(courtApplicationId, anyOf(
+        pollForApplicationAtAGlance(courtApplicationId, anyOf(
                 withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address2"))
         ));
     }
@@ -164,21 +158,20 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
 
         initiateCourtProceedingsForMatchedDefendants(caseId, defendantId, masterDefendantId);
         verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
-        String res = getProgressionCaseHearings(caseId);
-        assertFalse(res.isEmpty());
+        pollProsecutionCasesProgressionForCAAG(caseId, withJsonPath("$", not(emptyOrNullString())));
 
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, getProsecutionCaseMatchers(caseId, defendantId));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         // initiation of  application
         intiateCourtProceedingForApplicationWithRespondents(id2, id3, courtApplicationId, caseId, defendantId, masterDefendantId, "Address1", hearingId,
                 "applications/progression.initiate-court-proceedings-for-court-order-linked-application-for-updated-address.json");
 
-        getProgressionCaseHearings(caseId, anyOf(
+        pollProsecutionCasesProgressionForCAAG(caseId, anyOf(
                 withJsonPath("$.defendants[0].address.address1", is("sam2Address2Address1"))));
 
-        getProgressionQueryForApplicationAtAaag(courtApplicationId, anyOf(
+        pollForApplicationAtAGlance(courtApplicationId, anyOf(
                 withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address1"))));
 
         // initiation of  other application
@@ -186,12 +179,12 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         intiateCourtProceedingForApplicationWithRespondents(id2, id3, courtApplicationId1, caseId, defendantId, masterDefendantId, "Address2", hearingId,
                 "applications/progression.initiate-court-proceedings-for-application-with-respondents.json");
 
-        getProgressionCaseHearings(caseId, anyOf(
+        pollProsecutionCasesProgressionForCAAG(caseId, anyOf(
                 withJsonPath("$.defendants[0].address.address1", is("sam2Address2Address2"))));
 
-        getProgressionQueryForApplicationAtAaag(courtApplicationId1, anyOf(
+        pollForApplicationAtAGlance(courtApplicationId1, anyOf(
                 withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address2"))));
-        getProgressionQueryForApplicationAtAaag(courtApplicationId, anyOf(
+        pollForApplicationAtAGlance(courtApplicationId, anyOf(
                 withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address2"))
         ));
     }
@@ -206,13 +199,4 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         assertNotNull(reportingRestrictionObject);
     }
 
-    private String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
-        return pollForResponse("/prosecutioncases/" + caseId,
-                PROGRESSION_QUERY_PROSECUTION_CASE_CAAG_JSON, randomUUID().toString(), matchers);
-    }
-
-    private String getProgressionQueryForApplicationAtAaag(final String applicationId, final Matcher... matchers) {
-        return pollForResponse("/applications/" + applicationId,
-                PROGRESSION_QUERY_APPLICATION_AAAG_JSON, randomUUID().toString(), matchers);
-    }
 }

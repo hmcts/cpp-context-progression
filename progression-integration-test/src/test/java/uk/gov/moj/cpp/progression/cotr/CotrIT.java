@@ -18,7 +18,6 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrAccessControl.mockCourtsUserCotrAccessControl;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrAccessControl.mockDefenceUserCotrAccessControl;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrAccessControl.mockProsecutionUserCotrAccessControl;
@@ -31,12 +30,10 @@ import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.queryAndVeri
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.serveDefendantCotr;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.serveProsecutionCotr;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.updateReviewNotes;
-import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyCaseId;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyCotrAndGetCotr;
 import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyInMessagingQueue;
-import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyServeDefendant;
-import static uk.gov.moj.cpp.progression.cotr.cotrHelper.CotrHelper.verifyServeProsecution;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForCaseHearings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
@@ -44,7 +41,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForCotrTrialHearings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForGetTrialReadinessHearingDetails;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForSearchTrialReadiness;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessage;
@@ -56,10 +52,12 @@ import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStructured
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedDefendantsForDefenceOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForDefendantIdpcMetadata;
+import static uk.gov.moj.cpp.progression.stub.DirectionsManagementStub.stubCaseDirectionsList;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingCotrSearch;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.stubCotrFormServedNotificationCms;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubCotrReviewNotes;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForTypes;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCotrDetailsMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCotrTrialHearingsMatchers;
@@ -83,15 +81,10 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.PolarQuestion;
 import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
-import uk.gov.moj.cpp.progression.stub.DefenceStub;
-import uk.gov.moj.cpp.progression.stub.DirectionsManagementStub;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
-import uk.gov.moj.cpp.progression.stub.MaterialStub;
-import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -110,62 +103,40 @@ import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class CotrIT {
+public class CotrIT extends AbstractIT {
 
     private static final String DEFENCE_USER_ID = randomUUID().toString();
     private static final String PROSECUTOR_USER_ID = randomUUID().toString();
     private static final String COURTS_USER_ID = randomUUID().toString();
 
-    private static final String COTR_CREATED_PUBLIC_EVENT = "public.progression.cotr-created";
-
-    private static final String SERVE_PROSECUTOR_COTR_CREATED_PUBLIC_EVENT = "public.progression.prosecution-cotr-served";
-    private static final String SERVE_PROSECUTOR_COTR_CREATED_PRIVATE_EVENT = "progression.event.prosecution-cotr-served";
-
-    private static final String SERVE_DEFENDANT_COTR_PUBLIC_EVENT = "public.progression.serve-defendant-cotr";
-    private static final String SERVE_DEFENDANT_COTR_PRIVATE_EVENT = "progression.event.defendant-cotr-served";
+    private static final String PROGRESSION_PUBLIC_EVENT_COTR_CREATED = "public.progression.cotr-created";
+    private static final String PROGRESSION_PUBLIC_EVENT_PROSECUTOR_COTR_SERVED = "public.progression.prosecution-cotr-served";
+    private static final String PROGRESSION_PUBLIC_EVENT_SERVE_DEFENDANT_COTR = "public.progression.serve-defendant-cotr";
+    private static final String PROGRESSION_PUBLIC_EVENT_COTR_REVIEW_NOTES_UPDATED = "public.progression.cotr-review-notes-updated";
+    private static final String PROGRESSION_PUBLIC_EVENT_DEFENDANTS_CHANGED_IN_COTR = "public.progression.defendants-changed-in-cotr";
+    private static final String PROGRESSION_PUBLIC_EVENT_FURTHER_INFO_FOR_PROSECUTION_COTR_ADDED = "public.progression.further-info-for-prosecution-cotr-added";
 
     private static final String PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_COTR_SUBMITTED = "public.prosecutioncasefile.cps-serve-cotr-submitted";
     private static final String PUBLIC_PROSECUTIONCASEFILE_CPS_UPDATE_COTR_SUBMITTED = "public.prosecutioncasefile.cps-update-cotr-submitted";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final String PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS = "progression.command.initiate-court-proceedings.json";
     private static final String PROGRESSION_QUERY_TRIAL_HEARINGS_FOR_PROSECUTION_CASE = "application/vnd.progression.query.cotr-trial-hearings+json";
 
-    private static final String FURTHER_INFO_FOR_PROSECUTION_COTR_ADDED_PUBLIC_EVENT = "public.progression.further-info-for-prosecution-cotr-added";
-
-    private static final String REVIEW_NOTES_UPDATED_PUBLIC_EVENT = "public.progression.cotr-review-notes-updated";
-
-    private static final String DEFENDANTS_CHANGED_IN_COTR_PUBLIC_EVENT = "public.progression.defendants-changed-in-cotr";
-    public static final String PROGRESSION_QUERY_GET_CASE_HEARINGS = "application/vnd.progression.query.casehearings+json";
-
-    private static final String DOCUMENT_TEXT = STRING.next();
     private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
-    private static final JmsMessageConsumerClient consumerForPublicForCotrCreated = newPublicJmsMessageConsumerClientProvider().withEventNames(COTR_CREATED_PUBLIC_EVENT).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicForCotrCreated = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_COTR_CREATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicServeProsecutionCotrCreated = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_PROSECUTOR_COTR_SERVED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicEventFurtherInfoForProsecutionCotrAdded = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_FURTHER_INFO_FOR_PROSECUTION_COTR_ADDED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicEventReviewNotesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_COTR_REVIEW_NOTES_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicEventDefendantsChangedIdCotr = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_DEFENDANTS_CHANGED_IN_COTR).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicServeDefendantCotr = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_SERVE_DEFENDANT_COTR).getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPublicCourtDocumentAdded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForCourDocumentNotified = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-send-to-cps").getMessageConsumerClient();
 
-    private static final JmsMessageConsumerClient consumerForServeProsecutionCotrCreated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(SERVE_PROSECUTOR_COTR_CREATED_PRIVATE_EVENT).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForPublicServeProsecutionCotrCreated = newPublicJmsMessageConsumerClientProvider().withEventNames(SERVE_PROSECUTOR_COTR_CREATED_PUBLIC_EVENT).getMessageConsumerClient();
-
-    private static final JmsMessageConsumerClient consumerForPublicEventFurtherInfoForProsecutionCotrAdded = newPublicJmsMessageConsumerClientProvider().withEventNames(FURTHER_INFO_FOR_PROSECUTION_COTR_ADDED_PUBLIC_EVENT).getMessageConsumerClient();
-
-    private static final JmsMessageConsumerClient consumerForPublicEventReviewNotesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(REVIEW_NOTES_UPDATED_PUBLIC_EVENT).getMessageConsumerClient();
-
-    private static final JmsMessageConsumerClient consumerForPublicEventDefendantsChangedIdCotr = newPublicJmsMessageConsumerClientProvider().withEventNames(DEFENDANTS_CHANGED_IN_COTR_PUBLIC_EVENT).getMessageConsumerClient();
-
-    private static final JmsMessageConsumerClient consumerForPublicServeDefendantCotr = newPublicJmsMessageConsumerClientProvider().withEventNames(SERVE_DEFENDANT_COTR_PUBLIC_EVENT).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForServeDefendantCotr = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(SERVE_DEFENDANT_COTR_PRIVATE_EVENT).getMessageConsumerClient();
-
-    private static final JmsMessageConsumerClient consumerForPublicCourtDocumentAdded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForCourDocumentNotified = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-send-to-cps").getMessageConsumerClient();
-
-    private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
     private String caseId;
     private String materialIdActive;
     private String materialIdDeleted;
@@ -177,8 +148,6 @@ public class CotrIT {
 
     @BeforeAll
     public static void setUpClass() {
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubMaterialMetadata();
         stubCotrFormServedNotificationCms();
         stubCotrReviewNotes();
     }
@@ -197,7 +166,6 @@ public class CotrIT {
     }
 
     @Test
-    @Disabled("DD-33449")
     public void shouldTestCotrCommands() throws Exception {
 
         final UUID caseId = randomUUID();
@@ -209,7 +177,7 @@ public class CotrIT {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId.toString(), defendantId1.toString(), defendantId2.toString());
         pollProsecutionCasesProgressionFor(caseId.toString(), getProsecutionCaseMatchers(caseId.toString(), defendantId1.toString()));
 
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId.toString(), defendantId1.toString(), getProsecutionCaseMatchers(caseId.toString(), defendantId1.toString()));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId.toString(), defendantId1.toString());
 
         mockDefenceUserCotrAccessControl(DEFENCE_USER_ID);
         pollForCotrTrialHearings(caseId.toString(), getCotrTrialHearingsMatchers(hearingId, Collections.emptyList()));
@@ -246,10 +214,8 @@ public class CotrIT {
                 .withHasAllDisclosureBeenProvided(PolarQuestion.polarQuestion().withAnswer("Y").withDetails("details").withAttentionRequired(Boolean.TRUE).build())
                 .withSubmissionId(randomUUID())
                 .build();
-        UsersAndGroupsStub.stubGetOrganisationDetailForTypes("stub-data/usersgroups.get-organisations-details.json", PROSECUTOR_USER_ID);
+        stubGetOrganisationDetailForTypes("stub-data/usersgroups.get-organisations-details.json", PROSECUTOR_USER_ID);
         serveProsecutionCotr(serveProsecutionCotr, PROSECUTOR_USER_ID);
-        final JsonObject serveProsecutionCotrEvent = verifyCotrAndGetCotr(consumerForServeProsecutionCotrCreated, cotrIdString);
-        verifyServeProsecution(serveProsecutionCotrEvent, serveProsecutionCotr);
 
         verifyCotrAndGetCotr(consumerForPublicServeProsecutionCotrCreated, cotrIdString);
 
@@ -274,9 +240,6 @@ public class CotrIT {
                 .build();
 
         serveDefendantCotr(serveDefendantCotr, COURTS_USER_ID);
-        final JsonObject serveDefendantCotrEvent = verifyCotrAndGetCotr(consumerForServeDefendantCotr, cotrIdString);
-        verifyServeDefendant(serveDefendantCotrEvent, serveDefendantCotr);
-        verifyCaseId(serveDefendantCotrEvent, caseId.toString());
         verifyCotrAndGetCotr(consumerForPublicServeDefendantCotr, cotrIdString);
         verifyInMessagingQueue(consumerForPublicCourtDocumentAdded);
         verifyInMessagingQueue(consumerForCourDocumentNotified);
@@ -423,8 +386,8 @@ public class CotrIT {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId.toString(), defendantId1.toString(), defendantId2.toString());
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId.toString(), defendantId1.toString());
 
-        ListingStub.stubListingCotrSearch("stub-data/listing.search.hearings.json", hearingId);
-        DirectionsManagementStub.stubCaseDirectionsList("stub-data/directionmanagement.query.case-directions-list.json");
+        stubListingCotrSearch("stub-data/listing.search.hearings.json", hearingId);
+        stubCaseDirectionsList("stub-data/directionmanagement.query.case-directions-list.json");
 
         mockDefenceUserCotrAccessControl(DEFENCE_USER_ID);
 
@@ -447,8 +410,8 @@ public class CotrIT {
         addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId.toString(), defendantId1.toString(), defendantId2.toString());
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId.toString(), defendantId1.toString());
 
-        DirectionsManagementStub.stubCaseDirectionsList("stub-data/directionmanagement.query.case-directions-list.json");
-        DefenceStub.stubForDefendantIdpcMetadata("stub-data/defence.query.defendant.idpc.metadata.json", defendantId1.toString());
+        stubCaseDirectionsList("stub-data/directionmanagement.query.case-directions-list.json");
+        stubForDefendantIdpcMetadata("stub-data/defence.query.defendant.idpc.metadata.json", defendantId1.toString());
 
         pollProsecutionCasesProgressionFor(caseId.toString());
 
@@ -463,8 +426,6 @@ public class CotrIT {
 
         setupLoggedInUsersPermissionQueryStub();
         setupMaterialStructuredPetQueryForCotr(petId.toString());
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubMaterialMetadata();
 
         final Response responseForCreatePetForm = postCommand(getWriteUrl("/pet"), "application/vnd.progression.create-pet-form+json", payload.toString());
         assertThat(responseForCreatePetForm.getStatusCode(), is(ACCEPTED.getStatusCode()));
@@ -474,10 +435,8 @@ public class CotrIT {
 
         mockDefenceUserCotrAccessControl(DEFENCE_USER_ID);
 
-        final String response = pollForGetTrialReadinessHearingDetails(hearingId);
-        final JsonObject responseObject = stringToJsonObjectConverter.convert(response);
-        assertThat(responseObject.getJsonObject("trialSummary"), is(notNullValue()));
-
+        pollForGetTrialReadinessHearingDetails(hearingId,
+                withJsonPath("$.trialSummary", is(notNullValue())));
     }
 
     @Test
@@ -486,9 +445,7 @@ public class CotrIT {
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
-        verifyInMessagingQueueForProsecutionCaseCreated();
-
-        getProgressionCaseHearings(caseId, anyOf(
+        pollForCaseHearings(caseId,
                 withJsonPath("$.hearings.length()", is(1)),
                 withJsonPath("$.hearings[0].id", is(notNullValue())),
                 withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
@@ -496,9 +453,9 @@ public class CotrIT {
                 withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
                 withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01")),
                 withJsonPath("$.hearings[0].hearingDays[0].sittingDay", is(notNullValue()))
-        ));
+        );
 
-        UsersAndGroupsStub.stubGetOrganisationDetailForTypes("stub-data/usersgroups.get-organisations-details.json", PROSECUTOR_USER_ID);
+        stubGetOrganisationDetailForTypes("stub-data/usersgroups.get-organisations-details.json", PROSECUTOR_USER_ID);
 
         final String cpsDefendantId = randomUUID().toString();
         final JsonObject cpsServeCotrSubmittedPublicEvent = buildPayloadForCpsServeCotrSubmitted(cpsDefendantId);
@@ -519,16 +476,14 @@ public class CotrIT {
         pollProsecutionCasesProgressionFor(caseId, caseWithCpsDefendantIdMatchers);
     }
 
-
     @Test
     public void shouldUpdateServeCpsCotrForm() throws IOException {
 
         //given
         initiateCourtProceedings(PROGRESSION_COMMAND_INITIATE_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         //when
-        verifyInMessagingQueueForProsecutionCaseCreated();
 
-        getProgressionCaseHearings(caseId, anyOf(
+        pollForCaseHearings(caseId,
                 withJsonPath("$.hearings.length()", is(1)),
                 withJsonPath("$.hearings[0].id", is(notNullValue())),
                 withJsonPath("$.hearings[0].courtCentre.id", is("88cdf36e-93e4-41b0-8277-17d9dba7f06f")),
@@ -536,10 +491,10 @@ public class CotrIT {
                 withJsonPath("$.hearings[0].courtCentre.roomId", is("9e4932f7-97b2-3010-b942-ddd2624e4dd8")),
                 withJsonPath("$.hearings[0].courtCentre.roomName", is("Courtroom 01")),
                 withJsonPath("$.hearings[0].hearingDays[0].sittingDay", is(notNullValue()))
-        ));
+        );
 
         //CPS - Create COTR
-        UsersAndGroupsStub.stubGetOrganisationDetailForTypes("stub-data/usersgroups.get-organisations-details.json", PROSECUTOR_USER_ID);
+        stubGetOrganisationDetailForTypes("stub-data/usersgroups.get-organisations-details.json", PROSECUTOR_USER_ID);
 
         final String cpsDefendantId = randomUUID().toString();
         final JsonObject cpsServeCotrSubmittedPublicEvent = buildPayloadForCpsServeCotrSubmitted(cpsDefendantId);
@@ -555,13 +510,12 @@ public class CotrIT {
         final JsonEnvelope publicEventUpdateEnvelope = envelopeFrom(buildMetadata(PUBLIC_PROSECUTIONCASEFILE_CPS_UPDATE_COTR_SUBMITTED, randomUUID()), cpsServeCotrUpdatePublicEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_PROSECUTIONCASEFILE_CPS_UPDATE_COTR_SUBMITTED, publicEventUpdateEnvelope);
 
-        assertThat(getPrivateEventsCotrServedConsumer(), is(notNullValue()));
         final JsonEnvelope publicEvent = getPublicEventsCotrServedConsumer();
         assertThat(publicEvent, is(notNullValue()));
         final JsonObject eventPayload = publicEvent.payloadAsJsonObject();
         assertThat(eventPayload, notNullValue());
 
-        getCotrCaseDetails(caseId, anyOf(
+        pollForCotrCaseDetails(caseId, anyOf(
                 withJsonPath("$.cotrDetails[0].id", is(notNullValue()))
         ));
 
@@ -577,14 +531,7 @@ public class CotrIT {
         );
     }
 
-    private String getProgressionCaseHearings(final String caseId, final Matcher... matchers) {
-        return pollForResponse("/prosecutioncases/" + caseId,
-                PROGRESSION_QUERY_GET_CASE_HEARINGS,
-                randomUUID().toString(),
-                matchers);
-    }
-
-    private String getCotrCaseDetails(final String caseId, final Matcher... matchers) {
+    private String pollForCotrCaseDetails(final String caseId, final Matcher... matchers) {
         return pollForResponse("/prosecutioncases/" + caseId + "/cotr-details-prosecutioncase",
                 "application/vnd.progression.query.cotr.details.prosecutioncase+json",
                 randomUUID().toString(),
@@ -619,18 +566,8 @@ public class CotrIT {
         return message.get();
     }
 
-
-    private void verifyInMessagingQueueForProsecutionCaseCreated() {
-        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumer);
-        assertTrue(message.isPresent());
-    }
-
     public JsonEnvelope getPublicEventsCotrCreatedConsumer() {
         return retrieveMessage(consumerForPublicForCotrCreated).orElse(null);
-    }
-
-    public JsonEnvelope getPrivateEventsCotrServedConsumer() {
-        return retrieveMessage(consumerForServeProsecutionCotrCreated).orElse(null);
     }
 
     public JsonEnvelope getPublicEventsCotrServedConsumer() {

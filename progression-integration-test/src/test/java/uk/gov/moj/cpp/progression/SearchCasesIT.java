@@ -37,7 +37,6 @@ public class SearchCasesIT extends AbstractIT {
     private static final String MIDDLE_NAME = randomAlphabetic(15);
     private static final String LAST_NAME = randomAlphabetic(15);
 
-
     @BeforeAll
     public static void setUpCommonData() throws IOException, JSONException {
         final String caseId = randomUUID().toString();

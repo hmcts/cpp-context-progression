@@ -5,21 +5,20 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
-import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplicationCase;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplication;
 import static uk.gov.moj.cpp.progression.stub.SjpStub.setupSjpProsecutionCaseQueryStub;
 
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class SummonsApplicationIT {
+public class SummonsApplicationIT extends AbstractIT {
 
     @Test
     public void shouldCreateLinkedApplicationWithSummons() throws Exception {
@@ -42,7 +41,9 @@ public class SummonsApplicationIT {
         };
 
         pollForCourtApplication(applicationId, applicationMatchers);
-        pollForCourtApplicationCase(caseId);
+        pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.linkedApplicationsSummary", hasSize(1))
+        );
     }
 
     @Test
@@ -123,7 +124,9 @@ public class SummonsApplicationIT {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
         };
 
-        pollForCourtApplicationCase(caseId);
+        pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.linkedApplicationsSummary", hasSize(1))
+        );
         pollForCourtApplication(applicationId, applicationMatchers);
     }
 
@@ -140,7 +143,9 @@ public class SummonsApplicationIT {
         };
 
         pollForCourtApplication(applicationId, applicationMatchers);
-        pollForCourtApplicationCase(caseId);
+        pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.linkedApplicationsSummary", hasSize(1))
+        );
 
         applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, caseId, "applications/progression.initiate-court-proceedings-for-summons-application-with-sjp-case.json");
@@ -149,6 +154,7 @@ public class SummonsApplicationIT {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
         };
         pollForCourtApplication(applicationId, newApplicationMatchers);
-        pollForCourtApplicationCase(caseId);
+        pollProsecutionCasesProgressionFor(caseId,
+                withJsonPath("$.linkedApplicationsSummary", hasSize(2)));
     }
 }

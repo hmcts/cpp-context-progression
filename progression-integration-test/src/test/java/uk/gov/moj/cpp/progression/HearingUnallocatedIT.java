@@ -15,7 +15,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.io.IOException;
 
@@ -23,19 +22,13 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.json.JSONException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class HearingUnallocatedIT extends AbstractIT {
 
     private static final String PUBLIC_EVENTS_LISTING_HEARING_UNALLOCATED = "public.events.listing.hearing-unallocated";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-
-    @BeforeEach
-    public void setUp() {
-        HearingStub.stubInitiateHearing();
-    }
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     @Test
     public void shouldUnallocateHearing() throws IOException, JSONException {

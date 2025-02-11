@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 public class ReadCourtDocumentIT extends AbstractIT {
 
     private final String mimeType = "text/uri-list";

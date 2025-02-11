@@ -33,7 +33,6 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 public class InitiateCourtProceedingsIT extends AbstractIT {
 
     private String caseId;
@@ -67,16 +66,11 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         //given
         initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
-
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
-
-        pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
-
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
             try {
-                final JsonObject jsonObject1 = elasticSearchIndexFinderUtil.findAll("crime_case_index");
+                final JsonObject jsonObject1 = elasticSearchIndexFinderUtil.findByCaseIds("crime_case_index", caseId);
                 if (jsonObject1.getInt("totalResults") == 1 && isPartiesPopulated(jsonObject1, 1)) {
                     return of(jsonObject1);
                 }

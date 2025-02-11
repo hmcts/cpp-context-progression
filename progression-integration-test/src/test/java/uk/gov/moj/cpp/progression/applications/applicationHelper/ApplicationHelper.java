@@ -1,12 +1,9 @@
 package uk.gov.moj.cpp.progression.applications.applicationHelper;
 
 import static com.google.common.io.Resources.getResource;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.hamcrest.CoreMatchers.is;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.DefaultRequests.PROGRESSION_QUERY_PROSECUTION_CASE_JSON;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 
@@ -80,8 +77,10 @@ public class ApplicationHelper {
                 matchers);
     }
 
-    public static void pollForCourtApplicationCase(final String caseId) {
-        pollForResponse("/prosecutioncases/" + caseId, PROGRESSION_QUERY_PROSECUTION_CASE_JSON, randomUUID().toString(), withJsonPath("$.prosecutionCase.id", is(caseId)));
+    public static String pollForApplicationAtAGlance(final String applicationId, final Matcher... matchers) {
+        return pollForResponse("/applications/" + applicationId, "application/vnd.progression.query.application.aaag+json",
+                randomUUID().toString(),
+                matchers);
     }
 
     private static String getCourtApplicationJson(final String applicationId, final String caseId, final String hearingId, final String masterDefendantId, final String fileName) throws IOException {

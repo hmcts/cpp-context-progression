@@ -12,13 +12,13 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class GenericLinkedApplicationIT {
+public class GenericLinkedApplicationIT extends AbstractIT {
 
     @Test
     public void shouldInitiateCourtProceedingsForProsecutionCases() throws Exception {

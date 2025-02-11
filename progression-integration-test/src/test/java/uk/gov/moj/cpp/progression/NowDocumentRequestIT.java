@@ -18,9 +18,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.ID;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataOf;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegister;
@@ -33,8 +32,7 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
-import uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub;
+import uk.gov.moj.cpp.progression.helper.NowsRequestHelper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -46,17 +44,16 @@ import java.util.UUID;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import io.restassured.response.Response;
-import org.apache.http.HttpStatus;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class NowDocumentRequestIT extends AbstractIT {
+
+    private final String PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT = "public.stagingenforcement.enforce-financial-imposition-acknowledgement";
 
     private static final String NOW_DOCUMENT_REQUESTS = "nowDocumentRequests";
     private static final String MATERIAL_ID = "materialId";
@@ -70,13 +67,10 @@ public class NowDocumentRequestIT extends AbstractIT {
     private String defendantId;
     private String requestId;
     private UUID userId;
-    final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    @BeforeAll
-    public static void setupBefore() {
-        SysDocGeneratorStub.stubDocGeneratorEndPoint();
-        NotificationServiceStub.setUp();
-    }
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+
+    private NowsRequestHelper nowsRequestHelper;
 
     @BeforeEach
     public void setup() {
@@ -85,19 +79,13 @@ public class NowDocumentRequestIT extends AbstractIT {
         materialId = randomUUID().toString();
         requestId = randomUUID().toString();
         userId = randomUUID();
+        nowsRequestHelper = new NowsRequestHelper();
     }
 
     @Test
     public void shouldAddFinancialNowDocumentRequest() throws IOException, JSONException {
         final String body = prepareAddNowFinancialDocumentRequestPayload();
-
-        requestNowsDocument(body);
-
-        getNowDocumentRequestsFor(requestId, anyOf(
-                withJsonPath("$.nowDocumentRequests[0].requestId", equalTo(requestId)),
-                withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId)),
-                withJsonPath("$.nowDocumentRequests[0].materialId", equalTo(materialId)))
-        );
+        nowsRequestHelper.makeNowsRequestAndVerify(requestId, body);
 
         sendPublicEventForFinancialImpositionAcknowledgement();
 
@@ -111,13 +99,25 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
+    public void shouldFailToProcessFinancialNowsOnReceivingErrorAcknowledgement() throws IOException {
+        final String body = prepareAddNowFinancialDocumentRequestPayload();
+        nowsRequestHelper.makeNowsRequestAndVerify(requestId, body);
+        getNowDocumentRequestsFor(requestId, anyOf(
+                withJsonPath("$.nowDocumentRequests[0].requestId", equalTo(requestId)),
+                withJsonPath("$.nowDocumentRequests[0].hearingId", equalTo(hearingId)),
+                withJsonPath("$.nowDocumentRequests[0].materialId", equalTo(materialId)))
+        );
+        sendErrorAcknowledgementAndVerify(requestId);
+    }
+
+    @Test
     public void shouldAddNonFinancialNowDocumentRequest() throws IOException, JSONException {
 
         final String payload = prepareAddNowNonFinancialDocumentRequestPayload("progression.add-non-financial-now-document-request.json");
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);
         final NowDocumentRequest nowDocumentRequest = jsonToObjectConverter.convert(jsonObject, NowDocumentRequest.class);
 
-        requestNowsDocument(payload);
+        nowsRequestHelper.makeNowsRequestAndVerify(null, payload);
 
         sendPublicEventForDocumentAvailable();
 
@@ -132,13 +132,6 @@ public class NowDocumentRequestIT extends AbstractIT {
         final JsonObject nowDocumentRequests = stringToJsonObjectConverter.convert(nowDocumentRequestPayload);
         final JsonObject nowDocumentRequestJsonObject = nowDocumentRequests.getJsonArray(NOW_DOCUMENT_REQUESTS).getJsonObject(0);
         assertThat(nowDocumentRequest.getMaterialId().toString(), is(nowDocumentRequestJsonObject.getString(MATERIAL_ID)));
-    }
-
-    private void requestNowsDocument(final String body) throws IOException {
-        final Response writeResponse = postCommand(getWriteUrl("/nows"),
-                "application/vnd.progression.add-now-document-request+json",
-                body);
-        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
     private void sendPublicEventForMaterialAdded() {
@@ -159,13 +152,12 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     private void sendPublicEventForFinancialImpositionAcknowledgement() {
-        final String eventName = "public.stagingenforcement.enforce-financial-imposition-acknowledgement";
-
         final JsonObject payload = generateSuccessfulAcknowledgement(requestId);
 
-        messageProducerClientPublic.sendMessage(eventName, envelopeFrom(metadataOf(randomUUID(), eventName)
-                .withUserId(randomUUID().toString())
-                .build(), payload));
+        messageProducerClientPublic.sendMessage(PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT,
+                envelopeFrom(metadataOf(randomUUID(), PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT)
+                        .withUserId(randomUUID().toString())
+                        .build(), payload));
     }
 
     private String prepareAddNowFinancialDocumentRequestPayload() {
@@ -262,6 +254,23 @@ public class NowDocumentRequestIT extends AbstractIT {
                 .add("generatedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
                 .add("generateVersion", 1)
                 .build();
+    }
+
+
+    private void sendErrorAcknowledgementAndVerify(final String requestId) {
+        final String errorCode = "ERR12";
+        final String errorMessage = "Post code is invalid";
+        final JsonObject stagingEnforcementAckPayload = createObjectBuilder().add("originator", "courts")
+                .add("requestId", requestId)
+                .add("exportStatus", "ENFORCEMENT_EXPORT_FAILED")
+                .add("updated", "2019-12-01T10:00:00Z")
+                .add("acknowledgement", createObjectBuilder().add("errorCode", errorCode).add("errorMessage", errorMessage).build())
+                .build();
+
+        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, USER_ID_VALUE_AS_ADMIN), stagingEnforcementAckPayload);
+        messageProducerClientPublic.sendMessage(PUBLIC_EVENT_STAGINGENFORCEMENT_ENFORCE_FINANCIAL_IMPOSITION_ACKNOWLEDGEMENT, publicEventEnvelope);
+
+        new NowsRequestHelper().verifyErrorEventRaised(errorCode, errorMessage);
     }
 
 }

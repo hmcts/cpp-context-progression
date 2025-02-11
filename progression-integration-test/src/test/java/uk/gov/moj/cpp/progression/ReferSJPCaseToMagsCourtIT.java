@@ -17,7 +17,6 @@ public class ReferSJPCaseToMagsCourtIT extends AbstractIT {
     private String caseId;
     private String defendantId;
 
-
     @Test
     public void shouldGetProsecutionCaseAndVerifyVerdictFromSjp() throws Exception {
         caseId = randomUUID().toString();

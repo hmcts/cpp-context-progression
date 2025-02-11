@@ -17,7 +17,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -39,7 +38,7 @@ import org.junit.jupiter.api.Test;
 public class UpdateCourtApplicationIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     private String caseId;
@@ -86,7 +85,6 @@ public class UpdateCourtApplicationIT extends AbstractIT {
 
     @Test
     public void shouldRaiseProbationEventWhenUpdateCourtApplication() throws Exception {
-        stubInitiateHearing();
         final String applicationId = randomUUID().toString();
 
         addStandaloneCourtApplication(applicationId, UUID.randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");

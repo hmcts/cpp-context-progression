@@ -22,7 +22,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClien
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateCaseMarkersHelper;
 
 import java.time.LocalDate;
@@ -49,9 +48,9 @@ public class UpdateCaseMarkersIT {
     private String defendantDOB;
 
     private ProsecutionCaseUpdateCaseMarkersHelper helper;
-    private static final JmsMessageConsumerClient publicEventsCaseMarkersUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-markers-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventsCaseMarkersUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-markers-updated").getMessageConsumerClient();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     @BeforeEach
     public void setUp() {
@@ -90,9 +89,6 @@ public class UpdateCaseMarkersIT {
 
     @Test
     public void shouldUpdateHearingCaseMarkers() throws Exception {
-        HearingStub.stubInitiateHearing();
-        //given
-
         addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId);
 
         final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);

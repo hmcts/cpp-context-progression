@@ -3,19 +3,15 @@ package uk.gov.moj.cpp.progression;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.Matchers.is;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateDefendantListingStatusChanged;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class UpdateDefendantListingStatusIT extends AbstractIT {
-
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
     private String hearingId;
     private String caseId;
@@ -24,7 +20,6 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        HearingStub.stubInitiateHearing();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
     }
@@ -35,7 +30,7 @@ public class UpdateDefendantListingStatusIT extends AbstractIT {
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         updateDefendantListingStatusChanged(hearingId, "progression.update-defendant-listing-status.json");
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
+        pollForHearing(hearingId,
                 withJsonPath("$.hearing.id", is(hearingId)),
                 withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")),
                 withJsonPath("$.hearing.jurisdictionType", is("CROWN"))

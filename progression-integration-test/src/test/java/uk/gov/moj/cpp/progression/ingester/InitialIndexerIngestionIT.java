@@ -12,7 +12,6 @@ import static uk.gov.justice.services.test.utils.common.host.TestHostProvider.ge
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.services.jmx.system.command.client.SystemCommanderClient;
 import uk.gov.justice.services.jmx.system.command.client.TestSystemCommanderClientFactory;
@@ -28,7 +27,6 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -58,11 +56,6 @@ public class InitialIndexerIngestionIT extends AbstractIT {
         databaseCleaner.cleanStreamBufferTable(CONTEXT_NAME);
         databaseCleaner.cleanViewStoreTables(CONTEXT_NAME, "processed_event");
         deleteAndCreateIndex();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        cleanEventStoreTables();
     }
 
     @Test

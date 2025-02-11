@@ -3,13 +3,13 @@ package uk.gov.moj.cpp.progression.util;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.jayway.jsonpath.ReadContext;
@@ -19,7 +19,7 @@ public class ReferProsecutionCaseToCrownCourtHelper {
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
 
     public static Matcher<? super ReadContext>[] getProsecutionCaseMatchers(final String caseId, final String defendantId) {
-        return getProsecutionCaseMatchers(caseId, defendantId, Collections.emptyList());
+        return getProsecutionCaseMatchers(caseId, defendantId, emptyList());
 
     }
 

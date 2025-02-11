@@ -25,7 +25,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.Prosecutio
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertHearing;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertJudiciaryTypes;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -48,7 +47,6 @@ import javax.json.JsonValue;
 
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -60,8 +58,8 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     private static final String EVENT_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed.json";
     private static final String EVENT_WITH_LINKED_APPLICATION_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-linked-applications.json";
 
-    private static final JmsMessageConsumerClient messageConsumerV2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT).getMessageConsumerClient();
-    private static final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerV2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT).getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
     private static final String COURT_APPLICATIONS = "courtApplications";
     private static final String APPLICATIONS = "applications";
     public static final String APPLICATION_REFERENCE = "applicationReference";
@@ -82,12 +80,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         courtId = randomUUID().toString();
         deleteAndCreateIndex();
     }
-
-    @AfterAll
-    public static void tearDown() {
-        cleanEventStoreTables();
-    }
-
 
     @Test
     public void shouldIngestProsecutionCaseDefendantListingStatusChangedV2Event() {
@@ -385,7 +377,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
                 .build();
     }
 
-    private static void verifyInMessagingQueueV2() {
+    private void verifyInMessagingQueueV2() {
         final JsonPath message = retrieveMessageAsJsonPath(messageConsumerV2);
         assertNotNull(message);
     }

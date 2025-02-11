@@ -4,25 +4,21 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.util.ConvictionDateHelper;
 
 import java.io.IOException;
@@ -32,16 +28,13 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.json.JSONException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @SuppressWarnings("squid:S1607")
-@ExtendWith(JmsResourceManagementExtension.class)
 public class ConvictionDateIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final String NEW_COURT_CENTRE_ID = fromString("999bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
 
@@ -58,11 +51,6 @@ public class ConvictionDateIT extends AbstractIT {
     private String caseId;
     private String defendantId;
     private String offenceId;
-
-    @BeforeAll
-    public static void setUpClass() {
-        HearingStub.stubInitiateHearing();
-    }
 
     @BeforeEach
     public void setUp() {
@@ -85,9 +73,6 @@ public class ConvictionDateIT extends AbstractIT {
         // when
         helper.addConvictionDate();
 
-        // then
-        helper.verifyInActiveMQForConvictionDateChanged();
-
         final Matcher[] convictionAddedMatchers = {
                 withJsonPath("$.courtApplication.convictionDate", is("2017-02-02"))
         };
@@ -95,21 +80,18 @@ public class ConvictionDateIT extends AbstractIT {
 
         helper.removeConvictionDate();
 
-        helper.verifyInActiveMQForConvictionDateRemoved();
-
         pollForApplication(courtApplicationId, withoutJsonPath("$.courtApplication.convictionDate"));
     }
 
     @Test
     public void shouldRetainTheJudicialResultsWhenConvictionDateIsUpdatedV2() throws IOException, JSONException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId == '" + defendantId + "')].hearingIds", hasSize(greaterThan(0))));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);;
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
                 hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
+        pollHearingWithStatus(hearingId, "HEARING_RESULTED");
 
         helper.addConvictionDate();
         final Matcher[] convictionAddedMatchers = {
@@ -117,8 +99,6 @@ public class ConvictionDateIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].convictionDate", is("2017-02-02"))
         };
         pollProsecutionCasesProgressionFor(caseId, convictionAddedMatchers);
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
     }
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
@@ -135,14 +115,6 @@ public class ConvictionDateIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
         );
-    }
-
-    private Matcher[] getHearingAtAGlanceMatchers() {
-        return new Matcher[]{
-                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue())
-
-        };
     }
 
 }

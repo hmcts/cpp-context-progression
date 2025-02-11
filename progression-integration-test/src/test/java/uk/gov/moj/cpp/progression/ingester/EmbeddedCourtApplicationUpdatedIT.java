@@ -28,7 +28,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.moj.cpp.progression.AbstractIT;
@@ -44,7 +43,6 @@ import com.jayway.jsonpath.DocumentContext;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -85,11 +83,6 @@ public class EmbeddedCourtApplicationUpdatedIT extends AbstractIT {
         applicationStatus = ApplicationStatus.DRAFT.toString();
         applicationReference = randomAlphanumeric(10).toUpperCase();
         deleteAndCreateIndex();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        cleanEventStoreTables();
     }
 
     @Test

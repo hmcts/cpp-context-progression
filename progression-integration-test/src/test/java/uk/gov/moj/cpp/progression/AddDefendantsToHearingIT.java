@@ -1,12 +1,10 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.ListDefendantRequest.listDefendantRequest;
@@ -15,15 +13,15 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.core.courts.AddDefendantsToCourtProceedings;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -36,10 +34,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
 import java.io.IOException;
@@ -55,25 +50,17 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.json.JSONException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class AddDefendantsToHearingIT {
+public class AddDefendantsToHearingIT extends AbstractIT {
 
     private static final String PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT = "public.events.hearing.prosecution-case-created-in-hearing";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient messageConsumerDefendantsAddedToCourtProceedingsPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendants-added-to-court-proceedings").getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerDefendantsAddedToCourtProceedingsPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendants-added-to-court-proceedings").getMessageConsumerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-
-    @BeforeAll
-    public static void setUp() {
-        stubInitiateHearing();
-    }
 
     @Test
     public void shouldStoreDefendantWhenProsecutionCaseHasBeenCreatedInHearing() throws IOException, JSONException {
@@ -86,11 +73,10 @@ public class AddDefendantsToHearingIT {
         final String courtCentreId = "f8254db1-1683-483e-afb3-b87fde5a0a26";
         final String urn = generateUrn();
 
-
         // add prosecution case
-        addProsecutionCaseToCrownCourtAndVerify(prosecutionCaseId, defendantId, urn);
+        addProsecutionCaseToCrownCourt(prosecutionCaseId, defendantId, urn);
         final String hearingId = pollCaseAndGetHearingForDefendant(prosecutionCaseId, defendantId);
-        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
+        stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed.json",
                 prosecutionCaseId, hearingId, defendantId, courtCentreId));
@@ -118,7 +104,6 @@ public class AddDefendantsToHearingIT {
         // prosecution case has been created in hearing
         final JsonEnvelope publicHearingCaseCreatedEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, userId), prosecutionCaseCreatedInHearingJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_PROSECUTION_CASE_CREATED_IN_HEARING_EVENT, publicHearingCaseCreatedEventEnvelope);
-
         verifyInMessagingQueueForDefendantsAddedToCourtProceedingsPublicEvent();
 
     }
@@ -180,13 +165,6 @@ public class AddDefendantsToHearingIT {
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId);
         return stringToJsonObjectConverter.convert(strPayload);
-    }
-
-    private void addProsecutionCaseToCrownCourtAndVerify(final String caseId, final String defendantId, final String urn) throws IOException, JSONException {
-        PreAndPostConditionHelper.addProsecutionCaseToCrownCourt(caseId, defendantId, urn);
-
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
     }
 
     private JsonObject getProsecutionCaseCreatedInHearingObject(final String prosecutionCaseId) {

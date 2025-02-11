@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Test;
 public class UpdateCourtDocumentIT extends AbstractIT {
     private static final String PUBLIC_NOTIFICATION_SENT = "public.notificationnotify.events.notification-sent";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private String caseId;
     private String defendantId;

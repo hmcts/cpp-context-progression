@@ -16,19 +16,18 @@ import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecu
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class BreachApplicationIT {
+public class BreachApplicationIT extends AbstractIT {
 
     @BeforeAll
     public static void setUpClass() {
         stubQueryProsecutorData("/restResource/referencedata.query.prosecutor.json", randomUUID());
-        stubInitiateHearing();
     }
 
     @Test

@@ -18,7 +18,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtAppli
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanEventStoreTables;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -31,7 +30,6 @@ import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -62,11 +60,6 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
         applicationStatus = ApplicationStatus.DRAFT.toString();
         deleteAndCreateIndex();
 
-    }
-
-    @AfterEach
-    public void tearDown() {
-        cleanEventStoreTables();
     }
 
     private void verifyMessageReceived(final JmsMessageConsumerClient messageConsumer) {

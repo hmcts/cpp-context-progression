@@ -2,13 +2,10 @@ package uk.gov.moj.cpp.progression;
 
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.listNewHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingWithProsecutorInfo;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
@@ -19,13 +16,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT extends AbstractIT {
-    private static final String DOCUMENT_TEXT = STRING.next();
     private String caseId;
     private String defendantId;
 
     private CaseProsecutorUpdateHelper caseProsecutorUpdateHelper;
 
-    private static final JmsMessageConsumerClient publicEventsCaseProsecutorUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.cps-prosecutor-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventsCaseProsecutorUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.cps-prosecutor-updated").getMessageConsumerClient();
 
     @BeforeEach
     public void setUp() {
@@ -33,8 +29,6 @@ public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT ext
         defendantId = randomUUID().toString();
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
         setupLoggedInUsersPermissionQueryStub();
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubInitiateHearing();
     }
 
     @Test

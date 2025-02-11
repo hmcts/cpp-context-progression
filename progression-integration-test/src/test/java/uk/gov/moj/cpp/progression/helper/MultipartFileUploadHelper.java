@@ -20,7 +20,7 @@ import org.hamcrest.Matchers;
 
 public class MultipartFileUploadHelper extends AbstractTestHelper {
 
-    private static final JmsMessageConsumerClient publicEventsConsumerForCourtDocUploaded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.court-document-uploaded").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventsConsumerForCourtDocUploaded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.court-document-uploaded").getMessageConsumerClient();
 
     public void verifyInMessagingQueueForCourtDocUploaded(final UUID materialId) {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventsConsumerForCourtDocUploaded);

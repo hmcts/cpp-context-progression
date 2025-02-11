@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -11,11 +10,9 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProduc
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForDefendantMatching;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.stubListingSearchHearingsQuery;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
@@ -31,18 +28,16 @@ import java.time.LocalDate;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.ReadContext;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
-    private static final String PROGRESSION_QUERY_CASE = "application/vnd.progression.query.prosecutioncase+json";
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     private String prosecutionCaseId_1;
@@ -61,7 +56,6 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        stubInitiateHearing();
         prosecutionCaseId_1 = randomUUID().toString();
         prosecutionCaseId_2 = randomUUID().toString();
 
@@ -84,7 +78,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     public void shouldVerifyRelatedCasesWhenAllCasesInActive() throws Exception {
         // initiation of case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        final String hearingId1 = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId_1_forMasterDefendantId_1 + "')]", CoreMatchers.notNullValue()));
+        final String hearingId1 = pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId1);
 
         JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, randomUUID()), getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -95,7 +89,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
 
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, defendantId_2_forMasterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        final String hearingId2 = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId_2_forMasterDefendantId_1 + "')]", CoreMatchers.notNullValue()));
+        final String hearingId2 = pollCaseAndGetHearingForDefendant(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1);
         stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId2);
 
         publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, randomUUID()), getHearingJsonObject("public.listing.hearing-confirmed.json",
@@ -107,7 +101,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
         // match defendantId_2_forMasterDefendantId_1 associated to case 2
         matchDefendant(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1);
 
-        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_1), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1,
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
@@ -116,7 +110,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                 withJsonPath("$.relatedCases[0].cases[0].offences[0].maxPenalty", equalTo("Max Penalty"))
         );
 
-        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_2), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2,
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
@@ -127,7 +121,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
         closeTheCase(prosecutionCaseId_1, masterDefendantId_1, hearingId1);
         closeTheCase(prosecutionCaseId_2, masterDefendantId_1, hearingId2);
 
-        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_1), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1,
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_2)),
@@ -135,7 +129,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
                 withJsonPath("$.relatedCases[0].cases[0].offences[0].offenceTitle", equalTo("ROBBERY"))
         );
 
-        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_2), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2,
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
                 withJsonPath("$.relatedCases[0].masterDefendantId", equalTo(masterDefendantId_1)),
                 withJsonPath("$.relatedCases[0].cases[0].caseId", equalTo(prosecutionCaseId_1)),
@@ -150,7 +144,7 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
     public void shouldVerifyRelatedCasesWhenCasesAreMix() throws IOException {
         // initiation of case
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
-        final String hearingId1 = pollProsecutionCasesProgressionAndReturnHearingId(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId_1_forMasterDefendantId_1 + "')]", CoreMatchers.notNullValue()));
+        final String hearingId1 = pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1_forMasterDefendantId_1);
 
         initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, defendantId_2_forMasterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         final Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2_forMasterDefendantId_1, emptyList());
@@ -160,12 +154,12 @@ public class ProsecutionCaseRelatedCasesIT extends AbstractIT {
 
         closeTheCase(prosecutionCaseId_1, masterDefendantId_1, hearingId1);
 
-        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_1), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1,
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo("INACTIVE")),
                 withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
         );
 
-        pollForResponse(format("/prosecutioncases/%s", prosecutionCaseId_2), PROGRESSION_QUERY_CASE, randomUUID().toString(),
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2,
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo("ACTIVE")),
                 withJsonPath("$.relatedCases[0]", is(anEmptyMap()))
         );

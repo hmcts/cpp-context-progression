@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.awaitility.Awaitility.await;
@@ -27,11 +28,9 @@ public class ProbationCaseworkerStub {
     public static final String PROBATION_HEARING_DELETED_COMMAND = "/probation/api/v1/hearing/deleted";
 
     public static void stubProbationHearing() {
-
         stubFor(post(urlMatching(PROBATION_HEARING_COMMAND))
                 .willReturn(aResponse().withStatus(SC_ACCEPTED))
         );
-
     }
 
     public static void stubProbationHearingDeleted() {
@@ -49,7 +48,7 @@ public class ProbationCaseworkerStub {
     }
 
     private static void verifyProbationHearingStubCommandInvoked(final String commandEndPoint, final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

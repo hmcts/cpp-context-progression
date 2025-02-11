@@ -46,7 +46,7 @@ public class ShareCourtDocumentIT extends AbstractIT {
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
     private static final String UPLOAD_USER_ID = "5e1cc18c-76dc-47dd-99c1-d6f87385edf1";
 
-    private static final JmsMessageConsumerClient messageConsumerCourtDocumentSharedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_COURT_DOCUMENT_SHARED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerCourtDocumentSharedPublicEvent = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_COURT_DOCUMENT_SHARED).getMessageConsumerClient();
     private static String caseId;
     private static String defendantLevelDocumentId1;
     private static String caseLevelDocumentId;

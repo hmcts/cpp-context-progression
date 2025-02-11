@@ -5,6 +5,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -46,7 +48,7 @@ import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
 
-    private static final JmsMessageConsumerClient consumerForReferToCourtRejected = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.refer-prosecution-cases-to-court-rejected").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForReferToCourtRejected = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.refer-prosecution-cases-to-court-rejected").getMessageConsumerClient();
 
     private static final String SENT_FOR_LISTING_STATUS = "SENT_FOR_LISTING";
 
@@ -82,8 +84,8 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         final String matchedDefendantId_1 = randomUUID().toString();
         final String matchedProsecutionCaseId_2 = randomUUID().toString();
         final String matchedDefendantId_2 = randomUUID().toString();
-        final String pncId = "2099/1234567L";
-        final String croNumber = "1234567";
+        final String pncId = randomNumeric(4) + "/" + randomAlphanumeric(8);
+        final String croNumber = randomNumeric(7);
 
         addProsecutionCaseToCrownCourt(matchedProsecutionCaseId_1, matchedDefendantId_1);
         Matcher[] matchers = getProsecutionCaseMatchers(matchedProsecutionCaseId_1, matchedDefendantId_1, emptyList());
@@ -177,7 +179,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
     }
 
 
-    private static void verifyInMessagingQueueForReferToCourtsRejected() {
+    private void verifyInMessagingQueueForReferToCourtsRejected() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForReferToCourtRejected);
         assertThat(message.isPresent(), is(true));
 

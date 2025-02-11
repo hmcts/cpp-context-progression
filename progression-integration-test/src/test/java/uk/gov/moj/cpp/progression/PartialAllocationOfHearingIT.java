@@ -3,41 +3,31 @@ package uk.gov.moj.cpp.progression;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithTwoProsecutionCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.TIMEOUT_IN_SECONDS;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-
-import java.time.Duration;
 
 import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 @SuppressWarnings("squid:S1607")
-public class PartialAllocationOfHearingIT {
+public class PartialAllocationOfHearingIT extends AbstractIT {
 
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -45,13 +35,6 @@ public class PartialAllocationOfHearingIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FOR_ONE_CASE_TWO_DEFENDANT_FILE = "public.listing.hearing-confirmed-one-case-two-defendants.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FOR_TWO_CASE_ONE_DEFENDANT_FILE = "public.listing.hearing-confirmed-two-cases-one-defendant.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_WITH_EXTENDED_HEARING_ID = "public.listing.hearing-confirmed-with-extended-hearing-id.json";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
-
-
-    @BeforeAll
-    public static void setUp() {
-        HearingStub.stubInitiateHearing();
-    }
 
     @Test
     public void shouldPartiallyAllocateForOneDefendantWithTwoOffencesToExistingHearing() throws Exception {
@@ -61,10 +44,11 @@ public class PartialAllocationOfHearingIT {
         final String courtCentreId = randomUUID().toString();
         final String userId = randomUUID().toString();
 
+        // Defendant has 4 offences of which 2 are listed in a hearing
         addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences(caseId, defendantId);
-        final String extendedHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        final String firstHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        doHearingConfirmedForOneDefendantAndTwoOffences(extendedHearingId, caseId, defendantId, courtCentreId, userId);
+        doHearingConfirmedForOneDefendantAndTwoOffences(firstHearingId, caseId, defendantId, courtCentreId, userId);
 
         // UnAllocated hearing Id
         final String caseId1 = randomUUID().toString();
@@ -76,10 +60,10 @@ public class PartialAllocationOfHearingIT {
         final String existingHearingId = pollCaseAndGetHearingForDefendant(caseId1, defendantId1);
 
         // Extending hearing for one offence
-        doHearingConfirmed(existingHearingId, caseId1, defendantId1, courtCentreId1, userId1, extendedHearingId);
+        doHearingConfirmed(existingHearingId, caseId1, defendantId1, courtCentreId1, userId1, firstHearingId);
 
-        assertThat(queryAndVerifyHearingIsExtended(extendedHearingId, 2), is(true));
-        verifyProbationHearingCommandInvoked(newArrayList(extendedHearingId, courtCentreId1));
+        pollAndVerifyHearingIsExtended(firstHearingId, 2);
+        verifyProbationHearingCommandInvoked(newArrayList(firstHearingId, courtCentreId1));
     }
 
     @Test
@@ -108,7 +92,7 @@ public class PartialAllocationOfHearingIT {
 
         // Extending hearing for one offence
         doHearingConfirmed(existingHearingId, caseId2, defendantId3, courtCentreId1, userId1, extendedHearingId);
-        assertThat(queryAndVerifyHearingIsExtended(extendedHearingId, 2), is(true));
+        pollAndVerifyHearingIsExtended(extendedHearingId, 2);
     }
 
     @Test
@@ -139,7 +123,7 @@ public class PartialAllocationOfHearingIT {
 
         // Extending hearing for one offence
         doHearingConfirmed(existingHearingId, caseId3, defendantId3, courtCentreId1, userId1, extendedHearingId);
-        await().atMost(TIMEOUT_IN_SECONDS, SECONDS).pollInterval(Duration.ofMillis(500)).until(() -> queryAndVerifyHearingIsExtended(extendedHearingId, 3));
+        pollAndVerifyHearingIsExtended(extendedHearingId, 3);
     }
 
     private void doHearingConfirmedForOneDefendantAndTwoOffences(String hearingId, String caseId, String defendantId, String courtCentreId, String userId) {
@@ -222,18 +206,16 @@ public class PartialAllocationOfHearingIT {
 
     }
 
-    private boolean queryAndVerifyHearingIsExtended(final String allocatedHearingId, final int numberOfProsecutionCases) {
+    private void pollAndVerifyHearingIsExtended(final String allocatedHearingId, final int numberOfProsecutionCases) {
         final Matcher[] hearingMatchers = {
                 withJsonPath("$", notNullValue()),
-                withJsonPath("$.hearing.id", is(allocatedHearingId))
+                withJsonPath("$.hearing.id", is(allocatedHearingId)),
+                withJsonPath("$.hearing.prosecutionCases", hasSize(numberOfProsecutionCases))
         };
-        final String dbHearing = pollForResponse("/hearingSearch/" + allocatedHearingId, PROGRESSION_QUERY_HEARING_JSON, hearingMatchers);
-        final JsonObject hearingExtendedJsonObject = stringToJsonObjectConverter.convert(dbHearing);
-        return numberOfProsecutionCases == hearingExtendedJsonObject.getJsonObject("hearing")
-                .getJsonArray("prosecutionCases").size();
+        pollForHearing(allocatedHearingId, hearingMatchers);
     }
 
-    private static void sendPublicEvent(final String eventName, final Metadata metadata, final JsonObject hearingConfirmedJson) {
+    private void sendPublicEvent(final String eventName, final Metadata metadata, final JsonObject hearingConfirmedJson) {
         final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
         publicMessageProducerClient.sendMessage(eventName, envelopeFrom(metadata, hearingConfirmedJson));
     }

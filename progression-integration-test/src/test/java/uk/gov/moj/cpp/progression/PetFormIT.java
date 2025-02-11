@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation;
@@ -29,8 +28,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStructuredPetQuery;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryPetFormData;
@@ -77,22 +74,20 @@ public class PetFormIT extends AbstractIT {
 
     public static final String CREATE_PET_FORM_MEDIA_TYPE = "application/vnd.progression.create-pet-form+json";
     public static final String UPDATE_PET_FORM_MEDIA_TYPE = "application/vnd.progression.update-pet-form+json";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PUBLIC_PROSECUTIONCASEFILE_CPS_SERVE_PET_SUBMITTED = "public.prosecutioncasefile.cps-serve-pet-submitted";
-    private static final String DOCUMENT_TEXT = STRING.next();
     private static final String EDIT_FORM_ENDPOINT = "/prosecutioncases/%caseId%/form/%courtFormId%";
     private static final String REQUEST_EDIT_FORM_MEDIA_TYPE = "application/vnd.progression.request-edit-form+json";
 
 
-    private static final JmsMessageConsumerClient consumerForPetFormCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-created").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForPetDetailUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-detail-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForPetFormUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPetFormCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-created").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPetDetailUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-detail-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPetFormUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-updated").getMessageConsumerClient();
 
-    private static final JmsMessageConsumerClient consumerForPetFormDefendantUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-defendant-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForPetFormReleased = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-released").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForPetFormFinalised = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-finalised").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient consumerForEditFormRequested = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.edit-form-requested").getMessageConsumerClient();
-
+    private final JmsMessageConsumerClient consumerForPetFormDefendantUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-defendant-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPetFormReleased = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-released").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForPetFormFinalised = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.pet-form-finalised").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForEditFormRequested = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.edit-form-requested").getMessageConsumerClient();
 
     public static final String NAME = "name";
     public static final String USER_NAME_VALUE = "cps user name";
@@ -106,8 +101,6 @@ public class PetFormIT extends AbstractIT {
     public void setUp() {
         setupLoggedInUsersPermissionQueryStub();
         setupMaterialStructuredPetQuery(petId.toString());
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubMaterialMetadata();
     }
 
     @Test

@@ -23,7 +23,6 @@ import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 import uk.gov.moj.cpp.progression.util.Pair;
 
 import java.util.Map;
@@ -48,10 +47,9 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForHearingResulted = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED).getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForHearingResulted = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED).getMessageConsumerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -69,22 +67,8 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private String courtCentreName;
 
 
-    private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
-        assertTrue(message.isPresent());
-        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
-    }
-
-    private void verifyInMessagingQueueForHearingResulted() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResulted);
-        assertTrue(message.isPresent());
-        assertThat(message.get().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("caseStatus"), equalTo("INACTIVE"));
-    }
-
     @BeforeEach
     public void setUp() {
-        HearingStub.stubInitiateHearing();
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -202,6 +186,21 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
         );
     }
+
+    private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
+        assertTrue(message.isPresent());
+        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
+    }
+
+    private void verifyInMessagingQueueForHearingResulted() {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResulted);
+        assertTrue(message.isPresent());
+        assertThat(message.get().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("caseStatus"), equalTo("INACTIVE"));
+    }
+
+
 
 }
 

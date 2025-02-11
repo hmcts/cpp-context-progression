@@ -61,12 +61,11 @@ public class DefenceFlowIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
 
-    private static final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-
-    private static JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
-    private static JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED).getMessageConsumerClient();
-    private static JmsMessageConsumerClient messageConsumerClientPublicForCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED).getMessageConsumerClient();
+    private JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+    private JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED).getMessageConsumerClient();
+    private JmsMessageConsumerClient messageConsumerClientPublicForCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED).getMessageConsumerClient();
 
 
     private static final String statusCode = "G2";

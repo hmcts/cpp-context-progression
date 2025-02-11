@@ -2,20 +2,13 @@ package uk.gov.moj.cpp.progression.summons;
 
 import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasSize;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.MaterialHelper.sendEventToConfirmMaterialAdded;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
@@ -28,8 +21,6 @@ import static uk.gov.moj.cpp.progression.summons.SummonsHelper.verifyTemplatePay
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.util.List;
 import java.util.Map;
@@ -51,8 +42,7 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
     private String materialIdDeleted = randomUUID().toString();
     private String caseUrn = generateUrn();
 
-    private static final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
-    private static final String DOCUMENT_TEXT = STRING.next();
+    private final JmsMessageConsumerClient nowsMaterialRequestRecordedConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_EVENT_NOWS_MATERIAL_REQUEST_RECORDED).getMessageConsumerClient();
 
     private static final String DEFENDANT_ID = randomUUID().toString();
     private static final List<String> SJP_REFERRED_DEFENDANT_NAME = newArrayList("Harry", "Jack", "Kane Junior");
@@ -63,11 +53,6 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-
-        stubInitiateHearing();
-        stubDocumentCreate(DOCUMENT_TEXT);
-        IdMapperStub.setUp();
-        NotificationServiceStub.setUp();
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         stubQueryReferralReasons("/restResource/referencedata.query.referral-reasons-by-id.json", randomUUID());
 
@@ -93,9 +78,7 @@ public class RequestSjpCaseReferredSummonsIT extends AbstractIT {
     }
 
     private void verifySummonsGeneratedOnHearingConfirmed(final boolean isWelsh) {
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, DEFENDANT_ID,
-                withJsonPath("$.prosecutionCase.id", is(caseId)),
-                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId == '" + DEFENDANT_ID + "')].hearingIds[0]", hasSize(greaterThanOrEqualTo(1))));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, DEFENDANT_ID);
 
         sendPublicEventToConfirmHearingForInitiatedCase(hearingId, DEFENDANT_ID, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1", caseId, isWelsh);
 

@@ -5,22 +5,16 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 public class CaseProsecutorUpdatedIT extends AbstractIT {
-    private static final JmsMessageConsumerClient publicEventsCaseProsecutorUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.cps-prosecutor-updated").getMessageConsumerClient();
-    private static final String DOCUMENT_TEXT = STRING.next();
+    private final JmsMessageConsumerClient publicEventsCaseProsecutorUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.cps-prosecutor-updated").getMessageConsumerClient();
     private String caseId;
     private String defendantId;
 
@@ -31,9 +25,6 @@ public class CaseProsecutorUpdatedIT extends AbstractIT {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
-
-        stubDocumentCreate(DOCUMENT_TEXT);
-        stubInitiateHearing();
     }
 
     @Test

@@ -13,8 +13,9 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber.stubFeaturesFor;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneDefendantAndTwoOffences;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
@@ -23,15 +24,11 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHe
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordLAAReference;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.LaaAPIMServiceStub.stubPostLaaAPI;
 import static uk.gov.moj.cpp.progression.stub.LaaAPIMServiceStub.verifyLaaProceedingsConcludedCommandInvoked;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingV2ForHmiSlots;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubCourtApplicationTypes;
@@ -46,8 +43,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -61,37 +57,33 @@ import javax.json.JsonObject;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.ReadContext;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 @SuppressWarnings("squid:S1607")
 public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT {
 
-    private static final String DOCUMENT_TEXT = STRING.next();
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_EVENTS_HEARING_HEARING_RESULTED = "public.events.hearing.hearing-resulted";
     private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForWelshTranslationRequired = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.welsh-translation-required").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerHearingResultedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.hearing-resulted").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerProsecutionCasesResultedV2PrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-cases-resulted-v2").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerInitiateApplicationForCaseRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.initiate-application-for-case-requested").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerCourtApplicationProceedingInitiatedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-initiated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerDeleteApplicationForCaseRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.delete-application-for-case-requested").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerCourtApplicationDeletedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-hearing-deleted").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerCourtApplicationDocumentUpdatePrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-document-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerNextHearingsRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.next-hearings-requested").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerDeleteNextHearingsRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.delete-next-hearings-requested").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerUnscheduledNextHearingsRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.unscheduled-next-hearings-requested").getMessageConsumerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForWelshTranslationRequired = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.welsh-translation-required").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerHearingResultedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.hearing-resulted").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerProsecutionCasesResultedV2PrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-cases-resulted-v2").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerInitiateApplicationForCaseRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.initiate-application-for-case-requested").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerCourtApplicationProceedingInitiatedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-initiated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerDeleteApplicationForCaseRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.delete-application-for-case-requested").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerCourtApplicationDeletedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-hearing-deleted").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerCourtApplicationDocumentUpdatePrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-document-updated").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerNextHearingsRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.next-hearings-requested").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerDeleteNextHearingsRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.delete-next-hearings-requested").getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerUnscheduledNextHearingsRequestedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.unscheduled-next-hearings-requested").getMessageConsumerClient();
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private final JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     //compare with  master new consumer added
@@ -108,9 +100,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     @BeforeEach
     public void setUp() {
         final ImmutableMap<String, Boolean> features = ImmutableMap.of("amendReshare", true);
-        FeatureStubber.stubFeaturesFor(CONTEXT_NAME, features);
-        stubDocumentCreate(DOCUMENT_TEXT);
-        HearingStub.stubInitiateHearing();
+        stubFeaturesFor(CONTEXT_NAME, features);
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -126,8 +116,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        stubPostLaaAPI();
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
 
@@ -482,12 +470,12 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         assertThat(newHearing.getProsecutionCases().get(0).getDefendants().size(), is(1));
         assertThat(newHearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
 
-        final ProsecutionCaseUpdateOffencesHelper helper = new ProsecutionCaseUpdateOffencesHelper(caseId, defendantId, randomUUID().toString());;
+        final ProsecutionCaseUpdateOffencesHelper helper = new ProsecutionCaseUpdateOffencesHelper(caseId, defendantId, randomUUID().toString());
         helper.updateOffences(newOffenceId, "TFL123");
         JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-offences-updated").getMessageConsumerClient();
         helper.verifyInActiveMQ(privateEventsConsumer);
 
-         newHearing = getHearingFromQuery(nextHearingId);
+        newHearing = getHearingFromQuery(nextHearingId);
         assertThat(newHearing.getProsecutionCases().get(0).getDefendants().size(), is(1));
         assertThat(newHearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(2));
 
@@ -495,7 +483,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         String newHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChangedV2);
-        if(newHearingId.equals(hearingId) || newHearingId.equals(nextHearingId)){
+        if (newHearingId.equals(hearingId) || newHearingId.equals(nextHearingId)) {
             newHearingId = doVerifyProsecutionCaseDefendantListingStatusChanged(messageConsumerProsecutionCaseDefendantListingStatusChangedV2);
         }
         System.out.println("newHearingId : " + newHearingId);
@@ -638,8 +626,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        stubPostLaaAPI();
-
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
@@ -720,11 +706,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
         );
 
         return hearingId.get();
-    }
-
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged, final Matcher matcher) {
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerProsecutionCaseDefendantListingStatusChanged, matcher);
-        return message.getJsonObject("hearing.id");
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
@@ -871,7 +852,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     }
 
     private Hearing getHearingFromQuery(final String hearingId) {
-        final String hearingIdQueryResult = pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON);
+        final String hearingIdQueryResult = pollForHearing(hearingId);
         final JsonObject hearingJsonObject = getJsonObject(hearingIdQueryResult);
         JsonObject hearingJson = hearingJsonObject.getJsonObject("hearing");
         return jsonObjectConverter.convert(hearingJson, Hearing.class);

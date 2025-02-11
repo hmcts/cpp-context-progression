@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public class UpdateCivilFeesIT extends AbstractIT {
     private String caseId = randomUUID().toString();
 
-    private static final JmsMessageConsumerClient consumerForCivilFeesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.civil-fees-response").getMessageConsumerClient();
+    private final JmsMessageConsumerClient consumerForCivilFeesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.civil-fees-response").getMessageConsumerClient();
 
     @Test
     public void shouldUpdateCivilFees() throws IOException {
@@ -44,7 +44,7 @@ public class UpdateCivilFeesIT extends AbstractIT {
         verifyInMessageIsPresentInPublicEvent();
     }
 
-    private static void verifyInMessageIsPresentInPublicEvent() {
+    private void verifyInMessageIsPresentInPublicEvent() {
         final Optional<JsonObject> message = retrieveMessageBody(consumerForCivilFeesUpdated);
         assertTrue(message.isPresent());
     }

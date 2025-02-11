@@ -12,6 +12,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
@@ -38,8 +39,6 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDef
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 import uk.gov.moj.cpp.progression.util.FileUtil;
 
 import java.io.IOException;
@@ -55,12 +54,9 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 public class CourtDocumentQueryIT {
 
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
@@ -90,7 +86,6 @@ public class CourtDocumentQueryIT {
 
     }
 
-
     @Test
     public void shouldGetCourtDocumentsForGivenDefendantLevelDocsBasedOnRBAC() throws IOException, JSONException {
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
@@ -112,7 +107,7 @@ public class CourtDocumentQueryIT {
                 .replace("CASE-ID", caseId)
                 .replace("DEFENDANT-ID", defendantId);
 
-        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
 
@@ -136,11 +131,9 @@ public class CourtDocumentQueryIT {
         final JsonObject courtDocumentCaseLevelJson2 = new StringToJsonObjectConverter().convert(courtDocumentCaseLevel2);
         final String caseLevelCourtDocumentId2 = courtDocumentCaseLevelJson2.getJsonObject("courtDocument").getString("courtDocumentId");
 
-
         //Doc Type Ref Data
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
-        ReferenceDataStub.stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
+        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
         final String actualDocument = getCourtDocumentsByCaseAndDefendant(USER_ID, caseId, defendantId);
 
@@ -152,7 +145,7 @@ public class CourtDocumentQueryIT {
                 .replace("CASE-ID", caseId)
                 .replace("DEFENDANT-ID", defendantId);
 
-        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
     @Test
@@ -179,7 +172,6 @@ public class CourtDocumentQueryIT {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-legal-advisor.json", docTypeId2);
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
 
-
         final String actualDocument = getCourtDocumentsByCaseAndDefendant(USER_ID, caseId, defendantId);
 
         final String expectedPayload = FileUtil.getPayload("expected/expected.progression.court-document-def-level.json")
@@ -188,7 +180,7 @@ public class CourtDocumentQueryIT {
                 .replace("CASE-ID", caseId)
                 .replace("DEFENDANT-ID", defendantId);
 
-        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
 
@@ -224,7 +216,7 @@ public class CourtDocumentQueryIT {
                 .replace("DOCUMENT-TYPE-ID1", docTypeId2)
                 .replace("CASE-ID", caseId);
 
-        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
 
@@ -251,7 +243,7 @@ public class CourtDocumentQueryIT {
 
         final String expectedPayload = "{\"documentIndices\":[]}";
 
-        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
     @Test
@@ -283,7 +275,7 @@ public class CourtDocumentQueryIT {
                 .replace("DOCUMENT-TYPE-ID1", docTypeId2)
                 .replace("DOCUMENT-TYPE-ID2", docTypeId)
                 .replace("CASE-ID", caseId);
-        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
     @Test
@@ -326,7 +318,7 @@ public class CourtDocumentQueryIT {
                 .replace("CASE-ID", caseId)
                 .replace("DEFENDANT-ID", defendantId);
 
-        JSONAssert.assertEquals(expectedPayload, actualDocument, getCustomComparator());
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
     private String getRoleInCasePermissionPayload(final String caseId, final String defendantId, final String role) {
@@ -412,7 +404,7 @@ public class CourtDocumentQueryIT {
         ));
     }
 
-    private String addCourtDocumentForDefence(final String caseId, final String docId, final String defendantId, final String body) throws IOException {
+    private String addCourtDocumentForDefence(final String caseId, final String docId, final String defendantId, final String body) {
 
         final Response writeResponse = postCommandWithUserId(getWriteUrl(format("/defendant/%s/courtdocument/%s", defendantId, docId)),
                 "application/vnd.progression.add-court-document-for-defence+json",

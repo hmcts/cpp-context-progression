@@ -35,7 +35,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verify
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
-import static uk.gov.moj.cpp.progression.stub.MaterialStub.stubMaterialMetadata;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCpsProsecutorData;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
@@ -45,10 +44,7 @@ import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorise
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupDefenceClientPermission;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubUserGroupOrganisation;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
 
 import java.io.IOException;
@@ -69,12 +65,10 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 @SuppressWarnings({"squid:S1607"})
-@ExtendWith(JmsResourceManagementExtension.class)
 public class AddCourtDocumentIT extends AbstractIT {
 
     private static final String USER_ID = "07e9cd55-0eff-4eb3-961f-0d83e259e415";
@@ -82,8 +76,7 @@ public class AddCourtDocumentIT extends AbstractIT {
     public static final String USER_GROUP_NOT_PRESENT_DROOL = randomUUID().toString();
     public static final String USER_GROUP_NOT_PRESENT_RBAC = randomUUID().toString();
     public static final String CHAMBER_USER_ID = randomUUID().toString();
-    private static final JmsMessageConsumerClient consumerForCourtDocumentUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_EVENT_COURT_DOCUMENT_UPADTED).getMessageConsumerClient();
-    StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private final JmsMessageConsumerClient publicEventConsumerForCourtDocumentUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_EVENT_COURT_DOCUMENT_UPADTED).getMessageConsumerClient();
     private String caseId;
     private String docId;
     private String defendantId;
@@ -92,7 +85,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @BeforeAll
     public static void init() {
-
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_DROOL), "stub-data/usersgroups.get-invalid-groups-by-user.json");
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
         setupAsAuthorisedUser(fromString(CHAMBER_USER_ID), "stub-data/usersgroups.get-chamber-groups-by-user.json");
@@ -102,14 +94,11 @@ public class AddCourtDocumentIT extends AbstractIT {
 
     @BeforeEach
     public void setup() throws JSONException {
-
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
         updatedDefendantId = randomUUID().toString();
         caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
-
-        stubMaterialMetadata();
     }
 
     @Test
@@ -119,10 +108,9 @@ public class AddCourtDocumentIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
                 singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
 
-        verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
+        addCourtDocumentAndVerify(null, "460f7ec0-c002-11e8-a355-529269fb1459");
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
-
 
         //Given
         final String bodyForUpdate = prepareUpdateCourtDocumentPayload();
@@ -155,8 +143,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         //Given
         final String body = prepareAddCourtDocumentPayload(null);
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         //When
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
@@ -166,7 +153,6 @@ public class AddCourtDocumentIT extends AbstractIT {
 
 
         //Group Not Present in Drool rule
-
         verifyQueryResultsForbidden(docId, USER_GROUP_NOT_PRESENT_DROOL, withJsonPath("$.error", StringContains.containsString(ACCESS_CONTROL_FAILED)));
 
 
@@ -180,8 +166,7 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         //Given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final String body = prepareAddCourtDocumentPayloadV2();
         //When
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
@@ -189,27 +174,20 @@ public class AddCourtDocumentIT extends AbstractIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-
         //Group Not Present in Drool rule
-
         verifyQueryResultsForbidden(docId, USER_GROUP_NOT_PRESENT_DROOL, withJsonPath("$.error", StringContains.containsString(ACCESS_CONTROL_FAILED)));
-
 
         //Group Not Present in RBAC
         //Then
         verifyQueryResultsForbidden(docId, USER_GROUP_NOT_PRESENT_RBAC, withJsonPath("$.error", StringContains.containsString(ACCESS_CONTROL_FAILED)));
-
-
     }
-
 
     @Test
     public void shouldGetForbiddenExceptionWhenAddCourtDocumentAndNoRBACRulesMatches() throws IOException, JSONException {
 
         //Given
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final String body = prepareAddCourtDocumentPayload(null);
         //When
         //postCommand()
@@ -217,20 +195,17 @@ public class AddCourtDocumentIT extends AbstractIT {
                 "application/vnd.progression.add-court-document+json",
                 body, USER_GROUP_NOT_PRESENT_RBAC);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_FORBIDDEN));
-
     }
 
     @Test
     public void shouldAddDocumentIfTheLoggedInUserIsGranted() throws IOException, JSONException {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId,
-                singletonList(withJsonPath("$.prosecutionCase.id", is(caseId)))));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
         final String docTypeId = randomUUID().toString();
         final String organisationId = randomUUID().toString();
 
         final String organisation = getPayload("stub-data/usersgroups.get-organisation-details.json")
                 .replace("%ORGANISATION_ID%", organisationId);
-
 
         final String permission = getPayload("stub-data/usersgroups.get-permission-for-user-by-defendant.json")
                 .replace("%USER_ID%", CHAMBER_USER_ID)
@@ -240,16 +215,11 @@ public class AddCourtDocumentIT extends AbstractIT {
         stubUserGroupOrganisation(CHAMBER_USER_ID, organisation);
         stubUserGroupDefenceClientPermission(permission);
 
-
         stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json");
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence.json", docTypeId);
-
 
         addCourtDocumentForDefence(CHAMBER_USER_ID, docId, defendantId,
                 prepareAddCourtDocumentWithDocTypePayload(docTypeId, docId, caseId, defendantId, "progression.add-court-document-def-level.json"), HttpStatus.SC_ACCEPTED);
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
-
-
     }
 
     @Test
@@ -258,7 +228,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        verifyAddCourtDocument(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        addCourtDocumentAndVerify(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
 
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.prosecutor.address.address1", is("6th Floor Windsor House")),
@@ -273,14 +243,13 @@ public class AddCourtDocumentIT extends AbstractIT {
         );
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, matchers));
-
     }
 
     @Test
     public void shouldNotUpdateCPSCaseAddDefendantCourtDocumentWithoutIsCpsCase() throws IOException, JSONException {
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
 
-        verifyAddCourtDocument(false, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        addCourtDocumentAndVerify(false, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
 
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withoutJsonPath("$.prosecutionCase.isCpsOrgVerifyError"),
@@ -295,10 +264,9 @@ public class AddCourtDocumentIT extends AbstractIT {
     public void shouldUpdateCPSCaseAddDefendantCourtDocumentWithIsCpsCaseButCpsOrganisationIsNotInReferenceData() throws IOException, JSONException {
         stubQueryCpsProsecutorData("/restResource/referencedata.query.prosecutor.by.oucode.json", randomUUID(), HttpStatus.SC_NOT_FOUND);
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
-        String response = pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        stringToJsonObjectConverter.convert(response).getJsonObject("prosecutionCase");
-        verifyAddCourtDocument(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        addCourtDocumentAndVerify(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
 
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.isCpsOrgVerifyError", is(true))
@@ -313,7 +281,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         stubQueryCpsProsecutorData("/restResource/referencedata.query.prosecutor.by.oucode.json", randomUUID(), HttpStatus.SC_NOT_FOUND);
         initiateCourtProceedingsWithoutCourtDocument("progression.command.initiate-court-proceedings-with-name.json", caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-        verifyAddCourtDocument(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        addCourtDocumentAndVerify(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
 
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.isCpsOrgVerifyError", is(true))
@@ -325,7 +293,7 @@ public class AddCourtDocumentIT extends AbstractIT {
 
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        verifyAddCourtDocument(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        addCourtDocumentAndVerify(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
 
         verifyCasesForSearchCriteria("Billy", new Matcher[]{
                 withJsonPath("$.searchResults.[*].defendantName", hasItem(containsString("Billy"))),
@@ -339,7 +307,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         initiateCourtProceedingsWithoutCourtDocumentAndCpsOrganisation(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        verifyAddCourtDocument(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
+        addCourtDocumentAndVerify(true, "0bb7b276-9dc0-4af2-83b9-f4acef0c7898");
 
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.isCpsOrgVerifyError", is(true))
@@ -388,7 +356,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         );
     }
 
-    private void verifyAddCourtDocument(Boolean isCpsCase, final String documentTypeId) throws IOException, JSONException {
+    private void addCourtDocumentAndVerify(Boolean isCpsCase, final String documentTypeId) throws IOException, JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload(isCpsCase);
         //When
@@ -413,13 +381,12 @@ public class AddCourtDocumentIT extends AbstractIT {
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
 
-    public void verifyInPublicTopic() {
-        final Optional<JsonObject> message = retrieveMessageBody(consumerForCourtDocumentUpdated);
-
+    private void verifyInPublicTopic() {
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForCourtDocumentUpdated);
         assertThat(message, notNullValue());
     }
 
-    private String addCourtDocumentForDefence(final String userId, final String docId, final String defendantId, final String body, final int status) throws IOException {
+    private String addCourtDocumentForDefence(final String userId, final String docId, final String defendantId, final String body, final int status) {
 
         final Response writeResponse = postCommandWithUserId(getWriteUrl(format("/defendant/%s/courtdocument/%s", defendantId, docId)),
                 "application/vnd.progression.add-court-document-for-defence+json",
@@ -456,7 +423,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
         //Given
-        verifyAddCourtDocument(null, "460f7ec0-c002-11e8-a355-529269fb1459");
+        addCourtDocumentAndVerify(null, "460f7ec0-c002-11e8-a355-529269fb1459");
 
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
 

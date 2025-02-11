@@ -15,13 +15,12 @@ import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStu
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetOrganisationById;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForIds;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQuery;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
 import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
 
@@ -50,7 +49,6 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     @BeforeAll
     public static void init() {
-
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_DROOL), "stub-data/usersgroups.get-invalid-groups-by-user.json");
         setupAsAuthorisedUser(UUID.fromString(USER_GROUP_NOT_PRESENT_RBAC), "stub-data/usersgroups.get-invalid-rbac-groups-by-user.json");
     }
@@ -63,10 +61,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     @BeforeEach
     public void setup() {
-        UsersAndGroupsStub.stubGetUsersAndGroupsQuery();
-        HearingStub.stubInitiateHearing();
-        NotificationServiceStub.setUp();
-        IdMapperStub.setUp();
+        stubGetUsersAndGroupsQuery();
         stubGetOrganisationById(REST_RESOURCE_REF_DATA_GET_ORGANISATION_JSON);
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
@@ -83,7 +78,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
         final String defendant2FirstName = randomAlphanumeric(10);
         final String defendant2LastName = randomAlphanumeric(10);
         final List<String> organizationIds = Arrays.asList("fcb1edc9-786a-462d-9400-318c95c7c700", "fcb1edc9-786a-462d-9400-318c95c7b700");
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence-lawyers.json");
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence-lawyers.json");
         stubForCaseDefendantsOrganisation("stub-data/defence.query.case-defendants-organisation.json", caseId, defendantId1, defendantId2, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName);
         stubGetOrganisationDetailForIds("stub-data/usersgroups.get-organisations-details.json", organizationIds, userId);
 
@@ -110,7 +105,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
         final List<String> organizationIds = Arrays.asList("fcb1edc9-786a-462d-9400-318c95c7c700", "fcb1edc9-786a-462d-9400-318c95c7b700");
-        ReferenceDataStub.stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence-lawyers.json");
+        stubQueryDocumentTypeData("/restResource/ref-data-document-type-for-defence-lawyers.json");
         stubForCaseDefendantsOrganisation("stub-data/defence.query.case-defendants-organisation.json", caseId, defendantId1, defendantId2, defendant1FirstName, defendant1LastName, defendant2FirstName, defendant2LastName);
         stubGetOrganisationDetailForIds("stub-data/usersgroups.get-organisations-details.json", organizationIds, userId);
         addCourtDocumentDefendantLevel("expected/expected.progression.add-court-document-for-email.json", docId, defendantId1, null, caseId);
@@ -119,7 +114,7 @@ public class DocumentAddedEmailNotificationIT extends AbstractIT {
 
     }
 
-    private static String getDefendantFullName(final String defendantFirstName, final String defendantLastName) {
+    private String getDefendantFullName(final String defendantFirstName, final String defendantLastName) {
         if (isNullOrEmpty(defendantFirstName) && isNullOrEmpty(defendantLastName)) {
             return "";
         }

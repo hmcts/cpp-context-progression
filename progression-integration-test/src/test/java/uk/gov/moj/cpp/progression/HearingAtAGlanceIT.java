@@ -9,9 +9,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
@@ -23,7 +24,6 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -32,7 +32,6 @@ import javax.json.JsonObject;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.collection.IsCollectionWithSize;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,9 +47,9 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private static String userId;
@@ -58,33 +57,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
     private static String caseId;
     private static String defendantId;
     private static String offenceId;
-
-    @BeforeAll
-    public static void setUpClass() {
-        HearingStub.stubInitiateHearing();
-    }
-
-    private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
-        assertTrue(message.isPresent());
-        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
-        assertThat(message.get().getJsonObject("prosecutionCase").getString("cpsOrganisation"), equalTo("A02"));
-
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("judicialResults").getJsonObject(0).getString("judicialResultId"), equalTo("94d6e18a-4114-11ea-b77f-2e728ce88125"));
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("judicialResults").getJsonObject(0).getString("category"), equalTo("FINAL"));
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("judicialResults").getJsonObject(0).getString("category"), equalTo("FINAL"));
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("judicialResults").getJsonObject(0).getBoolean("alwaysPublished"), equalTo(false));
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("judicialResults").getJsonObject(0).getBoolean("urgent"), equalTo(false));
-        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("judicialResults").getJsonObject(0).getString("resultText"), equalTo("code - resultText"));
-
-    }
 
     @BeforeEach
     public void setUp() {
@@ -97,9 +69,9 @@ public class HearingAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldRetainCurrentReportingRestrictionsAfterManuallyAddingOneWithHearing() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
                 hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -111,9 +83,9 @@ public class HearingAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldSetJudiciaryResultsAtHearingsLevelForHearingAtAGlanceV2() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
                 hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -124,9 +96,9 @@ public class HearingAtAGlanceIT extends AbstractIT {
     @Test
     public void shouldKeepCpsOrganisationForHearingAtAGlanceV2() throws Exception {
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
                 hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -139,9 +111,9 @@ public class HearingAtAGlanceIT extends AbstractIT {
         stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')]", notNullValue()));
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
                 hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
@@ -199,6 +171,28 @@ public class HearingAtAGlanceIT extends AbstractIT {
                         .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
                         .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
         );
+    }
+
+    private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
+        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
+        assertTrue(message.isPresent());
+        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
+        assertThat(message.get().getJsonObject("prosecutionCase").getString("cpsOrganisation"), equalTo("A02"));
+
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("judicialResultId"), equalTo("94d6e18a-4114-11ea-b77f-2e728ce88125"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("category"), equalTo("FINAL"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("category"), equalTo("FINAL"));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getBoolean("alwaysPublished"), equalTo(false));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getBoolean("urgent"), equalTo(false));
+        assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("judicialResults").getJsonObject(0).getString("resultText"), equalTo("code - resultText"));
+
     }
 }
 

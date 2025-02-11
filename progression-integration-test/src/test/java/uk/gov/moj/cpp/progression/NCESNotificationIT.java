@@ -4,9 +4,9 @@ import static java.lang.String.join;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForIdMapperSuccess;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment;
 
 import uk.gov.justice.core.courts.nces.NcesNotificationRequested;
@@ -14,9 +14,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
 import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.test.TestTemplates;
 
 import java.util.Arrays;
@@ -31,9 +29,8 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings({"squid:S1607"})
 public class NCESNotificationIT extends AbstractIT {
 
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    private static final String DOCUMENT_TEXT = STRING.next();
     public static final String APPLICATION_VND_PROGRESSION_QUERY_PROSECUTION_NOTIFICATION_STATUS_JSON = "application/vnd.progression.query.prosecution.notification-status+json";
 
     private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
@@ -44,12 +41,8 @@ public class NCESNotificationIT extends AbstractIT {
     @Test
     public void shouldSendNCESNotification() {
 
-        NotificationServiceStub.setUp();
-
-        DocumentGeneratorStub.stubDocumentCreate(DOCUMENT_TEXT);
-
         final NcesNotificationRequested ncesNotificationRequested = TestTemplates.generateNcesNotificationRequested();
-        IdMapperStub.stubForIdMapperSuccess(Response.Status.OK, ncesNotificationRequested.getCaseId());
+        stubForIdMapperSuccess(Response.Status.OK, ncesNotificationRequested.getCaseId());
 
         final JsonObject requestAsJson = objectToJsonObjectConverter.convert(ncesNotificationRequested);
 

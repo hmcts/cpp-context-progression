@@ -64,7 +64,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
     private String defendantId;
     private String cpsDefendantId;
 
-    private static final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
 
     @BeforeEach
     public void setup() {

@@ -7,15 +7,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubLegalStatus;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
@@ -25,13 +22,10 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAnd
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
@@ -47,12 +41,12 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
     private static final String PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA = "public.progression.defence-association-for-laa-locked";
     private static final String PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED = "public.progression.defence-organisation-for-laa-associated";
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForAssociationLockedReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForDefenceOrganisationAssociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_ID_STATUS_UPDATED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForAssociationLockedReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ASSOCIATION_LOCKED_FOR_LAA).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForDefenceOrganisationAssociation = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENCE_ORGANISATION_ASSOCIATED).getMessageConsumerClient();
 
-    private final String userId = UUID.randomUUID().toString();
+    private final String userId = randomUUID().toString();
     private final String organisationName = "Greg Associates Ltd.";
     private final String offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private final String statusCode = "G2";
@@ -63,7 +57,7 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        organisationId = UUID.randomUUID().toString();
+        organisationId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
         stubLegalStatus("/restResource/ref-data-legal-statuses.json", statusCode);
@@ -73,11 +67,6 @@ public class UpdateOffenceWithLAAReferenceIT extends AbstractIT {
         stubGetUsersAndGroupsQueryForSystemUsers(userId);
         stubGetGroupsForLoggedInQuery(userId);
         stubEnableAllCapabilities();
-
-        IdMapperStub.setUp();
-        stubInitiateHearing();
-        stubDocumentCreate(STRING.next());
-        NotificationServiceStub.setUp();
     }
 
 

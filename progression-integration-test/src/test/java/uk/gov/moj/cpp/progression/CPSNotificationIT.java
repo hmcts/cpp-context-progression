@@ -5,7 +5,6 @@ import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
@@ -16,9 +15,6 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
-import uk.gov.moj.cpp.progression.stub.IdMapperStub;
 
 import java.nio.charset.Charset;
 import java.time.LocalDate;
@@ -40,9 +36,8 @@ public class CPSNotificationIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed-cps-notification.json";
     private static final Logger LOGGER = LoggerFactory.getLogger(CPSNotificationIT.class.getCanonicalName());
 
-
-    private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
-    private static final String ORGANISATION_ID = "f8254db1-1683-483e-afb3-b87fde5a0a26";
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+    private static final String ORGANISATION_ID = randomUUID().toString();
     private static final String ORGANISATION_NAME = "Smith Associates Ltd." + RandomStringUtils.randomAlphanumeric(10);
     private final String futureHearingDate = LocalDate.now().plusYears(1) + "T09:30:00.000Z";
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
@@ -55,9 +50,6 @@ public class CPSNotificationIT extends AbstractIT {
 
     @BeforeEach
     public void setUp() {
-        IdMapperStub.setUp();
-        HearingStub.stubInitiateHearing();
-        DocumentGeneratorStub.stubDocumentCreate(STRING.next());
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -68,7 +60,6 @@ public class CPSNotificationIT extends AbstractIT {
 
     @Test
     public void shouldNotifyCPS() throws Exception {
-
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -94,6 +85,7 @@ public class CPSNotificationIT extends AbstractIT {
         final String strPayload = getPayloadForCreatingRequest(path)
                 .replaceAll("CASE_ID", caseId)
                 .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("ORGANISATION_ID", ORGANISATION_ID)
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("COURT_CENTRE_ID", courtCentreId)
                 .replaceAll("COURT_CENTRE_NAME", courtCentreName)

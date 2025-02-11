@@ -14,8 +14,8 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
@@ -24,7 +24,6 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -38,13 +37,10 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-@ExtendWith(JmsResourceManagementExtension.class)
-public class AuditCourtDocumentIT {
-
+public class AuditCourtDocumentIT extends AbstractIT{
 
     private String caseId;
     private String courtDocumentId;
@@ -53,7 +49,7 @@ public class AuditCourtDocumentIT {
     public static final String USER_GROUP_NOT_PRESENT_RBAC = UUID.randomUUID().toString();
     private static final String PRIVATE_COURT_DOCUMENT_AUDIT_EVENT = "progression.event.court-document-audit";
 
-    private static final JmsMessageConsumerClient messageConsumerClientPrivateForCourtDocumentAudit = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_COURT_DOCUMENT_AUDIT_EVENT).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPrivateForCourtDocumentAudit = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PRIVATE_COURT_DOCUMENT_AUDIT_EVENT).getMessageConsumerClient();
 
 
     @BeforeAll
@@ -97,7 +93,7 @@ public class AuditCourtDocumentIT {
 
     }
 
-    private static void verifyInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
+    private void verifyInMessagingQueue(final JmsMessageConsumerClient messageConsumer) {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumer);
         assertTrue(message.isPresent());
     }

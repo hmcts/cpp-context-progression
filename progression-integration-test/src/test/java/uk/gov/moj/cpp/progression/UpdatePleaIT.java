@@ -1,26 +1,25 @@
+package uk.gov.moj.cpp.progression;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addStandaloneCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplicationStatus;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.AbstractIT;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
-import uk.gov.moj.cpp.progression.stub.HearingStub;
 
 import java.nio.charset.Charset;
 import java.util.UUID;
@@ -28,17 +27,13 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class UpdatePleaIT extends AbstractIT {
-    private static final String DOCUMENT_TEXT = STRING.next();
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
     private static final String PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED = "public.hearing.hearing-offence-plea-updated";
     protected static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -49,13 +44,6 @@ public class UpdatePleaIT extends AbstractIT {
     private String courtCentreId;
     private String courtCentreName;
     private String applicationId;
-
-    @BeforeAll
-    public static void setUpClass() {
-        stubDocumentCreate(DOCUMENT_TEXT);
-        HearingStub.stubInitiateHearing();
-    }
-
 
     @BeforeEach
     public void setUp() {
@@ -84,10 +72,10 @@ public class UpdatePleaIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, userId), hearingVerdictUpdatedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, publicEventEnvelope2);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].plea.offenceId", Matchers.is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
-                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].plea.pleaDate", Matchers.is("2017-05-06"))
+        pollForHearing(hearingId,
+                withJsonPath("$.hearing.id", is(hearingId)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].plea.offenceId", is("3789ab16-0bb7-4ef1-87ef-c936bf0364f1")),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].plea.pleaDate", is("2017-05-06"))
         );
 
     }
@@ -111,11 +99,11 @@ public class UpdatePleaIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, userId), hearingVerdictUpdatedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_HEARING_OFFENCE_PLEA_UPDATED, publicEventEnvelope2);
 
-        pollForResponse("/hearingSearch/" + hearingId, PROGRESSION_QUERY_HEARING_JSON,
-                withJsonPath("$.hearing.id", Matchers.is(hearingId)),
-                withJsonPath("$.hearing.courtApplications[0].id", Matchers.is(applicationId)),
-                withJsonPath("$.hearing.courtApplications[0].plea.applicationId", Matchers.is(applicationId)),
-                withJsonPath("$.hearing.courtApplications[0].plea.pleaDate", Matchers.is("2017-05-06"))
+        pollForHearing(hearingId,
+                withJsonPath("$.hearing.id", is(hearingId)),
+                withJsonPath("$.hearing.courtApplications[0].id", is(applicationId)),
+                withJsonPath("$.hearing.courtApplications[0].plea.applicationId", is(applicationId)),
+                withJsonPath("$.hearing.courtApplications[0].plea.pleaDate", is("2017-05-06"))
         );
 
     }

@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.awaitility.Awaitility.await;
@@ -45,7 +46,7 @@ public class VejHearingStub {
     }
 
     public static void verifyVejHearingStubCommandInvoked(final String commandEndPoint, final List<String> expectedValues) {
-        await().atMost(30, SECONDS).pollInterval(1, SECONDS).until(() -> {
+        await().atMost(30, SECONDS).pollInterval(500, MILLISECONDS).until(() -> {
             final RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlPathMatching(commandEndPoint));
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))

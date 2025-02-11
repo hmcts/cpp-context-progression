@@ -6,8 +6,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_ENFORCEMENT_ACKNOWLEDGMENT_ERROR;
-import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER;
-import static uk.gov.moj.cpp.progression.helper.EventSelector.EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
@@ -22,23 +20,11 @@ public class NowsRequestHelper extends AbstractTestHelper {
 
     private static final String WRITE_MEDIA_TYPE = "application/vnd.progression.add-now-document-request+json";
 
-    public void makeNowsRequest(final String requestId, final String requestPayload) {
+    public void makeNowsRequestAndVerify(final String requestId, final String requestPayload) {
         makePostCall(getWriteUrl("/nows"), WRITE_MEDIA_TYPE, requestPayload);
-        verifyNowDocumentRequestProcessed(requestId);
-    }
-
-    public void verifyAccountNumberAddedToRequest(final String accountNumber, final String requestId) {
-        final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_NOW_REQUEST_WITH_ACCOUNT_NUMBER).getMessageConsumerClient();
-        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
-        assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
-        assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
-    }
-
-    public void verifyAccountNumberIgnoredToRequest(final String accountNumber, final String requestId) {
-        final JmsMessageConsumerClient privateEventsConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(EVENT_NOW_REQUEST_IGNORED_WITH_ACCOUNT_NUMBER).getMessageConsumerClient();
-        final JsonPath jsonResponse = retrieveMessageAsJsonPath(privateEventsConsumer);
-        assertThat(jsonResponse.getString("accountNumber"), Is.is(accountNumber));
-        assertThat(jsonResponse.getString("requestId"), Is.is(requestId));
+        if (null != requestId) {
+            verifyNowDocumentRequestProcessed(requestId);
+        }
     }
 
     public void verifyErrorEventRaised(final String errorCode, final String errorMessage) {
@@ -49,12 +35,12 @@ public class NowsRequestHelper extends AbstractTestHelper {
     }
 
     private void verifyNowDocumentRequestProcessed(final String requestId) {
-        getNowDocumentRequestsFor(requestId, anyOf(
+        verifyNowDocumentRequestProcessed(requestId, anyOf(
                 withJsonPath("$.nowDocumentRequests[0].requestId", equalTo(requestId))
         ));
     }
 
-    public static String getNowDocumentRequestsFor(final String requestId, final Matcher... matchers) {
+    public static String verifyNowDocumentRequestProcessed(final String requestId, final Matcher... matchers) {
         return pollForResponse("/nows/request/" + requestId,
                 "application/vnd.progression.query.now-document-requests-by-request-id+json",
                 USER_ID.toString(),

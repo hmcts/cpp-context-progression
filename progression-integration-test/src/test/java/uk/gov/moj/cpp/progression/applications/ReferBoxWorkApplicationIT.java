@@ -12,18 +12,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsPerCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubDocumentCreate;
-import static uk.gov.moj.cpp.progression.stub.HearingStub.stubInitiateHearing;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyEmailNotificationIsRaisedWithAttachment;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
@@ -31,8 +30,7 @@ import static uk.gov.moj.cpp.progression.util.ReferBoxWorkApplicationHelper.getP
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
-import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -46,32 +44,26 @@ import com.google.common.io.Resources;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-@ExtendWith(JmsResourceManagementExtension.class)
 @SuppressWarnings("squid:S1607")
-public class ReferBoxWorkApplicationIT {
+public class ReferBoxWorkApplicationIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED = "public.progression.boxwork-application-referred";
     public static final String PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED = "public.progression.events.hearing-extended";
 
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient publicEventsConsumerForHearingExtended = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient messageConsumerClientPublicForReferBoxWorkApplicationOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_BOXWORK_APPLICATION_REFERRED).getMessageConsumerClient();
+    private final JmsMessageConsumerClient publicEventsConsumerForHearingExtended = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED).getMessageConsumerClient();
 
     private String applicationId;
     private String caseId;
     private String defendantId;
 
     @BeforeAll
-    public static void setUpClass() throws JSONException {
-        stubInitiateHearing();
-        stubDocumentCreate(STRING.next());
-        NotificationServiceStub.setUp();
+    public static void setUpClass() {
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
     }
 
@@ -93,7 +85,7 @@ public class ReferBoxWorkApplicationIT {
 
         final String hearingId = hearing.getString("id");
 
-        pollForResponse("/hearingSearch/" + hearingId, "application/vnd.progression.query.hearing+json", withJsonPath("$.hearing.id", Matchers.is(hearingId)));
+        pollForHearing(hearingId, withJsonPath("$.hearing.id", Matchers.is(hearingId)));
 
         String eventOfHearing = createObjectBuilder().add("hearing", hearing).build().toString();
 
@@ -108,9 +100,13 @@ public class ReferBoxWorkApplicationIT {
         editCourtProceedingsForCourtApplication(applicationId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing-edit.json");
         verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, "TS12345");
         verifyPublicEventForHearingExtended("2020-01-12T05:27:17.210Z", "B01LY00", "MAGISTRATES");
-        final String payload = verifyCourtApplicationViewStoreUpdated(applicationId, "2022-02-02");
-        final JSONObject thirdParties = new JSONObject(payload).getJSONArray("thirdParties").getJSONObject(0);
-        assertThat(thirdParties.getString("name"), is("David lloyd"));
+
+        pollForApplicationAtAGlance(applicationId,
+                withJsonPath("$.applicationId", is(applicationId)),
+                withJsonPath("$.applicationDetails.applicationReceivedDate", is("2022-02-02")),
+                withJsonPath("$.thirdParties[0].name", is("David lloyd"))
+        );
+
     }
 
     @Test
@@ -139,22 +135,11 @@ public class ReferBoxWorkApplicationIT {
 
     }
 
-    private String verifyCourtApplicationViewStoreUpdated(final String applicationId, final String applicationReceivedDate) {
-        return pollForResponse("/applications/" + applicationId,
-                "application/vnd.progression.query.application.aaag+json",
-                randomUUID().toString(),
-                withJsonPath("$.applicationId", is(applicationId)),
-                withJsonPath("$.applicationDetails.applicationReceivedDate", is(applicationReceivedDate))
-        );
-
-    }
-
     private void editCourtProceedingsForCourtApplication(final String applicationId, final String boxHearingId, final String fileName) throws IOException {
         postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.edit-court-proceedings-for-application+json",
                 getCourtApplicationJson(applicationId, boxHearingId, fileName));
     }
-
 
     private String getCourtApplicationJson(final String applicationId, final String boxHearingId, final String fileName) throws IOException {
         String payloadJson;
