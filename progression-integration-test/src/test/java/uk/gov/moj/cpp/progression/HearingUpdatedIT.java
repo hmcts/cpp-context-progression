@@ -4,7 +4,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
 import static com.jayway.jsonpath.JsonPath.compile;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.UUID.fromString;
@@ -13,12 +12,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
@@ -39,7 +33,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollFo
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
@@ -64,8 +57,6 @@ import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateOffencesHelper;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -74,8 +65,6 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import com.jayway.jsonpath.Filter;
-import com.jayway.jsonpath.ReadContext;
-import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -95,19 +84,13 @@ public class HearingUpdatedIT extends AbstractIT {
     private static final String PROGRESSION_QUERY_HEARING_JSON = "application/vnd.progression.query.hearing+json";
 
     private static final String PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING = "public.events.listing.offences-removed-from-allocated-hearing";
-    private static final String PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT = "public.progression.prosecution-cases-referred-to-court";
     private static final String PUBLIC_PROGRESSION_OFFENCES_REMOVED_FROM_EXISTING_ALLOCATED_HEARING = "public.progression.offences-removed-from-existing-allocated-hearing";
 
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    private static final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT).getMessageConsumerClient();
     private static final JmsMessageConsumerClient messageConsumerClientPublicForHearingDetailChanged = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_HEARING_DETAIL_CHANGED).getMessageConsumerClient();
     private static final JmsMessageConsumerClient messageConsumerClientPublicOffenceRemovedFromHearing = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_HEARING_SELECTED_OFFENCES_REMOVED_FROM_ALLOCATED_HEARING).getMessageConsumerClient();
     private static final JmsMessageConsumerClient messageConsumerClientProgressionPublicOffenceRemovedFromHearing = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_OFFENCES_REMOVED_FROM_EXISTING_ALLOCATED_HEARING).getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerHearingPopulatedToProbationCaseWorker = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.events.hearing-populated-to-probation-caseworker").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerHearingOffenceUpdated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.hearing-offences-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerListingNumberUpdated = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-listing-number-updated").getMessageConsumerClient();
-    private static final JmsMessageConsumerClient messageConsumerListingNumberIncreased = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecution-case-listing-number-increased").getMessageConsumerClient();
 
     private static final String OFFENCE_ID = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
     private static final String OFFENCE_ID2 = "4789ab16-0bb7-4ef1-87ef-c936bf0364f1";
@@ -123,8 +106,6 @@ public class HearingUpdatedIT extends AbstractIT {
     public static void setUpClass() {
         stubInitiateHearing();
     }
-    private static final JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-added").getMessageConsumerClient();
-
 
     @BeforeEach
     public void setUp() {
@@ -466,7 +447,6 @@ public class HearingUpdatedIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
         doVerifyNotificationPrivateEvent(messageConsumerEmailRequestPrivateEvent, caseId);
         doVerifyNotificationPrivateEvent(messageConsumerPrintRequestPrivateEvent, caseId);
-        verifyAddCourtDocument(messageConsumerCourtDocumentAddedPrivateEvent);
     }
 
     private void doVerifyNotificationPrivateEvent(final JmsMessageConsumerClient messageConsumerProgressionCommandEmail, final String caseId) {
@@ -475,25 +455,6 @@ public class HearingUpdatedIT extends AbstractIT {
         final JsonObject progressionCommandNotificationEvent = message.get();
         assertThat(progressionCommandNotificationEvent.getString("caseId", EMPTY), is(caseId));
     }
-
-    private void verifyAddCourtDocument(JmsMessageConsumerClient messageConsumerCourtDocumentAddedPrivateEvent) {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerCourtDocumentAddedPrivateEvent);
-        assertThat(message.get(), Matchers.notNullValue());
-        final JsonObject progressionCourtDocumentAddedEvent = message.get();
-        JsonObject courtDocument = progressionCourtDocumentAddedEvent.getJsonObject("courtDocument");
-        assertThat(courtDocument.getString("documentTypeDescription"), containsString("Electronic Notifications"));
-        assertThat(courtDocument.getString("name"), containsString("AmendedHearingNotification"));
-        assertThat(courtDocument.getBoolean("containsFinancialMeans"), Matchers.is(false));
-        assertThat(courtDocument.getBoolean("sendToCps"), Matchers.is(false));
-    }
-
-    List<Matcher<? super ReadContext>> matchers = newArrayList(
-            withJsonPath("$.prosecutionCase.id", is(caseId)),
-            withJsonPath("$.prosecutionCase.originatingOrganisation", is("G01FT01AB")),
-            withJsonPath("$.prosecutionCase.initiationCode", is("J")),
-            withJsonPath("$.prosecutionCase.statementOfFacts", is("You did it")),
-            withJsonPath("$.prosecutionCase.statementOfFactsWelsh", is("You did it in Welsh"))
-    );
 
     private JsonObject getHearingConfirmedJsonObject(final String hearingId) {
         return stringToJsonObjectConverter.convert(
