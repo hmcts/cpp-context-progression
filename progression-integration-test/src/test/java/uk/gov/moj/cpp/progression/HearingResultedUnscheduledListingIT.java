@@ -1,11 +1,15 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.ArrayUtils.addAll;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -16,11 +20,15 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.extractHearingIdFromProsecutionCasesProgression;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingsForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStreamV2;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -45,6 +53,7 @@ import javax.json.JsonObject;
 
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +65,6 @@ public class HearingResultedUnscheduledListingIT {
     private static final String PUBLIC_HEARING_RESULTED_WITH_APPLICATION_RESULT_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing-with-application-resulted";
 
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
-    private static final JmsMessageConsumerClient consumerForDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed-v2").getMessageConsumerClient();
     private static final JmsMessageConsumerClient consumerForUnscheduledHearingRecorded = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.unscheduled-hearing-recorded").getMessageConsumerClient();
 
     private static final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
@@ -98,8 +106,6 @@ public class HearingResultedUnscheduledListingIT {
     @Test
     public void shouldListUnscheduledHearingsV2() throws Exception {
         final String existingHearingId = prepareHearingForTest();
-        Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(consumerForDefendantListingStatusChanged)
-                .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
 
         Utilities.EventListener eventListenerForHearingRecorded = listenForPrivateEvent(consumerForUnscheduledHearingRecorded)
                 .withFilter(isJson(withJsonPath("$.hearingId", is(existingHearingId))));
@@ -108,9 +114,12 @@ public class HearingResultedUnscheduledListingIT {
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
-        final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, EXPECTED_OFFENCE_ID);
-        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
+
+        final String unscheduledHearingId = pollCaseAndGetHearingsForDefendant(caseId, defendantId,
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds[*]", hasSize(greaterThan(1))))
+                .stream().filter(s -> ! s.equals(existingHearingId)).findFirst().get();
+        getHearingForDefendant(unscheduledHearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
+
 
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
@@ -121,9 +130,11 @@ public class HearingResultedUnscheduledListingIT {
         final JsonEnvelope publicEventEnvelope2 = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
+        final String unscheduledHearingId2 = pollCaseAndGetHearingsForDefendant(caseId, defendantId,
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds[*]", hasSize(greaterThan(2))))
+                .stream().filter(s -> ! s.equals(existingHearingId)).filter(s -> ! s.equals(unscheduledHearingId)).findFirst().get();
 
-        final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, EXPECTED_OFFENCE_ID);
+        getHearingForDefendant(unscheduledHearingId2, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
 
         verifyListUnscheduledHearingRequestsAsStreamV2(unscheduledHearingId, "1 week");
     }
@@ -131,8 +142,6 @@ public class HearingResultedUnscheduledListingIT {
     @Test
     public void shouldKeepsCpsOrganisationAndListUnscheduledHearingsV2() throws Exception {
         final String existingHearingId = prepareHearingForTestWithInitiate();
-        Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(consumerForDefendantListingStatusChanged)
-                .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
 
         Utilities.EventListener eventListenerForHearingRecorded = listenForPrivateEvent(consumerForUnscheduledHearingRecorded)
                 .withFilter(isJson(withJsonPath("$.hearingId", is(existingHearingId))));
@@ -141,9 +150,11 @@ public class HearingResultedUnscheduledListingIT {
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
-        final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, EXPECTED_OFFENCE_ID);
-        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
+        final String unscheduledHearingId = pollCaseAndGetHearingsForDefendant(caseId, defendantId,
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds[*]", hasSize(greaterThan(1))))
+                .stream().filter(s -> ! s.equals(existingHearingId)).findFirst().get();
+        getHearingForDefendant(unscheduledHearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
+
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
         doVerifyRecordedEventPayload(recordedEventPayload, existingHearingId, unscheduledHearingId);
@@ -154,8 +165,11 @@ public class HearingResultedUnscheduledListingIT {
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
 
-        final JsonPath defendantListingStatusChangedPayload2 = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload2, EXPECTED_OFFENCE_ID);
+        final String unscheduledHearingId2 = pollCaseAndGetHearingsForDefendant(caseId, defendantId,
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds[*]", hasSize(greaterThan(2))))
+                .stream().filter(s -> ! s.equals(existingHearingId)).filter(s -> ! s.equals(unscheduledHearingId)).findFirst().get();
+        getHearingForDefendant(unscheduledHearingId2, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
+
 
         pollProsecutionCasesProgressionFor(caseId, getMatcherForCpsOrganisation());
 
@@ -166,8 +180,6 @@ public class HearingResultedUnscheduledListingIT {
     @Test
     public void shouldListUnscheduledHearingsV2WhenApplicationResultedWithCase() throws Exception {
         final String existingHearingId = prepareHearingForTest();
-        Utilities.EventListener eventListenerForDefendantListinStatusChanged = listenForPrivateEvent(consumerForDefendantListingStatusChanged)
-                .withFilter(isJson(withJsonPath("$.hearing.id", not(existingHearingId))));
 
         Utilities.EventListener eventListenerForHearingRecorded = listenForPrivateEvent(consumerForUnscheduledHearingRecorded)
                 .withFilter(isJson(withJsonPath("$.hearingId", is(existingHearingId))));
@@ -176,9 +188,11 @@ public class HearingResultedUnscheduledListingIT {
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
-        final JsonPath defendantListingStatusChangedPayload = eventListenerForDefendantListinStatusChanged.waitFor();
-        doVerifyDefendantListingStatusChangedPayload(defendantListingStatusChangedPayload, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
-        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
+        final String unscheduledHearingId = pollCaseAndGetHearingsForDefendant(caseId, defendantId,
+                withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds[*]", hasSize(greaterThan(1))))
+                .stream().filter(s -> ! s.equals(existingHearingId)).findFirst().get();
+        getHearingForDefendant(unscheduledHearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
+
 
 
         final JsonPath recordedEventPayload = eventListenerForHearingRecorded.waitFor();
@@ -227,7 +241,10 @@ public class HearingResultedUnscheduledListingIT {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        String hearingIdInResponse = doVerifyProsecutionCaseDefendantListingStatusChanged(consumerForDefendantListingStatusChanged);
+        String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
+        JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+
+        String hearingIdInResponse = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingIdInResponse, defendantId, courtCentreId, courtCentreName);
 
@@ -243,7 +260,10 @@ public class HearingResultedUnscheduledListingIT {
         initiateCourtProceedingsWithoutCourtDocument(caseId, defendantId);
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
 
-        String hearingIdInResponse = doVerifyProsecutionCaseDefendantListingStatusChanged(consumerForDefendantListingStatusChanged);
+
+        String prosecutionCasesResponse = pollProsecutionCasesProgressionFor(caseId, addAll(getProsecutionCaseMatchers(caseId, defendantId), getHearingsAtAGlanceMatchers(defendantId)));
+        JsonObject prosecutionCasesJsonObject = getJsonObject(prosecutionCasesResponse);
+        String hearingIdInResponse = extractHearingIdFromProsecutionCasesProgression(prosecutionCasesJsonObject, defendantId);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingIdInResponse, defendantId, courtCentreId, courtCentreName);
 
@@ -252,12 +272,6 @@ public class HearingResultedUnscheduledListingIT {
 
         verifyInMessagingQueueForCasesReferredToCourts();
         return hearingIdInResponse;
-    }
-
-    private String doVerifyProsecutionCaseDefendantListingStatusChanged(final JmsMessageConsumerClient messageConsumer) {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumer);
-        final JsonObject prosecutionCaseDefendantListingStatusChanged = message.get();
-        return prosecutionCaseDefendantListingStatusChanged.getJsonObject("hearing").getString("id");
     }
 
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
@@ -290,6 +304,13 @@ public class HearingResultedUnscheduledListingIT {
     private static boolean hearingIdIsOneOf(JsonPath jsonPath, String h1, String h2) {
         final String s = jsonPath.getString("hearing.id");
         return h1.equals(s) || h2.equals(s);
+    }
+
+    private Matcher[] getHearingsAtAGlanceMatchers(final String defendantId) {
+        final List<Matcher> newMatchers = newArrayList();
+        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].defendantId", Matchers.is(defendantId)));
+        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds", hasSize(greaterThan(0))));
+        return newMatchers.toArray(new Matcher[0]);
     }
 
 }
