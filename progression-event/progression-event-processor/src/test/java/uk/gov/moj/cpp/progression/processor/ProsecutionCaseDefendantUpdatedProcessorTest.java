@@ -56,10 +56,8 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -70,8 +68,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -437,7 +433,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
 
     @Test
-    @Disabled
     public void shouldSendUpdateDefendantAssociationNotification_whenFutureHearingExists() {
         final UUID PROSECUTOR_ID = randomUUID();
         final String PROSECUTOR_CODE = "D24AW";
@@ -474,7 +469,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
 
     @Test
-    @Disabled
     public void shouldSendUpdateDefendantToApplication_whenApplicationSummariesExists() {
         final UUID PROSECUTOR_ID = randomUUID();
         final String PROSECUTOR_CODE = "D24AW";
@@ -506,7 +500,6 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
 
 
     @Test
-    @Disabled
     public void shouldNotSendUpdateDefendantAssociationNotification_whenFutureHearingExists_AndCpsEmailDoesNotExists() {
         final UUID PROSECUTOR_ID = randomUUID();
         final String PROSECUTOR_CODE = "D24AW";
