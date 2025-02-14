@@ -46,6 +46,8 @@ import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import uk.gov.moj.cpp.progression.service.dto.PostalNotificationDetails;
 import uk.gov.moj.cpp.progression.service.payloads.AssociatedDefenceOrganisation;
 import uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAddress;
 
@@ -154,6 +156,55 @@ public class PostalService {
                 isAmended, orderedDate);
     }
 
+    public PostalNotification getPostalNotificationForProsecutor(final JsonEnvelope envelope,
+                                                                 final PostalNotificationDetails postalNotificationDetails,
+                                                                 Optional<PostalAddressee> optionalPostalAddressee) {
+
+        final CourtCentre courtCentre = postalNotificationDetails.getCourtCentre();
+        final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
+
+        JsonObject localJusticeArea = Json.createObjectBuilder().build();
+
+        localJusticeArea = getLja(envelope, courtCentre, orderingCourtOptional, localJusticeArea);
+
+        String courtCentreNameWelsh = null;
+        if(nonNull(courtCentre)){
+            final Optional<JsonObject> courtCentreJsonOptional = referenceDataService.getCourtCentreWithCourtRoomsById(courtCentre.getId(), envelope, requester);
+            if (nonNull(courtCentreJsonOptional)) {
+                final JsonObject courtCentreJson = courtCentreJsonOptional.orElseThrow(() -> new IllegalArgumentException(String.format("Court centre '%s' not found", courtCentre.getId())));
+
+                courtCentreNameWelsh = courtCentreJson.getString("oucodeL3WelshName", "");
+            }
+        }
+        var courtApplication = postalNotificationDetails.getCourtApplication();
+        final MasterDefendant masterDefendant = courtApplication.getApplicant().getMasterDefendant();
+
+
+        final String applicantPersonal = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getFirstName() + " " + courtApplication.getApplicant().getPersonDetails().getLastName() : "";
+        final String applicantOther = nonNull(courtApplication.getApplicant().getProsecutingAuthority()) ? courtApplication.getApplicant().getProsecutingAuthority().getProsecutionAuthorityCode() : applicantPersonal;
+        final String applicant = getApplicant(courtApplication, masterDefendant, applicantOther);
+
+        final PostalAddressee postalAddressee = optionalPostalAddressee.orElse(null);
+
+        return buildPostalNotification(postalNotificationDetails.getHearingDate(),
+                postalNotificationDetails.getHearingTime(),
+                postalNotificationDetails.getCourtApplication().getApplicationReference(),
+                postalNotificationDetails.getCourtApplication().getType().getType(),
+                postalNotificationDetails.getCourtApplication().getType().getTypeWelsh(),
+                postalNotificationDetails.getCourtApplication().getType().getLegislation(),
+                postalNotificationDetails.getCourtApplication().getType().getLegislationWelsh(),
+                courtCentre,
+                courtCentreNameWelsh,
+                postalNotificationDetails.getWelTranslationRequired(),
+                localJusticeArea,
+                null,
+                postalNotificationDetails.getJurisdictionType(),
+                postalNotificationDetails.getCourtApplication().getApplicationParticulars(),
+                postalNotificationDetails.getCourtApplication(), applicant,
+                EMPTY, postalAddressee,
+                postalNotificationDetails.getAmended(), postalNotificationDetails.getIssueDate());
+    }
+
     private JsonObject getLja(final JsonEnvelope envelope, final CourtCentre courtCentre, final Optional<CourtCentre> orderingCourtOptional, JsonObject localJusticeArea) {
         if (orderingCourtOptional.isPresent()) {
 
@@ -255,7 +306,8 @@ public class PostalService {
         }
 
         //Check if the applicant is a defendant
-        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty.getMasterDefendant());
+        final Optional<MasterDefendant> defendantOptional = ofNullable(courtApplicationParty)
+                .map(CourtApplicationParty::getMasterDefendant);
         defendantOptional.ifPresent(defendant -> builder.withDefendant(buildDefendant(defendant)));
         if (nonNull(courtApplication.getRespondents())) {
             courtApplication.getRespondents().forEach(respondent -> {

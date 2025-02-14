@@ -134,6 +134,7 @@ import javax.json.JsonObject;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -770,7 +771,7 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
-    public void shouldCallBoxWorkWhenCourtApplicationInitiatedWithoutProsecutionCase() throws IOException {
+    public void shouldCallBoxWorkWhenCourtApplicationInitiatedWithoutProsecutionCase() throws IOException, JSONException {
         //Given
         final UUID applicationId = randomUUID();
 
@@ -886,7 +887,7 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
-    public void shouldCallBoxWorkWhenCourtApplicationInitiated() throws IOException {
+    public void shouldCallBoxWorkWhenCourtApplicationInitiated() throws IOException, JSONException {
         //Given
         final UUID applicationId = randomUUID();
 
@@ -939,7 +940,7 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
-    public void shouldPickupMatchingDefendantFromApplicantIfAnyInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException  {
+    public void shouldPickupMatchingDefendantFromApplicantIfAnyInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException, JSONException {
         //Given
         final UUID applicationId = randomUUID();
 
@@ -1001,7 +1002,7 @@ public class CourtApplicationProcessorTest {
     }
 
     @Test
-    public void shouldPickupMatchingDefendantFromRespondentsIfAnyInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException  {
+    public void shouldPickupMatchingDefendantFromRespondentsIfAnyInCourtApplicationHearingWhenApplicationReferredToCourtHearing() throws IOException, JSONException {
         //Given
         final UUID applicationId = randomUUID();
 
@@ -1209,7 +1210,7 @@ public class CourtApplicationProcessorTest {
 
 
     @Test
-    public void shouldProcessEventWhenApplicationReferredToCourtHearing() throws IOException {
+    public void shouldProcessEventWhenApplicationReferredToCourtHearing() throws IOException, JSONException {
 
         final UUID applicationId = randomUUID();
 

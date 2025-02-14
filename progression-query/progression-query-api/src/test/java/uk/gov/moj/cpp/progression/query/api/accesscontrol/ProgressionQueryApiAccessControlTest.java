@@ -224,6 +224,16 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
     }
 
     @Test
+    public void shouldAllowUserInAuthorisedGroupToGetAllApplicationNotes() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.application-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate", "Judge", "Recorders", "Deputies");
+    }
+
+    @Test
+    public void shouldNotAllowUserInAuthorisedGroupToGetAllApplicationNotes() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.application-notes", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "DJMC", "Court Associate","Judge","Deputies","Recorders");
+    }
+
+    @Test
     public void shouldAllowUserInAuthorisedGroupToGetAllCourtDocuments() {
         assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.courtdocuments", "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers",
                 "Prison Admin", "Court Admin", "Probation Admin", "Police Admin", "Victims & Witness Care Admin", "Youth Offending Service Admin", "Magistrates", "Court Associate", "District Judge", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge", "Second Line Support", "NCES", "Recorders", "Defence Lawyers", "Advocates","Non Police Prosecutors");

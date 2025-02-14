@@ -217,6 +217,7 @@ public class PreAndPostConditionHelper {
     }
 
 
+
     public static Response addProsecutionCaseToCrownCourtWithDefendantAsAdult(final String caseId, final String defendantId, final String caseUrn) throws IOException, JSONException {
         final JSONObject jsonPayload = new JSONObject(
                 createReferProsecutionCaseToCrownCourtWithDefendantAsAdult(
@@ -314,6 +315,8 @@ public class PreAndPostConditionHelper {
                 "application/vnd.progression.initiate-court-proceedings-for-group-cases+json",
                 payload);
     }
+
+
 
     public static Response initiateCourtProceedings(final String commandPayload) throws IOException {
         return postCommand(getWriteUrl("/initiatecourtproceedings"), "application/vnd.progression.initiate-court-proceedings+json", commandPayload);

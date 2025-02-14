@@ -535,6 +535,7 @@
         "masterDefendantId",
         "cases"
       ],
+
       "additionalProperties": false
     },
     "case": {
@@ -562,6 +563,9 @@
         "offences"
       ],
       "additionalProperties": false
+    },
+    "appealsLodgedInfo": {
+        "$ref": "http://justice.gov.uk/courts/progression/query/progression.query.prosecutioncase.caag#/definitions/appealsLodgedInfo"
     }
   }
 }

@@ -676,6 +676,27 @@ protocols: [ HTTP, HTTPS ]
                     example:  !include json/progression.query.case-notes.json
                     schema:  !include json/schema/progression.query.case-notes.json
 
+/applications/{applicationId}/notes:
+  uriParameters:
+    applicationId:
+      description: ID of application notes to get
+      type: string
+  get:
+    description: |
+      Return the application notes for the application Id.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application-notes+json
+          name: progression.query.application-notes
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.application-notes+json:
+            example:  !include json/progression.query.application-notes.json
+            schema:  !include json/schema/progression.query.application-notes.json
+
 /defendants/{laaContractNumber}:
   description: get defendants matching with LAA Contract Number
   get:

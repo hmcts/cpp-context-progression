@@ -12,6 +12,7 @@ import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearin
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsResourceManagementExtension;
+import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.nio.charset.Charset;
 
@@ -23,7 +24,7 @@ import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 @ExtendWith(JmsResourceManagementExtension.class)
-public class CourtAppealApplicationIT {
+public class CourtAppealApplicationIT extends AbstractIT{
 
     @Test
     public void shouldCreateLinkedApplicationForCourtAppeal() throws Exception {

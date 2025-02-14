@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.lang.Boolean.TRUE;
+import static java.time.ZonedDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -33,6 +34,8 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.ApplicationEjected;
+import uk.gov.justice.core.courts.ApplicationNoteAdded;
+import uk.gov.justice.core.courts.ApplicationNoteEdited;
 import uk.gov.justice.core.courts.ApplicationReferredIgnored;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
@@ -663,6 +666,27 @@ public class ApplicationAggregate implements Aggregate {
                         .build()));
     }
 
+    public Stream<Object> addNote(final UUID applicationNoteId, final UUID applicationId,
+                                  final String note, final Boolean isPinned, final String firstName, final String lastName) {
+        return apply(Stream.of(ApplicationNoteAdded.applicationNoteAdded()
+                .withApplicationNoteId(applicationNoteId)
+                .withApplicationId(applicationId)
+                .withNote(note)
+                .withIsPinned(isPinned)
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withCreatedDateTime(now())
+                .build()));
+    }
+
+    public Stream<Object> editNote(final UUID applicationNoteId, final UUID applicationId,
+                                   final Boolean isPinned) {
+        return apply(Stream.of(ApplicationNoteEdited.applicationNoteEdited()
+                .withApplicationNoteId(applicationNoteId)
+                .withApplicationId(applicationId)
+                .withIsPinned(isPinned)
+                .build()));
+    }
 
     public UUID getBoxHearingId() {
         return boxHearingId;

@@ -572,6 +572,59 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             500:
                 description: Internal Server Error
 
+/applications/{applicationId}/notes:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+  post:
+    description:  |
+      Add a note to an application
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.add-application-note+json
+          name: progression.command.add-application-note
+      ...
+    body:
+      application/vnd.progression.command.add-application-note+json:
+        example:
+          !include json/progression.command.add-application-note.json
+        schema:
+          !include json/schema/progression.command.add-application-note.json
+    responses:
+      202:
+        description: OK
+      500:
+        description: Internal Server Error
+
+/applications/{applicationId}/notes/{applicationNoteId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+    applicationNoteId:
+      description: The ID of the application note
+      type: string
+  post:
+    description:  |
+      update a note to an application
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.edit-application-note+json
+          name: progression.command.edit-application-note
+      ...
+    body:
+      application/vnd.progression.command.edit-application-note+json:
+        example:
+          !include json/progression.command.edit-application-note.json
+        schema:
+          !include json/schema/progression.command.edit-application-note.json
+    responses:
+      202:
+        description: OK
+      500:
+        description: Internal Server Error
+
 /laaReference/cases/{caseId}/defendants/{defendantId}/offences/{offenceId}:
   uriParameters:
     caseId:

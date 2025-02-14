@@ -137,6 +137,12 @@ subscriptions_descriptor:
         - name: progression.event.case-note-edited-v2
           schema_uri: http://justice.gov.uk/core/courts/progression.event.case-note-edited-v2.json
 
+        - name: progression.event.application-note-added
+          schema_uri: http://justice.gov.uk/core/courts/application-note-added.json
+
+        - name: progression.event.application-note-edited
+          schema_uri: http://justice.gov.uk/core/courts/application-note-edited.json
+
         - name: progression.event.court-document-send-to-cps
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.court-document-send-to-cps.json
 

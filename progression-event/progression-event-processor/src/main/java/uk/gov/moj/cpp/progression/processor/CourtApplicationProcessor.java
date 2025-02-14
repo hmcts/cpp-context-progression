@@ -760,7 +760,6 @@ public class CourtApplicationProcessor {
     public void sendNotificationForApplication(final JsonEnvelope jsonEnvelope) {
         final SendNotificationForApplication sendNotificationForApplication = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), SendNotificationForApplication.class);
         final CourtApplication courtApplication = sendNotificationForApplication.getCourtApplication();
-
         if (sendNotificationForApplication.getIsWelshTranslationRequired()) {
             final String applicantNameFromMasterDefendant = nonNull(courtApplication.getApplicant().getMasterDefendant()) && nonNull(courtApplication.getApplicant().getMasterDefendant().getPersonDefendant()) ? courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getMasterDefendant().getPersonDefendant().getPersonDetails().getFirstName() : "";
             final String applicationName = nonNull(courtApplication.getApplicant().getPersonDetails()) ? courtApplication.getApplicant().getPersonDetails().getLastName() + " " + courtApplication.getApplicant().getPersonDetails().getFirstName() : applicantNameFromMasterDefendant;

@@ -14,6 +14,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED;
+import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED_INFO;
 
 import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
@@ -29,7 +31,9 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
+import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
 
 import java.util.HashMap;
@@ -54,6 +58,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class DocumentQueryApiTest {
     public static final String CASE_LEVEL = "case level";
     public static final String DEFENDANT_LEVEL = "defendant level";
+    public static final String SECTION = "sectionValue";
     @InjectMocks
     private final CourtDocumentQueryApi target = new CourtDocumentQueryApi();
     @Mock
@@ -62,6 +67,8 @@ public class DocumentQueryApiTest {
     Envelope<Courtdocuments> courtdocumentsEnvelope;
     @Mock
     private JsonEnvelope response;
+    @Mock
+    private JsonEnvelope caagResponse;
     @Mock
     private UserDetailsLoader userDetailsLoader;
     @Mock
@@ -76,6 +83,8 @@ public class DocumentQueryApiTest {
     private CourtDocumentQueryView courtDocumentQueryView;
     @Mock
     private SharedCourtDocumentsQueryView sharedCourtDocumentsQueryView;
+    @Mock
+    private ProsecutionCaseQuery prosecutionCaseQuery;
     @Mock
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Captor
@@ -375,6 +384,8 @@ public class DocumentQueryApiTest {
     public void shouldReturnEmptyDocumentListWhenNoAssociatedDefendantFound() {
         when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(randomUUID().toString()).build());
         when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", randomUUID().toString()).add("defendantId", randomUUID().toString()).build());
+        when(prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(any())).thenReturn(caagResponse);
+        when(caagResponse.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
 
         final JsonEnvelope jsonEnvelope = target.searchCourtDocumentsForDefence(query);
         assertThat(jsonEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(0));
@@ -422,10 +433,13 @@ public class DocumentQueryApiTest {
         final Courtdocuments courtdocuments = Courtdocuments.courtdocuments()
                 .withDocumentIndices(singletonList(CourtDocumentIndex.courtDocumentIndex()
                         .withCaseIds(singletonList(randomUUID()))
+                        .withType(SECTION)
                         .build()))
                 .build();
 
         when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
+        when(prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(any())).thenReturn(caagResponse);
+        when(caagResponse.payloadAsJsonObject()).thenReturn(createObjectBuilder().add(APPEALS_LODGED_INFO, createObjectBuilder().add(APPEALS_LODGED, false)).build());
 
         //Given
         when(defenceQueryService.getDefendantList(any(), any())).thenReturn(asList(defendantId1, defendantId2));
@@ -453,13 +467,22 @@ public class DocumentQueryApiTest {
         final Courtdocuments courtdocuments = Courtdocuments.courtdocuments()
                 .withDocumentIndices(singletonList(CourtDocumentIndex.courtDocumentIndex()
                         .withCaseIds(singletonList(randomUUID()))
+                        .withType(SECTION)
                         .build()))
                 .build();
         when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
+        when(prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(any())).thenReturn(caagResponse);
+        when(caagResponse.payloadAsJsonObject()).thenReturn(createObjectBuilder().add(APPEALS_LODGED_INFO, createObjectBuilder().add(APPEALS_LODGED, true)).build());
+        when(referenceDataService.getDocumentsTypeAccess()).thenReturn(singletonList(DocumentTypeAccessReferenceData
+                .documentTypeAccessReferenceData()
+                .withId(randomUUID())
+                .withDefenceOnly(false)
+                .withSection(SECTION)
+                .build()));
 
         //Given
         when(defenceQueryService.getDefendantList(any(), any())).thenReturn(asList(defendantId1, defendantId2));
-        when (jsonObjectToObjectConverter.convert(response.payloadAsJsonObject(), Courtdocuments.class)).thenReturn(courtdocuments);
+        when(jsonObjectToObjectConverter.convert(response.payloadAsJsonObject(), Courtdocuments.class)).thenReturn(courtdocuments);
 
         final JsonEnvelope responseEnvelope = target.searchCourtDocumentsForDefence(query);
 
@@ -468,6 +491,45 @@ public class DocumentQueryApiTest {
         assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
 
         assertThat(responseEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(2));
+    }
+
+    @Test
+    public void shouldHandleSearchCourtDocumentsQueryAndRemoveDefenceOnlyDocumentsForAppealLodged() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final String userId = randomUUID().toString();
+        when(query.metadata()).thenReturn(MetadataBuilderFactory.metadataWithDefaults().withName("progression.query.courtdocuments.for.defence").withUserId(userId).build());
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("caseId", caseId.toString()).build());
+
+        final Courtdocuments courtdocuments = Courtdocuments.courtdocuments()
+                .withDocumentIndices(singletonList(CourtDocumentIndex.courtDocumentIndex()
+                        .withCaseIds(singletonList(randomUUID()))
+                        .withType(SECTION)
+                        .build()))
+                .build();
+        when(courtDocumentQueryView.searchCourtDocuments(any())).thenReturn(response);
+        when(prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(any())).thenReturn(caagResponse);
+        when(caagResponse.payloadAsJsonObject()).thenReturn(createObjectBuilder().add(APPEALS_LODGED_INFO, createObjectBuilder().add(APPEALS_LODGED, true)).build());
+        when(referenceDataService.getDocumentsTypeAccess()).thenReturn(singletonList(DocumentTypeAccessReferenceData
+                .documentTypeAccessReferenceData()
+                .withId(randomUUID())
+                .withDefenceOnly(true)
+                .withSection(SECTION)
+                .build()));
+
+        //Given
+        when(defenceQueryService.getDefendantList(any(), any())).thenReturn(asList(defendantId1, defendantId2));
+        when(jsonObjectToObjectConverter.convert(response.payloadAsJsonObject(), Courtdocuments.class)).thenReturn(courtdocuments);
+
+        final JsonEnvelope responseEnvelope = target.searchCourtDocumentsForDefence(query);
+
+        verify(courtDocumentQueryView, times(2)).searchCourtDocuments(jsonEnvelopeArgumentCaptor.capture());
+        final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
+        assertThat(jsonEnvelope.metadata().name(), equalTo("progression.query.courtdocuments"));
+
+        assertThat(responseEnvelope.payloadAsJsonObject().getJsonArray("documentIndices").size(), is(0));
     }
 
 }

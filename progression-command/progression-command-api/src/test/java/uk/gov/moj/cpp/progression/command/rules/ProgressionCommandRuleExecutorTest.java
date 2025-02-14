@@ -116,12 +116,14 @@ public class ProgressionCommandRuleExecutorTest extends BaseDroolsAccessControlT
         InitiateCourtProceedingsForApplication("progression.initiate-court-proceedings-for-application", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate", "NCES"),
         AddDefendantsToCourtProceedings("progression.add-defendants-to-court-proceedings", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "System Users", "Probation Admin", "Court Associate"),
         AddCaseNote("progression.add-case-note", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate"),
+        AddApplicationNote("progression.command.add-application-note", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate"),
         UpdateCaseMarkersApiTest("progression.update-case-markers", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Court Associate"),
         RecordLAAReference("progression.command.record-laareference-for-offence", "System Users"),
         EjectCaseOrApplication("progression.eject-case-or-application", "Eject Case Group"),
         ReceiveRepresentationOrder("progression.command.receive-representationorder-for-defendant", "System Users"),
         UpdateDefendantListingStatus("progression.update-defendant-listing-status", "System Users"),
         EditCaseNote("progression.edit-case-note", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate"),
+        EditApplicationNote("progression.command.edit-application-note", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Judiciary", "Court Associate"),
         UpdateCpsProsecutor("progression.update-cps-prosecutor-details", "Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Court Associate"),
         PleadOnline("progression.plead-online", "Online Plea System Users");
 

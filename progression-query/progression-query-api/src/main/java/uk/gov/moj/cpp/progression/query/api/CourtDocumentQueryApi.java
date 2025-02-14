@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -8,10 +9,13 @@ import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.removeProperty;
+import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED;
+import static uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery.APPEALS_LODGED_INFO;
 
 import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
@@ -29,6 +33,7 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
@@ -163,12 +168,29 @@ public class CourtDocumentQueryApi {
                 }
             });
 
+            removeDefenceOnlyDocumentsIfAppealLodged(query, finalDocumentList);
+
             final JsonObject resultJson = objectToJsonObjectConverter.convert(Courtdocuments.courtdocuments().withDocumentIndices(finalDocumentList).build());
             return envelopeFrom(query.metadata(), resultJson);
         } else { // for applicationId
             return courtDocumentQueryView.searchCourtDocuments(envelopeFrom(metadata, query.payloadAsJsonObject()));
         }
 
+    }
+
+    private void removeDefenceOnlyDocumentsIfAppealLodged(final JsonEnvelope query, final List<CourtDocumentIndex> finalDocumentList) {
+        final JsonEnvelope caagEnvelope = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(query);
+        final JsonObject caagObject = caagEnvelope.payloadAsJsonObject();
+        if (nonNull(caagObject) && caagObject.containsKey(APPEALS_LODGED_INFO)
+                && caagObject.getJsonObject(APPEALS_LODGED_INFO).containsKey(APPEALS_LODGED)
+                && caagObject.getJsonObject(APPEALS_LODGED_INFO).getBoolean(APPEALS_LODGED)) {
+
+            final List<DocumentTypeAccessReferenceData> defenceOnlyDTA = referenceDataService.getDocumentsTypeAccess()
+                    .stream().filter(dta -> nonNull(dta.getDefenceOnly()) && TRUE.equals(dta.getDefenceOnly())).toList();
+
+            finalDocumentList.removeIf(doc -> defenceOnlyDTA.stream()
+                    .anyMatch(dta -> isNotEmpty(dta.getSection()) && isNotEmpty(doc.getType()) && dta.getSection().equals(doc.getType())));
+        }
     }
 
     public List<CourtDocumentIndex> getFilteredList(final List<CourtDocumentIndex> fetchedDocumentIndices, final List<CourtDocumentIndex> existingDocumentList) {
@@ -207,9 +229,13 @@ public class CourtDocumentQueryApi {
 
         final ProsecutionCase prosecutionCaseObj = jsonObjectToObjectConverter.convert(prosecutionCase, ProsecutionCase.class);
         final String shortName = nonNull(prosecutionCaseObj.getProsecutor()) && nonNull(prosecutionCaseObj.getProsecutor().getProsecutorCode()) ? prosecutionCaseObj.getProsecutor().getProsecutorCode() : prosecutionCaseObj.getProsecutionCaseIdentifier().getProsecutionAuthorityCode();
-        final Optional<String> orgMatch  = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, shortName);
+        final Optional<String> orgMatch = usersGroupQueryService.validateNonCPSUserOrg(query.metadata(), userId, NON_CPS_PROSECUTORS, shortName);
 
-        if(!orgMatch.isPresent()) {
+        if (orgMatch.isPresent()) {
+            if (ORGANISATION_MIS_MATCH.equals(orgMatch.get())) {
+                throw new ForbiddenRequestException("Forbidden!! Non CPS Prosecutor user cannot view court documents if it is not belongs to the same Prosecuting Authority of the user logged in");
+            }
+        } else {
             isProsecutingCase = defenceQueryService.isUserProsecutingCase(query, query.payloadAsJsonObject().getString(CASE_ID));
         }
 

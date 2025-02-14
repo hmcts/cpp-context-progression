@@ -134,14 +134,16 @@ public class ReferenceDataOffenceService {
 
         final List<JsonObject> offencesJsonObject = new ArrayList<>();
 
-        LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCodes, offences.toObfuscatedDebugString());
+        if(!offences.payloadIsNull()) {
+            LOGGER.info("cjsoffencecode {}  offence ref data payload {}", cjsOffenceCodes, offences.toObfuscatedDebugString());
 
-        offences.payloadAsJsonObject().getJsonArray(OFFENCES)
-                .forEach(offenceJsonValue -> {
-                    final JsonObject offenceJsonObject = (JsonObject) offenceJsonValue;
+            offences.payloadAsJsonObject().getJsonArray(OFFENCES)
+                    .forEach(offenceJsonValue -> {
+                        final JsonObject offenceJsonObject = (JsonObject) offenceJsonValue;
 
-                    offencesJsonObject.add(generateOffenceJsonObject(offenceJsonObject));
-                });
+                        offencesJsonObject.add(generateOffenceJsonObject(offenceJsonObject));
+                    });
+        }
 
         return Optional.of(offencesJsonObject);
     }

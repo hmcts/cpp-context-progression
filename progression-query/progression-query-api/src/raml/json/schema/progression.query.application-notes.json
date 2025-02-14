@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "applicationNotes": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            },
+            "note": {
+              "type": "string"
+            },
+            "author": {
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "firstName",
+                "lastName"
+              ]
+            },
+            "createdDateTime": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "isPinned": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "note",
+            "author",
+            "createdDateTime",
+            "isPinned"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "applicationNotes"
+  ]
+}
