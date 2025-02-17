@@ -68,6 +68,8 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
     @Test
     public void shouldRetainCurrentReportingRestrictionsAfterManuallyAddingOneWithHearing() throws Exception {
+        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
+
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
@@ -76,21 +78,10 @@ public class HearingAtAGlanceIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtaGlanceMatchersWithReportingRestrictions());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
+        pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
 
-    }
+        verifyPublicEventHearingResultedCaseUpdated();
 
-    @Test
-    public void shouldSetJudiciaryResultsAtHearingsLevelForHearingAtAGlanceV2() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
-                hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-
-        pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchers());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
     }
 
     @Test
@@ -103,30 +94,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchersForCpsOrganisation());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
-    }
-
-    @Test
-    public void shouldSetDefendantLevelJudiciaryResultsAndQueryV2() throws Exception {
-        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
-                hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-
-        pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
-    }
-
-    private Matcher[] getHearingAtAGlanceMatchers() {
-        return new Matcher[]{
-                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue())
-
-        };
+        verifyPublicEventHearingResultedCaseUpdated();
     }
 
     private Matcher[] getHearingAtaGlanceMatchersWithReportingRestrictions() {
@@ -142,7 +110,6 @@ public class HearingAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.label", equalTo("Surcharge")),
                 withJsonPath("$.prosecutionCase.cpsOrganisation", equalTo("A01")),
                 withJsonPath("$.hearingsAtAGlance.hearings[0].defendantJudicialResults[0].judicialResult.judicialResultId", notNullValue())
-
         };
     }
 
@@ -173,7 +140,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         );
     }
 
-    private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
+    private void verifyPublicEventHearingResultedCaseUpdated() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));

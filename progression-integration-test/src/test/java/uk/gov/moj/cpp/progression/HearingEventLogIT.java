@@ -58,7 +58,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.jms.JMSException;
 import javax.json.JsonObject;
 
 import io.restassured.response.Response;
@@ -71,6 +70,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HearingEventLogIT extends AbstractIT {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingEventLogIT.class);
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED = "public.hearing.resulted-case-updated";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -102,7 +102,7 @@ public class HearingEventLogIT extends AbstractIT {
     }
 
     @AfterEach
-    public void tearDown() throws JMSException {
+    public void tearDown() {
         stubQueryDocumentTypeData("/restResource/ref-data-document-type.json");
         stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
         givenCaseIsReferredToMags(null, TEMPLATE_NAME);
@@ -141,7 +141,7 @@ public class HearingEventLogIT extends AbstractIT {
         JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForCasesReferredToCourts();
+        verifyPublicEventCasesReferredToCourts();
 
         publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED, userId), getHearingJsonObject("public.hearing.resulted-with-crown-committing-court.json", caseId,
                 hearingId, defendantId, newCourtCentreId, newCourtCentreName, reportingRestrictionId));
@@ -151,7 +151,7 @@ public class HearingEventLogIT extends AbstractIT {
 
         verifyHearingEventsLogsDocumentRequested(courtDocumentId, caseId, defendantId, materialId, applicationId, "INACTIVE");
         verifyMaterialCreated();
-        verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
+        verifyPublicEventHearingEventLogsDocumentSuccess();
     }
 
     @Test
@@ -200,10 +200,10 @@ public class HearingEventLogIT extends AbstractIT {
         final String payload = pollProsecutionCasesProgressionFor(caseId, getCaseStatusMatchers(ACTIVE.getDescription(), caseId));
         final JsonObject caseObject = stringToJsonObjectConverter.convert(payload);
 
-        verifyInMessagingQueueForCasesReferredToCourts();
+        verifyPublicEventCasesReferredToCourts();
         verifyCaagHearingEventLog(caseId);
         verifyHearingEventsLogsDocumentRequested(courtDocumentId, caseId, defendantId, materialId, applicationId, caseObject.getJsonObject("prosecutionCase").getString("caseStatus"));
-        verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
+        verifyPublicEventHearingEventLogsDocumentSuccess();
     }
 
     @Test
@@ -237,7 +237,7 @@ public class HearingEventLogIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
                 withJsonPath("$.hearingsAtAGlance.hearings[0].courtCentre.id", equalTo(courtCentreId)));
         verifyCaagHearingEventLog(caseId);
-        verifyInMessagingQueueForHearingEventLogsDocumentFailed();
+        verifyPublicEventHearingEventLogsDocumentFailed();
     }
 
     @Test
@@ -282,7 +282,7 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(caseObj.getString("caseStatus"), is(notNullValue()));
 
         verifyAaagHearingEventLog(caseId, applicationId.get());
-        verifyInMessagingQueueForHearingEventLogsDocumentFailed();
+        verifyPublicEventHearingEventLogsDocumentFailed();
     }
 
     @Test
@@ -336,7 +336,7 @@ public class HearingEventLogIT extends AbstractIT {
 
         verifyAaagHearingEventLog(caseId, applicationId.get());
         verifyHearingEventsLogsDocumentRequested(courtDocumentId, caseId, defendantId, materialId, applicationId, caseObj.getString("caseStatus"));
-        verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
+        verifyPublicEventHearingEventLogsDocumentSuccess();
     }
 
 
@@ -387,7 +387,7 @@ public class HearingEventLogIT extends AbstractIT {
 
         verifyAaagHearingEventLog(caseId, applicationId.get());
         verifyHearingEventsLogsDocumentRequested(courtDocumentId, caseId, defendantId, materialId, applicationId, "INACTIVE");
-        verifyInMessagingQueueForHearingEventLogsDocumentSuccess();
+        verifyPublicEventHearingEventLogsDocumentSuccess();
     }
 
     @Test
@@ -467,7 +467,7 @@ public class HearingEventLogIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        verifyInMessagingQueueForCasesReferredToCourts();
+        verifyPublicEventCasesReferredToCourts();
         verifyCaagHearingEventLog(caseId);
     }
 
@@ -639,17 +639,17 @@ public class HearingEventLogIT extends AbstractIT {
         };
     }
 
-    private void verifyInMessagingQueueForCasesReferredToCourts() {
+    private void verifyPublicEventCasesReferredToCourts() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertThat(message.isPresent(), is(true));
     }
 
-    private void verifyInMessagingQueueForHearingEventLogsDocumentSuccess() {
+    private void verifyPublicEventHearingEventLogsDocumentSuccess() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingEventsLogsDocumentSucess);
         assertTrue(message.isPresent());
     }
 
-    private void verifyInMessagingQueueForHearingEventLogsDocumentFailed() {
+    private void verifyPublicEventHearingEventLogsDocumentFailed() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingEventsLogsDocumentFailed);
         assertTrue(message.isPresent());
     }

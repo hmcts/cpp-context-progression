@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
@@ -9,8 +8,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
@@ -35,7 +32,6 @@ import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClien
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.util.Utilities;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -93,7 +89,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
                 existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-
 
         final String unscheduledHearingId = pollCaseAndGetHearingsForDefendant(caseId, defendantId,
                 withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId=='" + defendantId + "')].hearingIds[*]", hasSize(greaterThan(1))))
@@ -185,28 +180,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         };
     }
 
-    private void doVerifyDefendantListingStatusChangedPayload(final JsonPath defendantListingStatusChangedPayload, final String expectedOffenceId) {
-        final String unscheduledHearingId = defendantListingStatusChangedPayload.getString("hearing.id");
-        assertThat(unscheduledHearingId, is(not(nullValue())));
-
-        final List<HashMap> prosecutionCases = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases");
-        assertThat(prosecutionCases.size(), is(1));
-        HashMap map = prosecutionCases.get(0);
-        assertThat(map.get("id"), is(caseId));
-
-        final List<HashMap> defendants = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases[0].defendants");
-        assertThat(defendants.size(), is(1));
-        assertThat(defendants.get(0).get("id"), is(defendantId));
-
-        final List<HashMap> offences = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases[0].defendants[0].offences");
-        assertThat(offences.size(), is(1));
-        assertThat(offences.get(0).get("id"), is(expectedOffenceId));
-
-        final List<HashMap> judicialResults = defendantListingStatusChangedPayload.getJsonObject("hearing.prosecutionCases[0].defendants[0].offences[0].judicialResults");
-        assertThat(judicialResults, is(nullValue()));
-
-    }
-
     private void doVerifyRecordedEventPayload(final JsonPath recordedEventPayload, final String existingHearingId, final String unscheduledHearingId) {
         assertThat(recordedEventPayload.getString("hearingId"), is(existingHearingId));
         List<String> unscheduledHearingIds = recordedEventPayload.getJsonObject("unscheduledHearingIds");
@@ -256,13 +229,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
     private void verifyPublicEventCasesReferredToCourts() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
         assertTrue(message.isPresent());
-    }
-
-    private Matcher[] getHearingsAtAGlanceMatchers(final String defendantId) {
-        final List<Matcher> newMatchers = newArrayList();
-        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].defendantId", is(defendantId)));
-        newMatchers.add(withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds", hasSize(greaterThan(0))));
-        return newMatchers.toArray(new Matcher[0]);
     }
 
 }

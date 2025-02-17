@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -17,12 +18,14 @@ import uk.gov.moj.cpp.progression.domain.constant.RegisterStatus;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.jayway.jsonpath.matchers.JsonPathMatchers;
+import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 
@@ -34,19 +37,22 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
 
     private final JmsMessageProducerClient publicMessageProducer = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
-    public void verifyCourtRegisterRequestsExists(final UUID courtCentreId) {
-        getCourtRegisterDocumentRequests(RegisterStatus.RECORDED.name(), allOf(
-                JsonPathMatchers.withJsonPath("$.courtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString())),
-                JsonPathMatchers.withJsonPath("$.courtRegisterDocumentRequests[*].status", hasItem(RegisterStatus.RECORDED.name()))
-        ));
+    public void verifyCourtRegisterRequestsExists(final UUID... courtCentreIds) {
+
+        final List matchers = Arrays.stream(courtCentreIds).map(cid ->
+                withJsonPath("$.courtRegisterDocumentRequests[?(@.courtCentreId == '" + cid.toString() + "')].status", hasItem(RegisterStatus.RECORDED.name()))
+        ).toList();
+
+        getCourtRegisterDocumentRequests(RegisterStatus.RECORDED.name(), allOf(matchers));
     }
 
 
-    public String verifyCourtRegisterIsGenerated(final UUID courtCentreId) {
-        return getCourtRegisterDocumentRequests(RegisterStatus.GENERATED.name(), allOf(
-                JsonPathMatchers.withJsonPath("$.courtRegisterDocumentRequests[*].status", hasItem(RegisterStatus.GENERATED.name())),
-                JsonPathMatchers.withJsonPath("$.courtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString()))
-        ));
+    public String verifyCourtRegisterIsGenerated(final UUID... courtCentreIds) {
+        final List matchers = Arrays.stream(courtCentreIds).map(cid ->
+                withJsonPath("$.courtRegisterDocumentRequests[?(@.courtCentreId == '" + cid.toString() + "')].status", hasItem(RegisterStatus.GENERATED.name()))
+        ).toList();
+
+        return getCourtRegisterDocumentRequests(RegisterStatus.GENERATED.name(), allOf(matchers));
     }
 
     public void sendSystemDocGeneratorPublicEvent(final UUID userId, final UUID courtCentreStreamId) {
@@ -89,8 +95,8 @@ public class CourtRegisterDocumentRequestHelper extends AbstractTestHelper {
 
     public void verifyCourtRegisterIsNotified(final UUID courtCentreId) {
         getCourtRegisterDocumentRequests(RegisterStatus.NOTIFIED.name(), allOf(
-                JsonPathMatchers.withJsonPath("$.courtRegisterDocumentRequests[*].status", hasItem(RegisterStatus.NOTIFIED.name())),
-                JsonPathMatchers.withJsonPath("$.courtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString()))
+                withJsonPath("$.courtRegisterDocumentRequests[*].status", hasItem(RegisterStatus.NOTIFIED.name())),
+                withJsonPath("$.courtRegisterDocumentRequests[*].courtCentreId", hasItem(courtCentreId.toString()))
         ));
     }
 }
