@@ -187,7 +187,7 @@ public class ListNewHearingIT extends AbstractIT {
         stubQueryProsecutorData(payloadAsJsonObject, fromString(prosecutionAuthorityId), randomUUID());
     }
 
-    public Response addProsecutionCaseToCrownCourt(final String caseId, final String prosecutionAuthorityId, final String caseUrn, final String defendantId) throws IOException, JSONException {
+    public Response addProsecutionCaseToCrownCourt(final String caseId, final String prosecutionAuthorityId, final String caseUrn, final String defendantId) {
 
         final String payload = getPayload("progression.command.prosecution-case-refer-to-court-random-prosecutor.json")
                 .replaceAll("RANDOM_CASE_ID", caseId)

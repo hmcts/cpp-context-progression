@@ -1,10 +1,24 @@
 package uk.gov.moj.cpp.progression;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.lang.Thread.sleep;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.hamcrest.Matcher;
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplicationWithCourtHearing;
@@ -15,27 +29,12 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyHearingIsEmpty;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingDeletedCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.io.IOException;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import org.hamcrest.Matcher;
-import org.json.JSONException;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HearingDeletedIT extends AbstractIT {
 
@@ -65,7 +64,7 @@ public class HearingDeletedIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
+        pollHearingWithStatusInitialised(hearingId);
 
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(hearingId);
 
@@ -103,7 +102,7 @@ public class HearingDeletedIT extends AbstractIT {
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
 
-        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
+        pollHearingWithStatusInitialised(hearingId);
 
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(hearingId);
 
@@ -155,7 +154,7 @@ public class HearingDeletedIT extends AbstractIT {
         return pollCaseAndGetHearingForDefendant(caseId, defendantId);
     }
 
-    private String createHearingOneGrownDefendantAndReturnHearingId(final String caseId, final String defendantId) throws IOException, JSONException {
+    private String createHearingOneGrownDefendantAndReturnHearingId(final String caseId, final String defendantId) throws JSONException {
         addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
         return pollCaseAndGetHearingForDefendant(caseId, defendantId);
     }

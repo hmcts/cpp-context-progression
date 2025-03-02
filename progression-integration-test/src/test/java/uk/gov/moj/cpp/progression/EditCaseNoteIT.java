@@ -74,7 +74,7 @@ public class EditCaseNoteIT extends AbstractIT {
     }
 
 
-    private String addCaseNotesAndVerify() throws Exception {
+    private String addCaseNotesAndVerify() {
         String body = "{\"note\": \"test note\"}";
         //When
         final Response writeResponse = postCommand(

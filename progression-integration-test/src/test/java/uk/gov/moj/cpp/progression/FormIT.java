@@ -26,7 +26,6 @@ import static uk.gov.justice.core.courts.FormType.BCM;
 import static uk.gov.justice.core.courts.FormType.PTPH;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.PetFormIT.DATA;
 import static uk.gov.moj.cpp.progression.PetFormIT.NAME;
 import static uk.gov.moj.cpp.progression.PetFormIT.UPDATED_BY;
@@ -410,7 +409,7 @@ public class FormIT extends AbstractIT {
     }
 
     @Test
-    public void shouldVerifyBCMNotificationOnUpdate() throws IOException, JSONException {
+    public void shouldVerifyBCMNotificationOnUpdate() throws JSONException {
         final UUID courtFormId = randomUUID();
         final UUID caseId = randomUUID();
         final UUID defendant1 = randomUUID();

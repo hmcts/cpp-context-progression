@@ -391,7 +391,7 @@ public class CourtDocumentQueryIT {
         );
     }
 
-    private String addCourtDocument(final String caseId, final String docId, final String defendantId, final String body) throws IOException {
+    private String addCourtDocument(final String caseId, final String docId, final String defendantId, final String body) {
 
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document+json",

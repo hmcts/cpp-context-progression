@@ -241,7 +241,7 @@ public class CustodyTimeLimitIT extends AbstractIT {
         pollForHearing(hearingId, hearingMatchers);
     }
 
-    private void addCourtDocumentAndVerify() throws IOException {
+    private void addCourtDocumentAndVerify() {
         final String body = prepareAddCourtDocumentPayload();
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document-v2+json", body);

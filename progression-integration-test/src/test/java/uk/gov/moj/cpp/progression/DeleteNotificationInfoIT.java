@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 public class DeleteNotificationInfoIT extends AbstractIT {
 
     @Test
-    public void shouldDeleteNotificationInfo() throws IOException {
+    public void shouldDeleteNotificationInfo() {
         final String commandUri = getWriteUrl("/delete-notification-info");
         final Response response = postCommand(commandUri,
                 "application/vnd.progression.delete-notification-info+json",

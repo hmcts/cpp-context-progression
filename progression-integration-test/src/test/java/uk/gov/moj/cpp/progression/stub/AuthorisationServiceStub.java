@@ -16,8 +16,6 @@ import javax.json.Json;
 public class AuthorisationServiceStub extends StubUtil {
 
     private static final String CAPABILITY_ENABLEMENT_QUERY_URL = "/authorisation-service-server/rest/capabilities/%s";
-    private static final String CAPABILITY_ENABLEMENT_QUERY_MEDIA_TYPE = "application/vnd.authorisation.capability+json";
-    public static final String AUTHORISATION_SERVICE_SERVER = "authorisation-service-server";
 
     public static void stubEnableAllCapabilities() {
         final String url = format(CAPABILITY_ENABLEMENT_QUERY_URL, ".*");

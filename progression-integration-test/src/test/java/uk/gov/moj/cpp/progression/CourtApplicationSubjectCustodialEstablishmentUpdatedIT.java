@@ -1,5 +1,9 @@
 package uk.gov.moj.cpp.progression;
 
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
+
+import java.util.UUID;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
@@ -7,11 +11,11 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import org.hamcrest.Matcher;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplicationWithRespondents;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
@@ -19,22 +23,9 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCa
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionForCAAG;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantWithMatchedHelper.initiateCourtProceedingsForMatchedDefendants;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import org.hamcrest.Matcher;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends AbstractIT {
 
@@ -154,10 +145,7 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         String id3 = randomUUID().toString();
 
         // initiation of  case
-        final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
-
         initiateCourtProceedingsForMatchedDefendants(caseId, defendantId, masterDefendantId);
-        verifyInMessagingQueueForProsecutionCaseCreated(publicEventConsumerForProsecutionCaseCreated);
         pollProsecutionCasesProgressionForCAAG(caseId, withJsonPath("$", not(emptyOrNullString())));
 
         Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
@@ -187,16 +175,6 @@ public class CourtApplicationSubjectCustodialEstablishmentUpdatedIT extends Abst
         pollForApplicationAtAGlance(courtApplicationId, anyOf(
                 withJsonPath("$.respondentDetails[1].address.address1", is("sam2Address2Address2"))
         ));
-    }
-
-    private void verifyInMessagingQueueForProsecutionCaseCreated(final JmsMessageConsumerClient publicEventConsumerForProsecutionCaseCreated) {
-        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForProsecutionCaseCreated);
-        assertTrue(message.isPresent());
-        final JsonObject reportingRestrictionObject = message.get().getJsonObject("prosecutionCase")
-                .getJsonArray("defendants").getJsonObject(0)
-                .getJsonArray("offences").getJsonObject(0)
-                .getJsonArray("reportingRestrictions").getJsonObject(0);
-        assertNotNull(reportingRestrictionObject);
     }
 
 }

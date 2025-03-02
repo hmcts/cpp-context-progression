@@ -21,9 +21,6 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAnd
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
-import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
-import uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;

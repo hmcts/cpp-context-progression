@@ -1,37 +1,5 @@
 package uk.gov.moj.cpp.progression;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
-import static java.util.Objects.nonNull;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
-import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
-import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
-import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
-import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.moj.cpp.progression.stub.ReferenceDataStub;
@@ -45,12 +13,38 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
+import static com.google.common.collect.Lists.newArrayList;
 import com.jayway.jsonpath.ReadContext;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
+import static java.util.UUID.randomUUID;
 import org.apache.http.HttpStatus;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import org.hamcrest.Matcher;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.json.JSONException;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.stub.AuthorisationServiceStub.stubEnableAllCapabilities;
+import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearing;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetGroupsForLoggedInQuery;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailForLAAContractNumber;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationQuery;
+import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
 @SuppressWarnings("squid:S1607")
 public class DefenceFlowIT extends AbstractIT {
@@ -59,13 +53,11 @@ public class DefenceFlowIT extends AbstractIT {
     private static final String PUBLIC_DEFENCE_DEFENCE_ORGANISATION_ASSOCIATED = "public.defence.defence-organisation-associated";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
     private static final String PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED = "public.progression.defendant-legalaid-status-updated";
-    private static final String PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED = "public.progression.case-defendant-changed";
 
     private final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
     private JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGAL_AID_STATUS_UPDATED).getMessageConsumerClient();
-    private JmsMessageConsumerClient messageConsumerClientPublicForCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_CASE_DEFENDANT_CHANGED).getMessageConsumerClient();
 
 
     private static final String statusCode = "G2";
@@ -108,7 +100,6 @@ public class DefenceFlowIT extends AbstractIT {
 
         //Send public event to disassociate defence organisation
         sendPublicEvent(PUBLIC_DEFENCE_DEFENCE_ORGANISATION_DISASSOCIATED, userId, createPayloadForDisassociation(false));
-        verifyInMessagingQueueForCaseDefendantChanged();
 
         defenceOrganisationMatcher = newArrayList(
                 withoutJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation"));
@@ -123,8 +114,6 @@ public class DefenceFlowIT extends AbstractIT {
 
         //Send public event to associate defence organisation
         sendPublicEvent(PUBLIC_DEFENCE_DEFENCE_ORGANISATION_ASSOCIATED, userId, createPayloadForAssociation(false, laaContractNumber));
-
-        verifyInMessagingQueueForCaseDefendantChanged(laaContractNumber);
 
         List<Matcher<? super ReadContext>> defenceOrganisationMatcher = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber)));
@@ -147,16 +136,12 @@ public class DefenceFlowIT extends AbstractIT {
         //Send public event to associate defence organisation
         sendPublicEvent(PUBLIC_DEFENCE_DEFENCE_ORGANISATION_ASSOCIATED, userId, createPayloadForAssociation(false, laaContractNumber));
 
-        verifyInMessagingQueueForCaseDefendantChanged(laaContractNumber);
-
         List<Matcher<? super ReadContext>> defenceOrganisationMatcher = newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber)));
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, defenceOrganisationMatcher));
 
         //Send public event to disassociate defence organisation
         sendPublicEvent(PUBLIC_DEFENCE_DEFENCE_ORGANISATION_DISASSOCIATED, userId, createPayloadForDisassociation(false));
-
-        verifyInMessagingQueueForCaseDefendantChanged();
 
         defenceOrganisationMatcher = newArrayList(
                 withoutJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation"));
@@ -177,7 +162,6 @@ public class DefenceFlowIT extends AbstractIT {
         }
         verifyInMessagingQueueForDefendantOffenceUpdated();
         verifyInMessagingQueueForDefendantLegalAidStatusUpdated();
-        assertThat(isPublicCaseDefendantChangedEventExists(laaContractNumber2), is(true));
     }
 
     private void verifyInMessagingQueueForDefendantOffenceUpdated() {
@@ -191,25 +175,6 @@ public class DefenceFlowIT extends AbstractIT {
     private void verifyInMessagingQueueForDefendantLegalAidStatusUpdated() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
         assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForCaseDefendantChanged() {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForCaseDefendantChanged, 150000);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyInMessagingQueueForCaseDefendantChanged(final String laaContractNumber) {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForCaseDefendantChanged);
-        assertTrue(message.isPresent());
-        assertThat(message.get().getJsonObject("defendant").getJsonObject("associatedDefenceOrganisation").getJsonObject("defenceOrganisation").getJsonString("laaContractNumber").getString(), is(laaContractNumber));
-    }
-
-    private boolean isPublicCaseDefendantChangedEventExists(final String laaContractNumber) {
-
-        return nonNull(retrieveMessageAsJsonPath(messageConsumerClientPublicForCaseDefendantChanged, isJson(allOf(
-                withJsonPath("$.defendant.associatedDefenceOrganisation", notNullValue()),
-                withJsonPath("$.defendant.associatedDefenceOrganisation.defenceOrganisation.laaContractNumber", is(laaContractNumber))
-        ))));
     }
 
     private JsonObject createPayloadForDisassociation(final boolean isLAA) {

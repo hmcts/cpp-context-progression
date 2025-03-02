@@ -16,8 +16,6 @@ import java.nio.charset.Charset;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class ConvictionDateHelper extends AbstractTestHelper {

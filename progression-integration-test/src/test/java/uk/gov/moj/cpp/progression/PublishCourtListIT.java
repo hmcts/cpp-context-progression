@@ -174,7 +174,7 @@ public class PublishCourtListIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    public Response addProsecutionCaseToCrownCourt() throws IOException, JSONException {
+    public Response addProsecutionCaseToCrownCourt() {
 
         final String payload = getPayload("progression.command.prosecution-case-refer-to-court-random-prosecutor.json")
                 .replaceAll("RANDOM_CASE_ID", caseId)

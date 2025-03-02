@@ -96,7 +96,7 @@ public class ApplicationNoteIT extends AbstractIT {
     }
 
 
-    private String addApplicationNotesAndVerify() throws Exception {
+    private String addApplicationNotesAndVerify() {
         String body = "{\"note\": \"test note\"}";
         //When
         final Response writeResponse = postCommand(

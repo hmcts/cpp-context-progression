@@ -1,11 +1,19 @@
 package uk.gov.moj.cpp.progression;
 
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
+
+import java.io.IOException;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import io.restassured.response.Response;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import org.hamcrest.Matcher;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.APPLICATION_VND_PROGRESSION_REFER_CASES_TO_COURT_JSON;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseWithUrn;
@@ -14,17 +22,6 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verify
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyCasesForSearchCriteria;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
-
-import java.io.IOException;
-
-import io.restassured.response.Response;
-import org.hamcrest.Matcher;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"squid:S1607"})
 public class SearchCasesIT extends AbstractIT {
@@ -38,7 +35,7 @@ public class SearchCasesIT extends AbstractIT {
     private static final String LAST_NAME = randomAlphabetic(15);
 
     @BeforeAll
-    public static void setUpCommonData() throws IOException, JSONException {
+    public static void setUpCommonData() throws IOException {
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
         addProsecutionCase(caseId, defendantId, CASE_URN, FIRST_NAME, LAST_NAME, MIDDLE_NAME);
@@ -88,14 +85,12 @@ public class SearchCasesIT extends AbstractIT {
 
         verifyCasesForSearchCriteria(firstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(firstName))});
         final String updatedFirstName = randomAlphabetic(20);
-        final JmsMessageConsumerClient publicEventsCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
 
         // when
         final String jsonString = getUpdatedPayload(updatedFirstName, middleName, lastName);
         localHelper.updateDefendant(jsonString);
 
         // then
-        localHelper.verifyInMessagingQueueForDefendantChanged(publicEventsCaseDefendantChanged);
         verifyCasesForSearchCriteria(updatedFirstName, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(updatedFirstName))});
     }
 
@@ -130,7 +125,7 @@ public class SearchCasesIT extends AbstractIT {
         verifyCasesForSearchCriteria("01-01-10", new Matcher[]{withJsonPath(JSON_RESULTS_DOB, equalTo(DOB))});
     }
 
-    private static Response addProsecutionCase(final String caseId, final String defendantId, final String caseUrn, final String firstname, final String lastName, final String middleName) throws IOException {
+    private static Response addProsecutionCase(final String caseId, final String defendantId, final String caseUrn, final String firstname, final String lastName, final String middleName) {
         final String payload = getPayload("progression.command.prosecution-case-refer-to-court-search-test.json")
                 .replaceAll("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)

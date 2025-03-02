@@ -17,7 +17,6 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
 
 import java.time.Duration;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;

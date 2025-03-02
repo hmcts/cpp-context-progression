@@ -1,18 +1,5 @@
 package uk.gov.moj.cpp.progression.cotr.cotrHelper;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
-
 import uk.gov.justice.core.courts.CreateCotr;
 import uk.gov.justice.core.courts.ServeDefendantCotr;
 import uk.gov.justice.progression.courts.AddFurtherInfoDefenceCotrCommand;
@@ -30,9 +17,21 @@ import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import io.restassured.response.Response;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import org.hamcrest.Matcher;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.hamcrest.Matchers;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommandWithUserId;
 
 public class CotrHelper {
     public static Response createCotr(final CreateCotr createCotr, final String userId) throws IOException {
@@ -88,22 +87,6 @@ public class CotrHelper {
         final JsonObject eventPayload = message.get();
         assertThat(eventPayload.getString("cotrId"), is(cotrId));
         assertThat(eventPayload.getString("defendantId"), is(defendantId));
-    }
-
-    public static void verifyCaseId(final JsonObject message, final String inCaseId) {
-        final String caseId = message.getString("caseId");
-        assertThat(caseId, notNullValue());
-        assertThat(caseId, is(inCaseId));
-    }
-
-    public static void verifyServeProsecution(final JsonObject event, final ServeProsecutionCotr serveProsecutionCotr) {
-        assertThat(event.getString("hearingId"), is(serveProsecutionCotr.getHearingId().toString()));
-
-    }
-
-    public static void verifyServeDefendant(final JsonObject event, final ServeDefendantCotr serveDefendantCotr) {
-        assertThat(event.getString("defendantId"), is(serveDefendantCotr.getDefendantId().toString()));
-        assertThat(event.getString("defendantFormData"), is(serveDefendantCotr.getDefendantFormData()));
     }
 
     public static void verifyInMessagingQueue(JmsMessageConsumerClient messageConsumer) {

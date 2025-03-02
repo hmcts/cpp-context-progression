@@ -11,7 +11,7 @@ import io.restassured.response.Response;
 
 public class PleadOnlineHelper extends AbstractTestHelper {
 
-    public Response submitOnlinePlea(final String caseId, final String defendantId, final String resource) throws IOException {
+    public Response submitOnlinePlea(final String caseId, final String defendantId, final String resource) {
 
         final String commandUri = getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId + "/plead-online");
         return postCommand(commandUri,
@@ -19,7 +19,7 @@ public class PleadOnlineHelper extends AbstractTestHelper {
                 getPayload(resource));
     }
 
-    public Response submitOnlinePleaPcqVisited(final String caseId, final String defendantId, final String resource) throws IOException {
+    public Response submitOnlinePleaPcqVisited(final String caseId, final String defendantId, final String resource) {
 
         final String commandUri = getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId + "/plead-online-pcq-visited");
         return postCommand(commandUri,

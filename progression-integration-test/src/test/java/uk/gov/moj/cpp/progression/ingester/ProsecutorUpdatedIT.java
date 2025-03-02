@@ -67,7 +67,7 @@ public class ProsecutorUpdatedIT extends AbstractIT {
                 .assertThat("$._case_type", equalTo("PROSECUTION"));
     }
 
-    private void addCourtDocumentAndVerify(final String documentTypeId) throws IOException, JSONException {
+    private void addCourtDocumentAndVerify(final String documentTypeId) throws JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When

@@ -18,7 +18,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addRemoveCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCase;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
@@ -105,7 +105,7 @@ public class ReferProsecutionCaseToCrownCourtIT extends AbstractIT {
         final Matcher<? super ReadContext>[] caseMatchers = getProsecutionCaseMatchers(caseId, defendantId,
                 singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is("0a5372c5-b60f-4d95-8390-8c6462e2d7af"))));
 
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId, caseMatchers);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId, caseMatchers);
 
         List<Matcher> hearingMatchers = newArrayList(
                 withJsonPath("$.hearingListingStatus", is(SENT_FOR_LISTING_STATUS)));

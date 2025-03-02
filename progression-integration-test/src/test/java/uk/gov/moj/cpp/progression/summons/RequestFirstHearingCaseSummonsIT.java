@@ -37,7 +37,7 @@ import static uk.gov.moj.cpp.progression.helper.MaterialHelper.sendEventToConfir
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocumentsByCaseWithMatchers;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionAndReturnHearingId;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
@@ -206,7 +206,7 @@ public class RequestFirstHearingCaseSummonsIT extends AbstractIT {
     }
 
     private void verifySummonsGeneratedOnHearingConfirmed(final String defendantId, final String offenceId, final boolean isWelsh, final String summonsType, final String templateName, final int numberOfDocuments, final boolean existingHearingMatchedForDefendant, final boolean isYouth) {
-        final String hearingId = pollProsecutionCasesProgressionAndReturnHearingId(caseId, defendantId,
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId,
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.prosecutionCase.defendants[?(@.id == '" + defendantId + "')].offences[0]", hasSize(greaterThanOrEqualTo(1))),
                 withJsonPath("$.hearingsAtAGlance.defendantHearings[?(@.defendantId == '" + defendantId + "')].hearingIds[0]", hasSize(greaterThanOrEqualTo(1))));

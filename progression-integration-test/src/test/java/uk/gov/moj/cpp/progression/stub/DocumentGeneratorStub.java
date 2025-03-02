@@ -131,7 +131,7 @@ public class DocumentGeneratorStub {
     }
 
 
-    public static Optional<JSONObject> pollDocumentGenerationRequest(final String templateName) throws JSONException {
+    public static Optional<JSONObject> pollDocumentGenerationRequest(final String templateName) {
         return pollDocumentGenerationRequest(request -> {
             try {
                 return request.getString("templateName").equals(templateName);

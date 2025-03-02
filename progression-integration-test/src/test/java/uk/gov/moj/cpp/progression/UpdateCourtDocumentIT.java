@@ -95,7 +95,7 @@ public class UpdateCourtDocumentIT extends AbstractIT {
         ));
     }
 
-    private void addCourtDocumentWithPrintedDate(final ZonedDateTime completedAt) throws IOException {
+    private void addCourtDocumentWithPrintedDate(final ZonedDateTime completedAt) {
         final String body = getPayload("progression.court-document-to-be-printed-with-printed-date.json").replaceAll("%DOCUMENT_ID%", documentId.toString())
                 .replaceAll("%CASE_ID%", caseId)
                 .replaceAll("%MATERIAL_ID%", materialId.toString())

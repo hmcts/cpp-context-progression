@@ -19,7 +19,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequests;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.CourtRegisterDocumentRequestHelper;
 
@@ -33,7 +32,6 @@ import javax.json.JsonObject;
 
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class CourtRegisterDocumentRequestIT extends AbstractIT {
@@ -206,7 +204,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
     }
 
     private Response recordCourtRegister(final UUID courtCentreId, final String courtHouse, final ZonedDateTime registerDate, final UUID hearingId, final ZonedDateTime hearingDate,
-                                         final UUID courtApplicationId) throws IOException {
+                                         final UUID courtApplicationId) {
         final String body = getAggregateCourtRegisterDocumentRequestPayload(courtCentreId, courtHouse, registerDate, hearingId, hearingDate, courtApplicationId);
 
         return postCommand(
@@ -215,7 +213,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
                 body);
     }
 
-    private void generateCourtRegister() throws IOException {
+    private void generateCourtRegister() {
         final Response generateRegisterResponse = postCommand(
                 getWriteUrl("/court-register/generate"),
                 "application/vnd.progression.generate-court-register+json",

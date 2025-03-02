@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression.stub;
 
 
+import java.time.Duration;
+import java.util.stream.Stream;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
@@ -11,6 +14,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.jayway.jsonpath.matchers.JsonPathMatchers;
 import static java.text.MessageFormat.format;
 import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
@@ -18,22 +23,15 @@ import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.OK;
+import org.apache.http.HttpHeaders;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.waitAtMost;
-import static uk.gov.justice.services.common.http.HeaderConstants.ID;
-import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-
-import java.time.Duration;
-import java.util.stream.Stream;
-
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.jsonpath.matchers.JsonPathMatchers;
-import org.apache.http.HttpHeaders;
 import org.json.JSONException;
 import org.json.JSONObject;
+import static uk.gov.justice.services.common.http.HeaderConstants.ID;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 public class ListingStub {
 
@@ -47,7 +45,6 @@ public class ListingStub {
     private static final String LISTING_UNSCHEDULED_HEARING_COMMAND_TYPE_V2 = "application/vnd.listing.list-unscheduled-next-hearings+json";
 
     private static final String LISTING_NEXT_HEARING_V2_TYPE = "application/vnd.listing.next-hearings-v2+json";
-    public static final String LISTING_DELETE_NEXT_HEARINGS = "listing.delete-next-hearings";
     private static final String LISTING_DELETE_HEARING_TYPE = "application/vnd.listing.delete-hearing+json";
     private static final String LISTING_DELETE_NEXT_HEARINGS_TYPE = "application/vnd.listing.delete-next-hearings+json";
     public static final String LISTING_RELATED_HEARING_JSON = "application/vnd.listing.related-hearing+json";
@@ -76,7 +73,7 @@ public class ListingStub {
                         .withHeader(ID, randomUUID().toString())));
 
         stubFor(post(urlPathMatching(LISTING_HEARING_COMMAND_V2))
-                .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_NEXT_HEARINGS))
+                .withHeader(CONTENT_TYPE, equalTo(LISTING_DELETE_NEXT_HEARINGS_TYPE))
                 .willReturn(aResponse()
                         .withStatus(SC_ACCEPTED)
                         .withHeader(ID, randomUUID().toString())));
@@ -382,6 +379,22 @@ public class ListingStub {
                 });
     }
 
+    private static Stream<JSONObject> getDeleteNextHearingRequestsAsStream() {
+        final Stream<JSONObject> jsonObjectStream = findAll(postRequestedFor(urlPathMatching(LISTING_HEARING_COMMAND_V2))
+                .withHeader("Content-Type", equalTo(LISTING_DELETE_NEXT_HEARINGS_TYPE))
+        )
+                .stream()
+                .map(LoggedRequest::getBodyAsString)
+                .map(t -> {
+                    try {
+                        return new JSONObject(t);
+                    } catch (JSONException e) {
+                        return null;
+                    }
+                });
+        return jsonObjectStream;
+    }
+
     private static Stream<JSONObject> getListCourtHearingRequestsAsStreamV2() {
         return findAll(postRequestedFor(urlMatching(LISTING_HEARING_COMMAND_V2))
                 .withHeader(CONTENT_TYPE, equalTo(LISTING_NEXT_HEARING_V2_TYPE)))
@@ -437,7 +450,7 @@ public class ListingStub {
 
     public static void verifyPostListCourtHearingWithProsecutorInfo(final String caseId, final String defendantId, final String courtScheduleId) {
         try {
-            waitAtMost(Duration.ofMinutes(2)).pollInterval(500, MILLISECONDS).until(() -> getListCourtHearingRequestsAsStream()
+            waitAtMost(ofSeconds(30)).pollInterval(500, MILLISECONDS).until(() -> getListCourtHearingRequestsAsStream()
                     .anyMatch(
                             payload -> {
                                 try {
@@ -469,6 +482,32 @@ public class ListingStub {
 
         } catch (Exception e) {
             throw new AssertionError("ListingStub.verifyPostListCourtHearingWithProsecutorInfo failed with: " + e);
+        }
+    }
+
+    public static void verifyDeleteNexHearingCommandToListing(final String hearingId) {
+        try {
+            waitAtMost(ofSeconds(30)).until(() ->
+                    getDeleteNextHearingRequestsAsStream()
+                            .anyMatch(
+                                    payload -> {
+                                        try {
+                                            System.out.println(payload);
+                                            if (payload.has("seedingHearing") && payload.getJSONObject("seedingHearing").getString("seedingHearingId").equals(hearingId)) {
+                                                return true;
+                                            } else {
+                                                return false;
+                                            }
+                                        } catch (JSONException e) {
+                                            return false;
+                                        }
+                                    }
+                            )
+
+            );
+
+        } catch (Exception e) {
+            throw new AssertionError("ListingStub.verifyDeleteNexHearingCommandToListing failed with: " + e);
         }
     }
 }

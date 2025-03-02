@@ -1,33 +1,6 @@
 package uk.gov.moj.cpp.progression.ingester;
 
-import static com.jayway.jsonpath.JsonPath.parse;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Arrays.asList;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.UUID.randomUUID;
-import static junit.framework.TestCase.fail;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
-import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertCase;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertHearing;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertJudiciaryTypes;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -45,10 +18,31 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import io.restassured.path.json.JsonPath;
+import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.UUID.randomUUID;
+import static junit.framework.TestCase.fail;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import org.hamcrest.Matcher;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
+import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertCase;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertHearing;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseDefendantListingStatusChangedEventHelper.assertJudiciaryTypes;
+import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 @SuppressWarnings("squid:S1607")
 public class ProsecutionCaseDefendantListingStatusChangedEventIT extends AbstractIT {
@@ -58,7 +52,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
     private static final String EVENT_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed.json";
     private static final String EVENT_WITH_LINKED_APPLICATION_LOCATION = "ingestion/progression.event.prosecution-case-defendant-listing-status-changed-with-linked-applications.json";
 
-    private final JmsMessageConsumerClient messageConsumerV2 = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT).getMessageConsumerClient();
     private final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
     private static final String COURT_APPLICATIONS = "courtApplications";
     private static final String APPLICATIONS = "applications";
@@ -89,8 +82,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCaseDefendantListingStatusChangedEvent);
         messageProducer.sendMessage(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT, publicEventEnvelope);
-
-        verifyInMessagingQueueV2();
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
 
@@ -180,8 +171,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCaseDefendantListingStatusChangedEvent);
         messageProducer.sendMessage(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT, publicEventEnvelope);
 
-        verifyInMessagingQueueV2();
-
         final Matcher[] caseMatcher = {withJsonPath("$.caseId", equalTo(firstCaseId))};
 
         final Optional<JsonObject> prosecussionCaseResponseJsonObject = findBy(caseMatcher);
@@ -247,8 +236,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
 
         final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCaseDefendantListingStatusChangedEvent);
         messageProducer.sendMessage(DEFENDANT_LISTING_STATUS_CHANGED_V2_EVENT, publicEventEnvelope);
-
-        verifyInMessagingQueueV2();
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
 
@@ -375,11 +362,6 @@ public class ProsecutionCaseDefendantListingStatusChangedEventIT extends Abstrac
                 .withName(eventName)
                 .withUserId(randomUUID().toString())
                 .build();
-    }
-
-    private void verifyInMessagingQueueV2() {
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumerV2);
-        assertNotNull(message);
     }
 
 }

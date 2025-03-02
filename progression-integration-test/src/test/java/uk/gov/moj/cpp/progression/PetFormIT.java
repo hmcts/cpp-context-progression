@@ -302,7 +302,7 @@ public class PetFormIT extends AbstractIT {
     }
 
     @Test
-    public void shouldUpdatePetDetailsWithIsYouthFlagFlagFalse() throws IOException, JSONException {
+    public void shouldUpdatePetDetailsWithIsYouthFlagFlagFalse() throws JSONException {
 
         final boolean isYouthFlagWhenCreated = true;
         final UUID caseId = randomUUID();
@@ -435,7 +435,7 @@ public class PetFormIT extends AbstractIT {
     }
 
     @Test
-    public void shouldReleasePetForm() throws IOException, JSONException {
+    public void shouldReleasePetForm() throws JSONException {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID formId = randomUUID();

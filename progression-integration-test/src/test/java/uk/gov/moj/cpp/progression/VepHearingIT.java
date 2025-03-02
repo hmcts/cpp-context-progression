@@ -1,17 +1,32 @@
 package uk.gov.moj.cpp.progression;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.removeStub;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import io.restassured.response.Response;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
@@ -23,22 +38,6 @@ import static uk.gov.moj.cpp.progression.stub.VejHearingStub.stubVejHearingDelet
 import static uk.gov.moj.cpp.progression.stub.VejHearingStub.verifyHearingCommandInvoked;
 import static uk.gov.moj.cpp.progression.stub.VejHearingStub.verifyHearingDeletedCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import io.restassured.response.Response;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class VepHearingIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -75,24 +74,7 @@ public class VepHearingIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRaiseHearingPopulatedToProbationCaseWorkerWhenPublicListingHearingConfirmed() throws Exception {
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
-
-        addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.police.hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
-
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
-        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
-
-        verifyHearingCommandInvoked(asList(caseId, hearingId));
-
-    }
-
-    @Test
-    public void shouldRaiseHearingDeletedToProbationCaseWorkerWhenPublicListingHearingDeleted() throws Exception {
+    public void shouldRaiseVejCommandWhenCNotificationFromListingIndicatesHearingConfirmedOrDeleted() throws Exception {
         stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
 
         addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId);
@@ -102,12 +84,9 @@ public class VepHearingIT extends AbstractIT {
 
         JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+        pollHearingWithStatusInitialised(hearingId);
 
-        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
-
-        publicEventEnvelope = envelopeFrom(buildMetadata("public.events.hearing.hearing-resulted", userId), getHearingWithSingleCaseJsonObject("public.hearing.resulted-case-updated2.json", caseId,
-                hearingId, defendantId, courtCentreId, "C", "Remedy", "2593cf09-ace0-4b7d-a746-0703a29f33b5"));
-        messageProducerClientPublic.sendMessage("public.events.hearing.hearing-resulted", publicEventEnvelope);
+        verifyHearingCommandInvoked(asList(caseId, hearingId));
 
         final JsonObject hearingDeletedJson = getHearingMarkedAsDeletedObject(hearingId);
         final JsonEnvelope publicEventDeletedEnvelope = envelopeFrom(buildMetadata(PUBLIC_EVENTS_LISTING_HEARING_DELETED, userId), hearingDeletedJson);
@@ -116,9 +95,9 @@ public class VepHearingIT extends AbstractIT {
         verifyHearingDeletedCommandInvoked(asList(caseId, hearingId));
     }
 
-    public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
-                                                                        final String materialIdTwo, final String courtDocumentId, final String referralId,
-                                                                        final String caseUrn, final String prosecutionAuthorityId, final String ouCode, final String filePath) {
+    private String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
+                                                                  final String materialIdTwo, final String courtDocumentId, final String referralId,
+                                                                  final String caseUrn, final String prosecutionAuthorityId, final String ouCode, final String filePath) {
         return getPayload(filePath)
                 .replaceAll("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_REFERENCE", caseUrn)
@@ -151,7 +130,7 @@ public class VepHearingIT extends AbstractIT {
         );
     }
 
-    public void addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(final String caseId, final String defendantId) throws IOException, JSONException {
+    public void addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(final String caseId, final String defendantId) throws JSONException {
         final JSONObject jsonPayload = new JSONObject(createReferProsecutionCaseToCrownCourtJsonBody(caseId, defendantId, randomUUID().toString(),
                 randomUUID().toString(), randomUUID().toString(), randomUUID().toString(), generateUrn(), prosecutionAuthorityId, ouCode, "progression.command.police.prosecution-case-refer-to-court-one-grown-defendant-two-offences.json"));
         jsonPayload.getJSONObject("courtReferral").remove("courtDocuments");
@@ -160,22 +139,6 @@ public class VepHearingIT extends AbstractIT {
                 "application/vnd.progression.refer-cases-to-court+json",
                 caseCreationPayload);
         assertThatRequestIsAccepted(response);
-    }
-
-    private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
-                                                          final String defendantId, final String courtCentreId, final String bailStatusCode,
-                                                          final String bailStatusDescription, final String bailStatusId) {
-        return stringToJsonObjectConverter.convert(
-                getPayload(path)
-                        .replaceAll("CASE_ID", caseId)
-                        .replaceAll("HEARING_ID", hearingId)
-                        .replaceAll("DEFENDANT_ID", defendantId)
-                        .replaceAll("COURT_CENTRE_ID", courtCentreId)
-                        .replaceAll("BAIL_STATUS_ID", bailStatusId)
-                        .replaceAll("BAIL_STATUS_CODE", bailStatusCode)
-                        .replaceAll("BAIL_STATUS_DESCRIPTION", bailStatusDescription)
-                        .replaceAll("APPLICATION_ID", randomUUID().toString())
-        );
     }
 
 }

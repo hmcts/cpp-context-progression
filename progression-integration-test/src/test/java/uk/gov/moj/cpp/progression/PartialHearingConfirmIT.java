@@ -16,7 +16,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.stub.ListingStub;
 
 import java.io.IOException;
 
@@ -35,7 +34,7 @@ public class PartialHearingConfirmIT extends AbstractIT {
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Test
-    public void shouldPartialHearingConfirm() throws IOException, JSONException {
+    public void shouldPartialHearingConfirm() throws JSONException {
         final String caseId1 = randomUUID().toString();
         final String defendantId1 = randomUUID().toString();
         final String defendantId2 = randomUUID().toString();

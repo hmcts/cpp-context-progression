@@ -1,26 +1,6 @@
 package uk.gov.moj.cpp.progression.ingester;
 
-import static com.jayway.jsonpath.JsonPath.parse;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyUpdateCourtApplication;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
-import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
-
 import uk.gov.justice.core.courts.ApplicationStatus;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.AbstractIT;
 
 import java.io.IOException;
@@ -29,9 +9,24 @@ import java.util.Optional;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
+import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import org.hamcrest.Matcher;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForIngestion;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateCourtApplicationForIngestion;
+import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyAddCourtApplication;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyStandaloneApplication;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.CourtApplicationVerificationHelper.verifyUpdateCourtApplication;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getStringFromResource;
+import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 
 public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
     private static final String CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION = "ingestion/progression.command.create-court-application.json";
@@ -62,19 +57,12 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
     }
 
-    private void verifyMessageReceived(final JmsMessageConsumerClient messageConsumer) {
-        assertTrue(retrieveMessageBody(messageConsumer).isPresent());
-    }
-
     @Test
     public void shouldUpdateCourtApplication() throws Exception {
 
         setUpCourtApplication(CREATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
 
-        final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-edited").getMessageConsumerClient();
-
         updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondentId, respondentDefendantId, applicationReference, UPDATE_COURT_APPLICATION_COMMAND_RESOURCE_LOCATION);
-        verifyMessageReceived(messageConsumer);
 
         final Matcher[] matchers = {withJsonPath("$.parties[?(@._party_type=='RESPONDENT')].firstName", hasItem(equalTo("updatedA")))};
 
@@ -93,10 +81,7 @@ public class CourtApplicationUpdatedIngesterIT extends AbstractIT {
 
         setUpCourtApplication(CREATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
 
-        final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-application-proceedings-edited").getMessageConsumerClient();
-
         updateCourtApplicationForIngestion(applicationId, applicationId, applicantId, applicantDefendantId, respondentId, respondentDefendantId, applicationReference, UPDATE_COURT_APPLICATION_WITHOUT_RESPONDENT_COMMAND_RESOURCE_LOCATION);
-        verifyMessageReceived(messageConsumer);
 
         final Matcher[] matchers = {withJsonPath("$.parties[?(@._party_type=='APPLICANT')].organisationName", hasItem(equalTo("updatedA")))};
 

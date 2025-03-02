@@ -13,8 +13,4 @@ public class ViewStoreCleaner {
         databaseCleaner.cleanViewStoreTables(CONTEXT_NAME, tablesNames);
     }
 
-    public static void cleanEventStoreTables() {
-        final DatabaseCleaner databaseCleaner = new DatabaseCleaner();
-        databaseCleaner.cleanEventStoreTables(CONTEXT_NAME);
-    }
 }

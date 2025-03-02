@@ -136,7 +136,7 @@ public class UploadCourtDocumentIT extends AbstractIT {
         verifyInMessagingQueueForPublicCourtDocumentAdded();
     }
 
-    private void verifyAddCourtDocumentForCase() throws IOException {
+    private void verifyAddCourtDocumentForCase() {
         final String body = prepareAddCourtDocumentPayload();
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
                 "application/vnd.progression.add-court-document-v2+json", body);

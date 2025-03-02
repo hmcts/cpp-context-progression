@@ -54,7 +54,7 @@ public class DeleteFinancialMeansIT extends AbstractIT {
         assertCourtDocumentRemoved();
     }
 
-    private void deleteFinancialMeansData() throws IOException {
+    private void deleteFinancialMeansData() {
         final String commandUri = getWriteUrl("/cases/" + caseId + "/defendants/" + defendantId + "/financial-means");
         final Response response = postCommand(commandUri,
                 "application/vnd.progression.delete-financial-means+json",
@@ -80,7 +80,7 @@ public class DeleteFinancialMeansIT extends AbstractIT {
 
     }
 
-    private void addCourtDocumentToProsecutionCase() throws IOException {
+    private void addCourtDocumentToProsecutionCase() {
         String body = getPayload("progression.add-court-document.json");
         body = body.replaceAll("%RANDOM_DOCUMENT_ID%", docId)
                 .replaceAll("%RANDOM_CASE_ID%", caseId)

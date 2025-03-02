@@ -134,7 +134,7 @@ public class ReferDisqualificationWarningIT extends AbstractIT {
         return hasPostcode ? hasWelshPostcode ? "CF10 1BY" : "W1T 1JY" : null;
     }
 
-    private void verifyAddCourtDocument(final String documentTypeId, final String courtDocumentId) throws IOException, JSONException {
+    private void verifyAddCourtDocument(final String documentTypeId, final String courtDocumentId) throws JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
 

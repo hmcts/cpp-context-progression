@@ -1,20 +1,60 @@
 package uk.gov.moj.cpp.progression.cotr;
 
+import uk.gov.justice.core.courts.CotrPdfContent;
+import uk.gov.justice.core.courts.CreateCotr;
+import uk.gov.justice.core.courts.Defence;
+import uk.gov.justice.core.courts.Fields;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.ServeDefendantCotr;
+import uk.gov.justice.core.courts.Summary;
+import uk.gov.justice.progression.courts.AddFurtherInfoDefenceCotrCommand;
+import uk.gov.justice.progression.courts.AddFurtherInfoProsecutionCotr;
+import uk.gov.justice.progression.courts.ChangeDefendantsCotr;
+import uk.gov.justice.progression.courts.CotrNotes;
+import uk.gov.justice.progression.courts.ReviewNoteType;
+import uk.gov.justice.progression.courts.ReviewNotes;
+import uk.gov.justice.progression.courts.UpdateReviewNotes;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.ZonedDateTimes;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.AbstractIT;
+import uk.gov.moj.cpp.progression.PolarQuestion;
+import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import io.restassured.response.Response;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import org.hamcrest.Matcher;
 import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.Matchers;
+import org.json.JSONException;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static uk.gov.justice.progression.courts.ChangeDefendantsCotr.changeDefendantsCotr;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -49,7 +89,6 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupMaterialStructuredPetQueryForCotr;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedCaseDefendantsOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedDefendantsForDefenceOrganisation;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForDefendantIdpcMetadata;
@@ -62,48 +101,6 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCotrDetailsMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCotrTrialHearingsMatchers;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
-
-import uk.gov.justice.core.courts.CotrPdfContent;
-import uk.gov.justice.core.courts.CreateCotr;
-import uk.gov.justice.core.courts.Defence;
-import uk.gov.justice.core.courts.Fields;
-import uk.gov.justice.core.courts.JurisdictionType;
-import uk.gov.justice.core.courts.ServeDefendantCotr;
-import uk.gov.justice.core.courts.Summary;
-import uk.gov.justice.progression.courts.AddFurtherInfoDefenceCotrCommand;
-import uk.gov.justice.progression.courts.AddFurtherInfoProsecutionCotr;
-import uk.gov.justice.progression.courts.ChangeDefendantsCotr;
-import uk.gov.justice.progression.courts.CotrNotes;
-import uk.gov.justice.progression.courts.ReviewNoteType;
-import uk.gov.justice.progression.courts.ReviewNotes;
-import uk.gov.justice.progression.courts.UpdateReviewNotes;
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.ZonedDateTimes;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.AbstractIT;
-import uk.gov.moj.cpp.progression.PolarQuestion;
-import uk.gov.moj.cpp.progression.command.ServeProsecutionCotr;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import io.restassured.response.Response;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class CotrIT extends AbstractIT {
 
@@ -135,7 +132,6 @@ public class CotrIT extends AbstractIT {
     private final JmsMessageConsumerClient consumerForPublicEventDefendantsChangedIdCotr = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_DEFENDANTS_CHANGED_IN_COTR).getMessageConsumerClient();
     private final JmsMessageConsumerClient consumerForPublicServeDefendantCotr = newPublicJmsMessageConsumerClientProvider().withEventNames(PROGRESSION_PUBLIC_EVENT_SERVE_DEFENDANT_COTR).getMessageConsumerClient();
     private final JmsMessageConsumerClient consumerForPublicCourtDocumentAdded = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-document-added").getMessageConsumerClient();
-    private final JmsMessageConsumerClient consumerForCourDocumentNotified = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.court-document-send-to-cps").getMessageConsumerClient();
 
     private String caseId;
     private String materialIdActive;
@@ -242,7 +238,6 @@ public class CotrIT extends AbstractIT {
         serveDefendantCotr(serveDefendantCotr, COURTS_USER_ID);
         verifyCotrAndGetCotr(consumerForPublicServeDefendantCotr, cotrIdString);
         verifyInMessagingQueue(consumerForPublicCourtDocumentAdded);
-        verifyInMessagingQueue(consumerForCourDocumentNotified);
         // verifyCotrFormServedNotifyCms(); failing on jenkins, need investigation
         final AddFurtherInfoDefenceCotrCommand addFurtherInfoDefenceCotr = AddFurtherInfoDefenceCotrCommand.addFurtherInfoDefenceCotrCommand()
                 .withDefendantId(defendantId1)
@@ -374,7 +369,7 @@ public class CotrIT extends AbstractIT {
     }
 
     @Test
-    public void shouldSearchTrialReadiness() throws IOException, JSONException {
+    public void shouldSearchTrialReadiness() throws JSONException {
 
         final UUID caseId = randomUUID();
         final UUID defendantId1 = UUID.fromString("bd8d80d0-e995-40fb-9f59-340a53a1a688");
@@ -398,7 +393,7 @@ public class CotrIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGetTrialReadinessHearingDetails() throws IOException, JSONException {
+    public void shouldGetTrialReadinessHearingDetails() throws JSONException {
 
         final UUID caseId = randomUUID();
         final UUID formId = randomUUID();

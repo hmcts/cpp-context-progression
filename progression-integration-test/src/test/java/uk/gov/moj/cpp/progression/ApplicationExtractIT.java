@@ -85,7 +85,7 @@ public class ApplicationExtractIT extends AbstractIT {
         assertEquals(expectedPayloadAfterUpdate, actualDocumentAfterUpdate, getCustomComparator());
     }
 
-    private void verifyAddCourtDocument() throws IOException, JSONException {
+    private void verifyAddCourtDocument() throws JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When

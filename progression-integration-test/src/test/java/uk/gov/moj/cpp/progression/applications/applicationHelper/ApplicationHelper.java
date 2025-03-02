@@ -32,7 +32,7 @@ public class ApplicationHelper {
         return initiateCourtProceedingsForCourtApplication(payload);
     }
 
-    public static Response initiateCourtProceedingsForCourtApplication(final String payload) throws IOException {
+    public static Response initiateCourtProceedingsForCourtApplication(final String payload) {
         return postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json",
                 payload);

@@ -37,7 +37,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
   private ProsecutionCaseUpdateDefendantHelper helper;
 
     @Test
-    public void shouldGeneratePrisonCourtDocumentAsynchronously() throws IOException, JSONException {
+    public void shouldGeneratePrisonCourtDocumentAsynchronously() throws JSONException {
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
         final UUID prisonCourtRegisterStreamId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDateTime.toLocalDate().toString());
@@ -131,7 +131,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldFailedPrisonCourtDocumentAsynchronously() throws IOException, JSONException {
+    public void shouldFailedPrisonCourtDocumentAsynchronously() throws JSONException {
         final UUID courtCentreId = randomUUID();
         final ZonedDateTime hearingDateTime = ZonedDateTime.now(UTC);
         final UUID prisonCourtRegisterStreamId = getPrisonCourtRegisterStreamId(courtCentreId.toString(), hearingDateTime.toLocalDate().toString());

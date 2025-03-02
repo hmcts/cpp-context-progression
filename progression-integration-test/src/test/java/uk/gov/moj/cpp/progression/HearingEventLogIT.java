@@ -471,7 +471,7 @@ public class HearingEventLogIT extends AbstractIT {
         verifyCaagHearingEventLog(caseId);
     }
 
-    private void verifyCaagHearingEventLog(final String caseId) throws IOException {
+    private void verifyCaagHearingEventLog(final String caseId) {
         final String commandUri = getWriteUrl("/hearingeventlog/" + caseId);
         final io.restassured.response.Response response = postCommand(commandUri,
                 "application/vnd.progression.create-hearing-event-log-document+json",
@@ -479,7 +479,7 @@ public class HearingEventLogIT extends AbstractIT {
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
     }
 
-    private void verifyAaagHearingEventLog(final String caseId, final String applicationId) throws IOException {
+    private void verifyAaagHearingEventLog(final String caseId, final String applicationId) {
         final String commandUri = getWriteUrl("/hearingeventlog/case/" + caseId + "/application/" + applicationId);
         final io.restassured.response.Response response = postCommand(commandUri,
                 "application/vnd.progression.create-aaag-hearing-event-log-document+json",
@@ -568,7 +568,7 @@ public class HearingEventLogIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(payload);
     }
 
-    private void verifyAddCourtDocument(final String courtDocumentId, final String caseId, final String defendantId, final String materialId) throws IOException {
+    private void verifyAddCourtDocument(final String courtDocumentId, final String caseId, final String defendantId, final String materialId) {
         final String body = prepareAddCourtDocumentPayload(courtDocumentId, caseId, defendantId, materialId);
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + courtDocumentId),
                 "application/vnd.progression.add-court-document+json",
@@ -582,7 +582,7 @@ public class HearingEventLogIT extends AbstractIT {
         );
     }
 
-    private void verifyAddApplicationCourtDocument(final String courtDocumentId, final String caseId, final String defendantId, final String materialId, final String applicationId) throws IOException {
+    private void verifyAddApplicationCourtDocument(final String courtDocumentId, final String caseId, final String defendantId, final String materialId, final String applicationId) {
         final String body = prepareAddAaagCourtDocumentPayload(courtDocumentId, caseId, defendantId, materialId, applicationId);
 
         final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + courtDocumentId),

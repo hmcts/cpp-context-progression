@@ -28,7 +28,7 @@ public class UpdateCivilFeesIT extends AbstractIT {
     private final JmsMessageConsumerClient consumerForCivilFeesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.civil-fees-response").getMessageConsumerClient();
 
     @Test
-    public void shouldUpdateCivilFees() throws IOException {
+    public void shouldUpdateCivilFees() {
         //Given
         String body = getPayload("stub-data/update-civil-fees.json");
 

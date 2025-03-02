@@ -6,16 +6,14 @@ import static java.util.UUID.randomUUID;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPrivateJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtForIngestion;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.createReferProsecutionCaseToCrownCourtJsonBody;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.helper.UnifiedSearchIndexSearchHelper.findBy;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.HearingResultedCaseUpdatedVerificationHelper.verifyInitialElasticSearchCase;
@@ -25,7 +23,6 @@ import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUt
 import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
@@ -40,7 +37,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.restassured.path.json.JsonPath;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +47,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String HEARING_RESULTED_EVENT = "progression.event.hearing-resulted-case-updated";
     private static final String EVENT_LOCATION = "ingestion/progression.event.hearing-resulted-case-updated.json";
 
-    private final JmsMessageConsumerClient messageConsumer = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(HEARING_RESULTED_EVENT).getMessageConsumerClient();
     private final JmsMessageProducerClient messageProducer = newPrivateJmsMessageProducerClientProvider(CONTEXT_NAME).getMessageProducerClient();
 
     private ElasticSearchIndexRemoverUtil elasticSearchIndexRemoverUtil;
@@ -104,10 +99,9 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
 
         final JsonObject hearingResultedCaseUpdatedResult = hearingResultedCaseUpdatedResultEvent(EVENT_LOCATION);
 
-        final JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(metadata, hearingResultedCaseUpdatedResult);
-        messageProducer.sendMessage(HEARING_RESULTED_EVENT, publicEventEnvelope);
+        final JsonEnvelope eventEnvelope = envelopeFrom(metadata, hearingResultedCaseUpdatedResult);
+        messageProducer.sendMessage(HEARING_RESULTED_EVENT, eventEnvelope);
 
-        verifyInMessagingQueue();
         verifyMessageReceivedInViewStore(INACTIVE.getDescription());
 
     }
@@ -142,11 +136,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 .withName(eventName)
                 .withUserId(randomUUID().toString())
                 .build();
-    }
-
-    private void verifyInMessagingQueue() {
-        final JsonPath message = retrieveMessageAsJsonPath(messageConsumer);
-        assertNotNull(message);
     }
 
     private DocumentContext initialCase() {

@@ -99,7 +99,7 @@ public class AuditCourtDocumentIT extends AbstractIT{
     }
 
 
-    private void verifyAddCourtDocument() throws IOException, JSONException {
+    private void verifyAddCourtDocument() throws JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload();
         //When

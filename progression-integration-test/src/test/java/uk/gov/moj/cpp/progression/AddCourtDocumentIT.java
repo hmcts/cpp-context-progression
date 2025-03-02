@@ -93,7 +93,7 @@ public class AddCourtDocumentIT extends AbstractIT {
 
 
     @BeforeEach
-    public void setup() throws JSONException {
+    public void setup() {
         caseId = randomUUID().toString();
         docId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -356,7 +356,7 @@ public class AddCourtDocumentIT extends AbstractIT {
         );
     }
 
-    private void addCourtDocumentAndVerify(Boolean isCpsCase, final String documentTypeId) throws IOException, JSONException {
+    private void addCourtDocumentAndVerify(Boolean isCpsCase, final String documentTypeId) throws JSONException {
         //Given
         final String body = prepareAddCourtDocumentPayload(isCpsCase);
         //When

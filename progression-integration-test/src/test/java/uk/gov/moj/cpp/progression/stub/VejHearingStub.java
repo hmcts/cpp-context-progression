@@ -1,5 +1,8 @@
 package uk.gov.moj.cpp.progression.stub;
 
+import java.util.List;
+
+import com.github.tomakehurst.wiremock.client.VerificationException;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -9,14 +12,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.awaitility.Awaitility.await;
-
-import java.util.List;
-
-import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 
 public class VejHearingStub {
 
@@ -51,7 +51,12 @@ public class VejHearingStub {
             expectedValues.forEach(
                     expectedValue -> requestPatternBuilder.withRequestBody(containing(expectedValue))
             );
-            verify(requestPatternBuilder);
+
+            try {
+                verify(requestPatternBuilder);
+            } catch (VerificationException e) {
+                return false;
+            }
             return true;
         });
     }

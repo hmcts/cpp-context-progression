@@ -1,11 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.randomUUID;
-import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
-
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -17,7 +11,12 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import io.restassured.path.json.JsonPath;
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
 import org.hamcrest.Matcher;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 
 public class QueueUtil {
@@ -47,10 +46,6 @@ public class QueueUtil {
 
     public static Optional<JsonObject> retrieveMessageBody(final JmsMessageConsumerClient consumer) {
         return consumer.retrieveMessageAsJsonEnvelope(RETRIEVE_TIMEOUT).map(JsonEnvelope::payloadAsJsonObject);
-    }
-
-    public static Optional<JsonObject> retrieveMessageBody(final JmsMessageConsumerClient consumer, final long retrieveTimeout) {
-        return consumer.retrieveMessageAsJsonEnvelope(retrieveTimeout).map(JsonEnvelope::payloadAsJsonObject);
     }
 
     public static Optional<JsonEnvelope> retrieveMessage(final JmsMessageConsumerClient consumer) {

@@ -83,7 +83,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAddFinancialNowDocumentRequest() throws IOException, JSONException {
+    public void shouldAddFinancialNowDocumentRequest() throws JSONException {
         final String body = prepareAddNowFinancialDocumentRequestPayload();
         nowsRequestHelper.makeNowsRequestAndVerify(requestId, body);
 
@@ -99,7 +99,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldFailToProcessFinancialNowsOnReceivingErrorAcknowledgement() throws IOException {
+    public void shouldFailToProcessFinancialNowsOnReceivingErrorAcknowledgement() {
         final String body = prepareAddNowFinancialDocumentRequestPayload();
         nowsRequestHelper.makeNowsRequestAndVerify(requestId, body);
         getNowDocumentRequestsFor(requestId, anyOf(
@@ -111,7 +111,7 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldAddNonFinancialNowDocumentRequest() throws IOException, JSONException {
+    public void shouldAddNonFinancialNowDocumentRequest() throws JSONException {
 
         final String payload = prepareAddNowNonFinancialDocumentRequestPayload("progression.add-non-financial-now-document-request.json");
         final JsonObject jsonObject = new StringToJsonObjectConverter().convert(payload);

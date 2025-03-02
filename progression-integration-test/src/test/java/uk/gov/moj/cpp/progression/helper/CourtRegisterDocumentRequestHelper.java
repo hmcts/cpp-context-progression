@@ -25,7 +25,6 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 

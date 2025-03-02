@@ -1,17 +1,40 @@
 package uk.gov.moj.cpp.progression;
 
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
 import static com.google.common.io.Resources.getResource;
+import com.jayway.jsonpath.ReadContext;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import io.restassured.path.json.JsonPath;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.UUID.randomUUID;
+import org.apache.http.HttpStatus;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import org.hamcrest.Matcher;
 import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.hasSize;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -21,39 +44,14 @@ import static uk.gov.moj.cpp.progression.helper.OpaHelper.pollForOpaPublicList;
 import static uk.gov.moj.cpp.progression.helper.OpaHelper.pollForOpaResultList;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtFirstHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatus;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusResulted;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.it.framework.ContextNameProvider.CONTEXT_NAME;
 import static uk.gov.moj.cpp.progression.it.framework.util.ViewStoreCleaner.cleanViewStoreTables;
+import static uk.gov.moj.cpp.progression.util.FeatureStubUtil.setFeatureToggle;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
-
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.platform.test.feature.toggle.FeatureStubber;
-
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Resources;
-import com.jayway.jsonpath.ReadContext;
-import io.restassured.path.json.JsonPath;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("all")
 public class OnlinePleasAllocationIT extends AbstractIT {
@@ -109,31 +107,11 @@ public class OnlinePleasAllocationIT extends AbstractIT {
         generatedResultListConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_RESULT_LIST_OPA_NOTICE_GENERATED).getMessageConsumerClient();
     }
 
-
     @Test
-    public void shouldAddPleasAllocation() throws Exception {
+    public void shouldAddAndUpdatePleasAllocation_DeactivateOpaNoticesAsHearingResultsAreNotShared() throws Exception {
         final UUID allocationId = randomUUID();
-        final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
-
-        final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
-
-        final JsonObject onlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), onlinePleaAllocationEvent);
-        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
-
-        pollAndVerifyOpaRegisters(caseId, defendantId, hearingId);
-    }
-
-    @Test
-    public void shouldUpdatePleasAllocation() throws Exception {
-        final UUID allocationId = randomUUID();
-
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-
         final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
 
         pollAndVerifyAllOpaRegisterCleanedUp(caseId, defendantId, hearingId);
@@ -145,23 +123,8 @@ public class OnlinePleasAllocationIT extends AbstractIT {
         pollAndVerifyOpaRegisters(caseId, defendantId, hearingId);
 
         final JsonObject updatedOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_UPDATED);
-
         publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, userId), updatedOnlinePleaAllocationEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_UPDATED, publicEventEnvelope);
-
-        pollAndVerifyOpaRegisters(caseId, defendantId, hearingId);
-    }
-
-    @Test
-    public void shouldDeactivateOpaNoticesAsHearingResultsAreNotShared() throws Exception {
-        final UUID allocationId = randomUUID();
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-        final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
-
-        final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
-        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         pollAndVerifyOpaRegisters(caseId, defendantId, hearingId);
 
@@ -181,17 +144,16 @@ public class OnlinePleasAllocationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGeneratePublicAndPressOpaNotices() throws Exception {
+    public void shouldGeneratePublicAndPressOpaNoticesOnHearingConfirmedAndResultNoticeOnHearingResulted() throws Exception {
         final UUID allocationId = randomUUID();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
-
         final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.opa-hearing-confirmed.json", caseId, hearingId, defendantId, courtCentreId, courtCentreName);
         JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-        pollHearingWithStatus(hearingId, "HEARING_INITIALISED");
+        pollHearingWithStatusInitialised(hearingId);
 
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
         publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
@@ -202,7 +164,7 @@ public class OnlinePleasAllocationIT extends AbstractIT {
         final io.restassured.response.Response publicResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-public-list-notice+json", "{}");
         assertThat(publicResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
-        final Matcher publicEventMatcher = isJson(Matchers.allOf(
+        Matcher publicEventMatcher = isJson(Matchers.allOf(
                 withJsonPath("$.defendantId", is(defendantId)),
                 withJsonPath("$.hearingId", is(hearingId)))
         );
@@ -212,34 +174,20 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                 "application/vnd.progression.request-opa-press-list-notice+json", "{}");
         assertThat(pressResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
         verifyEventWithMatchers(generatedPressListConsumer, publicEventMatcher);
-    }
 
-    @Test
-    public void shouldGenerateResultNoticeOpaNotices() throws Exception {
-        final UUID allocationId = randomUUID();
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
 
-        final String hearingId = createCaseAndGetHearingId(caseId, defendantId, false);
-
-        pollAndVerifyAllOpaRegisterCleanedUp(caseId, defendantId, hearingId);
-
-        final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
-        messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
-        pollAndVerifyOpaRegisters(caseId, defendantId, hearingId);
-
+        // result hearing and chck opa result notice
         publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
                 hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-        pollHearingWithStatus(hearingId, "HEARING_RESULTED");
+        pollHearingWithStatusResulted(hearingId);
 
         final io.restassured.response.Response resultResponse = postCommand(getWriteUrl("/opa-notice/request"),
                 "application/vnd.progression.request-opa-result-list-notice+json", "{}");
         assertThat(resultResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
 
-        final Matcher publicEventMatcher = isJson(Matchers.allOf(
+        publicEventMatcher = isJson(Matchers.allOf(
                 withJsonPath("$.defendantId", is(defendantId)),
                 withJsonPath("$.hearingId", is(hearingId)),
                 withJsonPath("$.notificationId", is(notNullValue())),
@@ -256,7 +204,6 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                 withJsonPath("$.opaNotice.offences[0].title", is("Case worker murder"))));
 
         verifyEventWithMatchers(generatedResultListConsumer, publicEventMatcher);
-
     }
 
     private String createCaseAndGetHearingId(final String caseId, final String defendantId, final boolean isYouth) throws IOException, JSONException {
@@ -344,11 +291,5 @@ public class OnlinePleasAllocationIT extends AbstractIT {
                         .replaceAll("SITTING_DAY", formatter.format(now().plusMonths(1)))
                         .replaceAll("SHARED_TIME", formatter.format(now().minusDays(1)))
         );
-    }
-
-    private static void setFeatureToggle(final String featureName, final boolean isToggleOn) {
-        final ImmutableMap<String, Boolean> features = ImmutableMap.of(featureName, isToggleOn);
-        FeatureStubber.clearCache(CONTEXT_NAME);
-        FeatureStubber.stubFeaturesFor(CONTEXT_NAME, features);
     }
 }
