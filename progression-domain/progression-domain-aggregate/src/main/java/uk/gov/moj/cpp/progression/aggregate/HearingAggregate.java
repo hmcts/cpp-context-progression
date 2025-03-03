@@ -959,7 +959,7 @@ public class HearingAggregate implements Aggregate {
                 .flatMap(pc->pc.getDefendants().stream())
                 .flatMap(def -> def.getOffences().stream())
                 .filter(offence -> nonNull(offence.getSeedingHearing()))
-                .collect(Collectors.toMap(Offence::getId, Offence::getSeedingHearing));
+                .collect(Collectors.toMap(Offence::getId, Offence::getSeedingHearing,  (existing, replacement) -> replacement));
 
         this.hearing = Hearing.hearing().withValuesFrom(updatedHearing)
                 .withProsecutionCases(ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)

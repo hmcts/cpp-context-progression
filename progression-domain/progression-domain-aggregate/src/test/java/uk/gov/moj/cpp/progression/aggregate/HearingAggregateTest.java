@@ -188,6 +188,39 @@ public class HearingAggregateTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
     @Test
+    public void aggregateShouldHandleDuplicateOffences(){
+        final UUID offenceId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withDefendants(singletonList(Defendant.defendant()
+                                .withOffences(asList(Offence.offence()
+                                        .withId(offenceId)
+                                        .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                                        .build(), Offence.offence()
+                                        .withId(offenceId)
+                                        .withSeedingHearing(SeedingHearing.seedingHearing().build())
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+
+        final HearingInitiateEnriched hearingInitiateEnriched = HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build();
+        hearingAggregate.apply(hearingInitiateEnriched);
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
+                .withHearing(hearing)
+                .build();
+
+        hearingAggregate.apply(prosecutionCaseDefendantListingStatusChangedV2);
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getSeedingHearing(), notNullValue());
+
+    }
+
+    @Test
     public void shouldExtendHearingForApplication() {
         final Hearing payloadHearing = CoreTestTemplates.hearingForApplication(defaultArguments()
                 .setJurisdictionType(JurisdictionType.CROWN)
