@@ -230,7 +230,6 @@ public class CourtExtractTransformer {
 
         final List<Hearings> hearingsList = hearingsAtAGlance.getHearings().stream()
                 .filter(h -> defendantHearings.getHearingIds().contains(h.getId())).toList();
-        ;
 
         if (caseDefendant.isPresent()) {
             defendantBuilder.withId(caseDefendant.get().getId());
@@ -287,7 +286,7 @@ public class CourtExtractTransformer {
 
         courtExtract.withCompanyRepresentatives(transformCompanyRepresentatives(hearingsList));
 
-        courtExtract.withReferralReason(getReferralReason(hearingsList));
+        courtExtract.withReferralReason(getReferralReason(hearingsAtAGlance.getHearings()));
     }
 
     private List<CourtApplications> transformCourtApplications(final List<CourtApplication> caseCourtApplications, final Hearings hearings) {

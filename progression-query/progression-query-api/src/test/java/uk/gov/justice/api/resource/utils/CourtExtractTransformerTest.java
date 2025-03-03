@@ -326,6 +326,18 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
+    public void testTransformToCourtExtract_whenSJPCaseReferredToCC_ensureReferralReasonIsAlwaysPopulatedInTheExtract_whenHearingHasSubsequentHearings() {
+        final String extractType = "CrownCourtExtract";
+        final String subsequentHearingId = "dc50698d-f7f1-45a8-9ed9-9ea25d355881";
+        final List<String> selectedHearingIds = List.of(subsequentHearingId);
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSJPCaseReferredToCC(DEFENDANT_ID.toString());
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        final String referralReason = courtExtractRequested.getReferralReason();
+        assertThat(referralReason, is(("For disqualification (Defendant to attend - special reasons)")));
+    }
+
+    @Test
     public void testTransformToCourtExtract_whenLegalAdvisorResultedOffenceWithDelegatedPowers_expectHearingHasAuthorisedLegalAdvisors() {
         final String extractType = "CrownCourtExtract";
         final UUID breachApplicationHearing = randomUUID();
@@ -926,6 +938,13 @@ public class CourtExtractTransformerTest {
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("BREACH_H_ID", breachApplicationHearingId));
+        final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
+        return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+    }
+
+    private GetHearingsAtAGlance createHearingAtAGlanceWithSJPCaseReferredToCC(final String defendantId) {
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-sjp-referred-to-cc.json")
+                .replaceAll("DEFENDANT_ID", defendantId));
         final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
         return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
     }
