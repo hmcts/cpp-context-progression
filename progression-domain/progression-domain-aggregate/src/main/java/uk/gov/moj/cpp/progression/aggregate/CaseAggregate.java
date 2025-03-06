@@ -1890,6 +1890,7 @@ public class CaseAggregate implements Aggregate {
                         .withProsecutionAuthorityId(getProsecutorId(prosecutionCase))
                         .withCaseUrn(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())
                         .withUpdatedOrganisation(updatedOrganisation)
+                        .withHearingIds(new ArrayList<>(hearingIds))
                         .build());
 
             }
