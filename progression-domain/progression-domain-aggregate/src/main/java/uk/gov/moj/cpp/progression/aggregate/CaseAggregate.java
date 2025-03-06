@@ -219,6 +219,7 @@ import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 import uk.gov.moj.cpp.progression.events.CpsDefendantIdUpdated;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationAssociatedByDefenceContext;
 import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedByDefenceContext;
+import uk.gov.moj.cpp.progression.events.DefendantCustodialEstablishmentRemoved;
 import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
 import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
@@ -291,7 +292,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S2384", "pmd:NullAssignment", "squid:S134", "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = -2092381865833271660L;
+    private static final long serialVersionUID = 2319902433871042754L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -342,6 +343,9 @@ public class CaseAggregate implements Aggregate {
     private final Map<UUID, List<UUID>> applicationFinancialDocs = new HashMap<>();
 
     private final Map<UUID, RetentionPolicy> hearingCaseRetentionMap = new HashMap<>();
+
+    private final Map<UUID, uk.gov.moj.cpp.progression.events.CustodialEstablishment> defendantCustodialEstablishmentMap = new HashMap<>();
+
 
     private String caseStatus;
     private String previousNotInactiveCaseStatus;
@@ -539,7 +543,12 @@ public class CaseAggregate implements Aggregate {
                 ),
                 when(OnlinePleaAllocationAdded.class).apply(this::addOnlinePleaAllocation),
                 when(OnlinePleaAllocationUpdated.class).apply(this::updateOnlinePleaAllocation),
-
+                when(DefendantCustodialInformationUpdateRequested.class).apply(e ->
+                        this.defendantCustodialEstablishmentMap.put(e.getDefendantId(), e.getCustodialEstablishment())
+                ),
+                when(DefendantCustodialEstablishmentRemoved.class).apply(e ->
+                        this.defendantCustodialEstablishmentMap.remove(e.getDefendantId())
+                ),
                 otherwiseDoNothing());
 
     }
@@ -2810,7 +2819,7 @@ public class CaseAggregate implements Aggregate {
 
         //defendant proceedingsConcluded status is true when all the offences have a FINAL result; offence may be resulted in multiple hearings
         final boolean proceedingConcluded = checkIfDefendantProceedingsConcluded(defendant.getId(), updatedOffences);
-        return getDefendant(defendant, updatedOffences, proceedingConcluded);
+        return getDefendant(defendant, updatedOffences, proceedingConcluded, defendantCustodialEstablishmentMap.get(defendant.getId()));
     }
 
     private void updateCurrentOffencesWithProceedingsConcludedStatus(final UUID defendantId, final List<uk.gov.justice.core.courts.Offence> defendantOffences,
