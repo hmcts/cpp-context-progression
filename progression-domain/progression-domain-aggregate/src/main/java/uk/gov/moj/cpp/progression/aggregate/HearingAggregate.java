@@ -99,6 +99,7 @@ import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.HearingVerdictUpdated;
 import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
@@ -1500,6 +1501,7 @@ public class HearingAggregate implements Aggregate {
     private Defendant fromUpdatedDefendant(final Defendant defendant, final DefendantUpdate defendantUpdate) {
         return Defendant.defendant()
                 .withValuesFrom(defendant)
+                .withOffences(nonNull(defendant.getOffences())?enrichOffence(defendant.getOffences(),defendantUpdate.getOffences()):defendant.getOffences())
                 .withNumberOfPreviousConvictionsCited(defendantUpdate.getNumberOfPreviousConvictionsCited())
                 .withProsecutionAuthorityReference(defendantUpdate.getProsecutionAuthorityReference())
                 .withWitnessStatement(defendantUpdate.getWitnessStatement())
@@ -1514,6 +1516,32 @@ public class HearingAggregate implements Aggregate {
                 .withAliases(defendantUpdate.getAliases())
                 .withIsYouth(defendantUpdate.getIsYouth())
                 .build();
+
+
+
+    }
+
+    private List<Offence> enrichOffence(final List<Offence> offences, final List<Offence> updatedOffences) {
+        if (isNull(updatedOffences)){
+            return offences;
+        }
+        return
+                offences.stream()
+                        .map(offence -> {
+                            final Optional<Offence> updatedOffence = updatedOffences.stream().filter(offence1 -> offence1.getId().equals(offence.getId())).findFirst();
+                            return new Offence.Builder()
+                                    .withValuesFrom(offence)
+                                    .withLaaApplnReference(laaContract(offence, updatedOffence))
+                                    .build();
+                        })
+                        .collect(toList());
+
+    }
+
+    private LaaReference laaContract(final Offence offence, final Optional<Offence> updatedOffence) {
+        return updatedOffence.map(Offence::getLaaApplnReference).orElse(offence.getLaaApplnReference());
+
+
     }
 
     private void onOffencesRemovedFromHearing(final OffencesRemovedFromHearing offencesRemovedFromHearing) {

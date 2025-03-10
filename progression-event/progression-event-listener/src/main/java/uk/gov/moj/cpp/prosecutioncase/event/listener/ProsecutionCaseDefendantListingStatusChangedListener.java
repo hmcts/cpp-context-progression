@@ -11,6 +11,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Stream;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -25,9 +26,12 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseHearingRepository;
 
@@ -36,6 +40,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseDefendantListingStatusChangedListener {
@@ -51,6 +58,9 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
 
     @Inject
     private MatchDefendantCaseHearingRepository matchDefendantCaseHearingRepository;
+
+    @Inject
+    private HearingApplicationRepository hearingApplicationRepository;
 
     @Inject
     private HearingRepository hearingRepository;
@@ -72,13 +82,19 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
         final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(updatedProsecutionCaseDefendantListingStatusChanged);
         final HearingEntity hearingEntity = transformHearing(prosecutionCaseDefendantListingStatusChanged.getHearing(), prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus());
         final List<ProsecutionCase> prosecutionCases = prosecutionCaseDefendantListingStatusChanged.getHearing().getProsecutionCases();
+        final List<CourtApplication> courtApplications = prosecutionCaseDefendantListingStatusChanged.getHearing().getCourtApplications();
 
-        saveCaseDefendantHearing(prosecutionCases, hearingEntity);
-        updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus(), prosecutionCases, prosecutionCaseDefendantListingStatusChanged.getHearing().getId());
+        if (isNotEmpty(prosecutionCases)) {
+            saveCaseDefendantHearing(prosecutionCases, hearingEntity);
+            updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus(), prosecutionCases, prosecutionCaseDefendantListingStatusChanged.getHearing().getId());
+        } else {
+            saveHearingApplication(prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus(), courtApplications, hearingEntity);
+        }
     }
 
     @Handles("progression.event.prosecutionCase-defendant-listing-status-changed-v3")
     public void processV3(final JsonEnvelope event) {
+
         final ProsecutionCaseDefendantListingStatusChangedV3 updatedProsecutionCaseDefendantListingStatusChanged = dedupAllApplications(jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseDefendantListingStatusChangedV3.class));
 
         final ProsecutionCaseDefendantListingStatusChangedV3 prosecutionCaseDefendantListingStatusChanged = dedupAllReportingRestrictions(updatedProsecutionCaseDefendantListingStatusChanged);
@@ -113,6 +129,13 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
         return caseDefendantHearingEntity;
     }
 
+    private HearingApplicationEntity transformHearingApplicationEntity(final CourtApplication courtApplication, final HearingEntity hearingEntity) {
+        final HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
+        hearingApplicationEntity.setId(new HearingApplicationKey(courtApplication.getId(), hearingEntity.getHearingId()));
+        hearingApplicationEntity.setHearing(hearingEntity);
+        return hearingApplicationEntity;
+    }
+
     private HearingEntity transformHearing(final Hearing hearing, final HearingListingStatus hearingListingStatus) {
         HearingEntity hearingEntity = hearingRepository.findBy(hearing.getId());
 
@@ -141,6 +164,16 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
                             caseDefendantHearingRepository.save(transformCaseDefendantHearingEntity(d, pc, hearingEntity))
                     )
             );
+        }
+    }
+
+    private void saveHearingApplication(final HearingListingStatus hearingListingStatus, final List<CourtApplication> courtApplications, final HearingEntity hearingEntity) {
+        if (isNotEmpty(courtApplications)) {
+            if (hearingListingStatus == HearingListingStatus.SENT_FOR_LISTING) {
+                courtApplications.forEach(ca -> hearingApplicationRepository.save(transformHearingApplicationEntity(ca, hearingEntity)));
+            } else {
+                hearingRepository.save(hearingEntity);
+            }
         }
     }
 

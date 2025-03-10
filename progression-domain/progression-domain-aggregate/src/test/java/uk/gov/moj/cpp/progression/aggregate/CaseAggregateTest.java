@@ -39,6 +39,7 @@ import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.core.courts.LaaReference.laaReference;
 import static uk.gov.justice.core.courts.Offence.offence;
+import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.core.courts.PetDefendants.petDefendants;
 import static uk.gov.justice.core.courts.ProsecutionCase.prosecutionCase;
 import static uk.gov.justice.core.courts.ProsecutionCaseCreated.prosecutionCaseCreated;
@@ -52,6 +53,8 @@ import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.SJP_REFE
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.GRANTED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFUSED;
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
+import static uk.gov.moj.cpp.progression.events.DefendantCustodialEstablishmentRemoved.defendantCustodialEstablishmentRemoved;
+import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested;
 import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
@@ -305,7 +308,7 @@ public class CaseAggregateTest {
     private static final Defendant defendant = defendant()
             .withId(randomUUID())
             .withMasterDefendantId(randomUUID())
-            .withPersonDefendant(PersonDefendant.personDefendant()
+            .withPersonDefendant(personDefendant()
                     .withPersonDetails(uk.gov.justice.core.courts.Person.person()
                             .withFirstName("firstName")
                             .withLastName("lastName")
@@ -1719,7 +1722,7 @@ public class CaseAggregateTest {
                 .withOriginatingOrganisation("originatingOrganisation")
                 .withDefendants(asList(defendant().
                         withId(defendantId)
-                        .withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withPersonDefendant(personDefendant().build())
                         .withOffences(asList(offence().withId(offenceId1).build()
                                 , offence().withId(offenceId2).build()))
                         .build()))
@@ -1759,7 +1762,7 @@ public class CaseAggregateTest {
                .withOriginatingOrganisation("originatingOrganisation")
                .withDefendants(asList(defendant().
                         withId(defendantId)
-                        .withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withPersonDefendant(personDefendant().build())
                        .withOffences(asList(offence()
                                         .withId(offenceId1)
                                         .withIndicatedPlea(IndicatedPlea.indicatedPlea()
@@ -1816,7 +1819,7 @@ public class CaseAggregateTest {
                 .withOriginatingOrganisation("originatingOrganisation")
                 .withDefendants(singletonList(defendant().
                         withId(defendantId)
-                        .withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withPersonDefendant(personDefendant().build())
                         .withAssociationLockedByRepOrder(true)
                         .withOffences(asList(offence().withId(offenceId1).build()
                                 , offence().withId(offenceId2)
@@ -1874,7 +1877,7 @@ public class CaseAggregateTest {
                 .withOriginatingOrganisation("originatingOrganisation")
                 .withDefendants(singletonList(defendant().
                         withId(defendantId)
-                        .withPersonDefendant(PersonDefendant.personDefendant().build())
+                        .withPersonDefendant(personDefendant().build())
                         .withAssociationLockedByRepOrder(true)
                         .withOffences(asList(offence().withId(offenceId1)
                                         .withLaaApplnReference(laaReference().withStatusCode("WD").withOffenceLevelStatus(REFUSED.getDescription()).build())
@@ -4259,7 +4262,7 @@ public class CaseAggregateTest {
         final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .build())
                 .build();
 
@@ -4286,7 +4289,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                .withPersonDefendant(personDefendant().withPersonDetails(
                         uk.gov.justice.core.courts.Person.person().withAddress(Address.address().withAddress1("Address-defendantId1").build()).build()
                 ).build())
                 .build();
@@ -4294,7 +4297,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                .withPersonDefendant(personDefendant().withPersonDetails(
                         uk.gov.justice.core.courts.Person.person().withAddress(Address.address().withAddress1("Address-defendantId2").build()).build()
                 ).build())
                 .build();
@@ -4305,7 +4308,7 @@ public class CaseAggregateTest {
         final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
-                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                .withPersonDefendant(personDefendant().withPersonDetails(uk.gov.justice.core.courts.Person.person()
                                 .withAddress(Address.address().withAddress1("Address-defendantId11").build()).build())
                         .build())
                 .build();
@@ -4332,7 +4335,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                .withPersonDefendant(personDefendant().withPersonDetails(
                         uk.gov.justice.core.courts.Person.person().withAddress(Address.address().withAddress1("Address-defendantId1").build()).build()
                 ).build())
                 .build();
@@ -4340,7 +4343,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(
+                .withPersonDefendant(personDefendant().withPersonDetails(
                         uk.gov.justice.core.courts.Person.person().withAddress(Address.address().withAddress1("Address-defendantId2").build()).build()
                 ).build())
                 .build();
@@ -4351,7 +4354,7 @@ public class CaseAggregateTest {
         final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
-                .withPersonDefendant(PersonDefendant.personDefendant().withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                .withPersonDefendant(personDefendant().withPersonDetails(uk.gov.justice.core.courts.Person.person()
                                 .withAddress(Address.address().withAddress1("Address-defendantId1").build()).build())
                         .build())
                 .build();
@@ -4487,7 +4490,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(randomUUID())
@@ -4499,7 +4502,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -4538,7 +4541,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(randomUUID())
@@ -4550,7 +4553,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -4572,7 +4575,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(custodialEstablishment)
                         .build())
                 .build();
@@ -4609,7 +4612,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(custodialId)
@@ -4621,7 +4624,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -4643,7 +4646,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(custodialEstablishment)
                         .build())
                 .build();
@@ -4669,14 +4672,14 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .build())
                 .build();
         final Defendant defendant2 = Defendant.defendant()
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .build())
                 .build();
         defendantsMap.put(defendantId1, defendant1);
@@ -4714,7 +4717,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withCustody("custody")
                                 .withId(randomUUID())
@@ -4726,7 +4729,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withCustody("custody")
                                 .withId(randomUUID())
@@ -4767,7 +4770,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(custodialId)
@@ -4779,7 +4782,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -4819,14 +4822,14 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .build())
                 .build();
         final Defendant defendant2 = Defendant.defendant()
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .build())
                 .build();
         defendantsMap.put(defendantId1, defendant1);
@@ -4856,7 +4859,7 @@ public class CaseAggregateTest {
                 .withId(randomUUID())
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(custodialId)
@@ -4868,7 +4871,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -4909,7 +4912,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(custodialId)
@@ -4921,7 +4924,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -4961,7 +4964,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(custodialId)
@@ -4973,7 +4976,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -5019,7 +5022,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(custodialId)
@@ -5031,7 +5034,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -5083,7 +5086,7 @@ public class CaseAggregateTest {
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name1")
                                 .withId(custodialId)
@@ -5095,7 +5098,7 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
                                 .withName("name2")
                                 .withId(randomUUID())
@@ -5769,7 +5772,7 @@ public class CaseAggregateTest {
                 .withId(defendantId)
                 .withProsecutionCaseId(caseId)
                 .withOffences(Lists.newArrayList(offence))
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withPersonDetails(uk.gov.justice.core.courts.Person.person()
                                 .withDateOfBirth(LocalDate.now().minusYears(16))
                                 .build())
@@ -5847,7 +5850,7 @@ public class CaseAggregateTest {
                 .withId(defendantId)
                 .withProsecutionCaseId(caseId)
                 .withOffences(Lists.newArrayList(offence))
-                .withPersonDefendant(PersonDefendant.personDefendant()
+                .withPersonDefendant(personDefendant()
                         .withPersonDetails(uk.gov.justice.core.courts.Person.person()
                                 .withFirstName("XYYZ")
                                 .withLastName("ABC")
@@ -6939,6 +6942,87 @@ public class CaseAggregateTest {
                 equalTo(IndicatedPleaValue.INDICATED_GUILTY));
 
     }
+
+    @Test
+    public void shouldRequestAndRemovedCustodialEstablishmentForDefendant() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withProsecutionCaseId(caseId)
+                .withPersonDefendant(personDefendant()
+                        .build())
+                .withOffences(
+                        singletonList(offence()
+                                .withId(UUID.randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(FINAL)
+                                                .build())).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final DefendantJudicialResult defendantJudicialResult = defendantJudicialResult()
+                .withJudicialResult(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .withResultText("Result text")
+                        .withLabel("Label")
+                        .withJudicialResultId(randomUUID())
+                        .withLifeDuration(Boolean.TRUE)
+                        .build())
+                .withMasterDefendantId(UUID.randomUUID())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+        this.caseAggregate.apply(prosecutionCaseCreated);
+
+        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = defendantCustodialInformationUpdateRequested()
+                .withDefendantId(defendant.getId())
+                .withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
+                        .withCustody("Custody")
+                        .withName("Name")
+                        .withId(randomUUID())
+                        .build())
+                .build();
+
+        this.caseAggregate.apply(defendantCustodialInformationUpdateRequested);
+
+        final List<Object> eventStreamCustodialInformationUpdateRequested = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+
+        assertThat(eventStreamCustodialInformationUpdateRequested.size(), is(4));
+        final Object objectCustodialInformationUpdateRequested = eventStreamCustodialInformationUpdateRequested.get(0);
+        assertThat(objectCustodialInformationUpdateRequested.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithCustodialInformation = (HearingResultedCaseUpdated) eventStreamCustodialInformationUpdateRequested.get(0);
+        assertThat(hearingResultedCaseUpdatedWithCustodialInformation.getProsecutionCase().getDefendants().get(0).getPersonDefendant().getCustodialEstablishment(), is(notNullValue()));
+
+        final DefendantCustodialEstablishmentRemoved defendantCustodialEstablishmentRemoved = defendantCustodialEstablishmentRemoved()
+                .withDefendantId(defendant.getId())
+                .build();
+
+        this.caseAggregate.apply(defendantCustodialEstablishmentRemoved);
+
+        final List<Object> eventStreamDefendantCustodialEstablishmentRemoved = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
+        assertThat(eventStreamDefendantCustodialEstablishmentRemoved.size(), is(4));
+        final Object objectDefendantCustodialEstablishmentRemoved = eventStreamDefendantCustodialEstablishmentRemoved.get(0);
+        assertThat(objectDefendantCustodialEstablishmentRemoved.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
+        final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithoutCustodialInformation = (HearingResultedCaseUpdated) eventStreamDefendantCustodialEstablishmentRemoved.get(0);
+        assertThat(hearingResultedCaseUpdatedWithoutCustodialInformation.getProsecutionCase().getDefendants().get(0).getPersonDefendant().getCustodialEstablishment(), is(nullValue()));
+    }
+
 
     private void assertPleaAllocationsStoredCorrectly(final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations,
                                                       final PleasAllocationDetails allocationDetails,

@@ -16,6 +16,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
@@ -4034,6 +4035,37 @@ public class HearingAggregateTest {
         final Stream<Object> eventStream = hearingAggregate.updateDefendant(randomUUID(),defendantUpdate);
         final List events = eventStream.collect(toList());
         assertThat(events.get(0), Matchers.instanceOf(HearingDefendantUpdated.class));
+    }
+
+    @Test
+    public void shouldUpdateDefendantWithLaaContract(){
+        final String LAA_CONTRACT = "LAA_CONTRACT_NUMBER";
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                .setJurisdictionType(JurisdictionType.CROWN)
+                .setStructure(toMap(randomUUID(), toMap(randomUUID(), singletonList(randomUUID()))))
+                .setConvicted(false)).build();
+        final UUID defendantId = hearing.getProsecutionCases().get(0).getDefendants().get(0).getId();
+        hearingAggregate.enrichInitiateHearing(hearing);
+        final UUID OFFENCE_ID = hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId();
+
+
+        final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate()
+                .withId(defendantId)
+                .withOffences(asList(
+                        Offence.offence()
+                                .withId(OFFENCE_ID)
+                                .withLaaApplnReference(LaaReference.laaReference()
+                                        .withLaaContractNumber(LAA_CONTRACT)
+                                        .build())
+                                .build()
+                        )
+                )
+                .build();
+        final Stream<Object> eventStream = hearingAggregate.updateDefendant(randomUUID(),defendantUpdate);
+        final List events = eventStream.collect(toList());
+        assertThat(events.get(0), Matchers.instanceOf(HearingDefendantUpdated.class));
+        assertThat(((HearingDefendantUpdated)events.get(0)).getDefendant().getOffences().get(0).getLaaApplnReference().getLaaContractNumber(), equalTo(LAA_CONTRACT));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getLaaContractNumber(), equalTo(LAA_CONTRACT));
     }
 
     @Test
