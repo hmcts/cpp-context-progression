@@ -24,12 +24,14 @@ import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.progression.courts.AddedOffences;
 import uk.gov.justice.progression.courts.DeletedOffences;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.UpdatedOffences;
+import uk.gov.moj.cpp.progression.events.CustodialEstablishment;
 import uk.gov.moj.cpp.progression.events.MatchedDefendants;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
@@ -310,6 +312,28 @@ public class DefendantHelper {
 
     public static Defendant getDefendant(final Defendant defendant, final List<Offence> updatedOffences, boolean proceedingConcluded) {
         return Defendant.defendant().withValuesFrom(defendant).withOffences(updatedOffences).withProceedingsConcluded(proceedingConcluded).build();
+    }
+
+    public static Defendant getDefendant(final Defendant defendant, final List<Offence> updatedOffences, boolean proceedingConcluded, CustodialEstablishment custodialEstablishmentFromMap) {
+
+        if (nonNull(custodialEstablishmentFromMap)) {
+            final uk.gov.justice.core.courts.CustodialEstablishment.Builder custodialEstablishmentBuilder = uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment();
+            custodialEstablishmentBuilder.withCustody(custodialEstablishmentFromMap.getCustody())
+                    .withId(custodialEstablishmentFromMap.getId())
+                    .withName(custodialEstablishmentFromMap.getName());
+            final PersonDefendant.Builder updatedPersonDefendant = PersonDefendant.personDefendant();
+            updatedPersonDefendant.withValuesFrom(defendant.getPersonDefendant())
+                    .withCustodialEstablishment(custodialEstablishmentBuilder.build());
+
+            final Defendant.Builder defendantBuilder = Defendant.defendant();
+            defendantBuilder
+                    .withValuesFrom(defendant)
+                    .withOffences(updatedOffences)
+                    .withProceedingsConcluded(proceedingConcluded)
+                    .withPersonDefendant(updatedPersonDefendant.build());
+            return defendantBuilder.build();
+        }
+        return getDefendant(defendant, updatedOffences, proceedingConcluded);
     }
 
     public static Offence getUpdatedOffence(final List<Offence> updatedOffences, Offence existingOffence, boolean proceedingConcluded) {
