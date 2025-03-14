@@ -994,7 +994,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(response.getId(), is(CASE_ID));
 
         // Defendant Hearing details
-        assertThat(response.getHearings().size(), is(2));
+        assertThat(response.getHearings().size(), is(3));
         assertThat(response.getLatestHearingJurisdictionType(), is(JurisdictionType.CROWN));
     }
 
