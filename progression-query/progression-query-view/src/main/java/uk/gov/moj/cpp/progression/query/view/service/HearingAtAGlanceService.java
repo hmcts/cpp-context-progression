@@ -121,7 +121,6 @@ public class HearingAtAGlanceService {
         if (!hearingEntities.isEmpty()) {
             latestHearingJurisdictionType = getLatestHearingJurisdictionType(caseId, hearingEntities);
             LOGGER.info("Retrieved the latest hearing jurisdiction type {}", latestHearingJurisdictionType);
-            hearingEntities.removeIf(h -> h.getListingStatus().toString().equals(HEARING_STATUS_SENT_FOR_LISTING));
         }
 
         return getQueryResponse(hearingEntities, caseId, prosecutionCase, caseDefendantHearingEntities, latestHearingJurisdictionType);
