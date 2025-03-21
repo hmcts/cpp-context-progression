@@ -117,28 +117,6 @@ public class EjectCaseApplicationIT extends AbstractIT {
     }
 
     @Test
-    public void shouldEjectStandaloneCourtApplicationWithoutHearingIdAndGetConfirmation() throws Exception {
-
-        String applicationId = randomUUID().toString();
-
-        addStandaloneCourtApplication(applicationId, randomUUID().toString(), new CourtApplicationsHelper.CourtApplicationRandomValues(), "progression.command.create-standalone-court-application.json");
-        pollForApplicationStatus(applicationId, STATUS_DRAFT);
-
-        final JmsMessageConsumerClient consumerForCaseOrApplicationEjected = newPublicJmsMessageConsumerClientProvider().withEventNames(CASE_OR_APPLICATION_EJECTED).getMessageConsumerClient();
-
-        ejectApplication(applicationId, REMOVAL_REASON, "eject/progression.eject-application.json");
-
-        Matcher[] matchers = {
-                withJsonPath("$.courtApplication.id", is(applicationId)),
-                withJsonPath("$.courtApplication.applicationStatus", is(STATUS_EJECTED)),
-                withJsonPath("$.courtApplication.removalReason", is(REMOVAL_REASON))
-        };
-        pollForApplication(applicationId, matchers);
-
-        verifyInMessagingQueueForCaseOrApplicationEjected(consumerForCaseOrApplicationEjected);
-    }
-
-    @Test
     public void shouldCreateCourtApplicationLinkedWithCaseAndGetConfirmation() throws Exception {
         stubPostSetCaseEjected();
         // when

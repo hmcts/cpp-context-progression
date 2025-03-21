@@ -42,7 +42,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_MEMBER_CASE = "public.hearing.resulted-member-cases";
-    private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 = "public.events.hearing.hearing-resulted-case-updated";
     private static final String PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE_V2 = "public.events.hearing.hearing-resulted-multiple-prosecution-cases";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
@@ -105,20 +104,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldUpdateHearingResultedCaseUpdatedV2() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
-                hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-
-        pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
-        verifyInMessagingQueueForHearingResultedCaseUpdated();
-        verifyInMessagingQueueForHearingResulted();
-    }
-
-    @Test
     public void shouldRaiseUpdateHearingCaseUpdatedEventWhenMultipleProsecutionCasesArePresentV2() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
         final String caseId2 = randomUUID().toString();
@@ -131,6 +116,9 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
+        verifyInMessagingQueueForHearingResultedCaseUpdated();
+        verifyInMessagingQueueForHearingResulted();
+
     }
 
     private Matcher[] getDefendantUpdatedMatchers() {

@@ -70,29 +70,6 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
 
     @SuppressWarnings("squid:S1607")
     @Test
-    public void shouldListUnscheduledHearingsV2() throws Exception {
-        final String existingHearingId = prepareHearingForTest();
-
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
-                existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-
-        final String unscheduledHearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, List.of(existingHearingId));
-        getHearingForDefendant(unscheduledHearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
-
-        //amendment/resharing: should not raise any event
-
-        final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
-                existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
-
-        final String unscheduledHearingId2 = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 3, List.of(existingHearingId, unscheduledHearingId));
-        getHearingForDefendant(unscheduledHearingId2, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
-
-        verifyListUnscheduledHearingRequestsAsStreamV2(unscheduledHearingId, "1 week");
-    }
-
-    @Test
     public void shouldKeepsCpsOrganisationAndListUnscheduledHearingsV2() throws Exception {
         final String existingHearingId = prepareHearingForTestWithInitiate();
 

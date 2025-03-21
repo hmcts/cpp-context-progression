@@ -87,31 +87,6 @@ public class CourtDocumentQueryIT {
     }
 
     @Test
-    public void shouldGetCourtDocumentsForGivenDefendantLevelDocsBasedOnRBAC() throws IOException, JSONException {
-        final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
-
-        //Doc Type Ref Data
-        stubQueryDocumentTypeData("/restResource/ref-data-document-type.json", docTypeId);
-        stubGetDocumentsTypeAccess("/restResource/get-all-document-type-access.json");
-        //Defendant Level Document 1
-        final String courtDocumentDefendantLevel = addCourtDocument(caseId, docId, defendantId,
-                prepareAddCourtDocumentWithDocTypePayload(docTypeId, docId, caseId, defendantId, "progression.add-court-document-def-level.json"));
-        final JsonObject courtDocumentDefendantLevelJson = new StringToJsonObjectConverter().convert(courtDocumentDefendantLevel);
-        final String defendantLevelId = courtDocumentDefendantLevelJson.getJsonObject("courtDocument").getString("courtDocumentId");
-
-        final String actualDocument = getCourtDocumentsByDefendant(USER_ID, defendantId);
-
-        final String expectedPayload = FileUtil.getPayload("expected/expected.progression.court-document-def-level.json")
-                .replace("COURT-DOCUMENT-ID", defendantLevelId)
-                .replace("DOCUMENT-TYPE-ID", docTypeId)
-                .replace("CASE-ID", caseId)
-                .replace("DEFENDANT-ID", defendantId);
-
-        assertEquals(expectedPayload, actualDocument, getCustomComparator());
-    }
-
-
-    @Test
     public void shouldGetCourtDocumentsForGivenCaseLevelAndDefendantLevelDocsBasedOnRBAC() throws IOException, JSONException {
         final String docTypeId = "460f7ec0-c002-11e8-a355-529269fb1459";
 

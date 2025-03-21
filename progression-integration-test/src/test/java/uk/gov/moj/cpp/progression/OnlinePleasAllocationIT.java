@@ -117,7 +117,8 @@ public class OnlinePleasAllocationIT extends AbstractIT {
         pollAndVerifyAllOpaRegisterCleanedUp(caseId, defendantId, hearingId);
 
         final JsonObject addOnlinePleaAllocationEvent = buildOnlinePleaAllocationPayload(allocationId.toString(), caseId, defendantId, ALLOCATION_PLEAS_ADDED);
-        JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
+
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, userId), addOnlinePleaAllocationEvent);
         messageProducerClientPublic.sendMessage(PUBLIC_DEFENCE_ALLOCATION_PLEAS_ADDED, publicEventEnvelope);
 
         pollAndVerifyOpaRegisters(caseId, defendantId, hearingId);

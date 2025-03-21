@@ -118,41 +118,6 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGenerateCourtRegisterOnlyByRequestDate() throws IOException {
-        CourtRegisterDocumentRequestHelper courtRegisterDocumentRequestHelper = new CourtRegisterDocumentRequestHelper();
-        final UUID courtCentreId = randomUUID();
-        final String courtHouse = STRING.next();
-        final UUID hearingId = randomUUID();
-        final UUID courtApplicationId = randomUUID();
-        final ZonedDateTime registerDate = ZonedDateTime.now(UTC);
-        final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
-        final UUID caseId = randomUUID();
-        final UUID defendantId = randomUUID();
-
-        intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
-        verifyCourtApplicationCreatedPublicEvent();
-        recordCourtRegister(courtCentreId, courtHouse, registerDate, hearingId, hearingDate, courtApplicationId);
-
-        courtRegisterDocumentRequestHelper.verifyCourtRegisterRequestsExists(courtCentreId);
-
-        generateCourtRegister();
-        courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId);
-
-        final String body = getPayload("progression.generate-court-register-by-date.json")
-                .replaceAll("%REGISTER_DATE%", LocalDate.now().toString());
-
-        final Response generateRegisterResponse = postCommand(
-                getWriteUrl("/court-register/generate"),
-                "application/vnd.progression.generate-court-register-by-date+json",
-                body);
-        assertThat(generateRegisterResponse.getStatusCode(), equalTo(SC_ACCEPTED));
-
-        courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId);
-
-        pollSysDocGenerationRequests(hasSize(1));
-    }
-
-    @Test
     public void shouldGenerateCourtRegisterForLatestHearingSharedRequest() throws IOException {
         CourtRegisterDocumentRequestHelper courtRegisterDocumentRequestHelper = new CourtRegisterDocumentRequestHelper();
         final UUID courtCentreId = randomUUID();

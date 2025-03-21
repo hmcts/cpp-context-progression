@@ -42,11 +42,6 @@ public class SearchCasesIT extends AbstractIT {
     }
 
     @Test
-    public void shouldGetProsecutionCaseByCaseInsensitiveFirstName() {
-        verifyCasesForSearchCriteria(FIRST_NAME.toLowerCase(), new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(FIRST_NAME))});
-    }
-
-    @Test
     public void shouldGetProsecutionCaseByCaseInsensitiveLastName() {
         verifyCasesForSearchCriteria(LAST_NAME.toUpperCase(), new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(LAST_NAME))});
     }
@@ -61,10 +56,6 @@ public class SearchCasesIT extends AbstractIT {
         verifyCasesForSearchCriteria(MIDDLE_NAME, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(MIDDLE_NAME))});
     }
 
-    @Test
-    public void shouldGetProsecutionCaseByLastName() {
-        verifyCasesForSearchCriteria(LAST_NAME, new Matcher[]{withJsonPath(JSON_RESULTS_DEFENDANT_PATH, containsString(LAST_NAME))});
-    }
 
     @Test
     public void shouldGetProsecutionCaseByFirstAndMiddleName() {

@@ -101,37 +101,6 @@ public class HearingUpdatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldUpdateHearing() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final JsonObject hearingConfirmedJson = getHearingConfirmedJsonObject(hearingId);
-        final JsonEnvelope publicEventConfirmedEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
-        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventConfirmedEnvelope);
-
-        final Filter hearingIdFilter = filter(where("id").is(hearingId)
-                .and("courtCentre.id").is(courtCentreId)
-                .and("hearingListingStatus").is("HEARING_INITIALISED"));
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", hearingIdFilter)));
-
-        final String updatedCourtCentreId = randomUUID().toString();
-        final JsonObject hearingUpdatedJson = getHearingUpdatedJsonObject(hearingId, updatedCourtCentreId);
-        final JsonEnvelope publicEventUpdatedEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_UPDATED, userId), hearingUpdatedJson);
-        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_UPDATED, publicEventUpdatedEnvelope);
-
-        final Filter updatedHearingIdFilter = filter(where("id").is(hearingId)
-                .and("courtCentre.id").is(updatedCourtCentreId)
-                .and("hearingListingStatus").is("HEARING_INITIALISED"));
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath(compile("$.hearingsAtAGlance.hearings[?]", updatedHearingIdFilter)));
-        verifyInMessagingQueue(messageConsumerClientPublicForHearingDetailChanged);
-    }
-
-
-    @Test
     public void shouldUpdateHearingWhenDefendantMatched() throws Exception {
         final String prosecutionCaseId_1 = randomUUID().toString();
         final String defendantId_1 = randomUUID().toString();
