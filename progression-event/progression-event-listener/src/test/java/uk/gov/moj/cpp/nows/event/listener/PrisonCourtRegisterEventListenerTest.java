@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.nows.event.listener;
 
 import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
@@ -109,7 +110,7 @@ public class PrisonCourtRegisterEventListenerTest {
                 .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().withCourtHouse("Court House").withLjaName("LJA Name").build())
                 .build();
 
-        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId, "Applicant", null, prisonCourtRegisterDocumentRequest, prisonCourtRegisterStreamId );
+        final PrisonCourtRegisterRecorded prisonCourtRegisterRecorded = new PrisonCourtRegisterRecorded(courtCenterId, "Applicant", null, prisonCourtRegisterDocumentRequest,prisonCourtRegisterStreamId );
 
         final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterRecorded);
         final JsonEnvelope requestMessage = envelopeFrom(
@@ -164,10 +165,11 @@ public class PrisonCourtRegisterEventListenerTest {
         final UUID courtCenterId = UUID.randomUUID();
         final UUID fileId = UUID.randomUUID();
         final UUID hearingId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
 
         final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated()
                 .withCourtCentreId(courtCenterId)
-                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().build())
+                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().withMasterDefendantId(defendantId).build())
                 .withFileId(fileId)
                 .withHearingDate(ZonedDateTime.now(UTC))
                 .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().build())
@@ -177,11 +179,44 @@ public class PrisonCourtRegisterEventListenerTest {
 
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity = new PrisonCourtRegisterEntity();
         prisonCourtRegisterEntity.setCourtCentreId(courtCenterId);
-        when(prisonCourtRegisterRepository.findByCourtCentreIdAndHearingId(courtCenterId, hearingId.toString())).thenReturn(prisonCourtRegisterEntity);
+        when(prisonCourtRegisterRepository.findByCourtCentreIdAndHearingIdAndDefendantId(courtCenterId, hearingId.toString(), defendantId.toString())).thenReturn(prisonCourtRegisterEntity);
 
         prisonCourtRegisterEventListener.generatePrisonCourtRegister(envelopeFrom(metadataWithRandomUUID("progression.event.prison-court-register-generated"),
                 objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated)));
 
         assertThat(prisonCourtRegisterEntity.getFileId(), is(fileId));
+    }
+
+
+    // this is for old events, catch-up and replay DLQs, some DLQs may have multiple records, I don't know why.
+    @Test
+    public void testPrisonCourtRegisterGeneratedWithoutIdForMultipleRecords() {
+        final UUID courtCenterId = UUID.randomUUID();
+        final UUID fileId = UUID.randomUUID();
+        final UUID hearingId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+
+        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated()
+                .withCourtCentreId(courtCenterId)
+                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().withMasterDefendantId(defendantId).build())
+                .withFileId(fileId)
+                .withHearingDate(ZonedDateTime.now(UTC))
+                .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().build())
+                .withHearingId(hearingId)
+                .withRecipients(Collections.emptyList())
+                .build();
+
+        final PrisonCourtRegisterEntity prisonCourtRegisterEntity = new PrisonCourtRegisterEntity();
+        prisonCourtRegisterEntity.setCourtCentreId(courtCenterId);
+        prisonCourtRegisterEntity.setPayload(courtCenterId + " " + hearingId + " " + defendantId);
+        final PrisonCourtRegisterEntity prisonCourtRegisterEntity2 = new PrisonCourtRegisterEntity();
+        prisonCourtRegisterEntity2.setCourtCentreId(courtCenterId);
+
+        when(prisonCourtRegisterRepository.findByCourtCentreIdAndHearingIdAndDefendantId(courtCenterId, hearingId.toString(), defendantId.toString())).thenThrow( new RuntimeException());
+
+        prisonCourtRegisterEventListener.generatePrisonCourtRegister(envelopeFrom(metadataWithRandomUUID("progression.event.prison-court-register-generated"),
+                objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated)));
+
+        assertThat(prisonCourtRegisterEntity.getFileId(), is(nullValue()));
     }
 }

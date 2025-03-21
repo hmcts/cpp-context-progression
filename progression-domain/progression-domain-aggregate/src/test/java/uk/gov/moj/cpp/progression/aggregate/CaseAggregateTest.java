@@ -59,8 +59,8 @@ import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.
 import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.Address;
-import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
+import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
@@ -93,7 +93,6 @@ import uk.gov.justice.core.courts.DefendantsNotAddedToCourtProceedings;
 import uk.gov.justice.core.courts.DocumentWithProsecutionCaseIdAdded;
 import uk.gov.justice.core.courts.EditFormRequested;
 import uk.gov.justice.core.courts.ExactMatchedDefendantSearchResultStored;
-import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.FormCreated;
 import uk.gov.justice.core.courts.FormDefendants;
 import uk.gov.justice.core.courts.FormDefendantsUpdated;
@@ -102,8 +101,6 @@ import uk.gov.justice.core.courts.FormOperationFailed;
 import uk.gov.justice.core.courts.FormType;
 import uk.gov.justice.core.courts.FormUpdated;
 import uk.gov.justice.core.courts.HearingConfirmedCaseStatusUpdated;
-import uk.gov.justice.core.courts.HearingExtended;
-import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.HearingUpdatedForPartialAllocation;
@@ -5121,17 +5118,6 @@ public class CaseAggregateTest {
 
         setField(caseAggregate, "hearingIds", hearingIds);
 
-        final UpdateMatchedDefendantCustodialInformation updateMatchedDefendantCustodialInformation = updateMatchedDefendantCustodialInformation()
-                .withCaseId(caseId)
-                .withCustodialEstablishment(uk.gov.moj.cpp.progression.command.CustodialEstablishment.custodialEstablishment()
-                        .withCustody("custody1")
-                        .withId(custodialId)
-                        .withName("name1")
-                        .build())
-                .withDefendants(Arrays.asList(defendantId1))
-                .withMasterDefendantId(masterDefendantId)
-                .build();
-
         final List<UUID> allHearingIdsForCase = asList(applicationHearingId);
 
         final List<Object> eventList = caseAggregate.removeDefendantCustodialEstablishment(masterDefendantId, defendantId1, caseId, allHearingIdsForCase).collect(toList());
@@ -7023,6 +7009,170 @@ public class CaseAggregateTest {
         assertThat(hearingResultedCaseUpdatedWithoutCustodialInformation.getProsecutionCase().getDefendants().get(0).getPersonDefendant().getCustodialEstablishment(), is(nullValue()));
     }
 
+
+    @Test
+    void shouldNotRaiseCaseLinkToHearingWhenHearingWasDeleted() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        ProsecutionCase pCase = prosecutionCase().withValuesFrom(prosecutionCase).withId(caseId).build();
+
+        HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase = HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
+                .withHearingId(hearingId)
+                .withProsecutionCaseId(caseId)
+                .withDefendantIds(pCase.getDefendants().stream().map(Defendant::getId).collect(toList()))
+                .build();
+        caseAggregate.apply(new ProsecutionCaseCreated(pCase, null));
+        caseAggregate.apply(hearingDeletedForProsecutionCase);
+
+        final List<Object> response = caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId).collect(toList());
+
+        assertThat(response.size(), is(0));
+    }
+
+    @Test
+    void shouldNotRaiseCaseLinkToHearingWhenHearingWasMarkedAsDuplicateForCase() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        ProsecutionCase pCase = prosecutionCase().withValuesFrom(prosecutionCase).withId(caseId).build();
+
+        HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase = HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withHearingId(hearingId)
+                .withCaseId(caseId)
+                .withDefendantIds(pCase.getDefendants().stream().map(Defendant::getId).collect(toList()))
+                .build();
+        caseAggregate.apply(new ProsecutionCaseCreated(pCase, null));
+        caseAggregate.apply(hearingMarkedAsDuplicateForCase);
+
+        final List<Object> response = caseAggregate.linkProsecutionCaseToHearing(hearingId, caseId).collect(toList());
+
+        assertThat(response.size(), is(0));
+    }
+
+    @Test
+    void shouldNotLinkedMasterDefendantIdUpdatedV2WithDeletedHearing() {
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID defendantId3 = randomUUID();
+
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final List<Defendant> defendants = getDefendants(caseId, defendantId1, defendantId2, defendantId3, offenceId1, offenceId2, offenceId3);
+
+        defendantsMap.put(defendantId1, defendants.get(0));
+        defendantsMap.put(defendantId2, defendants.get(0));
+        defendantsMap.put(defendantId3, defendants.get(0));
+
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final UUID masterDefendantId1 = randomUUID();
+
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(defendantId1)
+                .withProsecutionCaseId(randomUUID())
+                .withMatchedDefendants(singletonList(
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(masterDefendantId1)
+                                .withProsecutionCaseId(randomUUID())
+                                .withMasterDefendantId(masterDefendantId1)
+                                .build()))
+                .build();
+
+        ProsecutionCase pCase = prosecutionCase().withValuesFrom(prosecutionCase).withId(caseId)
+                .withDefendants(asList(getDefendant(defendantId1), getDefendant(defendantId2), getDefendant(defendantId3)))
+                .build();
+
+        HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase = HearingDeletedForProsecutionCase.hearingDeletedForProsecutionCase()
+                .withHearingId(hearingId)
+                .withProsecutionCaseId(caseId)
+                .withDefendantIds(pCase.getDefendants().stream().map(Defendant::getId).collect(toList()))
+                .build();
+
+        final CaseLinkedToHearing caseLinkedToHearing = CaseLinkedToHearing.caseLinkedToHearing()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .build();
+
+        caseAggregate.apply(new ProsecutionCaseCreated(pCase, null));
+        // Hearing deleted for the prosecution case
+        caseAggregate.apply(hearingDeletedForProsecutionCase);
+
+        // Linking Case and Hearing
+        caseAggregate.apply(caseLinkedToHearing);
+
+        Stream<Object> objectStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
+
+        Optional<Object> masterDefendantIdUpdatedV2 = objectStream.filter(s -> s instanceof MasterDefendantIdUpdatedV2).findFirst();
+        assertThat(masterDefendantIdUpdatedV2.isPresent(), is(true));
+        assertThat(masterDefendantIdUpdatedV2.map(s -> (MasterDefendantIdUpdatedV2) s).get().getMatchedDefendants().size(), is(1));
+        assertThat(defendantsMap.get(defendantId1).getMasterDefendantId(), is(masterDefendantId1));
+
+        // Verify that masterDefendantIdUpdatedV2 not linked with deleted hearing
+        assertThat(masterDefendantIdUpdatedV2.map(s -> (MasterDefendantIdUpdatedV2) s).get().getHearingId(), is(Matchers.nullValue()));
+    }
+
+    @Test
+    void shouldNotLinkedMasterDefendantIdUpdatedWithDeletedHearing() {
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final CaseLinkedToHearing caseLinkedToHearing = CaseLinkedToHearing.caseLinkedToHearing()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .build();
+
+        final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase = HearingMarkedAsDuplicateForCase.hearingMarkedAsDuplicateForCase()
+                .withCaseId(caseId)
+                .withHearingId(hearingId)
+                .withDefendantIds(asList(defendantId))
+                .build();
+
+        MatchDefendant matchDefendant = MatchDefendant.matchDefendant()
+                .withDefendantId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withMatchedDefendants(asList(
+                        MatchedDefendant.matchedDefendant()
+                                .withDefendantId(defendantId)
+                                .withProsecutionCaseId(caseId)
+                                .withMasterDefendantId(defendantId)
+                                .build(),
+                        MatchedDefendant.matchedDefendant()
+                                .withCourtProceedingsInitiated(ZonedDateTime.now())
+                                .withDefendantId(defendantId)
+                                .withProsecutionCaseId(caseId)
+                                .withMasterDefendantId(defendantId)
+                                .build()))
+                .build();
+        CaseAggregate caseAggregate = new CaseAggregate();
+
+        // Marking Hearing a duplicate for case
+        caseAggregate.apply(hearingMarkedAsDuplicateForCase);
+
+        // Linking Case and Hearing
+        caseAggregate.apply(caseLinkedToHearing);
+
+        final Stream<Object> eventStream = caseAggregate.matchPartiallyMatchedDefendants(matchDefendant);
+
+        Optional<Object> optionalObjectMasterDefendantIdUpdated = eventStream.filter(s -> s instanceof MasterDefendantIdUpdated).findFirst();
+        assertThat(optionalObjectMasterDefendantIdUpdated.isPresent(), is(true));
+        MasterDefendantIdUpdated masterDefendantIdUpdated = (MasterDefendantIdUpdated) optionalObjectMasterDefendantIdUpdated.get();
+
+        // Verify that masterDefendantIdUpdated not linked with deleted hearing
+        assertThat(masterDefendantIdUpdated.getHearingId(), is(Matchers.nullValue()));
+    }
+
+    private Defendant getDefendant(final UUID defendantId1) {
+        return Defendant.defendant()
+                .withOffences(asList(uk.gov.justice.core.courts.Offence.offence().build()))
+                .withId(defendantId1).build();
+    }
 
     private void assertPleaAllocationsStoredCorrectly(final Map<UUID, OnlinePleasAllocation> onlinePleaAllocations,
                                                       final PleasAllocationDetails allocationDetails,

@@ -79,9 +79,6 @@ import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
-
-import java.util.Collection;
-
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
@@ -264,6 +261,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -292,12 +290,11 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S3776", "squid:MethodCyclomaticComplexity", "squid:S1948", "squid:S3457", "squid:S1192", "squid:CallToDeprecatedMethod", "squid:S1188", "squid:S2384", "pmd:NullAssignment", "squid:S134", "squid:S1312", "squid:S1612", "pmd:NullAssignment"})
 public class CaseAggregate implements Aggregate {
 
-    private static final long serialVersionUID = 2319902433871042754L;
+    private static final long serialVersionUID = -2092381865833271661L;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter ZONE_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm a");
-    private static final String HEARING_PAYLOAD_PROPERTY = "hearing";
     protected static final Logger LOGGER = LoggerFactory.getLogger(CaseAggregate.class);
     private static final String CASE_STATUS_EJECTED = "EJECTED";
     private static final String LAA_WITHDRAW_STATUS_CODE = "WD";
@@ -329,6 +326,7 @@ public class CaseAggregate implements Aggregate {
     //hearing collections
     private final Set<UUID> hearingIds = new HashSet<>();
     private final List<ListHearingRequest> listHearingRequestsToBeAdded = new ArrayList<>();
+    private final Set<UUID> deletedHearingIds = new HashSet<>();
 
     //offence collections
     private final Map<UUID, List<uk.gov.justice.core.courts.Offence>> defendantCaseOffences = new HashMap<>();
@@ -444,12 +442,7 @@ public class CaseAggregate implements Aggregate {
                             this.prosecutionCase.getDefendants().addAll(e.getDefendants());
                         }
                 ),
-                when(CaseLinkedToHearing.class).apply(
-                        e -> {
-                            this.hearingIds.add(e.getHearingId());
-                            this.latestHearingId = e.getHearingId();
-                        }
-                ),
+                when(CaseLinkedToHearing.class).apply(this::caseLinkedToHearing),
                 when(FinancialDataAdded.class).apply(this::populateFinancialData),
                 when(FinancialMeansDeleted.class).apply(this::deleteFinancialData),
                 when(HearingResultedCaseUpdated.class).apply(this::updateDefendantProceedingConcludedAndCaseStatus),
@@ -551,6 +544,13 @@ public class CaseAggregate implements Aggregate {
                 ),
                 otherwiseDoNothing());
 
+    }
+
+    private void caseLinkedToHearing(final CaseLinkedToHearing caseLinkedToHearing) {
+        if(!this.deletedHearingIds.contains(caseLinkedToHearing.getHearingId())){
+            this.hearingIds.add(caseLinkedToHearing.getHearingId());
+            this.latestHearingId = caseLinkedToHearing.getHearingId();
+        }
     }
 
     private List<uk.gov.justice.core.courts.Offence> getOffencesWithDefaultOrderIndex(final List<uk.gov.justice.core.courts.Offence> offences) {
@@ -1689,8 +1689,12 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> linkProsecutionCaseToHearing(final UUID hearingId, final UUID caseId) {
-        return apply(Stream.of(CaseLinkedToHearing.caseLinkedToHearing()
-                .withHearingId(hearingId).withCaseId(caseId).build()));
+        if(!this.deletedHearingIds.contains(hearingId)){
+            return apply(Stream.of(CaseLinkedToHearing.caseLinkedToHearing()
+                    .withHearingId(hearingId).withCaseId(caseId).build()));
+        } else {
+            return Stream.empty();
+        }
     }
 
     public Stream<Object> addFinancialMeansData(final UUID prosecutionCaseId, final UUID defendantId, final UUID applicationId, final Material material) {
@@ -2671,6 +2675,7 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingMarkedAsDuplicateForCase(final HearingMarkedAsDuplicateForCase hearingMarkedAsDuplicateForCase) {
         this.hearingIds.remove(hearingMarkedAsDuplicateForCase.getHearingId());
+        this.deletedHearingIds.add(hearingMarkedAsDuplicateForCase.getHearingId());
         if (nonNull(this.latestHearingId) && this.latestHearingId.equals(hearingMarkedAsDuplicateForCase.getHearingId())) {
             this.latestHearingId = null;
         }
@@ -2678,10 +2683,10 @@ public class CaseAggregate implements Aggregate {
 
     private void onHearingDeletedForProsecutionCase(final HearingDeletedForProsecutionCase hearingDeletedForProsecutionCase) {
         this.hearingIds.remove(hearingDeletedForProsecutionCase.getHearingId());
+        this.deletedHearingIds.add(hearingDeletedForProsecutionCase.getHearingId());
         if (hearingDeletedForProsecutionCase.getHearingId().equals(latestHearingId)) {
             latestHearingId = null;
         }
-
     }
 
     private void onHearingRemovedForProsecutionCase(final HearingRemovedForProsecutionCase hearingRemovedForProsecutionCase) {

@@ -14,14 +14,20 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.PrisonCourtRegisterEnti
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.PrisonCourtRegisterRepository;
 
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.UUID;
 
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @ServiceComponent(EVENT_LISTENER)
 public class PrisonCourtRegisterEventListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PrisonCourtRegisterEventListener.class);
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -53,10 +59,19 @@ public class PrisonCourtRegisterEventListener {
         final PrisonCourtRegisterEntity prisonCourtRegisterEntity;
         if(isNull(prisonCourtRegisterGenerated.getId())) {
             // this is for old events , catch-up or replay DLQs
-            prisonCourtRegisterEntity = prisonCourtRegisterRepository.findByCourtCentreIdAndHearingId(prisonCourtRegisterGenerated.getCourtCentreId(), prisonCourtRegisterGenerated.getHearingId().toString());
+            final String defendantId = Optional.ofNullable(prisonCourtRegisterGenerated.getDefendant().getMasterDefendantId()).map(UUID::toString).orElse("");
+            try{
+                prisonCourtRegisterEntity = prisonCourtRegisterRepository.findByCourtCentreIdAndHearingIdAndDefendantId(prisonCourtRegisterGenerated.getCourtCentreId(), prisonCourtRegisterGenerated.getHearingId().toString(), defendantId);
+                prisonCourtRegisterEntity.setFileId(prisonCourtRegisterGenerated.getFileId());
+            } catch (Exception e) {
+                // this update is not important for the old events
+                LOGGER.error("Found courtCentreId {} and hearingId {} defendantId {}", prisonCourtRegisterGenerated.getCourtCentreId(), prisonCourtRegisterGenerated.getHearingId(), defendantId);
+                LOGGER.error("Error generating prison court register " , e);
+            }
         } else {
             prisonCourtRegisterEntity = prisonCourtRegisterRepository.findById(prisonCourtRegisterGenerated.getId());
+            prisonCourtRegisterEntity.setFileId(prisonCourtRegisterGenerated.getFileId());
         }
-        prisonCourtRegisterEntity.setFileId(prisonCourtRegisterGenerated.getFileId());
+
     }
 }
