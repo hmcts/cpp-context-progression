@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
+import static javax.json.JsonValue.EMPTY_JSON_OBJECT;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -90,8 +91,12 @@ public class HearingQueryService {
 
         final JsonEnvelope responseJson = requester.request(JsonEnvelope.envelopeFrom(metadata, jsonPayLoad));
 
-        LOGGER.info("{} response payload {}", HEARING_GET_DRAFT_RESULT_V2, responseJson.toObfuscatedDebugString());
-        return responseJson.payloadAsJsonObject();
+        if (!responseJson.payloadIsNull()) {
+            LOGGER.info("{} response payload {}", HEARING_GET_DRAFT_RESULT_V2, responseJson.toObfuscatedDebugString());
+            return responseJson.payloadAsJsonObject();
+        }
+
+        return EMPTY_JSON_OBJECT;
     }
 
     private static Metadata metadataWithNewActionName(final Metadata metadata, final String actionName) {

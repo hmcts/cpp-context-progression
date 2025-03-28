@@ -1,7 +1,6 @@
 package uk.gov.justice.api.resource.utils;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
@@ -397,24 +396,6 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
-    public void testTransformToCourtExtract_whenDefendantOffencesWithCountAndOrderIndex() {
-        final String extractType = "CrownCourtExtract";
-        final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
-        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "hearing-results/progression.query.prosecutioncase-defendant-offence-count.json");
-
-        when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(emptyList());
-        when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
-
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().size(), is((3)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getCount(), is((1)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(1).getCount(), is((2)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(2).getCount(), is((0)));
-    }
-
-    @Test
     public void testTransformToCourtExtract_whenResultDeletedWithSlipRule() {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
@@ -724,16 +705,14 @@ public class CourtExtractTransformerTest {
         final UUID o1 = randomUUID();
         final UUID o2 = randomUUID();
         final UUID o3 = randomUUID();
-        final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(5).withOffenceTitle("o1").build(),
-                offences().withId(o2).withOrderIndex(2).withOffenceTitle("o2").build(),
-                offences().withId(o2).withCount(2).withOrderIndex(4).withOffenceTitle("o4").build(),
-                offences().withId(o3).withCount(0).withOrderIndex(3).withOffenceTitle("o3").build());
+        final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(5).build(),
+                offences().withId(o2).withOrderIndex(2).build(),
+                offences().withId(o3).withCount(0).withOrderIndex(3).build());
 
         final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), CROWN, emptyMap());
-        assertThat(offencesMags.get(0).getOffenceTitle(), is("o4"));
-        assertThat(offencesMags.get(1).getOffenceTitle(), is("o1"));
-        assertThat(offencesMags.get(2).getOffenceTitle(), is("o2"));
-        assertThat(offencesMags.get(3).getOffenceTitle(), is("o3"));
+        assertThat(offencesMags.get(0).getId(), is(o2));
+        assertThat(offencesMags.get(1).getId(), is(o3));
+        assertThat(offencesMags.get(2).getId(), is(o1));
     }
 
     @Test
@@ -753,25 +732,6 @@ public class CourtExtractTransformerTest {
         assertThat(offencesMags.get(1).getId(), is(o1));
         assertThat(offencesMags.get(2).getId(), is(o3));
         assertThat(offencesMags.get(3).getId(), is(o4));
-    }
-
-    @Test
-    public void shouldSortOffencesByOffenceCountAndThenOrderIndex_whenJurisdictionCrown() {
-        final UUID o1 = randomUUID();
-        final UUID o2 = randomUUID();
-        final UUID o3 = randomUUID();
-        final UUID o4 = randomUUID();
-        final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(3).withOffenceTitle("o1").build(),
-                offences().withId(o2).withCount(1).withOrderIndex(1).withOffenceTitle("o2").build(),
-                offences().withId(o3).withCount(5).withOrderIndex(5).withOffenceTitle("o3").build(),
-                offences().withId(o4).withOrderIndex(4).withOffenceTitle("o4").build()
-        );
-
-        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), CROWN, emptyMap());
-        assertThat(offencesMags.get(0).getOffenceTitle(), is("o2"));
-        assertThat(offencesMags.get(1).getOffenceTitle(), is("o1"));
-        assertThat(offencesMags.get(2).getOffenceTitle(), is("o3"));
-        assertThat(offencesMags.get(3).getOffenceTitle(), is("o4"));
     }
 
     private void verifyOffenceLevelResult(final CourtExtractRequested courtExtractRequested) {
