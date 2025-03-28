@@ -1,6 +1,7 @@
 package uk.gov.justice.api.resource.service;
 
 import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
@@ -17,6 +18,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.api.resource.utils.FileUtil;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -36,6 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,8 +62,15 @@ public class ReferenceDataServiceTest {
     private static final String FIELD_RESULT_DEFINITION_GROUP = "resultDefinitionGroup";
     public static final String LAVENDER_HILL_MAGISTRATES_COURT = "Lavender Hill Magistrates' Court";
 
+    private static final String FIELD_AMENDMENT_REASONS = "amendmentReasons";
+    private static final String REASON_CODE = "reasonCode";
+    public static final String SLIP_RULE_AMENDMENT_UUID = "a02018a1-915c-3343-95ad-abc5f99b339a";
+
     @Mock
     private Requester requester;
+
+    @Spy
+    private JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @InjectMocks
     private ReferenceDataService referenceDataService;
@@ -73,7 +84,7 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldRetrievePleaStatusTypeDescriptions() {
-        final Envelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
+        final Envelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
         final Map<String, String> actual = referenceDataService.retrievePleaTypeDescriptions();
         assertThat(actual.get(PLEA_VALUE_1), is(PLEA_DESC_1));
@@ -82,23 +93,23 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldRetrieveJudiciaries() {
-        final Envelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(), buildJudiciariesPayload());
+        final Envelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(), buildJudiciariesPayload());
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
-        final Optional<JsonObject> actual = referenceDataService.getJudiciary(UUID.randomUUID());
+        final Optional<JsonObject> actual = referenceDataService.getJudiciary(randomUUID());
         assertThat(actual.get().getString(JUDICIARY_VALUE_1), equalTo(JUDICIARY_DESC_1));
     }
 
     @Test
     public void shouldRetrieveCourtCentreIdsByClusterId() {
-        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(), buildClusterOrganisationPayload());
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(), buildClusterOrganisationPayload());
         when(requester.request(any())).thenReturn(envelope);
-        final JsonEnvelope actual = referenceDataService.getCourtCentreIdsByClusterId(UUID.randomUUID());
+        final JsonEnvelope actual = referenceDataService.getCourtCentreIdsByClusterId(randomUUID());
         assertThat(actual.payloadAsJsonObject().getJsonArray(FIELD_ORGGANISATION_UNITS).size(), equalTo(1));
     }
 
     @Test
     public void shouldgetCourtCenterDataByCourtName() {
-        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(),
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(),
                 FileUtil.jsonFromPath("stub-data/referencedata.query.ou.courtrooms.ou-courtroom-name.json"));
         when(requester.request(any())).thenReturn(envelope);
         final Optional<JsonObject> actual = referenceDataService.getCourtCenterDataByCourtName(envelope, LAVENDER_HILL_MAGISTRATES_COURT);
@@ -119,10 +130,10 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldGetOrganisationUnitById() {
-        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(),
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(),
                 createObjectBuilder().build());
         when(requester.request(any())).thenReturn(envelope);
-        final Optional<JsonObject> actual = referenceDataService.getOrganisationUnitById(envelope, UUID.randomUUID());
+        final Optional<JsonObject> actual = referenceDataService.getOrganisationUnitById(envelope, randomUUID());
 
         verify(requester).request(envelopeArgumentCaptor.capture());
         final JsonEnvelope envelopeCapture = envelopeArgumentCaptor.getValue();
@@ -131,24 +142,24 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldReturnEmptyJsonWhenNoJudiciariesInReferenceData() {
-        final Envelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(),
+        final Envelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(),
                 createObjectBuilder().add(FIELD_JUDICIARIES, createArrayBuilder()).build());
 
         when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
 
-        final Optional<JsonObject> actual = referenceDataService.getJudiciary(UUID.randomUUID());
+        final Optional<JsonObject> actual = referenceDataService.getJudiciary(randomUUID());
 
         assertThat(actual.isPresent(), equalTo(false));
     }
 
     @Test
     public void shouldgetResultDefinitionsByIdsWithCategoryAndGroup() {
-        final UUID rdId = UUID.randomUUID();
+        final UUID rdId = randomUUID();
         final List<UUID> resultDefinitionIdList = List.of(rdId);
-        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(),
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(),
                 buildResultDefinitionByIdsResponse(rdId, "I", "CommittedToCC"));
         when(requester.request(any())).thenReturn(envelope);
-        final List<ResultDefinition> resultDefinitionsByIdsResponse = referenceDataService.getResultDefinitionsByIds(envelope, resultDefinitionIdList);
+        final List<ResultDefinition> resultDefinitionsByIdsResponse = referenceDataService.getResultDefinitionsByIds(randomUUID(), resultDefinitionIdList);
 
         final JsonObject expectedJson = createObjectBuilder()
                 .add("ids", rdId.toString())
@@ -166,12 +177,12 @@ public class ReferenceDataServiceTest {
 
     @Test
     public void shouldgetResultDefinitionsByIdsWithCategoryAndNoGroup() {
-        final UUID rdId = UUID.randomUUID();
+        final UUID rdId = randomUUID();
         final List<UUID> resultDefinitionIdList = List.of(rdId);
-        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(UUID.randomUUID()).withName("ids").build(),
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(),
                 buildResultDefinitionByIdsResponse(rdId, "A", null));
         when(requester.request(any())).thenReturn(envelope);
-        final List<ResultDefinition> resultDefinitionsByIdsResponse = referenceDataService.getResultDefinitionsByIds(envelope, resultDefinitionIdList);
+        final List<ResultDefinition> resultDefinitionsByIdsResponse = referenceDataService.getResultDefinitionsByIds(randomUUID(), resultDefinitionIdList);
 
         final JsonObject expectedJson = createObjectBuilder()
                 .add("ids", rdId.toString())
@@ -185,6 +196,38 @@ public class ReferenceDataServiceTest {
         assertThat(resultDefinitionsByIdsResponse.get(0).getId().toString(), equalTo(rdId.toString()));
         assertThat(resultDefinitionsByIdsResponse.get(0).getCategory(), equalTo("A"));
         assertThat(resultDefinitionsByIdsResponse.get(0).getResultDefinitionGroup(), nullValue());
+    }
+
+    @Test
+    public void shouldGetAmendmentReasonIdForGivenReasonCode() {
+        final JsonEnvelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("ids").build(),
+                buildAmendmentReasons());
+        when(requester.request(any())).thenReturn(envelope);
+        final String reasonCode = "EO";
+        final UUID slipRuleAmendmentReasonId = referenceDataService.getAmendmentReasonId(randomUUID(), reasonCode);
+
+        verify(requester).request(envelopeArgumentCaptor.capture());
+        final JsonEnvelope envelopeCapture = envelopeArgumentCaptor.getValue();
+        assertEquals("referencedata.query.amendment-reasons", envelopeCapture.metadata().name());
+        assertEquals(slipRuleAmendmentReasonId.toString(), SLIP_RULE_AMENDMENT_UUID);
+    }
+
+    private JsonValue buildAmendmentReasons() {
+        final JsonObjectBuilder adminError = createObjectBuilder()
+                .add(FIELD_ID, "ca8b8285-5fc7-3b36-aa78-ecdf5ac6dad0")
+                .add("reasonDescription", "Admin error on shared result (a result recorded incorrectly)")
+                .add("reasonCode", "AE");
+
+        final JsonObjectBuilder slipRule = createObjectBuilder()
+                .add(FIELD_ID, SLIP_RULE_AMENDMENT_UUID)
+                .add("reasonDescription", "Error or Omission in result announced in court (Amendment under the Slip rule)")
+                .add("reasonCode", "EO");
+
+        return createObjectBuilder()
+                .add(FIELD_AMENDMENT_REASONS, createArrayBuilder()
+                        .add(adminError.build())
+                        .add(slipRule.build()))
+                .build();
     }
 
     private JsonObject buildPleaStatusTypesPayload() {

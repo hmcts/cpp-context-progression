@@ -10,6 +10,7 @@ import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.exract.CommittedForSentence;
+import uk.gov.justice.progression.courts.exract.Results;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.JurisdictionType;
 import uk.gov.moj.cpp.listing.domain.SeedingHearing;
@@ -111,6 +112,7 @@ public class CourtExtractHelper {
         return offences.stream()
                 .filter(o -> nonNull(o.getResults()))
                 .flatMap(o -> o.getResults().stream())
+                .map(Results::getResult)
                 .map(JudicialResult::getDelegatedPowers)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet())

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.api.resource.service.HearingQueryService;
 import uk.gov.justice.api.resource.service.ListingQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.api.resource.utils.CourtExtractHelper;
@@ -116,6 +117,9 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     @Mock
     private ReferenceDataService referenceDataService;
 
+    @Mock
+    private HearingQueryService hearingQueryService;
+
     @InjectMocks
     private DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource;
 
@@ -136,6 +140,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         setField(this.courtExtractTransformer, "courtExtractHelper", courtExtractHelper);
         setField(this.courtExtractTransformer, "listingQueryService", listingQueryService);
         setField(this.courtExtractTransformer, "referenceDataService", referenceDataService);
+        setField(this.courtExtractTransformer, "hearingQueryService", hearingQueryService);
         setField(this.pleaValueDescriptionBuilder, "referenceDataService", referenceDataService);
         setField(this.defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource, "pleaValueDescriptionBuilder", pleaValueDescriptionBuilder);
 

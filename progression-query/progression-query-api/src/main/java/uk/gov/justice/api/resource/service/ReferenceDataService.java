@@ -3,7 +3,6 @@ package uk.gov.justice.api.resource.service;
 import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -16,6 +15,7 @@ import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.progression.courts.exract.ProsecutingAuthority;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -24,6 +24,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
+import uk.gov.justice.services.messaging.spi.DefaultJsonMetadata;
 import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 
 import java.io.IOException;
@@ -59,6 +60,7 @@ public class ReferenceDataService {
     private static final String REFERENCEDATA_QUERY_CLUSTER = "referencedata.query.cluster-org-units";
     private static final String REFERENCEDATA_QUERY_DOCUMENTS_TYPE_ACCESS = "referencedata.get-all-document-type-access";
     public static final String REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS = "referencedata.query-result-definitions-by-ids";
+    public static final String REFERENCEDATA_QUERY_AMENDMENT_REASONS = "referencedata.query.amendment-reasons";
 
     private static final String ADDRESS_1 = "address1";
     private static final String ADDRESS_2 = "address2";
@@ -76,7 +78,10 @@ public class ReferenceDataService {
     private static final String FIELD_ID = "id";
     private static final String DEFAULT_VALUE = null;
 
-    private static final String FIELD_RESULT_DEFINITIONS = "resultDefinitions";
+    public static final String FIELD_RESULT_DEFINITIONS = "resultDefinitions";
+    private static final String FIELD_AMENDMENT_REASONS = "amendmentReasons";
+    private static final String REASON_CODE = "reasonCode";
+    private static final String REASON_ID = "id";
 
     @Inject
     @ServiceComponent(QUERY_API)
@@ -86,6 +91,9 @@ public class ReferenceDataService {
     private Enveloper enveloper;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
+
+    @Inject
+    private JsonObjectToObjectConverter jsonToObjectConverter;
 
     public Map<String, String> retrievePleaTypeDescriptions() {
         final MetadataBuilder metadataBuilder = metadataBuilder()
@@ -150,16 +158,15 @@ public class ReferenceDataService {
                 .withAddress5(courtCentreJson.getString(ADDRESS_5, null))
                 .withPostcode(courtCentreJson.getString(POSTCODE, null))
                 .build();
-
     }
 
-    public List<ResultDefinition> getResultDefinitionsByIds(final JsonEnvelope jsonEnvelope, final List<UUID> resultDefinitionIdList) {
+    public List<ResultDefinition> getResultDefinitionsByIds(final UUID userId, final List<UUID> resultDefinitionIdList) {
         final String idsValue = resultDefinitionIdList.stream().map(UUID::toString).collect(Collectors.joining(","));
         final JsonObject payload = createObjectBuilder().add("ids", idsValue).build();
 
         LOGGER.info("Calling referenceDataService queryResultDefinitionsByIds with list of resultDefinitionIds: {}", payload);
 
-        final Metadata metadata = metadataFrom(jsonEnvelope.metadata())
+        final Metadata metadata = metadataFrom(getReferenceDataQueryJsonEnvelop(userId).metadata())
                 .withName(REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS)
                 .build();
 
@@ -171,12 +178,32 @@ public class ReferenceDataService {
                 .orElseThrow(RuntimeException::new);
 
         resultDefinitions.forEach(respPayload -> resultDefinitionList.add(
-                ResultDefinition.builder()
-                        .withId(fromString(((JsonObject) respPayload).getString("id")))
-                        .withResultDefinitionGroup(((JsonObject) respPayload).getString("resultDefinitionGroup", null))
-                        .withCategory(((JsonObject) respPayload).getString("category")).build()));
+                jsonToObjectConverter.convert(respPayload.asJsonObject(), ResultDefinition.class)));
 
         return resultDefinitionList;
+    }
+
+    public UUID getAmendmentReasonId(final UUID userId, final String reasonCode) {
+
+        LOGGER.info("Calling referenceDataService query get result amendment reasons: ");
+
+        final Metadata metadata = metadataFrom(getReferenceDataQueryAmendmentReasons(userId).metadata())
+                .withName(REFERENCEDATA_QUERY_AMENDMENT_REASONS)
+                .build();
+        final JsonObject payload = createObjectBuilder().build();
+        final JsonEnvelope jsonEnvelop = requester.request(envelopeFrom(metadata, payload));
+
+        if (!jsonEnvelop.payloadIsNull()) {
+            return jsonEnvelop.payloadAsJsonObject().getJsonArray(FIELD_AMENDMENT_REASONS)
+                    .stream()
+                    .map(jsonValue -> (JsonObject) jsonValue)
+                    .filter(reasonObj -> reasonObj.containsKey(REASON_CODE))
+                    .filter(reasonObj -> reasonCode.equals(reasonObj.getString(REASON_CODE)))
+                    .map((reasonObj -> UUID.fromString(reasonObj.getString(REASON_ID))))
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 
     public ProsecutingAuthority getProsecutor(final JsonEnvelope event, final ProsecutionCaseIdentifier prosecutionCaseIdentifier) {
@@ -273,6 +300,30 @@ public class ReferenceDataService {
         return getRefDataStream(REFERENCEDATA_QUERY_DOCUMENTS_TYPE_ACCESS, FIELD_DOCUMENTS_TYPE_ACCESS,
                 createObjectBuilder().add("date", LocalDate.now().toString()))
                 .map(asDocumentsMetadataRefData()).collect(Collectors.toList());
+    }
+
+    private JsonEnvelope getReferenceDataQueryJsonEnvelop(final UUID userId) {
+        return envelopeFrom(
+                DefaultJsonMetadata.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS)
+                        .withUserId(userId.toString())
+                        .build(),
+                createObjectBuilder()
+                        .build()
+        );
+    }
+
+    private JsonEnvelope getReferenceDataQueryAmendmentReasons(final UUID userId) {
+        return envelopeFrom(
+                DefaultJsonMetadata.metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(REFERENCEDATA_QUERY_AMENDMENT_REASONS)
+                        .withUserId(userId.toString())
+                        .build(),
+                createObjectBuilder()
+                        .build()
+        );
     }
 
     public static class ReferenceHearingDetails {

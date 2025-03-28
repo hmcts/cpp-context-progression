@@ -1,12 +1,15 @@
 package uk.gov.justice.api.resource.utils;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,14 +20,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static uk.gov.justice.api.resource.service.HearingQueryService.RESULT_LINES;
+import static uk.gov.justice.api.resource.service.ReferenceDataService.FIELD_RESULT_DEFINITIONS;
 import static uk.gov.justice.api.resource.utils.FileUtil.getPayload;
+import static uk.gov.justice.api.resource.utils.FileUtil.jsonFromPath;
+import static uk.gov.justice.api.resource.utils.FileUtil.jsonFromString;
 import static uk.gov.justice.core.courts.JurisdictionType.CROWN;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.progression.courts.Offences.offences;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import uk.gov.justice.api.resource.dto.DraftResultsWrapper;
 import uk.gov.justice.api.resource.dto.ResultDefinition;
+import uk.gov.justice.api.resource.dto.ResultLine;
 import uk.gov.justice.api.resource.service.DefenceQueryService;
+import uk.gov.justice.api.resource.service.HearingQueryService;
 import uk.gov.justice.api.resource.service.ListingQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.api.resource.service.UsersAndGroupsService;
@@ -80,10 +90,13 @@ import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.Respondents;
+import uk.gov.justice.progression.courts.exract.ApplicationResults;
 import uk.gov.justice.progression.courts.exract.AttendanceDayAndType;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
 import uk.gov.justice.progression.courts.exract.CrownCourtDecisions;
+import uk.gov.justice.progression.courts.exract.DefendantResults;
 import uk.gov.justice.progression.courts.exract.JudiciaryNamesByRole;
+import uk.gov.justice.progression.courts.exract.Results;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
@@ -96,6 +109,7 @@ import uk.gov.moj.cpp.listing.domain.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.api.UserGroupsDetails;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -193,6 +207,7 @@ public class CourtExtractTransformerTest {
     private static final String APPLICATION_PARTICULARS = "Application particulars";
     private static final LocalDate ASSOCIATION_START_DATE = LocalDate.now();
     private static final LocalDate ASSOCIATION_END_DATE = ASSOCIATION_START_DATE.plusDays(10);
+    private static final UUID SLIP_RULE_AMENDMENT_REASON_ID = UUID.fromString("a02018a1-915c-3343-95ad-abc5f99b339a");
 
     private final ProsecutionCase prosecutionCase = createProsecutionCase();
     private CourtExtractTransformer target;
@@ -217,6 +232,9 @@ public class CourtExtractTransformerTest {
 
     @Mock
     private DefenceQueryService defenceQueryService;
+    @Mock
+    private HearingQueryService hearingQueryService;
+
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
@@ -228,6 +246,7 @@ public class CourtExtractTransformerTest {
         setField(this.target, "listingQueryService", listingQueryService);
         setField(this.target, "referenceDataService", referenceDataService);
         setField(this.target, "defenceQueryService", defenceQueryService);
+        setField(this.target, "hearingQueryService", hearingQueryService);
         setField(this.courtExtractHelper, "usersAndGroupsService", usersAndGroupsService);
     }
 
@@ -261,7 +280,7 @@ public class CourtExtractTransformerTest {
         assertThat(defendant.getHearings().get(1).getOffences().get(0).getResults().size(), is(1));
 
         final CourtExtractRequested courtExtract2ndDefendant = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID_2ND.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
-        final List<JudicialResult> defendant2ndResults = courtExtract2ndDefendant.getDefendant().getHearings().stream().flatMap(h -> h.getDefendantResults().stream()).toList();
+        final List<JudicialResult> defendant2ndResults = courtExtract2ndDefendant.getDefendant().getHearings().stream().flatMap(h -> h.getDefendantResults().stream().map(DefendantResults::getResult)).toList();
         assertThat(defendant2ndResults.size(), is(2));
     }
 
@@ -353,6 +372,188 @@ public class CourtExtractTransformerTest {
     }
 
     @Test
+    public void testTransformToCourtExtract_whenResultAmendedWithSlipRule() {
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "progression.query.prosecutioncase-result-sliprule-amended.json");
+        final UUID applicationId = hearingAtAGlance.getCourtApplications().get(0).getId();
+        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing.query.hearing.get-draft-result-v2.json");
+        final LocalDate hearingDay = LocalDate.parse("2025-02-13");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, defendantResultlines, null);
+
+
+        when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
+        when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getResults().size(), is((3)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getResults().get(0).getAmendments().size(), is((1)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getResults().get(0).getAmendments().get(0).getDefendantId(), is((DEFENDANT_ID)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getResults().get(0).getAmendments().get(0).getResultText(), is(("Community order England / Wales\nEnd Date 2025-05-15\nResponsible officer a probation officer")));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getResults().get(0).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
+    }
+
+    @Test
+    public void testTransformToCourtExtract_whenDefendantOffencesWithCountAndOrderIndex() {
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "hearing-results/progression.query.prosecutioncase-defendant-offence-count.json");
+
+        when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(emptyList());
+        when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().size(), is((3)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getCount(), is((1)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(1).getCount(), is((2)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(2).getCount(), is((0)));
+    }
+
+    @Test
+    public void testTransformToCourtExtract_whenResultDeletedWithSlipRule() {
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "progression.query.prosecutioncase-result-sliprule-amended-deleted.json");
+        final UUID applicationId = randomUUID();
+        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing.query.hearing.get-draft-result-v2-deleted.json");
+        final LocalDate hearingDay = LocalDate.parse("2025-02-28");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, defendantResultlines, null);
+
+        when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
+        when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getResults().size(), is((1)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getDeletedResults().size(), is((1)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getDeletedResults().get(0).getDefendantId(), is((DEFENDANT_ID)));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getDeletedResults().get(0).getResultText(), is(("Absolute discharge")));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0).getDeletedResults().get(0).getAmendmentType(), is(("DELETED")));
+    }
+
+    @Test
+    public void testTransformToCourtExtract_whenResultsAmendedPromptValueWithSlipRule() {
+
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "progression.query.prosecutioncase-result-sliprule-prompt-amended.json");
+        final UUID applicationId = randomUUID();
+        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing-results/hearing.query.hearing.get-draft-result-v2-amended.json");
+        final LocalDate hearingDay = LocalDate.parse("2025-02-28");
+        final ZonedDateTime lastSharedTime = ZonedDateTime.parse("2025-03-12T11:02:34.678Z");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, defendantResultlines, lastSharedTime);
+
+        when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
+        when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("hearing-results/referencedata.query.referencedata.query-result-definitions-by-ids-multiple.json"));
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
+        final uk.gov.justice.progression.courts.exract.Offences offences2 = courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(1);
+        assertThat(offences2.getResults().size(), is((1)));
+        assertThat(offences2.getResults().get(0).getAmendments().size(), is((1)));
+        assertThat(offences2.getResults().get(0).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
+        assertThat(offences2.getResults().get(0).getAmendments().get(0).getResultText(), is(("Conditional discharge\nPeriod of conditional discharge 12 Months")));
+    }
+
+    @Test
+    public void testTransformToCourtExtract_whenDefendantResultsAmendedWithSlipRule() {
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithDefendantAndCourtApplicationSlipRuleAmendments(DEFENDANT_ID.toString(), MASTER_DEFENDANT_ID.toString(), HEARING_ID.toString());
+        final UUID applicationId = hearingAtAGlance.getCourtApplications().get(0).getId();
+
+        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing-results/hearing.query.hearing.get-defendant-draft-result-v2.json");
+        final LocalDate hearingDay = LocalDate.parse("2025-02-24");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, defendantResultlines, null);
+
+        when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
+        when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        final uk.gov.justice.progression.courts.exract.Hearings hearings = courtExtractRequested.getDefendant().getHearings().get(0);
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
+        assertThat(hearings.getDefendantResults().size(), is((4)));
+        assertThat(hearings.getDefendantResults().stream().filter(dr -> nonNull(dr.getAmendments()))
+                .allMatch(dr -> dr.getAmendments().get(0).getDefendantId().equals(DEFENDANT_ID)), is(true));
+
+        assertThat(hearings.getDefendantResults().get(0).getAmendments().size(), is((1)));
+        assertThat(hearings.getDefendantResults().get(0).getAmendments().get(0).getResultText(), is(("Fined and detained in default of payment until court rises\nType of detention . Detention deemed served by reason of time already spent in custody\nTotal amount enforced 1500.00")));
+        assertThat(hearings.getDefendantResults().get(0).getAmendments().get(0).getAmendmentType(), is(("ADDED")));
+
+        assertThat(hearings.getDefendantResults().get(1).getAmendments().size(), is((1)));
+        assertThat(hearings.getDefendantResults().get(1).getAmendments().get(0).getResultText(), is(("Collection order\nCollection order type Make payments as ordered")));
+        assertThat(hearings.getDefendantResults().get(1).getAmendments().get(0).getAmendmentType(), is(("ADDED")));
+
+        assertThat(hearings.getDefendantResults().get(3).getAmendments().size(), is((1)));
+        assertThat(hearings.getDefendantResults().get(3).getAmendments().get(0).getResultText(), is(("Reserve Terms Instalments only\nPayment frequency weekly")));
+        assertThat(hearings.getDefendantResults().get(3).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
+    }
+
+    @Test
+    public void testTransformToCourtExtract_whenCourtApplicationResultsAmendedWithSlipRule() {
+        final String extractType = "CrownCourtExtract";
+        final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithDefendantAndCourtApplicationSlipRuleAmendments(DEFENDANT_ID.toString(), MASTER_DEFENDANT_ID.toString(), HEARING_ID.toString());
+
+        final UUID applicationId = hearingAtAGlance.getCourtApplications().get(0).getId();
+        final List<ResultLine> mockResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing-results/hearing.query.hearing.get-defendant-draft-result-v2.json");
+        final LocalDate hearingDay = LocalDate.parse("2025-02-24");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, mockResultlines, null);
+
+        when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
+        when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+
+        final uk.gov.justice.progression.courts.exract.Hearings hearings = courtExtractRequested.getDefendant().getHearings().get(0);
+        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
+        assertThat(hearings.getCourtApplications().size(), is((1)));
+
+        final List<ApplicationResults> applicationResults = hearings.getCourtApplications().get(0).getApplicationResults();
+        assertThat(applicationResults.size(), is(2));
+
+        assertThat(applicationResults.get(0).getAmendments().size(), is((1)));
+        assertThat(applicationResults.get(0).getAmendments().get(0).getResultText(), is(("Reserve Terms Instalments only\nPayment frequency weekly\nInstalment start date 2025-04-01")));
+        assertThat(applicationResults.get(0).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
+
+        assertThat(applicationResults.get(1).getAmendments().size(), is((1)));
+        assertThat(applicationResults.get(1).getAmendments().get(0).getResultText(), is(("Surcharge\nAmount of surcharge 120.00")));
+        assertThat(applicationResults.get(1).getAmendments().get(0).getAmendmentType(), is(("ADDED")));
+    }
+
+    private List<ResultDefinition> getResultDefinitions(final String pathToJson) {
+        final JsonObject resultDefinitions = jsonFromPath(pathToJson);
+
+        return resultDefinitions.getJsonArray(FIELD_RESULT_DEFINITIONS).stream()
+                .map(respPayload -> jsonObjectToObjectConverter.convert(respPayload.asJsonObject(), ResultDefinition.class)).collect(toList());
+    }
+
+    private List<ResultLine> getMockResultlines(final UUID defendantId, final UUID applicationId, final String pathToPayload) {
+        final JsonObject draftResultsPayload = jsonFromString(getPayload(pathToPayload)
+                .replaceAll("DEFENDANT_ID", defendantId.toString())
+                .replaceAll("APPLICATION_ID", applicationId.toString())
+        );
+
+        return draftResultsPayload.getJsonObject(RESULT_LINES).entrySet().stream()
+                .map(entry -> jsonObjectToObjectConverter.convert(entry.getValue().asJsonObject(), ResultLine.class))
+//                .filter(resultLine -> defendantId.equals(resultLine.getDefendantId()))
+                .filter(resultLine -> nonNull(resultLine.getAmendmentsLog()) && isNotEmpty(resultLine.getAmendmentsLog().getAmendmentsRecord()))
+                .collect(Collectors.toList());
+    }
+
+    @Test
     public void testTransformToCourtExtract_whenInitiallyResultedInMagistrateCourtWithCommittedForSentenceAndLaterResultedInCrownCourt() {
         final String extractType = "CrownCourtExtract";
         final UUID seedingHearingId = randomUUID();
@@ -434,6 +635,7 @@ public class CourtExtractTransformerTest {
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is((1)));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getRepresentation().getRespondentRepresentation().size(), is(2));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getRepresentation().getApplicantRepresentation().getApplicantCounsels().size(), is(1));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getApplicationResults().size(), is(1));
     }
 
     @Test
@@ -512,7 +714,7 @@ public class CourtExtractTransformerTest {
         final UUID o2 = randomUUID();
         final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(5).build(), offences().withId(o2).withOrderIndex(2).build());
 
-        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), MAGISTRATES);
+        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), MAGISTRATES, emptyMap());
         assertThat(offencesMags.get(0).getId(), is(o2));
         assertThat(offencesMags.get(1).getId(), is(o1));
     }
@@ -522,14 +724,16 @@ public class CourtExtractTransformerTest {
         final UUID o1 = randomUUID();
         final UUID o2 = randomUUID();
         final UUID o3 = randomUUID();
-        final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(5).build(),
-                offences().withId(o2).withOrderIndex(2).build(),
-                offences().withId(o3).withCount(0).withOrderIndex(3).build());
+        final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(5).withOffenceTitle("o1").build(),
+                offences().withId(o2).withOrderIndex(2).withOffenceTitle("o2").build(),
+                offences().withId(o2).withCount(2).withOrderIndex(4).withOffenceTitle("o4").build(),
+                offences().withId(o3).withCount(0).withOrderIndex(3).withOffenceTitle("o3").build());
 
-        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), CROWN);
-        assertThat(offencesMags.get(0).getId(), is(o2));
-        assertThat(offencesMags.get(1).getId(), is(o3));
-        assertThat(offencesMags.get(2).getId(), is(o1));
+        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), CROWN, emptyMap());
+        assertThat(offencesMags.get(0).getOffenceTitle(), is("o4"));
+        assertThat(offencesMags.get(1).getOffenceTitle(), is("o1"));
+        assertThat(offencesMags.get(2).getOffenceTitle(), is("o2"));
+        assertThat(offencesMags.get(3).getOffenceTitle(), is("o3"));
     }
 
     @Test
@@ -544,68 +748,97 @@ public class CourtExtractTransformerTest {
                 offences().withId(o4).withCount(5).withOrderIndex(8).build()
         );
 
-        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), CROWN);
+        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), CROWN, emptyMap());
         assertThat(offencesMags.get(0).getId(), is(o2));
         assertThat(offencesMags.get(1).getId(), is(o1));
         assertThat(offencesMags.get(2).getId(), is(o3));
         assertThat(offencesMags.get(3).getId(), is(o4));
     }
 
+    @Test
+    public void shouldSortOffencesByOffenceCountAndThenOrderIndex_whenJurisdictionCrown() {
+        final UUID o1 = randomUUID();
+        final UUID o2 = randomUUID();
+        final UUID o3 = randomUUID();
+        final UUID o4 = randomUUID();
+        final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(3).withOffenceTitle("o1").build(),
+                offences().withId(o2).withCount(1).withOrderIndex(1).withOffenceTitle("o2").build(),
+                offences().withId(o3).withCount(5).withOrderIndex(5).withOffenceTitle("o3").build(),
+                offences().withId(o4).withOrderIndex(4).withOffenceTitle("o4").build()
+        );
+
+        final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), CROWN, emptyMap());
+        assertThat(offencesMags.get(0).getOffenceTitle(), is("o2"));
+        assertThat(offencesMags.get(1).getOffenceTitle(), is("o1"));
+        assertThat(offencesMags.get(2).getOffenceTitle(), is("o3"));
+        assertThat(offencesMags.get(3).getOffenceTitle(), is("o4"));
+    }
+
     private void verifyOffenceLevelResult(final CourtExtractRequested courtExtractRequested) {
         //Case Level Does Not Exist
         final uk.gov.justice.progression.courts.exract.Offences offenceOne = courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0);
-        assertThat(offenceOne.getResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION)), is(true));
-        assertThat(offenceOne.getResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING)), is(true));
+        assertThat(offenceOne.getResults().stream().noneMatch(r -> r.getResult().getLabel().equals(LEGACY_COMPENSATION)), is(true));
+        assertThat(offenceOne.getResults().stream().noneMatch(r -> r.getResult().getLabel().equals(ORDERING)), is(true));
 
         //Defendant Level Exist
-        assertThat(offenceOne.getResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION)), is(true));
-        assertThat(offenceOne.getResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER)), is(true));
+        assertThat(offenceOne.getResults().stream().anyMatch(r -> r.getResult().getLabel().equals(COMPENSATION)), is(true));
+        assertThat(offenceOne.getResults().stream().anyMatch(r -> r.getResult().getLabel().equals(RESTRAINING_ORDER)), is(true));
 
 
         assertThat(offenceOne.getResults().stream()
+                .map(Results::getResult)
                 .filter(r -> r.getLabel().equals(COMPENSATION))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
         assertThat(offenceOne.getResults().stream()
+                .map(Results::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
 
         // Prompt Should not exist
         assertThat(offenceOne.getResults().stream()
+                .map(Results::getResult)
                 .filter(r -> r.getLabel().equals(COMPENSATION))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
         assertThat(offenceOne.getResults().stream()
+                .map(Results::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
-        assertThat(offenceOne.getResults().stream()
+        assertThat(offenceOne.getResults()
+                .stream().map(Results::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
     }
 
     private void verifyCaseLevelResult(final CourtExtractRequested courtExtractRequested) {
         //Case Level Does Not Exist
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION)), is(true));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getResult().getLabel().equals(LEGACY_COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getResult().getLabel().equals(ORDERING)), is(true));
 
         //Defendant Level Exist
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION)), is(true));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getResult().getLabel().equals(COMPENSATION)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getResult().getLabel().equals(RESTRAINING_ORDER)), is(true));
 
 
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
-                .filter(r -> r.getLabel().equals(COMPENSATION))
+                .map(DefendantResults::getResult)
+                .filter(result -> result.getLabel().equals(COMPENSATION))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
 
         // Prompt Should not exist
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(COMPENSATION))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
     }
@@ -671,30 +904,34 @@ public class CourtExtractTransformerTest {
 
     private void verifyDefendantHearingsLevelResults(final CourtExtractRequested courtExtractRequested) {
         //Defendant Level Not Exist
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(LEGACY_COMPENSATION_DEFENDANT_LEVEL)), is(true));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getLabel().equals(ORDERING_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getResult().getLabel().equals(LEGACY_COMPENSATION_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().noneMatch(r -> r.getResult().getLabel().equals(ORDERING_DEFENDANT_LEVEL)), is(true));
 
         //Defendant Level Exist
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL)), is(true));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getResult().getLabel().equals(COMPENSATION_DEFENDANT_LEVEL)), is(true));
+        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream().anyMatch(r -> r.getResult().getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL)), is(true));
 
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(AMOUNT_OF_COMPENSATION))), is(true));
 
-
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().anyMatch(prompt -> prompt.getLabel().equals(THIS_ORDER_IS_MADE_ON))), is(true));
 
         // Prompt Should not exist
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(COMPENSATION_DEFENDANT_LEVEL))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(MINOR_CREDITOR_FIRST_NAME))), is(true));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_NAME))), is(true));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().stream()
+                .map(DefendantResults::getResult)
                 .filter(r -> r.getLabel().equals(RESTRAINING_ORDER_DEFENDANT_LEVEL))
                 .map(JudicialResult::getJudicialResultPrompts).anyMatch(p -> p.stream().noneMatch(prompt -> prompt.getLabel().equals(PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1))), is(true));
     }
@@ -747,25 +984,25 @@ public class CourtExtractTransformerTest {
 
             //results
             assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().size(), is(resultsCount));
-            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getIsAvailableForCourtExtract(), is(true));
-            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getLabel(), is(label));
-            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getDelegatedPowers().getFirstName(), is(FIRST_NAME));
-            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getDelegatedPowers().getLastName(), is(LAST_NAME));
-            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getJudicialResultPrompts().get(0).getLabel(), is(LABEL));
-            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getJudicialResultPrompts().get(0).getValue(), is(PROMPT_VALUE));
-            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResultText(), is("resultText"));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getIsAvailableForCourtExtract(), is(true));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getLabel(), is(label));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getDelegatedPowers().getFirstName(), is(FIRST_NAME));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getDelegatedPowers().getLastName(), is(LAST_NAME));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getJudicialResultPrompts().get(0).getLabel(), is(LABEL));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getJudicialResultPrompts().get(0).getValue(), is(PROMPT_VALUE));
+            assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getResultText(), is("resultText"));
 
 
             //offences
             final uk.gov.justice.progression.courts.exract.Offences offences = courtExtractRequested.getDefendant().getHearings().get(0).getOffences().get(0);
             assertThat(offences.getConvictionDate(), is((CONVICTION_DATE)));
-            assertThat(offences.getResults().get(0).getIsAvailableForCourtExtract(), is(true));
-            assertThat(offences.getResults().get(0).getResultWording(), is(resultWording));
-            assertThat(offences.getResults().get(0).getDelegatedPowers().getFirstName(), is(FIRST_NAME));
-            assertThat(offences.getResults().get(0).getDelegatedPowers().getLastName(), is(LAST_NAME));
-            assertThat(offences.getResults().get(0).getJudicialResultPrompts().get(0).getLabel(), is(LABEL));
-            assertThat(offences.getResults().get(0).getJudicialResultPrompts().get(0).getValue(), is(PROMPT_VALUE));
-            assertThat(offences.getResults().get(0).getResultText(), is("resultText"));
+            assertThat(offences.getResults().get(0).getResult().getIsAvailableForCourtExtract(), is(true));
+            assertThat(offences.getResults().get(0).getResult().getResultWording(), is(resultWording));
+            assertThat(offences.getResults().get(0).getResult().getDelegatedPowers().getFirstName(), is(FIRST_NAME));
+            assertThat(offences.getResults().get(0).getResult().getDelegatedPowers().getLastName(), is(LAST_NAME));
+            assertThat(offences.getResults().get(0).getResult().getJudicialResultPrompts().get(0).getLabel(), is(LABEL));
+            assertThat(offences.getResults().get(0).getResult().getJudicialResultPrompts().get(0).getValue(), is(PROMPT_VALUE));
+            assertThat(offences.getResults().get(0).getResult().getResultText(), is("resultText"));
 
             //Offence Plea
             assertThat(offences.getPleas().get(0).getDelegatedPowers().getFirstName(), is(FIRST_NAME));
@@ -946,6 +1183,23 @@ public class CourtExtractTransformerTest {
         final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-sjp-referred-to-cc.json")
                 .replaceAll("DEFENDANT_ID", defendantId));
         final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
+        return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+    }
+
+    private GetHearingsAtAGlance createHearingAtAGlanceWithDefendantAndCourtApplicationSlipRuleAmendments(final String defendantId, final String masterDefendantId, final String hearingId) {
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-defendant-court-application-results.json")
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("MASTER_D_ID", masterDefendantId)
+                .replaceAll("HEARING_ID", hearingId));
+        final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
+        return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+    }
+
+    private GetHearingsAtAGlance createHearingAtAGlanceWithSlipRuleAmendment(final String defendantId, final String hearingId, final String jsonPath) {
+        final JsonObject jsonObject = stringToJsonObjectConverter.convert(getPayload(jsonPath)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("HEARING_ID", hearingId));
+        final JsonObject hearingsAtAGlanceJson = jsonObject.getJsonObject("hearingsAtAGlance");
         return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
     }
 

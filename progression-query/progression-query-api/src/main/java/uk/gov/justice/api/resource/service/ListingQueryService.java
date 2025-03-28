@@ -1,7 +1,10 @@
 package uk.gov.justice.api.resource.service;
 
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
@@ -25,8 +28,9 @@ public class ListingQueryService {
     @ServiceComponent(QUERY_API)
     private Requester requester;
 
-    public Hearing searchHearing(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
-        final Metadata metadata = metadataWithNewActionName(jsonEnvelope.metadata(), LISTING_SEARCH_HEARING);
+    public Hearing searchHearing(final UUID userId, final UUID hearingId) {
+
+        final Metadata metadata = metadataWithNewActionName(getListingQueryJsonEnvelop(userId).metadata(), LISTING_SEARCH_HEARING);
         final JsonObject jsonPayLoad = Json.createObjectBuilder()
                 .add("id", hearingId.toString())
                 .build();
@@ -46,5 +50,17 @@ public class ListingQueryService {
         metadata.version().ifPresent(metadataBuilder::withVersion);
 
         return metadataBuilder.build();
+    }
+
+    private JsonEnvelope getListingQueryJsonEnvelop(final UUID userId) {
+        return JsonEnvelope.envelopeFrom(
+                metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(LISTING_SEARCH_HEARING)
+                        .withUserId(userId.toString())
+                        .build(),
+                createObjectBuilder()
+                        .build()
+        );
     }
 }

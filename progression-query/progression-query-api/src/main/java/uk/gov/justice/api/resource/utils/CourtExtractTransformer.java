@@ -4,24 +4,25 @@ import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
-import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.api.resource.DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.COURT_EXTRACT;
-import static uk.gov.justice.api.resource.service.DefenceQueryService.DEFENCE_QUERY_ASSOCIATED_ORGANISATIONS;
-import static uk.gov.justice.api.resource.service.ListingQueryService.LISTING_SEARCH_HEARING;
-import static uk.gov.justice.api.resource.service.ReferenceDataService.REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS;
+import static uk.gov.justice.api.resource.utils.JudicialResultTransformer.getApplicationResultsWithAmendments;
+import static uk.gov.justice.api.resource.utils.JudicialResultTransformer.getDefendantResultsWithAmendments;
+import static uk.gov.justice.api.resource.utils.JudicialResultTransformer.getDeletedApplicationResultsWithAmendments;
+import static uk.gov.justice.api.resource.utils.JudicialResultTransformer.getDeletedDefendantResultsWithAmendments;
 import static uk.gov.justice.api.resource.utils.OffenceTransformer.toOffences;
+import static uk.gov.justice.api.resource.utils.ResultAmendmentHelper.extractAmendmentsDueToSlipRule;
+import static uk.gov.justice.api.resource.utils.ResultAmendmentHelper.getResultDefinitionsInSlipRuleAmendments;
 import static uk.gov.justice.api.resource.utils.TransformationHelper.getHearingsSortedByHearingDaysAsc;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 
+import uk.gov.justice.api.resource.dto.DraftResultsWrapper;
 import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.api.resource.service.DefenceQueryService;
+import uk.gov.justice.api.resource.service.HearingQueryService;
 import uk.gov.justice.api.resource.service.ListingQueryService;
 import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.core.courts.Address;
@@ -49,6 +50,7 @@ import uk.gov.justice.progression.courts.Defendants;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
+import uk.gov.justice.progression.courts.exract.Amendments;
 import uk.gov.justice.progression.courts.exract.ApplicantRepresentation;
 import uk.gov.justice.progression.courts.exract.AttendanceDayAndType;
 import uk.gov.justice.progression.courts.exract.AttendanceDays;
@@ -69,7 +71,6 @@ import uk.gov.justice.progression.courts.exract.ProsecutionCounsels;
 import uk.gov.justice.progression.courts.exract.PublishingCourt;
 import uk.gov.justice.progression.courts.exract.Representation;
 import uk.gov.justice.progression.courts.exract.RespondentRepresentation;
-import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 
 import java.time.LocalDate;
@@ -77,12 +78,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -102,6 +105,7 @@ public class CourtExtractTransformer {
     public static final String CATEGORY_INTERMEDIARY = "I";
     public static final String RD_GROUP_COMMITTED_TO_CC = "CommittedToCC";
     public static final String RD_GROUP_SENT_TO_CC = "SentToCC";
+    private static final String SLIPRULE_AMENDMENT_REASON_CODE = "EO";
 
     @Inject
     TransformationHelper transformationHelper;
@@ -117,30 +121,10 @@ public class CourtExtractTransformer {
     @Inject
     CourtExtractHelper courtExtractHelper;
 
+    @Inject
+    private HearingQueryService hearingQueryService;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtExtractTransformer.class);
-    private static final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> crownOffencesSortComparator = (offence1, offence2) -> {
-        if (isNull(offence1.getCount()) || isNull(offence2.getCount()) || offence1.getCount() == 0 || offence2.getCount() == 0
-                && (nonNull(offence1.getOrderIndex()) && nonNull(offence2.getOrderIndex()))) {
-            return offence1.getOrderIndex().compareTo(offence2.getOrderIndex());
-        }
-
-        if (nonNull(offence1.getCount()) && nonNull(offence2.getCount())
-                && nonNull(offence1.getOrderIndex()) && nonNull(offence2.getOrderIndex())) {
-            int countCmp = offence1.getCount().compareTo(offence2.getCount());
-            if (countCmp != 0) {
-                return countCmp;
-            }
-            return offence1.getOrderIndex().compareTo(offence2.getOrderIndex());
-        }
-        return 0;
-    };
-    private static final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> magsOffencesSortComparator = (offence1, offence2) -> {
-        if (nonNull(offence1.getOrderIndex()) && nonNull(offence2.getOrderIndex())) {
-            return offence1.getOrderIndex().compareTo(offence2.getOrderIndex());
-        }
-        return 0;
-    };
-
 
     public CourtExtractRequested getCourtExtractRequested(final GetHearingsAtAGlance hearingsAtAGlance, final String defendantId, final String extractType, final List<String> selectedHearingIdList, final UUID userId, final ProsecutionCase prosecutionCase) {
         final CourtExtractRequested.Builder courtExtract = CourtExtractRequested.courtExtractRequested();
@@ -289,7 +273,7 @@ public class CourtExtractTransformer {
         courtExtract.withReferralReason(getReferralReason(hearingsAtAGlance.getHearings()));
     }
 
-    private List<CourtApplications> transformCourtApplications(final List<CourtApplication> caseCourtApplications, final Hearings hearings) {
+    private List<CourtApplications> transformCourtApplications(final List<CourtApplication> caseCourtApplications, final Hearings hearings, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
         final List<CourtApplication> applicationsExtractList = new ArrayList<>();
 
         caseCourtApplications.forEach(app -> getResultedApplication(app.getId(), hearings).ifPresent(resultedApplication -> {
@@ -298,11 +282,13 @@ public class CourtExtractTransformer {
 
         return applicationsExtractList.stream()
                 .map(ca -> CourtApplications.courtApplications()
-                        .withResults(ca.getJudicialResults())
+                        .withApplicationResults(getApplicationResultsWithAmendments(ca.getJudicialResults(), resultIdSlipRuleAmendmentsMap))
+                        .withDeletedApplicationResults(getDeletedApplicationResultsWithAmendments(ca.getId(), resultIdSlipRuleAmendmentsMap))
                         .withRepresentation(transformRepresentation(ca, hearings))
                         .withApplicationType(ca.getType().getType())
                         .withApplicationDate(ca.getApplicationReceivedDate())
                         .withApplicationParticulars(ca.getApplicationParticulars())
+                        .withApplicationLegislation(ca.getType().getLegislation())
                         .withPlea(ca.getPlea())
                         .withCourtOrders(transformCourtOrders(ca.getCourtOrder()))
                         .build()).toList();
@@ -504,7 +490,7 @@ public class CourtExtractTransformer {
             //used for certificates generation
 
             if (nonNull(caseDefendant.getAssociatedDefenceOrganisation())) {
-                final List<AssociatedDefenceOrganisation> associatedOrganisations = defenceQueryService.getAllAssociatedOrganisations(getDefenceQueryJsonEnvelop(userId), defendantId.toString());
+                final List<AssociatedDefenceOrganisation> associatedOrganisations = defenceQueryService.getAllAssociatedOrganisations(userId, defendantId.toString());
                 defendantBuilder.withAssociatedDefenceOrganisations(associatedOrganisations);
             } else {
                 if (nonNull(caseDefendant.getDefenceOrganisation())) {
@@ -603,34 +589,40 @@ public class CourtExtractTransformer {
         );
     }
 
-    private List<uk.gov.justice.progression.courts.exract.Offences> transformOffence(final Hearings hearings, final UUID defendantId, final UUID userId, final List<Hearings> hearingsList) {
+    private List<uk.gov.justice.progression.courts.exract.Offences> transformOffence(final Hearings hearings, final UUID defendantId, final UUID userId,
+                                                                                     final List<Hearings> hearingsList, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
         final List<uk.gov.justice.progression.courts.exract.Offences> offences = new ArrayList<>();
 
-        final List<Offences> defendantOffences = hearings.getDefendants().stream().filter(Objects::nonNull)
+        final List<Offences> defendantOffences = getDefendantOffences(hearings, defendantId);
+        if (isNotEmpty(defendantOffences)) {
+            final Map<UUID, CommittedForSentence> offenceCommittedForSentenceMap = getUuidCommittedForSentenceMap(hearings, defendantId, userId, hearingsList);
+            offences.addAll(transformOffence(defendantOffences, hearings.getId(), offenceCommittedForSentenceMap, hearings.getJurisdictionType(), resultIdSlipRuleAmendmentsMap));
+        }
+        return offences;
+    }
+
+    private static List<Offences> getDefendantOffences(final Hearings hearings, final UUID defendantId) {
+        return hearings.getDefendants().stream().filter(Objects::nonNull)
                 .filter(d -> d.getId().equals(defendantId))
                 .filter(d -> nonNull(d.getOffences()))
                 .map(Defendants::getOffences)
                 .flatMap(Collection::stream)
                 .toList();
+    }
 
-        if (isNotEmpty(defendantOffences)) {
-            LOGGER.info("Defendant {} aggregated offences: {}", defendantId, defendantOffences.size());
-            //getOffence from Mags if sentToCC By Mags resulted with 'Committed for sentence'
-            final Hearing hearingFromListing = listingQueryService.searchHearing(getListingQueryJsonEnvelop(userId), hearings.getId());
-            final List<Offences> offencesFromSeedingHearings = courtExtractHelper.getOffencesFromSeedingHearings(defendantId, hearingFromListing, hearingsList);
-            final List<ResultDefinition> filteredResultDefinitions = getResultDefinitionsCommittedToCCOrSentToCC(userId, getResultDefinitionIds(offencesFromSeedingHearings));
+    private Map<UUID, CommittedForSentence> getUuidCommittedForSentenceMap(final Hearings hearings, final UUID defendantId, final UUID userId, final List<Hearings> hearingsList) {
+        final Hearing hearingFromListing = listingQueryService.searchHearing(userId, hearings.getId());
+        final List<Offences> offencesFromSeedingHearings = courtExtractHelper.getOffencesFromSeedingHearings(defendantId, hearingFromListing, hearingsList);
+        final List<ResultDefinition> filteredResultDefinitions = getResultDefinitionsCommittedToCCOrSentToCC(userId, getResultDefinitionIds(offencesFromSeedingHearings));
 
-            final Map<UUID, CommittedForSentence> offenceCommittedForSentenceMap = courtExtractHelper.getOffencesResultedWithCommittedForSentence(defendantId, hearingFromListing, hearingsList, filteredResultDefinitions);
-            offences.addAll(transformOffence(defendantOffences, hearings.getId(), offenceCommittedForSentenceMap, hearings.getJurisdictionType()));
-        }
-        return offences;
+        return courtExtractHelper.getOffencesResultedWithCommittedForSentence(defendantId, hearingFromListing, hearingsList, filteredResultDefinitions);
     }
 
     private List<ResultDefinition> getResultDefinitionsCommittedToCCOrSentToCC(final UUID userId, final List<UUID> uuids) {
         if (isEmpty(uuids)) {
             return emptyList();
         }
-        return referenceDataService.getResultDefinitionsByIds(getReferenceDataQueryJsonEnvelop(userId), uuids)
+        return referenceDataService.getResultDefinitionsByIds(userId, uuids)
                 .stream()
                 .filter(rd -> nonNull(rd.getCategory()) && CATEGORY_INTERMEDIARY.equals(rd.getCategory()))
                 .filter(rd -> nonNull(rd.getResultDefinitionGroup()) && (RD_GROUP_COMMITTED_TO_CC.equals(rd.getResultDefinitionGroup()) || RD_GROUP_SENT_TO_CC.equals(rd.getResultDefinitionGroup())))
@@ -682,18 +674,29 @@ public class CourtExtractTransformer {
     }
 
     protected List<uk.gov.justice.progression.courts.exract.Offences> transformOffence(final List<Offences> offences, final UUID hearingId,
-                                                                                       final Map<UUID, CommittedForSentence> offenceCommittedForSentenceMap, final JurisdictionType jurisdictionType) {
+                                                                                       final Map<UUID, CommittedForSentence> offenceCommittedForSentenceMap,
+                                                                                       final JurisdictionType jurisdictionType, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
 
-        final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> offencesSorted = jurisdictionType == JurisdictionType.CROWN
-                ? crownOffencesSortComparator : magsOffencesSortComparator;
-
-        return offences.stream()
+        final List<uk.gov.justice.progression.courts.exract.Offences> offencesList = offences.stream()
                 .map(o -> {
                     final List<JudicialResult> resultList = transformResults(filterOutResultDefinitionsNotToBeShownInCourtExtract(o, hearingId));
-                    return toOffences(o, resultList, offenceCommittedForSentenceMap.get(o.getId()));
+                    return toOffences(o, resultList, offenceCommittedForSentenceMap.get(o.getId()), resultIdSlipRuleAmendmentsMap);
                 })
-                .sorted(offencesSorted)
                 .toList();
+
+        if (jurisdictionType == JurisdictionType.CROWN) {
+            final List<uk.gov.justice.progression.courts.exract.Offences> offencesWithCount = offencesList.stream().filter(o -> nonNull(o.getCount()) && o.getCount() > 0)
+                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getCount).thenComparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
+                    .toList();
+            final List<uk.gov.justice.progression.courts.exract.Offences> offencesWithoutCount = offencesList.stream().filter(o -> isNull(o.getCount()) || o.getCount() == 0)
+                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
+                    .toList();
+            return Stream.concat(offencesWithCount.stream(), offencesWithoutCount.stream()).toList();
+        } else {
+            return offencesList.stream()
+                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
+                    .toList();
+        }
     }
 
     private List<JudicialResult> filterOutResultDefinitionsNotToBeShownInCourtExtract(final Offences o, final UUID hearingId) {
@@ -723,8 +726,10 @@ public class CourtExtractTransformer {
                 .withReportingRestrictionReason(hearing.getReportingRestrictionReason())
                 .withType(hearing.getType().getDescription());
 
+        final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap = getResultIdAmendmentListMap(hearing, userId);
+
         if (isNotEmpty(hearingsAtAGlance.getCourtApplications())) {
-            hearingBuilder.withCourtApplications(transformCourtApplications(hearingsAtAGlance.getCourtApplications(), hearing));
+            hearingBuilder.withCourtApplications(transformCourtApplications(hearingsAtAGlance.getCourtApplications(), hearing, resultIdSlipRuleAmendmentsMap));
         }
 
         if (nonNull(hearing.getProsecutionCounsels())) {
@@ -741,16 +746,46 @@ public class CourtExtractTransformer {
             hearingBuilder.withCrownCourtDecisions(crownCourtDecisions);
         }
 
-        final List<uk.gov.justice.progression.courts.exract.Offences> offences = transformOffence(hearing, defendant.getId(), userId, hearingsAtAGlance.getHearings());
+        final List<uk.gov.justice.progression.courts.exract.Offences> offences = transformOffence(hearing, defendant.getId(), userId, hearingsAtAGlance.getHearings(), resultIdSlipRuleAmendmentsMap);
         if (!offences.isEmpty()) {
             hearingBuilder.withOffences(offences);
             hearingBuilder.withAuthorisedLegalAdvisors(courtExtractHelper.getAuthorisedLegalAdvisors(offences));
         }
 
         hearingBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendanceDay(hearing, defendant)));
-        hearingBuilder.withDefendantResults(transformJudicialResults(hearing, masterDefendantId, defendant.getId()));
+
+        final List<JudicialResult> judicialResults = transformJudicialResults(hearing, masterDefendantId, defendant.getId());
+        hearingBuilder.withDefendantResults(getDefendantResultsWithAmendments(judicialResults, resultIdSlipRuleAmendmentsMap));
+        hearingBuilder.withDeletedDefendantResults(getDeletedDefendantResultsWithAmendments(resultIdSlipRuleAmendmentsMap));
+
+        if(hearing.getCompanyRepresentatives() != null){
+            final List<CompanyRepresentative> companyRepresentatives = transformCompanyRepresentatives(hearing.getCompanyRepresentatives(), hearing.getHearingDays());
+            hearingBuilder.withCompanyRepresentatives(transformCompanyRepresentative(companyRepresentatives));
+        }
 
         return hearingBuilder.build();
+    }
+
+    private List<CompanyRepresentative> transformCompanyRepresentatives(final List<CompanyRepresentative> companyRepresentatives, final List<HearingDay> hearingDays){
+        return companyRepresentatives.stream()
+                .filter(rep -> new HashSet<>(rep.getAttendanceDays()).containsAll(
+                        hearingDays.stream()
+                                .map(day -> day.getSittingDay().toLocalDate())
+                                .toList()
+                ))
+                .toList();
+    }
+
+    private Map<UUID, List<Amendments>> getResultIdAmendmentListMap(final Hearings hearing, final UUID userId) {
+        final List<LocalDate> hearingDayList = hearing.getHearingDays().stream().map(hd -> hd.getSittingDay().toLocalDate()).collect(toList());
+        final List<DraftResultsWrapper> defendantResultsWithAmendments = hearingQueryService.getDraftResultsWithAmendments(userId, hearing.getId(), hearingDayList);
+        final UUID slipRuleReasonId = referenceDataService.getAmendmentReasonId(userId, SLIPRULE_AMENDMENT_REASON_CODE);
+
+        final List<UUID> resultDefinitionsInSlipRule = getResultDefinitionsInSlipRuleAmendments(defendantResultsWithAmendments, slipRuleReasonId);
+        final List<ResultDefinition> slipRuleResultDefinitionList = isNotEmpty(resultDefinitionsInSlipRule)
+                ? referenceDataService.getResultDefinitionsByIds(userId, resultDefinitionsInSlipRule)
+                : emptyList();
+        return extractAmendmentsDueToSlipRule(defendantResultsWithAmendments, slipRuleResultDefinitionList, slipRuleReasonId);
     }
 
     private List<DefenceCounsels> getDefendantDefenceCounsels(final Hearings hearing, final UUID defendantId) {
@@ -832,41 +867,5 @@ public class CourtExtractTransformer {
         return Collections.singletonList(DefenceOrganisations.defenceOrganisations()
                 .withDefenceOrganisation(defendant.getDefenceOrganisation())
                 .build());
-    }
-
-    private JsonEnvelope getListingQueryJsonEnvelop(final UUID userId) {
-        return envelopeFrom(
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(LISTING_SEARCH_HEARING)
-                        .withUserId(userId.toString())
-                        .build(),
-                createObjectBuilder()
-                        .build()
-        );
-    }
-
-    private JsonEnvelope getReferenceDataQueryJsonEnvelop(final UUID userId) {
-        return envelopeFrom(
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(REFERENCEDATA_QUERY_RESULT_DEFINITIONS_BY_IDS)
-                        .withUserId(userId.toString())
-                        .build(),
-                createObjectBuilder()
-                        .build()
-        );
-    }
-
-    private JsonEnvelope getDefenceQueryJsonEnvelop(final UUID userId) {
-        return envelopeFrom(
-                metadataBuilder()
-                        .withId(randomUUID())
-                        .withName(DEFENCE_QUERY_ASSOCIATED_ORGANISATIONS)
-                        .withUserId(userId.toString())
-                        .build(),
-                createObjectBuilder()
-                        .build()
-        );
     }
 }

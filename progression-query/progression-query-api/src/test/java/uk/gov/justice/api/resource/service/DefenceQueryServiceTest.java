@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.api.resource.utils.FileUtil.jsonFromPath;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
-import uk.gov.justice.api.resource.utils.FileUtil;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -24,9 +23,7 @@ import java.util.UUID;
 
 import javax.json.JsonValue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -48,13 +45,9 @@ public class DefenceQueryServiceTest {
     @Mock
     private JsonEnvelope responseJsonEnvelope;
 
-    @BeforeEach
-    public void setup() {
-        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
-    }
-
     @Test
     public void shouldReturnFalseWhenQueryResponseIsNull() {
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(null);
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(false));
@@ -64,6 +57,7 @@ public class DefenceQueryServiceTest {
     @Test
     public void shouldReturnFalseWhenResponseNotHasRoleDetails() {
         final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), createObjectBuilder().build());
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(false));
@@ -73,6 +67,7 @@ public class DefenceQueryServiceTest {
     @Test
     public void shouldReturnFalseWhenResponseNotHasRoleDetailsAndResponseIsNull() {
         final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), JsonValue.NULL);
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(false));
@@ -82,6 +77,7 @@ public class DefenceQueryServiceTest {
     @Test
     public void shouldReturnBooleanWhenRoleNotProsecution() {
         final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), createObjectBuilder().add("isAdvocateDefendingOrProsecuting", "defending").build());
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(false));
@@ -96,6 +92,7 @@ public class DefenceQueryServiceTest {
                 .add("authorizedDefendantIds", createArrayBuilder()
                         .add(defId1.toString())
                         .add(defId2.toString()).build()).build());
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
 
 
@@ -109,6 +106,7 @@ public class DefenceQueryServiceTest {
     @Test
     public void shouldReturnEmptyListWhenGetDefendantListHasNoRoleDetails() {
         final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), createObjectBuilder().build());
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
 
         assertThat(defenceQueryService.getDefendantList(jsonEnvelope, caseId), is(emptyList()));
@@ -117,8 +115,8 @@ public class DefenceQueryServiceTest {
     @Test
     public void shouldReturnTrueWhenRoleInProsecution() {
         final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), createObjectBuilder().add("isAdvocateDefendingOrProsecuting", "prosecuting").build());
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
-
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(true));
         assertThat(defenceQueryService.isUserProsecutingOrDefendingCase(jsonEnvelope, caseId), is(true));
@@ -127,6 +125,7 @@ public class DefenceQueryServiceTest {
     @Test
     public void shouldReturnTrueWhenRoleInBothProsecutionAndDefence() {
         final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), createObjectBuilder().add("isAdvocateDefendingOrProsecuting", "both").build());
+        when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(true));
@@ -141,7 +140,7 @@ public class DefenceQueryServiceTest {
 
         when(requester.request(any())).thenReturn(response);
 
-        final List<AssociatedDefenceOrganisation> allAssociatedOrganisations = defenceQueryService.getAllAssociatedOrganisations(jsonEnvelope, defendantId);
+        final List<AssociatedDefenceOrganisation> allAssociatedOrganisations = defenceQueryService.getAllAssociatedOrganisations(randomUUID(), defendantId);
 
         assertThat(allAssociatedOrganisations.size(), is(2));
         assertThat(allAssociatedOrganisations.get(0).getDefenceOrganisation().getOrganisation().getName(), is("William & Co LLP"));

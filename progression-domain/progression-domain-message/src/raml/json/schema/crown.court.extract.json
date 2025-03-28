@@ -329,7 +329,22 @@
           "type": "array",
           "minItems": 1,
           "items": {
-            "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+            "$ref": "#/definitions/resultAmendments"
+          }
+        },
+        "deletedDefendantResults": {
+          "description": "List of amendments for previously existing result(s) that are deleted due to SlipRule",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/amendment"
+          }
+        },
+        "companyRepresentatives": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/counsel"
           }
         }
       },
@@ -422,11 +437,19 @@
           }
         },
         "results": {
-          "description": "offence level results",
+          "description": "offence level results with any amendments",
           "type": "array",
           "minItems": 1,
           "items": {
-            "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+            "$ref": "#/definitions/resultAmendments"
+          }
+        },
+        "deletedResults": {
+          "description": "List of amendments for previously existing result(s) that are deleted due to SlipRule",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/amendment"
           }
         },
         "orderIndex": {
@@ -448,6 +471,61 @@
         "startDate"
       ],
       "additionalProperties": false
+    },
+    "resultAmendments": {
+      "type": "object",
+      "properties": {
+        "amendments": {
+          "description": "List of amendments made to the result due to SlipRule",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/amendment"
+          }
+        },
+        "result": {
+          "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+        }
+      },
+      "required": [
+        "result"
+      ]
+    },
+    "amendment": {
+      "type": "object",
+      "properties": {
+        "defendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "applicationId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "judicialResultId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "amendmentType": {
+          "type": "string"
+        },
+        "amendmentDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resultText": {
+          "type": "string"
+        },
+        "resultLevel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "defendantId",
+        "judicialResultId",
+        "resultLevel",
+        "amendmentType"
+      ]
     },
     "committedForSentence": {
       "type": "object",
@@ -500,6 +578,9 @@
             "applicationParticulars": {
               "type": "string"
             },
+            "applicationLegislation": {
+              "type": "string"
+            },
             "applicationDate": {
               "description": "The date that the application was received by HMCTS",
               "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
@@ -523,6 +604,20 @@
               "type": "array",
               "items": {
                 "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+              }
+            },
+            "applicationResults": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/resultAmendments"
+              }
+            },
+            "deletedApplicationResults": {
+              "description": "List of amendments for previously existing result(s) that are deleted due to SlipRule",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/amendment"
               }
             },
             "representation": {
@@ -609,6 +704,7 @@
             "decisionDate",
             "response",
             "results",
+            "applicationResults",
             "representation"
           ]
         }

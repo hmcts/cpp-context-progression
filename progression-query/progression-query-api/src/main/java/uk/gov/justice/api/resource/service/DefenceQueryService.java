@@ -5,14 +5,14 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.spi.DefaultJsonMetadata.metadataBuilder;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
@@ -101,8 +101,9 @@ public class DefenceQueryService {
         return emptyList();
     }
 
-    public List<AssociatedDefenceOrganisation> getAllAssociatedOrganisations(final Envelope<?> jsonEnvelope, final String defendantId) {
-        final JsonEnvelope associatedOrganisationsEnvelope = queryAssociatedOrganisations(jsonEnvelope, defendantId);
+    public List<AssociatedDefenceOrganisation> getAllAssociatedOrganisations(final UUID userId, final String defendantId) {
+
+        final JsonEnvelope associatedOrganisationsEnvelope = queryAssociatedOrganisations(getDefenceQueryJsonEnvelop(userId), defendantId);
 
         if (nonNull(associatedOrganisationsEnvelope) && associatedOrganisationsEnvelope.payloadAsJsonObject().containsKey("associations")) {
             return associatedOrganisationsEnvelope.payloadAsJsonObject().getJsonArray("associations").stream()
@@ -169,6 +170,18 @@ public class DefenceQueryService {
             LOGGER.info("{} received with payload {}", DEFENCE_QUERY_ASSOCIATED_ORGANISATIONS, jsonEnvelope.toObfuscatedDebugString());
         }
         return jsonEnvelope;
+    }
+
+    private JsonEnvelope getDefenceQueryJsonEnvelop(final UUID userId) {
+        return envelopeFrom(
+                metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(DEFENCE_QUERY_ASSOCIATED_ORGANISATIONS)
+                        .withUserId(userId.toString())
+                        .build(),
+                createObjectBuilder()
+                        .build()
+        );
     }
 
 }
