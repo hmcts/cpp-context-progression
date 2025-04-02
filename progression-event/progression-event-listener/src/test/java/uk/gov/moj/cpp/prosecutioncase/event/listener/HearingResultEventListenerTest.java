@@ -12,6 +12,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -272,6 +274,69 @@ public class HearingResultEventListenerTest {
         assertThat(savedHearingEntity2.getListingStatus(), equalTo(HearingListingStatus.SENT_FOR_LISTING));
 
 
+    }
+
+    @Test
+    public void NotHearingResultIfThereIsNoHearing() {
+
+        final UUID firstHearingId = randomUUID();
+        final UUID courtCentreId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID offenceId2 = randomUUID();
+        final ZonedDateTime sharedTime = ZonedDateTime.now();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId)
+                .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_1)))
+                .withProceedingsConcluded(true)
+                .withOffences(asList(offence()
+                        .withId(offenceId)
+                        .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_1)))
+                        .build()))
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withDefendantCaseJudicialResults(newArrayList(getJudicialResult(randomUUID(), CASE_RESULT_LABEL_2)))
+                .withProceedingsConcluded(true)
+                .withOffences(asList(offence()
+                        .withId(offenceId2)
+                        .withJudicialResults(newArrayList(getJudicialResult(randomUUID(), OFFENCE_RESULT_LABEL_2)))
+                        .build()))
+                .build();
+        final List<Defendant> defendants = new ArrayList<>();
+        defendants.add(defendant1);
+        defendants.add(defendant2);
+
+        final HearingResulted hearingResulted = HearingResulted.hearingResulted()
+                .withHearing(Hearing.hearing()
+                        .withId(firstHearingId)
+                        .withDefendantJudicialResults(newArrayList(DefendantJudicialResult.defendantJudicialResult().withJudicialResult(getJudicialResult(randomUUID(), DEFENDANT_RESULT_LABEL)).build()))
+                        .withJurisdictionType(JurisdictionType.CROWN)
+                        .withHearingLanguage(HearingLanguage.ENGLISH)
+                        .withHasSharedResults(true)
+
+                        .withCourtCentre(CourtCentre.courtCentre()
+                                .withId(courtCentreId)
+                                .build())
+                        .withProsecutionCases(asList(ProsecutionCase.prosecutionCase()
+                                .withId(prosecutionCaseId)
+                                .withCaseStatus(CaseStatusEnum.INACTIVE.getDescription())
+                                .withDefendants(defendants)
+                                .build()))
+                        .build())
+                .withSharedTime(sharedTime)
+                .build();
+
+        when(hearingRepository.findBy(any())).thenReturn(null);
+
+        hearingEventEventListener.updateHearingResult(envelopeFrom(metadataWithRandomUUID("progression.event.hearing-resulted"),
+                objectToJsonObjectConverter.convert(hearingResulted)));
+
+
+        verify(this.hearingRepository, never()).save(hearingEntityArgumentCaptor.capture());
     }
 
     @Test

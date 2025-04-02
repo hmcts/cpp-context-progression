@@ -711,6 +711,33 @@ public class ProsecutionDefendantUpdatedEventListenerTest {
         verify(hearingRepository, never()).save(hearingArgumentCaptor.capture());
     }
 
+    @Test
+    public void shouldNotProcessHearingDefendantUpdatedWhenTheseIsNoHearing() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, HearingDefendantUpdated.class)).thenReturn(hearingDefendantUpdated);
+
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID selfDefinedEthnicityId = randomUUID();
+        final UUID observedEthnicityId = randomUUID();
+
+        final LocalDate updatedDoB = LocalDate.of(2005, 12, 27);
+        final DefendantUpdate defendantUpdate = prepareDefendantUpdate(randomUUID(), updatedDoB, defendantId);
+
+        final JsonObject jsonObject = Json.createObjectBuilder().build();
+        final Defendant defendant1 = prepareDefendantWithAssociatedPerson(defendantId, masterDefendantId, prosecutionCaseId, selfDefinedEthnicityId, observedEthnicityId);
+        final List<Defendant> defendants =new ArrayList<>();
+        defendants.add(defendant1);
+       when(hearingRepository.findBy(any())).thenReturn(null);
+
+        eventListener.processHearingDefendantUpdated(envelope);
+
+        verify(hearingRepository, never()).save(hearingArgumentCaptor.capture());
+    }
+
     private List<Defendant> getDefendants(final UUID defendantId1, final UUID defendantId2, final UUID defendantId3, final UUID prosecutionCaseId, final List<UUID> offenceIds) {
         final List<Offence> offences = offenceIds.stream().map(id -> Offence.offence().withId(id).withProceedingsConcluded(true).build()).collect(Collectors.toList());
         final Defendant defendant1 = Defendant.defendant().withId(defendantId1).withProceedingsConcluded(true)

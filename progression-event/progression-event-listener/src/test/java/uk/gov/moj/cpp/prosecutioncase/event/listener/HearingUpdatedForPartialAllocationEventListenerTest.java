@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -174,6 +175,23 @@ public class HearingUpdatedForPartialAllocationEventListenerTest {
         verify(objectToJsonObjectConverter, times(1)).convert(hearing);
         verify(caseDefendantHearingRepository, times(1)).findByHearingIdAndCaseIdAndDefendantId(hearingId, caseId, defendantId);
         verify(caseDefendantHearingRepository, times(1)).remove(caseDefendantHearingEntity);
+    }
+
+    @Test
+    public void notHearingExtendedForCaseIfThereIsNoHearing() {
+
+        final JsonObject payload = converter.convert(hearingUpdatedForPartialAllocationEventPayload);
+        final HearingUpdatedForPartialAllocation hearingUpdatedForPartialAllocation = createHearingUpdatedForPartialAllocation(payload);
+        final HearingEntity hearingEntity = createHearingEntity();
+        final CaseDefendantHearingEntity caseDefendantHearingEntity = createCaseDefendantHearingEntity();
+
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), any())).thenReturn(hearingUpdatedForPartialAllocation).thenReturn(hearing);
+        when(hearingRepository.findBy(hearingId)).thenReturn(null);
+        hearingUpdatedForPartialAllocationEventListener.hearingUpdatedForPartialAllocation(jsonEnvelope);
+
+        verify(hearingRepository, times(1)).findBy(hearingId);
+        verify(hearingRepository, never()).save(hearingEntity);
     }
 
 

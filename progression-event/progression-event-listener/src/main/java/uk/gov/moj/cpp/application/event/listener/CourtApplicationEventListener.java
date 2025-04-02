@@ -112,6 +112,9 @@ public class CourtApplicationEventListener {
     public void processCourtApplicationCreated(final JsonEnvelope event) {
         final CourtApplicationCreated courtApplicationCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationCreated.class);
         final CourtApplication courtApplication = courtApplicationCreated.getCourtApplication();
+        if(nonNull(courtApplicationRepository.findBy(courtApplication.getId()))){
+            return;
+        }
         deDupAllOffencesForCourtApplication(courtApplication);
         final CourtApplication applicationToBeSaved = dedupAllReportingRestrictions(buildCourtApplication(courtApplication));
         courtApplicationRepository.save(getCourtApplicationEntity(applicationToBeSaved));
@@ -150,7 +153,7 @@ public class CourtApplicationEventListener {
     @Handles("progression.event.court-application-status-changed")
     public void processCourtApplicationStatusChanged(final JsonEnvelope event) {
         final CourtApplicationStatusChanged courtApplicationStatusChanged = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationStatusChanged.class);
-        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(courtApplicationStatusChanged.getId());
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findBy(courtApplicationStatusChanged.getId());
         if (nonNull(applicationEntity)) {
             final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
             final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
@@ -194,6 +197,9 @@ public class CourtApplicationEventListener {
     @Handles("progression.event.court-application-proceedings-initiated")
     public void processCourtApplicationProceedingsInitiated(final JsonEnvelope event) {
         final CourtApplicationProceedingsInitiated initiateCourtApplicationProceedings = dedupReportingRestriction(jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsInitiated.class));
+        if(nonNull(initiateCourtApplicationRepository.findBy(initiateCourtApplicationProceedings.getCourtApplication().getId()))){
+            return;
+        }
         deDupAllOffencesForCourtApplication(initiateCourtApplicationProceedings.getCourtApplication());
         initiateCourtApplicationRepository.save(getInitiateCourtApplication(initiateCourtApplicationProceedings));
     }
@@ -214,7 +220,7 @@ public class CourtApplicationEventListener {
     @Handles("progression.event.hearing-resulted-application-updated")
     public void processHearingResultedApplicationUpdated(final JsonEnvelope event) {
         final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingResultedApplicationUpdated.class);
-        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(hearingResultedApplicationUpdated.getCourtApplication().getId());
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findBy(hearingResultedApplicationUpdated.getCourtApplication().getId());
         if (nonNull(applicationEntity)) {
             final CourtApplication updatedCourtApplication = dedupAllReportingRestrictions(hearingResultedApplicationUpdated.getCourtApplication());
             deDupAllOffencesForCourtApplication(updatedCourtApplication);
@@ -233,7 +239,7 @@ public class CourtApplicationEventListener {
         if(LOGGER.isInfoEnabled()){
             LOGGER.info("Defendant address is being updated for application id : {}, defendantId : {}, masterDefendantId : {}", applicationId, defendant.getId(),defendant.getMasterDefendantId());
         }
-        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findBy(applicationId);
         if (nonNull(applicationEntity)) {
             if(LOGGER.isInfoEnabled()){
                 LOGGER.info("Application found in database applicationId : {}, defendantId : {}, masterDefendantId : {}", applicationId, defendant.getId(),defendant.getMasterDefendantId());
@@ -405,7 +411,7 @@ public class CourtApplicationEventListener {
     }
 
     private void addCourtApplicationToCase(final CourtApplication courtApplication, final UUID prosecutionCaseId, final String caseReference) {
-        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(courtApplication.getId());
+        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findBy(courtApplication.getId());
         if (nonNull(courtApplicationEntity)) {
             final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
             final CourtApplicationCaseKey courtApplicationCaseKey = new CourtApplicationCaseKey(randomUUID(), courtApplication.getId(), prosecutionCaseId);

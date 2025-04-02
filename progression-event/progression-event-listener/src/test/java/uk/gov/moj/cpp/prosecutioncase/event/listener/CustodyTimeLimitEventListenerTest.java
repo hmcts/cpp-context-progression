@@ -6,6 +6,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -142,6 +144,64 @@ public class CustodyTimeLimitEventListenerTest {
         assertThat(hearingsOffence1.getCtlClockStopped(), is(true));
         assertThat(hearingsOffence2.getCustodyTimeLimit(), notNullValue());
         assertThat(hearingsOffence2.getCtlClockStopped(), nullValue());
+
+        final ProsecutionCaseEntity savedProsecutionCaseEntity = prosecutionCaseEntityArgumentCaptor.getValue();
+        final ProsecutionCase dbProsecutionCase = objectMapper.readValue(savedProsecutionCaseEntity.getPayload(), ProsecutionCase.class);
+        final Offence prosecutionCasesOffence1 = dbProsecutionCase.getDefendants().get(0).getOffences().get(0);
+        final Offence prosecutionCasesOffence2 = dbProsecutionCase.getDefendants().get(0).getOffences().get(1);
+        assertThat(prosecutionCasesOffence1.getCustodyTimeLimit(), nullValue());
+        assertThat(prosecutionCasesOffence1.getCtlClockStopped(), is(true));
+        assertThat(prosecutionCasesOffence2.getCustodyTimeLimit(), notNullValue());
+        assertThat(prosecutionCasesOffence2.getCtlClockStopped(), nullValue());
+
+    }
+
+    @Test
+    public void shouldNotProcessCustodyTimeLimitClockStoppedIfThereIsNoHearing() throws IOException {
+        final UUID hearingId = randomUUID();
+        final UUID offence1Id = randomUUID();
+        final UUID offence2Id = randomUUID();
+        final UUID caseId = randomUUID();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
+        prosecutionCaseEntity.setCaseId(caseId);
+        final LocalDate timeLimit = LocalDate.now();
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withDefendants(new ArrayList<>(Arrays.asList(Defendant.defendant()
+                        .withOffences(new ArrayList<>(Arrays.asList(Offence.offence()
+                                .withId(offence1Id)
+                                .withCustodyTimeLimit(CustodyTimeLimit.custodyTimeLimit()
+                                        .withTimeLimit(timeLimit)
+                                        .build())
+                                .build(), Offence.offence()
+                                .withId(offence2Id)
+                                .withCustodyTimeLimit(CustodyTimeLimit.custodyTimeLimit()
+                                        .withTimeLimit(timeLimit)
+                                        .build())
+                                .build())))
+                        .build())))
+                .build();
+        hearingEntity.setPayload(objectMapper.writeValueAsString(Hearing.hearing()
+                .withId(hearingId)
+                .withProsecutionCases(Arrays.asList(prosecutionCase))
+                .build()));
+        prosecutionCaseEntity.setPayload(objectMapper.writeValueAsString(prosecutionCase));
+
+        when(custodyTimeLimitClockStoppedEnvelope.payload()).thenReturn(CustodyTimeLimitClockStopped.custodyTimeLimitClockStopped()
+                .withHearingId(hearingId)
+                .withOffenceIds(Arrays.asList(offence1Id))
+                .withCaseIds(Arrays.asList(caseId))
+                .build());
+
+        when(hearingRepository.findBy(any())).thenReturn(null);
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(prosecutionCaseEntity);
+
+        custodyTimeLimitEventListener.processCustodyTimeLimitClockStopped(custodyTimeLimitClockStoppedEnvelope);
+
+        verify(hearingRepository, never()).save(hearingEntityArgumentCaptor.capture());
+        verify(prosecutionCaseRepository).save(prosecutionCaseEntityArgumentCaptor.capture());
+
 
         final ProsecutionCaseEntity savedProsecutionCaseEntity = prosecutionCaseEntityArgumentCaptor.getValue();
         final ProsecutionCase dbProsecutionCase = objectMapper.readValue(savedProsecutionCaseEntity.getPayload(), ProsecutionCase.class);
