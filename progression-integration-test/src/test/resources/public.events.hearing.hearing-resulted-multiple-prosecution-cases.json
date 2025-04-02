@@ -50,7 +50,7 @@
         },
         "originatingOrganisation": "a",
         "initiationCode": "J",
-        "caseStatus": "a",
+        "caseStatus": "ACTIVE",
         "statementOfFacts": "a",
         "statementOfFactsWelsh": "a",
         "defendants": [
