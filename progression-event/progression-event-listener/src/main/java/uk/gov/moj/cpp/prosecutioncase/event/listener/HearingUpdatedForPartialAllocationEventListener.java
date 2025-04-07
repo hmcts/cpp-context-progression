@@ -19,7 +19,6 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.StringReader;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,12 +28,9 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.persistence.NoResultException;
-import java.io.StringReader;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
+
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -86,6 +82,9 @@ public class HearingUpdatedForPartialAllocationEventListener {
                         ));
 
         final HearingEntity dbHearingEntity = hearingRepository.findBy(hearingId);
+        if(isNull(dbHearingEntity)){
+            return;
+        }
         final JsonObject dbHearingJsonObject = jsonFromString(dbHearingEntity.getPayload());
         final Hearing dbHearing = jsonObjectToObjectConverter.convert(dbHearingJsonObject, Hearing.class);
 

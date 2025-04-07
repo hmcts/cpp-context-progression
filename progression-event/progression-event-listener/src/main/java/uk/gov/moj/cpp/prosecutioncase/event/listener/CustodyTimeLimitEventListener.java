@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
@@ -154,6 +155,9 @@ public class CustodyTimeLimitEventListener {
 
     private void stopCTLClockForHearing(final CustodyTimeLimitClockStopped custodyTimeLimitClockStopped, final List<UUID> offenceIds) {
         final HearingEntity hearingEntity = hearingRepository.findBy(custodyTimeLimitClockStopped.getHearingId());
+        if(isNull(hearingEntity)){
+            return;
+        }
         final JsonObject dbHearingJsonObject = jsonFromString(hearingEntity.getPayload());
 
         final Hearing dbHearing = jsonObjectConverter.convert(dbHearingJsonObject, Hearing.class);

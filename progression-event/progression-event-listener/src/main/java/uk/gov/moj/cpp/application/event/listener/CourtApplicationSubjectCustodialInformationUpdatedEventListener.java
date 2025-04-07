@@ -44,7 +44,7 @@ public class CourtApplicationSubjectCustodialInformationUpdatedEventListener {
         final CourtApplicationSubjectCustodialInformationUpdated courtApplicationSubjectCustodialInformationUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationSubjectCustodialInformationUpdated.class);
         final UUID applicationId = courtApplicationSubjectCustodialInformationUpdated.getApplicationId();
         final DefendantUpdate defendantUpdate = courtApplicationSubjectCustodialInformationUpdated.getDefendant();
-        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findBy(applicationId);
         if (nonNull(applicationEntity)) {
 
             final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());

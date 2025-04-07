@@ -82,7 +82,7 @@ public class CourtApplicationSubjectCustodialInformationUpdatedEventListenerTest
         persistedEntity.setPayload(payload.toString());
 
 
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(persistedEntity.getPayload())).thenReturn(buildCourtApplication(applicationId.toString()));
 
         final CourtApplicationSubjectCustodialInformationUpdated courtApplicationSubjectCustodialInformationUpdated = CourtApplicationSubjectCustodialInformationUpdated.courtApplicationSubjectCustodialInformationUpdated()
@@ -115,7 +115,7 @@ public class CourtApplicationSubjectCustodialInformationUpdatedEventListenerTest
         persistedEntity.setPayload(payload.toString());
 
 
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(persistedEntity.getPayload())).thenReturn(buildCourtApplicationWithoutCustodyEstablishment(applicationId.toString()));
 
         final CourtApplicationSubjectCustodialInformationUpdated courtApplicationSubjectCustodialInformationUpdated = CourtApplicationSubjectCustodialInformationUpdated.courtApplicationSubjectCustodialInformationUpdated()
@@ -155,7 +155,7 @@ public class CourtApplicationSubjectCustodialInformationUpdatedEventListenerTest
         persistedEntity.setPayload(payload.toString());
 
 
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(persistedEntity.getPayload())).thenReturn(buildCourtApplication(applicationId.toString()));
 
         final CourtApplicationSubjectCustodialInformationUpdated courtApplicationSubjectCustodialInformationUpdated = CourtApplicationSubjectCustodialInformationUpdated.courtApplicationSubjectCustodialInformationUpdated()
@@ -196,7 +196,7 @@ public class CourtApplicationSubjectCustodialInformationUpdatedEventListenerTest
         persistedEntity.setPayload(payload.toString());
 
 
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(persistedEntity.getPayload())).thenReturn(buildCourtApplicationWithoutSubject(applicationId.toString()));
 
         final CourtApplicationSubjectCustodialInformationUpdated courtApplicationSubjectCustodialInformationUpdated = CourtApplicationSubjectCustodialInformationUpdated.courtApplicationSubjectCustodialInformationUpdated()

@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -187,8 +188,21 @@ public class CourtApplicationEventListenerTest {
         when(courtApplication.getId()).thenReturn(UUID.randomUUID());
         when(courtApplicationCreated.getCourtApplication()).thenReturn(courtApplication);
         when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
+        when(repository.findBy(any())).thenReturn(null);
         eventListener.processCourtApplicationCreated(envelope);
         verify(repository).save(argumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldNotHandleCourtApplicationCreatedEventIfApplicationSavedBefore() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtApplicationCreated.class)).thenReturn(courtApplicationCreated);
+        when(courtApplication.getId()).thenReturn(UUID.randomUUID());
+        when(courtApplicationCreated.getCourtApplication()).thenReturn(courtApplication);
+        when(repository.findBy(any())).thenReturn(new CourtApplicationEntity());
+        eventListener.processCourtApplicationCreated(envelope);
+        verify(repository, never()).save(argumentCaptor.capture());
     }
 
     @Test
@@ -198,7 +212,7 @@ public class CourtApplicationEventListenerTest {
         persistedEntity.setApplicationId(applicationId);
         persistedEntity.setPayload(payload.toString());
 
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(payload);
         when(envelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(jsonObjectToObjectConverter.convert(jsonObject, CourtApplicationStatusChanged.class))
@@ -241,9 +255,26 @@ public class CourtApplicationEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CourtApplicationProceedingsInitiated.class))
                 .thenReturn(courtApplicationProceedingsInitiated);
         when(objectToJsonObjectConverter.convert(courtApplicationProceedingsInitiated)).thenReturn(createObjectBuilder().build());
+        when(initiateCourtApplicationRepository.findBy(any())).thenReturn(null);
         eventListener.processCourtApplicationProceedingsInitiated(envelope);
         final ArgumentCaptor<InitiateCourtApplicationEntity> initiateCourtApplicationEntityArgumentCaptor = ArgumentCaptor.forClass(InitiateCourtApplicationEntity.class);
         verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldNotProcessCourtApplicationProceedingsInitiatedIfApplicationSavedBefore() {
+
+        final UUID applicationId = randomUUID();
+        final CourtApplication courtApplication = CourtApplication.courtApplication().withId(applicationId).build();
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated().
+                withCourtApplication(courtApplication).build();
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CourtApplicationProceedingsInitiated.class))
+                .thenReturn(courtApplicationProceedingsInitiated);
+        when(initiateCourtApplicationRepository.findBy(any())).thenReturn(new InitiateCourtApplicationEntity());
+        eventListener.processCourtApplicationProceedingsInitiated(envelope);
+        final ArgumentCaptor<InitiateCourtApplicationEntity> initiateCourtApplicationEntityArgumentCaptor = ArgumentCaptor.forClass(InitiateCourtApplicationEntity.class);
+        verify(initiateCourtApplicationRepository, never()).save(initiateCourtApplicationEntityArgumentCaptor.capture());
     }
 
     @Test
@@ -375,7 +406,7 @@ public class CourtApplicationEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
                 .thenReturn(courtApplicationAddedToCase);
         when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
 
         eventListener.processCourtApplicationAddedToCase(envelope);
 
@@ -416,7 +447,7 @@ public class CourtApplicationEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
                 .thenReturn(courtApplicationAddedToCase);
         when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
 
         eventListener.processCourtApplicationAddedToCase(envelope);
 
@@ -448,7 +479,7 @@ public class CourtApplicationEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
                 .thenReturn(courtApplicationAddedToCase);
         when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
 
         eventListener.processCourtApplicationAddedToCase(envelope);
 
@@ -494,7 +525,7 @@ public class CourtApplicationEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
                 .thenReturn(courtApplicationAddedToCase);
         when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         eventListener.processCourtApplicationAddedToCase(envelope);
         verify(courtApplicationCaseRepository, times(1)).save(courtApplicationCaseArgumentCaptor.capture());
         final CourtApplicationCaseEntity courtApplicationCaseEntity = courtApplicationCaseArgumentCaptor.getValue();
@@ -525,7 +556,7 @@ public class CourtApplicationEventListenerTest {
         when(jsonObjectToObjectConverter.convert(payload, CourtApplicationAddedToCase.class))
                 .thenReturn(courtApplicationAddedToCase);
         when(courtApplicationAddedToCase.getCourtApplication()).thenReturn(courtApplication);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
 
         eventListener.processCourtApplicationAddedToCase(envelope);
 
@@ -545,7 +576,7 @@ public class CourtApplicationEventListenerTest {
                 .withCourtApplication(CourtApplication.courtApplication().withId(applicationId).build()).build());
         when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         eventListener.processHearingResultedApplicationUpdated(envelope);
     }
 
@@ -587,7 +618,7 @@ public class CourtApplicationEventListenerTest {
                         .build()).build());
         when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         eventListener.processHearingResultedApplicationUpdated(envelope);
         verify(objectToJsonObjectConverter).convert(courtApplicationArgumentCaptor.capture());
         final CourtApplication courtApplication = courtApplicationArgumentCaptor.getValue();
@@ -636,7 +667,7 @@ public class CourtApplicationEventListenerTest {
                         .build()).build());
         when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         eventListener.processHearingResultedApplicationUpdated(envelope);
         verify(objectToJsonObjectConverter).convert(courtApplicationArgumentCaptor.capture());
         final CourtApplication courtApplication = courtApplicationArgumentCaptor.getValue();
@@ -655,7 +686,7 @@ public class CourtApplicationEventListenerTest {
                 DefendantAddressOnApplicationUpdated.defendantAddressOnApplicationUpdated()
                         .withApplicationId(applicationId)
                                 .withDefendant(DefendantUpdate.defendantUpdate().build()).build());
-        when(repository.findByApplicationId(applicationId)).thenReturn(null);
+        when(repository.findBy(applicationId)).thenReturn(null);
         eventListener.processDefendantAddressOnApplicationUpdated(envelope);
         verify(repository, times(0)).save(any());
     }
@@ -672,7 +703,7 @@ public class CourtApplicationEventListenerTest {
         final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
         persistedEntity.setApplicationId(applicationId);
         persistedEntity.setPayload(payload.toString());
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(payload);
         when(objectToJsonObjectConverter.convert(any())).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CourtApplication.class)).thenReturn(CourtApplication.courtApplication()
@@ -706,7 +737,7 @@ public class CourtApplicationEventListenerTest {
         final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
         persistedEntity.setApplicationId(applicationId);
         persistedEntity.setPayload(payload.toString());
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(payload);
         when(objectToJsonObjectConverter.convert(any())).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CourtApplication.class)).thenReturn(CourtApplication.courtApplication()
@@ -739,7 +770,7 @@ public class CourtApplicationEventListenerTest {
         final CourtApplicationEntity persistedEntity = new CourtApplicationEntity();
         persistedEntity.setApplicationId(applicationId);
         persistedEntity.setPayload(payload.toString());
-        when(repository.findByApplicationId(applicationId)).thenReturn(persistedEntity);
+        when(repository.findBy(applicationId)).thenReturn(persistedEntity);
         when(stringToJsonObjectConverter.convert(payload.toString())).thenReturn(payload);
         when(objectToJsonObjectConverter.convert(any())).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(payload, CourtApplication.class)).thenReturn(CourtApplication.courtApplication()

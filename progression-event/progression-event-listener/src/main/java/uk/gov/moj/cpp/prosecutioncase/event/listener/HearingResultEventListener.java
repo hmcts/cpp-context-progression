@@ -108,6 +108,9 @@ public class HearingResultEventListener {
             updatedHearingResulted.getHearing().getProsecutionCases().stream().forEach(c -> deDupAllOffencesForProsecutionCase(c));
         }
         final HearingEntity currentHearingEntity = hearingRepository.findBy(updatedHearingResulted.getHearing().getId());
+        if(isNull(currentHearingEntity)){
+            return;
+        }
         final JsonObject currentHearingJson = jsonFromString(currentHearingEntity.getPayload());
         final Hearing originalCurrentHearing = jsonObjectConverter.convert(currentHearingJson, Hearing.class);
         final Hearing updatedHearing = dedupAllReportingRestrictions(getUpdatedHearingForResulted(updatedHearingResulted.getHearing(), originalCurrentHearing, updatedHearingResulted.getHearingDay()));

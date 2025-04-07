@@ -152,6 +152,9 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
         final HearingDefendantUpdated hearingDefendantUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), HearingDefendantUpdated.class);
         final DefendantUpdate defendantUpdate = hearingDefendantUpdated.getDefendant();
         final HearingEntity hearingEntity = hearingRepository.findBy(hearingDefendantUpdated.getHearingId());
+        if(isNull(hearingEntity)){
+            return;
+        }
         final JsonObject hearingJson = jsonFromString(hearingEntity.getPayload());
         final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
 
