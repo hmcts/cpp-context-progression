@@ -12,27 +12,25 @@ import uk.gov.justice.services.unifiedsearch.client.domain.Party;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
-
-import javax.json.JsonObject;
 
 import com.bazaarvoice.jolt.Transform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ProsecutionCaseCreatedTransformer implements Transform {
 
-    private DomainToIndexMapper domainToIndexMapper = new DomainToIndexMapper();
+    private final DomainToIndexMapper domainToIndexMapper = new DomainToIndexMapper();
 
-    private ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapperProducer().objectMapper();
 
     @Override
     public Object transform(final Object input) {
 
-        final JsonObject jsonObject = new ObjectToJsonObjectConverter(objectMapper).convert(input);
-
         final ProsecutionCaseCreated prosecutionCaseCreated =
-                new JsonObjectToObjectConverter(objectMapper).convert(jsonObject, ProsecutionCaseCreated.class);
+                new JsonObjectToObjectConverter(objectMapper)
+                        .convert(new ObjectToJsonObjectConverter(objectMapper)
+                                .convert(input), ProsecutionCaseCreated.class);
+
         final CaseDetails caseDetails = new CaseDetails();
         final ProsecutionCase prosecutionCase = prosecutionCaseCreated.getProsecutionCase();
         final List<Defendant> defendants = prosecutionCase.getDefendants();
@@ -44,9 +42,9 @@ public class ProsecutionCaseCreatedTransformer implements Transform {
             caseDetails.setCaseStatus("ACTIVE");
 
             if (prosecutionCase.getProsecutionCaseIdentifier() != null) {
-                if (!Objects.isNull(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())) {
+                if (nonNull(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN())) {
                     caseDetails.setCaseReference(prosecutionCase.getProsecutionCaseIdentifier().getCaseURN());
-                } else if (!Objects.isNull(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())) {
+                } else if (nonNull(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())) {
                     caseDetails.setCaseReference(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference());
                 }
                 final Prosecutor prosecutor = prosecutionCase.getProsecutor();
@@ -56,6 +54,12 @@ public class ProsecutionCaseCreatedTransformer implements Transform {
                     caseDetails.setProsecutingAuthority(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityCode());
                 }
             }
+
+            if (nonNull(prosecutionCase.getMigrationSourceSystem())
+                    && nonNull(prosecutionCase.getMigrationSourceSystem().getMigrationSourceSystemCaseIdentifier())) {
+                caseDetails.setSourceSystemReference(prosecutionCase.getMigrationSourceSystem().getMigrationSourceSystemCaseIdentifier());
+            }
+
             parties.add(domainToIndexMapper.party(defendant));
         }
         caseDetails.setParties(parties);

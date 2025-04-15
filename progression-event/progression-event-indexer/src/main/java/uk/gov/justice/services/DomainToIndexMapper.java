@@ -1,5 +1,6 @@
 package uk.gov.justice.services;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 
@@ -211,6 +212,8 @@ public class DomainToIndexMapper {
                 ofNullable(offence.getPlea()).ifPresent(plea -> offence1.setPleas(plea(plea)));
                 if ( ofNullable(offence.getIndicatedPlea()).isPresent()
                         && IndicatedPleaValue.INDICATED_GUILTY.equals(offence.getIndicatedPlea().getIndicatedPleaValue())
+                        && nonNull(offence.getIndicatedPlea().getOriginatingHearingId())
+                        && nonNull(offence.getIndicatedPlea().getIndicatedPleaDate())
                         && !ofNullable(offence.getPlea()).isPresent()) {
                     ofNullable(offence.getIndicatedPlea()).ifPresent(indicatedPlea -> offence1.setPleas(pleaGuilty(indicatedPlea)));
                 }

@@ -1,33 +1,34 @@
 package uk.gov.moj.cpp.progression;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import org.json.JSONException;
-import org.junit.jupiter.api.Test;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithDefendantAsAdult;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetLatestHearingForDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingsForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyHearingIsEmpty;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.verifyProbationHearingDeletedCommandInvoked;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.util.List;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.json.JSONException;
+import org.junit.jupiter.api.Test;
 
 public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
 
@@ -39,7 +40,7 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Test
-    public void shouldHearingAsMarkedDuplicate() throws IOException, JSONException {
+    public void shouldHearingAsMarkedDuplicate() throws JSONException {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();
@@ -51,7 +52,10 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
         String duplicateHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         addProsecutionCaseToCrownCourtWithDefendantAsAdult(caseId, defendantId, urn);
-        final String hearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, List.of(duplicateHearingId));
+        List<String> allHearingIds = newArrayList(pollCaseAndGetHearingsForDefendant(caseId, defendantId, withJsonPath("$.hearingsAtAGlance.defendantHearings[0].hearingIds.length()", is(2))));
+
+        allHearingIds.remove(duplicateHearingId);
+        final String hearingId = allHearingIds.get(0);
 
         final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, duplicateHearingId, defendantId, courtCentreId, "Lavender Hill Magistrate's Court");
 

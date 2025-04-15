@@ -5,6 +5,8 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
 import static uk.gov.justice.core.courts.CreateHearingApplicationRequest.createHearingApplicationRequest;
@@ -20,6 +22,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.model.HearingListing;
 
 import java.util.List;
 import java.util.UUID;
@@ -83,6 +86,34 @@ public class SummonsHearingRequestServiceTest {
         assertThat(commandEnveloper.metadata().name(), is("progression.command.create-hearing-application-request"));
         assertThat(commandEnveloper.payload().getString("hearingId"), is(hearingId.toString()));
         assertThat(commandEnveloper.payload().getJsonArray("applicationRequests").getJsonObject(0).getString("courtApplicationId"), is(applicationId.toString()));
+
+    }
+
+    @Test
+    void addDefendantRequestToHearingWhenHearingListingIsEmpty() {
+
+        final List<HearingListing> hearingListingList = List.of();
+
+        summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope(), hearingListingList);
+
+        verify(sender, never()).send(any(Envelope.class));
+    }
+
+    @Test
+    void addDefendantRequestToHearingWhenHearingListingIsNotEmpty() {
+
+        final UUID hearingId = randomUUID();
+
+        final List<HearingListing> hearingListingList = List.of(new HearingListing(hearingId, "key", List.of(),
+                List.of(ListDefendantRequest.listDefendantRequest().build())));
+
+        summonsHearingRequestService.addDefendantRequestToHearing(jsonEnvelope(), hearingListingList);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final Envelope<JsonObject> commandEnveloper = envelopeCaptor.getValue();
+        assertThat(commandEnveloper.metadata().name(), is("progression.command.create-hearing-defendant-request"));
+        assertThat(commandEnveloper.payload().getString("hearingId"), is(hearingId.toString()));
 
     }
 

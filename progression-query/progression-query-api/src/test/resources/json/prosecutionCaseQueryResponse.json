@@ -79,7 +79,11 @@
       "prosecutionAuthorityId": "42880989-5d09-332e-a711-8797af06ecea",
       "caseURN": "10GD7635820"
     },
-    "statementOfFacts": "Prosecution facts"
+    "statementOfFacts": "Prosecution facts",
+    "migrationSourceSystem" :{
+      "migrationSourceSystemName" : "LIBRA",
+      "migrationSourceSystemCaseIdentifier" : "LIBRA-123"
+    }
   },
   "hearingsAtAGlance": {
     "courtApplications": [],

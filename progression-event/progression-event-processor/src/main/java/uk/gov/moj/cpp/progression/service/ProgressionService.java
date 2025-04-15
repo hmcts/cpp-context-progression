@@ -96,6 +96,7 @@ import uk.gov.moj.cpp.progression.Country;
 import uk.gov.moj.cpp.progression.domain.utils.LocalDateUtils;
 import uk.gov.moj.cpp.progression.exception.DataValidationException;
 import uk.gov.moj.cpp.progression.exception.ReferenceDataNotFoundException;
+import uk.gov.moj.cpp.progression.model.HearingListing;
 import uk.gov.moj.cpp.progression.processor.exceptions.CourtApplicationAndCaseNotFoundException;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
@@ -149,6 +150,8 @@ public class ProgressionService {
     private static final String PROGRESSION_QUERY_RESULT_LIST_OPA_NOTICES = "progression.query.result-list-opa-notices";
     private static final String PROGRESSION_QUERY_SEARCH_CASES_BY_CASEURN = "progression.query.search-cases-by-caseurn";
     private static final String PROGRESSION_QUERY_CASE_EXISTS_BY_CASEURN = "progression.query.case-exist-by-caseurn";
+
+    private static final String PROGRESSION_QUERY_PROSECUTION_CASE_EXISTS_BY_CASEID = "progression.query.prosecutioncase-details";
     private static final String PROGRESSION_QUERY_PROSECUTION_CASES = "progression.query.prosecutioncase-v2";
     private static final String PROGRESSION_QUERY_CASE_STATUS_FOR_APPLICATION = "progression.query.case.status-for-application";
     private static final String PROGRESSION_QUERY_HEARING = "progression.query.hearing";
@@ -757,6 +760,21 @@ public class ProgressionService {
         return Optional.of(response.payloadAsJsonObject());
     }
 
+    public Optional<JsonObject> prosecutionCaseByCaseId(final JsonEnvelope envelope, final String reference) {
+
+        final JsonObject requestParameter = createObjectBuilder().add(CASE_ID, reference).build();
+
+        LOGGER.info("search for case detail with reference {} ", reference);
+
+        final JsonEnvelope response = requester.request(enveloper.withMetadataFrom(envelope, PROGRESSION_QUERY_PROSECUTION_CASE_EXISTS_BY_CASEID).apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("search for case detail response {}", response.toObfuscatedDebugString());
+        }
+
+        return Optional.of(response.payloadAsJsonObject());
+    }
+
     public JsonObject getReferralReasonByReferralReasonId(final JsonEnvelope jsonEnvelope, final UUID referralId) {
 
         LOGGER.info("search for Referral reason detail with reference {} ", referralId);
@@ -909,38 +927,66 @@ public class ProgressionService {
      * @param hearings       - the hearings to update the status for
      * @param seedingHearing - The originating hearing details
      */
-    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing, final List<ListHearingRequest> listHearingRequests, final Boolean isGroupProceedings, final Integer numberOfGroupCases) {
+    public void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope,
+                                                           final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing,
+                                                           final List<ListHearingRequest> listHearingRequests, final Boolean isGroupProceedings, final Integer numberOfGroupCases) {
         hearings.forEach(hearingListingNeeds -> {
             final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, isGroupProceedings, numberOfGroupCases);
-            if (isNotEmpty(hearing.getProsecutionCases())) {
-                final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
-                        .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
-                        .add(HEARING, objectToJsonObjectConverter.convert(hearing));
-                if (isNotEmpty(listHearingRequests)) {
-                    hearingListingStatusCommandBuilder.add(LIST_HEARING_REQUESTS, hearingRequestListToJsonArrayConverter.convert(listHearingRequests));
-                }
+            updateHearingListingStatusToSentForListing(jsonEnvelope, listHearingRequests, hearing);
+        });
+    }
 
-                final JsonObject hearingListingStatusCommand = hearingListingStatusCommandBuilder.build();
-                LOGGER.info("update hearing listing status after send case for listing with hearingId {}", hearing.getId());
-                sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
-            } else {
-
-                final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = Json.createObjectBuilder()
-                        .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
-                        .add(HEARING, objectToJsonObjectConverter.convert(hearing));
-
-                if (isNotEmpty(listHearingRequests)) {
-                    hearingCreatedForApplicationCommandBuilder.add(LIST_HEARING_REQUESTS, hearingRequestListToJsonArrayConverter.convert(listHearingRequests));
-                }
-
-                final JsonObject hearingCreatedForApplicationCommand = hearingCreatedForApplicationCommandBuilder.build();
-
-                LOGGER.info("create hearing listing status after send application for listing with hearingId {}", hearing.getId());
-
-                sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
-                        hearingCreatedForApplicationCommand));
-
+    private void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<ListHearingRequest> listHearingRequests, final Hearing hearing) {
+        if (isNotEmpty(hearing.getProsecutionCases())) {
+            final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
+                    .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                    .add(HEARING, objectToJsonObjectConverter.convert(hearing));
+            if (isNotEmpty(listHearingRequests)) {
+                hearingListingStatusCommandBuilder.add(LIST_HEARING_REQUESTS, hearingRequestListToJsonArrayConverter.convert(listHearingRequests));
             }
+
+            final JsonObject hearingListingStatusCommand = hearingListingStatusCommandBuilder.build();
+            LOGGER.info("update hearing listing status after send case for listing with payload {}", hearingListingStatusCommand);
+            sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
+        } else {
+
+            final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = Json.createObjectBuilder()
+                    .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
+                    .add(HEARING, objectToJsonObjectConverter.convert(hearing));
+
+            if (isNotEmpty(listHearingRequests)) {
+                hearingCreatedForApplicationCommandBuilder.add(LIST_HEARING_REQUESTS, hearingRequestListToJsonArrayConverter.convert(listHearingRequests));
+            }
+
+            final JsonObject hearingCreatedForApplicationCommand = hearingCreatedForApplicationCommandBuilder.build();
+
+            LOGGER.info("create hearing listing status after send application for listing with payload {}", hearingCreatedForApplicationCommand);
+
+            sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_CREATE_HEARING_FOR_APPLICATION_COMMAND),
+                    hearingCreatedForApplicationCommand));
+
+        }
+    }
+
+    /**
+     * @param jsonEnvelope
+     * @param hearings       - the hearings to update the status for
+     * @param seedingHearing - The originating hearing details
+     */
+    public void updateHearingListingStatusToSentForListingWithMultipleRequest(final JsonEnvelope jsonEnvelope,
+                                                                              final List<HearingListingNeeds> hearings, final SeedingHearing seedingHearing,
+                                                                              final List<HearingListing> hearingListingList, final Boolean isGroupProceedings,
+                                                                              final Integer numberOfGroupCases) {
+
+        hearings.forEach(hearingListingNeeds -> {
+            final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, isGroupProceedings, numberOfGroupCases);
+
+            final List<ListHearingRequest> listHearingRequests = hearingListingList.stream()
+                    .filter(h -> h.hearingId().equals(hearing.getId()))
+                    .map(HearingListing::listHearingRequestList)
+                    .flatMap(Collection::stream).toList();
+
+            updateHearingListingStatusToSentForListing(jsonEnvelope, listHearingRequests, hearing);
         });
     }
 
@@ -1440,14 +1486,14 @@ public class ProgressionService {
                         .build());
         if (isWelshCourtCenter) {
             courtCenterBuilder.withWelshAddress(
-                    Address.address()
-                            .withAddress1(courtCentreJson.getString(WELSH_ADDRESS_1))
-                            .withAddress2(courtCentreJson.getString(WELSH_ADDRESS_2, EMPTY_STRING))
-                            .withAddress3(courtCentreJson.getString(WELSH_ADDRESS_3, EMPTY_STRING))
-                            .withAddress4(courtCentreJson.getString(WELSH_ADDRESS_4, EMPTY_STRING))
-                            .withAddress5(courtCentreJson.getString(WELSH_ADDRESS_5, EMPTY_STRING))
-                            .withPostcode(courtCentreJson.getString(POSTCODE, null))
-                            .build())
+                            Address.address()
+                                    .withAddress1(courtCentreJson.getString(WELSH_ADDRESS_1))
+                                    .withAddress2(courtCentreJson.getString(WELSH_ADDRESS_2, EMPTY_STRING))
+                                    .withAddress3(courtCentreJson.getString(WELSH_ADDRESS_3, EMPTY_STRING))
+                                    .withAddress4(courtCentreJson.getString(WELSH_ADDRESS_4, EMPTY_STRING))
+                                    .withAddress5(courtCentreJson.getString(WELSH_ADDRESS_5, EMPTY_STRING))
+                                    .withPostcode(courtCentreJson.getString(POSTCODE, null))
+                                    .build())
                     .withWelshName(courtCentreJson.getString("oucodeL3WelshName"))
                     .withWelshRoomName((courtRoomDetails.isPresent() ? courtRoomDetails.get().getString("welshCourtroomName") : EMPTY_STRING));
         }

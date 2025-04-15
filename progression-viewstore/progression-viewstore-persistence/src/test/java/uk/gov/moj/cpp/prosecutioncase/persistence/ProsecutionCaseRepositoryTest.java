@@ -29,7 +29,7 @@ public class ProsecutionCaseRepositoryTest {
     private ProsecutionCaseRepository repository;
 
     @Test
-    public void shouldFindOptionalBy() throws Exception {
+    public void shouldFindOptionalBy() {
         //given
         repository.save(getProsecutionCase());
 

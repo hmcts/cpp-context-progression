@@ -1123,7 +1123,8 @@ public class PreAndPostConditionHelper {
         ).stream().filter(hs -> !hearingIdsToExclude.contains(hs)).findFirst().get();
     }
 
-    private static List<String> pollCaseAndGetHearingsForDefendant(final String caseId, final String defendantId, final Matcher<? super ReadContext>... matchers) {
+    @SafeVarargs
+    public static List<String> pollCaseAndGetHearingsForDefendant(final String caseId, final String defendantId, final Matcher<? super ReadContext>... matchers) {
         final String prosecutionCaseAsString = pollProsecutionCasesProgressionFor(caseId, matchers);
         final JsonObject prosecutionCaseJson = getJsonObject(prosecutionCaseAsString);
         return extractAllHearingIdsFromProsecutionCasesProgression(prosecutionCaseJson, defendantId);

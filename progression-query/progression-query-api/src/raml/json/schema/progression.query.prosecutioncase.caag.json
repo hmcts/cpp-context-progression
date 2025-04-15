@@ -33,6 +33,9 @@
           "items": {
             "$ref": "http://justice.gov.uk/progression/query/related-reference.json"
           }
+        },
+        "migrationSourceSystem": {
+          "$ref": "http://justice.gov.uk/core/courts/migrationSourceSystem.json"
         }
       }
     },
