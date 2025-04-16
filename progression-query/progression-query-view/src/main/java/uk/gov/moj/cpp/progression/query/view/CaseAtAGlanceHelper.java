@@ -114,6 +114,7 @@ public class CaseAtAGlanceHelper {
             caseDetailsBuilder.withRelatedReferenceList(relatedReferences);
         }
 
+        caseDetailsBuilder.withMigrationSourceSystem(prosecutionCase.getMigrationSourceSystem());
 
         if (prosecutionCase.getInitiationCode() != null) {
             caseDetailsBuilder.withInitiationCode(
@@ -258,9 +259,9 @@ public class CaseAtAGlanceHelper {
                 final CaagDefendantOffences.Builder caagDefendantOffenceBuilder = CaagDefendantOffences.caagDefendantOffences();
                 final List<JudicialResult> resultsFromAllHearings = getResultsFromAllHearings(defendant.getId(), offence.getId());
                 final List<CaagResults> caagResultsList = extractResults(resultsFromAllHearings);
-                final Optional<Plea> plea = getPlea(defendant.getId(), offence.getId());
-                final Optional<IndicatedPlea> indicatedPlea = getIndicatedPlea(defendant.getId(), offence.getId());
-                final Optional<Verdict> verdict = getVerdict(defendant.getId(), offence.getId());
+                final Optional<Plea> plea = getPlea(defendant.getId(), offence);
+                final Optional<IndicatedPlea> indicatedPlea = getIndicatedPlea(defendant.getId(), offence);
+                final Optional<Verdict> verdict = getVerdict(defendant.getId(), offence);
 
                 caagDefendantOffenceBuilder.withCaagResults(caagResultsList);
                 caagDefendantOffenceBuilder.withId(offence.getId());
@@ -416,42 +417,45 @@ public class CaseAtAGlanceHelper {
                 .collect(toList());
     }
 
-    private Optional<Plea> getPlea(final UUID defendantId, final UUID offenceId) {
-        if (getResultedHearing().isPresent()) {
-            return getResultedHearing().get().getDefendants().stream()
+    private Optional<Plea> getPlea(final UUID defendantId, final Offence offence) {
+        final UUID offenceId = offence.getId();
+        final Optional<Plea> hearingPlea = getResultedHearings()
+                .flatMap(hearings -> hearings.getDefendants().stream())
                 .filter(defendants -> defendantId.equals(defendants.getId()))
                 .flatMap(defendants -> defendants.getOffences().stream())
                 .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getPleas()))
                 .flatMap(offences -> offences.getPleas().stream())
-                .filter(plea -> nonNull(plea.getPleaValue()) && nonNull(plea.getPleaDate())).findFirst();
-         }
-        return Optional.empty();
+                .filter(plea -> nonNull(plea.getPleaValue()) && nonNull(plea.getPleaDate()))
+                .max(comparing(Plea::getPleaDate));
+        return Optional.ofNullable(hearingPlea.orElse(offence.getPlea()));
     }
 
-    private Optional<IndicatedPlea> getIndicatedPlea(final UUID defendantId, final UUID offenceId) {
-        if (getResultedHearing().isPresent()) {
-            return getResultedHearing().get().getDefendants().stream()
-                    .filter(defendants -> defendantId.equals(defendants.getId()))
-                    .flatMap(defendants -> defendants.getOffences().stream())
-                    .filter(offences -> offenceId.equals(offences.getId()) && nonNull(offences.getIndicatedPlea()))
-                    .map(Offences::getIndicatedPlea)
-                    .filter(indicatedPlea -> nonNull(indicatedPlea.getIndicatedPleaValue()) && nonNull(indicatedPlea.getIndicatedPleaDate()))
-                    .findFirst();
-        }
-        return Optional.empty();
+    private Optional<IndicatedPlea> getIndicatedPlea(final UUID defendantId, final Offence offence) {
+        final UUID offenceId = offence.getId();
+        final Optional<IndicatedPlea> hearingIndicatedPlea = getResultedHearings()
+                .flatMap(hearings -> hearings.getDefendants().stream())
+                .filter(defendants -> defendantId.equals(defendants.getId()))
+                .flatMap(defendants -> defendants.getOffences().stream())
+                .filter(offences -> offenceId.equals(offences.getId()) && nonNull(offences.getIndicatedPlea()))
+                .map(Offences::getIndicatedPlea)
+                .filter(indicatedPlea -> nonNull(indicatedPlea.getIndicatedPleaValue()) && nonNull(indicatedPlea.getIndicatedPleaDate()))
+                .findFirst();
+        return Optional.ofNullable(hearingIndicatedPlea.orElse(offence.getIndicatedPlea()));
     }
 
 
-    private Optional<Verdict> getVerdict(final UUID defendantId, final UUID offenceId) {
-        if (getResultedHearing().isPresent()) {
-            return getResultedHearing().get().getDefendants().stream()
-                    .filter(defendants -> defendantId.equals(defendants.getId()))
-                    .flatMap(defendants -> defendants.getOffences().stream())
-                    .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getVerdicts()))
-                    .flatMap(offences -> offences.getVerdicts().stream())
-                    .filter(verdict -> nonNull(verdict.getVerdictType()) && nonNull(verdict.getVerdictDate())).findFirst();
-        }
-        return Optional.empty();
+    private Optional<Verdict> getVerdict(final UUID defendantId, final Offence offence) {
+        final UUID offenceId = offence.getId();
+        final Optional<Verdict> hearingVerdict = getResultedHearings()
+                .flatMap(hearings -> hearings.getDefendants().stream())
+                .filter(defendants -> defendantId.equals(defendants.getId()))
+                .flatMap(defendants -> defendants.getOffences().stream())
+                .filter(offences -> offenceId.equals(offences.getId()) && !isEmpty(offences.getVerdicts()))
+                .flatMap(offences -> offences.getVerdicts().stream())
+                .filter(verdict -> nonNull(verdict.getVerdictType()) && nonNull(verdict.getVerdictDate()))
+                .max(comparing(Verdict::getVerdictDate));
+
+        return Optional.ofNullable(hearingVerdict.orElse(offence.getVerdict()));
     }
 
     private List<JudicialResult> getDefendantLevelJudicialResults(final UUID defendantId) {

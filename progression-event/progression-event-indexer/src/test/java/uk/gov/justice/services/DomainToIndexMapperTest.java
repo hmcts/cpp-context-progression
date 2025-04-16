@@ -2,6 +2,7 @@ package uk.gov.justice.services;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.justice.services.DomainToIndexMapper.addressLines;
 import static java.util.Arrays.asList;
 
@@ -264,6 +265,42 @@ public class DomainToIndexMapperTest {
         assertThat(party.getOffences().get(0).getPleas().get(0).getPleaValue(), is(defendant.getOffences().get(0).getPlea().getPleaValue().toString()));
         assertThat(party.getOffences().get(0).getPleas().get(0).getPleaDate(), is(defendant.getOffences().get(0).getPlea().getPleaDate().toString()));
     }
+
+    @Test
+    public void shouldIgnoreIndicatedGuiltyPleaIfOriginatingHearingIdIsNotPresent() {
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withOffences(Collections.singletonList(Offence.offence()
+                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                .withIndicatedPleaDate(LocalDate.now())
+                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
+                                .build())
+                        .build()))
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertNull(party.getOffences().get(0).getPleas());
+    }
+
+    @Test
+    public void shouldIgnoreIndicatedGuiltyPleaIfPleaDateIsNotPresent() {
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withOffences(Collections.singletonList(Offence.offence()
+                        .withIndicatedPlea(IndicatedPlea.indicatedPlea()
+                                .withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY)
+                                .withOriginatingHearingId(UUID.randomUUID())
+                                .build())
+                        .build()))
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertNull(party.getOffences().get(0).getPleas());
+    }
+
+
     private Defendant createDefendant(final String courtProceedingsInitiated) {
         return Defendant.defendant()
                 .withId(UUID.randomUUID())

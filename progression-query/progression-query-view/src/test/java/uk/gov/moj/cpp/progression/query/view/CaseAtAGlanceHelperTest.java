@@ -51,6 +51,7 @@ import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.InitiationCode;
 import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.MigrationSourceSystem;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
@@ -139,6 +140,8 @@ public class CaseAtAGlanceHelperTest {
     private static final String PNC_ID = "pncId";
     private static final String ASN = "asn1234";
     private static final Gender DRIVER_GENDER = Gender.MALE;
+    private static final String MIGRATION_SOURCE_SYSTEM_NAME = "LIBRA";
+    private static final String MIGRATION_SOURCE_SYSTEM_CASE_IDENTIFIER = "LIBRA-359";
 
     private CaseAtAGlanceHelper caseAtAGlanceHelper;
 
@@ -546,6 +549,28 @@ public class CaseAtAGlanceHelperTest {
 
         assertThat(defendants.get(0).getCtlExpiryDate(), is(timeLimit1));
         assertThat(defendants.get(0).getCtlExpiryCountDown(), is((-10)));
+    }
+
+    @Test
+    public void shouldGetCaseDetailsFromProsecutionCaseWithMigrationCaseDetails() {
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withValuesFrom(getProsecutionCaseWithCaseDetails())
+                .withMigrationSourceSystem(MigrationSourceSystem.migrationSourceSystem()
+                        .withMigrationSourceSystemName(MIGRATION_SOURCE_SYSTEM_NAME)
+                        .withMigrationSourceSystemCaseIdentifier(MIGRATION_SOURCE_SYSTEM_CASE_IDENTIFIER)
+                        .build())
+                .build();
+
+        caseAtAGlanceHelper = new CaseAtAGlanceHelper(prosecutionCase, new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
+
+
+        final CaseDetails caseDetails = caseAtAGlanceHelper.getCaseDetails();
+
+        assertThat(caseDetails.getCaseMarkers().size(), is(2));
+        assertThat(caseDetails.getCaseURN(), is(CASE_URN));
+        assertThat(caseDetails.getInitiationCode(), is(InitiationCode.J.toString()));
+        assertThat(caseDetails.getMigrationSourceSystem().getMigrationSourceSystemName(), is(MIGRATION_SOURCE_SYSTEM_NAME));
+        assertThat(caseDetails.getMigrationSourceSystem().getMigrationSourceSystemCaseIdentifier(), is(MIGRATION_SOURCE_SYSTEM_CASE_IDENTIFIER));
     }
 
     private ProsecutionCase getProsecutionCaseWithProsecutor(){

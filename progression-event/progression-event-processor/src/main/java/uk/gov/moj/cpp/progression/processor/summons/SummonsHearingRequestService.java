@@ -10,6 +10,7 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.model.HearingListing;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,18 @@ public class SummonsHearingRequestService {
 
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST = "progression.command.create-hearing-defendant-request";
     private static final String PROGRESSION_COMMAND_CREATE_HEARING_APPLICATION_REQUEST = "progression.command.create-hearing-application-request";
+
+    public void addDefendantRequestToHearing(final JsonEnvelope jsonEnvelope, final List<HearingListing> hearingListingList) {
+        hearingListingList.forEach(hearingListing -> {
+            final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(createHearingDefendantRequest()
+                    .withHearingId(hearingListing.hearingId())
+                    .withDefendantRequests(hearingListing.listDefendantRequests())
+                    .build());
+            sender.send(envelop(hearingDefendantRequestJson)
+                    .withName(PROGRESSION_COMMAND_CREATE_HEARING_DEFENDANT_REQUEST)
+                    .withMetadataFrom(jsonEnvelope));
+        });
+    }
 
     public void addDefendantRequestToHearing(final JsonEnvelope jsonEnvelope, final List<ListDefendantRequest> listDefendantRequests, final UUID hearingId) {
         final JsonObject hearingDefendantRequestJson = objectToJsonObjectConverter.convert(createHearingDefendantRequest()

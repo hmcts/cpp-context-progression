@@ -138,6 +138,7 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
                     .withValuesFrom(prosecutionCaseInRepository)
                     .withDefendants(dedupAllReportingRestrictionsForDefendants(prosecutionCaseInRepository.getDefendants()))
                     .withCaseStatus(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus())
+                    .withMigrationSourceSystem(prosecutionCaseInRepository.getMigrationSourceSystem())
                     .build();
             repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
             updateSearchable(updatedProsecutionCase);

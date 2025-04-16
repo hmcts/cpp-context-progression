@@ -32,6 +32,7 @@ public class ProsecutionCaseTransformer {
                 .withRemovalReason(prosecutionCase.getRemovalReason())
                 .withCaseStatus(caseStatus)
                 .withTrialReceiptType(prosecutionCase.getTrialReceiptType())
+                .withMigrationSourceSystem(prosecutionCase.getMigrationSourceSystem())
                 .build();
     }
 }

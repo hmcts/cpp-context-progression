@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.common</groupId>
         <artifactId>service-parent-pom</artifactId>
-        <version>17.101.0</version>
+        <version>17.101.1</version>
     </parent>
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
@@ -62,21 +62,21 @@
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
-        <material.version>17.0.20</material.version>
+        <material.version>17.0.57</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.64</referencedata.version>
+        <referencedata.version>17.0.84</referencedata.version>
         <listing.version>17.0.48</listing.version>
         <hearing.version>17.0.65</hearing.version>
-        <usersgroups.version>17.0.19</usersgroups.version>
-        <defence.version>17.0.44</defence.version>
+        <usersgroups.version>17.0.32</usersgroups.version>
+        <defence.version>17.0.60</defence.version>
         <referencedata.offence.version>17.0.17</referencedata.offence.version>
-        <coredomain.version>17.101.3</coredomain.version>
+        <coredomain.version>17.101.4</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.1</results.version>
         <notification.notify.version>17.0.1</notification.notify.version>
-        <unifiedsearch.version>17.0.12</unifiedsearch.version>
+        <unifiedsearch.version>17.0.23</unifiedsearch.version>
         <systemdocgenerator.version>17.0.27</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.19</applicationscourtorders.version>
         <sjp.version>17.0.6</sjp.version>
