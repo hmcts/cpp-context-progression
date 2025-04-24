@@ -45,6 +45,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.AddedDefendantsMovedToHearing;
 import uk.gov.justice.core.courts.AddedOffencesMovedToHearing;
+import uk.gov.justice.core.courts.AllCourtDocumentsShared;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
 import uk.gov.justice.core.courts.BreachedApplications;
@@ -74,6 +75,7 @@ import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DeleteApplicationForCaseRequested;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingIgnored;
 import uk.gov.justice.core.courts.ExtendHearing;
+import uk.gov.justice.core.courts.DuplicateShareAllCourtDocumentsRequestReceived;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationRequestCreated;
@@ -211,7 +213,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667495L;
+    private static final long serialVersionUID = 9128521802762667498L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -236,6 +238,9 @@ public class HearingAggregate implements Aggregate {
     private final Map<UUID, Set<LocalDate>> opaPublicListNoticesSent = new HashMap<>();
     private final Map<UUID, Set<LocalDate>> opaPressListNoticesSent = new HashMap<>();
     private final Map<UUID, Set<LocalDate>> opaResultListNoticesSent = new HashMap<>();
+
+    private final Map<UUID, Map<UUID, List<UUID>>> allDocumentsSharedWithUserGroup = new HashMap<>();
+    private final Map<UUID, Map<UUID, List<UUID>>> allDocumentsSharedWithUser = new HashMap<>();
 
     @VisibleForTesting
     public Hearing getHearing() {
@@ -365,6 +370,7 @@ public class HearingAggregate implements Aggregate {
                 when(InitiateApplicationForCaseRequested.class).apply(this::handleInitiateApplicationForCaseRequested),
                 when(CourtApplicationRemovedFromSeedingHearing.class).apply(this::handleCourtApplicationRemovedFromSeedingHearing),
                 when(AddedOffencesMovedToHearing.class).apply(this::handleAddedOffencesMovedToHearing),
+                when(AllCourtDocumentsShared.class).apply(this::updateAllCourtDocumentsShared),
                 otherwiseDoNothing());
     }
 
@@ -391,6 +397,32 @@ public class HearingAggregate implements Aggregate {
 
     private void handleCourtApplicationRemovedFromSeedingHearing(CourtApplicationRemovedFromSeedingHearing courtApplicationRemovedFromSeedingHearing) {
         this.initiatedApplicationIdsForResultIds.remove(courtApplicationRemovedFromSeedingHearing.getApplicationId());
+    }
+
+    private void updateAllCourtDocumentsShared(final AllCourtDocumentsShared allCourtDocumentsShared) {
+        final UUID defendantId = allCourtDocumentsShared.getDefendantId();
+        final UUID caseId = allCourtDocumentsShared.getCaseId();
+        final UUID userGroupId = allCourtDocumentsShared.getUserGroupId();
+        final UUID userId = allCourtDocumentsShared.getUserId();
+        Map<UUID, List<UUID>> allDocumentsSharedCaseDefMap;
+        if (nonNull(userGroupId)) {
+            allDocumentsSharedCaseDefMap = allDocumentsSharedWithUserGroup.get(userGroupId);
+        } else {
+            allDocumentsSharedCaseDefMap = allDocumentsSharedWithUser.get(userId);
+        }
+        if (isNull(allDocumentsSharedCaseDefMap)) {
+            allDocumentsSharedCaseDefMap = new HashMap<>();
+        }
+
+        final Map<UUID, List<UUID>> finalAllDocumentsSharedCaseDefMap = allDocumentsSharedCaseDefMap;
+        if(isNull(finalAllDocumentsSharedCaseDefMap.get(caseId))){
+            finalAllDocumentsSharedCaseDefMap.put(caseId, new ArrayList<>());
+        }
+        finalAllDocumentsSharedCaseDefMap.get(caseId).add(defendantId);
+
+        ofNullable(userGroupId).ifPresentOrElse(
+                value -> allDocumentsSharedWithUserGroup.put(userGroupId, finalAllDocumentsSharedCaseDefMap),
+                () -> allDocumentsSharedWithUser.put(userId, finalAllDocumentsSharedCaseDefMap));
     }
 
     @SuppressWarnings("pmd:NullAssignment")
@@ -2264,7 +2296,6 @@ public class HearingAggregate implements Aggregate {
 
 
     private List<CourtApplicationCase> getCourtApplicationCasesWithNewPlea(final PleaModel pleaModel, final CourtApplication courtApplication) {
-        ofNullable(hearing.getDefenceCounsels()).map(Collection::stream).orElseGet(Stream::empty).collect(toList());
         return ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(courtApplicationCase -> CourtApplicationCase.courtApplicationCase().withValuesFrom(courtApplicationCase)
                         .withOffences(ofNullable(courtApplicationCase.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
@@ -3080,6 +3111,42 @@ public class HearingAggregate implements Aggregate {
                 .withDefendantId(defendantId)
                 .withTriggerDate(triggerDate)
                 .build()));
+    }
+
+    public Stream<Object> shareAllCourtDocuments(final UUID hearingId, final UUID caseId, final UUID defendantId, final UUID userGroupId, final UUID userId, final UUID sharedByUser) {
+        if (isAlreadyAllDocumentShared(caseId, defendantId, userGroupId, userId)) {
+            return apply(Stream.of(DuplicateShareAllCourtDocumentsRequestReceived.duplicateShareAllCourtDocumentsRequestReceived()
+                    .withApplicationHearingId(hearingId)
+                    .withCaseId(caseId)
+                    .withDefendantId(defendantId)
+                    .withUserGroupId(userGroupId)
+                    .withUserId(userId)
+                    .withSharedByUser(sharedByUser)
+                    .withDateShared(ZonedDateTime.now())
+                    .build()));
+        }
+
+        return apply(Stream.of(AllCourtDocumentsShared.allCourtDocumentsShared()
+                .withApplicationHearingId(hearingId)
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withUserGroupId(userGroupId)
+                .withUserId(userId)
+                .withDateShared(ZonedDateTime.now())
+                .withSharedByUser(sharedByUser)
+                .build()));
+
+    }
+
+    private boolean isAlreadyAllDocumentShared(final UUID caseId, final UUID defendantId, final UUID userGroupId, final UUID userId) {
+        Map<UUID, List<UUID>> allDocumentsSharedDefCaseMap;
+        if (nonNull(userGroupId)) {
+            allDocumentsSharedDefCaseMap = this.allDocumentsSharedWithUserGroup.get(userGroupId);
+        } else {
+            allDocumentsSharedDefCaseMap = this.allDocumentsSharedWithUser.get(userId);
+        }
+
+        return nonNull(allDocumentsSharedDefCaseMap) && allDocumentsSharedDefCaseMap.containsKey(caseId) && allDocumentsSharedDefCaseMap.get(caseId).contains(defendantId);
     }
 
     private void addPublicListNoticeSent(final OpaPublicListNoticeSent event) {

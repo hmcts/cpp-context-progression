@@ -223,6 +223,7 @@ public class HearingAtAGlanceServiceTest {
         final List<ProsecutionCounsel> prosecutionCounselsResponse = hearingResponse.getProsecutionCounsels();
         assertThat(prosecutionCounselsResponse.get(0).getFirstName(), is(caseHearing.getProsecutionCounsels().get(0).getFirstName()));
         assertThat(hearingResponse.getHasResultAmended(), is(true));
+        assertThat(hearingResponse.getIsApplicationHearing(), is(false));
     }
 
     @Test
@@ -584,6 +585,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse1.getType().getDescription(), is(caseHearing.getType().getDescription()));
         assertThat(hearingResponse1.getJurisdictionType(), is(JurisdictionType.CROWN));
         assertThat(hearingResponse1.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse1.getIsApplicationHearing(), is(false));
 
         assertThat(hearingResponse1.getDefendants().size(), is(2));
 
@@ -616,6 +618,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse2.getType().getDescription(), is(applicationHearing.getType().getDescription()));
         assertThat(hearingResponse2.getJurisdictionType(), is(JurisdictionType.CROWN));
         assertThat(hearingResponse2.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse2.getIsApplicationHearing(), is(true));
 
         // Hearing level defendant details
         assertThat(hearingResponse2.getDefendants().size(), is(2));
@@ -712,6 +715,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
         assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
         assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getIsApplicationHearing(), is(true));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(3));
@@ -807,6 +811,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
         assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
         assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getIsApplicationHearing(), is(true));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(3));
@@ -902,6 +907,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse.getType().getDescription(), is(caseHearing.getType().getDescription()));
         assertThat(hearingResponse.getJurisdictionType(), is(JurisdictionType.CROWN));
         assertThat(hearingResponse.getHearingListingStatus(), is(HearingListingStatus.HEARING_INITIALISED));
+        assertThat(hearingResponse.getIsApplicationHearing(), is(true));
 
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(3));

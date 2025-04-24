@@ -14,13 +14,14 @@ import static uk.gov.moj.cpp.progression.helper.AddCourtDocumentHelper.addCourtD
 import static uk.gov.moj.cpp.progression.helper.EventSelector.PUBLIC_COURT_DOCUMENT_SHARED;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtDocuments;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.shareCourtDocument;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubGetDocumentsTypeAccess;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupHearingQueryStub;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -73,22 +74,103 @@ public class ShareCourtDocumentIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
                 withJsonPath("$.hearingsAtAGlance.id", is(caseId))
         )));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId1, getProsecutionCaseMatchers(caseId, defendantId1));
+        setupHearingQueryStub(fromString(hearingId), "stub-data/hearing.get-hearing-of-type-trial.json");
+
         addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
 
         addCourtDocumentCaseLevel("progression.add-court-document-case-level.json", caseId, caseLevelDocumentId);
 
 
-        shareCourtDocument(defendantLevelDocumentId1, HEARING_ID_TYPE_TRIAL, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        shareCourtDocument(defendantLevelDocumentId1, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
         verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
 
-        shareCourtDocument(caseLevelDocumentId, HEARING_ID_TYPE_TRIAL, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        shareCourtDocument(caseLevelDocumentId, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
         verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
 
-        final String actualDocument = getCourtDocuments(USER_ID, caseId, defendantId1, HEARING_ID_TYPE_TRIAL);
+        final String actualDocument = getCourtDocuments(USER_ID, caseId, defendantId1, hearingId);
 
         final String expectedPayload = getExpectedPayloadForCourtDocumentShared(caseLevelDocumentId, defendantLevelDocumentId1, defendantId1, caseId);
         assertEquals(expectedPayload, actualDocument, getCustomComparator());
     }
+
+    @Test
+    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrial() throws IOException, JSONException {
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId1, getProsecutionCaseMatchers(caseId, defendantId1));
+        setupHearingQueryStub(fromString(hearingId), "stub-data/hearing.get-hearing-of-type-trial.json");
+
+        addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
+
+
+        addCourtDocumentCaseLevel("progression.add-court-document-case-level.json", caseId, caseLevelDocumentId);
+
+        shareCourtDocument(defendantLevelDocumentId1, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
+
+        shareCourtDocument(caseLevelDocumentId, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
+
+        final String actualDocument = getCourtDocuments(USER_ID, caseId, defendantId1, hearingId);
+
+        final String expectedPayload = getExpectedPayloadForCourtDocumentShared(caseLevelDocumentId, defendantLevelDocumentId1, defendantId1, caseId);
+
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
+    }
+
+    @Test
+    void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithMultiDefendantWithHearingTypeTrialOfIssue() throws IOException, JSONException {
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId1, getProsecutionCaseMatchers(caseId, defendantId1));
+        setupHearingQueryStub(fromString(hearingId), "stub-data/hearing.get-hearing-of-type-trial-of-issue.json");
+
+
+        addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
+
+        String resourceCaseLevel = "progression.add-court-document-case-level.json";
+        addCourtDocumentCaseLevel(resourceCaseLevel, caseId, caseLevelDocumentId);
+
+        shareCourtDocument(defendantLevelDocumentId1, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
+
+        shareCourtDocument(caseLevelDocumentId, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
+
+        final String actualDocument = getCourtDocuments(USER_ID, caseId, defendantId1, hearingId);
+
+        final String expectedPayload = getExpectedPayloadForCourtDocumentShared(caseLevelDocumentId, defendantLevelDocumentId1, defendantId1, caseId);
+        assertEquals(expectedPayload, actualDocument, getCustomComparator());
+    }
+
+    @Test
+    public void shouldMakeCourtDocumentSharedWithMagistratesForGivenDefendantsOnlyWithNonTrialHearingType() throws IOException, JSONException {
+        addProsecutionCaseToCrownCourtWithOneProsecutionCaseAndTwoDefendants(caseId, defendantId1, defendantId2);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId1, newArrayList(
+                withJsonPath("$.hearingsAtAGlance.id", is(caseId))
+        )));
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId1, getProsecutionCaseMatchers(caseId, defendantId1));
+        setupHearingQueryStub(fromString(hearingId), "stub-data/hearing.get-hearing-of-type-trial-of-issue.json");
+
+        addCourtDocumentDefendantLevel("progression.add-court-document.json", defendantLevelDocumentId1, defendantId1, defendantId2, caseId);
+
+        String resourceCaseLevel = "progression.add-court-document-case-level.json";
+        addCourtDocumentCaseLevel(resourceCaseLevel, caseId, caseLevelDocumentId);
+
+        shareCourtDocument(defendantLevelDocumentId1, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
+        shareCourtDocument(caseLevelDocumentId, hearingId, MAGISTRATES_USER_GROUP_ID, "progression.share-court-document.json");
+        verifyInMessagingQueue(messageConsumerCourtDocumentSharedPublicEvent);
+
+        final JsonObject actualDocumentJson = new StringToJsonObjectConverter().convert(getCourtDocuments(USER_ID, caseId, defendantId1, hearingId));
+        assertThat(actualDocumentJson.getJsonArray("documentIndices").size(), is(2));
+    }
+
 
     private String getExpectedPayloadForCourtDocumentShared(final String caseLeveldocId, final String defendantLeveldocId1, final String defendantId1, final String caseId) {
         return FileUtil.getPayload("expected/expected.progression.query-courtdocuments-for-shared-documents.json")

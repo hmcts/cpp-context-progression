@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.application-hearing-case-details.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingType": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingType.json"
+    },
+    "isBoxHearing": {
+      "type": "boolean"
+    },
+    "masterDefendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "masterDefendantName": {
+      "type": "string"
+    },
+    "courtApplicationCasesSummary": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/applicationCaseSummary"
+      }
+    },
+    "courtOrderCasesSummary": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/applicationCaseSummary"
+      }
+    }
+  },
+  "definitions": {
+    "applicationCaseSummary": {
+      "type": "object",
+      "properties": {
+        "caseStatus": {
+          "type": "string"
+        },
+        "caseURN": {
+          "type": "string"
+        },
+        "caseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "caseStatus",
+        "caseUrn",
+        "caseId"
+      ]
+    }
+  },
+  "required": [
+    "hearingId",
+    "applicationId",
+    "hearingType"
+  ],
+  "additionalProperties": false
+}

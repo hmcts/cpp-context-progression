@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentSharedProcessor.PUBLIC_ALL_COURT_DOCUMENTS_SHARED;
 import static uk.gov.moj.cpp.progression.processor.document.CourtDocumentSharedProcessor.PUBLIC_COURT_DOCUMENT_SHARED;
 
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -91,6 +92,24 @@ public class CourtDocumentSharedProcessorTest {
     }
 
     @Test
+    public void shouldPublishPublicEventWhenAllCourtDocumentsSharedEventReceived() {
+
+        final JsonObject courtDocumentPayload = buildDocumentJsonObject();
+
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.all-court-documents-shared"),
+                courtDocumentPayload);
+
+
+        eventProcessor.handleAllCourtDocumentsSharedEvent(requestMessage);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
+        assertThat(commands.get(0).metadata().name(), is(PUBLIC_ALL_COURT_DOCUMENTS_SHARED));
+
+    }
+
+    @Test
     public void shouldPublishPublicEventWhenDuplicateShareCourtDocumentRequestReceivedEventReceived() {
 
         final JsonObject courtDocumentPayload = buildDocumentJsonObject();
@@ -105,6 +124,24 @@ public class CourtDocumentSharedProcessorTest {
 
         final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
         assertThat(commands.get(0).metadata().name(), is(PUBLIC_COURT_DOCUMENT_SHARED));
+
+    }
+
+    @Test
+    public void shouldPublishPublicEventWhenDuplicateAllShareCourtDocumentsRequestReceivedEventReceived() {
+
+        final JsonObject courtDocumentPayload = buildDocumentJsonObject();
+
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.duplicate-share-all-court-documents-request-received"),
+                courtDocumentPayload);
+
+
+        eventProcessor.handleDuplicateAllShareCourtDocumentsRequestReceivedEvent(requestMessage);
+        verify(sender, times(1)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> commands = envelopeCaptor.getAllValues();
+        assertThat(commands.get(0).metadata().name(), is(PUBLIC_ALL_COURT_DOCUMENTS_SHARED));
 
     }
 

@@ -1,7 +1,5 @@
 package uk.gov.moj.cpp.progression.event;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -39,8 +37,6 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
-import javax.inject.Inject;
-import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +47,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.json.JsonObjectBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultEventProcessor {
@@ -140,7 +142,18 @@ public class HearingResultEventProcessor {
             sender.send(envelop(payloadBuilder.build()).withName("progression.command.hearing-resulted-update-application").withMetadataFrom(event));
         });
 
-        updateApplications(event, hearing);
+        //updateApplicationStatus
+        if (isNotEmpty(hearing.getCourtApplications())) {
+            LOGGER.info("Hearing contains court applications resulted for hearing id :: {}", hearing.getId());
+            hearing.getCourtApplications()
+                    .forEach(courtApplication -> {
+                        final ApplicationStatus applicationStatus = ofNullable(courtApplication.getJudicialResults()).map(ArrayList::new).orElseGet(ArrayList::new).stream()
+                                .filter(Objects::nonNull).map(JudicialResult::getCategory).anyMatch(FINAL::equals)
+                                ? ApplicationStatus.FINALISED
+                                : courtApplication.getApplicationStatus();
+                        progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), applicationStatus);
+                    });
+        }
     }
 
     private void initiateHearingAdjournment(JsonEnvelope event, Hearing hearing, final List<UUID> shadowListedOffences, final Optional<CommittingCourt> committingCourt) {
@@ -162,23 +175,6 @@ public class HearingResultEventProcessor {
                 .forEach(prosecutionCase -> progressionService.updateCase(event, prosecutionCase, hearing.getCourtApplications(),
                         hearing.getDefendantJudicialResults(), hearing.getCourtCentre(),
                         hearing.getId(), hearing.getType(), hearing.getJurisdictionType(), hearing.getIsBoxHearing()));
-    }
-
-    private void updateApplications(final JsonEnvelope event, final Hearing hearing) {
-        if (isNotEmpty(hearing.getCourtApplications())) {
-            LOGGER.info("Hearing contains court applications resulted for hearing id :: {}", hearing.getId());
-            final List<UUID> applicationIdsResultCategoryFinal = new ArrayList<>();
-            final List<UUID> allApplicationIds = new ArrayList<>();
-            hearing.getCourtApplications().forEach(courtApplication -> {
-                final List<JudicialResult> judicialResults = hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication);
-                allApplicationIds.add(courtApplication.getId());
-                final boolean isResultCategoryFinal = judicialResults.stream().filter(Objects::nonNull).map(JudicialResult::getCategory).anyMatch(FINAL::equals);
-                if (isResultCategoryFinal) {
-                    applicationIdsResultCategoryFinal.add(courtApplication.getId());
-                }
-            });
-            progressionService.updateCourtApplicationStatus(event, applicationIdsResultCategoryFinal, ApplicationStatus.FINALISED);
-        }
     }
 
     /**

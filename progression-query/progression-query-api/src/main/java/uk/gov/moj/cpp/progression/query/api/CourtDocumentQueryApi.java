@@ -303,16 +303,17 @@ public class CourtDocumentQueryApi {
     }
 
     private JsonEnvelope requestSharedCourtDocuments(final JsonEnvelope query, final String magsGroupId) {
-        final JsonObject withGroupId = createObjectBuilder()
+        final JsonObjectBuilder withGroupIdBuilder = createObjectBuilder()
                 .add(HEARING_ID, query.payloadAsJsonObject().getString(HEARING_ID))
                 .add("userGroupId", magsGroupId)
-                .add(CASE_ID, query.payloadAsJsonObject().getString(CASE_ID))
-                .add(DEFENDANT_ID, query.payloadAsJsonObject().getString(DEFENDANT_ID))
-                .build();
+                .add(CASE_ID, query.payloadAsJsonObject().getString(CASE_ID));
+        if (query.payloadAsJsonObject().containsKey(DEFENDANT_ID)) {
+            withGroupIdBuilder.add(DEFENDANT_ID, query.payloadAsJsonObject().getString(DEFENDANT_ID));
+        }
         final Metadata metadata = metadataFrom(query.metadata())
                 .withName("progression.query.shared-court-documents")
                 .build();
-        return sharedCourtDocumentsQueryView.getSharedCourtDocuments(envelopeFrom(metadata, withGroupId));
+        return sharedCourtDocumentsQueryView.getSharedCourtDocuments(envelopeFrom(metadata, withGroupIdBuilder.build()));
     }
 
     private JsonObject getUpdatedQueryPayload(JsonObject payload, final boolean isProsecutingCase) {

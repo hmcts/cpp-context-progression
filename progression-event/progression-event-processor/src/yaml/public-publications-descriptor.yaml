@@ -222,6 +222,9 @@ subscriptions_descriptor:
         - name: public.progression.event.court-document-shared
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
 
+        - name: public.progression.event.all-court-documents-shared
+          schema_uri: http://justice.gov.uk/core/courts/public.events.progression.all-court-documents-shared.json
+
         - name: public.progression.idpc-document-received
           schema_uri: http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.idpc-document-received.json
 

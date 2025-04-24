@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -8,18 +9,19 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentApi.MATERIAL_CONTENT_FOR_PROSECUTION;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.APPLICATION_ID;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.CASE_ID;
-import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_NAME;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.COURT_DOCUMENTS_SEARCH_PROSECUTION;
 import static uk.gov.moj.cpp.progression.query.api.CourtDocumentQueryApi.DEFENDANT_ID;
 
 import uk.gov.QueryClientTestBase;
 import uk.gov.justice.api.resource.service.DefenceQueryService;
+import uk.gov.justice.api.resource.service.ReferenceDataService;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -30,9 +32,14 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
+import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.JsonObject;
@@ -52,6 +59,7 @@ public class CourtDocumentQueryApiTest {
 
     public static final String JSON_COURT_DOCUMENT_WITH_RBAC_JSON = "json/courtDocumentWithRBAC.json";
     public static final String PROGRESSION_QUERY_COURTDOCUMENT = "progression.query.courtdocument";
+    private static final String COURT_DOCUMENTS_SEARCH_NAME = "progression.query.courtdocuments";
     @Mock
     private JsonEnvelope query;
 
@@ -66,6 +74,18 @@ public class CourtDocumentQueryApiTest {
 
     @Mock
     private CourtDocumentQueryView courtDocumentQueryView;
+
+    @Mock
+    private HearingDetailsLoader hearingDetailsLoader;
+
+    @Mock
+    private UserDetailsLoader userDetailsLoader;
+
+    @Mock
+    private ReferenceDataService referenceDataService;
+
+    @Mock
+    private SharedCourtDocumentsQueryView sharedCourtDocumentsQueryView;
 
     @Mock
     private Enveloper enveloper;
@@ -130,6 +150,92 @@ public class CourtDocumentQueryApiTest {
         when(courtDocumentQueryView.getCourtDocument(any())).thenReturn(envelope);
         courtDocumentQueryApi.getCourtDocument(envelope);
         assertThat(courtDocumentQueryApi.getCourtDocument(envelope), equalTo(envelope));
+    }
+
+    @Test
+    public void shouldSearchCourtDocumentsWhenHearingTypeIsTrialAndDefendantIsNullForMagsUser() {
+        ArgumentCaptor<JsonEnvelope> argumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_NAME);
+        final UUID userId = UUID.fromString(metadata.userId().get());
+        final JsonEnvelope expectedResult = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
+                .add("documentIndices", createArrayBuilder().build())
+                .build());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("hearingId", hearingId.toString())
+                .build());
+        final UUID trialType = randomUUID();
+        final Map<UUID, ReferenceDataService.ReferenceHearingDetails> hearingTypes = new HashMap<>();
+        final ReferenceDataService.ReferenceHearingDetails referenceHearingDetails = new ReferenceDataService.ReferenceHearingDetails(trialType, "", "", true);
+        hearingTypes.put(trialType, referenceHearingDetails);
+        when(referenceDataService.getHearingTypes(any())).thenReturn(hearingTypes);
+        when(sharedCourtDocumentsQueryView.getSharedCourtDocuments(any())).thenReturn(expectedResult);
+        final HearingDetails hearingDetails = new HearingDetails();
+        hearingDetails.setType("Trial");
+        hearingDetails.setHearingTypeId(trialType);
+        hearingDetails.addUserId(userId);
+        when(hearingDetailsLoader.getHearingDetails(any(), eq(hearingId))).thenReturn(hearingDetails);
+        final UUID groupId = randomUUID();
+        final UserGroupsDetails userGroupsDetails = new UserGroupsDetails(groupId, "Magistrates");
+        when(userDetailsLoader.getGroupsUserBelongsTo(any(), eq(userId))).thenReturn(Arrays.asList(userGroupsDetails));
+
+        final JsonEnvelope result = courtDocumentQueryApi.searchCourtDocuments(envelope);
+
+        assertThat(result, equalTo(expectedResult));
+        verify(sharedCourtDocumentsQueryView).getSharedCourtDocuments(argumentCaptor.capture());
+
+        final JsonEnvelope argumentCaptorValue = argumentCaptor.getValue();
+        assertThat(argumentCaptorValue.payloadAsJsonObject().containsKey("defendantId"), is(false));
+        assertThat(argumentCaptorValue.payloadAsJsonObject().getString("hearingId"), is(hearingId.toString()));
+        assertThat(argumentCaptorValue.payloadAsJsonObject().getString("caseId"), is(caseId.toString()));
+        assertThat(argumentCaptorValue.payloadAsJsonObject().getString("userGroupId"), is(groupId.toString()));
+    }
+
+    @Test
+    public void shouldSearchCourtDocumentsWhenHearingTypeIsTrialAndDefendantIsNotNullForMagsUser() {
+        ArgumentCaptor<JsonEnvelope> argumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        final UUID caseId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Metadata metadata = QueryClientTestBase.metadataFor(COURT_DOCUMENTS_SEARCH_NAME);
+        final UUID userId = UUID.fromString(metadata.userId().get());
+        final JsonEnvelope expectedResult = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
+                .add("documentIndices", createArrayBuilder().build())
+                .build());
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("hearingId", hearingId.toString())
+                .add("defendantId", defendantId.toString())
+                .build());
+        final UUID trialType = randomUUID();
+        final Map<UUID, ReferenceDataService.ReferenceHearingDetails> hearingTypes = new HashMap<>();
+        final ReferenceDataService.ReferenceHearingDetails referenceHearingDetails = new ReferenceDataService.ReferenceHearingDetails(trialType, "", "", true);
+        hearingTypes.put(trialType, referenceHearingDetails);
+        when(referenceDataService.getHearingTypes(any())).thenReturn(hearingTypes);
+        when(sharedCourtDocumentsQueryView.getSharedCourtDocuments(any())).thenReturn(expectedResult);
+        final HearingDetails hearingDetails = new HearingDetails();
+        hearingDetails.setType("Trial");
+        hearingDetails.setHearingTypeId(trialType);
+        hearingDetails.addUserId(userId);
+        when(hearingDetailsLoader.getHearingDetails(any(), eq(hearingId))).thenReturn(hearingDetails);
+        final UUID groupId = randomUUID();
+        final UserGroupsDetails userGroupsDetails = new UserGroupsDetails(groupId, "Magistrates");
+        when(userDetailsLoader.getGroupsUserBelongsTo(any(), eq(userId))).thenReturn(Arrays.asList(userGroupsDetails));
+
+        final JsonEnvelope result = courtDocumentQueryApi.searchCourtDocuments(envelope);
+
+        assertThat(result, equalTo(expectedResult));
+        verify(sharedCourtDocumentsQueryView).getSharedCourtDocuments(argumentCaptor.capture());
+
+        final JsonEnvelope argumentCaptorValue = argumentCaptor.getValue();
+        assertThat(argumentCaptorValue.payloadAsJsonObject().getString("defendantId"), is(defendantId.toString()));
+        assertThat(argumentCaptorValue.payloadAsJsonObject().getString("hearingId"), is(hearingId.toString()));
+        assertThat(argumentCaptorValue.payloadAsJsonObject().getString("caseId"), is(caseId.toString()));
+        assertThat(argumentCaptorValue.payloadAsJsonObject().getString("userGroupId"), is(groupId.toString()));
     }
 
     @Test

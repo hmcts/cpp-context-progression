@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.application.shared-court-documents-links.json",
+  "type": "object",
+  "properties": {
+    "sharedCourtDocumentsLinksForApplication": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/sharedCourtDocumentsLinksForApplication"
+      }
+    },
+    "definitions": {
+      "sharedCourtDocumentsLinksForApplication": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseUrn": {
+            "type": "string"
+          },
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "defendantName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "caseUrn",
+          "defendantId",
+          "defendantName"
+        ]
+      }
+    }
+  },
+  "required": [
+    "sharedCourtDocumentsLinksForApplication"
+  ],
+  "additionalProperties": false
+}

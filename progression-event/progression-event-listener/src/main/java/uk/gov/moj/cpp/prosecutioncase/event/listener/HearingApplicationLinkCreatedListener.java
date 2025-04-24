@@ -8,9 +8,11 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
@@ -23,8 +25,10 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +39,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class HearingApplicationLinkCreatedListener {
@@ -50,6 +55,9 @@ public class HearingApplicationLinkCreatedListener {
 
     @Inject
     private HearingApplicationRepository repository;
+
+    @Inject
+    private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
 
     @Inject
     private HearingRepository hearingRepository;
@@ -75,6 +83,7 @@ public class HearingApplicationLinkCreatedListener {
         repository.save(transformHearingApplicationEntity
                 (updatedHearingApplicationLinkCreated.getHearing(), updatedHearingApplicationLinkCreated.getApplicationId(),
                         updatedHearingApplicationLinkCreated.getHearingListingStatus()));
+        updateInitiateCourtApplication(hearingApplicationLinkCreated);
 
     }
 
@@ -131,6 +140,7 @@ public class HearingApplicationLinkCreatedListener {
                 prosecutionCases.addAll(prosecutionCasesListToAdd);
                 hearingBuilder.withProsecutionCases(prosecutionCases);
             }
+            hearingBuilder.withType(hearingFromEvent.getType());
             final Hearing hearingUpdated = hearingBuilder.build();
             hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingUpdated).toString());
         } else {
@@ -162,6 +172,24 @@ public class HearingApplicationLinkCreatedListener {
                                         }
                                 ))
         );
+    }
+
+    private void updateInitiateCourtApplication(final HearingApplicationLinkCreated hearingApplicationLinkCreated) {
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity = initiateCourtApplicationRepository.findBy(hearingApplicationLinkCreated.getApplicationId());
+        if (nonNull(initiateCourtApplicationEntity)) {
+            final JsonObject initiateCourtApplicationJson = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload());
+            final InitiateCourtApplicationProceedings persistedInitiateCourtApplication = jsonObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class);
+            if (nonNull(persistedInitiateCourtApplication.getCourtHearing())) {
+                final InitiateCourtApplicationProceedings updatedPersistedInitiateCourtApplication = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                        .withValuesFrom(persistedInitiateCourtApplication)
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest()
+                                .withValuesFrom(persistedInitiateCourtApplication.getCourtHearing())
+                                .withHearingType(hearingApplicationLinkCreated.getHearing().getType()).build())
+                        .build();
+                initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedPersistedInitiateCourtApplication).toString());
+                initiateCourtApplicationRepository.save(initiateCourtApplicationEntity);
+            }
+        }
     }
 
 }

@@ -230,8 +230,8 @@ public class HearingConfirmedEventProcessor {
 
 
             if (isNotEmpty(applicationIds)) {
-                LOGGER.info("Update application status to LISTED, associate Hearing with id: {} to Applications with ids {} and generate summons", hearing.getId(), applicationIds);
-                progressionService.updateCourtApplicationStatus(jsonEnvelope, applicationIds, ApplicationStatus.LISTED);
+                LOGGER.info("Based on JudicialResults of the application, update application status to LISTED for Applications with ids {}, in associate Hearing id: {}  ", applicationIds, hearing.getId());
+                progressionService.updateCourtApplicationStatus(jsonEnvelope, hearing, applicationIds, ApplicationStatus.LISTED);
                 progressionService.updateCaseStatus(jsonEnvelope, hearing, applicationIds);
             }
 

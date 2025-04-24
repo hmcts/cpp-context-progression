@@ -105,6 +105,25 @@ rule "Query - Access control for  progression.query.prosecutioncase-v2"
     $outcome.setSuccess(true);
 end
 
+
+rule "Query - Access control for  progression.query.application.shared-court-documents-links"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.application.shared-court-documents-links");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Magistrates"))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Query - Access control for  progression.query.application-hearing-case-details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.application-hearing-case-details");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "Query - Access control for  progression.query.prosecutioncase-details"
   when
     $outcome: Outcome();

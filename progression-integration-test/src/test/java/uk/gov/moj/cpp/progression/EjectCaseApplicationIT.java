@@ -56,6 +56,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
     private static final String STATUS_EJECTED = "EJECTED";
     private static final String STATUS_DRAFT = "DRAFT";
     private static final String STATUS_UN_ALLOCATED = "UN_ALLOCATED";
+    private static final String STATUS_LISTED = "LISTED";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String hearingId;
@@ -126,7 +127,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         // Creating first application for the case
         String firstApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
-        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_UN_ALLOCATED));
+        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_LISTED));
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed.json",
                 caseId, hearingId, defendantId, courtCentreId, randomUUID().toString(), courtCentreName));
@@ -136,10 +137,10 @@ public class EjectCaseApplicationIT extends AbstractIT {
         // Creating second application for the case
         String secondApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(secondApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
-        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_UN_ALLOCATED));
+        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_LISTED));
 
         //assert linked applications
-        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_UN_ALLOCATED));
+        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_LISTED));
 
         final JmsMessageConsumerClient consumerForCaseOrApplicationEjected = newPublicJmsMessageConsumerClientProvider().withEventNames(CASE_OR_APPLICATION_EJECTED).getMessageConsumerClient();
 

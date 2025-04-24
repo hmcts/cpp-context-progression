@@ -140,7 +140,7 @@ public class AdjournHearingThroughHearingResultedIT extends AbstractIT {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
                 withJsonPath("$.courtApplication.type.code", is("AS14518")),
                 withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
                 withJsonPath("$.courtApplication.applicant.id", notNullValue()),
                 withJsonPath("$.courtApplication.subject.id", notNullValue()),
                 withJsonPath("$.courtApplication.courtOrder.courtOrderOffences[0].prosecutionCaseId", notNullValue()),

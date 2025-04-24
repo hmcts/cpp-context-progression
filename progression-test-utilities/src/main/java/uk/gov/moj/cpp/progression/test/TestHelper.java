@@ -9,6 +9,7 @@ import static uk.gov.justice.core.courts.MasterDefendant.masterDefendant;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 
+import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
@@ -48,6 +49,7 @@ public class TestHelper {
                                 .withProsecutionAuthorityId(randomUUID())
                                 .build())
                         .build())
+                .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
                 .build();
     }
 

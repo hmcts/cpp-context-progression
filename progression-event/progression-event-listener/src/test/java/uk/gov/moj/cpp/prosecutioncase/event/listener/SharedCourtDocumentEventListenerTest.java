@@ -10,18 +10,23 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.AllCourtDocumentsShared.allCourtDocumentsShared;
 import static uk.gov.justice.core.courts.CourtDocumentShared.courtDocumentShared;
 import static uk.gov.justice.core.courts.SharedCourtDocument.sharedCourtDocument;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
+import uk.gov.justice.core.courts.AllCourtDocumentsShared;
 import uk.gov.justice.core.courts.CourtDocumentShared;
 import uk.gov.justice.core.courts.CourtDocumentSharedV2;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedAllCourtDocumentsEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedCourtDocumentEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedAllCourtDocumentsRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedCourtDocumentRepository;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -41,6 +46,9 @@ public class SharedCourtDocumentEventListenerTest {
     private JsonObjectToObjectConverter jsonObjectConverter;
     @Mock
     private SharedCourtDocumentRepository sharedCourtDocumentRepository;
+
+    @Mock
+    private SharedAllCourtDocumentsRepository sharedAllCourtDocumentsRepository;
 
     @Captor
     private ArgumentCaptor<SharedCourtDocumentEntity> sharedCourtDocumentEntityArgumentCaptor;
@@ -152,6 +160,35 @@ public class SharedCourtDocumentEventListenerTest {
 
     }
 
+    @Test
+     void shouldSaveSharedAllCourtDocumentsToRepository() {
+        ArgumentCaptor<SharedAllCourtDocumentsEntity> argumentCaptor = ArgumentCaptor.forClass(SharedAllCourtDocumentsEntity.class);
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID userGroupId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID sharedByUser = randomUUID();
+        final ZonedDateTime dateShared = ZonedDateTime.now();
+
+        final JsonEnvelope courtDocumentSharedEnvelope = envelopeFrom(metadataWithRandomUUID("progression.event.all-court-documents-shared"),
+                getAllCourtDocumentSharedJson(caseId, defendantId, userGroupId, userId, sharedByUser, dateShared));
+
+        when(jsonObjectConverter.convert(courtDocumentSharedEnvelope.payloadAsJsonObject(), AllCourtDocumentsShared.class))
+                .thenReturn(getAllCourtDocumentsShared(caseId, defendantId , userGroupId, userId, sharedByUser, dateShared));
+
+        sharedCourtDocumentEventListener.processAllCourtDocumentsShared(courtDocumentSharedEnvelope);
+
+        verify(sharedAllCourtDocumentsRepository).save(argumentCaptor.capture());
+        final SharedAllCourtDocumentsEntity entity = argumentCaptor.getValue();
+
+        assertThat(entity.getCaseId(), is(caseId));
+        assertThat(entity.getDefendantId(), is(defendantId));
+        assertThat(entity.getUserGroupId(), is(userGroupId));
+        assertThat(entity.getUserId(), is(userId));
+        assertThat(entity.getDateShared(), is(dateShared));
+        assertThat(entity.getSharedByUser(), is(sharedByUser));
+    }
+
 
     private CourtDocumentShared getCourtDocumentShared(final UUID courtDocumentId, final UUID hearingId, final UUID userGroup, final UUID caseId, final UUID defendantId) {
         return courtDocumentShared()
@@ -174,6 +211,17 @@ public class SharedCourtDocumentEventListenerTest {
                         .withCaseIds(Collections.singletonList(caseId))
                         .withDefendantId(defendantId)
                         .build())
+                .build();
+    }
+
+    private AllCourtDocumentsShared getAllCourtDocumentsShared(final UUID caseId, final UUID defendantId, final UUID userGroupId, final UUID userId, final UUID sharedByUser, final ZonedDateTime dateShared) {
+        return allCourtDocumentsShared()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withUserGroupId(userGroupId)
+                .withUserId(userId)
+                .withSharedByUser(sharedByUser)
+                .withDateShared(dateShared)
                 .build();
     }
 
@@ -207,6 +255,16 @@ public class SharedCourtDocumentEventListenerTest {
                         .add("caseId", caseId.toString())
                         .add("defendantId", defendantId.toString())
                         .build())
+                .build();
+    }
+
+    private JsonObject getAllCourtDocumentSharedJson(final UUID caseId, final UUID defendantId,  final UUID userGroupId, final UUID userId, final UUID sharedByUser, final ZonedDateTime dateShared) {
+        return createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .add("userGroupId", userGroupId.toString())
+                .add("sharedByUser", sharedByUser.toString())
+                .add("dateShared", dateShared.toString())
                 .build();
     }
 

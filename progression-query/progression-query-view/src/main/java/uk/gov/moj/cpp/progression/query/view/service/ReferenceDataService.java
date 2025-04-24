@@ -6,9 +6,11 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.view.service.exception.ReferenceDataServiceException;
 
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.util.Optional;
 
@@ -18,6 +20,7 @@ import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_VIEW;
 import static uk.gov.justice.services.messaging.Envelope.metadataBuilder;
+import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 public class ReferenceDataService {
@@ -25,6 +28,8 @@ public class ReferenceDataService {
     static final String REFERENCEDATA_GET_PROSECUTOR = "referencedata.query.prosecutor";
 
     public static final String REFERENCEDATA_QUERY_LANGUAGES = "referencedata.query.languages";
+    private static final String REFERENCEDATA_GET_HEARINGTYPES = "referencedata.query.hearing-types";
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceDataService.class);
 
@@ -63,5 +68,14 @@ public class ReferenceDataService {
         }
         LOGGER.info("Got languages from reference data context");
         return response.payload();
+    }
+
+    public JsonArray getHearingTypes(final JsonEnvelope event) {
+        final Metadata metadata = metadataFrom(event.metadata())
+                .withName(REFERENCEDATA_GET_HEARINGTYPES)
+                .build();
+        final JsonEnvelope jsonEnvelop = requester.request(envelopeFrom(metadata, createObjectBuilder().build()));
+
+        return jsonEnvelop.payloadAsJsonObject().getJsonArray("hearingTypes");
     }
 }

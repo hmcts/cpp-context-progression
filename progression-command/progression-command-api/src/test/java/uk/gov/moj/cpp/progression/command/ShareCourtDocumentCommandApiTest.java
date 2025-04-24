@@ -43,6 +43,15 @@ public class ShareCourtDocumentCommandApiTest {
         assertThat(jsonEnvelope.metadata().name(), is("progression.command.share-court-document"));
     }
 
+    @Test
+    public void shouldShareAllCourtDocument() {
+        shareCourtDocumentCommandApi.handleShareAllCourtDocuments(getMockEnvelope());
+
+        verify(sender, times(1)).send(jsonEnvelopeArgumentCaptor.capture());
+        final JsonEnvelope jsonEnvelope = jsonEnvelopeArgumentCaptor.getValue();
+        assertThat(jsonEnvelope.metadata().name(), is("progression.command.share-all-court-documents"));
+    }
+
     private JsonEnvelope getMockEnvelope() {
         return envelopeFrom(MetadataBuilderFactory.metadataWithRandomUUIDAndName(), createObjectBuilder());
     }

@@ -115,4 +115,5 @@
     <include file="liquibase/create-related-reference.xml"/>
     <include file="liquibase/add-shared-time-to-hearing-table.xml"/>
     <include file="liquibase/create-application-note.xml"/>
+    <include file="liquibase/create-shared-all-court-documents.xml"/>
 </databaseChangeLog>

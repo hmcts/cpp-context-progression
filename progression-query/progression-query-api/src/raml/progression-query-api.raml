@@ -592,6 +592,34 @@ protocols: [ HTTP, HTTPS ]
             schema: !include json/schema/progression.query.application.notification-status.json
             example: !include json/progression.query.application.notification-status.json
 
+/applications/{applicationId}/hearings/{hearingId}:
+  uriParameters:
+    applicationId:
+      type: string
+    hearingId:
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application.shared-court-documents-links+json
+          name: progression.query.application.shared-court-documents-links
+       (mapping):
+          responseType: application/vnd.progression.query.application-hearing-case-details+json
+          name: progression.query.application-hearing-case-details
+      
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.application.shared-court-documents-links+json:
+            example: !include json/progression.query.application.shared-court-documents-links.json
+            schema: !include json/schema/progression.query.application.shared-court-documents-links.json
+          application/vnd.progression.query.application-hearing-case-details+json:
+            example: !include json/progression.query.application-hearing-case-details.json
+            schema: !include json/schema/progression.query.application-hearing-case-details.json
+
 /hearingSearch/{hearingId}:
   uriParameters:
         hearingId:

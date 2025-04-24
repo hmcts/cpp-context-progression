@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-shared-all-court-documents" author="yilmaz">
+        <createTable tableName="shared_all_court_documents">
+            <column name="id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="case_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="defendant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="application_hearing_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_group_id" type="UUID"/>
+            <column name="user_id" type="UUID"/>
+            <column name="shared_by_user" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_shared" type="DATETIME TZ">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="id"
+                       constraintName="shared_all_court_documents_primary_key"
+                       tableName="shared_all_court_documents"/>
+
+        <createIndex tableName="shared_all_court_documents" indexName="shared_all_court_documents_hearing_case_defendant_idx">
+            <column name="application_hearing_id"/>
+            <column name="case_id"/>
+            <column name="defendant_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

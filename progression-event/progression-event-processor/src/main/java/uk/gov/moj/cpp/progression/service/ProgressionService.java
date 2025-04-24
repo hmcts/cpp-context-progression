@@ -57,6 +57,7 @@ import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -1206,8 +1207,16 @@ public class ProgressionService {
         return result;
     }
 
-    public void updateCourtApplicationStatus(final JsonEnvelope jsonEnvelope, final List<UUID> applicationIds, final ApplicationStatus status) {
-        applicationIds.forEach(applicationId -> updateCourtApplicationStatus(jsonEnvelope, applicationId, status));
+    public void updateCourtApplicationStatus(final JsonEnvelope jsonEnvelope, final Hearing hearing, final List<UUID> applicationIds, final ApplicationStatus status) {
+        applicationIds.forEach(applicationId -> {
+            final Optional<ApplicationStatus> applicationStatusFound = hearing.getCourtApplications().stream()
+                    .filter(ca -> ca.getId().equals(applicationId))
+                    .map(ca -> nonNull(ca.getJudicialResults()) && ca.getJudicialResults().stream().anyMatch(jr -> jr.getCategory() == JudicialResultCategory.FINAL)
+                                    ? FINALISED : status)
+                    .findFirst();
+
+            applicationStatusFound.ifPresent(applicationStatus -> updateCourtApplicationStatus(jsonEnvelope, applicationId, applicationStatus));
+        });
     }
 
     public void updateCourtApplicationStatus(final JsonEnvelope jsonEnvelope, final UUID applicationId, final ApplicationStatus status) {
@@ -1360,7 +1369,6 @@ public class ProgressionService {
                         application -> {
                             final CourtApplication courtApplication = jsonObjectConverter.convert(application.getJsonObject("courtApplication"), CourtApplication.class);
                             final CourtApplication.Builder builder = CourtApplication.courtApplication().withValuesFrom(courtApplication)
-                                    .withJudicialResults(null)
                                     .withFutureSummonsHearing(null);
                             updateCourtApplicationCases(courtApplication, builder);
                             updateCourtOrder(courtApplication, builder);

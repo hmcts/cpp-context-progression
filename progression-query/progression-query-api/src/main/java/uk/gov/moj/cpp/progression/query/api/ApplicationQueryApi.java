@@ -17,6 +17,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.ApplicationHearingQueryView;
 import uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
@@ -48,6 +49,9 @@ public class ApplicationQueryApi {
 
     @Inject
     private ApplicationNotesQueryView applicationNotesQueryView;
+
+    @Inject
+    private ApplicationHearingQueryView applicationHearingQueryView;
 
     @Inject
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
@@ -158,6 +162,12 @@ public class ApplicationQueryApi {
     @Handles("progression.query.case.status-for-application")
     public JsonEnvelope getCaseStatusForApplication(final JsonEnvelope query) {
         return applicationQueryView.getCaseStatusForApplication(query);
+    }
+
+    @Handles("progression.query.application-hearing-case-details")
+    public JsonEnvelope getApplicationHearingCaseDetails(final JsonEnvelope query) {
+        return applicationHearingQueryView.getApplicationHearingCaseDetails(query);
+
     }
 
 }

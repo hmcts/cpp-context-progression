@@ -7,6 +7,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.justice.core.courts.ApplicationStatus.DRAFT;
@@ -115,7 +116,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908498L;
+    private static final long serialVersionUID = 1331113876243908499L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private ApplicationStatus applicationStatus = DRAFT;
@@ -584,12 +585,12 @@ public class ApplicationAggregate implements Aggregate {
     }
 
     public Stream<Object> hearingResulted(CourtApplication courtApplication) {
-        if (FINALISED.equals(courtApplication.getApplicationStatus()) && CollectionUtils.isEmpty(courtApplication.getJudicialResults())) {
+        if (FINALISED.equals(courtApplication.getApplicationStatus()) && isEmpty(courtApplication.getJudicialResults())) {
             return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(
                             courtApplication()
                                     .withValuesFrom(courtApplication)
                                     .withJudicialResults(this.courtApplication.getJudicialResults())
-                                    .withApplicationStatus(getApplicationStatusAfterHearingResulted(courtApplication))
+                                    .withApplicationStatus(FINALISED)
                                     .build())
                     .build()));
         }
@@ -605,7 +606,7 @@ public class ApplicationAggregate implements Aggregate {
     private ApplicationStatus getApplicationStatusAfterHearingResulted(final CourtApplication courtApplication) {
         return ofNullable(courtApplication.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
                 .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory()))
-                ? FINALISED : this.applicationStatus;
+                ? FINALISED : courtApplication.getApplicationStatus();
     }
 
     public Stream<Object> deleteHearingRelatedToCourtApplication(final UUID hearingId, final UUID courtApplicationId) {

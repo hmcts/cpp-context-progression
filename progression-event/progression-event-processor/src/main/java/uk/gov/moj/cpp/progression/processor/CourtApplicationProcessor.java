@@ -599,7 +599,8 @@ public class CourtApplicationProcessor {
         progressionService.updateHearingListingStatusToHearingInitiated(event, hearingInitiate);
 
         // then update application status and list hearing
-        progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
+        progressionService.updateCourtApplicationStatus(event, application.getId(),
+                nonNull(application.getApplicationStatus()) ? application.getApplicationStatus() : ApplicationStatus.UN_ALLOCATED);
 
         final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(), application, prosecutionCases);
         listingService.listCourtHearing(event, listCourtHearing);
@@ -620,7 +621,6 @@ public class CourtApplicationProcessor {
                     .withId(courtApplicationSummonsApproved.getApplicationId())
                     .withProsecutionCaseId(courtApplicationSummonsApproved.getCaseIds().get(0))
                     .build();
-
 
             sender.send(envelop(summonsApprovedPublicEventPayload).withName(PUBLIC_PROGRESSION_COURT_APPLICATION_SUMMONS_APPROVED).withMetadataFrom(event));
         }
@@ -688,7 +688,8 @@ public class CourtApplicationProcessor {
         progressionService.linkApplicationToHearing(event, hearingInitiate.getHearing(), HearingListingStatus.HEARING_INITIALISED);
 
         // then update application status and list hearing
-        progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
+        progressionService.updateCourtApplicationStatus(event, application.getId(),
+                nonNull(application.getApplicationStatus()) ? application.getApplicationStatus() : ApplicationStatus.UN_ALLOCATED);
 
         final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(courtHearing, application, prosecutionCases);
         listingService.listCourtHearing(event, listCourtHearing);

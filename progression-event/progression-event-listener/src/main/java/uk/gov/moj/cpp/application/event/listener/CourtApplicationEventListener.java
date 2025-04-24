@@ -157,7 +157,7 @@ public class CourtApplicationEventListener {
         if (nonNull(applicationEntity)) {
             final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
             final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
-            final ApplicationStatus applicationStatus = persistedApplication.getApplicationStatus() == ApplicationStatus.FINALISED ? ApplicationStatus.FINALISED : courtApplicationStatusChanged.getApplicationStatus();
+            final ApplicationStatus applicationStatus = courtApplicationStatusChanged.getApplicationStatus();
             final CourtApplication updatedApplication = buildCourtApplicationWithStatus(persistedApplication, applicationStatus);
             applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedApplication).toString());
             courtApplicationRepository.save(applicationEntity);

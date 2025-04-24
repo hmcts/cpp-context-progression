@@ -749,6 +749,25 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/shareallcourtdocuments:
+  post:
+    description: |
+      Makes all court documents for a given hearing accessible for a given user group
+      ...
+      (mapping):
+          requestType: application/vnd.progression.share-all-court-documents+json
+          name: progression.share-all-court-documents
+      ...
+    body:
+      application/vnd.progression.share-all-court-documents+json:
+        example:
+          !include json/progression.share-all-court-documents.json
+        schema:
+          !include json/schema/progression.share-all-court-documents.json
+    responses:
+      202:
+        description: OK
+
 /prosecutioncases/{prosecutionCaseId}/defendants/{defendantId}/match:
   uriParameters:
       defendantId:

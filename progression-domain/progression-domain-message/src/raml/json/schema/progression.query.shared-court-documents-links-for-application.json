@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/sharedCourtDocumentsLinksForApplication.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseUrn": {
+      "type": "string"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "defendantName",
+    "caseUrn"
+  ],
+  "additionalProperties": false
+}
