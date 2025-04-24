@@ -65,6 +65,7 @@ import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseInactiveBdf;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
@@ -318,6 +319,23 @@ public class CaseAggregateTest {
                     .build()))
             .build();
 
+    private static final Defendant defendantWithMultipleOffences = defendant()
+            .withId(randomUUID())
+            .withMasterDefendantId(randomUUID())
+            .withPersonDefendant(PersonDefendant.personDefendant()
+                    .withPersonDetails(uk.gov.justice.core.courts.Person.person()
+                            .withFirstName("firstName")
+                            .withLastName("lastName")
+                            .withDateOfBirth(LocalDate.now().minusYears(20))
+                            .build())
+                    .build())
+            .withCourtProceedingsInitiated(ZonedDateTime.now())
+            .withOffences(asList(offence().withId(randomUUID())
+                    .withIndicatedPlea(IndicatedPlea.indicatedPlea().withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY).build())
+                    .build(), offence().withId(randomUUID())
+                    .build()))
+            .build();
+
     private static final Defendant legalEntityDefendant = Defendant.defendant()
             .withId(randomUUID())
             .withMasterDefendantId(randomUUID())
@@ -329,6 +347,10 @@ public class CaseAggregateTest {
 
     private static final List<Defendant> defendants = new ArrayList<Defendant>() {{
         add(defendant);
+    }};
+
+    private static final List<Defendant> defendantsWithMultipleOffences = new ArrayList<Defendant>() {{
+        add(defendantWithMultipleOffences);
     }};
 
     private static final List<Defendant> legalEntityDefendants = new ArrayList<Defendant>() {{
@@ -1398,6 +1420,14 @@ public class CaseAggregateTest {
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(CaseEjected.class)));
+    }
+
+    @Test
+    public void shouldReturnCaseInactive() {
+        final List<Object> eventStream = caseAggregate.inactiveCaseBdf(randomUUID()).collect(toList());
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(CaseInactiveBdf.class)));
     }
 
     @Test
@@ -6911,19 +6941,20 @@ public class CaseAggregateTest {
             final UUID uuid = UUID.randomUUID();
         final ProsecutionCase prosecutionCase = prosecutionCase()
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
-                .withDefendants(defendants).withId(uuid).build();
+                .withDefendants(defendantsWithMultipleOffences).withId(uuid).build();
         final ProsecutionCaseCreated prosecutionCaseUpdated = prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build();
         this.caseAggregate.apply(prosecutionCaseUpdated);
 
         final CourtHearingRequest courtHearingRequest = CourtHearingRequest.courtHearingRequest()
                         .withListDefendantRequests(new ArrayList<>(Arrays.asList(ListDefendantRequest.listDefendantRequest()
-                                .withDefendantId(defendants.get(0).getId())
-                                .withDefendantOffences(Arrays.asList(UUID.randomUUID()))
+                                .withDefendantId(defendantsWithMultipleOffences.get(0).getId())
+                                .withDefendantOffences(Arrays.asList(defendantsWithMultipleOffences.get(0).getOffences().get(0).getId(), defendantsWithMultipleOffences.get(0).getOffences().get(0).getId()))
                                 .build())))
                 .build();
         final Stream<Object> objectStream = caseAggregate.extendCaseToExistingHearingForAdhocHearing(courtHearingRequest, true);
         Optional<RelatedCaseRequestedForAdhocHearing> relatedCaseRequestedForAdhocHearing = objectStream.filter(s -> s instanceof RelatedCaseRequestedForAdhocHearing).map(RelatedCaseRequestedForAdhocHearing.class::cast).findFirst();
         assertThat(relatedCaseRequestedForAdhocHearing.isPresent(), is(true));
+        assertThat(relatedCaseRequestedForAdhocHearing.get().getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
         assertThat(relatedCaseRequestedForAdhocHearing.get().getProsecutionCase().getDefendants().get(0).getOffences().get(0).getIndicatedPlea().getIndicatedPleaValue(),
                 equalTo(IndicatedPleaValue.INDICATED_GUILTY));
 

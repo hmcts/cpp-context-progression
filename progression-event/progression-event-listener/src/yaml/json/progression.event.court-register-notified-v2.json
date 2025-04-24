@@ -1,0 +1,12 @@
+{
+  "courtCentreId": "9b92d988-a5b1-4b22-b790-000b88be6db9",
+  "recipients": [
+    {
+      "emailAddress1": "john.smith@hmcts.net",
+      "emailTemplateName": "cr_standard",
+      "recipientName": "John Smith"
+    }
+  ],
+  "registerDate": "2025-02-26",
+  "systemDocGeneratorId": "6d54041d-b79f-4daa-ad17-9c58db10c898"
+}

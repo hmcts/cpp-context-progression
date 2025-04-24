@@ -1547,3 +1547,22 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
                 description: OK
             500:
                 description: Internal Server Error
+
+/inactive-case-bdf:
+  post:
+    description: |
+      Inactive Case.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.inactive-case-bdf+json
+          name: progression.inactive-case-bdf
+      ...
+    body:
+      application/vnd.progression.inactive-case-bdf+json:
+        example:
+          !include json/progression.inactive-case-bdf.json
+        schema:
+          !include json/schema/progression.inactive-case-bdf.json
+    responses:
+      202:
+        description: OK

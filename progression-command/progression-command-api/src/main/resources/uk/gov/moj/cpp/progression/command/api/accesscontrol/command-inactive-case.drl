@@ -4,15 +4,13 @@ import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
 
-rule "Command - Rule for list new hearing"
+rule "Command - inactive case bdf"
   when
     $outcome: Outcome();
-    $action: Action(name == "progression.list-new-hearing");
-    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.adhocHearingCreatePermission())) or
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+    $action: Action(name == "progression.inactive-case-bdf");
+     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"));
   then
     $outcome.setSuccess(true);
 end
-
 
 
