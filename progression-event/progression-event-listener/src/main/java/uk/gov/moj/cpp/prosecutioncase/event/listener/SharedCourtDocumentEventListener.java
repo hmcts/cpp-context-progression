@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
+import uk.gov.justice.core.courts.AllCourtDocumentsShared;
 import uk.gov.justice.core.courts.CourtDocumentShared;
 import uk.gov.justice.core.courts.CourtDocumentSharedV2;
 import uk.gov.justice.core.courts.SharedCourtDocument;
@@ -11,7 +12,9 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedAllCourtDocumentsEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SharedCourtDocumentEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedAllCourtDocumentsRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.SharedCourtDocumentRepository;
 
 import java.util.UUID;
@@ -26,6 +29,8 @@ public class SharedCourtDocumentEventListener {
     private JsonObjectToObjectConverter jsonObjectConverter;
     @Inject
     private SharedCourtDocumentRepository sharedCourtDocumentRepository;
+    @Inject
+    private SharedAllCourtDocumentsRepository sharedAllCourtDocumentsRepository;
 
     @Handles("progression.event.court-document-shared")
     public void processCourtDocumentShared(final JsonEnvelope event) {
@@ -86,5 +91,12 @@ public class SharedCourtDocumentEventListener {
         }
     }
 
+    @Handles("progression.event.all-court-documents-shared")
+    public void processAllCourtDocumentsShared(final JsonEnvelope event) {
+        final AllCourtDocumentsShared allCourtDocumentsShared = jsonObjectConverter.convert(event.payloadAsJsonObject(), AllCourtDocumentsShared.class);
+        final SharedAllCourtDocumentsEntity sharedAllCourtDocuments = new SharedAllCourtDocumentsEntity(randomUUID(), allCourtDocumentsShared.getCaseId(), allCourtDocumentsShared.getDefendantId(), allCourtDocumentsShared.getApplicationHearingId(),
+                allCourtDocumentsShared.getUserGroupId(), allCourtDocumentsShared.getUserId(), allCourtDocumentsShared.getSharedByUser(), allCourtDocumentsShared.getDateShared());
+        sharedAllCourtDocumentsRepository.save(sharedAllCourtDocuments);
+    }
 
 }

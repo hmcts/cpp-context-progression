@@ -19,6 +19,7 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
+import uk.gov.moj.cpp.progression.query.ApplicationHearingQueryView;
 import uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
@@ -75,6 +76,9 @@ public class ApplicationQueryApiTest {
 
     @Mock
     private ApplicationQueryView applicationQueryView;
+
+    @Mock
+    private ApplicationHearingQueryView applicationHearingQueryView;
 
     @InjectMocks
     private ApplicationQueryApi applicationQueryApi;
@@ -227,6 +231,12 @@ public class ApplicationQueryApiTest {
     public void shouldGetCaseStatusForApplicationId() {
         when(applicationQueryView.getCaseStatusForApplication(query)).thenReturn(response);
         assertThat(applicationQueryApi.getCaseStatusForApplication(query), equalTo(response));
+    }
+
+    @Test
+    void shouldGetApplicationHearingCaseDetails() {
+        when(applicationHearingQueryView.getApplicationHearingCaseDetails(query)).thenReturn(response);
+        assertThat(applicationQueryApi.getApplicationHearingCaseDetails(query), equalTo(response));
     }
 
 }

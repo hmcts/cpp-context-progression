@@ -574,7 +574,8 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_DOC_ID", courtDocumentId)
                 .replace("RANDOM_MATERIAL_ID_ONE", materialIdOne)
                 .replace("RANDOM_MATERIAL_ID_TWO", materialIdTwo)
-                .replace("RANDOM_REFERRAL_ID", referralId);
+                .replace("RANDOM_REFERRAL_ID", referralId)
+                .replace("NOTICE_DATE", LocalDate.now().minusDays(28).toString());
     }
 
     public static String createReferProsecutionCaseToCrownCourtJsonBody(final String caseId, final String defendantId, final String materialIdOne,
@@ -1204,6 +1205,10 @@ public class PreAndPostConditionHelper {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}&hearingId={2}", args), "application/vnd.progression.query.courtdocuments+json", userId);
     }
 
+    public static String getCourtDocumentsWithMatchers(final String userId, final String caseId, final String defendantId, final String hearingId, final Matcher[] matchers) {
+        return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}&defendantId={1}&hearingId={2}", caseId, defendantId, hearingId), "application/vnd.progression.query.courtdocuments+json", userId, matchers);
+    }
+
     public static String getCourtDocumentsByCase(final String userId, final String caseId) {
         return pollForResponse(MessageFormat.format("/courtdocumentsearch?caseId={0}", caseId), "application/vnd.progression.query.courtdocuments+json", userId);
     }
@@ -1318,6 +1323,12 @@ public class PreAndPostConditionHelper {
         return postCommand(getWriteUrl("/application"),
                 "application/vnd.progression.create-court-application+json",
                 getCourtApplicationWithDefendantJsonBody(caseId, applicationId, defendantId, generateUrn(), fileName));
+    }
+
+    public static Response shareAllCourtDocuments(final String caseId, final String defendantId, final String userGroup, final String fileName) throws IOException {
+        return postCommand(getWriteUrl("/shareallcourtdocuments"),
+                "application/vnd.progression.share-all-court-documents+json",
+                getShareAllCourtDocumentsJsonBody(caseId, defendantId, userGroup, fileName));
     }
 
     public static Response addCourtApplicationForApplicationAtAGlance(final String caseId,
@@ -1617,6 +1628,13 @@ public class PreAndPostConditionHelper {
         return getPayload(fileName)
                 .replace("COURT_DOCUMENT_ID", courtDocumentId)
                 .replace("HEARING_ID", hearingId)
+                .replace("USER_GROUP", userGroup);
+    }
+
+    private static String getShareAllCourtDocumentsJsonBody(final String caseId, final String defendantId, final String userGroup, final String fileName) {
+        return getPayload(fileName)
+                .replace("CASE_ID", caseId)
+                .replace("DEFENDANT_ID", defendantId)
                 .replace("USER_GROUP", userGroup);
     }
 

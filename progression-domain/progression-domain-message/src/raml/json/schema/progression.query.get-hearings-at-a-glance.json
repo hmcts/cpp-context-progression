@@ -222,6 +222,9 @@
           "items": {
             "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
           }
+        },
+        "isApplicationHearing": {
+          "type": "boolean"
         }
       },
       "required": [

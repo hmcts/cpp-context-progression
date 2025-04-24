@@ -17,6 +17,7 @@ import javax.inject.Inject;
 public class CourtDocumentSharedProcessor {
 
     public static final String PUBLIC_COURT_DOCUMENT_SHARED = "public.progression.event.court-document-shared";
+    public static final String PUBLIC_ALL_COURT_DOCUMENTS_SHARED = "public.progression.event.all-court-documents-shared";
 
     @Inject
     private Sender sender;
@@ -36,6 +37,18 @@ public class CourtDocumentSharedProcessor {
     @Handles("progression.event.duplicate-share-court-document-request-received")
     public void handleDuplicateShareCourtDocumentRequestReceivedEvent(final JsonEnvelope envelope) {
         final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_COURT_DOCUMENT_SHARED).build();
+        sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
+    }
+
+    @Handles("progression.event.all-court-documents-shared")
+    public void handleAllCourtDocumentsSharedEvent(final JsonEnvelope envelope) {
+        final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_ALL_COURT_DOCUMENTS_SHARED).build();
+        sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
+    }
+
+    @Handles("progression.event.duplicate-share-all-court-documents-request-received")
+    public void handleDuplicateAllShareCourtDocumentsRequestReceivedEvent(final JsonEnvelope envelope) {
+        final Metadata metadata = Envelope.metadataFrom(envelope.metadata()).withName(PUBLIC_ALL_COURT_DOCUMENTS_SHARED).build();
         sender.send(JsonEnvelope.envelopeFrom(metadata, envelope.payload()));
     }
 

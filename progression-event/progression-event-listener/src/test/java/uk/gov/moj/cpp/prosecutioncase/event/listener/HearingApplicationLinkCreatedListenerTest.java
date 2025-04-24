@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,9 +12,12 @@ import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCa
 import static uk.gov.justice.core.courts.HearingApplicationLinkCreated.hearingApplicationLinkCreated;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
@@ -24,8 +28,10 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +57,9 @@ public class HearingApplicationLinkCreatedListenerTest {
     public static final String COURT_APPLICATION_CASES = "courtApplicationCases";
     public static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     public static final String JUDICIAL_RESULTS = "judicialResults";
+    private static final String TYPE = "type";
+    private static final String DESCRIPTION = "description";
+
     @Spy
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
@@ -64,10 +73,16 @@ public class HearingApplicationLinkCreatedListenerTest {
     private HearingApplicationRepository repository;
 
     @Mock
+    private InitiateCourtApplicationRepository initiateCourtApplicationRepository;
+
+    @Mock
     private JsonEnvelope envelope;
 
     @Captor
     private ArgumentCaptor<HearingApplicationEntity> argumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<InitiateCourtApplicationEntity> initiateCourtApplicationEntityArgumentCaptor;
 
 
     @InjectMocks
@@ -84,11 +99,16 @@ public class HearingApplicationLinkCreatedListenerTest {
 
     @Test
     public void shouldHandleHearingApplicationLinkCreatedEventWithExistingHearing() {
+        final UUID dbTypeId = UUID.randomUUID();
+        final String dbTypeDescription = "Application";
+        final UUID eventTypeId = UUID.randomUUID();
+        final String eventTypeDescription = "Trial";
         final Hearing hearingFromDb = Hearing.hearing()
                 .withId(HEARING_ID)
                 .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
                         .withId(CASE_ID)
                         .build()))
+                .withType(HearingType.hearingType().withId(dbTypeId).withDescription(dbTypeDescription).build())
                 .build();
 
         final Hearing hearing = Hearing.hearing().withId(HEARING_ID)
@@ -96,6 +116,7 @@ public class HearingApplicationLinkCreatedListenerTest {
                         .withId(APPLICATION_ID)
                         .withCourtApplicationCases(singletonList(courtApplicationCase()
                                 .withProsecutionCaseId(CASE_ID).build())).build()))
+                .withType(HearingType.hearingType().withId(eventTypeId).withDescription(eventTypeDescription).build())
                 .build();
 
         HearingApplicationLinkCreated hearingApplicationLinkCreated
@@ -121,6 +142,10 @@ public class HearingApplicationLinkCreatedListenerTest {
         assertThat(payloadJson.getJsonArray(PROSECUTION_CASES).getJsonObject(0).getString(ID), is(CASE_ID.toString()));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getString(ID), is(APPLICATION_ID.toString()));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getJsonArray(COURT_APPLICATION_CASES).getJsonObject(0).getString(PROSECUTION_CASE_ID), is(CASE_ID.toString()));
+
+        final JsonObject hearingType = payloadJson.getJsonObject(TYPE);
+        assertThat(hearingType.getString(ID), is(eventTypeId.toString()));
+        assertThat(hearingType.getString(DESCRIPTION), is(eventTypeDescription));
     }
 
 
@@ -167,6 +192,7 @@ public class HearingApplicationLinkCreatedListenerTest {
         assertThat((Integer) (payloadJson.getJsonArray(PROSECUTION_CASES).size()), is(1));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getString(ID), is(APPLICATION_ID.toString()));
         assertThat(payloadJson.getJsonArray(COURT_APPLICATIONS).getJsonObject(0).getJsonArray(COURT_APPLICATION_CASES).getJsonObject(0).getString(PROSECUTION_CASE_ID), is(CASE_ID2.toString()));
+        verify(initiateCourtApplicationRepository, times(0)).save(any());
     }
 
     @Test
@@ -308,6 +334,58 @@ public class HearingApplicationLinkCreatedListenerTest {
 
         assertThat(hearingIdArgumentCaptor.getValue(), is(HEARING_ID));
         assertThat(courtApplicationIdArgumentCaptor.getValue(), is(APPLICATION_ID));
+    }
+
+    @Test
+    void shouldUpdateInitiateCourtApplicationEntityForHearingType() {
+        final UUID dbTypeId = UUID.randomUUID();
+        final String dbTypeDescription = "Application";
+        final UUID eventTypeId = UUID.randomUUID();
+        final String eventTypeDescription = "Trial";
+        final Hearing hearingFromDb = Hearing.hearing()
+                .withId(HEARING_ID)
+                .withProsecutionCases(singletonList(ProsecutionCase.prosecutionCase()
+                        .withId(CASE_ID)
+                        .build()))
+                .withType(HearingType.hearingType().withId(dbTypeId).withDescription(dbTypeDescription).build())
+                .build();
+
+        final Hearing hearing = Hearing.hearing().withId(HEARING_ID)
+                .withCourtApplications(singletonList(courtApplication()
+                        .withId(APPLICATION_ID)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseId(CASE_ID).build())).build()))
+                .withType(HearingType.hearingType().withId(eventTypeId).withDescription(eventTypeDescription).build())
+                .build();
+
+        HearingApplicationLinkCreated hearingApplicationLinkCreated
+                = hearingApplicationLinkCreated()
+                .withApplicationId(APPLICATION_ID)
+                .withHearing(hearing)
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(HEARING_ID);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearingFromDb).toString());
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+
+        final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
+
+        final InitiateCourtApplicationEntity initiateCourtApplicationEntity =  new InitiateCourtApplicationEntity();
+        initiateCourtApplicationEntity.setApplicationId(APPLICATION_ID);
+        initiateCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().withHearingType(HearingType.hearingType().build()).build())
+                .build()).toString());
+        when(initiateCourtApplicationRepository.findBy(APPLICATION_ID)).thenReturn(initiateCourtApplicationEntity);
+
+        eventListener.process(envelope);
+
+        verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
+        final String initiateCourtApplicationPayload = initiateCourtApplicationEntityArgumentCaptor.getValue().getPayload();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(initiateCourtApplicationPayload), InitiateCourtApplicationProceedings.class);
+        assertThat(initiateCourtApplicationProceedings.getCourtHearing().getHearingType().getId(), is(eventTypeId));
+        assertThat(initiateCourtApplicationProceedings.getCourtHearing().getHearingType().getDescription(), is(eventTypeDescription));
     }
 
     private List<CourtApplication> getCourtApplications(final List<JudicialResult> judicialResults) {

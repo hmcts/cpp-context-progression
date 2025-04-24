@@ -63,6 +63,33 @@ public class CourtDocumentIndexRepositoryTest  {
     }
 
     @Test
+    public void shouldFindByCaseIdDefendantId() {
+
+        final UUID courtDocumentId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId = UUID.randomUUID();
+        final UUID hearingId = UUID.randomUUID();
+
+        final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
+        courtDocumentEntity.setCourtDocumentId(courtDocumentId);
+        courtDocumentEntity.setIsRemoved(false);
+        final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
+        indices.add(getCourtDocumentIndexEntity(courtDocumentEntity, caseId, defendantId, courtDocumentId, hearingId));
+        courtDocumentEntity.setIndices(indices);
+        courtDocumentRepository.save(courtDocumentEntity);
+
+        final List<CourtDocumentIndexEntity> result = courtDocumentIndexRepository.findByProsecutionCaseIdAndDefendantId(caseId, defendantId);
+
+        assertThat(result.size(), is(1));
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = result.get(0);
+        assertEquals(courtDocumentId, courtDocumentIndexEntity.getCourtDocument().getCourtDocumentId());
+        assertEquals(caseId, courtDocumentIndexEntity.getProsecutionCaseId());
+        assertEquals(defendantId, courtDocumentIndexEntity.getDefendantId());
+        assertEquals(hearingId, courtDocumentIndexEntity.getHearingId());
+
+    }
+
+    @Test
     public void shouldUpdateApplicationIdByApplicationId() {
         final UUID courtDocumentId = UUID.randomUUID();
         final UUID applicationId = UUID.randomUUID();
@@ -97,4 +124,9 @@ public class CourtDocumentIndexRepositoryTest  {
         return courtDocumentIndexEntity;
     }
 
+    private CourtDocumentIndexEntity getCourtDocumentIndexEntity(final CourtDocumentEntity courtDocumentEntity, final UUID caseId, final UUID defendantId, final UUID courtDocumentId, final UUID hearingId) {
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = getCourtDocumentIndexEntity(courtDocumentEntity, caseId, defendantId, courtDocumentId);
+        courtDocumentIndexEntity.setHearingId(hearingId);
+        return courtDocumentIndexEntity;
+    }
 }

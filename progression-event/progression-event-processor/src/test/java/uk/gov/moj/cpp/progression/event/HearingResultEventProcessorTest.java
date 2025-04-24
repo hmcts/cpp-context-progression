@@ -399,7 +399,7 @@ public class HearingResultEventProcessorTest {
 
     @Test
     public void shouldProcessHandleApplicationsResulted() {
-        final Hearing hearing = hearing().withCourtApplications(singletonList(courtApplication().build())).build();
+        final Hearing hearing = hearing().withCourtApplications(singletonList(courtApplication().withId(randomUUID()).withApplicationStatus(ApplicationStatus.LISTED).build())).build();
         final ApplicationsResulted applicationsResulted = applicationsResulted().withHearing(hearing).build();
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
@@ -412,7 +412,7 @@ public class HearingResultEventProcessorTest {
         assertThat(allValues.size(), is(1));
         assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
 
-        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(List.class), any(ApplicationStatus.class));
+        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
         verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
 
 

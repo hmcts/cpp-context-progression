@@ -158,6 +158,9 @@ subscriptions_descriptor:
         - name: progression.event.court-document-shared-v2
           schema_uri: http://justice.gov.uk/core/courts/court-document-shared-v2.json
 
+        - name: progression.event.all-court-documents-shared
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.all-court-documents-shared.json
+
         - name: progression.event.case-markers-updated.json
           schema_uri: http://justice.gov.uk/core/courts/case-markers-updated.json
 

@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.all-court-documents-shared.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationHearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "userGroupId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "userId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sharedByUser": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "dateShared": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "caseId",
+        "defendantId",
+        "applicationHearingId",
+        "userGroupId",
+        "sharedByUser",
+        "dateShared"
+      ]
+    },
+    {
+      "required": [
+        "caseId",
+        "defendantId",
+        "applicationHearingId",
+        "userId",
+        "sharedByUser",
+        "dateShared"
+      ]
+    }
+  ]
+}

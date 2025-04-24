@@ -839,7 +839,7 @@ public class HearingConfirmedEventProcessorTest {
         doNothing().when(progressionService).prepareSummonsData(any(JsonEnvelope.class), any(ConfirmedHearing.class));
         when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
         when(progressionService.transformConfirmedHearing(any(), any(), any())).thenReturn(hearing);
-        doNothing().when(progressionService).updateCourtApplicationStatus(any(), anyList(), any());
+        doNothing().when(progressionService).updateCourtApplicationStatus(any(), any(), anyList(), any());
         when(enveloper.withMetadataFrom(envelope, "progression.command-enrich-hearing-initiate")).thenReturn(enveloperFunction);
         when(envelope.payloadAsJsonObject()).thenReturn(payload);
         when(jsonObjectToObjectConverter.convert(envelope.payloadAsJsonObject(), HearingConfirmed.class))
@@ -849,7 +849,7 @@ public class HearingConfirmedEventProcessorTest {
         eventProcessor.processEvent(envelope);
 
         verify(sender).send(finalEnvelope);
-        verify(progressionService).updateCourtApplicationStatus(any(), anyList(), any());
+        verify(progressionService).updateCourtApplicationStatus(any(), any(), anyList(), any());
     }
 
     @Test
@@ -904,7 +904,7 @@ public class HearingConfirmedEventProcessorTest {
         eventProcessor.processEvent(envelope);
 
         verify(sender, times(2)).send(finalEnvelope);
-        verify(progressionService).updateCourtApplicationStatus(envelope, courtApplicationIds, LISTED);
+        verify(progressionService).updateCourtApplicationStatus(envelope, hearing, courtApplicationIds, LISTED);
         verify(progressionService).prepareSummonsData(envelope, confirmedHearing);
     }
 

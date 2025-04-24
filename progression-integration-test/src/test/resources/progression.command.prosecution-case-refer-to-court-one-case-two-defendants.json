@@ -1,7 +1,7 @@
 {
   "courtReferral": {
     "sjpReferral": {
-      "noticeDate": "2018-01-01",
+      "noticeDate": "NOTICE_DATE",
       "referralDate": "2018-02-15",
       "referringJudicialDecision": {
         "location": "Lavender Hill Magistrates' Court",

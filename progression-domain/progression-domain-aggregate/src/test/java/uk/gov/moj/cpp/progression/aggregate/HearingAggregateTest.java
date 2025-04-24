@@ -16,6 +16,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -26,6 +27,7 @@ import uk.gov.justice.core.courts.AddBreachApplication;
 import uk.gov.justice.core.courts.AddedDefendantsMovedToHearing;
 import uk.gov.justice.core.courts.AddedOffencesMovedToHearing;
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AllCourtDocumentsShared;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
 import uk.gov.justice.core.courts.BreachedApplications;
@@ -47,6 +49,7 @@ import uk.gov.justice.core.courts.DefendantRequestToExtendHearingCreated;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DeleteApplicationForCaseRequested;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingIgnored;
+import uk.gov.justice.core.courts.DuplicateShareAllCourtDocumentsRequestReceived;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated;
 import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
@@ -3632,6 +3635,147 @@ public class HearingAggregateTest {
         final List<UUID> uuidList = Stream.of(randomUUID(),randomUUID(),randomUUID()).collect(toList());
         final Stream<Object> objectStream = hearingAggregate.recordUnscheduledHearing(hearingId, uuidList);
         assertThat(((UnscheduledHearingRecorded)objectStream.collect(toList()).get(0)).getHearingId(), is(hearingId));
+    }
+
+    @Test
+    void shouldAllCourtDocumentsShared() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID userGroupId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID sharedByUser = randomUUID();
+
+        final List<Object> events = hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId, userGroupId, userId, sharedByUser).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final AllCourtDocumentsShared allCourtDocumentsShared = (AllCourtDocumentsShared) events.get(0);
+        assertThat(allCourtDocumentsShared.getCaseId(), is(caseId));
+        assertThat(allCourtDocumentsShared.getDefendantId(), is(defendantId));
+        assertThat(allCourtDocumentsShared.getApplicationHearingId(), is(hearingId));
+        assertThat(allCourtDocumentsShared.getUserId(), is(userId));
+        assertThat(allCourtDocumentsShared.getUserGroupId(), is(userGroupId));
+        assertThat(allCourtDocumentsShared.getSharedByUser(), is(sharedByUser));
+        assertThat(allCourtDocumentsShared.getDateShared().toLocalDate(), is(LocalDate.now()));
+
+    }
+
+    @Test
+    void shouldAllCourtDocumentsSharedWhenSameDefendantInDifferentCase() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID caseId2 = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID userGroupId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID sharedByUser = randomUUID();
+
+        final List<Object> events = hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId, userGroupId, userId, sharedByUser).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final AllCourtDocumentsShared allCourtDocumentsShared = (AllCourtDocumentsShared) events.get(0);
+        assertThat(allCourtDocumentsShared.getCaseId(), is(caseId));
+        assertThat(allCourtDocumentsShared.getDefendantId(), is(defendantId));
+        assertThat(allCourtDocumentsShared.getApplicationHearingId(), is(hearingId));
+        assertThat(allCourtDocumentsShared.getUserId(), is(userId));
+        assertThat(allCourtDocumentsShared.getUserGroupId(), is(userGroupId));
+        assertThat(allCourtDocumentsShared.getSharedByUser(), is(sharedByUser));
+        assertThat(allCourtDocumentsShared.getDateShared().toLocalDate(), is(LocalDate.now()));
+
+        hearingAggregate.apply(events);
+
+        final List<Object> events2 = hearingAggregate.shareAllCourtDocuments(hearingId, caseId2, defendantId, userGroupId, userId, sharedByUser).collect(toList());
+        assertThat(events2.size(), is(1));
+        final AllCourtDocumentsShared allCourtDocumentsShared2 = (AllCourtDocumentsShared) events.get(0);
+        assertThat(allCourtDocumentsShared2.getCaseId(), is(caseId));
+        assertThat(allCourtDocumentsShared2.getDefendantId(), is(defendantId));
+        assertThat(allCourtDocumentsShared2.getApplicationHearingId(), is(hearingId));
+        assertThat(allCourtDocumentsShared2.getUserId(), is(userId));
+        assertThat(allCourtDocumentsShared2.getUserGroupId(), is(userGroupId));
+        assertThat(allCourtDocumentsShared2.getSharedByUser(), is(sharedByUser));
+        assertThat(allCourtDocumentsShared2.getDateShared().toLocalDate(), is(LocalDate.now()));
+
+        hearingAggregate.apply(events2);
+
+        final List<Object> events3 = hearingAggregate.shareAllCourtDocuments(hearingId, caseId2, defendantId, userGroupId, null, sharedByUser).collect(toList());
+        assertThat(events3.size(), is(1));
+        final DuplicateShareAllCourtDocumentsRequestReceived duplicateEvent = (DuplicateShareAllCourtDocumentsRequestReceived) events3.get(0);
+        assertThat(duplicateEvent.getCaseId(), is(caseId2));
+        assertThat(duplicateEvent.getDefendantId(), is(defendantId));
+        assertThat(duplicateEvent.getApplicationHearingId(), is(hearingId));
+        assertNull(duplicateEvent.getUserId());
+        assertThat(duplicateEvent.getUserGroupId(), is(userGroupId));
+        assertThat(duplicateEvent.getSharedByUser(), is(sharedByUser));
+        assertThat(duplicateEvent.getDateShared().toLocalDate(), is(LocalDate.now()));
+    }
+
+    @Test
+    void shouldNotAllCourtDocumentsSharedWhenAlreadyShared() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID userGroupId = randomUUID();
+        final UUID sharedByUser = randomUUID();
+
+        hearingAggregate.apply(hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId, userGroupId, null, sharedByUser));
+
+        final List<Object> events = hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId, userGroupId, null, sharedByUser).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final DuplicateShareAllCourtDocumentsRequestReceived duplicateEvent = (DuplicateShareAllCourtDocumentsRequestReceived) events.get(0);
+        assertThat(duplicateEvent.getCaseId(), is(caseId));
+        assertThat(duplicateEvent.getApplicationHearingId(), is(hearingId));
+        assertNull(duplicateEvent.getUserId());
+        assertThat(duplicateEvent.getUserGroupId(), is(userGroupId));
+        assertThat(duplicateEvent.getSharedByUser(), is(sharedByUser));
+
+        final List<Object> events2 = hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId2, userGroupId, null, sharedByUser).collect(toList());
+        assertThat(events2.size(), is(1));
+        final AllCourtDocumentsShared allCourtDocumentsShared = (AllCourtDocumentsShared) events2.get(0);
+        assertThat(allCourtDocumentsShared.getCaseId(), is(caseId));
+        assertThat(allCourtDocumentsShared.getDefendantId(), is(defendantId2));
+        assertThat(allCourtDocumentsShared.getApplicationHearingId(), is(hearingId));
+        assertNull(allCourtDocumentsShared.getUserId());
+        assertThat(allCourtDocumentsShared.getUserGroupId(), is(userGroupId));
+        assertThat(allCourtDocumentsShared.getSharedByUser(), is(sharedByUser));
+        assertThat(allCourtDocumentsShared.getDateShared().toLocalDate(), is(LocalDate.now()));
+
+    }
+
+    @Test
+    void shouldNotAllCourtDocumentsSharedWhenAlreadySharedForUser() {
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID sharedByUser = randomUUID();
+
+        hearingAggregate.apply(hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId, null, userId, sharedByUser));
+
+        final List<Object> events = hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId, null, userId, sharedByUser).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final DuplicateShareAllCourtDocumentsRequestReceived duplicateEvent = (DuplicateShareAllCourtDocumentsRequestReceived) events.get(0);
+        assertThat(duplicateEvent.getCaseId(), is(caseId));
+        assertThat(duplicateEvent.getApplicationHearingId(), is(hearingId));
+        assertThat(duplicateEvent.getUserId(), is(userId));
+        assertNull(duplicateEvent.getUserGroupId());
+        assertThat(duplicateEvent.getSharedByUser(), is(sharedByUser));
+
+        final List<Object> events2 = hearingAggregate.shareAllCourtDocuments(hearingId, caseId, defendantId2, null, userId, sharedByUser).collect(toList());
+
+        assertThat(events2.size(), is(1));
+        final AllCourtDocumentsShared allCourtDocumentsShared = (AllCourtDocumentsShared) events2.get(0);
+        assertThat(allCourtDocumentsShared.getCaseId(), is(caseId));
+        assertThat(allCourtDocumentsShared.getDefendantId(), is(defendantId2));
+        assertThat(allCourtDocumentsShared.getApplicationHearingId(), is(hearingId));
+        assertNull(allCourtDocumentsShared.getUserGroupId());
+        assertThat(allCourtDocumentsShared.getUserId(), is(userId));
+        assertThat(allCourtDocumentsShared.getSharedByUser(), is(sharedByUser));
+        assertThat(allCourtDocumentsShared.getDateShared().toLocalDate(), is(LocalDate.now()));
+
     }
 
     private HearingDeleted createHearingDeleted(final Hearing hearing) {

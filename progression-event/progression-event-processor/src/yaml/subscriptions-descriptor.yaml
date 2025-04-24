@@ -551,6 +551,12 @@ subscriptions_descriptor:
         - name: progression.event.duplicate-share-court-document-request-received
           schema_uri: http://justice.gov.uk/core/courts/duplicate-share-court-document-request-received.json
 
+        - name: progression.event.all-court-documents-shared
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.all-court-documents-shared.json
+
+        - name: progression.event.duplicate-share-all-court-documents-request-received
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.duplicate-share-all-court-documents-request-received.json
+
         - name: progression.event.notification-request-failed
           schema_uri: http://justice.gov.uk/core/courts/progression.event.notification-request-failed.json
 

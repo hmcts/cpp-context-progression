@@ -13,6 +13,8 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,9 @@ public class ReferenceDataServiceTest {
 
     @Mock
     private JsonEnvelope jsonEnvelope;
+
+    @Mock
+    private JsonEnvelope queryEnvelope;
 
     @InjectMocks
     private ReferenceDataService referenceDataService;
@@ -72,5 +77,24 @@ public class ReferenceDataServiceTest {
         assertThat(requestJsonEnvelope.getValue().payloadAsJsonObject().getString("id"), is(prosecutorId));
         assertThat(requestJsonEnvelope.getValue().metadata().id(), notNullValue());
         assertThat(requestJsonEnvelope.getValue().metadata().name(), is(REFERENCEDATA_GET_PROSECUTOR));
+    }
+
+    @Test
+    void shouldGetHearingTypes() {
+        when(requester.request(requestJsonEnvelope.capture())).thenReturn(jsonEnvelope);
+        final JsonArray hearingTypes = Json.createArrayBuilder()
+                .add(Json.createObjectBuilder().add("id", UUID.randomUUID().toString()).build())
+                .build();
+        when(queryEnvelope.metadata()).thenReturn(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("name").build());
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(Json.createObjectBuilder()
+                .add("hearingTypes", hearingTypes)
+                .build()
+        );
+
+        final JsonArray result = referenceDataService.getHearingTypes(queryEnvelope);
+
+        assertThat(result, is(hearingTypes));
+        assertThat(requestJsonEnvelope.getValue().metadata().name(), is("referencedata.query.hearing-types"));
+
     }
 }

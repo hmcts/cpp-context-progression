@@ -64,7 +64,7 @@ public class GenericLinkedApplicationIT extends AbstractIT {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
                 withJsonPath("$.courtApplication.type.code", is("AS14518")),
                 withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
-                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
                 withJsonPath("$.courtApplication.applicant.id", notNullValue()),
                 withJsonPath("$.courtApplication.subject.id", notNullValue()),
                 withJsonPath("$.courtApplication.courtOrder.id", notNullValue()),
@@ -78,7 +78,7 @@ public class GenericLinkedApplicationIT extends AbstractIT {
         Matcher[] caseMatchers = {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.linkedApplicationsSummary[0].applicationId", is(applicationId)),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("UN_ALLOCATED"))
+                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("LISTED"))
         };
 
         pollProsecutionCasesProgressionFor(caseId, caseMatchers);

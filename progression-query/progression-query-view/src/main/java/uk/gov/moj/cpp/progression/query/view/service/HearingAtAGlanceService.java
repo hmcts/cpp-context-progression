@@ -246,6 +246,7 @@ public class HearingAtAGlanceService {
                     .withDefendants(createDefendants(caseId, hearing.getProsecutionCases(), hearing.getCourtApplications(), hearing))
                     .withYouthCourt(hearing.getYouthCourt())
                     .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
+                    .withIsApplicationHearing(CollectionUtils.isNotEmpty(hearing.getCourtApplications()))
                     .build();
             hearingsList.add(hearingsView);
         });
@@ -662,7 +663,7 @@ public class HearingAtAGlanceService {
         return new ArrayList<>();
     }
 
-    private static String getDefendantName(final PersonDefendant personDefendant, final LegalEntityDefendant legalEntityDefendant) {
+    public static String getDefendantName(final PersonDefendant personDefendant, final LegalEntityDefendant legalEntityDefendant) {
         if (nonNull(personDefendant)) {
             return getPersonName(personDefendant.getPersonDetails());
         }

@@ -162,7 +162,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldHearingApplicationLinkCreatedEventIsUpdatedWithApplicationStatus() {
+    void shouldHearingApplicationLinkCreatedEventIsUpdatedWithApplicationStatus() {
         final UUID applicationId = randomUUID();
         final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = HearingResultedApplicationUpdated.hearingResultedApplicationUpdated().withCourtApplication(courtApplication()
                         .withId(applicationId)
@@ -518,7 +518,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldHearingResultedWithFinalised() {
+    void shouldHearingResultedWithFinalised() {
         final List<Object> eventStream = aggregate.hearingResulted(courtApplication()
                         .withValuesFrom(buildCourtapplication(randomUUID(), LocalDate.now()))
                         .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
@@ -532,7 +532,7 @@ public class ApplicationAggregateTest {
     }
 
     @Test
-    public void shouldHearingResultedWithInProgress() {
+    void shouldHearingResultedWithInProgress() {
         aggregate.apply(Stream.of(ApplicationReferredToBoxwork.applicationReferredToBoxwork().build()));
         final List<Object> eventStream = aggregate.hearingResulted(courtApplication()
                         .withValuesFrom(buildCourtapplication(randomUUID(), LocalDate.now()))

@@ -54,6 +54,20 @@ public class AddCourtDocumentHelper {
         ));
     }
 
+    public static String addCourtDocumentHearingLevel(final String resourceAddCourtDocument, final String caseId, final String defendantId, final String hearingId, final String docId) throws IOException {
+        final String body = prepareAddCourtDocumentPayload(docId, caseId, defendantId, null, hearingId, resourceAddCourtDocument);
+
+        final Response writeResponse = postCommand(getWriteUrl("/courtdocument/" + docId),
+                "application/vnd.progression.add-court-document+json",
+                body);
+        assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
+
+        return getCourtDocumentFor(docId, allOf(
+                withJsonPath("$.courtDocument.courtDocumentId", equalTo(docId)),
+                withJsonPath("$.courtDocument.containsFinancialMeans", equalTo(true))
+        ));
+    }
+
     public static String prepareAddCourtDocumentPayload(final String docId, final String caseId, final String defendantId1, final String defendantId2, final String addCourtDocumentResource) throws IOException {
         String body = Resources.toString(Resources.getResource(addCourtDocumentResource),
                 Charset.defaultCharset());
@@ -63,6 +77,12 @@ public class AddCourtDocumentHelper {
                 .replaceAll("%RANDOM_DEFENDANT_ID2%", defendantId1)
                 .replaceAll("%UPLOADDATETIME%", ZONE_DATETIME_FORMATTER.format(ZonedDateTime.now()));
         return body;
+    }
+
+    public static String prepareAddCourtDocumentPayload(final String docId, final String caseId, final String defendantId1, final String defendantId2, final String hearingId, final String addCourtDocumentResource) throws IOException {
+        final String body = prepareAddCourtDocumentPayload(docId, caseId, defendantId1, defendantId2, addCourtDocumentResource);
+        return  body.replaceAll("%RANDOM_HEARING_ID%", hearingId);
+
     }
 
 }
