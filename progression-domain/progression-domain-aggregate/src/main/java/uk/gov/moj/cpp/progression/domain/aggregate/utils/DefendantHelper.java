@@ -434,13 +434,7 @@ public class DefendantHelper {
             defendantOffencesChanged = true;
         }
 
-        final List<Offence> offencesDeletedList = DefendantHelper.getAddedOffences(existingOffences, offences);
-        if (!offencesDeletedList.isEmpty()) {
-            final List<DeletedOffences> deletedOffences = Arrays.asList(DeletedOffences.deletedOffences().withDefendantId(defendantId).withProsecutionCaseId(prosecutionCaseId).withOffences(offencesDeletedList.stream().map(Offence::getId).collect(Collectors.toList())).build());
 
-            builder.withDeletedOffences(deletedOffences);
-            defendantOffencesChanged = true;
-        }
         return defendantOffencesChanged ? of(builder.build()) : empty();
     }
 

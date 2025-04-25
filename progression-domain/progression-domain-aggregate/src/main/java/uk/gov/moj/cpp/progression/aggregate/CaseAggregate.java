@@ -88,6 +88,7 @@ import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseGroupInfoUpdated;
+import uk.gov.justice.core.courts.CaseInactiveBdf;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
@@ -868,6 +869,17 @@ public class CaseAggregate implements Aggregate {
         }
         return apply(Stream.of(CaseEjected.caseEjected()
                 .withProsecutionCaseId(prosecutionCaseId).withRemovalReason(removalReason).build()));
+    }
+
+    /**
+     * Make case Inactive using BDF, this is used in MI Report Data to make the case status inactive consistent with progression and unified search
+     *
+     * @param prosecutionCaseId prosecution id
+     * @return Stream of events
+     */
+    public Stream<Object> inactiveCaseBdf(final UUID prosecutionCaseId) {
+        return apply(Stream.of(CaseInactiveBdf.caseInactiveBdf()
+                .withProsecutionCaseId(prosecutionCaseId).build()));
     }
 
     private uk.gov.justice.core.courts.Defendant getUpdatedDefendantWithIsYouth(final uk.gov.justice.core.courts.Defendant defendant, final List<ListHearingRequest> listHearingRequests) {
@@ -3487,7 +3499,8 @@ public class CaseAggregate implements Aggregate {
                 .withDefendants(this.getProsecutionCase().getDefendants().stream()
                         .filter(def -> defendantsIds.contains(def.getId()))
                         .map(def -> uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(def)
-                                .withOffences(this.defendantCaseOffences.get(def.getId()))
+                                .withOffences(ofNullable(this.defendantCaseOffences.get(def.getId())).map(Collection::stream).orElseGet(Stream::empty)
+                                        .filter(off -> offenceIds.contains(off.getId())).toList())
 
                                 .build())
                         .collect(Collectors.toList()))

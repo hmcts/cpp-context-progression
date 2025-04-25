@@ -6,6 +6,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.core.courts.BailStatus.bailStatus;
@@ -382,6 +383,54 @@ public class DefendantHelperTest {
                         .withOffenceId(randomUUID()).build());
         assertTrue(DefendantHelper.isConcluded(offence, defendantJudicialResults, caseDefendantJudicialResults));
     }
+
+    @Test
+    void getOffencesForDefendantChanged_shouldReturnOffencesForDefendantChangedWithAddedAndUpdatedOffences() {
+        UUID prosecutionCaseId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
+        List<Offence> existingOffences = List.of(createOffence(UUID.randomUUID(), "existingOffence"));
+        List<Offence> newOffences = List.of(createOffence(UUID.randomUUID(), "newOffence"));
+        List<Offence> updatedOffences = List.of(createOffence(existingOffences.get(0).getId(), "updatedOffence"));
+        List<Offence> offences = Stream.concat(newOffences.stream(), updatedOffences.stream()).collect(Collectors.toList());
+        Optional<List<JsonObject>> referenceDataOffences = Optional.empty();
+
+        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+
+        assertTrue(result.isPresent());
+        OffencesForDefendantChanged offencesForDefendantChanged = result.get();
+        assertEquals(1, offencesForDefendantChanged.getAddedOffences().size());
+        assertEquals(1, offencesForDefendantChanged.getUpdatedOffences().size());
+        assertEquals(newOffences.get(0).getId(), offencesForDefendantChanged.getAddedOffences().get(0).getOffences().get(0).getId());
+        assertEquals(updatedOffences.get(0).getId(), offencesForDefendantChanged.getUpdatedOffences().get(0).getOffences().get(0).getId());
+    }
+
+    @Test
+    void getOffencesForDefendantChanged_shouldReturnEmptyWhenNoChanges() {
+        UUID prosecutionCaseId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
+        List<Offence> existingOffences = List.of(createOffence(UUID.randomUUID(), "existingOffence"));
+        List<Offence> offences = List.of(createOffence(existingOffences.get(0).getId(), "existingOffence"));
+        Optional<List<JsonObject>> referenceDataOffences = Optional.empty();
+
+        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void getOffencesForDefendantChanged_shouldReturnEmptyWhenOffencesPassedInParameterNotMatchingWithExistingOffences () {
+        UUID prosecutionCaseId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
+        List<Offence> existingOffences = List.of(createOffence(UUID.randomUUID(), "existingOffence"));
+        List<Offence> offences = List.of();
+        Optional<List<JsonObject>> referenceDataOffences = Optional.empty();
+
+        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+
+        assertFalse(result.isPresent());
+
+    }
+
 
     @ParameterizedTest
     @MethodSource("provideDefendantJudicialResultNotIncludedOffence")

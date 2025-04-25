@@ -68,9 +68,9 @@
         <referencedata.version>17.0.84</referencedata.version>
         <listing.version>17.0.48</listing.version>
         <hearing.version>17.0.65</hearing.version>
-        <usersgroups.version>17.0.32</usersgroups.version>
-        <defence.version>17.0.60</defence.version>
-        <referencedata.offence.version>17.0.17</referencedata.offence.version>
+        <usersgroups.version>17.0.19</usersgroups.version>
+        <defence.version>17.0.44</defence.version>
+        <referencedata.offence.version>17.0.32</referencedata.offence.version>
         <coredomain.version>17.101.4</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>

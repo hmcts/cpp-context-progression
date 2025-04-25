@@ -21,15 +21,18 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.moj.cpp.progression.helper.CourtRegisterDocumentRequestHelper;
+import uk.gov.moj.cpp.progression.stub.NotificationServiceStub;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.json.JsonObject;
 
+import com.google.common.collect.Lists;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
@@ -165,7 +168,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         pollSysDocGenerationRequests(hasSize(1));
         courtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicEvent(USER_ID_VALUE_AS_ADMIN, getCourtRegisterStreamId(courtCentreId.toString(), registerDate4.toLocalDate().toString()));
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsNotified(courtCentreId);
-
+        NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment(Lists.newArrayList("john.smith@hmcts.net"));
     }
 
     private Response recordCourtRegister(final UUID courtCentreId, final String courtHouse, final ZonedDateTime registerDate, final UUID hearingId, final ZonedDateTime hearingDate,
