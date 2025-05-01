@@ -1,0 +1,631 @@
+{
+    "version": 20,
+    "hearingId": "83261746-fbef-4697-9067-ae9d894074d0",
+    "relations": [
+        {
+            "ruleType": "standalone",
+            "resultLineId": "4b05ca4f-4787-4ff1-82c8-6c84e0bb9ece",
+            "childResultLineIds": [
+                "5346e266-9ed1-4b8d-9783-896994459fec",
+                "8d7f6e98-2b77-43c2-8107-9f64bcee8438"
+            ]
+        },
+        {
+            "ruleType": "mandatory",
+            "resultLineId": "5346e266-9ed1-4b8d-9783-896994459fec",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "optional",
+            "resultLineId": "8d7f6e98-2b77-43c2-8107-9f64bcee8438",
+            "childResultLineIds": [
+                "0596b032-2df9-4f88-a748-3596ac4a616b"
+            ]
+        },
+        {
+            "ruleType": "oneOf",
+            "resultLineId": "0596b032-2df9-4f88-a748-3596ac4a616b",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "de5f8c3b-a934-497d-984e-0438afd8626e",
+            "childResultLineIds": [
+                "b28350f0-6dbf-4177-8c34-ff43c41f2080",
+                "c0dfd0b6-54cf-4252-a49d-5e0be86ee349"
+            ]
+        },
+        {
+            "ruleType": "mandatory",
+            "resultLineId": "b28350f0-6dbf-4177-8c34-ff43c41f2080",
+            "childResultLineIds": [
+                "439631c0-77c7-4843-94eb-feaf495952ac"
+            ]
+        },
+        {
+            "ruleType": "oneOf",
+            "resultLineId": "439631c0-77c7-4843-94eb-feaf495952ac",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "optional",
+            "resultLineId": "c0dfd0b6-54cf-4252-a49d-5e0be86ee349",
+            "childResultLineIds": [
+                "c688d063-0f30-4a7b-8dd1-3949c7552fcb"
+            ]
+        },
+        {
+            "ruleType": "atleastOneOf",
+            "resultLineId": "c688d063-0f30-4a7b-8dd1-3949c7552fcb",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "6c9a2d8f-f916-4f50-a507-8d32c86042f7",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "334597ab-2911-47d1-af35-73f9bdc8774e",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "43a9d819-d806-4d80-96e2-b5639ce8b045",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "716562d0-d17f-48c8-a000-dac0b5c5edb5",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "e931b5af-8348-4f86-aced-2b90f1297092",
+            "childResultLineIds": []
+        }
+    ],
+    "hearingDay": "2025-03-17",
+    "resultLines": {
+        "0596b032-2df9-4f88-a748-3596ac4a616b": {
+            "label": "0: None or unknown",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "f783c864-1d44-4007-9fa1-206d80547797",
+            "shortCode": "none",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "none",
+            "resultLineId": "0596b032-2df9-4f88-a748-3596ac4a616b",
+            "resultPrompts": [],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "c3a39c2f-b056-442f-8dfc-604b5434f956",
+            "nonStandaloneAncillaryResult": false
+        },
+        "334597ab-2911-47d1-af35-73f9bdc8774e": {
+            "label": "No adjudication - dealt with for original offence",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "F",
+            "shortCode": "bro",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "bro",
+            "resultLineId": "334597ab-2911-47d1-af35-73f9bdc8774e",
+            "applicationId": "e464583f-4488-48ac-9195-c187144c42b6",
+            "resultPrompts": [],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "1c70f1e0-7674-4acb-8710-1c5233e984c0",
+            "nonStandaloneAncillaryResult": false
+        },
+        "439631c0-77c7-4843-94eb-feaf495952ac": {
+            "label": "Next hearing in Crown Court",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "01fc4777-81a3-4342-ac21-d4cec5dff38d",
+            "shortCode": "nhccs",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "nhccs",
+            "resultLineId": "439631c0-77c7-4843-94eb-feaf495952ac",
+            "resultPrompts": [
+                {
+                    "type": "ONEOF",
+                    "label": "Date and time to be fixed",
+                    "value": {
+                        "type": "DATE",
+                        "label": "Fixed Date",
+                        "value": "2025-03-17",
+                        "promptId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                        "promptRef": "fixedDate"
+                    },
+                    "promptId": "46257d78-1cbf-42b0-a24b-206826fecfb9",
+                    "promptRef": "dateToBeFixed"
+                },
+                {
+                    "type": "TIME",
+                    "label": "Time of hearing",
+                    "value": "15:00",
+                    "promptId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                    "promptRef": "timeOfHearing"
+                },
+                {
+                    "type": "NAMEADDRESS",
+                    "label": "Courthouse",
+                    "value": [
+                        {
+                            "type": "TXT",
+                            "label": "Courthouse organisation name",
+                            "value": "Croydon Crown Court",
+                            "promptId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                            "promptRef": "hCHOUSEOrganisationName"
+                        },
+                        {
+                            "type": "TXT",
+                            "label": "Courthouse address line 1",
+                            "value": "The Law Courts",
+                            "promptId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                            "promptRef": "hCHOUSEAddress1"
+                        },
+                        {
+                            "type": "TXT",
+                            "label": "Courthouse address line 2",
+                            "value": "Altyre Road",
+                            "promptId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                            "promptRef": "hCHOUSEAddress2"
+                        },
+                        {
+                            "type": "TXT",
+                            "label": "Courthouse address line 3",
+                            "value": "Croydon",
+                            "promptId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                            "promptRef": "hCHOUSEAddress3"
+                        },
+                        {
+                            "type": "TXT",
+                            "label": "Courthouse post code",
+                            "value": "CR9 5AB",
+                            "promptId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                            "promptRef": "hCHOUSEPostCode"
+                        }
+                    ],
+                    "promptId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                    "promptRef": "hCHOUSE"
+                },
+                {
+                    "type": "HCROOM",
+                    "label": "Courtroom",
+                    "value": "Courtroom 02",
+                    "promptId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                    "promptRef": "HCROOM"
+                },
+                {
+                    "type": "FIXL",
+                    "label": "Hearing type",
+                    "value": "Plea and Trial Preparation",
+                    "promptId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                    "promptRef": "HTYPE"
+                },
+                {
+                    "type": "DURATION",
+                    "label": "Estimated duration",
+                    "value": [
+                        {
+                            "label": "HOURS",
+                            "value": 1
+                        }
+                    ],
+                    "promptId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                    "promptRef": "HEST"
+                }
+            ],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+            "nonStandaloneAncillaryResult": false
+        },
+        "43a9d819-d806-4d80-96e2-b5639ce8b045": {
+            "label": "Entered in error",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "F",
+            "shortCode": "err",
+            "sharedDate": "2025-03-17T12:52:00.308Z",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "err",
+            "resultLineId": "43a9d819-d806-4d80-96e2-b5639ce8b045",
+            "amendmentDate": "2025-03-17T12:57:21.003Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-03-17T12:57:21.003Z",
+                        "validationDate": "2025-03-17T12:58:11.851Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": [
+                            {
+                                "type": "TXT",
+                                "label": "Reason",
+                                "value": "Test",
+                                "promptId": "af38d17b-46de-4dbb-a5c7-14ac36905c89",
+                                "promptRef": "reason"
+                            }
+                        ]
+                    },
+                    {
+                        "amendedBy": "Emma Cleaner",
+                        "validatedBy": "Erica Wilson",
+                        "amendmentDate": "2025-03-17T12:52:00.308Z",
+                        "validationDate": "2025-03-17T12:53:24.892Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "applicationId": "e464583f-4488-48ac-9195-c187144c42b6",
+            "resultPrompts": [
+                {
+                    "type": "TXT",
+                    "label": "Reason",
+                    "value": "Amended again for testing",
+                    "promptId": "af38d17b-46de-4dbb-a5c7-14ac36905c89",
+                    "promptRef": "reason"
+                }
+            ],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "c36fed37-b635-4303-b514-2273e9e2594d",
+            "nonStandaloneAncillaryResult": false
+        },
+        "4b05ca4f-4787-4ff1-82c8-6c84e0bb9ece": {
+            "label": "Obligatory disqualification",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "f783c864-1d44-4007-9fa1-206d80547797",
+            "shortCode": "ddo",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "ddo",
+            "resultLineId": "4b05ca4f-4787-4ff1-82c8-6c84e0bb9ece",
+            "resultPrompts": [
+                {
+                    "type": "DURATION",
+                    "label": "Disqualification period",
+                    "value": [
+                        {
+                            "label": "Months",
+                            "value": 6
+                        }
+                    ],
+                    "promptId": "2bf54447-328c-4c1b-a123-341adbd52172",
+                    "promptRef": "disqualificationPeriod"
+                },
+                {
+                    "type": "TXT",
+                    "label": "Extension period section 35A (immediate custodial sentence)",
+                    "value": "Extension period section 35A (immediate custodial sentence)",
+                    "promptId": "81638260-3cd1-41e7-9725-c8e91e23bda1",
+                    "promptRef": "extensionPeriodSection35AImmediateCustodialSentence"
+                },
+                {
+                    "type": "TXT",
+                    "label": "Extension period section 35B (effect of custodial sentence noted)",
+                    "value": "Extension period section 35B (effect of custodial sentence noted)\n",
+                    "promptId": "0143f821-7cab-4e53-a00b-2fd1c3dc8204",
+                    "promptRef": "extensionPeriodSection35BEffectOfCustodialSentenceNoted"
+                },
+                {
+                    "type": "TXT",
+                    "label": "Defendant driving licence number",
+                    "value": "DHARM56757",
+                    "promptId": "a593ae4a-9d69-45b9-9585-c11aeed28404",
+                    "promptRef": "defendantDrivingLicenceNumber"
+                }
+            ],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "b2d06bbc-e90e-4df8-8851-6e4a70894828",
+            "nonStandaloneAncillaryResult": false
+        },
+        "5346e266-9ed1-4b8d-9783-896994459fec": {
+            "label": "Has an interim disqualification been imposed 6 months or less before the sentence date?",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "f783c864-1d44-4007-9fa1-206d80547797",
+            "shortCode": "intd",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "intd",
+            "resultLineId": "5346e266-9ed1-4b8d-9783-896994459fec",
+            "resultPrompts": [],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "429fb553-4fb3-45eb-a700-7e5e69d1ca29",
+            "nonStandaloneAncillaryResult": false
+        },
+        "6c9a2d8f-f916-4f50-a507-8d32c86042f7": {
+            "label": "Granted",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "deleted": true,
+            "category": "F",
+            "shortCode": "g",
+            "sharedDate": "2025-03-17T12:51:48.554Z",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "g",
+            "resultLineId": "6c9a2d8f-f916-4f50-a507-8d32c86042f7",
+            "amendmentDate": "2025-03-17T12:51:48.554Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Emma Cleaner",
+                        "validatedBy": "Erica Wilson",
+                        "amendmentDate": "2025-03-17T12:51:48.554Z",
+                        "validationDate": "2025-03-17T12:53:24.892Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "applicationId": "ec9d511b-09e1-4f7b-a084-366d36f11fa5",
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+            "nonStandaloneAncillaryResult": false
+        },
+        "716562d0-d17f-48c8-a000-dac0b5c5edb5": {
+            "label": "Application refused",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "deleted": true,
+            "category": "F",
+            "shortCode": "rfsd",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "rfsd",
+            "resultLineId": "716562d0-d17f-48c8-a000-dac0b5c5edb5",
+            "amendmentDate": "2025-03-17T12:57:35.587Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-03-17T12:57:35.587Z",
+                        "validationDate": "2025-03-17T12:58:11.851Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "applicationId": "ec9d511b-09e1-4f7b-a084-366d36f11fa5",
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "d3902789-4cc8-4753-a15f-7e26dd39f6ae",
+            "nonStandaloneAncillaryResult": false
+        },
+        "8d7f6e98-2b77-43c2-8107-9f64bcee8438": {
+            "label": "Licence produced in court",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "f783c864-1d44-4007-9fa1-206d80547797",
+            "shortCode": "lpc",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "lpc",
+            "resultLineId": "8d7f6e98-2b77-43c2-8107-9f64bcee8438",
+            "resultPrompts": [],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "ea1ee5a4-be13-48dc-8411-78f22e01c236",
+            "nonStandaloneAncillaryResult": false
+        },
+        "b28350f0-6dbf-4177-8c34-ff43c41f2080": {
+            "label": "Next hearing",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "01fc4777-81a3-4342-ac21-d4cec5dff38d",
+            "shortCode": "nexh",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "nexh",
+            "resultLineId": "b28350f0-6dbf-4177-8c34-ff43c41f2080",
+            "resultPrompts": [],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+            "nonStandaloneAncillaryResult": false
+        },
+        "c0dfd0b6-54cf-4252-a49d-5e0be86ee349": {
+            "label": "Adjournment reasons",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "01fc4777-81a3-4342-ac21-d4cec5dff38d",
+            "shortCode": "adjr",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "adjr",
+            "resultLineId": "c0dfd0b6-54cf-4252-a49d-5e0be86ee349",
+            "resultPrompts": [],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+            "nonStandaloneAncillaryResult": false
+        },
+        "c688d063-0f30-4a7b-8dd1-3949c7552fcb": {
+            "label": "Unexpected circumstances meant that the case could not be heard",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "A",
+            "offenceId": "01fc4777-81a3-4342-ac21-d4cec5dff38d",
+            "shortCode": "unf",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "unf",
+            "resultLineId": "c688d063-0f30-4a7b-8dd1-3949c7552fcb",
+            "resultPrompts": [
+                {
+                    "type": "TXT",
+                    "label": "Additional information",
+                    "value": "Additional information - Test",
+                    "promptId": "cecebc7e-d1e8-45f3-b042-1aae41b8cfbf",
+                    "promptRef": "additionalInformation"
+                }
+            ],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+            "nonStandaloneAncillaryResult": false
+        },
+        "de5f8c3b-a934-497d-984e-0438afd8626e": {
+            "label": "Remand unconditional bail",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "I",
+            "offenceId": "01fc4777-81a3-4342-ac21-d4cec5dff38d",
+            "shortCode": "remub",
+            "sharedDate": "2025-03-17T00:00:00.000Z",
+            "defendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "originalText": "remub",
+            "resultLineId": "de5f8c3b-a934-497d-984e-0438afd8626e",
+            "resultPrompts": [
+                {
+                    "type": "ONEOF",
+                    "label": "Defendant to attend the next hearing",
+                    "value": {
+                        "type": "BOOLEAN",
+                        "label": "Defendant to attend the next hearing",
+                        "value": true,
+                        "promptId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "promptRef": "defendantToAttendTheNextHearing"
+                    },
+                    "promptId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                    "promptRef": "defendantToAttendTheNextHearing"
+                },
+                {
+                    "type": "BOOLEAN",
+                    "label": "Bail granted unconditionally pending appeal to the Crown Court",
+                    "value": false,
+                    "promptId": "78f6bbd5-794d-48dc-abaa-7b8e24fcb6f1",
+                    "promptRef": "bailGrantedUnconditionallyPendingAppealToTheCrownCourt"
+                }
+            ],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "d076bd4a-17d5-4720-899a-1c6f96e3b35f",
+            "nonStandaloneAncillaryResult": false
+        },
+        "e931b5af-8348-4f86-aced-2b90f1297092": {
+            "label": "Withdrawn",
+            "valid": true,
+            "caseId": "eadd5dea-2e01-4c6b-8b21-1bd32b0a71e1",
+            "category": "F",
+            "shortCode": "wdrn",
+            "orderedDate": "2025-03-17",
+            "resultLevel": "O",
+            "unscheduled": false,
+            "originalText": "WD",
+            "resultLineId": "e931b5af-8348-4f86-aced-2b90f1297092",
+            "applicationId": "ec9d511b-09e1-4f7b-a084-366d36f11fa5",
+            "resultPrompts": [
+                {
+                    "type": "TXT",
+                    "label": "Reasons",
+                    "value": "Test reason",
+                    "promptId": "318c9eb2-cf3c-4592-a353-1b2166c15f81",
+                    "promptRef": "reasons"
+                },
+                {
+                    "type": "FIXL",
+                    "label": "Details",
+                    "value": "Criminal application withdrawn",
+                    "promptId": "6f305506-9919-4e7b-bd57-c4c352ec3e3e",
+                    "promptRef": "details"
+                }
+            ],
+            "unresolvedParts": [],
+            "masterDefendantId": "ab4065c1-a958-41d8-86b6-b6da84b9fccd",
+            "resultDefinitionId": "eb2e4c4f-b738-4a4d-9cce-0572cecb7cb8",
+            "resultDefinitionGroup": "WOAEXTEND",
+            "nonStandaloneAncillaryResult": false
+        }
+    },
+    "__metadata__": {
+        "version": 1,
+        "lastSharedTime": "2025-03-17T12:58:14.056Z"
+    },
+    "delegatedPowers": false,
+    "shadowListedOffenceIds": []
+}

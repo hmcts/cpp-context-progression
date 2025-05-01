@@ -24,6 +24,7 @@ public class ResultLine {
     private String shortCode;
     private String resultLevel;
     private Boolean deleted;
+    private Boolean valid;
     private AmendmentReason amendmentReason;
     private AmendmentLog amendmentsLog;
 
@@ -33,7 +34,7 @@ public class ResultLine {
     public ResultLine(final UUID caseId, final UUID defendantId, final UUID offenceId, final UUID applicationId,
                       final ZonedDateTime amendmentDate, final ZonedDateTime sharedDate, final LocalDate orderedDate,
                       final UUID resultLineId, final UUID resultDefinitionId, final String shortCode, final String resultLevel,
-                      final Boolean deleted, final AmendmentReason amendmentReason,
+                      final Boolean deleted, final Boolean valid, final AmendmentReason amendmentReason,
                       final AmendmentLog amendmentsLog, final List<ResultPrompt> resultPrompts) {
 
         this.caseId = caseId;
@@ -46,6 +47,7 @@ public class ResultLine {
         this.resultLineId = resultLineId;
         this.resultDefinitionId = resultDefinitionId;
         this.deleted = deleted;
+        this.valid = valid;
         this.shortCode = shortCode;
         this.resultLevel = resultLevel;
         this.amendmentReason = amendmentReason;
@@ -133,6 +135,14 @@ public class ResultLine {
         this.deleted = deleted;
     }
 
+    public Boolean getValid() {
+        return valid;
+    }
+
+    public void setValid(final Boolean valid) {
+        this.valid = valid;
+    }
+
     public UUID getResultDefinitionId() {
         return resultDefinitionId;
     }
@@ -190,6 +200,7 @@ public class ResultLine {
         private String shortCode;
         private String resultLevel;
         private Boolean deleted;
+        private Boolean valid;
         private AmendmentReason amendmentReason;
         private AmendmentLog amendmentsLog;
         private List<ResultPrompt> resultPrompts;
@@ -254,6 +265,11 @@ public class ResultLine {
             return this;
         }
 
+        public Builder withValid(final Boolean valid) {
+            this.valid = valid;
+            return this;
+        }
+
         public Builder withAmendmentReason(final AmendmentReason amendmentReason) {
             this.amendmentReason = amendmentReason;
             return this;
@@ -271,7 +287,7 @@ public class ResultLine {
 
         public ResultLine build() {
             return new ResultLine(caseId, defendantId, offenceId, applicationId, amendmentDate, sharedDate, orderedDate, resultLineId,
-                    resultDefinitionId, shortCode, resultLevel, deleted, amendmentReason, amendmentsLog, resultPrompts);
+                    resultDefinitionId, shortCode, resultLevel, deleted, valid, amendmentReason, amendmentsLog, resultPrompts);
         }
     }
 }

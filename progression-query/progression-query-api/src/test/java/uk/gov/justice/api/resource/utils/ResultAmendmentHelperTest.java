@@ -6,6 +6,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static uk.gov.justice.api.resource.dto.AmendmentLog.amendmentLog;
 import static uk.gov.justice.api.resource.dto.AmendmentReason.amendmentReason;
@@ -27,6 +28,7 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -65,6 +67,7 @@ public class ResultAmendmentHelperTest {
 
         final List<ResultLine> resultsWithAmendments = List.of(getResultLineBuilder()
                 .withResultLineId(resultLineId)
+                .withValid(Boolean.TRUE)
                 .withResultDefinitionId(resultDefId)
                 .withAmendmentDate(amendedDate)
                 .withSharedDate(sharedDate)
@@ -117,19 +120,15 @@ public class ResultAmendmentHelperTest {
         assertThat(resultDefinitions.size(), is(11));
 
         final Map<UUID, List<Amendments>> resultAmendmentsMap = extractAmendmentsDueToSlipRule(List.of(draftResultsWrapper), resultDefinitions, SLIP_RULE_AMENDMENT_REASON_ID);
-        assertThat(resultAmendmentsMap.size(), is(8));
+        assertThat(resultAmendmentsMap.size(), is(6));
 
         final List<Amendments> oneOfAmendments = resultAmendmentsMap.get(fromString("80ecc8ff-99ad-43b3-b53b-5de7b3901d91"));
-        assertThat(oneOfAmendments.size(), is(2));
+        assertThat(oneOfAmendments.size(), is(1));
         assertThat(oneOfAmendments.get(0).getAmendmentType(), is("DELETED"));
         assertThat(oneOfAmendments.get(0).getResultText(), is("Compensation\nAmount of compensation 3000.00\nMajor creditor organisation name \"Asda Stores,Treasury Dept. Asda House,Great Wilson St,Leeds,LS11 5AD\""));
-        assertThat(oneOfAmendments.get(1).getAmendmentType(), is("DELETED"));
-        assertThat(oneOfAmendments.get(1).getResultText(), is("Compensation\nAmount of compensation 200.00"));
 
         final List<Amendments> deletedAmendments = resultAmendmentsMap.get(fromString("175d27a7-bc42-48af-89f2-39d66140be78"));
-        assertThat(deletedAmendments.size(), is(2));
-        assertThat(deletedAmendments.get(0).getAmendmentType(), is("DELETED"));
-        assertThat(deletedAmendments.get(1).getAmendmentType(), is("DELETED"));
+        assertThat(deletedAmendments, is(nullValue()));
     }
 
     @Test
@@ -172,8 +171,76 @@ public class ResultAmendmentHelperTest {
         final List<ResultDefinition> resultDefinitions = getResultDefinitions("hearing-results/referencedata.query.referencedata.result-definitions-with-oneof.json");
 
         final Map<UUID, List<Amendments>> resultAmendmentsMap = extractAmendmentsDueToSlipRule(List.of(draftResultsWrapper), resultDefinitions, SLIP_RULE_AMENDMENT_REASON_ID);
-        assertThat(resultAmendmentsMap.size(), is(17));
+        assertThat(resultAmendmentsMap.size(), is(15));
 
+    }
+
+    @Test
+    public void shouldReturnSharedAmendmentWhenAmendedMultipleTimes() {
+
+        final List<ResultLine> resultLineWithAmendments = getResultLines("hearing-results/payload-hearing-get-draft-result-multi-amends.json").stream()
+                .filter(resultLine -> nonNull(resultLine.getAmendmentsLog()) && isNotEmpty(resultLine.getAmendmentsLog().getAmendmentsRecord())).collect(toList());
+
+        final UUID hearingId = randomUUID();
+        final LocalDate hearingDay = LocalDate.now();
+        final ZonedDateTime lastSharedDate = ZonedDateTime.parse("2025-03-17T12:58:14.056Z");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(hearingId, hearingDay, resultLineWithAmendments, lastSharedDate);
+
+        assertThat(resultLineWithAmendments.size(), is(3));
+
+        final List<ResultDefinition> resultDefinitions = getResultDefinitions("hearing-results/referencedata.query.referencedata.result-definitions-multi-amends.json");
+
+        final Map<UUID, List<Amendments>> resultAmendmentsMap = extractAmendmentsDueToSlipRule(List.of(draftResultsWrapper), resultDefinitions, SLIP_RULE_AMENDMENT_REASON_ID);
+        assertThat(resultAmendmentsMap.size(), is(3));
+        assertThat(resultAmendmentsMap.get(fromString("43a9d819-d806-4d80-96e2-b5639ce8b045")).get(0).getResultText(), is("Entered in error\nReason Test"));
+        assertThat(resultAmendmentsMap.get(fromString("43a9d819-d806-4d80-96e2-b5639ce8b045")).get(1).getResultText(), is("Entered in error"));
+
+    }
+
+    @Test
+    public void shouldReturnLatestSharedAmendmentWhenResultDeletedWithMultipleAmendments() {
+
+        final List<ResultLine> resultLineWithAmendments = getResultLines("hearing-results/payload-hearing-get-draft-result-multi-amends-delete.json").stream()
+                .filter(resultLine -> nonNull(resultLine.getAmendmentsLog()) && isNotEmpty(resultLine.getAmendmentsLog().getAmendmentsRecord())).collect(toList());
+
+        final UUID hearingId = randomUUID();
+        final LocalDate hearingDay = LocalDate.now();
+        final ZonedDateTime lastSharedDate = ZonedDateTime.parse("2025-03-24T14:01:21.878Z");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(hearingId, hearingDay, resultLineWithAmendments, lastSharedDate);
+
+        assertThat(resultLineWithAmendments.size(), is(16));
+
+        final List<ResultDefinition> resultDefinitions = getResultDefinitions("hearing-results/referencedata.query.referencedata.result-definitions-multi-amends-delete.json");
+
+        final Map<UUID, List<Amendments>> resultAmendmentsMap = extractAmendmentsDueToSlipRule(List.of(draftResultsWrapper), resultDefinitions, SLIP_RULE_AMENDMENT_REASON_ID);
+        assertThat(resultAmendmentsMap.size(), is(16));
+
+        final List<Amendments> deletedAmendments = new ArrayList<>();
+        resultAmendmentsMap.forEach((k, v) -> deletedAmendments.addAll(v.stream().filter(a -> a.getAmendmentType().equals(AmendmentType.DELETED.name())).toList()));
+        assertThat(deletedAmendments.size(), is(16));
+        assertThat(deletedAmendments.stream().filter(amendment -> "Payment terms".equals(amendment.getResultText())).count(), is(1L));
+        assertThat(deletedAmendments.stream().filter(amendment -> "Payment Method".equals(amendment.getResultText())).count(), is(1L));
+    }
+
+    @Test
+    public void shouldReturnSharedAmendmentsWhenResultLinesHaveYesBoxPromptType() {
+
+        final List<ResultLine> resultLineWithAmendments = getResultLines("hearing-results/payload-hearing-get-draft-result-yesbox.json").stream()
+                .filter(resultLine -> nonNull(resultLine.getAmendmentsLog()) && isNotEmpty(resultLine.getAmendmentsLog().getAmendmentsRecord())).collect(toList());
+
+        final UUID hearingId = randomUUID();
+        final LocalDate hearingDay = LocalDate.now();
+        final ZonedDateTime lastSharedDate = ZonedDateTime.parse("2025-04-08T13:05:53.925Z");
+        final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(hearingId, hearingDay, resultLineWithAmendments, lastSharedDate);
+
+        assertThat(resultLineWithAmendments.size(), is(16));
+
+        final List<ResultDefinition> resultDefinitions = getResultDefinitions("hearing-results/referencedata.query.referencedata.result-definitions-with-yesbox.json");
+
+        final Map<UUID, List<Amendments>> resultAmendmentsMap = extractAmendmentsDueToSlipRule(List.of(draftResultsWrapper), resultDefinitions, SLIP_RULE_AMENDMENT_REASON_ID);
+        assertThat(resultAmendmentsMap.size(), is(14));
+        assertThat(resultAmendmentsMap.get(fromString("2e858c86-0743-42f7-a92f-dbcd7a9a9469")).get(0).getResultText(),
+                is("Imprisonment\nImprisonment Period 6 Weeks\nConcurrent true\nConsecutive to offence test\nwhich is on case number 123445\nImprisonment reasons failure to comply with a pre-sentence drug testing order\nReason for custody because of an unprovoked attack of a serious nature\nNumber of days in custody in foreign jurisdiction to count 22\nBail remand days to count (tagged days) 12\nThis offence is aggravated by the foreign power condition being met in relation to it as defined by section 31 of the National Security Act 2023 No"));
     }
 
     private List<ResultLine> getResultLines(final String pathToDraftResultsJson) {
