@@ -1,6 +1,8 @@
 package uk.gov.justice.api.resource.utils;
 
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
+import static java.util.List.of;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
@@ -27,33 +29,28 @@ public class ResultAmendmentHelper {
     public static Map<UUID, List<Amendments>> extractAmendmentsDueToSlipRule(final List<DraftResultsWrapper> defendantResultsWithAmendments, final List<ResultDefinition> resultDefinitions, final UUID slipRuleReasonId) {
 
         final Map<UUID, List<Amendments>> resultLineAmendmentMap = new HashMap<>();
-        if (isNotEmpty(defendantResultsWithAmendments)) {
-            defendantResultsWithAmendments.forEach(draftResultsWrapper -> {
-                final List<ResultLine> resultLines = draftResultsWrapper.getResultLines();
-                if (isNotEmpty(resultLines)) {
-                    resultLines
-                            .forEach(resultLine -> {
-                                final ResultDefinition resultDefinition = getAssociatedResultDefinition(resultLine.getResultDefinitionId(), resultDefinitions);
-                                final ZonedDateTime sharedDate = nonNull(draftResultsWrapper.getLastSharedTime()) ? draftResultsWrapper.getLastSharedTime() : resultLine.getSharedDate();
-                                final List<AmendmentRecord> amendmentsWithSlipRule = getAmendmentsWithSlipRule(sharedDate, resultLine.getAmendmentsLog().getAmendmentsRecord(), slipRuleReasonId);
+        defendantResultsWithAmendments.forEach(draftResultsWrapper -> {
+            if (isNotEmpty(draftResultsWrapper.getResultLines())) {
+                draftResultsWrapper.getResultLines().stream()
+                        .filter(resultLine -> Boolean.TRUE.equals(resultLine.getValid()))
+                        .forEach(resultLine -> {
+                            final ResultDefinition resultDefinition = getAssociatedResultDefinition(resultLine.getResultDefinitionId(), resultDefinitions);
+                            final ZonedDateTime sharedDate = getSharedDate(draftResultsWrapper, resultLine);
+                            final List<AmendmentRecord> amendmentsWithSlipRule = getAmendmentsWithSlipRule(sharedDate, resultLine.getAmendmentsLog().getAmendmentsRecord(), slipRuleReasonId);
 
-                                if (isNotEmpty(amendmentsWithSlipRule)) {
-                                    final List<Amendments> amendmentList = amendmentsWithSlipRule.stream()
-                                            .map(amendmentRecord -> toAmendment(resultLine, amendmentRecord, resultDefinition))
-                                            .distinct()
-                                            .sorted(comparing(Amendments::getAmendmentDate).reversed())
-                                            .toList();
-                                    resultLineAmendmentMap.put(resultLine.getResultLineId(), amendmentList);
-                                }
-                            });
-                }
-            });
-        }
+                            if (isNotEmpty(amendmentsWithSlipRule)) {
+                                final List<Amendments> amendmentList = amendmentsWithSlipRule.stream()
+                                        .map(amendmentRecord -> toAmendment(resultLine, amendmentRecord, amendmentsWithSlipRule.size(), resultDefinition))
+                                        .distinct()
+                                        .sorted(comparing(Amendments::getAmendmentDate).reversed())
+                                        .toList();
+                                resultLineAmendmentMap.put(resultLine.getResultLineId(), getAmendments(resultLine, amendmentList));
+                            }
+                        });
+            }
+        });
+
         return resultLineAmendmentMap;
-    }
-
-    private static ResultDefinition getAssociatedResultDefinition(final UUID resultDefinitionId, final List<ResultDefinition> resultDefinitions) {
-        return resultDefinitions.stream().filter(resultDefinition -> resultDefinitionId.equals(resultDefinition.getId())).findFirst().orElse(null);
     }
 
     public static List<UUID> getResultDefinitionsInSlipRuleAmendments(final List<DraftResultsWrapper> defendantResultsWithAmendments, final UUID slipRuleReasonId) {
@@ -66,23 +63,24 @@ public class ResultAmendmentHelper {
     private static List<ResultLine> filterSlipRuleAmendments(final List<DraftResultsWrapper> defendantResultsWithAmendments, final UUID slipRuleReasonId) {
         final List<ResultLine> resultLinesWithSlipRuleAmendments = new ArrayList<>();
 
-        if (isNotEmpty(defendantResultsWithAmendments)) {
-            defendantResultsWithAmendments.forEach(draftResultsWrapper -> {
-                final List<ResultLine> resultLines = draftResultsWrapper.getResultLines();
-                if (isNotEmpty(resultLines)) {
-                    resultLinesWithSlipRuleAmendments.addAll(resultLines.stream()
-                            .filter(resultLine -> nonNull(resultLine.getAmendmentsLog())
-                                    && nonNull(resultLine.getAmendmentsLog().getAmendmentsRecord()))
-                            .filter(resultLine -> {
-                                final ZonedDateTime sharedDate = nonNull(draftResultsWrapper.getLastSharedTime()) ? draftResultsWrapper.getLastSharedTime() : resultLine.getSharedDate();
-                                return isNotEmpty(getAmendmentsWithSlipRule(sharedDate, resultLine.getAmendmentsLog().getAmendmentsRecord(), slipRuleReasonId));
-                            })
-                            .toList());
-                }
-            });
-        }
+        defendantResultsWithAmendments.forEach(draftResultsWrapper -> {
+            if (isNotEmpty(draftResultsWrapper.getResultLines())) {
+                resultLinesWithSlipRuleAmendments.addAll(draftResultsWrapper.getResultLines().stream()
+                        .filter(resultLine -> nonNull(resultLine.getAmendmentsLog())
+                                && nonNull(resultLine.getAmendmentsLog().getAmendmentsRecord()))
+                        .filter(resultLine -> {
+                            final ZonedDateTime sharedDate = getSharedDate(draftResultsWrapper, resultLine);
+                            return isNotEmpty(getAmendmentsWithSlipRule(sharedDate, resultLine.getAmendmentsLog().getAmendmentsRecord(), slipRuleReasonId));
+                        })
+                        .toList());
+            }
+        });
 
         return resultLinesWithSlipRuleAmendments;
+    }
+
+    private static ZonedDateTime getSharedDate(final DraftResultsWrapper draftResultsWrapper, final ResultLine resultLine) {
+        return nonNull(draftResultsWrapper.getLastSharedTime()) ? draftResultsWrapper.getLastSharedTime() : resultLine.getSharedDate();
     }
 
     private static List<AmendmentRecord> getAmendmentsWithSlipRule(final ZonedDateTime sharedDate, final List<AmendmentRecord> amendmentsRecord, final UUID slipRuleReasonId) {
@@ -92,8 +90,8 @@ public class ResultAmendmentHelper {
                 .toList();
     }
 
-    private static Amendments toAmendment(final ResultLine resultLine, final AmendmentRecord amendmentRecord, final ResultDefinition resultDefinition) {
-        final List<ResultPrompt> amendmentPrompts = isNotEmpty(amendmentRecord.getResultPromptsRecord()) ? amendmentRecord.getResultPromptsRecord() : resultLine.getResultPrompts();
+    private static Amendments toAmendment(final ResultLine resultLine, final AmendmentRecord amendmentRecord, final int amendmentCount, final ResultDefinition resultDefinition) {
+        final List<ResultPrompt> amendmentPrompts = getAmendmentPrompts(resultLine, amendmentRecord, amendmentCount == 1);
         final String resultText = isNotEmpty(amendmentPrompts) ? getResultText(resultDefinition, amendmentPrompts) : resultDefinition.getLabel();
 
         return Amendments.amendments()
@@ -108,8 +106,17 @@ public class ResultAmendmentHelper {
                 .build();
     }
 
+    private static List<ResultPrompt> getAmendmentPrompts(final ResultLine resultLine, final AmendmentRecord amendmentRecord, final boolean singleAmendment) {
+        if (isNotEmpty(amendmentRecord.getResultPromptsRecord())) {
+            return amendmentRecord.getResultPromptsRecord();
+        }
+
+        return singleAmendment || isDeleted(resultLine) ? resultLine.getResultPrompts() : emptyList();
+    }
+
+
     private static AmendmentType getAmendmentType(final ResultLine resultLine, final List<ResultPrompt> amendmentPrompts) {
-        if (Boolean.TRUE.equals(resultLine.getDeleted())) {
+        if (isDeleted(resultLine)) {
             return AmendmentType.DELETED;
         }
 
@@ -124,6 +131,14 @@ public class ResultAmendmentHelper {
         }
 
         return AmendmentType.AMENDED;
+    }
+
+    private static List<Amendments> getAmendments(final ResultLine resultLine, final List<Amendments> amendmentList) {
+        return isDeleted(resultLine) && isNotEmpty(amendmentList) ? of(amendmentList.get(0)) : amendmentList;
+    }
+
+    private static boolean isDeleted(final ResultLine resultLine) {
+        return Boolean.TRUE.equals(resultLine.getDeleted());
     }
 
     private static boolean isPromptsAdded(final List<ResultPrompt> resultLinePrompts, final List<ResultPrompt> amendmentPrompts) {
@@ -144,6 +159,10 @@ public class ResultAmendmentHelper {
             return true;
         }
         return false;
+    }
+
+    private static ResultDefinition getAssociatedResultDefinition(final UUID resultDefinitionId, final List<ResultDefinition> resultDefinitions) {
+        return resultDefinitions.stream().filter(resultDefinition -> resultDefinitionId.equals(resultDefinition.getId())).findFirst().orElse(null);
     }
 
 }

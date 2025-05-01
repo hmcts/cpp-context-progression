@@ -17,6 +17,11 @@ public class ResultPromptValueHelperTest {
     }
 
     @Test
+    public void shouldConvertYesBoxTypePromptValueToStringValue() {
+        assertThat(getValue("YESBOX", JsonValue.TRUE), is("true"));
+    }
+
+    @Test
     public void shouldConvertCurrencyTypePromptValueToStringValue() {
         assertThat(getValue("CURR", Json.createValue(1200.00)), is("1200.00"));
     }

@@ -30,6 +30,12 @@ public class ResultPromptValueHelper {
 
     public enum ResultPromptType {
 
+        YESBOX {
+            @Override
+            public String toValue(JsonValue fromValue) {
+                return fromValue.toString();
+            }
+        },
         BOOLEAN {
             @Override
             public String toValue(JsonValue fromValue) {
@@ -87,7 +93,12 @@ public class ResultPromptValueHelper {
         DEFAULT {
             @Override
             public String toValue(final JsonValue fromValue) {
-                return ((JsonString) fromValue).getString();
+                if (fromValue.getValueType() == JsonValue.ValueType.STRING){
+                    return ((JsonString) fromValue).getString();
+                }
+
+                LOGGER.error("Unhandled Json ValueType {} found, returning value as string", fromValue.getValueType());
+                return fromValue.toString();
             }
         };
 
