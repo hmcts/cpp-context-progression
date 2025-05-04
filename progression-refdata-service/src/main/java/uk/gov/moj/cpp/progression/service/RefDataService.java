@@ -535,7 +535,7 @@ public class RefDataService {
 
         final JsonEnvelope response = requester.request(request);
 
-        if (response.payload() == null) {
+        if (response.payloadIsNull()) {
             return Optional.empty();
         }
 

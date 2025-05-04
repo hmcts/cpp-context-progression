@@ -42,105 +42,7 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHel
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
-import uk.gov.justice.core.courts.AddBreachApplication;
-import uk.gov.justice.core.courts.AddedDefendantsMovedToHearing;
-import uk.gov.justice.core.courts.AddedOffencesMovedToHearing;
-import uk.gov.justice.core.courts.AllCourtDocumentsShared;
-import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
-import uk.gov.justice.core.courts.BreachApplicationsToBeAddedToHearing;
-import uk.gov.justice.core.courts.BreachedApplications;
-import uk.gov.justice.core.courts.CaseHearingDetailsUpdatedInUnifiedSearch;
-import uk.gov.justice.core.courts.CaseMarkersUpdatedInHearing;
-import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
-import uk.gov.justice.core.courts.CommittingCourt;
-import uk.gov.justice.core.courts.ConfirmedHearing;
-import uk.gov.justice.core.courts.ConfirmedProsecutionCaseId;
-import uk.gov.justice.core.courts.CourtApplication;
-import uk.gov.justice.core.courts.CourtApplicationCase;
-import uk.gov.justice.core.courts.CourtApplicationParty;
-import uk.gov.justice.core.courts.CourtApplicationHearingDeleted;
-import uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds;
-import uk.gov.justice.core.courts.CourtApplicationRemovedFromSeedingHearing;
-import uk.gov.justice.core.courts.CourtCentre;
-import uk.gov.justice.core.courts.CourtHearingRequest;
-import uk.gov.justice.core.courts.CourtOrder;
-import uk.gov.justice.core.courts.CourtOrderOffence;
-import uk.gov.justice.core.courts.CustodyTimeLimit;
-import uk.gov.justice.core.courts.DefenceCounsel;
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.DefendantJudicialResult;
-import uk.gov.justice.core.courts.DefendantRequestFromCurrentHearingToExtendHearingCreated;
-import uk.gov.justice.core.courts.DefendantRequestToExtendHearingCreated;
-import uk.gov.justice.core.courts.DefendantUpdate;
-import uk.gov.justice.core.courts.DeleteApplicationForCaseRequested;
-import uk.gov.justice.core.courts.DeleteCourtApplicationHearingIgnored;
-import uk.gov.justice.core.courts.ExtendHearing;
-import uk.gov.justice.core.courts.DuplicateShareAllCourtDocumentsRequestReceived;
-import uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.HearingApplicationRequestCreated;
-import uk.gov.justice.core.courts.HearingDay;
-import uk.gov.justice.core.courts.HearingDefenceCounselAdded;
-import uk.gov.justice.core.courts.HearingDefenceCounselRemoved;
-import uk.gov.justice.core.courts.HearingDefenceCounselUpdated;
-import uk.gov.justice.core.courts.HearingDefendantRequestCreated;
-import uk.gov.justice.core.courts.HearingDefendantUpdated;
-import uk.gov.justice.core.courts.HearingExtended;
-import uk.gov.justice.core.courts.HearingExtendedProcessed;
-import uk.gov.justice.core.courts.HearingInitiateEnriched;
-import uk.gov.justice.core.courts.HearingListingNeeds;
-import uk.gov.justice.core.courts.HearingListingNumberUpdated;
-import uk.gov.justice.core.courts.HearingListingStatus;
-import uk.gov.justice.core.courts.HearingOffencesUpdated;
-import uk.gov.justice.core.courts.HearingOffencesUpdatedV2;
-import uk.gov.justice.core.courts.HearingPleaUpdated;
-import uk.gov.justice.core.courts.HearingType;
-import uk.gov.justice.core.courts.HearingUpdatedForAllocationFields;
-import uk.gov.justice.core.courts.HearingUpdatedProcessed;
-import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
-import uk.gov.justice.core.courts.HearingVerdictUpdated;
-import uk.gov.justice.core.courts.InitiateApplicationForCaseRequested;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.LaaReference;
-import uk.gov.justice.core.courts.LegalEntityDefendant;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.ListHearingRequest;
-import uk.gov.justice.core.courts.ListHearingRequested;
-import uk.gov.justice.core.courts.ListingNumberUpdated;
-import uk.gov.justice.core.courts.Marker;
-import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.justice.core.courts.MoveOffencesFromOldNextHearing;
-import uk.gov.justice.core.courts.MoveOffencesToNewNextHearing;
-import uk.gov.justice.core.courts.NextHearing;
-import uk.gov.justice.core.courts.NextHearingsRequested;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.OffenceListingNumbers;
-import uk.gov.justice.core.courts.OffencesMovedToNewNextHearing;
-import uk.gov.justice.core.courts.OnlinePleasAllocation;
-import uk.gov.justice.core.courts.Organisation;
-import uk.gov.justice.core.courts.Person;
-import uk.gov.justice.core.courts.PersonDefendant;
-import uk.gov.justice.core.courts.Plea;
-import uk.gov.justice.core.courts.PleaModel;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantHearingResultUpdated;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
-import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
-import uk.gov.justice.core.courts.ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2;
-import uk.gov.justice.core.courts.ProsecutionCasesResultedV2;
-import uk.gov.justice.core.courts.Prosecutor;
-import uk.gov.justice.core.courts.ReferralReason;
-import uk.gov.justice.core.courts.ReportingRestriction;
-import uk.gov.justice.core.courts.SeededCase;
-import uk.gov.justice.core.courts.SeededDefendant;
-import uk.gov.justice.core.courts.SeedingHearing;
-import uk.gov.justice.core.courts.SharedResultLine;
-import uk.gov.justice.core.courts.UnscheduledHearingListingRequested;
-import uk.gov.justice.core.courts.UnscheduledHearingRecorded;
-import uk.gov.justice.core.courts.UnscheduledNextHearingsRequested;
-import uk.gov.justice.core.courts.UpdateHearingForAllocationFields;
-import uk.gov.justice.core.courts.Verdict;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
@@ -213,7 +115,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667498L;
+    private static final long serialVersionUID = 9128521802762667499L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -241,6 +143,10 @@ public class HearingAggregate implements Aggregate {
 
     private final Map<UUID, Map<UUID, List<UUID>>> allDocumentsSharedWithUserGroup = new HashMap<>();
     private final Map<UUID, Map<UUID, List<UUID>>> allDocumentsSharedWithUser = new HashMap<>();
+
+    // we need to know if offence was added hearing because the offence was added to case of the hearing.
+    // The offence was not resulted from another hearing or not extended from another hearing.
+    private final Set<UUID> newOffences = new HashSet<>();
 
     @VisibleForTesting
     public Hearing getHearing() {
@@ -1243,7 +1149,7 @@ public class HearingAggregate implements Aggregate {
         }
     }
 
-    public Stream<Object> removeOffenceFromHearing(final UUID hearingId, final List<UUID> offencesToBeRemoved, final Boolean isNextHearingDeleting) {
+    public Stream<Object> removeOffenceFromHearing(final UUID hearingId, final List<UUID> offencesToBeRemoved, final Boolean isResultFlow) {
 
         if (this.deleted) {
             return empty();
@@ -1268,7 +1174,7 @@ public class HearingAggregate implements Aggregate {
                 .withOffenceIds(offencesToBeRemoved)
                 .withDefendantIds(defendantsToBeRemoved)
                 .withProsecutionCaseIds(prosecutionCasesToBeRemoved)
-                .withIsNextHearingDeleting(isNextHearingDeleting)
+                .withIsResultFlow(isResultFlow)
                 .build()));
     }
 
@@ -1578,13 +1484,18 @@ public class HearingAggregate implements Aggregate {
 
     private void onOffencesRemovedFromHearing(final OffencesRemovedFromHearing offencesRemovedFromHearing) {
 
-        if(ofNullable(offencesRemovedFromHearing.getIsNextHearingDeleting()).orElse(false)){
+        if(ofNullable(offencesRemovedFromHearing.getIsResultFlow()).orElse(false)){
             seededProsecutionCases = ofNullable(this.hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                     .map(pc -> ProsecutionCase.prosecutionCase().withValuesFrom(pc)
                             .withDefendants(pc.getDefendants().stream().map(def -> Defendant.defendant().withValuesFrom(def)
                                     .withOffences(def.getOffences().stream().map(off -> Offence.offence().withValuesFrom(off).build()).toList())
                                     .build()).toList())
                             .build()).toList();
+        } else {
+            // update newOffences when an offence was deleted from the hearing.
+            final Set<UUID> offences = hearing.getProsecutionCases().stream().flatMap( pc -> pc.getDefendants().stream())
+                    .flatMap(def -> def.getOffences().stream()).map(Offence::getId).collect(Collectors.toSet());
+            newOffences.removeIf( off -> !offences.contains(off));
         }
         final List<UUID> offencesToBeRemoved = offencesRemovedFromHearing.getOffenceIds();
         final List<UUID> defendantsToBeRemoved = offencesRemovedFromHearing.getDefendantIds();
@@ -1638,6 +1549,18 @@ public class HearingAggregate implements Aggregate {
         }
 
         return this.committingCourt;
+    }
+
+    public Stream<Object> processCreateNextHearing(final CreateNextHearing createNextHearing) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(NextHearingsRequested.nextHearingsRequested()
+                .withHearing(createNextHearing.getHearing())
+                .withCommittingCourt(createNextHearing.getCommittingCourt())
+                .withSeedingHearing(createNextHearing.getSeedingHearing())
+                .withShadowListedOffences(createNextHearing.getShadowListedOffences())
+                .withPreviousBookingReferencesWithCourtScheduleIds(createNextHearing.getPreviousBookingReferencesWithCourtScheduleIds())
+                .build());
+        return apply(streamBuilder.build());
     }
 
     public Stream<Object> processHearingResults(final Hearing hearing, final ZonedDateTime sharedTime, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
@@ -2373,6 +2296,9 @@ public class HearingAggregate implements Aggregate {
                                 }
                             }
                     );
+            // these offence was added to case, so I need to mark them.
+            ofNullable(hearingOffencesUpdated.getNewOffences()).orElseGet(ArrayList::new).forEach(offence -> newOffences.add(offence.getId()));
+
             updateHearingWithSeedingHearings(hearingUpdated);
         }
     }
@@ -2656,12 +2582,14 @@ public class HearingAggregate implements Aggregate {
                     .withSeedingHearing(seedingHearing)
                     .build());
         }
+        final boolean shouldPopulateCommittingCourt = checkResultLinesForCommittingCourt(hearing);
+        final CommittingCourt court = committingCourt == null ? findCommittingCourt(hearing) : committingCourt;
+        final List<BookingReferenceCourtScheduleIds> bookingReferenceCourtScheduleIds = bookingReferencesAndCourtScheduleIdsForHearingDay.getOrDefault(hearingDay, emptyList());
+
 
         if (hasNewOrAmendedNextHearingsOrRelatedNextHearings) {
-            final boolean shouldPopulateCommittingCourt = checkResultLinesForCommittingCourt(hearing);
-            final CommittingCourt court = committingCourt == null ? findCommittingCourt(hearing) : committingCourt;
 
-            final List<BookingReferenceCourtScheduleIds> bookingReferenceCourtScheduleIds = bookingReferencesAndCourtScheduleIdsForHearingDay.getOrDefault(hearingDay, emptyList());
+
             if (hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing(hearing)) {
                 events.add(NextHearingsRequested.nextHearingsRequested()
                         .withHearing(hearing)
@@ -2689,6 +2617,27 @@ public class HearingAggregate implements Aggregate {
                     .withSeedingHearing(seedingHearing)
                     .withHearing(hearing)
                     .build());
+        }
+
+        if(events.stream().anyMatch(event -> event instanceof DeleteNextHearingsRequested) &&
+                events.stream().anyMatch(event -> event instanceof NextHearingsRequested)){
+            events.removeIf(event -> event instanceof DeleteNextHearingsRequested);
+            events.removeIf(event -> event instanceof NextHearingsRequested);
+            DeletePreviousHearingsAndCreateNextHearing deletePreviousHearingsAndCreateNextHearing = DeletePreviousHearingsAndCreateNextHearing.deletePreviousHearingsAndCreateNextHearing()
+                    .withCreateNextHearing(CreateNextHearing.createNextHearing()
+                            .withHearing(hearing)
+                            .withSeedingHearing(seedingHearing)
+                            .withShadowListedOffences(shadowListedOffences)
+                            .withCommittingCourt(shouldPopulateCommittingCourt ? court : null)
+                            .withPreviousBookingReferencesWithCourtScheduleIds(bookingReferenceCourtScheduleIds)
+                            .build())
+                    .withDeletePreviousHearings(DeletePreviousHearings.deletePreviousHearings()
+                            .withHearingId(hearing.getId())
+                            .withSeedingHearing(seedingHearing)
+                            .build())
+                    .build();
+            events.add(deletePreviousHearingsAndCreateNextHearing);
+
         }
 
         return events;
@@ -3182,12 +3131,17 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> moveOffencesFromHearing(final MoveOffencesFromOldNextHearing moveOffencesFromOldNextHearing) {
+        // This is oldNext Hearing and newNext hearing will be created
+        // So we need to move new offences to new next hearing
+        // because seeded hearing does not have new offences, and it can't create new next hearing with new offences.
         final List<ProsecutionCase> prosecutionCases = ofNullable(seededProsecutionCases).orElse(this.hearing.getProsecutionCases());
         if(isEmpty(prosecutionCases)){
             return Stream.empty();
         }
 
-        final Boolean hasOneCase = prosecutionCases.size() == 1;
+        final boolean hasOneCase = prosecutionCases.size() == 1 && prosecutionCases.get(0).getDefendants().stream()
+                .flatMap(def -> def.getOffences().stream())
+                .noneMatch(off -> isNull(off.getSeedingHearing()) && !newOffences.contains(off.getId()) ); // the offence extended from another hearing.
 
         final List<ProsecutionCase> seededCases;
         if(hasOneCase) {
@@ -3209,15 +3163,15 @@ public class HearingAggregate implements Aggregate {
                                         .filter(def -> def.getOffences().stream()
                                                 .anyMatch(off -> nonNull(off.getSeedingHearing())))
                                         .filter(def -> def.getOffences().stream()
-                                                .anyMatch(off -> isNull(off.getSeedingHearing())))
+                                                .anyMatch(off -> newOffences.contains(off.getId())))
                                         .map(def -> SeededDefendant.seededDefendant()
                                                 .withId(def.getId())
-                                                .withSeededOffences(def.getOffences().stream().filter(off -> isNull(off.getSeedingHearing())).toList())
+                                                .withSeededOffences(def.getOffences().stream().filter(off -> newOffences.contains(off.getId())).toList())
                                                 .build())
                                         .collect(collectingAndThen(toList(), l -> l.isEmpty() || hasOneCase ? null : l)))
                                 .withNewDefendants(pc.getDefendants().stream()
                                         .filter(def -> hasOneCase || def.getOffences().stream()
-                                                .noneMatch(off -> nonNull(off.getSeedingHearing())))
+                                                .allMatch(off -> newOffences.contains(off.getId())))
                                         .collect(collectingAndThen(toList(), l -> l.isEmpty() ? null : l)))
                                 .build())
                                 .filter(seededCase -> nonNull(seededCase.getSeededDefendants()) || nonNull(seededCase.getNewDefendants()))

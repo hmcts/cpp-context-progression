@@ -5,11 +5,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
-import uk.gov.justice.core.courts.Defendant;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.Offence;
-import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.*;
 import uk.gov.justice.hearing.courts.HearingResult;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
 import uk.gov.justice.services.core.aggregate.AggregateService;

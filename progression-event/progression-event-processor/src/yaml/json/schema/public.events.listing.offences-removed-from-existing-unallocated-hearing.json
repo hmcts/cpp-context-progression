@@ -15,6 +15,9 @@
       "items": {
         "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
       }
+    },
+    "isResultFlow": {
+      "type": "boolean"
     }
   },
   "required": [

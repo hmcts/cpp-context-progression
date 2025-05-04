@@ -280,7 +280,7 @@ public class ApplicationAtAGlanceHelper {
         } else if (nonNull(respondent.getProsecutingAuthority())) {
             updateRespondentDetailsWithProsecutingAuthority(respondent, respondentDetailsBuilder);
         }
-        respondentDetailsBuilder.withIsSubject(subject != null && respondent.getId().equals(subject.getId()));
+        respondentDetailsBuilder.withIsSubject(nonNull(subject) && nonNull(subject.getMasterDefendant()) && nonNull(respondent.getMasterDefendant()) && respondent.getMasterDefendant().getMasterDefendantId().equals(subject.getMasterDefendant().getMasterDefendantId()));
         if(nonNull(respondent.getUpdatedOn())){
             respondentDetailsBuilder.withUpdatedOn(respondent.getUpdatedOn());
         }

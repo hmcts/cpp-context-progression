@@ -142,6 +142,65 @@ public class ExtendHearingIT extends AbstractIT {
     }
 
     @Test
+    public void shouldAddNewCaseToAllocatedHearingWhenExtending() throws Exception {
+        final UUID offenceId = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId, defendantId, offenceId);
+        final String extendedHearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        LOGGER.info("*** Extended Hearing : {}  | caseId : {}  |  defendant id : {}", extendedHearingId, caseId, defendantId);
+
+        doHearingConfirmedAndVerify(extendedHearingId, caseId, defendantId, courtCentreId, userId);
+        verifyListingNumberForCase(caseId, defendantId, 1);
+
+        addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences(caseId1, defendantId1, offenceId1);
+        final String existingHearingId = pollCaseAndGetHearingForDefendant(caseId1, defendantId1);
+        doHearingConfirmedAndVerify(existingHearingId, caseId1, defendantId1, courtCentreId, userId, offenceId1);
+        pollForHearing(existingHearingId,
+                withJsonPath("$.hearing.prosecutionCases.length()", is(1))
+        );
+
+        final JsonObject payload = createObjectBuilder()
+                .add("existingHearingId", extendedHearingId)
+                .add("hearingId", existingHearingId)
+                .add("confirmedProsecutionCase", createArrayBuilder()
+                        .add(createObjectBuilder().add("id", caseId)
+                                .add("defendants", createArrayBuilder().add(createObjectBuilder().add("id", defendantId)
+                                                .add("offences", createArrayBuilder().add(createObjectBuilder().add("id", offenceId.toString()).build())
+                                                        .build()).build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata("public.listing.cases-added-to-hearing", userId), payload);
+        messageProducerClientPublic.sendMessage("public.listing.cases-added-to-hearing", publicEventEnvelope);
+
+        pollForHearing(existingHearingId,
+                withJsonPath("$.hearing.prosecutionCases.length()", is(2))
+        );
+
+        final JsonObject payload2 = createObjectBuilder().add("hearingId", existingHearingId)
+                .add("offenceIds", createArrayBuilder().add("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").add(offenceId1.toString()))
+                .add("isResultFlow", true)
+                .build();
+
+        final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata("public.events.listing.offences-removed-from-existing-allocated-hearing", userId), payload2);
+        messageProducerClientPublic.sendMessage("public.events.listing.offences-removed-from-existing-allocated-hearing", publicEventEnvelope2);
+
+        LOGGER.info("*** Existing Hearing : {}  | caseId : {}  |  defendant id : {} | offenceId : {}", existingHearingId, caseId1, defendantId1, offenceId1);
+
+        pollForHearing(existingHearingId,
+                withJsonPath("$.hearing.prosecutionCases.length()", is(1))
+        );
+
+        final List<String> attendanceDaysList = Stream.of(FUTURE_LOCAL_DATE.next().toString(), FUTURE_LOCAL_DATE.next().toString()).collect(Collectors.toList());
+        final JmsMessageConsumerClient messageConsumerProsecutionCaseDefendantListingStatusChanged = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.prosecutionCase-defendant-listing-status-changed").getMessageConsumerClient();
+        addDefenceCounsel(existingHearingId, randomUUID().toString(), Stream.of(defendantId1).collect(Collectors.toList()), attendanceDaysList, "progression.add-hearing-defence-counsel.json");
+        assertNotNull(retrieveMessageAsJsonPath(messageConsumerProsecutionCaseDefendantListingStatusChanged, isJson(CoreMatchers.allOf(withJsonPath("$.hearing.prosecutionCases.length()", is(1))))));
+    }
+
+    @Test
     public void shouldIncreaseListingNumberWhenHearingDeletedForProsecutionCases() throws Exception {
 
         doReferCaseToCourtAndVerify(caseId, defendantId);

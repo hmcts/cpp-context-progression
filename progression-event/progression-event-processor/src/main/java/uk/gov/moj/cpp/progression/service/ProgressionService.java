@@ -6,6 +6,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -1831,7 +1832,7 @@ public class ProgressionService {
                             .withPersonDetails(defendant.getPersonDefendant().getPersonDetails())
                             .withNotificationRequired(false)
                             .withSummonsRequired(false)
-                            .withId(defendant.getId())
+                            .withId(randomUUID())
                             .withMasterDefendant(masterDefendant)
                             .build());
             LOGGER.info("Respondents {}", defendant.getId());

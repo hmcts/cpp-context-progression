@@ -40,7 +40,7 @@ public class ACourtHearingMarkedAsDuplicateIT extends AbstractIT {
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
 
     @Test
-    public void shouldHearingAsMarkedDuplicate() throws JSONException {
+    void shouldHearingAsMarkedDuplicate() throws JSONException {
         final String userId = randomUUID().toString();
         final String caseId = randomUUID().toString();
         final String defendantId = randomUUID().toString();

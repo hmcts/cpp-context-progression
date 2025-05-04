@@ -116,9 +116,9 @@ public class HearingExtendedEventListener {
                     final CaseDefendantHearingEntity entity = caseDefendantHearingRepository.findByHearingIdAndCaseIdAndDefendantId(hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId());
                     caseDefendantHearingRepository.remove(entity);
                 } catch (NoResultException ex) {
-                    //Handling NoResultException to prevent errors during EventReplay (dublicate call)
-                    LOGGER.error(String.format("CaseDefendantHearingEntity not found CaseId: %s DefendantId: %s HearingId: %s",
-                            hearingExtended.getExtendedHearingFrom(), prosecutionCase.getId(), defendant.getId()), ex);
+                    //Handling NoResultException to prevent errors during EventReplay (duplicate call)
+                    LOGGER.warn(String.format("CaseDefendantHearingEntity not found CaseId: %s DefendantId: %s HearingId: %s",
+                             prosecutionCase.getId(), defendant.getId(), hearingExtended.getExtendedHearingFrom()), ex);
                 }
             }));
         }

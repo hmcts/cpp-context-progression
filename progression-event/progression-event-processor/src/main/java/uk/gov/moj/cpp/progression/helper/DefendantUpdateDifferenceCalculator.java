@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.ContactNumber;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import org.slf4j.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,7 +88,11 @@ import org.apache.commons.lang3.tuple.Pair;
  * </pre>
  */
 public class DefendantUpdateDifferenceCalculator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefendantUpdateDifferenceCalculator.class);
+
     public static final String ROLE_PARENT = "PARENT";
+    public static final String ROLE_PARENT_GUARDIAN = "PARENTGUARDIAN";
     private final DefendantUpdate originalDefendantPreviousVersion;
     private final DefendantUpdate originalDefendantNextVersion;
     private final DefendantUpdate matchedDefendantPreviousVersion;
@@ -152,7 +158,7 @@ public class DefendantUpdateDifferenceCalculator {
     }
 
     @SuppressWarnings("squid:S2589")
-    private List<AssociatedPerson> calculateAssociatedPersons() {
+    public List<AssociatedPerson> calculateAssociatedPersons() {
         final List<AssociatedPerson> associatedPersons = matchedDefendantPreviousVersion.getAssociatedPersons();
         final Optional<AssociatedPerson> previousParent = checkNullList(originalDefendantPreviousVersion.getAssociatedPersons())
                 .filter(associatedPerson -> ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole())).findFirst();
@@ -165,6 +171,7 @@ public class DefendantUpdateDifferenceCalculator {
 
         // added, remove old if exists (I know unnecessary conditions above, These are kept for clarification)
         if (!previousParent.isPresent() && nextParent.isPresent()) {
+            LOGGER.info("AssociatedPersons validation Defendant is Not PARENT, DefendantUpdate have: {}", nextParent.get().getRole());
             final List<AssociatedPerson> newAssociatedPersons = checkNullList(associatedPersons)
                     .filter(associatedPerson -> !ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole()))
                     .collect(Collectors.toList());
@@ -173,23 +180,30 @@ public class DefendantUpdateDifferenceCalculator {
         }
         // removed, (I know unnecessary conditions above, These are kept for clarification)
         if (previousParent.isPresent() && !nextParent.isPresent()) {
+            LOGGER.info("AssociatedPersons validation DefendantUpdate is Not PARENT, Defendant have: {}", previousParent.get().getRole());
             return associatedPersons.stream()
                     .filter(associatedPerson -> !ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole()))
                     .collect(Collectors.toList());
         }
         // changed, merge, (I know unnecessary conditions above, These are kept for clarification)
         if (previousParent.isPresent() && nextParent.isPresent()) {
+            LOGGER.info("AssociatedPersons validation DefendantUpdate is {}, Defendant have: {}", nextParent.get().getRole(), previousParent.get().getRole());
+            final List<AssociatedPerson> newAssociatedPersons = checkNullList(associatedPersons)
+                    .filter(associatedPerson -> (!ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole())))
+                    .collect(Collectors.toList());
 
             final Person newParentPerson = calculatePerson(
                     defendantUpdate -> defendantUpdate.getAssociatedPersons().stream()
-                            .filter(associatedPerson -> ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole())).findFirst().get().getPerson(),
+                            .filter(associatedPerson -> (ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole()) || ROLE_PARENT_GUARDIAN.equalsIgnoreCase(associatedPerson.getRole())))
+                            .findFirst()
+                            .get().getPerson(),
                     nextParent.get().getPerson());
 
-            final List<AssociatedPerson> newAssociatedPersons = checkNullList(associatedPersons).filter(associatedPerson -> !ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole())).collect(Collectors.toList());
             newAssociatedPersons.add(AssociatedPerson.associatedPerson()
                     .withPerson(newParentPerson)
                     .withRole(ROLE_PARENT)
                     .build());
+            LOGGER.info("calculateAssociatedPersons newAssociatedPersons: {}", newParentPerson);
             return newAssociatedPersons;
         }
 

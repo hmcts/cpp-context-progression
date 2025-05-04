@@ -1,25 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://justice.gov.uk/hearing/courts/hearing.command.remove-offences-from-existing-hearing.json",
+  "id": "http://justice.gov.uk/progression/courts/booking-reference-court-schedule-ids.json",
   "type": "object",
   "properties": {
-    "hearingId": {
+    "bookingId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "offenceIds": {
+    "courtScheduleIds": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
       }
-    },
-    "isResultFlow": {
-      "type": "boolean"
     }
   },
   "required": [
-    "hearingId",
-    "offenceIds"
+    "bookingId",
+    "courtScheduleIds"
   ],
   "additionalProperties": false
 }

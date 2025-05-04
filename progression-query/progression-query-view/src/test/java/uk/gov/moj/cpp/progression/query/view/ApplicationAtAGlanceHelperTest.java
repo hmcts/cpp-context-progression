@@ -669,6 +669,92 @@ public class ApplicationAtAGlanceHelperTest {
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getName(), is(firstName+" "+lastName));
         assertThat(details.getAddress(), is(address));
+
+    }
+
+    @Test
+    public void shouldGetRespondentForSubject() {
+
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+        final UUID masterDefendantId = UUID.randomUUID();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .build();
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId).withPersonDefendant(personDefendant().withPersonDetails(person).build()).build())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withProsecutionAuthorityCode("ABCD").build())
+                .build();
+
+        final CourtApplicationParty courtApplicationPartySubject = courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId).withPersonDefendant(personDefendant().withPersonDetails(person).build()).build())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withProsecutionAuthorityCode("ABCD").build())
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .withSubject(courtApplicationPartySubject)
+                .build();
+
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getName(), is(firstName+" "+lastName));
+        assertThat(details.getAddress(), is(address));
+        assertThat(details.getIsSubject(),is(true));
+
+    }
+
+    @Test
+    public void shouldGetRespondentWhichIsNotSubject() {
+
+        final Address address = mock(Address.class);
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+        final UUID masterDefendantId1 = UUID.randomUUID();
+        final UUID masterDefendantId2 = UUID.randomUUID();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .withAddress(address)
+                .build();
+
+        final CourtApplicationParty courtApplicationParty = courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId1).withPersonDefendant(personDefendant().withPersonDetails(person).build()).build())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withProsecutionAuthorityCode("ABCD").build())
+                .build();
+
+        final CourtApplicationParty courtApplicationPartySubject = courtApplicationParty()
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(masterDefendantId2).withPersonDefendant(personDefendant().withPersonDetails(person).build()).build())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withProsecutionAuthorityCode("ABCD").build())
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(courtApplicationParty);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .withSubject(courtApplicationPartySubject)
+                .build();
+
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getName(), is(firstName+" "+lastName));
+        assertThat(details.getAddress(), is(address));
+        assertThat(details.getIsSubject(),is(false));
+
     }
 
     @Test

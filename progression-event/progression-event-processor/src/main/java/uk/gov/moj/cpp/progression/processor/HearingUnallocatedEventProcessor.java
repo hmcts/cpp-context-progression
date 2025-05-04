@@ -55,13 +55,14 @@ public class HearingUnallocatedEventProcessor {
                     PUBLIC_EVENTS_LISTING_OFFENCES_REMOVED_FROM_EXISTING_UNALLOCATED_HEARING, jsonEnvelope.metadata(), jsonEnvelope.toObfuscatedDebugString());
         }
 
-        commandRemoveOffencesFromExistingHearing(jsonEnvelope, false);
+
+        commandRemoveOffencesFromExistingHearing(jsonEnvelope, jsonEnvelope.payloadAsJsonObject().getBoolean("isResultFlow", false));
     }
 
-    private void commandRemoveOffencesFromExistingHearing(final JsonEnvelope jsonEnvelope, final Boolean isNextHearingDeleting) {
+    private void commandRemoveOffencesFromExistingHearing(final JsonEnvelope jsonEnvelope, final Boolean isResultFlow) {
         JsonObject payload ;
-        if(Optional.ofNullable(isNextHearingDeleting).orElse(false)){
-            payload = createObjectBuilder(jsonEnvelope.payloadAsJsonObject()).add("isNextHearingDeleting", true).build();
+        if(Optional.ofNullable(isResultFlow).orElse(false)){
+            payload = createObjectBuilder(jsonEnvelope.payloadAsJsonObject()).add("isResultFlow", true).build();
         }else{
             payload = jsonEnvelope.payloadAsJsonObject();
         }

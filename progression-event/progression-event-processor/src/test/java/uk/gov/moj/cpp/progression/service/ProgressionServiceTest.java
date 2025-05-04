@@ -139,8 +139,11 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -1244,7 +1247,17 @@ public class ProgressionServiceTest {
         final JsonObject resultCommand = (JsonObject) envelopeCaptor.getValue().payload();
 
         JsonObject expectedCommand = getJsonObjectResponseFromJsonResource("progression.command.initiate-court-proceedings-for-application.json");
-        assertThat(resultCommand, is(stringToJsonObjectConverter.convert(expectedCommand.toString().replaceAll("TODAY",LocalDate.now().toString()))));
+        final String respondentIdInResult = resultCommand
+                .getJsonObject("courtApplication")
+                .getJsonArray("respondents")
+                .getJsonObject(0)
+                .getString("id");
+
+        assertThat(resultCommand, is(stringToJsonObjectConverter.convert(
+                expectedCommand.toString()
+                        .replaceAll("TODAY",LocalDate.now().toString())
+                        .replaceAll("RESPONDENT_ID",respondentIdInResult)
+        )));
 
     }
 

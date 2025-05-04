@@ -75,7 +75,7 @@ public class HearingUnallocatedEventProcessorTest {
                 withJsonPath("$.hearingId", equalTo(hearingId)),
                 withJsonPath("$.offenceIds.[0]", equalTo(offenceId1.toString())),
                 withJsonPath("$.offenceIds.[1]", equalTo(offenceId2.toString())),
-                withJsonPath("$.isNextHearingDeleting", equalTo(true))
+                withJsonPath("$.isResultFlow", equalTo(true))
                 )));
     }
 
@@ -106,7 +106,7 @@ public class HearingUnallocatedEventProcessorTest {
                 withJsonPath("$.hearingId", equalTo(hearingId)),
                 withJsonPath("$.offenceIds.[0]", equalTo(offenceId1.toString())),
                 withJsonPath("$.offenceIds.[1]", equalTo(offenceId2.toString())),
-                withJsonPath("$.isNextHearingDeleting", equalTo(true))
+                withJsonPath("$.isResultFlow", equalTo(true))
         )));
     }
 
@@ -137,7 +137,7 @@ public class HearingUnallocatedEventProcessorTest {
         assertThat(commandEventResponse.payload().toString(), isJson(allOf(
                 withJsonPath("$.hearingId", equalTo(hearingId.toString())),
                 withJsonPath("$.offenceIds[0:2]", containsInAnyOrder(offenceId1.toString(),offenceId2.toString())),
-                withoutJsonPath("$.isNextHearingDeleting")
+                withoutJsonPath("$.isResultFlow")
         )));
     }
 }

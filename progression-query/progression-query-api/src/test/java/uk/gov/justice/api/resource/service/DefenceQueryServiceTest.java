@@ -48,7 +48,8 @@ public class DefenceQueryServiceTest {
     @Test
     public void shouldReturnFalseWhenQueryResponseIsNull() {
         when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
-        when(requester.request(any())).thenReturn(null);
+        final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), JsonValue.EMPTY_JSON_OBJECT);
+        when(requester.request(any())).thenReturn(response);
 
         assertThat(defenceQueryService.isUserProsecutingCase(jsonEnvelope, caseId), is(false));
         assertThat(defenceQueryService.isUserProsecutingOrDefendingCase(jsonEnvelope, caseId), is(false));
@@ -66,7 +67,7 @@ public class DefenceQueryServiceTest {
 
     @Test
     public void shouldReturnFalseWhenResponseNotHasRoleDetailsAndResponseIsNull() {
-        final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), JsonValue.NULL);
+        final JsonEnvelope response = envelopeFrom(getMetadataBuilder(UUID.randomUUID()).build(), JsonValue.EMPTY_JSON_OBJECT);
         when(jsonEnvelope.metadata()).thenReturn(getMetadataBuilder(UUID.randomUUID()).build());
         when(requester.request(any())).thenReturn(response);
 
