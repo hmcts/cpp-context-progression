@@ -625,6 +625,28 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       500:
         description: Internal Server Error
 
+/applications/patch:
+  post:
+    description:  |
+      patch for applications
+      ...
+      (mapping):
+          requestType: application/vnd.progression.patch-update-applications-status+json
+          name: progression.patch-update-applications-status
+      ...
+
+    body:
+      application/vnd.progression.patch-update-applications-status+json:
+        example:
+          !include json/progression.patch-update-applications-status.json
+        schema:
+          !include json/schema/progression.patch-update-applications-status.json
+    responses:
+      202:
+        description: OK
+      500:
+        description: Internal Server Error
+
 /laaReference/cases/{caseId}/defendants/{defendantId}/offences/{offenceId}:
   uriParameters:
     caseId:

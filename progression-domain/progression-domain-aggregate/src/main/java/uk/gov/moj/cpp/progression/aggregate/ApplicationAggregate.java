@@ -56,6 +56,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
+import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -157,6 +158,7 @@ public class ApplicationAggregate implements Aggregate {
 
                 ),
                 when(CourtApplicationUpdated.class).apply(e-> setCourtApplication(e.getCourtApplication())),
+                when(CourtApplicationStatusUpdated.class).apply(e -> this.applicationStatus = e.getApplicationStatus()),
                 otherwiseDoNothing());
     }
 
@@ -887,4 +889,17 @@ public class ApplicationAggregate implements Aggregate {
                                 .withCourtApplicationPayment(courtApplicationPayment)
                                 .build()));
     }
+
+    public Stream<Object> patchUpdateApplicationStatus(final UUID applicationId, final ApplicationStatus applicationStatus) {
+        return apply(Stream.of(CourtApplicationStatusUpdated.courtApplicationStatusUpdated()
+                .withId(applicationId)
+                .withApplicationStatus(applicationStatus)
+                .build()));
+    }
+
+    public ApplicationStatus getApplicationStatus() {
+        return this.applicationStatus;
+    }
+
+
 }
