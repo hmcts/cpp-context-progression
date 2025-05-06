@@ -39,6 +39,7 @@ import uk.gov.justice.core.courts.CourtApplicationProceedingsEdited;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiateIgnored;
 import uk.gov.justice.core.courts.CourtApplicationProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
+import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
@@ -81,6 +82,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -961,6 +964,21 @@ public class ApplicationAggregateTest {
         final CourtApplicationUpdated event =  (CourtApplicationUpdated) eventStream.get(0);
         assertThat(event.getCourtApplication().getId(), is(courtApplicationId));
         assertThat(aggregate.getCourtApplication().getSubject().getMasterDefendant().getPersonDefendant().getCustodialEstablishment().getCustody(), is("custody2"));
+    }
+
+    @ParameterizedTest
+    @EnumSource(ApplicationStatus.class)
+    void shouldUpdateApplicationStatusWithPatch(final ApplicationStatus applicationStatus){
+        final UUID applicationId = randomUUID();
+        final List<Object> eventStream = aggregate.patchUpdateApplicationStatus(applicationId, applicationStatus).toList();
+
+        assertThat(eventStream.size(), is(1));
+        final CourtApplicationStatusUpdated event = (CourtApplicationStatusUpdated) eventStream.get(0);
+        assertThat(event.getApplicationStatus(), is(applicationStatus));
+        assertThat(event.getId(), is(applicationId));
+
+        aggregate.apply(event);
+        assertThat(aggregate.getApplicationStatus(), is(applicationStatus));
     }
 
 

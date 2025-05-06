@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/patch-update-applications-status.json",
+  "type": "object",
+  "properties": {
+    "applications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "applicationStatus": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/courtApplicationStatus"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
