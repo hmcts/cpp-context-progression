@@ -530,8 +530,6 @@ subscriptions_descriptor:
         - name: progression.event.remove-defendant-custodial-establishment-requested
           schema_uri: http://justice.gov.uk/core/courts/remove-defendant-custodial-establishment-requested.json
 
-        - name: progression.event.delete-previous-hearings-and-create-next-hearing
-          schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-previous-hearings-and-create-next-hearing.json
 
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
@@ -835,7 +833,5 @@ subscriptions_descriptor:
         - name: public.prosecutioncasefile.cps-update-cotr-submitted
           schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-update-cotr-submitted.json
 
-        - name: public.listing.create-next-hearing-requested
-          schema_uri: http://justice.gov.uk/listing/events/public.listing.create-next-hearing-requested.json
 
       event_source_name: public.event.source

@@ -1551,17 +1551,7 @@ public class HearingAggregate implements Aggregate {
         return this.committingCourt;
     }
 
-    public Stream<Object> processCreateNextHearing(final CreateNextHearing createNextHearing) {
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(NextHearingsRequested.nextHearingsRequested()
-                .withHearing(createNextHearing.getHearing())
-                .withCommittingCourt(createNextHearing.getCommittingCourt())
-                .withSeedingHearing(createNextHearing.getSeedingHearing())
-                .withShadowListedOffences(createNextHearing.getShadowListedOffences())
-                .withPreviousBookingReferencesWithCourtScheduleIds(createNextHearing.getPreviousBookingReferencesWithCourtScheduleIds())
-                .build());
-        return apply(streamBuilder.build());
-    }
+
 
     public Stream<Object> processHearingResults(final Hearing hearing, final ZonedDateTime sharedTime, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
 
@@ -2619,26 +2609,7 @@ public class HearingAggregate implements Aggregate {
                     .build());
         }
 
-        if(events.stream().anyMatch(event -> event instanceof DeleteNextHearingsRequested) &&
-                events.stream().anyMatch(event -> event instanceof NextHearingsRequested)){
-            events.removeIf(event -> event instanceof DeleteNextHearingsRequested);
-            events.removeIf(event -> event instanceof NextHearingsRequested);
-            DeletePreviousHearingsAndCreateNextHearing deletePreviousHearingsAndCreateNextHearing = DeletePreviousHearingsAndCreateNextHearing.deletePreviousHearingsAndCreateNextHearing()
-                    .withCreateNextHearing(CreateNextHearing.createNextHearing()
-                            .withHearing(hearing)
-                            .withSeedingHearing(seedingHearing)
-                            .withShadowListedOffences(shadowListedOffences)
-                            .withCommittingCourt(shouldPopulateCommittingCourt ? court : null)
-                            .withPreviousBookingReferencesWithCourtScheduleIds(bookingReferenceCourtScheduleIds)
-                            .build())
-                    .withDeletePreviousHearings(DeletePreviousHearings.deletePreviousHearings()
-                            .withHearingId(hearing.getId())
-                            .withSeedingHearing(seedingHearing)
-                            .build())
-                    .build();
-            events.add(deletePreviousHearingsAndCreateNextHearing);
 
-        }
 
         return events;
     }
