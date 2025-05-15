@@ -74,7 +74,7 @@
         <coredomain.version>17.101.5</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <results.version>17.0.55</results.version>
+        <results.version>17.0.57</results.version>
         <notification.notify.version>17.0.24</notification.notify.version>
         <unifiedsearch.version>17.0.25</unifiedsearch.version>
         <systemdocgenerator.version>17.0.64</systemdocgenerator.version>

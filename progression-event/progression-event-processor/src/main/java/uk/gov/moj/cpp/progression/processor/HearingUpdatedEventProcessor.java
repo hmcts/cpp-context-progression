@@ -104,9 +104,15 @@ public class HearingUpdatedEventProcessor {
         }
 
         final List<UUID> courtApplicationIds = hearingUpdated.getUpdatedHearing().getCourtApplicationIds();
-        final Optional<JsonObject> hearingPayloadOptional = progressionService.getHearing(jsonEnvelope, hearingUpdated.getUpdatedHearing().getId().toString());
-        final JsonObject hearingJson = hearingPayloadOptional.orElseThrow(() -> new RuntimeException("Hearing not found")).getJsonObject("hearing");
-        final Hearing hearingEntity = jsonObjectToObjectConverter.convert(hearingJson, Hearing.class);
+        final UUID hearingId = hearingUpdated.getUpdatedHearing().getId();
+        final Optional<JsonObject> hearingPayloadOptional = progressionService.getHearing(jsonEnvelope, hearingId.toString());
+
+        if (hearingPayloadOptional.isEmpty() || !hearingPayloadOptional.get().containsKey("hearing")) {
+            LOGGER.error("Hearing not found for id:{}", hearingId);
+            return;
+        }
+        JsonObject hearing = hearingPayloadOptional.get().get("hearing").asJsonObject();
+        final Hearing hearingEntity = jsonObjectToObjectConverter.convert(hearing, Hearing.class);
         Hearing updatedHearing = progressionService.updateHearingForHearingUpdated(hearingUpdated.getUpdatedHearing(), jsonEnvelope, hearingEntity);
         if (HearingListingStatus.SENT_FOR_LISTING.toString().equals(hearingPayloadOptional.map(jsonObject -> jsonObject.getString("hearingListingStatus")).orElse(""))) {
             updatedHearing = Hearing.hearing().withValuesFrom(updatedHearing)
@@ -120,9 +126,19 @@ public class HearingUpdatedEventProcessor {
             }
             progressionService.publishHearingDetailChangedPublicEvent(jsonEnvelope, confirmedUpdatedHearing);
         } else {
+
+            final ConfirmedHearing confirmedHearing = hearingUpdated.getUpdatedHearing();
+            final boolean prosecutionCasesOrDefendantsOrOffencesNullOrEmpty = isProsecutionCasesOrDefendantsOrOffencesNullOrEmpty(updatedHearing.getProsecutionCases());
+
+            if (prosecutionCasesOrDefendantsOrOffencesNullOrEmpty) {
+                LOGGER.error("Invalid Schema for event:{}, prosecutionCasesOrDefendantsOrOffencesNullOrEmpty:{}",
+                        PROGRESSION_COMMAND_PROCESS_HEARING_UPDATED, prosecutionCasesOrDefendantsOrOffencesNullOrEmpty);
+                return;
+            }
+
             sender.send(envelop(
                     createObjectBuilder()
-                            .add("confirmedHearing", objectToJsonObjectConverter.convert(hearingUpdated.getUpdatedHearing()))
+                            .add("confirmedHearing", objectToJsonObjectConverter.convert(confirmedHearing))
                             .add("updatedHearing", objectToJsonObjectConverter.convert(updatedHearing))
                             .build())
                     .withName(PROGRESSION_COMMAND_PROCESS_HEARING_UPDATED)
@@ -135,6 +151,19 @@ public class HearingUpdatedEventProcessor {
         }
     }
 
+    protected boolean isProsecutionCasesOrDefendantsOrOffencesNullOrEmpty(List<ProsecutionCase> prosecutionCases) {
+        if (prosecutionCases == null || prosecutionCases.isEmpty()) {
+            return true;
+        }
+
+        return prosecutionCases.stream()
+                .anyMatch(ca ->
+                        ca.getDefendants() == null ||
+                                ca.getDefendants().isEmpty() ||
+                                ca.getDefendants().stream()
+                                        .anyMatch(de -> de.getOffences() == null || de.getOffences().isEmpty()));
+    }
+
     private void sendHearingNotificationsToDefenceAndProsecutor(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedUpdatedHearing, Hearing updatedHearing) {
         final HearingNotificationInputData hearingNotificationInputData = new HearingNotificationInputData();
 
@@ -142,7 +171,7 @@ public class HearingUpdatedEventProcessor {
         final Map<UUID, List<UUID>> defendantOffenceListMap = new HashMap<>();
         final Set<UUID> defendantIdSet = new HashSet<>();
 
-        if(isNotEmpty(confirmedUpdatedHearing.getProsecutionCases())) {
+        if (isNotEmpty(confirmedUpdatedHearing.getProsecutionCases())) {
             confirmedUpdatedHearing.getProsecutionCases().stream().forEach(prosecutionCase -> {
                 caseIds.add(prosecutionCase.getId());
                 prosecutionCase.getDefendants().stream()
