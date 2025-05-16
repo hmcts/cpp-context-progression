@@ -410,6 +410,9 @@ subscriptions_descriptor:
         - name: progression.event.application-hearing-defendant-updated
           schema_uri: http://justice.gov.uk/progression/event/progression.event.application-hearing-defendant-updated.json
 
+        - name: progression.event.now-notification-generated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.now-notification-generated.json
+
         - name: progression.event.court-application-status-updated
           schema_uri: http://justice.gov.uk/core/courts/progression.event.court-application-status-updated.json
 

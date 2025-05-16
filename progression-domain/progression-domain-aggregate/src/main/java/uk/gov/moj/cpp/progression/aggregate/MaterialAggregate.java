@@ -17,6 +17,7 @@ import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowNotificationGenerated;
 import uk.gov.justice.core.courts.NowsDocumentFailed;
 import uk.gov.justice.core.courts.NowsDocumentGenerated;
 import uk.gov.justice.core.courts.NowsDocumentSent;
@@ -349,6 +350,15 @@ public class MaterialAggregate implements Aggregate {
                 .withNowDistribution(nowDistribution)
                 .withOrderAddressee(orderAddressee)
                 .withUserId(userId)
+                .build()));
+    }
+
+    public Stream<Object> recordNowNotificationGenerated(final UUID materialId, final UUID hearingId, final String status, UUID userId) {
+        return apply(Stream.of(NowNotificationGenerated.nowNotificationGenerated()
+                .withMaterialId(materialId)
+                .withHearingId(hearingId)
+                .withUserId(userId)
+                .withStatus(status)
                 .build()));
     }
 }

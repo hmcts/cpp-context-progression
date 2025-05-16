@@ -26,7 +26,8 @@ import javax.json.JsonObject;
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -71,7 +72,7 @@ public class MaterialAddedProcessorTest {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     @Test
-    public void shouldForwardCourtOriginUpdate() {
+    public void shouldForwardCourtOriginUpdateWhenOriginatorIsCourt() {
         final JsonObject metaDataJson = Json.createObjectBuilder()
                 .add(MaterialAddedProcessor.ORIGINATOR, MaterialAddedProcessor.ORIGINATOR_VALUE)
                 .add("id", UUID.randomUUID().toString()).build();
@@ -91,12 +92,12 @@ public class MaterialAddedProcessorTest {
     }
 
     @Test
-    public void shouldNotForwardNonCourtOriginUpdate() {
+    public void shouldNotForwardUpdateWhenOriginatorIsNotCourt() {
         when(event.metadata()).thenReturn(metadata);
         when(metadata.asJsonObject()).thenReturn(metaDataJson);
 
         when(metaDataJson.containsKey(MaterialAddedProcessor.ORIGINATOR)).thenReturn(true);
-        when(metaDataJson.getString(MaterialAddedProcessor.ORIGINATOR)).thenReturn("xxx" + MaterialAddedProcessor.ORIGINATOR_VALUE);
+        when(metaDataJson.getString(MaterialAddedProcessor.ORIGINATOR)).thenReturn("NOWS_DOCUMENTS");
         target.processEvent(event);
 
         verify(sender, times(0)).send(sentEnvelopes.capture());

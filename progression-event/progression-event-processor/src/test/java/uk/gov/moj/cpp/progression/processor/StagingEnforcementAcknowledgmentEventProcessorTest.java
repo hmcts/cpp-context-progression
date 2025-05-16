@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
 
@@ -58,7 +59,7 @@ public class StagingEnforcementAcknowledgmentEventProcessorTest {
     private ArgumentCaptor<Envelope<JsonObject>> argumentCaptor;
 
     @Test
-    public void processAcknowledgement() {
+    public void shouldProcessAcknowledgementWhenOriginatorIsCourts() {
         final String requestId = UUID.randomUUID().toString();
         final String materialId_1 = UUID.randomUUID().toString();
         final String materialId_2 = UUID.randomUUID().toString();
@@ -82,7 +83,7 @@ public class StagingEnforcementAcknowledgmentEventProcessorTest {
     }
 
     @Test
-    public void enforcementAcknowledgementError(){
+    public void shouldProcessEnforcementAcknowledgementErrorWhenOriginatorIsCourts(){
         final String requestId = UUID.randomUUID().toString();
         final String materialId_1 = UUID.randomUUID().toString();
         final String materialId_2 = UUID.randomUUID().toString();
@@ -103,5 +104,24 @@ public class StagingEnforcementAcknowledgmentEventProcessorTest {
         eventProcessor.processAcknowledgement(envelope);
         verify(sender, times(2)).sendAsAdmin(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue().metadata().name(), is("progression.command.enforcement-acknowledgement-error"));
+    }
+
+    @Test
+    public void shouldNotProcessEnforcementAcknowledgementWhenNoMaterialsForRequestId() {
+        final String requestId = UUID.randomUUID().toString();
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("originator", "courts")
+                .add("acknowledgement", Json.createObjectBuilder().add("accountNumber", 1234)
+                        .build())
+                .add("requestId", requestId).build();
+        when(envelope.metadata()).thenReturn(Envelope.metadataBuilder().withId(UUID.randomUUID()).withName("public.stagingenforcement.enforce-financial-imposition-acknowledgement").build());
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+
+        JsonObject jsonObject = Json.createObjectBuilder().add("nowDocumentRequests", Json.createArrayBuilder().build()).build();
+        when(queryResponseEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
+        when(requester.request(any(Envelope.class))).thenReturn(queryResponseEnvelope);
+
+        eventProcessor.processAcknowledgement(envelope);
+        verifyNoInteractions(sender);
     }
 }

@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonMetadata.NAME;
@@ -227,7 +228,7 @@ public class SystemDocGeneratorEventProcessorTest {
     }
 
     @Test
-    public void shouldProcessNowsDocumentAvailable() throws FileServiceException {
+    public void shouldProcessNowsDocumentAvailableWhenOriginatingSourceIsNows() throws FileServiceException {
 
         final UUID materialId = UUID.randomUUID();
 
@@ -263,7 +264,7 @@ public class SystemDocGeneratorEventProcessorTest {
 
 
     @Test
-    public void shouldProcessWhenNowsFailedToGenerate() {
+    public void shouldProcessNowsFailedToGenerateWhenOriginatingSourceIsNows() {
 
         final UUID materialId = UUID.randomUUID();
 
@@ -295,6 +296,49 @@ public class SystemDocGeneratorEventProcessorTest {
         assertThat(actualPayload.getString("reason"), equalTo("Test Reason"));
         assertThat(actualPayload.getString("payloadFileId"), equalTo(fileId.toString()));
 
+    }
+
+    @Test
+    public void shouldNotProcessNowsDocumentAvailableWhenOriginatingSourceIsNotNows() throws FileServiceException {
+        final UUID materialId = UUID.randomUUID();
+        final UUID fileId = UUID.randomUUID();
+        final UUID systemDocGeneratorId = UUID.randomUUID();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
+                Json.createObjectBuilder()
+                        .add(ORIGINATING_SOURCE, "NOWS_DOCUMENTS")
+                        .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
+                        .add(CONVERSION_FORMAT, "pdf")
+                        .add(SOURCE_CORRELATION_ID, materialId.toString())
+                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                        .add(DOCUMENT_FILE_SERVICE_ID, systemDocGeneratorId.toString())
+                        .build());
+
+        systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
+
+        verifyNoInteractions(sender);
+    }
+
+    @Test
+    public void shouldNotProcessNowsFailedToGenerateWhenOriginatingSourceIsNotNows() {
+        final UUID materialId = UUID.randomUUID();
+        final UUID fileId = UUID.randomUUID();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.generation-failed"),
+                Json.createObjectBuilder()
+                        .add(ORIGINATING_SOURCE, "NOWS_DOCUMENTS")
+                        .add(TEMPLATE_IDENTIFIER, "OEE_Layout6")
+                        .add(CONVERSION_FORMAT, "pdf")
+                        .add(SOURCE_CORRELATION_ID, materialId.toString())
+                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                        .add("requestedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                        .add("failedTime", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT))
+                        .add("reason", "Test Reason")
+                        .build());
+
+        systemDocGeneratorEventProcessor.handleDocumentGenerationFailed(jsonEnvelope);
+
+        verifyNoInteractions(sender);
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID courtCentreId) {

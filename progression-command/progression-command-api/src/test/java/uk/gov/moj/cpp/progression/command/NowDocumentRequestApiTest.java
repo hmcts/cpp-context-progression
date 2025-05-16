@@ -6,10 +6,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerClassMatcher.isHandlerClass;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.moj.cpp.progression.domain.constant.FeatureGuardNames.FEATURE_HEARINGNOWS;
 
+import uk.gov.justice.services.core.featurecontrol.FeatureControlGuard;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -35,6 +39,9 @@ public class NowDocumentRequestApiTest {
     @Mock
     private Sender sender;
 
+    @Mock
+    private FeatureControlGuard featureControlGuard;
+
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
 
@@ -48,10 +55,10 @@ public class NowDocumentRequestApiTest {
     }
 
     @Test
-    public void shouldRecordNowDocumentRequest() {
+    public void shouldRecordNowDocumentRequestWhenHearingNowsFeatureIsNotEnabled() {
 
         final JsonEnvelope commandEnvelope = buildEnvelope();
-
+        when(featureControlGuard.isFeatureEnabled(FEATURE_HEARINGNOWS)).thenReturn(false);
 
         nowDocumentRequestApi.addNowDocumentRequest(commandEnvelope);
         verify(sender, times(1)).send(envelopeCaptor.capture());
@@ -60,6 +67,16 @@ public class NowDocumentRequestApiTest {
 
         assertThat(newCommand.metadata().name(), is(ADD_NOW_DOCUMENT_REQUEST_COMMAND_NAME));
         assertThat(newCommand.payload(), equalTo(commandEnvelope.payloadAsJsonObject()));
+    }
+
+    @Test
+    public void shouldNotProcessNowDocumentRequestWhenHearingNowsFeatureIsEnabled() {
+
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+        when(featureControlGuard.isFeatureEnabled(FEATURE_HEARINGNOWS)).thenReturn(true);
+
+        nowDocumentRequestApi.addNowDocumentRequest(commandEnvelope);
+        verifyNoInteractions(sender);
     }
 
     private JsonEnvelope buildEnvelope() {

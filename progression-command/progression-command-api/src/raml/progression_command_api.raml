@@ -1588,3 +1588,32 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
     responses:
       202:
         description: OK
+
+/notification:
+  post:
+    description:  |
+      Send notification
+      ...
+      (mapping):
+          requestType: application/vnd.progression.send.email+json
+          name: progression.send.email
+      (mapping):
+          requestType: application/vnd.progression.send.print+json
+          name: progression.send.print
+      (mapping):
+          requestType: application/vnd.progression.update-send-to-cps-flag+json
+          name: progression.update-send-to-cps-flag
+      ...
+    body:
+      application/vnd.progression.send.email+json:
+        schema:
+          !include json/schema/progression.send.email.json
+      application/vnd.progression.send.print+json:
+        schema:
+          !include json/schema/progression.send.print.json
+      application/vnd.progression.update-send-to-cps-flag+json:
+        schema:
+          !include json/schema/progression.update-send-to-cps-flag.json
+    responses:
+      202:
+        description: OK

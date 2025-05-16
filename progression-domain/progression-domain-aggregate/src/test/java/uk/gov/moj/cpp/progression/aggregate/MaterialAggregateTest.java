@@ -11,6 +11,7 @@ import uk.gov.justice.core.courts.EnforcementAcknowledgmentError;
 import uk.gov.justice.core.courts.MaterialDetails;
 import uk.gov.justice.core.courts.NowDocumentRequestToBeAcknowledged;
 import uk.gov.justice.core.courts.NowDocumentRequested;
+import uk.gov.justice.core.courts.NowNotificationGenerated;
 import uk.gov.justice.core.courts.NowsDocumentFailed;
 import uk.gov.justice.core.courts.NowsDocumentGenerated;
 import uk.gov.justice.core.courts.NowsDocumentSent;
@@ -322,6 +323,26 @@ public class MaterialAggregateTest {
         assertThat(nowsDocumentGenerated.getMaterialId(), is(materialId));
         assertThat(nowsDocumentGenerated.getSystemDocGeneratorId(), is(systemDocGeneratorId));
         assertThat(nowsDocumentGenerated.getUserId(), is(userId));
+    }
+
+    @Test
+    public void shouldRecordNowNotificationGenerated() {
+        final UUID materialId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID userId = randomUUID();
+        final String status = "generated";
+
+        final List<Object> eventStream = aggregate.recordNowNotificationGenerated(materialId, hearingId, status, userId).collect(toList());
+        assertThat(eventStream.size(), is(1));
+
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(CoreMatchers.equalTo(NowNotificationGenerated.class)));
+
+        final NowNotificationGenerated nowNotificationGenerated = (NowNotificationGenerated) object;
+        assertThat(nowNotificationGenerated.getMaterialId(), is(materialId));
+        assertThat(nowNotificationGenerated.getHearingId(), is(hearingId));
+        assertThat(nowNotificationGenerated.getStatus(), is(status));
+        assertThat(nowNotificationGenerated.getUserId(), is(userId));
     }
 
     private Notification createNotification(final UUID notificationId, final UUID templateId, final String sendToAddress, final UUID materialId) {

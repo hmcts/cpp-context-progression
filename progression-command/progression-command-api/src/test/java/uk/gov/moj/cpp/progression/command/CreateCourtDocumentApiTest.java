@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class CreateCourtDocumentApiTest {
 
     private static final String CREATE_COURT_DOCUMENTS_COMMAND = "progression.create-court-documents";
+    private static final String PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT = "progression.command.create-court-document";
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloper();
@@ -70,6 +71,6 @@ public class CreateCourtDocumentApiTest {
 
         final Envelope newCommand = envelopeCaptor.getValue();
 
-        assertThat(newCommand.metadata().name(), is("progression.command.create-court-document"));
+        assertThat(newCommand.metadata().name(), is(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT));
     }
 }

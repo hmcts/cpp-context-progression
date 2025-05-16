@@ -833,5 +833,8 @@ subscriptions_descriptor:
         - name: public.prosecutioncasefile.cps-update-cotr-submitted
           schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-update-cotr-submitted.json
 
+        # Hearingnows
+        - name: public.hearingnows.now-notification-generated
+          schema_uri: http://moj.gov.uk/cpp/hearing/nows/events/public.hearingnows.now-notification-generated.json
 
       event_source_name: public.event.source

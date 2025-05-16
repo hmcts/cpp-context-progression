@@ -1,0 +1,37 @@
+{
+  "courtDocument": {
+    "courtDocumentId": "dbccd18c-5f2d-4378-a857-a6daa16a60cf",
+    "documentCategory": {
+      "nowDocument": {
+        "defendantId": "42c6c143-c994-4913-9e79-37b418982636",
+        "orderHearingId": "0dd6f629-8a36-4c44-9588-14e7877fa11b"
+      }
+    },
+    "documentTypeDescription": "Court Final orders",
+    "documentTypeId": "460fbc00-c002-11e8-a355-529269fb1459",
+    "documentTypeRBAC": {
+      "downloadUserGroups": [
+        "System Users",
+        "Charging Lawyers"
+      ],
+      "readUserGroups": [
+        "System Users",
+        "Charging Lawyers"
+      ]
+    },
+    "materials": [
+      {
+        "id": "0c739c58-9633-4711-82aa-a48ae3aa8f83",
+        "name": "Fred Smith - Notice of Financial Penalty",
+        "uploadDateTime": "2025-01-20T14:50:12.085Z",
+        "userGroups": [
+          "System Users",
+          "Charging Lawyers"
+        ]
+      }
+    ],
+    "mimeType": "application/pdf",
+    "name": "Fred Smith - Notice of Financial Penalty",
+    "seqNum": 270
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/hearing/nows/events/public.hearingnows.now-notification-generated.json",
+  "type": "object",
+  "properties": {
+    "materialId": {
+      "$ref": "#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "#/definitions/uuid"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "materialId",
+    "hearingId",
+    "status"
+  ],
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "pattern": "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    }
+  },
+  "additionalProperties": false
+}
