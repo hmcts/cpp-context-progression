@@ -529,25 +529,25 @@ public class ProsecutionCaseQueryViewTest {
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase(caseURN, defendant().withMasterDefendantId(randomUUID())
                 .withId(randomUUID()).build())).toString());
         final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(randomUUID(), randomUUID());
-        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
-        final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
-        courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), UUID.fromString(caseId)));
-        courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
-        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
-                .withHearings(asList(
-                        hearings()
-                                .build()
-                ))
-                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
-                .withId(randomUUID())
-                .build();
+        final CourtApplicationEntity parentCourtApplicationEntity = new CourtApplicationEntity();
+        parentCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
+        final CourtApplicationCaseEntity parentCourtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        parentCourtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), UUID.fromString(caseId)));
+        parentCourtApplicationCaseEntity.setCourtApplication(parentCourtApplicationEntity);
+
+        final CourtApplicationEntity childCourtApplicationEntity = new CourtApplicationEntity();
+        childCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
+
+        final CourtApplicationCaseEntity childCourtApplicationCaseEntity = new CourtApplicationCaseEntity();
+        childCourtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), UUID.fromString(caseId)));
+        childCourtApplicationCaseEntity.setCourtApplication(childCourtApplicationEntity);
 
         when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
-        when(courtApplicationCaseRepository.findByCaseId(fromString(caseId))).thenReturn(asList(courtApplicationCaseEntity));
+        when(courtApplicationCaseRepository.findByCaseId(fromString(caseId))).thenReturn(asList(parentCourtApplicationCaseEntity, childCourtApplicationCaseEntity));
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCaseForCaseAtAGlance(envelopeWithCaseId);
         assertThat(response.payloadAsJsonObject().get("linkedApplications"), notNullValue());
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications").getJsonObject(0).getString("applicationId"), is(APPLICATION_ID.toString()));
         assertThat(response.payloadAsJsonObject().getJsonArray("defendants").getJsonObject(0).containsKey("updatedOn"),is(false));
 
     }

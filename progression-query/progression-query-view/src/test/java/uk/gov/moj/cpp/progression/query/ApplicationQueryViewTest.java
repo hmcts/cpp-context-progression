@@ -322,6 +322,66 @@ public class ApplicationQueryViewTest {
     }
 
     @Test
+    public void shouldGetApplicationAtAGlanceWithChildApplication() {
+        final UUID applicationId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("applicationId", applicationId.toString()).build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName("progression.query.application.aaag").build(),
+                jsonObject);
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload("{\"id\": \"9aec6dcc-564c-11ea-8e2d-0242ac130003\"}");
+        courtApplicationEntity.setParentApplicationId(randomUUID());
+
+        final List<Offence> offences = new ArrayList<>();
+        offences.add(Offence.offence()
+                .withId(randomUUID())
+                .build());
+
+        final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withOffences(offences)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
+                .build();
+
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+
+        final CourtApplicationEntity childCourtApplicationEntity = new CourtApplicationEntity();
+        when(courtApplicationRepository.findByParentApplicationId(any())).thenReturn(singletonList(childCourtApplicationEntity));
+
+        when(stringToJsonObjectConverter.convert(any())).thenReturn(applicationJson);
+        CourtApplication courtApplication = mock(CourtApplication.class);
+        CourtApplication childCourtApplication = mock(CourtApplication.class);
+        when(jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class)).thenReturn(courtApplication, childCourtApplication);
+        when(courtApplication.getCourtApplicationCases()).thenReturn(singletonList(courtApplicationCase));
+        final UUID parentApplicationId = randomUUID();
+        when(courtApplication.getParentApplicationId()).thenReturn(parentApplicationId);
+        when(childCourtApplication.getId()).thenReturn(UUID.randomUUID());
+        when(childCourtApplication.getApplicant()).thenReturn(getCourtApplicant());
+        when(courtApplicationRepository.findByApplicationId(parentApplicationId)).thenReturn(courtApplicationEntity);
+
+        when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(mock(ApplicationDetails.class));
+        final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
+
+        when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
+        final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
+
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
+
+        final JsonEnvelope response = applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope);
+        assertThat(response.payloadAsJsonObject().getString("applicationId"), is(applicationId.toString()));
+        assertThat(response.payloadAsJsonObject().getJsonObject("applicationDetails"), is(mockApplicationDetailsJson));
+        assertThat(response.payloadAsJsonObject().getJsonObject("applicantDetails"), is(mockApplicantDetailsJson));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications").size(), is(1));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").size(), is(1));
+        assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0), is(notNullValue()));
+        assertThat(response.payloadAsJsonObject().getJsonObject("parentApplication"), is(notNullValue()));
+    }
+
+    @Test
     public void shouldReturnApplicationSummary() {
         final UUID applicationId = randomUUID();
         final JsonObject jsonObject = createObjectBuilder()
@@ -491,10 +551,18 @@ public class ApplicationQueryViewTest {
         final InitiateCourtApplicationEntity initiateCourtApplicationEntity = new InitiateCourtApplicationEntity();
         final JsonObject jsonObject1 = createObjectBuilder().add("courtApplication", createObjectBuilder().add("id", randomUUID().toString()).build()).build();
         initiateCourtApplicationEntity.setPayload(jsonObject1.toString());
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        final JsonObject jsonObject2 = createObjectBuilder().add("courtApplication", createObjectBuilder().add("id", randomUUID().toString()).build()).build();
+        courtApplicationEntity.setPayload(jsonObject2.toString());
+
         when(initiateCourtApplicationRepository.findBy(applicationId)).thenReturn(initiateCourtApplicationEntity);
+        when(courtApplicationRepository.findByParentApplicationId(applicationId)).thenReturn(List.of(courtApplicationEntity));
         when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(jsonObject1);
+
         final JsonEnvelope jsonEnvelopeOut = applicationQueryView.getCourtProceedingsForApplication(jsonEnvelopeIn);
         assertThat(jsonEnvelopeOut.payloadAsJsonObject().getJsonObject("courtApplication"), is(notNullValue()));
+        assertThat(jsonEnvelopeOut.payloadAsJsonObject().getJsonArray("linkedApplications"), is(notNullValue()));
     }
 
     @Test

@@ -19,6 +19,13 @@
     "summonsApprovalRequired": {
       "description": "Indicates that the summons approval process is required to be initiated",
       "type": "boolean"
+    },
+    "linkedApplications": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/applicationSummary"
+      }
     }
   },
   "required": [

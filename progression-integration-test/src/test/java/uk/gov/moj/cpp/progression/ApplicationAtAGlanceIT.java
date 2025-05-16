@@ -42,6 +42,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-aaag.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private static final String DOCUMENT_TEXT = STRING.next();
 
     private String userId;
     private String caseId;
@@ -99,12 +100,14 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         doHearingConfirmedAndVerify();
 
         final String firstApplicationId = courtApplicationId;
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
+        final String parentApplicationId = randomUUID().toString();
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId, null);
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, courtApplicationId, parentApplicationId);
         verifyApplicationAtAGlance(courtApplicationId);
 
         setupData();
         final String linkedApplicationId = courtApplicationId;
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, firstApplicationId);
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, courtApplicationId, firstApplicationId);
         pollForApplicationAtAGlance(firstApplicationId,
                 withJsonPath("$.applicationId", equalTo(firstApplicationId)),
                 withJsonPath("$.linkedApplications[0].applicationId", equalTo(linkedApplicationId)),
@@ -126,7 +129,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         doReferCaseToCourtAndVerify();
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         doHearingConfirmedAndVerify();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, randomUUID().toString());
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, courtApplicationId, null);
 
         verifyApplicationAtAGlance(courtApplicationId);
     }
@@ -152,7 +155,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private void doAddCourtApplicationAndVerify(final String filename, final String parentApplicationId) throws Exception {
+    private void doAddCourtApplicationAndVerify(final String filename, final String courtApplicationId, final String parentApplicationId) {
         addCourtApplicationForApplicationAtAGlance(caseId,
                 courtApplicationId,
                 particulars,

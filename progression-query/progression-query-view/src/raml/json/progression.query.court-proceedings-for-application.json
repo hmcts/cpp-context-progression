@@ -34,5 +34,23 @@
     "courtCentre": {
       "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
     }
-  }
+  },
+  "linkedApplications": [
+    {
+      "applicationId": "982ef017-5b49-43a6-b04c-50751eb141b6",
+      "applicationTitle": "Failing to comply",
+      "applicationReference": "TFL1195954-2",
+      "applicationStatus": "DRAFT",
+      "applicantDisplayName": "Amazon",
+      "respondentDisplayNames": "Adriel Shawna Armstrong,John S Chivers,Rowe"
+    },
+    {
+      "applicationId": "57457780-569f-42c1-beec-563ef26c3be0",
+      "applicationTitle": "Appearance to make",
+      "applicationReference": "TFL1195954-3",
+      "applicationStatus": "DRAFT",
+      "applicantDisplayName": "Bob K Kalis",
+      "respondentDisplayNames": "Adriel Shawna Armstrong,James J Smith,Rowe"
+    }
+  ]
 }

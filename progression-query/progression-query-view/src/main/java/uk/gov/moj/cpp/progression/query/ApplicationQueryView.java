@@ -120,6 +120,7 @@ public class ApplicationQueryView {
 
 
     @Handles("progression.query.application.aaag")
+    @SuppressWarnings("squid:S3776")
     public JsonEnvelope getCourtApplicationForApplicationAtAGlance(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
         final Optional<UUID> applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
@@ -141,7 +142,19 @@ public class ApplicationQueryView {
 
                 final List<CourtApplicationEntity> childApplications = courtApplicationRepository.findByParentApplicationId(applicationId.get());
                 if (!childApplications.isEmpty()) {
-                    jsonObjectBuilder.add("linkedApplications", buildApplicationSummaries(childApplications));
+                    LOGGER.info("### childApplications found with applicationId='{}'", applicationId);
+                    final JsonArray jsonValue = buildApplicationSummaries(childApplications);
+                    LOGGER.info("### childApplications/linkedApplications='{}'", jsonValue);
+                    jsonObjectBuilder.add("linkedApplications", jsonValue);
+                }
+                if (courtApplication.getParentApplicationId() != null) {
+                    LOGGER.info("### Parent application found with applicationId='{}'", courtApplication.getParentApplicationId());
+                    final CourtApplicationEntity parentApplication = courtApplicationRepository.findByApplicationId(courtApplication.getParentApplicationId());
+                    if (parentApplication != null) {
+                        final JsonObject jsonValue = buildApplicationSummary(parentApplication);
+                        LOGGER.info("### Parent application jsonValue='{}'", jsonValue);
+                        jsonObjectBuilder.add("parentApplication", jsonValue);
+                    }
                 }
 
                 final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
@@ -282,7 +295,16 @@ public class ApplicationQueryView {
     public JsonEnvelope getCourtProceedingsForApplication(final JsonEnvelope query) {
         final String applicationId = getString(query.payloadAsJsonObject(), APPLICATION_ID_SEARCH_PARAM).orElse("");
         final InitiateCourtApplicationEntity applicationEntity = initiateCourtApplicationRepository.findBy(UUID.fromString(applicationId));
-        return envelopeFrom(query.metadata(), stringToJsonObjectConverter.convert(applicationEntity.getPayload()));
+
+        JsonObject applicationObject = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
+
+        final List<CourtApplicationEntity> childApplications = courtApplicationRepository.findByParentApplicationId(UUID.fromString(applicationId));
+        if (!childApplications.isEmpty()) {
+            final JsonArray childApplicationsArray = buildApplicationSummaries(childApplications);
+            applicationObject = createObjectBuilder(applicationObject).add("linkedApplications", createArrayBuilder(childApplicationsArray)).build();
+        }
+
+        return envelopeFrom(query.metadata(), applicationObject);
     }
 
     @Handles("progression.query.case.status-for-application")
@@ -299,6 +321,22 @@ public class ApplicationQueryView {
         childApplications.forEach(cae -> buildApplicationSummary(cae, jsonArrayBuilder));
         return jsonArrayBuilder.build();
     }
+
+    private JsonObject buildApplicationSummary(final CourtApplicationEntity parentApplication) {
+        final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert
+                (parentApplication.getPayload()), CourtApplication.class);
+
+        return objectToJsonObjectConverter.convert(CourtApplicationSummary.applicationSummary()
+                .withApplicationId(courtApplication.getId().toString())
+                .withApplicationReference(courtApplication.getApplicationReference())
+                .withApplicationStatus(courtApplication.getApplicationStatus())
+                .withApplicationTitle(courtApplication.getType())
+                .withApplicantDisplayName(courtApplication.getApplicant())
+                .withRespondentDisplayNames(courtApplication.getRespondents())
+                .withAssignedUserId(parentApplication.getAssignedUserId())
+                .build());
+    }
+
 
     private JsonArray buildCourtDocuments(final List<CourtDocumentEntity> courtDocuments) {
         final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();

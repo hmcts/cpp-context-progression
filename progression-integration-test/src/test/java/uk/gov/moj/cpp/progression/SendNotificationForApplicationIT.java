@@ -119,7 +119,8 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         doHearingConfirmedAndVerify();
         final String parentApplicationId = randomUUID().toString();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId);
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId, null);
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, courtApplicationId, parentApplicationId);
         verifyApplicationAtAGlance(courtApplicationId);
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, false);
         verifyEmailNotificationIsRaisedWithAttachment(singletonList(defenceOrganisationEmail));
@@ -133,7 +134,8 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
         doHearingConfirmedAndVerify();
         final String parentApplicationId = randomUUID().toString();
-        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId);
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId, null);
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, courtApplicationId, parentApplicationId);
         verifyApplicationAtAGlance(courtApplicationId);
         doSendNotification(PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_APPLICATION_JSON, parentApplicationId, false, true);
         verifyPublicEvent();
@@ -171,7 +173,7 @@ public class SendNotificationForApplicationIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private void doAddCourtApplicationAndVerify(final String filename, final String parentApplicationId) throws Exception {
+    private void doAddCourtApplicationAndVerify(final String filename, final String courtApplicationId, final String parentApplicationId) throws Exception {
         addCourtApplicationForApplicationAtAGlance(caseId,
                 courtApplicationId,
                 particulars,

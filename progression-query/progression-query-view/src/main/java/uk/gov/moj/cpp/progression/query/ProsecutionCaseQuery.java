@@ -433,7 +433,9 @@ public class ProsecutionCaseQuery {
 
             if (!courtApplicationCaseEntities.isEmpty()) {
                 final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();
-                courtApplicationCaseEntities.forEach(courtApplicationCaseEntity -> buildApplicationSummary(courtApplicationCaseEntity.getCourtApplication().getPayload(), jsonApplicationBuilder));
+                courtApplicationCaseEntities
+                        .stream().filter(courtApplicationCaseEntity -> courtApplicationCaseEntity.getCourtApplication().getParentApplicationId() == null)
+                        .forEach(courtApplicationCaseEntity -> buildApplicationSummary(courtApplicationCaseEntity.getCourtApplication().getPayload(), jsonApplicationBuilder));
                 jsonObjectBuilder.add("linkedApplications", jsonApplicationBuilder.build());
             }
 

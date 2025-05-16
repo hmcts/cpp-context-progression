@@ -1371,10 +1371,9 @@ public class PreAndPostConditionHelper {
                                                                       final String prosecutionAuthorityReference,
                                                                       final String parentApplicationId,
                                                                       final String fileName) {
-        final String body = getPayload(fileName)
+        String body = getPayload(fileName)
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_APPLICATION_ID", applicationId)
-                .replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId)
                 .replaceAll("RANDOM_PARTICULARS", particulars)
                 .replaceAll("\"applicationReceivedDate\": \"2019-01-01\"", format("\"applicationReceivedDate\": \"%s\"", applicantReceivedDate))
                 .replaceAll("RANDOM_APPLICATION_TYPE", applicationType)
@@ -1411,6 +1410,11 @@ public class PreAndPostConditionHelper {
                 .replaceAll("RANDOM_PROSECUTION_AUTHORITY_CODE", prosecutionAuthorityCode)
                 .replaceAll("RANDOM_PROSECUTION_AUTHORITY_REFERENCE", prosecutionAuthorityReference)
                 .replaceAll("RANDOM_REFERENCE", applicationReference);
+        if (parentApplicationId == null) {
+            body = body.replace("\"parentApplicationId\": \"RANDOM_PARENT_APPLICATION_ID\",", "");
+        } else {
+            body = body.replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId);
+        }
 
         return postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json", body);
@@ -1458,10 +1462,9 @@ public class PreAndPostConditionHelper {
                                             final String fileName,
                                             final Boolean isBoxWorkRequest,
                                             final Boolean isWelshTranslationRequired) {
-        final String body = getPayload(fileName)
+        String body = getPayload(fileName)
                 .replace("RANDOM_CASE_ID", caseId)
                 .replace("RANDOM_APPLICATION_ID", applicationId)
-                .replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId)
                 .replaceAll("RANDOM_PARTICULARS", particulars)
                 .replaceAll("\"applicationReceivedDate\": \"2019-01-01\"", format("\"applicationReceivedDate\": \"%s\"", applicantReceivedDate))
                 .replaceAll("RANDOM_APPLICATION_TYPE", applicationType)
@@ -1500,6 +1503,11 @@ public class PreAndPostConditionHelper {
                 .replaceAll("IS_BOXWORK_REQUEST", isBoxWorkRequest.toString())
                 .replaceAll("IS_WELSH_TRANSLATION_REQUIRED", isWelshTranslationRequired.toString());
 
+        if (parentApplicationId == null) {
+            body = body.replace("\"parentApplicationId\": \"RANDOM_PARENT_APPLICATION_ID\",", "");
+        } else {
+            body = body.replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId);
+        }
         return postCommand(getWriteUrl("/send-notification-for-application"),
                 "application/vnd.progression.send-notification-for-application+json", body);
 
