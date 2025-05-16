@@ -41,6 +41,8 @@ subscriptions_descriptor:
           schema_uri: http://justice.gov.uk/core/courts/case-hearing-details-updated-in-unified-search.json
         - name: progression.event.case-ejected
           schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
+        - name: progression.event.court-application-status-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.court-application-status-updated.json
 
       event_source_name: progression
 

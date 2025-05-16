@@ -158,7 +158,10 @@ public class ApplicationAggregate implements Aggregate {
 
                 ),
                 when(CourtApplicationUpdated.class).apply(e-> setCourtApplication(e.getCourtApplication())),
-                when(CourtApplicationStatusUpdated.class).apply(e -> this.applicationStatus = e.getApplicationStatus()),
+                when(CourtApplicationStatusUpdated.class).apply(e -> {
+                    this.applicationStatus = e.getCourtApplication().getApplicationStatus();
+                    setCourtApplication(e.getCourtApplication());
+                }),
                 otherwiseDoNothing());
     }
 
@@ -890,10 +893,12 @@ public class ApplicationAggregate implements Aggregate {
                                 .build()));
     }
 
-    public Stream<Object> patchUpdateApplicationStatus(final UUID applicationId, final ApplicationStatus applicationStatus) {
+    public Stream<Object> patchUpdateApplicationStatus(final ApplicationStatus applicationStatus) {
         return apply(Stream.of(CourtApplicationStatusUpdated.courtApplicationStatusUpdated()
-                .withId(applicationId)
-                .withApplicationStatus(applicationStatus)
+                .withCourtApplication(CourtApplication.courtApplication()
+                        .withValuesFrom(this.courtApplication)
+                        .withApplicationStatus(applicationStatus)
+                        .build())
                 .build()));
     }
 

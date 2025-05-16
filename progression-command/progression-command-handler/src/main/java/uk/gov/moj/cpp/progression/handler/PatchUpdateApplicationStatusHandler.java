@@ -41,7 +41,7 @@ public class PatchUpdateApplicationStatusHandler {
 
         final EventStream eventStream = eventSource.getStreamById(applicationId);
         final ApplicationAggregate aggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
-        final Stream<Object> events = aggregate.patchUpdateApplicationStatus(applicationId, applicationStatus);
+        final Stream<Object> events = aggregate.patchUpdateApplicationStatus(applicationStatus);
         appendEventsToStream(envelope, eventStream, events);
 
     }

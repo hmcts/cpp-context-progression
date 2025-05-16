@@ -24,13 +24,7 @@ public class HearingResultedApplicationUpdatedTransformer extends BaseCourtAppli
                 new JsonObjectToObjectConverter(objectMapper).convert(jsonObject, HearingResultedApplicationUpdated.class);
 
         final CourtApplication courtApplication = courtApplicationCreated.getCourtApplication();
-        final Map<UUID, CaseDetails> caseDocumentsMap = new HashMap<>();
-        transformCourtApplicationStatusChange(courtApplication, caseDocumentsMap);
-
-        final List<CaseDetails> caseDetailsList = caseDocumentsMap.values().stream().collect(Collectors.toList());
-        final HashMap<String, List<CaseDetails>> caseDocuments = new HashMap<>();
-        caseDocuments.put("caseDocuments", caseDetailsList);
-        return caseDocuments;
+        return  createCaseDocumentsFromCourtApplication(courtApplication);
     }
 
     @Override

@@ -35,13 +35,14 @@ public class CourtApplicationsUpdatedEventListener {
     @Handles("progression.event.court-application-status-updated")
     public void processApplicationStatusUpdated(final JsonEnvelope event) {
         final CourtApplicationStatusUpdated payload = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationStatusUpdated.class);
-        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(payload.getId());
+        final CourtApplication courtApplication = payload.getCourtApplication();
+        final CourtApplicationEntity applicationEntity = courtApplicationRepository.findByApplicationId(courtApplication.getId());
 
         final JsonObject applicationJson = stringToJsonObjectConverter.convert(applicationEntity.getPayload());
         final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
         final CourtApplication updatedApplication = CourtApplication.courtApplication()
                 .withValuesFrom(persistedApplication)
-                .withApplicationStatus(payload.getApplicationStatus())
+                .withApplicationStatus(courtApplication.getApplicationStatus())
                 .build();
         applicationEntity.setPayload(objectToJsonObjectConverter.convert(updatedApplication).toString());
         courtApplicationRepository.save(applicationEntity);

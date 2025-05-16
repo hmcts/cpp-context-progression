@@ -52,7 +52,7 @@ class CourtApplicationsUpdatedEventListenerTest {
     }
 
     @Test
-    void shouldProcessApplicationStatusUpdated(){
+    void shouldProcessApplicationStatusUpdated() {
         final UUID applicationId = UUID.randomUUID();
         final CourtApplicationEntity entity = new CourtApplicationEntity();
         entity.setApplicationId(applicationId);
@@ -62,8 +62,10 @@ class CourtApplicationsUpdatedEventListenerTest {
 
         listener.processApplicationStatusUpdated(envelopeFrom(metadataWithRandomUUID("progression.event.court-application-status-updated"),
                 objectToJsonObjectConverter.convert(CourtApplicationStatusUpdated.courtApplicationStatusUpdated()
-                        .withApplicationStatus(IN_PROGRESS)
-                        .withId(applicationId)
+                        .withCourtApplication(CourtApplication.courtApplication()
+                                .withApplicationStatus(IN_PROGRESS)
+                                .withId(applicationId)
+                                .build())
                         .build()
                 )));
 

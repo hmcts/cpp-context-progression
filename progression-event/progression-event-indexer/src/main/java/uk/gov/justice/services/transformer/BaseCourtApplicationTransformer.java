@@ -22,6 +22,7 @@ import uk.gov.justice.services.unifiedsearch.client.domain.Hearing;
 import uk.gov.justice.services.unifiedsearch.client.domain.Party;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -46,6 +47,16 @@ public abstract class BaseCourtApplicationTransformer implements Transform {
     protected PartiesMapper partiesMapper = new PartiesMapper();
 
     protected CaseDetailsMapper caseDetailsMapper = new CaseDetailsMapper();
+
+    protected HashMap<String, List<CaseDetails>> createCaseDocumentsFromCourtApplication(final CourtApplication courtApplication) {
+        final Map<UUID, CaseDetails> caseDocumentsMap = new HashMap<>();
+        transformCourtApplicationStatusChange(courtApplication, caseDocumentsMap);
+
+        final List<CaseDetails> caseDetailsList = new ArrayList<>(caseDocumentsMap.values());
+        final HashMap<String, List<CaseDetails>> caseDocuments = new HashMap<>();
+        caseDocuments.put("caseDocuments", caseDetailsList);
+        return caseDocuments;
+    }
 
     protected Map<UUID, CaseDetails> transformCourtApplicationStatusChange(final CourtApplication courtApplication, final Map<UUID, CaseDetails> caseDocumentsMap) {
         final List<CourtApplicationCase> courtApplicationCases = courtApplication.getCourtApplicationCases();

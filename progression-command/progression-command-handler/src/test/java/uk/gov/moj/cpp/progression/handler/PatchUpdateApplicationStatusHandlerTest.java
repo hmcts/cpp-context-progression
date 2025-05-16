@@ -9,8 +9,10 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.PatchUpdateApplicationStatus;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -60,7 +62,9 @@ class PatchUpdateApplicationStatusHandlerTest {
     void shouldHandleWhenApplicationStatusIsNotProvided() throws EventStreamException {
         final UUID applicationId = randomUUID();
         when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(new ApplicationAggregate());
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        setField(applicationAggregate, "courtApplication", CourtApplication.courtApplication().withId(applicationId).build());
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         final MetadataBuilder metadataBuilder = metadataFrom(metadataWithRandomUUID("progression.command.patch-update-application-status")
                 .withUserId(randomUUID().toString())
@@ -75,7 +79,7 @@ class PatchUpdateApplicationStatusHandlerTest {
         assertThat(eventList.size(), is(1));
         final JsonEnvelope event = eventList.get(0);
         assertThat(event.metadata().name(), is("progression.event.court-application-status-updated"));
-        final JsonObject payload = event.payload().asJsonObject();
+        final JsonObject payload = event.payload().asJsonObject().getJsonObject("courtApplication");
         assertThat(payload.getString("id"), is(applicationId.toString()));
         assertThat(payload.getString("applicationStatus"), is(IN_PROGRESS.toString()));
 
@@ -86,7 +90,9 @@ class PatchUpdateApplicationStatusHandlerTest {
     void shouldHandleWhenApplicationStatusIsProvided(final ApplicationStatus applicationStatus) throws EventStreamException {
         final UUID applicationId = randomUUID();
         when(eventSource.getStreamById(applicationId)).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(new ApplicationAggregate());
+        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
+        setField(applicationAggregate, "courtApplication", CourtApplication.courtApplication().withId(applicationId).build());
+        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
 
         final MetadataBuilder metadataBuilder = metadataFrom(metadataWithRandomUUID("progression.command.patch-update-application-status")
                 .withUserId(randomUUID().toString())
@@ -103,8 +109,9 @@ class PatchUpdateApplicationStatusHandlerTest {
         final JsonEnvelope event = eventList.get(0);
         assertThat(event.metadata().name(), is("progression.event.court-application-status-updated"));
         final JsonObject payload = event.payload().asJsonObject();
-        assertThat(payload.getString("id"), is(applicationId.toString()));
-        assertThat(payload.getString("applicationStatus"), is(applicationStatus.toString()));
+        final JsonObject courtApplication = payload.getJsonObject("courtApplication");
+        assertThat(courtApplication.getString("id"), is(applicationId.toString()));
+        assertThat(courtApplication.getString("applicationStatus"), is(applicationStatus.toString()));
 
     }
 

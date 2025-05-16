@@ -968,14 +968,23 @@ public class ApplicationAggregateTest {
 
     @ParameterizedTest
     @EnumSource(ApplicationStatus.class)
-    void shouldUpdateApplicationStatusWithPatch(final ApplicationStatus applicationStatus){
+    void shouldUpdateApplicationStatusWithPatch(final ApplicationStatus applicationStatus) {
         final UUID applicationId = randomUUID();
-        final List<Object> eventStream = aggregate.patchUpdateApplicationStatus(applicationId, applicationStatus).toList();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(applicationId)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+
+        aggregate.apply(aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false));
+
+        final List<Object> eventStream = aggregate.patchUpdateApplicationStatus(applicationStatus).toList();
 
         assertThat(eventStream.size(), is(1));
         final CourtApplicationStatusUpdated event = (CourtApplicationStatusUpdated) eventStream.get(0);
-        assertThat(event.getApplicationStatus(), is(applicationStatus));
-        assertThat(event.getId(), is(applicationId));
+        assertThat(event.getCourtApplication().getApplicationStatus(), is(applicationStatus));
 
         aggregate.apply(event);
         assertThat(aggregate.getApplicationStatus(), is(applicationStatus));
