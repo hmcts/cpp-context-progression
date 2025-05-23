@@ -211,6 +211,7 @@ public class HearingAggregateTest {
                 .build();
 
         setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_INITIALISED);
         final List<Object> eventStream = hearingAggregate.deleteHearing(hearingId).collect(toList());
 
         assertThat(eventStream.size(), is(4));
@@ -662,6 +663,7 @@ public class HearingAggregateTest {
 
         final Hearing hearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
         setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_INITIALISED);
 
         final List<Object> eventStream1 = hearingAggregate.deleteHearing(hearing.getId()).collect(toList());
         assertThat(eventStream1.size(), is(4));
@@ -673,6 +675,21 @@ public class HearingAggregateTest {
         assertThat(hearingId, is(deletedHearingPopulatedToProbationCaseworker.getHearing().getId()));
         VejDeletedHearingPopulatedToProbationCaseworker vejDeletedHearingPopulatedToProbationCaseworker = (VejDeletedHearingPopulatedToProbationCaseworker) eventStream1.get(3);
         assertThat(hearingId, is(vejDeletedHearingPopulatedToProbationCaseworker.getHearing().getId()));
+    }
+
+    @Test
+    public void shouldNotDeleteHearingWhenHearingIsResulted() {
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_RESULTED);
+
+        final List<Object> eventStream1 = hearingAggregate.deleteHearing(hearing.getId()).collect(toList());
+        assertThat(eventStream1.size(), is(0));
     }
 
 
@@ -986,7 +1003,14 @@ public class HearingAggregateTest {
 
     @Test
     public void shouldNotRaiseDefendantUpdatedEventWhenTheHearingDeleted(){
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
         final UUID hearingId = randomUUID();
+        final UUID offenceId = randomUUID();
+
+        final Hearing hearing = getHearingForVejWithoutCourtApplications(prosecutionCaseId, courtApplicationId, hearingId, offenceId);
+        setField(hearingAggregate, "hearing", hearing);
+        setField(hearingAggregate, "hearingListingStatus", HearingListingStatus.HEARING_INITIALISED);
         hearingAggregate.deleteHearing(hearingId);
 
         final DefendantUpdate defendantUpdate = DefendantUpdate.defendantUpdate().build();

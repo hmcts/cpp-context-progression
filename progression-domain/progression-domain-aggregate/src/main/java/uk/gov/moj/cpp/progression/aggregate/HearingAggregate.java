@@ -1067,7 +1067,7 @@ public class HearingAggregate implements Aggregate {
 
     public Stream<Object> deleteHearing(final UUID hearingId) {
 
-        if (this.deleted) {
+        if (this.deleted  || (nonNull(hearingListingStatus) && hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED)))  {
             return empty();
         }
 
@@ -1108,11 +1108,13 @@ public class HearingAggregate implements Aggregate {
         final List<UUID> courtApplicationIds = isNotEmpty(hearing.getCourtApplications()) ? getCourtApplicationIds(hearing) : null;
 
         final Stream.Builder builder = Stream.builder();
-        builder.add(HearingDeleted.hearingDeleted()
-                .withHearingId(hearingId)
-                .withCourtApplicationIds(courtApplicationIds)
-                .withProsecutionCaseIds(prosecutionCaseIds)
-                .build());
+        if(nonNull(hearingListingStatus) && !hearingListingStatus.equals(HearingListingStatus.HEARING_RESULTED)) {
+            builder.add(HearingDeleted.hearingDeleted()
+                    .withHearingId(hearingId)
+                    .withCourtApplicationIds(courtApplicationIds)
+                    .withProsecutionCaseIds(prosecutionCaseIds)
+                    .build());
+        }
         if (isNotEmpty(prosecutionCaseIds)) {
             builder.add(OffenceInHearingDeleted.offenceInHearingDeleted()
                     .withProsecutionCaseIds(prosecutionCaseIds)
@@ -1551,7 +1553,17 @@ public class HearingAggregate implements Aggregate {
         return this.committingCourt;
     }
 
-
+    public Stream<Object> processCreateNextHearing(final CreateNextHearing createNextHearing) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(NextHearingsRequested.nextHearingsRequested()
+                .withHearing(createNextHearing.getHearing())
+                .withCommittingCourt(createNextHearing.getCommittingCourt())
+                .withSeedingHearing(createNextHearing.getSeedingHearing())
+                .withShadowListedOffences(createNextHearing.getShadowListedOffences())
+                .withPreviousBookingReferencesWithCourtScheduleIds(createNextHearing.getPreviousBookingReferencesWithCourtScheduleIds())
+                .build());
+        return apply(streamBuilder.build());
+    }
 
     public Stream<Object> processHearingResults(final Hearing hearing, final ZonedDateTime sharedTime, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
 
@@ -2609,7 +2621,26 @@ public class HearingAggregate implements Aggregate {
                     .build());
         }
 
+        if(events.stream().anyMatch(event -> event instanceof DeleteNextHearingsRequested) &&
+                events.stream().anyMatch(event -> event instanceof NextHearingsRequested)){
+            events.removeIf(event -> event instanceof DeleteNextHearingsRequested);
+            events.removeIf(event -> event instanceof NextHearingsRequested);
+            DeletePreviousHearingsAndCreateNextHearing deletePreviousHearingsAndCreateNextHearing = DeletePreviousHearingsAndCreateNextHearing.deletePreviousHearingsAndCreateNextHearing()
+                    .withCreateNextHearing(CreateNextHearing.createNextHearing()
+                            .withHearing(hearing)
+                            .withSeedingHearing(seedingHearing)
+                            .withShadowListedOffences(shadowListedOffences)
+                            .withCommittingCourt(shouldPopulateCommittingCourt ? court : null)
+                            .withPreviousBookingReferencesWithCourtScheduleIds(bookingReferenceCourtScheduleIds)
+                            .build())
+                    .withDeletePreviousHearings(DeletePreviousHearings.deletePreviousHearings()
+                            .withHearingId(hearing.getId())
+                            .withSeedingHearing(seedingHearing)
+                            .build())
+                    .build();
+            events.add(deletePreviousHearingsAndCreateNextHearing);
 
+        }
 
         return events;
     }
