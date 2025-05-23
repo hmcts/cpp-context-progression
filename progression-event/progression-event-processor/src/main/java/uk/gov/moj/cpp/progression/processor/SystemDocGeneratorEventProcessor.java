@@ -116,7 +116,7 @@ public class SystemDocGeneratorEventProcessor {
 
         if (COURT_REGISTER.equalsIgnoreCase(originatingSource)) {
 
-            final String courtCenterStreamId = documentAvailablePayload.getString("sourceCorrelationId");
+            final String courtCenterStreamId = documentAvailablePayload.getString(SOURCE_CORRELATION_ID);
             final NotifyCourtRegister notifyCourtRegister = new NotifyCourtRegister.Builder()
                     .withCourtRegisterId(fromString(courtCenterStreamId))
                     .withSystemDocGeneratorId(fromString(fileId))
