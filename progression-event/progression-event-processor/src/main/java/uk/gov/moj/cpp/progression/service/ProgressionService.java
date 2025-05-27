@@ -197,7 +197,8 @@ public class ProgressionService {
     private static final String REMIT_RESULT_IDS = "remitResultIds";
     private static final String IS_BOX_HEARING = "isBoxHearing";
     private static final String PROGRESSION_QUERY_CASE_HEARINGS = "progression.query.casehearings";
-
+    private static final String PROGRESSION_QUERY_RECORD_SHEET = "progression.query.record-sheet";
+    private static final String PROGRESSION_QUERY_CASE_DEFENDANT_HEARINGS = "progression.query.case-defendant-hearings";
 
     private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
     private static final String PROGRESSION_QUERY_ACTIVE_APPLICATIONS_ON_CASE = "progression.query.active-applications-on-case";
@@ -606,6 +607,18 @@ public class ProgressionService {
                 }
             });
         }
+    }
+
+    public JsonObject generateTrialRecordSheetPayload(JsonEnvelope envelope, final UUID caseId, final UUID defendantId) {
+        LOGGER.info(">>1300 Generating trial record sheet for caseId {} and defendantId {}", caseId, defendantId);
+        final JsonObject requestParameter = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("defendantId", defendantId.toString())
+                .build();
+
+        return requester.requestAsAdmin(enveloper
+                .withMetadataFrom(envelope, PROGRESSION_QUERY_RECORD_SHEET)
+                .apply(requestParameter)).payloadAsJsonObject();
     }
 
     /**

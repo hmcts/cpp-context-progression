@@ -64,6 +64,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 public class PreAndPostConditionHelper {
 
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
+    private static final String RECORD_SHEET_EXTRACT = "RecordSheet";
     public static final String APPLICATION_VND_PROGRESSION_REFER_CASES_TO_COURT_JSON = "application/vnd.progression.refer-cases-to-court+json";
 
     public static Response addProsecutionCaseToCrownCourtForIngestion(final String caseId, final String defendantId, final String materialIdOne,
@@ -1293,6 +1294,16 @@ public class PreAndPostConditionHelper {
         }
         return pollForResponse(join("", "/prosecutioncases/", caseId, "/defendants/", defendantId, "/extract/", extractType, queryParam), "application/vnd.progression.query.court-extract+json");
     }
+
+    public static String getRecordSheetExtractPdf(final String caseId, final String defendantId, final String hearingId, final String extractType) {
+        String queryParam = "";
+        if (RECORD_SHEET_EXTRACT.equals(extractType)) {
+            queryParam = "?hearingIds=" + hearingId;
+        }
+        return pollForResponse(join("", "/prosecutioncases/", caseId, "/defendants/", defendantId, "/record-sheet/" , queryParam), "application/vnd.progression.query.record-sheet+json");
+    }
+
+
 
     public static String ejectCaseExtractPdf(final String caseId, final String defendantId) {
         return pollForResponse(join("", "/prosecutioncases/", caseId, "/defendants/", defendantId, "/ejectcase/"), "application/vnd.progression.query.eject-case+json");

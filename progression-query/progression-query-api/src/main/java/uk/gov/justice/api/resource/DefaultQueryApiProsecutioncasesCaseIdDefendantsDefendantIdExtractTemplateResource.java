@@ -11,17 +11,10 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.api.resource.utils.CourtExtractTransformer;
-import uk.gov.justice.api.resource.utils.payload.PleaValueDescriptionBuilder;
-import uk.gov.justice.api.resource.utils.payload.ResultTextFlagBuilder;
-import uk.gov.justice.core.courts.ProsecutionCase;
-import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
-import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.adapter.rest.multipart.FileInputDetailsFactory;
 import uk.gov.justice.services.adapter.rest.parameter.ParameterCollectionBuilderFactory;
 import uk.gov.justice.services.adapter.rest.processor.RestProcessor;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
@@ -67,6 +60,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     public static final String PROGRESSION_QUERY_PROSECUTION_CASE = "progression.query.prosecutioncase";
     public static final String COURT_EXTRACT = "CrownCourtExtract";
     public static final String CERTIFICATE_OF_ACQUITTAL_CONVICTION = "CertificateOfAcquittalConviction";
+    public static final String RECORD_SHEET = "RecordSheet";
 
     @Inject
     RestProcessor restProcessor;
@@ -100,19 +94,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
     @Inject
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Inject
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Inject
     private CourtExtractTransformer courtExtractTransformer;
-
-    @Inject
-    private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
-
-    @Inject
-    private ResultTextFlagBuilder resultTextFlagBuilder;
 
     private UUID userId;
 
@@ -163,11 +145,7 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final byte[] resultOrderAsByteArray;
         final InputStream documentInputStream;
         try {
-            LOGGER.info("transform court extract payload : {}", document.toObfuscatedDebugString());
-            final JsonObject payload = transformToTemplateConvert(document.payloadAsJsonObject(), defendantId, extractType, hearingIdList);
-            LOGGER.info("create court extract with payload : {}", payload);
-            JsonObject newPayload = pleaValueDescriptionBuilder.rebuildPleaWithDescription(payload);
-            newPayload = resultTextFlagBuilder.rebuildWithResultTextFlag(newPayload);
+            JsonObject newPayload = courtExtractTransformer.getTransformedPayload(document, defendantId, extractType, hearingIdList, userId);
             resultOrderAsByteArray = documentGeneratorClientProducer.documentGeneratorClient().generatePdfDocument(newPayload, getTemplateName(extractType), systemUser);
             documentInputStream = new ByteArrayInputStream(resultOrderAsByteArray);
         } catch (IOException e) {
@@ -178,17 +156,13 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     }
 
     public String getTemplateName(String template) {
-        if(COURT_EXTRACT.equals(template)) {
-            return COURT_EXTRACT;
+        switch (template) {
+            case COURT_EXTRACT:
+                return COURT_EXTRACT;
+            case RECORD_SHEET:
+                return RECORD_SHEET;
+            default:
+                return CERTIFICATE_OF_ACQUITTAL_CONVICTION;
         }
-
-        return CERTIFICATE_OF_ACQUITTAL_CONVICTION;
-    }
-
-    private JsonObject transformToTemplateConvert(JsonObject jsonObject, final String defendantId, final String extractType, final List<String> hearingIdList) {
-        final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("hearingsAtAGlance"), GetHearingsAtAGlance.class);
-        final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(jsonObject.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-        final CourtExtractRequested courtExtractRequested = courtExtractTransformer.getCourtExtractRequested(hearingsAtAGlance, defendantId, extractType, hearingIdList, userId, prosecutionCase);
-        return objectToJsonObjectConverter.convert(courtExtractRequested);
     }
 }

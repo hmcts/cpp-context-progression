@@ -237,17 +237,19 @@ public class CourtApplicationProcessor {
             LOGGER.info("CourtApplication  {}", courtApplication.getId());
         }
 
-        courtApplication.getCourtApplicationCases()
-                .stream()
-                .filter(courtApplicationCase -> INACTIVE.equals(courtApplicationCase.getCaseStatus()))
-                .forEach(prosecutionCase -> {
-                    final JsonObject caseCommand = createObjectBuilder()
-                            .add("prosecutionCaseId", prosecutionCase.getProsecutionCaseId().toString())
-                            .add("defendantId", courtApplication.getSubject().getMasterDefendant().getDefendantCase().get(0).getDefendantId().toString())
-                            .add("masterDefendantId", courtApplication.getSubject().getMasterDefendant().getMasterDefendantId().toString())
-                            .build();
-                    sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(REMOVE_DEFENDANT_CUSTODIAL_ESTABLISHMENT_FROM_CASE).build(), caseCommand));
-                });
+        if(isNotEmpty(courtApplication.getCourtApplicationCases())){
+            courtApplication.getCourtApplicationCases()
+                    .stream()
+                    .filter(courtApplicationCase -> INACTIVE.equals(courtApplicationCase.getCaseStatus()))
+                    .forEach(prosecutionCase -> {
+                        final JsonObject caseCommand = createObjectBuilder()
+                                .add("prosecutionCaseId", prosecutionCase.getProsecutionCaseId().toString())
+                                .add("defendantId", courtApplication.getSubject().getMasterDefendant().getDefendantCase().get(0).getDefendantId().toString())
+                                .add("masterDefendantId", courtApplication.getSubject().getMasterDefendant().getMasterDefendantId().toString())
+                                .build();
+                        sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(REMOVE_DEFENDANT_CUSTODIAL_ESTABLISHMENT_FROM_CASE).build(), caseCommand));
+                    });
+        }
     }
 
     private void sendUpdateCpsDefendantIdCommand(final JsonEnvelope event, final CourtApplicationCreated courtApplicationCreated) {

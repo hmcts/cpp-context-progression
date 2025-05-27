@@ -180,6 +180,12 @@
         "age": {
           "type": "string"
         },
+        "ethnicity": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
         "address": {
           "$ref": "http://justice.gov.uk/core/courts/address.json#"
         },
@@ -230,6 +236,9 @@
         },
         "legalAidStatus": {
           "type": "string"
+        },
+        "remandStatus": {
+          "type": "string"
         }
       },
       "required": [
@@ -272,6 +281,9 @@
         },
         "reportingRestrictionReason": {
           "type": "string"
+        },
+        "allOffencesProceedingsConcluded": {
+          "type": "boolean"
         },
         "offences": {
           "type": "array",
@@ -338,6 +350,13 @@
           "minItems": 1,
           "items": {
             "$ref": "#/definitions/amendment"
+          }
+        },
+        "companyRepresentatives": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/counsel"
           }
         }
       },
@@ -454,6 +473,9 @@
         },
         "committedForSentence": {
           "$ref": "#/definitions/committedForSentence"
+        },
+        "proceedingsConcluded": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -569,6 +591,9 @@
               "type": "string"
             },
             "applicationParticulars": {
+              "type": "string"
+            },
+            "applicationLegislation": {
               "type": "string"
             },
             "applicationDate": {
@@ -756,6 +781,9 @@
           "type": "string"
         },
         "offenceTitle": {
+          "type": "string"
+        },
+        "offenceLegislation": {
           "type": "string"
         },
         "offenceTitleWelsh": {

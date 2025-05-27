@@ -1,28 +1,18 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 
-import static java.util.Objects.nonNull;
-import static java.util.UUID.fromString;
-import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
-
-import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
+import uk.gov.moj.cpp.progression.query.api.service.RecordSheetService;
 import uk.gov.moj.cpp.progression.query.api.service.CourtOrderService;
 import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
-
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -30,6 +20,17 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.moj.cpp.progression.query.api.helper.ProgressionQueryHelper.addProperty;
 
 @ServiceComponent(Component.QUERY_API)
 public class ProsecutionCaseQueryApi {
@@ -49,7 +50,10 @@ public class ProsecutionCaseQueryApi {
     private static final String REPRESENTATION = "representation";
     public static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
     public static final String ORGANISATION_MIS_MATCH = "OrganisationMisMatch";
-
+    public static final String PROGRESSION_QUERY_PROSECUTION_CASE = "progression.query.prosecutioncase";
+    public static final String RECORD_SHEET = "RecordSheet";
+    @Inject
+    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
     @Inject
     private Requester requester;
 
@@ -59,6 +63,8 @@ public class ProsecutionCaseQueryApi {
     @Inject
     private OrganisationService organisationService;
 
+    @Inject
+    private RecordSheetService recordSheetService;
     @Inject
     private CourtOrderService courtOrderService;
 
@@ -209,6 +215,36 @@ public class ProsecutionCaseQueryApi {
 
         return query;
     }
+
+    @Handles("progression.query.record-sheet")
+    public JsonEnvelope getRecordSheet(final JsonEnvelope query) {
+        final UUID userId = getUserId();
+        JsonEnvelope documentQuery = getDocumentQuery(query, userId);
+        return recordSheetService.getTrialRecordSheetPayload(query, getCaseProsecutionCase(documentQuery), userId );
+    }
+
+    private JsonEnvelope getDocumentQuery(final JsonEnvelope query, final UUID userId) {
+        final JsonObject payloadAsJsonObject = query.payloadAsJsonObject();
+        String caseId = payloadAsJsonObject.containsKey(CASE_ID) ? payloadAsJsonObject.getString(CASE_ID) : null;
+
+        return envelopeFrom(
+                metadataBuilder()
+                        .withId(randomUUID())
+                        .withName(PROGRESSION_QUERY_PROSECUTION_CASE)
+                        .withUserId(userId.toString())
+                        .build(),
+                createObjectBuilder()
+                        .add(CASE_ID, caseId)
+                        .add("template", RECORD_SHEET)
+                        .build()
+        );
+    }
+
+    private UUID getUserId() {
+        final Optional<UUID> systemUserOptional = serviceContextSystemUserProvider.getContextSystemUserId();
+        return systemUserOptional.isPresent() ? systemUserOptional.get() : null;
+    }
+
 
     @Handles("progression.query.eject-case")
     public JsonEnvelope ejectCase(final JsonEnvelope query) {

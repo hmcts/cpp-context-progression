@@ -14,6 +14,12 @@ import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForP
 import static uk.gov.moj.cpp.progression.helper.OnlinePleaProcessorHelper.isForPleaFinancialDocument;
 
 import uk.gov.justice.core.courts.CourtDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.gov.justice.core.courts.CaseDocument;
+import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.DocumentCategory;
+import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.progression.courts.NotifyCourtRegister;
 import uk.gov.justice.progression.courts.NotifyPrisonCourtRegister;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
@@ -36,6 +42,7 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
+import uk.gov.moj.cpp.progression.service.MaterialService;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -43,6 +50,11 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +69,8 @@ public class SystemDocGeneratorEventProcessor {
     private static final String  PCR_FILE_NAME_FORMAT = "PCR_%s_%s.pdf";
     private static final String PRISON_COURT_REGISTER = "PRISON_COURT_REGISTER";
     private static final String NOWS = "NOWs";
+    private static final String RECORD_SHEET_ORIG_SOURCE = "RECORD_SHEET";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemDocGeneratorEventProcessor.class);
     private static final String CASE_ID = "caseId";
     private static final String DEFENDANT_ID = "defendantId";
@@ -82,6 +96,13 @@ public class SystemDocGeneratorEventProcessor {
     public static final String PROPERTY_VALUE = "propertyValue";
     public static final String ID = "id";
     public static final String PRISON_COURT_REGISTER_STREAM_ID = "prisonCourtRegisterStreamId";
+    private static final String DOCUMENT_TYPE_DESCRIPTION = "Private section - Judges & HMCTS";
+    private static final UUID CASE_DOCUMENT_TYPE_ID = fromString("460fae22-c002-11e8-a355-529269fb1459");
+    private static final String APPLICATION_PDF = "application/pdf";
+    private static final String RECORD_SHEET_CASE_ID = "caseId";
+    public static final String DEFENDANT_NAME = "defendantName";
+    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
     @Inject
     private Sender sender;
 
@@ -138,8 +159,76 @@ public class SystemDocGeneratorEventProcessor {
             processPrisonCourtRegisterDocumentAvailable(documentAvailableEvent, fileId);
         } else if (NOWS.equalsIgnoreCase(originatingSource)) {
             processNowsDocumentAvailable(documentAvailableEvent);
+        } else if (RECORD_SHEET_ORIG_SOURCE.equalsIgnoreCase(originatingSource)) {
+            processRecordSheetDocumentAvailable(documentAvailableEvent, fileId);
         }
     }
+
+    private void processRecordSheetDocumentAvailable(JsonEnvelope documentAvailableEvent, final String fileId) {
+        final JsonObject documentAvailablePayload = documentAvailableEvent.payloadAsJsonObject();
+        Optional<UUID> recordSheetCaseId = Optional.empty();
+        Optional<String> defendantName = Optional.empty();
+        final UUID materialId = randomUUID();
+        final Optional<UUID> contextSystemUserId = userProvider.getContextSystemUserId();
+
+        materialService.uploadMaterial(UUID.fromString(fileId), materialId, contextSystemUserId.orElse(null));
+
+        if (documentAvailablePayload.containsKey(ADDITIONAL_INFORMATION)) {
+            final JsonArray additionalInformation = documentAvailablePayload.getJsonArray(ADDITIONAL_INFORMATION);
+            if (nonNull(additionalInformation)) {
+                recordSheetCaseId = additionalInformation.getValuesAs(JsonObject.class).stream()
+                        .filter(jsonObj -> RECORD_SHEET_CASE_ID.equalsIgnoreCase(jsonObj.getString(PROPERTY_NAME, EMPTY)))
+                        .filter(jsonObj -> nonNull(jsonObj.getString(PROPERTY_VALUE, null)) && isNotEmpty(jsonObj.getString(PROPERTY_VALUE, EMPTY)))
+                        .map(prisonObj -> UUID.fromString(prisonObj.getString(PROPERTY_VALUE)))
+                        .findFirst();
+                defendantName = additionalInformation.getValuesAs(JsonObject.class).stream()
+                        .filter(jsonObj -> DEFENDANT_NAME.equalsIgnoreCase(jsonObj.getString(PROPERTY_NAME, EMPTY)))
+                        .filter(jsonObj -> nonNull(jsonObj.getString(PROPERTY_VALUE, null)) && isNotEmpty(jsonObj.getString(PROPERTY_VALUE, EMPTY)))
+                        .map(prisonObj -> prisonObj.getString(PROPERTY_VALUE))
+                        .findFirst();
+            }
+        }
+
+        final String fileName = String.format("RecordSheet_%s.pdf", defendantName.get());
+        if (recordSheetCaseId.isPresent()) {
+            addRecordSheetCourtDocument(documentAvailableEvent, recordSheetCaseId.get(), materialId, fileName, contextSystemUserId.orElse(null));
+        }
+    }
+
+    private void addRecordSheetCourtDocument(final JsonEnvelope envelope, final UUID caseUUID, final UUID materialId, final String filename, final UUID userId) {
+        CourtDocument courtDocument = buildRecordSheetCourtDocument(caseUUID, materialId, filename);
+        final JsonObject jsonObject = createObjectBuilder()
+                .add(MATERIAL_ID, materialId.toString())
+                .add(COURT_DOCUMENT, objectToJsonObjectConverter.convert(courtDocument))
+                .build();
+
+        sender.send(assembleEnvelopeWithPayloadAndMetaDetails(jsonObject, PROGRESSION_COMMAND_ADD_COURT_DOCUMENT, userId.toString()));
+    }
+
+    private CourtDocument buildRecordSheetCourtDocument(final UUID caseUUID, final UUID materialId, final String filename) {
+        final DocumentCategory documentCategory = DocumentCategory.documentCategory()
+                .withCaseDocument(CaseDocument.caseDocument()
+                        .withProsecutionCaseId(caseUUID)
+                        .build())
+                .build();
+
+        final Material material = Material.material().withId(materialId)
+                .withReceivedDateTime(ZonedDateTime.now())
+                .build();
+
+        return CourtDocument.courtDocument()
+                .withCourtDocumentId(randomUUID())
+                .withDocumentCategory(documentCategory)
+                .withDocumentTypeDescription(DOCUMENT_TYPE_DESCRIPTION)
+                .withDocumentTypeId(CASE_DOCUMENT_TYPE_ID)
+                .withMimeType(APPLICATION_PDF)
+                .withName(filename)
+                .withMaterials(Collections.singletonList(material))
+                .withSendToCps(false)
+                .withContainsFinancialMeans(false)
+                .build();
+    }
+
 
     @Handles(DOCUMENT_GENERATION_FAILED_EVENT_NAME)
     public void handleDocumentGenerationFailed(final JsonEnvelope envelope) {

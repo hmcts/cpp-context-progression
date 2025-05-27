@@ -214,6 +214,9 @@ subscriptions_descriptor:
         - name: progression.event.hearing-resulted-case-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
 
+        - name: progression.event.defendant-trial-record-sheet-requested
+          schema_uri: http://justice.gov.uk/core/courts/defendant-trial-record-sheet-requested.json
+
         - name: progression.event.hearing-resulted-application-updated
           schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
 

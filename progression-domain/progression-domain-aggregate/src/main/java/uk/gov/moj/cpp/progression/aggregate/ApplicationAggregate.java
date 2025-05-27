@@ -66,6 +66,7 @@ import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAddressOnApplicationUpdated;
+import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
@@ -589,23 +590,42 @@ public class ApplicationAggregate implements Aggregate {
                 .build()));
     }
 
+
     public Stream<Object> hearingResulted(CourtApplication courtApplication) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        final ApplicationStatus applicationStatusAfterHearingResulted = getApplicationStatusAfterHearingResulted(courtApplication);
+
         if (FINALISED.equals(courtApplication.getApplicationStatus()) && isEmpty(courtApplication.getJudicialResults())) {
-            return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(
+            streamBuilder.add((hearingResultedApplicationUpdated().withCourtApplication(
                             courtApplication()
                                     .withValuesFrom(courtApplication)
                                     .withJudicialResults(this.courtApplication.getJudicialResults())
-                                    .withApplicationStatus(FINALISED)
+                                    .build())
+                    .build()));
+
+        } else {
+            streamBuilder.add((hearingResultedApplicationUpdated().withCourtApplication(
+                            courtApplication()
+                                    .withValuesFrom(courtApplication)
+                                    .withApplicationStatus(applicationStatusAfterHearingResulted)
                                     .build())
                     .build()));
         }
 
-        return apply(Stream.of(hearingResultedApplicationUpdated().withCourtApplication(
-                        courtApplication()
-                                .withValuesFrom(courtApplication)
-                                .withApplicationStatus(getApplicationStatusAfterHearingResulted(courtApplication))
-                                .build())
-                .build()));
+        if (nonNull(courtApplication.getCourtOrder()) && nonNull(courtApplication.getCourtOrder().getDefendantIds()) && applicationStatusAfterHearingResulted.equals(FINALISED)) {
+            courtApplication.getCourtOrder().getDefendantIds().forEach(defendant -> {
+                if (nonNull(courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseId())) {
+                    streamBuilder.add(DefendantTrialRecordSheetRequested.defendantTrialRecordSheetRequested()
+                            .withCaseId(courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseId())
+                            .withDefendantId(UUID.fromString(defendant))
+                            .build());
+                }
+            });
+        }
+
+        return streamBuilder.build();
+
     }
 
     private ApplicationStatus getApplicationStatusAfterHearingResulted(final CourtApplication courtApplication) {

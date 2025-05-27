@@ -25,9 +25,6 @@ import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.adapter.rest.multipart.FileInputDetailsFactory;
 import uk.gov.justice.services.adapter.rest.parameter.ParameterCollectionBuilderFactory;
 import uk.gov.justice.services.adapter.rest.processor.RestProcessor;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.logging.HttpTraceLoggerHelper;
@@ -37,6 +34,7 @@ import uk.gov.moj.cpp.system.documentgenerator.client.DocumentGeneratorClientPro
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,23 +88,14 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
     @Mock
     private DocumentGeneratorClientProducer documentGeneratorClientProducer;
 
-    @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-
-    @Spy
-    private ObjectToJsonObjectConverter objectToJsonObjectConverter;
-
-    @Spy
+    @Mock
     private CourtExtractTransformer courtExtractTransformer;
 
     @Mock
-    private TransformationHelper transformationHelper;
+    private ListingQueryService listingQueryService;
 
     @Mock
     private CourtExtractHelper courtExtractHelper;
-
-    @Mock
-    private ListingQueryService listingQueryService;
 
     @Spy
     private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
@@ -134,16 +123,6 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final String hearingIds = "632b12d5-a404-4472-8de0-3a60b2e6f7ca";
         final UUID userId = fromString("3feb1195-4027-4a35-b686-279f32a3c361");
 
-        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-        setField(this.courtExtractTransformer, "transformationHelper", transformationHelper);
-        setField(this.courtExtractTransformer, "courtExtractHelper", courtExtractHelper);
-        setField(this.courtExtractTransformer, "listingQueryService", listingQueryService);
-        setField(this.courtExtractTransformer, "referenceDataService", referenceDataService);
-        setField(this.courtExtractTransformer, "hearingQueryService", hearingQueryService);
-        setField(this.pleaValueDescriptionBuilder, "referenceDataService", referenceDataService);
-        setField(this.defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource, "pleaValueDescriptionBuilder", pleaValueDescriptionBuilder);
-
         final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
         final DocumentGeneratorClient documentGeneratorClient = mock(DocumentGeneratorClient.class);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -152,12 +131,44 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
             final JsonObject payload = jsonReader.readObject();
             final String newPayload = Resources.toString(getResource("payload-with-plea-description.json"), Charset.defaultCharset());
 
-            when(jsonEnvelope.payloadAsJsonObject()).thenReturn(payload);
+            final JsonReader reader = Json.createReader(new StringReader(newPayload));
+            JsonObject res = reader.readObject();
+
+            when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
+            when(documentGeneratorClient.generatePdfDocument(any(), anyString(), any())).thenReturn(newPayload.getBytes());
+            when(courtExtractTransformer.getTransformedPayload(any(), anyString(), anyString(), any(), any())).thenReturn(res);
+            when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
+            when(interceptorChainProcessor.process(any())).thenReturn(of(jsonEnvelope));
+
+            defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.getCourtExtractByCaseIdContent(caseId, defendantId, template, hearingIds, userId);
+
+            verify(documentGeneratorClient).generatePdfDocument(jsonObjectArgumentCaptor.capture(), anyString(), any());
+            assertThat(jsonObjectArgumentCaptor.getValue().toString(), is(newPayload));
+        }
+    }
+
+    @Test
+    public void shouldGetRecordSheetByCaseIdContent() throws Exception {
+        final String caseId = "8d68d068-4d29-4f2b-9cd7-b162529ee4f3";
+        final String defendantId = "5f080fe7-7020-4c38-ac9a-88681ad05a5e";
+        final String template = "RecordSheet";
+        final String hearingIds = "632b12d5-a404-4472-8de0-3a60b2e6f7ca";
+        final UUID userId = fromString("3feb1195-4027-4a35-b686-279f32a3c361");
+
+        final JsonEnvelope jsonEnvelope = mock(JsonEnvelope.class);
+        final DocumentGeneratorClient documentGeneratorClient = mock(DocumentGeneratorClient.class);
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try (final InputStream stream = loader.getResourceAsStream("resulted.json");
+             final JsonReader jsonReader = Json.createReader(stream)) {
+            final JsonObject payload = jsonReader.readObject();
+            final String newPayload = Resources.toString(getResource("record-sheet-payload-with-plea-description.json"), Charset.defaultCharset());
+            final JsonReader reader = Json.createReader(new StringReader(newPayload));
+            JsonObject res = reader.readObject();
             when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
             when(documentGeneratorClient.generatePdfDocument(any(), anyString(), any())).thenReturn(newPayload.getBytes());
             when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(of(UUID.randomUUID()));
             when(interceptorChainProcessor.process(any())).thenReturn(of(jsonEnvelope));
-            when(referenceDataService.retrievePleaTypeDescriptions()).thenReturn(buildPleaStatusTypeDescriptions());
+            when(courtExtractTransformer.getTransformedPayload(any(), anyString(), anyString(), any(), any())).thenReturn(res);
 
             defaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.getCourtExtractByCaseIdContent(caseId, defendantId, template, hearingIds, userId);
 

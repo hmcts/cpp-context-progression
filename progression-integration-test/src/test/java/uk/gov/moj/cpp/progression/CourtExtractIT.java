@@ -28,6 +28,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCou
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.ejectCaseExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getCourtExtractPdf;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getRecordSheetExtractPdf;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
@@ -37,6 +38,22 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getCrownCourtExtractDocumentRequestByDefendant;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.json.JsonObject;
+
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 @SuppressWarnings("squid:S1607")
 public class CourtExtractIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
@@ -44,6 +61,10 @@ public class CourtExtractIT extends AbstractIT {
     private static final String CROWN_COURT_EXTRACT = "CrownCourtExtract";
     private static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
+    public static final String PAYLOAD = "payload";
+    public static final String EXTRACT_TYPE = "extractType";
+    public static final String RECORD_SHEET = "RecordSheet";
+    public static final String CASE_REFERENCE = "caseReference";
 
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application.json";
@@ -85,6 +106,7 @@ public class CourtExtractIT extends AbstractIT {
         // then
         assertThat(documentContentResponse, is(notNullValue()));
         verifyContentsInCrownCourtExtractPayloadUsedForPdfGeneration();
+        getAndVerifyRecordSheetExtractResponse(documentContentResponse);
     }
 
     @Test
@@ -103,6 +125,7 @@ public class CourtExtractIT extends AbstractIT {
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, "", CERTIFICATE_OF_CONVICTION);
         // then
         assertThat(documentContentResponse, is(notNullValue()));
+        getAndVerifyRecordSheetExtractResponse(documentContentResponse);
     }
 
     @Test
@@ -164,7 +187,7 @@ public class CourtExtractIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, personDefendantOffenceUpdatedMatchers);
 
         final String documentContentResponse = getCourtExtractPdf(caseId, defendantId, hearingId, CROWN_COURT_EXTRACT);
-        assertThat(documentContentResponse, is(notNullValue()));
+        getAndVerifyRecordSheetExtractResponse(documentContentResponse);
     }
 
     private void doAddCourtApplicationAndVerify(boolean withDefendant) throws Exception {
@@ -207,6 +230,16 @@ public class CourtExtractIT extends AbstractIT {
 
         assertThat(crownCourtExtractPayload.has("prosecutingAuthority"), is(true));
         assertThat(crownCourtExtractPayload.getJSONObject("defendant").getString("arrestSummonsNumber"), is("arrest123"));
+    }
+
+    private void getAndVerifyRecordSheetExtractResponse(String documentContentResponse) {
+        final String documentContentOfRecordSheetResponse = getRecordSheetExtractPdf(caseId, defendantId, "", RECORD_SHEET);
+        assertThat(documentContentResponse, is(notNullValue()));
+
+        assertThat(documentContentOfRecordSheetResponse, is(notNullValue()));
+        JsonObject recordSheetResponse = stringToJsonObjectConverter.convert(documentContentOfRecordSheetResponse);
+        assertThat(recordSheetResponse.getJsonObject(PAYLOAD).getString(EXTRACT_TYPE), is(RECORD_SHEET));
+        assertThat(recordSheetResponse.getJsonObject(PAYLOAD).getString(CASE_REFERENCE), is(notNullValue()));
     }
 }
 

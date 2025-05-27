@@ -217,6 +217,9 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnline;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -2032,7 +2035,7 @@ public class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
         final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
@@ -2084,13 +2087,13 @@ public class CaseAggregateTest {
         final List<DefendantJudicialResult> defendantJudicialResults = singletonList(defendantJudicialResult);
         final List<Object> eventStream = caseAggregate.updateCase(prosecutionCase, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(INACTIVE.getDescription()));
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCpsOrganisation(), is("A01"));
-        final Object object1 = eventStream.get(3);
+        final Object object1 = eventStream.get(4);
         assertThat(object1.getClass(), is(equalTo(HearingEventLogsDocumentCreated.class)));
     }
 
@@ -2351,7 +2354,7 @@ public class CaseAggregateTest {
 
         final List<Object> eventStream = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
@@ -2727,15 +2730,15 @@ public class CaseAggregateTest {
         final List<Object> eventStream = this.caseAggregate.updateCase(updatedProsecutionCase, singletonList(defendantJudicialResult),
                 courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStream.size(), is(4));
+        assertThat(eventStream.size(), is(5));
         final Object object = eventStream.get(0);
         assertThat(object.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdated = (HearingResultedCaseUpdated) eventStream.get(0);
         assertThat(hearingResultedCaseUpdated.getProsecutionCase().getCaseStatus(), is(INACTIVE.getDescription()));
 
-        final Object eventTwo = eventStream.get(1);
+        final Object eventTwo = eventStream.get(2);
         assertThat(eventTwo.getClass(), is(equalTo(CaseRetentionPolicyRecorded.class)));
-        final CaseRetentionPolicyRecorded caseRetentionPolicyRecorded = (CaseRetentionPolicyRecorded) eventStream.get(1);
+        final CaseRetentionPolicyRecorded caseRetentionPolicyRecorded = (CaseRetentionPolicyRecorded) eventStream.get(2);
         assertThat(caseRetentionPolicyRecorded.getCaseURN(), is("URN"));
         assertThat(caseRetentionPolicyRecorded.getHearingId(), is(hearingId));
         assertThat(caseRetentionPolicyRecorded.getHearingType(), is(hearingType));
@@ -2747,7 +2750,7 @@ public class CaseAggregateTest {
         assertThat(caseRetentionPolicyRecorded.getPolicyType(), is("NON_CUSTODIAL"));
         assertThat(caseRetentionPolicyRecorded.getPeriod(), is("7Y0M0D"));
 
-        final CaseRetentionLengthCalculated caseRetentionLengthCalculated = (CaseRetentionLengthCalculated) eventStream.get(2);
+        final CaseRetentionLengthCalculated caseRetentionLengthCalculated = (CaseRetentionLengthCalculated) eventStream.get(3);
         assertThat(caseRetentionLengthCalculated.getCaseURN(), is("URN"));
         assertThat(caseRetentionLengthCalculated.getCaseStatus(), is(INACTIVE.getDescription()));
         assertThat(caseRetentionLengthCalculated.getCourtCentreId(), is(courtCentre.getId()));
@@ -7020,7 +7023,7 @@ public class CaseAggregateTest {
 
         final List<Object> eventStreamCustodialInformationUpdateRequested = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
 
-        assertThat(eventStreamCustodialInformationUpdateRequested.size(), is(4));
+        assertThat(eventStreamCustodialInformationUpdateRequested.size(), is(5));
         final Object objectCustodialInformationUpdateRequested = eventStreamCustodialInformationUpdateRequested.get(0);
         assertThat(objectCustodialInformationUpdateRequested.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithCustodialInformation = (HearingResultedCaseUpdated) eventStreamCustodialInformationUpdateRequested.get(0);
@@ -7033,7 +7036,7 @@ public class CaseAggregateTest {
         this.caseAggregate.apply(defendantCustodialEstablishmentRemoved);
 
         final List<Object> eventStreamDefendantCustodialEstablishmentRemoved = this.caseAggregate.updateCase(prosecutionCase, asList(defendantJudicialResult), courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList()).collect(toList());
-        assertThat(eventStreamDefendantCustodialEstablishmentRemoved.size(), is(4));
+        assertThat(eventStreamDefendantCustodialEstablishmentRemoved.size(), is(5));
         final Object objectDefendantCustodialEstablishmentRemoved = eventStreamDefendantCustodialEstablishmentRemoved.get(0);
         assertThat(objectDefendantCustodialEstablishmentRemoved.getClass(), is(equalTo(HearingResultedCaseUpdated.class)));
         final HearingResultedCaseUpdated hearingResultedCaseUpdatedWithoutCustodialInformation = (HearingResultedCaseUpdated) eventStreamDefendantCustodialEstablishmentRemoved.get(0);

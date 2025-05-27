@@ -1,0 +1,1473 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "ACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-04-25T08:20:58.953Z",
+        "id": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
+        "masterDefendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-04-25",
+              "motReasonCode": "02",
+              "motReasonDescription": "Indictable-only offence",
+              "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+              "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+              "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+              "sequenceNumber": 100
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2025-04-25",
+            "count": 0,
+            "dateHeldInCustodySince": "2025-04-25",
+            "endorsableFlag": false,
+            "id": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+            "isDisposed": false,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "INTERMEDIARY",
+                "cjsCode": "4506",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "e720f13c-01ef-49f0-a098-5374ba8344d8",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "promptReference": "4a57cb2a-a7af-496f-8698-89f4257340fa",
+                    "promptSequence": 0,
+                    "usergroups": [
+
+                    ],
+                    "value": "Date and time to be fixed:Yes\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nHearing type:Trial\nEstimated duration:2 HOURS",
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                    "label": "Defendant to attend the next hearing",
+                    "promptReference": "defendantToAttendTheNextHearing",
+                    "promptSequence": 100,
+                    "type": "BOOLEAN",
+                    "usergroups": [
+
+                    ],
+                    "value": "true",
+                    "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                    "welshValue": "true"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "promptReference": "5d28c452-8917-47f7-8335-f3e136388d69",
+                    "promptSequence": 200,
+                    "qualifier": "GE",
+                    "usergroups": [
+
+                    ],
+                    "value": "",
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "label": "Adjournment reasons",
+                    "promptReference": "5480dd39-007d-4fb2-ba4a-e90982cf8fa1",
+                    "promptSequence": 300,
+                    "usergroups": [
+
+                    ],
+                    "value": "",
+                    "welshLabel": "Rheswm dros ohirio:"
+                  }
+                ],
+                "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "label": "Adjournment",
+                "lastSharedDateTime": "2025-04-25",
+                "level": "O",
+                "lifeDuration": false,
+                "nextHearing": {
+                  "adjournmentReason": "To attend or a warrant to issue",
+                  "courtCentre": {
+                    "address": {
+                      "address1": "QEII Law Courts",
+                      "address2": "Derby Square",
+                      "address3": "Liverpool",
+                      "postcode": "L2 1XA"
+                    },
+                    "code": "C05LV00",
+                    "courtHearingLocation": "C05LV00",
+                    "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                    "name": "Liverpool Crown Court",
+                    "psaCode": 1810,
+                    "welshName": "Llys Y Goron Lerpwl"
+                  },
+                  "dateToBeFixed": true,
+                  "estimatedDuration": "2 HOURS",
+                  "estimatedMinutes": 120,
+                  "jurisdictionType": "CROWN",
+                  "type": {
+                    "description": "Trial",
+                    "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                  }
+                },
+                "orderedDate": "2025-04-25",
+                "orderedHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                "policeSubjectLineTitle": "Adjourned",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "qualifier": "GE",
+                "rank": 194200,
+                "resultText": "A - Adjournment\nAdjourned for hearing on a Date and time to be fixed, Liverpool Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "e720f13c-01ef-49f0-a098-5374ba8344d8",
+                "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [
+
+                ],
+                "welshLabel": "Gohiriad"
+              }
+            ],
+            "lastAdjournDate": "2025-04-25",
+            "lastAdjournedHearingType": "To attend or a warrant to issue",
+            "listingNumber": 1,
+            "maxPenalty": "Indictable only",
+            "modeOfTrial": "Indictable",
+            "offenceCode": "OF61102C",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+            "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+            "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+            "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+            "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+              "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+              "pleaDate": "2025-04-25",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": false,
+            "startDate": "2022-12-12",
+            "verdict": {
+              "jurors": {
+                "numberOfJurors": 12,
+                "numberOfSplitJurors": 0,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm"
+              },
+              "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+              "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+              "verdictDate": "2025-04-25",
+              "verdictType": {
+                "category": "Guilty",
+                "categoryType": "GUILTY",
+                "cjsVerdictCode": "G",
+                "description": "Found guilty",
+                "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "sequence": 10,
+                "verdictCode": "G"
+              }
+            },
+            "wording": "The defendant at Zulauf Field, conspired together with Richard Quitzon to assault Melody Mitchell, thereby occasioning actual bodily harm"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF012297828",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "contact": {
+              "home": "015325443756"
+            },
+            "dateOfBirth": "2000-02-18",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Lucy",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "McGlynn",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": false,
+        "prosecutionAuthorityReference": "DEF012297828",
+        "prosecutionCaseId": "473b1b20-199a-42cc-93cc-0c81e44e64cc"
+      },
+      {
+        "courtProceedingsInitiated": "2025-04-25T08:20:58.953Z",
+        "id": "5c75653a-e264-4b59-a419-66221b725a58",
+        "isYouth": false,
+        "masterDefendantId": "5c75653a-e264-4b59-a419-66221b725a58",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-04-25",
+              "motReasonCode": "02",
+              "motReasonDescription": "Indictable-only offence",
+              "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+              "offenceId": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+              "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+              "sequenceNumber": 100
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2025-04-25",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1002",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "durationElement": {
+                  "primaryDurationUnit": "M",
+                  "primaryDurationValue": 6
+                },
+                "dvlaCode": "A",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "8888033c-2110-46d5-b248-23982af11b8c",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                    "label": "Total custodial period",
+                    "promptReference": "totalCustodialPeriod",
+                    "promptSequence": 100,
+                    "type": "INTM",
+                    "usergroups": [
+
+                    ],
+                    "value": "9 Months",
+                    "welshValue": "9 Months"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                    "label": "Prison organisation name",
+                    "promptReference": "prisonOrganisationName",
+                    "promptSequence": 900,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [
+
+                    ],
+                    "value": "HMIRC The Verne",
+                    "welshValue": "HMIRC The Verne"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                    "label": "Prison email address 1",
+                    "promptReference": "prisonEmailAddress1",
+                    "promptSequence": 900,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [
+
+                    ],
+                    "value": "omu.theverne@justice.gov.uk",
+                    "welshValue": "omu.theverne@justice.gov.uk"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                    "label": "Conveyor / custodian name organisation name",
+                    "promptReference": "conveyorcustodiannameOrganisationName",
+                    "promptSequence": 1000,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [
+
+                    ],
+                    "value": "Lavender Hill Magistrates' Court: PECS",
+                    "welshValue": "Lavender Hill Magistrates' Court: PECS"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                    "label": "Conveyor / custodian name email address 1",
+                    "promptReference": "conveyorcustodiannameEmailAddress1",
+                    "promptSequence": 1000,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [
+
+                    ],
+                    "value": "periodicwarrants@geoamey.co.uk",
+                    "welshValue": "periodicwarrants@geoamey.co.uk"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                    "label": "Probation team to be notified organisation name",
+                    "promptReference": "probationteamtobenotifiedOrganisationName",
+                    "promptSequence": 1200,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [
+
+                    ],
+                    "value": "London Division NPS",
+                    "welshValue": "London Division NPS"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                    "label": "Probation team to be notified email address 1",
+                    "promptReference": "probationteamtobenotifiedEmailAddress1",
+                    "promptSequence": 1200,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [
+
+                    ],
+                    "value": "londonnps.court@justice.gov.uk",
+                    "welshValue": "londonnps.court@justice.gov.uk"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "durationSequence": 1,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                    "label": "Imprisonment Period",
+                    "promptReference": "imprisonmentPeriod",
+                    "promptSequence": 100,
+                    "type": "INTM",
+                    "usergroups": [
+
+                    ],
+                    "value": "6 Months",
+                    "welshLabel": "Cyfnod Carcharu",
+                    "welshValue": "6 Months"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "ea957761-0813-4a92-9e7c-b536654325f0",
+                    "label": "Imprisonment reasons",
+                    "promptReference": "imprisonmentReasons",
+                    "promptSequence": 200,
+                    "type": "FIXL",
+                    "usergroups": [
+
+                    ],
+                    "value": "failure to comply with requirements of post custodial sentence supervision",
+                    "welshLabel": "Rhesymau dros garcharu",
+                    "welshValue": "methu â chydymffurfio â gofynion goruchwyliaeth ar ôl dedfryd o garchar"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "622aa563-a3db-4102-ba7e-21c21cee0110",
+                    "label": "Reason for custody",
+                    "promptReference": "theReasonsForThis",
+                    "promptSequence": 300,
+                    "type": "FIXLOM",
+                    "usergroups": [
+
+                    ],
+                    "value": "because of an unprovoked attack of a serious nature, because the defendant has a flagrant disregard for court orders",
+                    "welshValue": "because of an unprovoked attack of a serious nature, because the defendant has a flagrant disregard for court orders"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                    "label": "Bail remand days to count (tagged days)",
+                    "promptReference": "bailRemandDaysToCountTaggedDays",
+                    "promptSequence": 500,
+                    "type": "INT",
+                    "usergroups": [
+
+                    ],
+                    "value": "0",
+                    "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                    "welshValue": "0"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "26f082eb-d599-43bb-9725-0e47ab86d535",
+                    "label": "This offence is aggravated by the foreign power condition being met in relation to it as defined by section 31 of the National Security Act 2023",
+                    "promptReference": "offenceAggByForeignPowerCondition",
+                    "promptSequence": 550,
+                    "type": "BOOLEAN",
+                    "usergroups": [
+
+                    ],
+                    "value": "false",
+                    "welshValue": "false"
+                  }
+                ],
+                "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                "label": "Imprisonment",
+                "lastSharedDateTime": "2025-04-25",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-04-25",
+                "orderedHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 75700,
+                "resultText": "IMP - Imprisonment\nCommitted to prison for 6 Months. Reason: failure to comply with requirements of post custodial sentence supervision because of an unprovoked attack of a serious nature, because the defendant has a flagrant disregard for court orders. Bail remand days to count (Tagged Days): 0. Total custodial period: 9 Months.\n \n ",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "8888033c-2110-46d5-b248-23982af11b8c",
+                "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [
+
+                ]
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "Indictable only",
+            "modeOfTrial": "Indictable",
+            "offenceCode": "OF61102C",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+            "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+            "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+            "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+            "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+              "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+              "pleaDate": "2025-04-25",
+              "pleaValue": "NOT_GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "verdict": {
+              "jurors": {
+                "numberOfJurors": 12,
+                "numberOfSplitJurors": 0,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm"
+              },
+              "offenceId": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+              "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+              "verdictDate": "2025-04-25",
+              "verdictType": {
+                "category": "Guilty",
+                "categoryType": "GUILTY",
+                "cjsVerdictCode": "G",
+                "description": "Found guilty",
+                "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "sequence": 10,
+                "verdictCode": "G"
+              }
+            },
+            "wording": "The defendant at Zulauf Field, conspired together with Lucy McGlynn to assault Melody Mitchell, thereby occasioning actual bodily harm"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF022297828",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "custodialEstablishment": {
+            "custody": "Prison",
+            "id": "70ed3219-378f-3d4c-9bdc-61b399ab95f9",
+            "name": "HMIRC The Verne"
+          },
+          "driverNumber": "VANFL002222OW9PA",
+          "personDetails": {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "contact": {
+              "home": "020824653791"
+            },
+            "dateOfBirth": "2000-03-24",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Richard ",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Quitzon",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF022297828",
+        "prosecutionCaseId": "473b1b20-199a-42cc-93cc-0c81e44e64cc"
+      }
+    ],
+    "id": "473b1b20-199a-42cc-93cc-0c81e44e64cc",
+    "initiationCode": "C",
+    "originatingOrganisation": "0440000",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Operational HQ",
+        "address2": "Mottisfont Court",
+        "address3": "Tower Street",
+        "address4": "Winchester",
+        "postcode": "SO23 8ZD"
+      },
+      "contact": {
+        "primaryEmail": "cjd.phoenix@hampshire.police.uk"
+      },
+      "majorCreditorCode": "PO44",
+      "prosecutionAuthorityCode": "HIWPF",
+      "prosecutionAuthorityId": "25d4926b-9720-3883-95e3-aa2b3c026766",
+      "prosecutionAuthorityName": "Hampshire Police",
+      "prosecutionAuthorityOUCode": "0440000",
+      "caseURN": "28DI2297828"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [
+
+    ],
+    "defendantHearings": [
+      {
+        "defendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
+        "defendantName": "Lucy McGlynn",
+        "hearingIds": [
+          "59b30a88-9e00-4e3e-bbe5-ac53a3d4dc7c",
+          "c39e5052-ee04-4175-b089-a5eb0fa67504"
+        ]
+      },
+      {
+        "defendantId": "5c75653a-e264-4b59-a419-66221b725a58",
+        "defendantName": "Richard  Quitzon",
+        "hearingIds": [
+          "c39e5052-ee04-4175-b089-a5eb0fa67504"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-04-25"
+              }
+            ],
+            "defendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf"
+          },
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-04-25"
+              }
+            ],
+            "defendantId": "5c75653a-e264-4b59-a419-66221b725a58"
+          }
+        ],
+        "defendantJudicialResults": [
+          {
+            "judicialResult": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "ANCILLARY",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "0206727b-f581-40c3-9dde-3320088f65ee",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "042742a1-8d47-4558-9b3e-9f34b358e034",
+                  "label": "Reason for no surcharge",
+                  "promptReference": "reasonForNoSurcharge",
+                  "promptSequence": 100,
+                  "type": "TXT",
+                  "usergroups": [
+
+                  ],
+                  "value": "test Reason for no surcharge",
+                  "welshValue": "test Reason for no surcharge"
+                }
+              ],
+              "judicialResultTypeId": "204fc6b8-d6c9-4fb8-acd0-47d23c087625",
+              "label": "No surcharge",
+              "lastSharedDateTime": "2025-04-25",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+              "orderedDate": "2025-04-25",
+              "orderedHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+              "parentJudicialResultId": "706c2b0f-bf94-408b-93df-56f7876181e9",
+              "parentJudicialResultTypeId": "386a3a47-b2cb-4017-9dd8-19ffeb457b56",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 1000,
+              "resultText": "NOVS - No surcharge\nReason: test Reason for no surcharge",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "8888033c-2110-46d5-b248-23982af11b8c",
+              "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [
+
+              ]
+            },
+            "masterDefendantId": "5c75653a-e264-4b59-a419-66221b725a58"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "25",
+            "courtApplications": [
+
+            ],
+            "dateOfBirth": "2000-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [
+
+              ],
+              "defendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf"
+            },
+            "id": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
+            "judicialResults": [
+
+            ],
+            "name": "Lucy McGlynn",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-04-25",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                  "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                  "sequenceNumber": 100
+                },
+                "convictionDate": "2025-04-25",
+                "count": 0,
+                "id": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "e720f13c-01ef-49f0-a098-5374ba8344d8",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "4a57cb2a-a7af-496f-8698-89f4257340fa",
+                        "promptSequence": 0,
+                        "usergroups": [
+
+                        ],
+                        "value": "Date and time to be fixed:Yes\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nHearing type:Trial\nEstimated duration:2 HOURS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+
+                        ],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "5d28c452-8917-47f7-8335-f3e136388d69",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "5480dd39-007d-4fb2-ba4a-e90982cf8fa1",
+                        "promptSequence": 300,
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-04-25",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "code": "C05LV00",
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "dateToBeFixed": true,
+                      "estimatedDuration": "2 HOURS",
+                      "estimatedMinutes": 120,
+                      "jurisdictionType": "CROWN",
+                      "type": {
+                        "description": "Trial",
+                        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                      }
+                    },
+                    "orderedDate": "2025-04-25",
+                    "orderedHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on a Date and time to be fixed, Liverpool Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "e720f13c-01ef-49f0-a098-5374ba8344d8",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                    "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "pleaDate": "2025-04-25",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "OF61102C",
+                      "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                      "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                      "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm"
+                    },
+                    "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                    "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "verdictDate": "2025-04-25",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Found guilty",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                      "sequence": 10,
+                      "verdictCode": "G"
+                    }
+                  }
+                ],
+                "wording": "The defendant at Zulauf Field, conspired together with Richard Quitzon to assault Melody Mitchell, thereby occasioning actual bodily harm"
+              }
+            ]
+          },
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "25",
+            "courtApplications": [
+
+            ],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [
+
+              ],
+              "defendantId": "5c75653a-e264-4b59-a419-66221b725a58"
+            },
+            "id": "5c75653a-e264-4b59-a419-66221b725a58",
+            "judicialResults": [
+
+            ],
+            "name": "Richard  Quitzon",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-04-25",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+                  "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                  "sequenceNumber": 100
+                },
+                "convictionDate": "2025-04-25",
+                "count": 0,
+                "id": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1002",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "M",
+                      "primaryDurationValue": 6
+                    },
+                    "dvlaCode": "A",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "8888033c-2110-46d5-b248-23982af11b8c",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                        "label": "Total custodial period",
+                        "promptReference": "totalCustodialPeriod",
+                        "promptSequence": 100,
+                        "type": "INTM",
+                        "usergroups": [
+
+                        ],
+                        "value": "9 Months",
+                        "welshValue": "9 Months"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison organisation name",
+                        "promptReference": "prisonOrganisationName",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "HMIRC The Verne",
+                        "welshValue": "HMIRC The Verne"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+                        "label": "Prison email address 1",
+                        "promptReference": "prisonEmailAddress1",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "omu.theverne@justice.gov.uk",
+                        "welshValue": "omu.theverne@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name organisation name",
+                        "promptReference": "conveyorcustodiannameOrganisationName",
+                        "promptSequence": 1000,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Lavender Hill Magistrates' Court: PECS",
+                        "welshValue": "Lavender Hill Magistrates' Court: PECS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "6927b6ac-4c85-4532-838d-88ac00ea83f9",
+                        "label": "Conveyor / custodian name email address 1",
+                        "promptReference": "conveyorcustodiannameEmailAddress1",
+                        "promptSequence": 1000,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "periodicwarrants@geoamey.co.uk",
+                        "welshValue": "periodicwarrants@geoamey.co.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 1200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "London Division NPS",
+                        "welshValue": "London Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 1200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "londonnps.court@justice.gov.uk",
+                        "welshValue": "londonnps.court@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                        "label": "Imprisonment Period",
+                        "promptReference": "imprisonmentPeriod",
+                        "promptSequence": 100,
+                        "type": "INTM",
+                        "usergroups": [
+
+                        ],
+                        "value": "6 Months",
+                        "welshLabel": "Cyfnod Carcharu",
+                        "welshValue": "6 Months"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "ea957761-0813-4a92-9e7c-b536654325f0",
+                        "label": "Imprisonment reasons",
+                        "promptReference": "imprisonmentReasons",
+                        "promptSequence": 200,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "failure to comply with requirements of post custodial sentence supervision",
+                        "welshLabel": "Rhesymau dros garcharu",
+                        "welshValue": "methu â chydymffurfio â gofynion goruchwyliaeth ar ôl dedfryd o garchar"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "622aa563-a3db-4102-ba7e-21c21cee0110",
+                        "label": "Reason for custody",
+                        "promptReference": "theReasonsForThis",
+                        "promptSequence": 300,
+                        "type": "FIXLOM",
+                        "usergroups": [
+
+                        ],
+                        "value": "because of an unprovoked attack of a serious nature, because the defendant has a flagrant disregard for court orders",
+                        "welshValue": "because of an unprovoked attack of a serious nature, because the defendant has a flagrant disregard for court orders"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                        "label": "Bail remand days to count (tagged days)",
+                        "promptReference": "bailRemandDaysToCountTaggedDays",
+                        "promptSequence": 500,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "0",
+                        "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                        "welshValue": "0"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "26f082eb-d599-43bb-9725-0e47ab86d535",
+                        "label": "This offence is aggravated by the foreign power condition being met in relation to it as defined by section 31 of the National Security Act 2023",
+                        "promptReference": "offenceAggByForeignPowerCondition",
+                        "promptSequence": 550,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+
+                        ],
+                        "value": "false",
+                        "welshValue": "false"
+                      }
+                    ],
+                    "judicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                    "label": "Imprisonment",
+                    "lastSharedDateTime": "2025-04-25",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-04-25",
+                    "orderedHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 75700,
+                    "resultText": "IMP - Imprisonment\nCommitted to prison for 6 Months. Reason: failure to comply with requirements of post custodial sentence supervision because of an unprovoked attack of a serious nature, because the defendant has a flagrant disregard for court orders. Bail remand days to count (Tagged Days): 0. Total custodial period: 9 Months.\n \n ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "8888033c-2110-46d5-b248-23982af11b8c",
+                    "rootJudicialResultTypeId": "abb95a52-2a75-40c3-8d3f-a1d75a199c47",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ]
+                  }
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+                    "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "pleaDate": "2025-04-25",
+                    "pleaValue": "NOT_GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "OF61102C",
+                      "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                      "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                      "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm"
+                    },
+                    "offenceId": "169d495d-d39f-4b67-b819-01b9bc1cc821",
+                    "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "verdictDate": "2025-04-25",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Found guilty",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                      "sequence": 10,
+                      "verdictCode": "G"
+                    }
+                  }
+                ],
+                "wording": "The defendant at Zulauf Field, conspired together with Lucy McGlynn to assault Melody Mitchell, thereby occasioning actual bodily harm"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-04-25T09:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+        "isApplicationHearing": false,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "QEII Law Courts",
+            "address2": "Derby Square",
+            "address3": "Liverpool",
+            "postcode": "L2 1XA"
+          },
+          "code": "C05LV00",
+          "courtHearingLocation": "C05LV00",
+          "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+          "name": "Liverpool Crown Court",
+          "psaCode": 1810,
+          "welshName": "Llys Y Goron Lerpwl"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "25",
+            "courtApplications": [
+
+            ],
+            "dateOfBirth": "2000-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [
+
+              ],
+              "defendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf"
+            },
+            "id": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
+            "judicialResults": [
+
+            ],
+            "name": "Lucy McGlynn",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-04-25",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                  "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                  "sequenceNumber": 100
+                },
+                "convictionDate": "2025-04-25",
+                "count": 0,
+                "id": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                "judicialResults": [
+
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                    "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "pleaDate": "2025-04-25",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "startDate": "2022-12-12",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "OF61102C",
+                      "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                      "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                      "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm"
+                    },
+                    "offenceId": "5b65ba71-b80e-45a6-9c6d-85f6c45c2e81",
+                    "originatingHearingId": "c39e5052-ee04-4175-b089-a5eb0fa67504",
+                    "verdictDate": "2025-04-25",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Found guilty",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                      "sequence": 10,
+                      "verdictCode": "G"
+                    }
+                  }
+                ],
+                "wording": "The defendant at Zulauf Field, conspired together with Richard Quitzon to assault Melody Mitchell, thereby occasioning actual bodily harm"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-04-25T09:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "SENT_FOR_LISTING",
+        "id": "59b30a88-9e00-4e3e-bbe5-ac53a3d4dc7c",
+        "isApplicationHearing": false,
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Trial",
+          "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+        }
+      }
+    ],
+    "id": "473b1b20-199a-42cc-93cc-0c81e44e64cc",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Operational HQ",
+        "address2": "Mottisfont Court",
+        "address3": "Tower Street",
+        "address4": "Winchester",
+        "postcode": "SO23 8ZD"
+      },
+      "contact": {
+        "primaryEmail": "cjd.phoenix@hampshire.police.uk"
+      },
+      "majorCreditorCode": "PO44",
+      "prosecutionAuthorityCode": "HIWPF",
+      "prosecutionAuthorityId": "25d4926b-9720-3883-95e3-aa2b3c026766",
+      "prosecutionAuthorityName": "Hampshire Police",
+      "prosecutionAuthorityOUCode": "0440000",
+      "caseURN": "28DI2297828"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  }
+}

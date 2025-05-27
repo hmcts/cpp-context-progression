@@ -46,6 +46,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
+import org.hamcrest.core.Is;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicantCounsel;
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -159,6 +160,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"squid:S1607"})
@@ -475,6 +477,27 @@ public class ProgressionServiceTest {
         assertThat(jsonObject.getString("hearingId"), is(hearingId.toString()));
         assertThat(jsonObject.getString("unscheduledHearingIds.length()"), is(unscheduledHearingId.toString()));
         assertThat(jsonObject.getString("unscheduledHearingIds[0]"), is(unscheduledHearingId.toString()));
+    }
+
+    @Mock
+    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
+    @Test
+    public void generateTrialRecordSheetPayload() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID systemUserId = randomUUID();
+
+        JsonEnvelope requestEnvelope = getUserEnvelope(APPLICATION_AAAG);
+        when(requester.requestAsAdmin(any())).thenReturn(requestEnvelope);
+
+        progressionService.generateTrialRecordSheetPayload(requestEnvelope, caseId, defendantId);
+
+        verify(requester).requestAsAdmin(envelopeArgumentCaptor.capture());
+        JsonEnvelope capturedEnvelope = envelopeArgumentCaptor.getValue();
+        assertThat(capturedEnvelope.metadata().name(), Is.is("progression.query.record-sheet"));
+
+        assertThat(capturedEnvelope.payloadAsJsonObject().getString("caseId"), is(caseId.toString()));
+        assertThat(capturedEnvelope.payloadAsJsonObject().getString("defendantId"), is(defendantId.toString()));
     }
 
     @Test

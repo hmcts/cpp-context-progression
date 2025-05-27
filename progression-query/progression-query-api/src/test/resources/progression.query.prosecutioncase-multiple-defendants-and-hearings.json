@@ -1,0 +1,882 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-05-02T13:25:49.052Z",
+        "id": "779e559b-4864-4a2e-b819-c1760b7cab22",
+        "masterDefendantId": "779e559b-4864-4a2e-b819-c1760b7cab22",
+        "offences": [
+          {
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "4504e612-c886-4a8c-86b8-4c6d18591b92",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1017",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "dvlaCode": "J",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "59b0810d-ace8-459b-a359-95371331709e",
+                "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "label": "Absolute discharge",
+                "lastSharedDateTime": "2025-05-02",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-05-02",
+                "orderedHearingId": "ed4865fb-35e9-4712-a06b-5084b756181f",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 53800,
+                "resultText": "AD - Absolute discharge",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "59b0810d-ace8-459b-a359-95371331709e",
+                "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad diamod"
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "Indictable only",
+            "modeOfTrial": "Indictable",
+            "offenceCode": "OF61102C",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+            "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+            "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+            "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+            "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+            "orderIndex": 1,
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "Lindsay Hermiston at Demond Bridge, conspired together with Willie Boehm to assault Dr. Anthony Lockman, thereby occasioning actual bodily harm"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF012921147",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "contact": {
+              "home": "015325443756"
+            },
+            "dateOfBirth": "2000-02-18",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Lindsay",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Hermiston",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF012921147",
+        "prosecutionCaseId": "ef1229d8-ef72-49e9-bcbd-d7f6306b37b0"
+      },
+      {
+        "courtProceedingsInitiated": "2025-05-02T13:25:49.052Z",
+        "id": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+        "masterDefendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+        "offences": [
+          {
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "count": 0,
+            "dateHeldInCustodySince": "2025-05-02",
+            "endorsableFlag": false,
+            "id": "80ffb6a4-da93-47a2-8e8e-bb317195a515",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": true,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1018",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "durationElement": {
+                  "primaryDurationUnit": "Y",
+                  "primaryDurationValue": 2
+                },
+                "dvlaCode": "E",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "72b8d26e-3f5e-4e66-98a3-b68586e062a9",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "durationSequence": 1,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                    "label": "Period of conditional discharge",
+                    "promptReference": "periodofConditionalDischarge",
+                    "promptSequence": 100,
+                    "type": "INT",
+                    "usergroups": [],
+                    "value": "2 Years",
+                    "welshLabel": "Cyfnod o ryddhad amodol",
+                    "welshValue": "2 Years"
+                  }
+                ],
+                "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "label": "Conditional discharge",
+                "lastSharedDateTime": "2025-05-02",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-05-02",
+                "orderedHearingId": "c3977965-10eb-4de9-9e60-e4a01525071e",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 73800,
+                "resultText": "CD - Conditional discharge\nDischarged conditionally for 2 Years.",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "72b8d26e-3f5e-4e66-98a3-b68586e062a9",
+                "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad Amodol"
+              }
+            ],
+            "lastAdjournDate": "2025-05-02",
+            "lastAdjournedHearingType": "To attend or a warrant to issue",
+            "listingNumber": 2,
+            "offenceCode": "TH68025A",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "14d0b0fc-3c5c-3eb3-880a-a46556d365eb",
+            "offenceLegislation": "",
+            "offenceTitle": "Attempted assault with intent to rob",
+            "orderIndex": 1,
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "On TEST  at  TEST  used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety. Contrary to section 3(1) and (7) of the Public Order Act 1986."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF022921147",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PA",
+          "personDetails": {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "contact": {
+              "home": "020824653791"
+            },
+            "dateOfBirth": "2000-03-24",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Euna",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Heaney",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF022921147",
+        "prosecutionCaseId": "ef1229d8-ef72-49e9-bcbd-d7f6306b37b0"
+      }
+    ],
+    "id": "ef1229d8-ef72-49e9-bcbd-d7f6306b37b0",
+    "initiationCode": "C",
+    "originatingOrganisation": "GAEAA01",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI2921147"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "779e559b-4864-4a2e-b819-c1760b7cab22",
+        "defendantName": "Lindsay Hermiston",
+        "hearingIds": [
+          "ed4865fb-35e9-4712-a06b-5084b756181f"
+        ]
+      },
+      {
+        "defendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+        "defendantName": "Euna Heaney",
+        "hearingIds": [
+          "c3977965-10eb-4de9-9e60-e4a01525071e",
+          "ed4865fb-35e9-4712-a06b-5084b756181f"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "1-15 Pocock Street",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SE1 0BJ"
+          },
+          "code": "C01BL00",
+          "courtHearingLocation": "C01BL00",
+          "courtLocationCode": "0428",
+          "id": "89592405-c29b-3706-b1d3-b1dd3a08b227",
+          "lja": {
+            "ljaCode": "2570",
+            "ljaName": "Central London Magistrates' Court"
+          },
+          "name": "Blackfriars Crown Court",
+          "roomId": "d0624ee3-9198-3c8b-94d6-42fb197ebe5e",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "BY_VIDEO",
+                "day": "2025-05-02"
+              }
+            ],
+            "defendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "25",
+            "courtApplications": [],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666"
+            },
+            "id": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+            "judicialResults": [],
+            "name": "Euna Heaney",
+            "offences": [
+              {
+                "count": 0,
+                "id": "80ffb6a4-da93-47a2-8e8e-bb317195a515",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1018",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "Y",
+                      "primaryDurationValue": 2
+                    },
+                    "dvlaCode": "E",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "72b8d26e-3f5e-4e66-98a3-b68586e062a9",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                        "label": "Period of conditional discharge",
+                        "promptReference": "periodofConditionalDischarge",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "2 Years",
+                        "welshLabel": "Cyfnod o ryddhad amodol",
+                        "welshValue": "2 Years"
+                      }
+                    ],
+                    "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "label": "Conditional discharge",
+                    "lastSharedDateTime": "2025-05-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-02",
+                    "orderedHearingId": "c3977965-10eb-4de9-9e60-e4a01525071e",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 73800,
+                    "resultText": "CD - Conditional discharge\nDischarged conditionally for 2 Years.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "72b8d26e-3f5e-4e66-98a3-b68586e062a9",
+                    "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad Amodol"
+                  }
+                ],
+                "offenceCode": "TH68025A",
+                "offenceDefinitionId": "14d0b0fc-3c5c-3eb3-880a-a46556d365eb",
+                "offenceLegislation": "",
+                "offenceTitle": "Attempted assault with intent to rob",
+                "orderIndex": 1,
+                "pleas": [],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "On TEST  at  TEST  used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety. Contrary to section 3(1) and (7) of the Public Order Act 1986."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "89592405-c29b-3706-b1d3-b1dd3a08b227",
+            "courtRoomId": "d0624ee3-9198-3c8b-94d6-42fb197ebe5e",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 5400,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-02T09:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "c3977965-10eb-4de9-9e60-e4a01525071e",
+        "isApplicationHearing": false,
+        "jurisdictionType": "CROWN",
+        "type": {
+          "description": "Trial",
+          "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "BY_VIDEO",
+                "day": "2025-05-02"
+              }
+            ],
+            "defendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666"
+          },
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-05-02"
+              }
+            ],
+            "defendantId": "779e559b-4864-4a2e-b819-c1760b7cab22"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "25",
+            "courtApplications": [],
+            "dateOfBirth": "2000-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "779e559b-4864-4a2e-b819-c1760b7cab22"
+            },
+            "id": "779e559b-4864-4a2e-b819-c1760b7cab22",
+            "judicialResults": [],
+            "name": "Lindsay Hermiston",
+            "offences": [
+              {
+                "count": 0,
+                "id": "4504e612-c886-4a8c-86b8-4c6d18591b92",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "59b0810d-ace8-459b-a359-95371331709e",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2025-05-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-02",
+                    "orderedHearingId": "ed4865fb-35e9-4712-a06b-5084b756181f",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 53800,
+                    "resultText": "AD - Absolute discharge",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "59b0810d-ace8-459b-a359-95371331709e",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Lindsay Hermiston at Demond Bridge, conspired together with Willie Boehm to assault Dr. Anthony Lockman, thereby occasioning actual bodily harm"
+              }
+            ]
+          },
+          {
+            "address": {
+              "address1": "14",
+              "address2": "North Westbridge Street",
+              "address3": "London",
+              "postcode": "SW11 2TQ"
+            },
+            "age": "25",
+            "courtApplications": [],
+            "dateOfBirth": "2000-03-24",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666"
+            },
+            "id": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+            "judicialResults": [],
+            "name": "Euna Heaney",
+            "offences": [
+              {
+                "count": 0,
+                "id": "80ffb6a4-da93-47a2-8e8e-bb317195a515",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "8395ab2f-71da-4e1d-b2af-961cc9e2182b",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "ffb7fdaa-da33-4f8b-921c-a22122e670b1",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Fixed Date:02/05/2025\nTime of hearing:10:00\nCourthouse organisation name:Blackfriars Crown Court\nCourthouse address line 1:1-15 Pocock Street\nCourthouse address line 2:London\nCourthouse post code:SE1 0BJ\nCourtroom:Courtroom 01\nHearing type:Trial\nEstimated duration:3 WEEKS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "a25972a0-76c6-4c5a-9271-84ad4702ccf3",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "b182c8d9-b560-454c-a573-d40db78b0be7",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-05-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "1-15 Pocock Street",
+                          "address2": "London",
+                          "postcode": "SE1 0BJ"
+                        },
+                        "code": "C01BL00",
+                        "courtHearingLocation": "C01BL00",
+                        "id": "89592405-c29b-3706-b1d3-b1dd3a08b227",
+                        "name": "Blackfriars Crown Court",
+                        "psaCode": 2570,
+                        "roomId": "d0624ee3-9198-3c8b-94d6-42fb197ebe5e",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Y Goron Blackfriars"
+                      },
+                      "estimatedDuration": "3 WEEKS",
+                      "estimatedMinutes": 5400,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2025-05-02T09:00:00.000Z",
+                      "type": {
+                        "description": "Trial",
+                        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+                      }
+                    },
+                    "orderedDate": "2025-05-02",
+                    "orderedHearingId": "ed4865fb-35e9-4712-a06b-5084b756181f",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 02/05/2025 at 10:00 in Courtroom 01, Blackfriars Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "8395ab2f-71da-4e1d-b2af-961cc9e2182b",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "offenceCode": "TH68025A",
+                "offenceDefinitionId": "14d0b0fc-3c5c-3eb3-880a-a46556d365eb",
+                "offenceLegislation": "",
+                "offenceTitle": "Attempted assault with intent to rob",
+                "orderIndex": 1,
+                "pleas": [],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "On TEST  at  TEST  used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety. Contrary to section 3(1) and (7) of the Public Order Act 1986."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-02T22:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "ed4865fb-35e9-4712-a06b-5084b756181f",
+        "isApplicationHearing": false,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      }
+    ],
+    "id": "ef1229d8-ef72-49e9-bcbd-d7f6306b37b0",
+    "latestHearingJurisdictionType": "CROWN",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI2921147"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  },
+  "activeCourtOrders": [
+    {
+      "masterDefendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+      "courtOrders": [
+        {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": false,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "arrestDate": "2022-12-14",
+                "chargeDate": "2022-12-15",
+                "count": 0,
+                "dateHeldInCustodySince": "2025-05-02",
+                "endorsableFlag": false,
+                "id": "80ffb6a4-da93-47a2-8e8e-bb317195a515",
+                "isDisposed": true,
+                "lastAdjournDate": "2025-05-02",
+                "lastAdjournedHearingType": "To attend or a warrant to issue",
+                "listingNumber": 2,
+                "offenceCode": "TH68025A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "14d0b0fc-3c5c-3eb3-880a-a46556d365eb",
+                "offenceLegislation": "",
+                "offenceTitle": "Attempted assault with intent to rob",
+                "orderIndex": 1,
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "wording": "On TEST  at  TEST  used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety. Contrary to section 3(1) and (7) of the Public Order Act 1986."
+              },
+              "prosecutionCaseId": "ef1229d8-ef72-49e9-bcbd-d7f6306b37b0",
+              "prosecutionCaseIdentifier": {
+                "address": {
+                  "address1": "Barton House",
+                  "address2": "Bond Street",
+                  "address3": "Bristol",
+                  "postcode": "BS98 1TL"
+                },
+                "contact": {
+                  "primaryEmail": "court.results@tvl.cjsm.net"
+                },
+                "majorCreditorCode": "TVL3",
+                "prosecutionAuthorityCode": "TVL",
+                "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+                "prosecutionAuthorityName": "TV Licensing",
+                "prosecutionAuthorityOUCode": "GAEAA01",
+                "caseURN": "28DI2921147"
+              }
+            }
+          ],
+          "defendantIds": [
+            "42df5ca0-0cd6-47a7-b777-ab1a5e822666"
+          ],
+          "endDate": "2027-05-02",
+          "id": "37bc6261-6570-4d56-aa9b-1caafd1e4db7",
+          "isSJPOrder": false,
+          "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+          "label": "Conditional discharge",
+          "masterDefendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+          "orderDate": "2025-05-02",
+          "orderingCourt": {
+            "address": {
+              "address1": "1-15 Pocock Street",
+              "address2": "London",
+              "address3": "",
+              "address4": "",
+              "address5": "",
+              "postcode": "SE1 0BJ"
+            },
+            "code": "C01BL00",
+            "courtHearingLocation": "C01BL00",
+            "courtLocationCode": "0428",
+            "id": "89592405-c29b-3706-b1d3-b1dd3a08b227",
+            "lja": {
+              "ljaCode": "2570",
+              "ljaName": "Central London Magistrates' Court"
+            },
+            "name": "Blackfriars Crown Court",
+            "roomId": "d0624ee3-9198-3c8b-94d6-42fb197ebe5e",
+            "roomName": "Courtroom 01"
+          },
+          "orderingHearingId": "c3977965-10eb-4de9-9e60-e4a01525071e",
+          "startDate": "2025-05-02"
+        }
+      ]
+    }
+  ]
+}

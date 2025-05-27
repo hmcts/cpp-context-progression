@@ -40,6 +40,7 @@ public class OffenceTransformer {
                 .withWordingWelsh(offences.getWordingWelsh())
                 .withIndictmentParticular(offences.getIndictmentParticular())
                 .withCommittedForSentence(committedForSentence)
+                .withProceedingsConcluded(offences.getProceedingsConcluded())
                 .build();
     }
 

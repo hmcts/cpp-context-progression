@@ -21,6 +21,7 @@ import uk.gov.justice.core.courts.HearingDay;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
+import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.exract.Address;
 import uk.gov.justice.progression.courts.exract.Dates;
@@ -286,6 +287,13 @@ public class TransformationHelper {
                 .map(CourtApplication::getApplicationStatus)
                 .anyMatch(applicationStatus -> applicationStatus.equals(ApplicationStatus.DRAFT) || applicationStatus.equals(ApplicationStatus.LISTED)
                         || applicationStatus.equals(ApplicationStatus.EJECTED));
+    }
+
+    public ProsecutingAuthority transformProsecutor(final Prosecutor prosecutor) {
+        return ProsecutingAuthority.prosecutingAuthority()
+                .withAddress(prosecutor.getAddress())
+                .withName(prosecutor.getProsecutorName())
+                .build();
     }
 
 }

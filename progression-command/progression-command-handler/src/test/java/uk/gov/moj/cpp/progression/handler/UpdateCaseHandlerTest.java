@@ -1,38 +1,20 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.justice.core.courts.JudicialResultCategory.ANCILLARY;
-import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
-import static uk.gov.justice.core.courts.JudicialResultCategory.INTERMEDIARY;
-import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
-import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
-import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
-import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
-import static uk.gov.moj.cpp.progression.command.helper.HandlerTestHelper.metadataFor;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
+import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.FundingType;
 import uk.gov.justice.core.courts.HearingResultedCaseUpdated;
 import uk.gov.justice.core.courts.HearingResultedUpdateCase;
@@ -69,15 +51,33 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.core.courts.JudicialResultCategory.ANCILLARY;
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
+import static uk.gov.justice.core.courts.JudicialResultCategory.INTERMEDIARY;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.EventStreamMatcher.eventStreamAppendedWith;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payloadIsJson;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.string;
+import static uk.gov.moj.cpp.progression.command.helper.HandlerTestHelper.metadataFor;
 
 @ExtendWith(MockitoExtension.class)
 public class UpdateCaseHandlerTest {
@@ -93,7 +93,7 @@ public class UpdateCaseHandlerTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(HearingResultedUpdateCase.class,
-            HearingResultedCaseUpdated.class, LaaDefendantProceedingConcludedChanged.class,
+            HearingResultedCaseUpdated.class, DefendantTrialRecordSheetRequested.class, LaaDefendantProceedingConcludedChanged.class,
             CaseRetentionLengthCalculated.class, ProsecutionCaseListingNumberUpdated.class,
             ProsecutionCaseListingNumberIncreased.class);
 
@@ -149,6 +149,15 @@ public class UpdateCaseHandlerTest {
                                                 withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
 
+                                        )
+                                )),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.defendant-trial-record-sheet-requested"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.caseId", notNullValue()),
+                                                withJsonPath("$.defendantId", notNullValue())
                                         )
                                 ))
                 )));
@@ -287,6 +296,15 @@ public class UpdateCaseHandlerTest {
                                                 withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.INACTIVE.getDescription())),
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
                                         )
+                                )),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.defendant-trial-record-sheet-requested"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.caseId", notNullValue()),
+                                                withJsonPath("$.defendantId", notNullValue())
+                                        )
                                 ))
                 )));
     }
@@ -412,6 +430,15 @@ public class UpdateCaseHandlerTest {
                                                 withJsonPath("$.prosecutionCase.defendants[0].offences[1].proceedingsConcluded", is(true)),
                                                 withJsonPath("$.prosecutionCase.caseStatus", is(CaseStatusEnum.READY_FOR_REVIEW.getDescription())),
                                                 withJsonPath("$.prosecutionCase.defendants[0].associatedDefenceOrganisation.fundingType", notNullValue())
+                                        )
+                                )),
+                        jsonEnvelope(
+                                withMetadataEnvelopedFrom(envelope)
+                                        .withName("progression.event.defendant-trial-record-sheet-requested"),
+                                payloadIsJson(
+                                        allOf(
+                                                withJsonPath("$.caseId", notNullValue()),
+                                                withJsonPath("$.defendantId", notNullValue())
                                         )
                                 ))
                 )));

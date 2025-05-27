@@ -247,6 +247,7 @@ public class HearingAtAGlanceService {
                     .withYouthCourt(hearing.getYouthCourt())
                     .withYouthCourtDefendantIds(hearing.getYouthCourtDefendantIds())
                     .withIsApplicationHearing(CollectionUtils.isNotEmpty(hearing.getCourtApplications()))
+                    .withCompanyRepresentatives(hearing.getCompanyRepresentatives())
                     .build();
             hearingsList.add(hearingsView);
         });

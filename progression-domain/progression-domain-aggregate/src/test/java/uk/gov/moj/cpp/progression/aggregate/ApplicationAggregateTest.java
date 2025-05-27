@@ -17,6 +17,7 @@ import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCa
 import static uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated.sendNotificationForAutoApplicationInitiated;
 import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
+import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplication;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplicationWithCustodialEstablisment;
 import static uk.gov.moj.cpp.progression.test.TestHelper.buildCourtapplicationWithOffenceUnderCase;
@@ -44,6 +45,7 @@ import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
+import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
@@ -62,6 +64,9 @@ import uk.gov.justice.core.courts.SlotsBookedForApplication;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
 import uk.gov.justice.progression.courts.SendStatdecAppointmentLetter;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.moj.cpp.platform.test.utils.reflection.ReflectionUtil;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
@@ -78,6 +83,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.json.JsonObject;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -92,6 +99,9 @@ public class ApplicationAggregateTest {
     private static final HearingListingNeeds hearingListingNeeds = HearingListingNeeds.hearingListingNeeds().build();
     @InjectMocks
     private ApplicationAggregate aggregate;
+
+    private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
+    private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @BeforeEach
     public void setUp() {
@@ -555,6 +565,16 @@ public class ApplicationAggregateTest {
                 .withCategory(JudicialResultCategory.FINAL)
                 .withJudicialResultId(randomUUID())
                 .build());
+
+        final CourtApplication courtApplication = buildCourtapplication(randomUUID(), LocalDate.now(), judicialResults);
+        InitiateCourtApplicationProceedings initiateCourtProceedings = InitiateCourtApplicationProceedings
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication)
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+        aggregate.apply(aggregate.initiateCourtApplicationProceedings(initiateCourtProceedings, false, false));
+
         final List<Object> eventStream = aggregate.hearingResulted(courtApplication()
                         .withValuesFrom(buildCourtapplication(randomUUID(), LocalDate.now()))
                         .withJudicialResults(judicialResults)
@@ -565,7 +585,6 @@ public class ApplicationAggregateTest {
         assertThat(event.getCourtApplication().getApplicationStatus(), is(ApplicationStatus.FINALISED));
         aggregate.apply(eventStream);
 
-        final CourtApplication courtApplication = buildCourtapplication(randomUUID(), LocalDate.now());
         final List<Object> eventStream2 = aggregate.hearingResulted(courtApplication()
                         .withValuesFrom(courtApplication)
                         .withApplicationStatus(ApplicationStatus.FINALISED)
@@ -581,6 +600,20 @@ public class ApplicationAggregateTest {
                 .build();
         assertThat(secondEvent.getCourtApplication(), is(expectedCourtApplication));
 
+    }
+
+    @Test
+    public void shouldHearingResultedRaiseDefendantTrialRecordSheetRequestedEvent() {
+        final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(getPayload("json/court-application-with-court-order.json"));
+        final JsonObject courtApplicationJson = courtApplicationPayload.getJsonObject("courtApplication");
+        CourtApplication courtApplication = jsonObjectToObjectConverter.convert(courtApplicationJson, CourtApplication.class);
+
+        final List<Object> eventStream = aggregate.hearingResulted(courtApplication)
+                .collect(toList());
+        assertThat(eventStream.size(), is(2));
+
+        assertThat(eventStream.get(0).getClass(), is(equalTo(HearingResultedApplicationUpdated.class)));
+        assertThat(eventStream.get(1).getClass(), is(equalTo(DefendantTrialRecordSheetRequested.class)));
     }
 
     @Test

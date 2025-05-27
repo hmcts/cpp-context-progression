@@ -111,6 +111,7 @@ import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DefendantPartialMatchCreated;
+import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.Defendants;
 import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
@@ -255,6 +256,10 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -1313,6 +1318,18 @@ public class CaseAggregate implements Aggregate {
         streamBuilder.add(HearingResultedCaseUpdated.hearingResultedCaseUpdated()
                 .withProsecutionCase(updatedProsecutionCase)
                 .build());
+
+        //Identify list of defendants whose proceedingsConcluded is true and raise private event progression.event.defendant-record-sheet-requested
+        if (nonNull(updatedProsecutionCase) && nonNull(updatedProsecutionCase.getDefendants())) {
+            updatedProsecutionCase.getDefendants().forEach(defendant -> {
+                if (Boolean.TRUE.equals(defendant.getProceedingsConcluded())) {
+                    streamBuilder.add(DefendantTrialRecordSheetRequested.defendantTrialRecordSheetRequested()
+                            .withCaseId(prosecutionCase.getId())
+                            .withDefendantId(defendant.getId())
+                            .build());
+                }
+            });
+        }
 
         if (JurisdictionType.CROWN == jurisdictionType && !TRUE.equals(isBoxHearing)) {
             final HearingInfo hearingInfo = new HearingInfo(hearingId, hearingType, jurisdictionType.name(),

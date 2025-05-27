@@ -16,6 +16,7 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
@@ -39,6 +40,24 @@ public class TestHelper {
     public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
+                .withType(CourtApplicationType.courtApplicationType()
+                        .withType(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION)
+                        .withCode(MC_80527)
+                        .build())
+                .withConvictionDate(convictionDate)
+                .withApplicant(CourtApplicationParty.courtApplicationParty()
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withProsecutionAuthorityId(randomUUID())
+                                .build())
+                        .build())
+                .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
+                .build();
+    }
+
+    public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate, final List<JudicialResult> judicialResults) {
+        return CourtApplication.courtApplication()
+                .withId(courtApplicationId)
+                .withJudicialResults(judicialResults)
                 .withType(CourtApplicationType.courtApplicationType()
                         .withType(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION)
                         .withCode(MC_80527)

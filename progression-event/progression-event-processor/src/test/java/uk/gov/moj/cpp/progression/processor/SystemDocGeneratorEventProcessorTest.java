@@ -46,6 +46,7 @@ import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.json.stream.JsonParsingException;
 
 import org.apache.http.client.utils.DateUtils;
@@ -81,6 +82,9 @@ public class SystemDocGeneratorEventProcessorTest {
     public static final String PROPERTY_NAME = "propertyName";
     public static final String PROPERTY_VALUE = "propertyValue";
 
+    private static final String RECORD_SHEET_ORIG_SOURCE = "RECORD_SHEET";
+    private static final String RECORD_SHEET_CASE_ID = "caseId";
+    private static final String RECORD_SHEET_TEMPLATE = "RecordSheet";
 
     @InjectMocks
     private SystemDocGeneratorEventProcessor systemDocGeneratorEventProcessor;
@@ -188,6 +192,47 @@ public class SystemDocGeneratorEventProcessorTest {
         assertThat(notifyPcrCommandPayload.getString(PRISON_COURT_REGISTER_STREAM_ID), equalTo(prisonCourtRegisterStreamId.toString()));
         assertThat(notifyPcrCommandPayload.containsKey(COURT_CENTRE_ID), is(FALSE));
         assertThat(notifyPcrCommandPayload.getString(ID), equalTo(id.toString()));
+
+    }
+
+    @Test
+    public void shouldProcessRecordSheetDocumentAvailable() throws FileServiceException {
+        final UUID streamId = UUID.randomUUID();
+        final UUID fileId = UUID.randomUUID();
+        final UUID caseId = UUID.randomUUID();
+        final UUID systemUserId = UUID.randomUUID();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.systemdocgenerator.events.document-available"),
+                Json.createObjectBuilder()
+                        .add(ORIGINATING_SOURCE, RECORD_SHEET_ORIG_SOURCE)
+                        .add(TEMPLATE_IDENTIFIER, RECORD_SHEET_TEMPLATE)
+                        .add(CONVERSION_FORMAT, "pdf")
+                        .add(SOURCE_CORRELATION_ID, streamId.toString())
+                        .add(PAYLOAD_FILE_SERVICE_ID, fileId.toString())
+                        .add(DOCUMENT_FILE_SERVICE_ID, UUID.randomUUID().toString())
+                        .add(ADDITIONAL_INFORMATION, createArrayBuilder()
+                                .add(createObjectBuilder()
+                                        .add("propertyName", RECORD_SHEET_CASE_ID)
+                                        .add("propertyValue", caseId.toString())
+                                )
+                                .add(createObjectBuilder().add("propertyName", "defendantName").add("propertyValue", "Test User"))
+                        )
+                        .build());
+        when(userProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
+        systemDocGeneratorEventProcessor.handleDocumentAvailable(jsonEnvelope);
+
+        verify(sender).send(envelopeCaptor.capture());
+        final Envelope<JsonObject> privateEvent = envelopeCaptor.getValue();
+
+        assertThat(privateEvent.metadata().name(),
+                equalTo("progression.command.add-court-document"));
+
+        final JsonObject actualPayload = privateEvent.payload();
+        JsonValue courtDocument = actualPayload.get("courtDocument");
+        courtDocument.asJsonObject().get("name").toString();
+        assertThat(courtDocument.asJsonObject().get("containsFinancialMeans").toString(), is("false"));
+        assertThat(courtDocument.asJsonObject().get("documentTypeDescription").toString(), is("\"Private section - Judges & HMCTS\""));
 
     }
 

@@ -64,7 +64,7 @@ protocols: [ HTTP, HTTPS ]
       description: ID of the defendant
       type: string
     template:
-      description: template name to pass to docmosis api(CrownCourtExtract, CertificateOfConviction or CertificateOfAcquittal)
+      description: template name to pass to docmosis api(CrownCourtExtract, CertificateOfConviction or CertificateOfAcquittal, RecordSheet)
       type: string
   get:
     description: |
@@ -83,6 +83,33 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.query.court-extract+json:
+
+/prosecutioncases/{caseId}/defendants/{defendantId}/record-sheet:
+  description: get court extract content as pdf
+  uriParameters:
+    caseId:
+      description: ID of prosecution case
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.record-sheet+json
+          name: progression.query.record-sheet
+      ...
+    queryParameters:
+        hearingIds:
+          description: comma separated list of hearingIds
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.record-sheet+json:
 
 /prosecutioncases/{caseId}:
   uriParameters:
