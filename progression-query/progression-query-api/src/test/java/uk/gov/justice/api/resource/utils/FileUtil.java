@@ -46,16 +46,4 @@ public class FileUtil {
     public static JsonObject jsonFromPath(final String path) {
         return jsonFromString(getPayload(path));
     }
-
-    public static JsonObject givenPayload(final String filePath) throws IOException {
-        JsonReader jsonReader = null;
-        try (final InputStream inputStream = FileUtil.class.getResourceAsStream(filePath)) {
-            jsonReader = createReader(inputStream);
-            return jsonReader.readObject();
-        } finally {
-            if (Objects.nonNull(jsonReader)) {
-                jsonReader.close();
-            }
-        }
-    }
 }

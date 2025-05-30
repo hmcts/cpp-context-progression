@@ -1,5 +1,5 @@
 package uk.gov.justice.api.resource.service;
-
+import java.util.Set;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
@@ -48,6 +48,9 @@ public class ReferenceDataServiceTest {
     private static final String FIELD_RESULT_DEFINITIONS = "resultDefinitions";
     private static final String FIELD_PLEA_TYPE_DESCRIPTION = "pleaTypeDescription";
     private static final String FIELD_PLEA_VALUE = "pleaValue";
+    private static final String FIELD_PLEA_TYPE_GUILTY_FLAG = "pleaTypeGuiltyFlag";
+    private static final String GUILTY_FLAG_YES = "Yes";
+    private static final String GUILTY_FLAG_NO = "No";
     private static final String PLEA_VALUE_1 = "pleaValue1";
     private static final String PLEA_VALUE_2 = "pleaValue2";
     private static final String PLEA_DESC_1 = "pleaDesc1";
@@ -90,6 +93,16 @@ public class ReferenceDataServiceTest {
         assertThat(actual.get(PLEA_VALUE_1), is(PLEA_DESC_1));
         assertThat(actual.get(PLEA_VALUE_2), is(PLEA_DESC_2));
     }
+
+    @Test
+    void shouldRetrieveGuiltyPleaTypes() {
+        final Envelope envelope = envelopeFrom(metadataBuilder().withId(randomUUID()).withName("name").build(), buildPleaStatusTypesPayload());
+        when(requester.requestAsAdmin(any(), eq(JsonObject.class))).thenReturn(envelope);
+        final Set<String> actual = referenceDataService.retrieveGuiltyPleaTypes();
+        assertThat(actual.size(), is(1));
+        assertThat(actual.contains(PLEA_VALUE_1), is(true));
+    }
+
 
     @Test
     public void shouldRetrieveJudiciaries() {
@@ -232,8 +245,8 @@ public class ReferenceDataServiceTest {
 
     private JsonObject buildPleaStatusTypesPayload() {
         return createObjectBuilder().add(FIELD_PLEA_STATUS_TYPES, createArrayBuilder()
-                        .add(createObjectBuilder().add(FIELD_PLEA_VALUE, PLEA_VALUE_1).add(FIELD_PLEA_TYPE_DESCRIPTION, PLEA_DESC_1))
-                        .add(createObjectBuilder().add(FIELD_PLEA_VALUE, PLEA_VALUE_2).add(FIELD_PLEA_TYPE_DESCRIPTION, PLEA_DESC_2)))
+                        .add(createObjectBuilder().add(FIELD_PLEA_VALUE, PLEA_VALUE_1).add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_YES).add(FIELD_PLEA_TYPE_DESCRIPTION, PLEA_DESC_1))
+                        .add(createObjectBuilder().add(FIELD_PLEA_VALUE, PLEA_VALUE_2).add(FIELD_PLEA_TYPE_GUILTY_FLAG, GUILTY_FLAG_NO).add(FIELD_PLEA_TYPE_DESCRIPTION, PLEA_DESC_2)))
                 .build();
     }
 

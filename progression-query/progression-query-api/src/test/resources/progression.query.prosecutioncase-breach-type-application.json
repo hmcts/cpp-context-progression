@@ -321,6 +321,7 @@
         "applicationReference": "28DI8505400",
         "applicationStatus": "FINALISED",
         "commissionerOfOath": false,
+        "convictionDate": "2025-05-21",
         "courtOrder": {
           "canBeSubjectOfBreachProceedings": true,
           "canBeSubjectOfVariationProceedings": true,

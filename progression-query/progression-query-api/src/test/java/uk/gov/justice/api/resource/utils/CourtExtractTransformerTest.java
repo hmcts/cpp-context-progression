@@ -61,6 +61,8 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
@@ -77,6 +79,7 @@ import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.Jurors;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -172,6 +175,9 @@ public class CourtExtractTransformerTest {
     private static final UUID HEARING_ID_2 = randomUUID();
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID OFFENCE_ID = randomUUID();
+    private static final UUID OFFENCE_ID1 = randomUUID();
+    private static final UUID OFFENCE_ID2 = randomUUID();
+
     private static final LocalDate DOB = LocalDate.of(LocalDate.now().getYear() - 30, 01, 01);
 
     private static final String HEARING_DATE_1 = "2018-06-01T10:00:00.000Z";
@@ -451,6 +457,7 @@ public class CourtExtractTransformerTest {
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getResultTextList().size(), is((2)));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getPlea().getPleaValue(), is(("GUILTY")));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getIndicatedPlea().getIndicatedPleaValue().name(), is(("INDICATED_GUILTY")));
+        assertThat(breachApplication.getConvictionDate().toString(), is("2025-05-21"));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getId().toString(), is((selectedHearingIds.get(1))));
         assertThat(courtExtractRequested.getIsAppealPending(), is(false));
     }
@@ -823,7 +830,7 @@ public class CourtExtractTransformerTest {
     public void shouldSortOffencesByOffenceOrderIndex_whenJurisdictionMagistrate() {
         final UUID o1 = randomUUID();
         final UUID o2 = randomUUID();
-        final List<Offences> offences = List.of(offences().withId(o1).withCount(3).withOrderIndex(5).build(), offences().withId(o2).withOrderIndex(2).build());
+        final List<Offences> offences = List.of(offences().withId(o1).withConvictionDate(CONVICTION_DATE.minusDays(2)).withCount(3).withOrderIndex(5).build(), offences().withId(o2).withConvictionDate(CONVICTION_DATE.plusDays(3)).withOrderIndex(2).build());
 
         final List<uk.gov.justice.progression.courts.exract.Offences> offencesMags = target.transformOffence(offences, randomUUID(), Map.of(), MAGISTRATES, emptyMap());
         assertThat(offencesMags.get(0).getId(), is(o2));
@@ -1386,6 +1393,50 @@ public class CourtExtractTransformerTest {
         );
     }
 
+
+    private List<Hearings> createHearingsCOC() {
+        final LocalDate CONVICTION_DATE1 = LocalDate.of(2020, 04, 04);
+        final LocalDate CONVICTION_DATE2 = LocalDate.of(2025, 05, 04);
+
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(CONVICTION_DATE1, asList(DEFENDANT_ID, DEFENDANT_ID_2ND), asList(randomUUID(), randomUUID(), randomUUID()), HEARING1, HEARING_ID, "CertificateOfConviction"))
+                        .withDefendantAttendance(createDefendantAttendance(asList(DEFENDANT_ID, DEFENDANT_ID_2ND)))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(CONVICTION_DATE2, asList(DEFENDANT_ID), asList(randomUUID(), randomUUID(), randomUUID()), HEARING2, HEARING_ID_2, "CertificateOfConviction"))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .build()
+        );
+    }
+
+
     private List<Hearings> createHearingsWithYouthCourtDetails(final List<UUID> defendandIds) {
         return asList(
                 Hearings.hearings()
@@ -1748,6 +1799,36 @@ public class CourtExtractTransformerTest {
         return defendantIdList.stream().map(id -> createDefendant(id, hearing, hearingId)).collect(toList());
     }
 
+    private List<Defendants> createDefendants(final LocalDate convictionDate, final List<UUID> defendantIdList, final List<UUID> offenceIdList, final String hearing, final UUID hearingId, final String extractType) {
+        return defendantIdList.stream().map(id -> createDefendant(convictionDate, id, offenceIdList, hearing, hearingId, extractType)).collect(toList());
+    }
+
+    private Defendants createDefendant(final LocalDate convictionDate, final UUID defendantId, final List<UUID> offenceIdList, final String hearing, final UUID hearingId, final String extractType) {
+        Defendants.Builder defendantBuilder = Defendants.defendants()
+                .withId(defendantId)
+                .withAddress(createAddress())
+                .withDateOfBirth(DOB)
+                .withAge(DEFENDANT_AGE)
+                .withLegalAidStatus("legal aid")
+                .withJudicialResults(createResults(hearingId))
+                .withDefenceOrganisation(createDefenceOrganisation(hearing))
+                .withCourtApplications(asList(createCourtApplications()))
+                .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                        .withCustody(CUSTODY_TYPE)
+                        .withId(CUSTODY_ESTABLISHMENT_UUID)
+                        .withName(CUSTODY_ESTABLISHMENT_NAME)
+                        .build());
+
+        if("CertificateOfConviction".equals(extractType)) {
+            defendantBuilder.withOffences(createOffenceForCOC(convictionDate, offenceIdList, hearingId));
+        } else {
+            defendantBuilder.withOffences(createOffence(OFFENCE_ID, hearingId));
+
+        }
+
+        return defendantBuilder.build();
+    }
+
     private Defendants createDefendant(final UUID defendantId, final String hearing, final UUID hearingId) {
         return Defendants.defendants()
                 .withId(defendantId)
@@ -1755,8 +1836,8 @@ public class CourtExtractTransformerTest {
                 .withDateOfBirth(DOB)
                 .withAge(DEFENDANT_AGE)
                 .withLegalAidStatus("legal aid")
-                .withJudicialResults(createResults(hearingId))
                 .withOffences(createOffence(OFFENCE_ID, hearingId))
+                .withJudicialResults(createResults(hearingId))
                 .withDefenceOrganisation(createDefenceOrganisation(hearing))
                 .withCourtApplications(asList(createCourtApplications()))
                 .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
@@ -1791,6 +1872,43 @@ public class CourtExtractTransformerTest {
                         .withId(offenceId)
                         .withOrderIndex(Integer.valueOf(randomNumeric(2)))
                         .withConvictionDate(CONVICTION_DATE)
+                        .withJudicialResults(createResults(hearingId))
+                        .withPleas(createPlea())
+                        .withIndicatedPlea(createIndicatedPlea())
+                        .withAllocationDecision(createAllocationDecision())
+                        .withVerdicts(createVerdicts()).build()
+        );
+    }
+
+    private List<Offences> createOffenceForCOC(final LocalDate convictionDate,final List<UUID> offenceIdList, UUID hearingId) {
+        return asList(
+                offences()
+                        .withId(offenceIdList.get(0))
+                        .withOrderIndex(Integer.valueOf(randomNumeric(2)))
+                        .withCount(3)
+                        .withConvictionDate(convictionDate.plusWeeks(1))
+                        .withJudicialResults(createResults(hearingId))
+                        .withPleas(createPlea())
+                        .withIndicatedPlea(createIndicatedPlea())
+                        .withAllocationDecision(createAllocationDecision())
+                        .withIndictmentParticular("Offence 1 Indictment Particular")
+                        .withVerdicts(createVerdicts()).build(),
+                offences()
+                        .withId(offenceIdList.get(1))
+                        .withCount(1)
+                        .withOrderIndex(Integer.valueOf(randomNumeric(1)))
+                        .withConvictionDate(convictionDate.plusDays(2))
+                        .withJudicialResults(createResults(hearingId))
+                        .withPleas(createPlea())
+                        .withIndicatedPlea(createIndicatedPlea())
+                        .withIndictmentParticular("Offence 2 Indictment Particular")
+                        .withAllocationDecision(createAllocationDecision())
+                        .withVerdicts(createVerdicts()).build(),
+                offences()
+                        .withId(offenceIdList.get(2))
+                        .withCount(5)
+                        .withOrderIndex(Integer.valueOf(randomNumeric(2)))
+                        .withConvictionDate(convictionDate.plusWeeks(1))
                         .withJudicialResults(createResults(hearingId))
                         .withPleas(createPlea())
                         .withIndicatedPlea(createIndicatedPlea())
@@ -2031,6 +2149,20 @@ public class CourtExtractTransformerTest {
                 .build();
     }
 
+    private CourtApplication createBreachCourtOrder() {
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withApplicant(createApplicationParty())
+                .withType(createCourtApplicationType())
+                .withApplicationReceivedDate(APPLICATION_DATE)
+                .withApplicationParticulars(APPLICATION_PARTICULARS)
+                .withRespondents(createCourtApplicationRespondents())
+                .withCourtOrder(createCourtOrder())
+                .build();
+
+    }
+
     private CourtApplication createCourtApplication() {
         return CourtApplication.courtApplication()
                 .withId(APPLICATION_ID)
@@ -2062,6 +2194,26 @@ public class CourtExtractTransformerTest {
                         .build())
                 .withRepresentationOrganisation(createOrganisation())
                 .build());
+    }
+
+    private CourtOrder createCourtOrder() {
+        return CourtOrder.courtOrder().withCourtOrderOffences(
+                asList(CourtOrderOffence.courtOrderOffence()
+                        .withOffence(Offence.offence()
+                                .withId(randomUUID())
+                                .withOffenceTitle("Title")
+                                .withOrderIndex(5)
+                                .withCount(3)
+                                .withConvictionDate(CONVICTION_DATE.plusWeeks(3)).build())
+                        .build(),
+                        CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence()
+                                        .withId(randomUUID())
+                                        .withOffenceTitle("Title")
+                                        .withOrderIndex(5)
+                                        .withCount(3)
+                                        .withConvictionDate(CONVICTION_DATE.plusDays(3)).build())
+                                .build())).build();
     }
 
     private List<Respondents> createRespondents() {

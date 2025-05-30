@@ -22,6 +22,7 @@ import static uk.gov.justice.api.resource.utils.ResultAmendmentHelper.extractAme
 import static uk.gov.justice.api.resource.utils.ResultAmendmentHelper.getResultDefinitionsInSlipRuleAmendments;
 import static uk.gov.justice.api.resource.utils.TransformationHelper.getHearingsSortedByHearingDaysAsc;
 import static uk.gov.justice.api.resource.DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTemplateResource.RECORD_SHEET;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 
 import uk.gov.justice.api.resource.dto.DraftResultsWrapper;
 import uk.gov.justice.api.resource.dto.ResultDefinition;
@@ -43,6 +44,7 @@ import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
@@ -60,10 +62,12 @@ import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
 import uk.gov.justice.progression.courts.exract.Amendments;
 import uk.gov.justice.progression.courts.exract.ApplicantRepresentation;
+import uk.gov.justice.progression.courts.exract.AquittedOffencesDetails;
 import uk.gov.justice.progression.courts.exract.AttendanceDayAndType;
 import uk.gov.justice.progression.courts.exract.AttendanceDays;
 import uk.gov.justice.progression.courts.exract.CommittedForSentence;
 import uk.gov.justice.progression.courts.exract.CompanyRepresentatives;
+import uk.gov.justice.progression.courts.exract.ConvictedOffencesDetails;
 import uk.gov.justice.progression.courts.exract.CourtApplications;
 import uk.gov.justice.progression.courts.exract.CourtExtractRequested;
 import uk.gov.justice.progression.courts.exract.CourtOrderOffences;
@@ -95,8 +99,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -119,6 +126,11 @@ public class CourtExtractTransformer {
     public static final String RD_GROUP_COMMITTED_TO_CC = "CommittedToCC";
     public static final String RD_GROUP_SENT_TO_CC = "SentToCC";
     private static final String SLIPRULE_AMENDMENT_REASON_CODE = "EO";
+    public static final String CERTIFICATE_OF_CONVICTION = "CertificateOfConviction";
+    public static final String CERTIFICATE_OF_ACQUITTAL = "CertificateOfAcquittal";
+    public static final String AFTER_TRIAL_ON_INDICTMENT = "After trial on indictment";
+    public static final String GUILTY_PLEA = "Following guilty plea";
+    public static final String FOUND_TO_BE_IN_BREACH_OF_AN_ORDER_MADE_BY = "Found to be in breach of an order made by";
 
     @Inject
     TransformationHelper transformationHelper;
@@ -147,6 +159,28 @@ public class CourtExtractTransformer {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CourtExtractTransformer.class);
+    private static final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> crownOffencesSortComparator = (offence1, offence2) -> {
+        if (isNull(offence1.getCount()) || isNull(offence2.getCount()) || offence1.getCount() == 0 || offence2.getCount() == 0
+                && (nonNull(offence1.getOrderIndex()) && nonNull(offence2.getOrderIndex()))) {
+            return offence1.getOrderIndex().compareTo(offence2.getOrderIndex());
+        }
+
+        if (nonNull(offence1.getCount()) && nonNull(offence2.getCount())
+                && nonNull(offence1.getOrderIndex()) && nonNull(offence2.getOrderIndex())) {
+            int countCmp = offence1.getCount().compareTo(offence2.getCount());
+            if (countCmp != 0) {
+                return countCmp;
+            }
+            return offence1.getOrderIndex().compareTo(offence2.getOrderIndex());
+        }
+        return 0;
+    };
+    private static final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> magsOffencesSortComparator = (offence1, offence2) -> {
+        if (nonNull(offence1.getOrderIndex()) && nonNull(offence2.getOrderIndex())) {
+            return offence1.getOrderIndex().compareTo(offence2.getOrderIndex());
+        }
+        return 0;
+    };
 
     public JsonObject getTransformedPayload(final JsonEnvelope document, final String defendantId, final String extractType, final List<String> hearingIdList, final UUID userId) throws IOException {
         final JsonObject payload = transformToTemplateConvert(document.payloadAsJsonObject(), defendantId, extractType, hearingIdList, userId);
@@ -347,6 +381,7 @@ public class CourtExtractTransformer {
                         .withApplicationDate(ca.getApplicationReceivedDate())
                         .withApplicationParticulars(ca.getApplicationParticulars())
                         .withApplicationLegislation(ca.getType().getLegislation())
+                        .withConvictionDate(ca.getConvictionDate())
                         .withPlea(ca.getPlea())
                         .withCourtOrders(transformCourtOrders(ca.getCourtOrder()))
                         .build()).toList();
@@ -380,6 +415,7 @@ public class CourtExtractTransformer {
                             .withResultTextList(nonNull(coo.getOffence().getJudicialResults()) && !coo.getOffence().getJudicialResults().isEmpty() ?
                                     coo.getOffence().getJudicialResults().stream().map(JudicialResult::getResultText).filter(StringUtils::isNotEmpty).toList() : emptyList())
                             .withPlea(coo.getOffence().getPlea())
+                            .withConvictionDate(coo.getOffence().getConvictionDate())
                             .build())
                     .toList()
             );
@@ -411,6 +447,7 @@ public class CourtExtractTransformer {
                 .withApplicationReceivedDate(courtApplication.getApplicationReceivedDate())
                 .withApplicationParticulars(courtApplication.getApplicationParticulars())
                 .withPlea(courtApplication.getPlea())
+                .withConvictionDate(courtApplication.getConvictionDate())
                 .withCourtOrder(courtApplication.getCourtOrder())
                 .build());
     }
@@ -539,10 +576,10 @@ public class CourtExtractTransformer {
             defendantBuilder.withLegalAidStatus(defendant.getLegalAidStatus());
             defendantBuilder.withAddress(toAddress(defendant.getAddress()));
 
-            final List<uk.gov.justice.progression.courts.exract.Hearings> extractHearings = hearingsList.stream()
-                    .map(h -> getExtractHearing(defendant, masterDefendantId, userId, h, hearingsAtAGlance, extractType))
-                    .toList();
-            defendantBuilder.withHearings(getHearingsSortedByHearingDaysAsc(extractHearings));
+            final List<uk.gov.justice.progression.courts.exract.Hearings> extractHearings = getExtractHearings(masterDefendantId, userId, hearingsList, hearingsAtAGlance, extractType, defendant);
+
+            List<uk.gov.justice.progression.courts.exract.Hearings> sortedHearings = getHearingsSortedByHearingDaysAsc(extractHearings);
+            defendantBuilder.withHearings(sortedHearings);
             //used for certificates generation
             defendantBuilder.withAttendanceDays(transformAttendanceDayAndTypes(transformDefendantAttendanceDay(hearingsList, defendant)));
             defendantBuilder.withResults(transformJudicialResults(hearingsList, masterDefendantId, defendantId));
@@ -559,6 +596,12 @@ public class CourtExtractTransformer {
                 } else {
                     defendantBuilder.withDefenceOrganisations(transformDefenceOrganisation(null));
                 }
+            }
+            if (CERTIFICATE_OF_CONVICTION.equals(extractType) && isNotEmpty(sortedHearings)) {
+                buildHearingsForConvictionCertificate(defendantBuilder, sortedHearings);
+            }
+            if (CERTIFICATE_OF_ACQUITTAL.equals(extractType) && isNotEmpty(sortedHearings)) {
+                buildHearingsForAcquittalCertificate(defendantBuilder, sortedHearings);
             }
             return handlePersonDefendantDetails(caseDefendant, defendantBuilder);
         }
@@ -588,6 +631,207 @@ public class CourtExtractTransformer {
             }
         }
         return defendantBuilder.build();
+    }
+
+    private List<uk.gov.justice.progression.courts.exract.Hearings> getExtractHearings(final UUID masterDefendantId, final UUID userId, final List<Hearings> hearingsList, final GetHearingsAtAGlance hearingsAtAGlance, final String extractType, final Defendants defendant) {
+        return hearingsList.stream()
+                .filter(h -> h.getIsBoxHearing() == null || !h.getIsBoxHearing())
+                .filter(h -> (!CERTIFICATE_OF_CONVICTION.equals(extractType) && !CERTIFICATE_OF_ACQUITTAL.equals(extractType))
+                        || HEARING_RESULTED.equals(h.getHearingListingStatus()))
+                .map(h -> getExtractHearing(defendant, masterDefendantId, userId, h, hearingsAtAGlance, extractType))
+                .toList();
+    }
+
+
+    private void buildHearingsForConvictionCertificate(final Defendant.Builder defendantBuilder, final List<uk.gov.justice.progression.courts.exract.Hearings> sortedHearings) {
+        List<uk.gov.justice.progression.courts.exract.Hearings> updateHearingWithConvictedData = new ArrayList<>();
+        // Sort offences within each hearing by conviction date
+        for (uk.gov.justice.progression.courts.exract.Hearings hearing : sortedHearings) {
+            final List<ConvictedOffencesDetails> convictedOffencesList = new ArrayList<>();
+            buildConvictedCaseOffences(hearing, convictedOffencesList);
+            buildConvictedCourtOrderOffences(hearing, convictedOffencesList);
+            updateHearingWithConvictedData.add(uk.gov.justice.progression.courts.exract.Hearings.hearings().withValuesFrom(hearing)
+                    .withConvictedOffencesDetails(convictedOffencesList).build());
+
+        }
+        if (!updateHearingWithConvictedData.isEmpty()) {
+            defendantBuilder.withHearings(updateHearingWithConvictedData);
+        }
+    }
+
+    private void buildHearingsForAcquittalCertificate(final Defendant.Builder defendantBuilder, final List<uk.gov.justice.progression.courts.exract.Hearings> sortedHearings) {
+        List<uk.gov.justice.progression.courts.exract.Hearings> updateHearingWithAcquittedData = new ArrayList<>();
+        // Sort offences within each hearing by Acquittal date
+        for (uk.gov.justice.progression.courts.exract.Hearings hearing : sortedHearings) {
+            final List<AquittedOffencesDetails> aquittedOffencesDetails = new ArrayList<>();
+            if (isNotEmpty(hearing.getOffences())) {
+                buildAcquittedCaseOffences(hearing, aquittedOffencesDetails);
+                updateHearingWithAcquittedData.add(uk.gov.justice.progression.courts.exract.Hearings.hearings().withValuesFrom(hearing)
+                        .withAquittedOffencesDetails(aquittedOffencesDetails).build());
+            }
+        }
+        if (!updateHearingWithAcquittedData.isEmpty()) {
+            defendantBuilder.withHearings(updateHearingWithAcquittedData);
+        }
+    }
+
+    private void buildConvictedCaseOffences(final uk.gov.justice.progression.courts.exract.Hearings hearing, final List<ConvictedOffencesDetails> convictedOffencesList) {
+        if(isNotEmpty(hearing.getOffences())) {
+            final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> offencesSorted = getOffencesComparator(hearing);
+            final Map<LocalDate, List<uk.gov.justice.progression.courts.exract.Offences>> groupedOffencesForCOC = getOffencesByConvictionDate(hearing.getOffences(), offencesSorted);
+            groupedOffencesForCOC.forEach((convictionDate, offencesList) -> {
+                final String dataVariation = getDataVariation(offencesList);
+                ConvictedOffencesDetails.Builder convictedOffencesGroup = ConvictedOffencesDetails.convictedOffencesDetails()
+                        .withConvictionDate(convictionDate)
+                        .withDataVariation(dataVariation)
+                        .withLocation(nonNull(hearing.getCourtCentre()) ? hearing.getCourtCentre().getName() : "")
+                        .withSentenceLocation(getSentenceLocation(convictionDate, offencesList))
+                        .withOffences(sortOffences(hearing.getJurisdictionType(), offencesList));
+                convictedOffencesList.add(convictedOffencesGroup.build());
+            });
+        }
+    }
+
+    private static String getSentenceLocation(final LocalDate convictionDate, final List<uk.gov.justice.progression.courts.exract.Offences> offencesList) {
+        return Optional.ofNullable(offencesList).orElse(emptyList()).stream()
+                .filter(o -> nonNull(convictionDate) && convictionDate.equals(o.getConvictionDate()))
+                .filter(o -> nonNull(o.getConvictingCourt()) && nonNull(o.getConvictingCourt().getName()))
+                .map(o -> o.getConvictingCourt().getName())
+                .findFirst()
+                .orElse("");
+    }
+
+    private void buildAcquittedCaseOffences(final uk.gov.justice.progression.courts.exract.Hearings hearing, final List<AquittedOffencesDetails> aquittedOffencesList) {
+        final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> offencesSorted = getOffencesComparator(hearing);
+        final Map<LocalDate, List<uk.gov.justice.progression.courts.exract.Offences>> groupedOffencesForCOA = getOffencesByAquittalDate(hearing.getOffences(), offencesSorted);
+        groupedOffencesForCOA.forEach((aquittalDate, offencesList) -> {
+            final String dataVariation = getDataVariation(offencesList);
+            AquittedOffencesDetails.Builder aquittedOffencesGroup = AquittedOffencesDetails.aquittedOffencesDetails()
+                    .withAquittalDate(aquittalDate)
+                    .withDataVariation(dataVariation)
+                    .withLocation(hearing.getCourtCentre().getName())
+                    .withOffences(sortOffences(hearing.getJurisdictionType(), offencesList));
+            aquittedOffencesList.add(aquittedOffencesGroup.build());
+        });
+    }
+
+    private List<uk.gov.justice.progression.courts.exract.Offences> sortOffences(final JurisdictionType jurisdictionType, final List<uk.gov.justice.progression.courts.exract.Offences> offencesList) {
+        if (jurisdictionType == JurisdictionType.CROWN) {
+            final List<uk.gov.justice.progression.courts.exract.Offences> offencesWithCount = offencesList.stream().filter(o -> nonNull(o.getCount()) && o.getCount() > 0)
+                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getCount).thenComparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
+                    .toList();
+            final List<uk.gov.justice.progression.courts.exract.Offences> offencesWithoutCount = offencesList.stream().filter(o -> isNull(o.getCount()) || o.getCount() == 0)
+                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
+                    .toList();
+            return Stream.concat(offencesWithCount.stream(), offencesWithoutCount.stream()).toList();
+        } else {
+            return offencesList.stream()
+                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
+                    .toList();
+        }
+    }
+
+    private Comparator<? super uk.gov.justice.progression.courts.exract.Offences> getOffencesComparator(final uk.gov.justice.progression.courts.exract.Hearings hearing) {
+        final JurisdictionType jurisdictionType = hearing.getJurisdictionType();
+        return jurisdictionType == JurisdictionType.CROWN ? crownOffencesSortComparator : magsOffencesSortComparator;
+    }
+
+    private String getDataVariation(final List<uk.gov.justice.progression.courts.exract.Offences> offencesList) {
+        String dataVariation = null;
+        final Set<String> guiltyPleaTypes = referenceDataService.retrieveGuiltyPleaTypes();
+        if (!getGuiltyVerdicts(offencesList).isEmpty()) {
+            dataVariation = AFTER_TRIAL_ON_INDICTMENT;
+        } else if (!getGuiltyPleas(offencesList, guiltyPleaTypes).isEmpty() || !getIndicatedGuiltyPleas(offencesList).isEmpty()) {
+            dataVariation = GUILTY_PLEA;
+        }
+        return dataVariation;
+    }
+
+    private void buildConvictedCourtOrderOffences(final uk.gov.justice.progression.courts.exract.Hearings hearing, final List<ConvictedOffencesDetails> convictedOffencesList) {
+        if (nonNull(hearing.getCourtApplications()) && !hearing.getCourtApplications().isEmpty()) {
+            hearing.getCourtApplications().forEach(courtApplication -> {
+                if (Boolean.TRUE.equals(nonNull(courtApplication.getCourtOrders())
+                        && courtApplication.getCourtOrders().getCanBeSubjectOfBreachProceedings())
+                        && !courtApplication.getCourtOrders().getCourtOrderOffences().isEmpty()) {
+                    final Map<LocalDate, List<CourtOrderOffences>> groupedCourtOrderOffencesForCOC = getCourtOrderOffencesByConvictionDate(courtApplication);
+                    groupedCourtOrderOffencesForCOC.forEach((convictionDate, offencesList) -> {
+                        ConvictedOffencesDetails.Builder convictedCourtOrderOffences = ConvictedOffencesDetails.convictedOffencesDetails()
+                                .withConvictionDate(convictionDate)
+                                .withDataVariation(FOUND_TO_BE_IN_BREACH_OF_AN_ORDER_MADE_BY + " " + hearing.getCourtCentre().getName())
+                                .withLocation(hearing.getCourtCentre().getName())
+                                .withApplicationDate(courtApplication.getApplicationDate())
+                                .withApplicationType(courtApplication.getApplicationType())
+                                .withApplicationParticulars(courtApplication.getApplicationParticulars())
+                                .withApplicationResults(courtApplication.getApplicationResults())
+                                .withApplicationLegislation(courtApplication.getApplicationLegislation())
+                                .withBreachApplicationConvictionDate(courtApplication.getConvictionDate())
+                                .withCourtOrderOffences(offencesList);
+                        convictedOffencesList.add(convictedCourtOrderOffences.build());
+                    });
+                }
+            });
+        }
+    }
+
+    public static List<uk.gov.justice.progression.courts.exract.Offences> getGuiltyVerdicts(List<uk.gov.justice.progression.courts.exract.Offences> offencesList) {
+        return offencesList.stream()
+                .filter(offence -> offence.getVerdicts().stream()
+                        .anyMatch(verdict -> "GUILTY".equalsIgnoreCase(verdict.getVerdictType().getCategory())))
+                .toList();
+    }
+
+    public static List<uk.gov.justice.progression.courts.exract.Offences> getIndicatedGuiltyPleas(List<uk.gov.justice.progression.courts.exract.Offences> offencesList) {
+        return offencesList.stream()
+                .filter(offence -> nonNull(offence.getIndicatedPlea())
+                        && offence.getIndicatedPlea().getIndicatedPleaValue() == IndicatedPleaValue.INDICATED_GUILTY)
+                .toList();
+    }
+
+    public static List<uk.gov.justice.progression.courts.exract.Offences> getGuiltyPleas(List<uk.gov.justice.progression.courts.exract.Offences> offencesList, Set<String> guiltyPleaTypes) {
+        return offencesList.stream()
+                .filter(offence -> offence.getPleas().stream()
+                        .anyMatch(plea -> guiltyPleaTypes.contains(plea.getPleaValue())))
+                .toList();
+    }
+
+    private Map<LocalDate, List<uk.gov.justice.progression.courts.exract.Offences>> getOffencesByConvictionDate(final List<uk.gov.justice.progression.courts.exract.Offences> defendantOffences, final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> offencesSorted) {
+
+        return defendantOffences.stream()
+                .filter(o -> o.getConvictionDate() != null)
+                .collect(Collectors.groupingBy(
+                        uk.gov.justice.progression.courts.exract.Offences::getConvictionDate,
+                        () -> new TreeMap<>(Comparator.naturalOrder()),
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> list.stream()
+                                        .sorted(offencesSorted)
+                                        .toList()
+                        )
+                ));
+    }
+
+
+    private Map<LocalDate, List<uk.gov.justice.progression.courts.exract.Offences>> getOffencesByAquittalDate(final List<uk.gov.justice.progression.courts.exract.Offences> defendantOffences, final Comparator<? super uk.gov.justice.progression.courts.exract.Offences> offencesSorted) {
+        Map<LocalDate, List<uk.gov.justice.progression.courts.exract.Offences>> groupedOffences = defendantOffences.stream()
+                .filter(o -> o.getAquittalDate() != null)
+                .collect(Collectors.groupingBy(
+                        uk.gov.justice.progression.courts.exract.Offences::getAquittalDate,
+                        () -> new TreeMap<>(Comparator.naturalOrder()),
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> list.stream()
+                                        .sorted(offencesSorted)
+                                        .toList()
+                        )
+                ));
+
+        return groupedOffences;
+    }
+
+    private Map<LocalDate, List<uk.gov.justice.progression.courts.exract.CourtOrderOffences>> getCourtOrderOffencesByConvictionDate(final CourtApplications courtApplication) {
+        return courtApplication.getCourtOrders().getCourtOrderOffences().stream()
+                .filter(courtOrderOffence -> Objects.nonNull(courtOrderOffence.getConvictionDate()))
+                .collect(Collectors.groupingBy(uk.gov.justice.progression.courts.exract.CourtOrderOffences::getConvictionDate, TreeMap::new, Collectors.toList()));
     }
 
     private static Address toAddress(final Address address) {
@@ -757,26 +1001,15 @@ public class CourtExtractTransformer {
                                                                                        final Map<UUID, CommittedForSentence> offenceCommittedForSentenceMap,
                                                                                        final JurisdictionType jurisdictionType, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
 
+        final Set<String> guiltyPleaTypes = referenceDataService.retrieveGuiltyPleaTypes();
         final List<uk.gov.justice.progression.courts.exract.Offences> offencesList = offences.stream()
                 .map(o -> {
                     final List<JudicialResult> resultList = transformResults(filterOutResultDefinitionsNotToBeShownInCourtExtract(o, hearingId));
-                    return toOffences(o, resultList, offenceCommittedForSentenceMap.get(o.getId()), resultIdSlipRuleAmendmentsMap);
+                    return toOffences(o, resultList, offenceCommittedForSentenceMap.get(o.getId()), resultIdSlipRuleAmendmentsMap, guiltyPleaTypes);
                 })
                 .toList();
 
-        if (jurisdictionType == JurisdictionType.CROWN) {
-            final List<uk.gov.justice.progression.courts.exract.Offences> offencesWithCount = offencesList.stream().filter(o -> nonNull(o.getCount()) && o.getCount() > 0)
-                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getCount).thenComparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
-                    .toList();
-            final List<uk.gov.justice.progression.courts.exract.Offences> offencesWithoutCount = offencesList.stream().filter(o -> isNull(o.getCount()) || o.getCount() == 0)
-                    .sorted(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex))
-                    .toList();
-            return Stream.concat(offencesWithCount.stream(), offencesWithoutCount.stream()).toList();
-        } else {
-            final List<uk.gov.justice.progression.courts.exract.Offences> magsOffencesList = new ArrayList<>(offencesList);
-            magsOffencesList.sort(Comparator.comparing(uk.gov.justice.progression.courts.exract.Offences::getOrderIndex));
-            return magsOffencesList;
-        }
+        return sortOffences(jurisdictionType, offencesList);
     }
 
     private List<JudicialResult> filterOutResultDefinitionsNotToBeShownInCourtExtract(final Offences o, final UUID hearingId) {

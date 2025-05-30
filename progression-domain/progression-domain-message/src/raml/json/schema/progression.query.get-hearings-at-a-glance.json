@@ -299,6 +299,9 @@
         "convictionDate": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
         },
+        "convictingCourt": {
+          "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+        },
         "notifiedPlea": {
           "$ref": "http://justice.gov.uk/core/courts/notifiedPlea.json"
         },

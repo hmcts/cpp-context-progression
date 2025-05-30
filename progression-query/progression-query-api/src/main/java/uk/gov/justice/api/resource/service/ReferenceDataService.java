@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -73,6 +74,8 @@ public class ReferenceDataService {
     private static final String FIELD_PLEA_STATUS_TYPES = "pleaStatusTypes";
     private static final String FIELD_PLEA_TYPE_DESCRIPTION = "pleaTypeDescription";
     private static final String FIELD_PLEA_VALUE = "pleaValue";
+    private static final String GUILTY_FLAG_YES = "Yes";
+    private static final String FIELD_PLEA_TYPE_GUILTY_FLAG = "pleaTypeGuiltyFlag";
     private static final String FIELD_JUDICIARIES = "judiciaries";
     private static final String FIELD_DOCUMENTS_TYPE_ACCESS = "documentsTypeAccess";
     private static final String FIELD_ID = "id";
@@ -96,18 +99,35 @@ public class ReferenceDataService {
     private JsonObjectToObjectConverter jsonToObjectConverter;
 
     public Map<String, String> retrievePleaTypeDescriptions() {
-        final MetadataBuilder metadataBuilder = metadataBuilder()
-                .withId(randomUUID())
-                .withName(REFERENCEDATA_QUERY_PLEA_TYPES);
-
-        final Envelope<JsonObject> pleaTypes = requester.requestAsAdmin(envelopeFrom(metadataBuilder, createObjectBuilder()), JsonObject.class);
-        final JsonArray pleaStatusTypes = pleaTypes.payload().getJsonArray(FIELD_PLEA_STATUS_TYPES);
+        final JsonArray pleaStatusTypes = getPleaStatusTypes();
 
         return pleaStatusTypes.stream()
                 .collect(Collectors.toMap(
                         jsonValue -> ((JsonObject) jsonValue).getString(FIELD_PLEA_VALUE),
                         jsonValue -> ((JsonObject) jsonValue).getString(FIELD_PLEA_TYPE_DESCRIPTION)
                 ));
+    }
+
+    public Set<String> retrieveGuiltyPleaTypes() {
+        final JsonArray pleaStatusTypes = getPleaStatusTypes();
+
+        return pleaStatusTypes.stream()
+                .filter(jsonValue -> isGuiltyPleaType((JsonObject) jsonValue))
+                .map(jsonValue -> ((JsonObject)jsonValue).getString(FIELD_PLEA_VALUE))
+                .collect(Collectors.toSet());
+    }
+
+    private JsonArray getPleaStatusTypes() {
+        final MetadataBuilder metadataBuilder = metadataBuilder()
+                .withId(randomUUID())
+                .withName(REFERENCEDATA_QUERY_PLEA_TYPES);
+
+        final Envelope<JsonObject> pleaTypes = requester.requestAsAdmin(envelopeFrom(metadataBuilder, createObjectBuilder()), JsonObject.class);
+        return pleaTypes.payload().getJsonArray(FIELD_PLEA_STATUS_TYPES);
+    }
+
+    private boolean isGuiltyPleaType(JsonObject jsonValue) {
+        return GUILTY_FLAG_YES.equalsIgnoreCase(jsonValue.getString(FIELD_PLEA_TYPE_GUILTY_FLAG));
     }
 
 

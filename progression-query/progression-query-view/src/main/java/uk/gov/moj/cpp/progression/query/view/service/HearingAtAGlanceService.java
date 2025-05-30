@@ -576,6 +576,7 @@ public class HearingAtAGlanceService {
                     .withEndDate(offence.getEndDate())
                     .withCount(offence.getCount())
                     .withConvictionDate(offence.getConvictionDate())
+                    .withConvictingCourt(offence.getConvictingCourt())
                     .withNotifiedPlea(offence.getNotifiedPlea())
                     .withIndicatedPlea(offence.getIndicatedPlea())
                     .withAllocationDecision(offence.getAllocationDecision())
