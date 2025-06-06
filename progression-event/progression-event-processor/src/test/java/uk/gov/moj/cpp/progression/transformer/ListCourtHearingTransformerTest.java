@@ -743,6 +743,77 @@ public class ListCourtHearingTransformerTest {
         assertTrue(listCourtHearing.getHearings().get(0).getDefendantListingNeeds().get(0).getIsYouth());
     }
 
+    @Test
+    void shouldTransformToListCourtHearingForUnscheduledHearing() {
+
+        //given
+        final UUID defendant1 = randomUUID();
+
+        final UUID defendant2 = randomUUID();
+
+        final List<ListHearingRequest> listHearingRequest1 = getListHearingRequestForUnscheduledHearing(defendant1);
+
+        final List<ListHearingRequest> listHearingRequest2 = getListHearingRequestForUnscheduledHearing(defendant2);
+
+        final List<HearingListing> hearingListings = List.of(
+                new HearingListing(
+                        randomUUID(),
+                        defendant1.toString(),
+                        listHearingRequest1,
+                        List.of(ListDefendantRequest.listDefendantRequest().withDefendantId(defendant1).build())),
+                new HearingListing(
+                        randomUUID(),
+                        defendant2.toString(),
+                        listHearingRequest2,
+                        List.of(ListDefendantRequest.listDefendantRequest().withDefendantId(defendant2).build()))
+        );
+
+        final JsonEnvelope envelopeReferral = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(),
+                Json.createObjectBuilder().build());
+
+        final ListCourtHearing listCourtHearing = listCourtHearingTransformer
+                .transform(envelopeReferral,
+                        List.of(getProsecutionCaseWithDefendant(defendant1, defendant2)),
+                        hearingListings, false);
+
+        assertThat(listCourtHearing.getHearings().size(), is(2));
+        assertThat(listCourtHearing.getHearings().get(0).getCourtCentre().getId(), is(courtCenterId));
+        assertThat(listCourtHearing.getHearings().get(0).getEstimatedMinutes(), is(estimateMinutes));
+        assertThat(listCourtHearing.getHearings().get(0).getReportingRestrictionReason(), is(AUTOMATIC_ANONYMITY));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0).getId(), is(defendant1));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0).getPersonDefendant().getPersonDetails().getAddress().getPostcode(), is(postcode));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
+        assertThat(listCourtHearing.getHearings().get(0).getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+        assertThat(listCourtHearing.getHearings().get(0).getDefendantListingNeeds().get(0).getDefendantId(), is(defendant1));
+        assertThat(listCourtHearing.getHearings().get(1).getCourtCentre().getId(), is(courtCenterId));
+        assertThat(listCourtHearing.getHearings().get(1).getEstimatedMinutes(), is(estimateMinutes));
+        assertThat(listCourtHearing.getHearings().get(1).getReportingRestrictionReason(), is(AUTOMATIC_ANONYMITY));
+        assertThat(listCourtHearing.getHearings().get(1).getProsecutionCases().get(0).getId(), is(prosecutionCaseId));
+        assertThat(listCourtHearing.getHearings().get(1).getProsecutionCases().get(0).getDefendants().get(0).getId(), is(defendant2));
+        assertThat(listCourtHearing.getHearings().get(1).getProsecutionCases().get(0).getDefendants().get(0).getPersonDefendant().getPersonDetails().getAddress().getPostcode(), is(postcode));
+        assertThat(listCourtHearing.getHearings().get(1).getProsecutionCases().get(0).getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
+        assertThat(listCourtHearing.getHearings().get(1).getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
+        assertThat(listCourtHearing.getHearings().get(1).getDefendantListingNeeds().get(0).getDefendantId(), is(defendant2));
+    }
+
+    private List<ListHearingRequest> getListHearingRequestForUnscheduledHearing(UUID defendant) {
+        return List.of(ListHearingRequest.listHearingRequest()
+                .withCourtCentre(createCourtCenter())
+                .withEstimateMinutes(15)
+                .withHearingType(HearingType.hearingType().withId(randomUUID()).build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withListDefendantRequests(List.of(ListDefendantRequest.listDefendantRequest()
+                        .withProsecutionCaseId(prosecutionCaseId)
+                        .withDefendantOffences(List.of(offenceId))
+                        .withDefendantId(defendant)
+                        .build()))
+                .withListingDirections("wheelchair access required")
+                .withReportingRestrictionReason(AUTOMATIC_ANONYMITY)
+                .build());
+    }
+
     private List<CourtApplication> createCourtApplications() {
         final List<CourtApplication> courtApplications = new ArrayList<>();
         courtApplications.add(CourtApplication.courtApplication()
@@ -846,6 +917,47 @@ public class ListCourtHearingTransformerTest {
                         .withMarkerTypeCode(MARKER_TYPE_CODE)
                         .withMarkerTypeDescription(MARKER_TYPE_DESCRIPTION)
                         .build()))
+                .build();
+    }
+
+    private ProsecutionCase getProsecutionCaseWithDefendant(final UUID defendantId1, final UUID defendantId2) {
+        return ProsecutionCase.prosecutionCase()
+                .withId(prosecutionCaseId)
+                .withCpsOrganisation(cpsOrganisation)
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                        .withProsecutionAuthorityCode(prosecutingAuth).build())
+                .withDefendants(List.of(Defendant.defendant()
+                                .withId(defendantId1)
+                                .withMasterDefendantId(randomUUID())
+                                .withCourtProceedingsInitiated(courtProceedingsInitiated)
+                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                        .withPersonDetails(Person.person()
+                                                .withAddress(Address.address().withPostcode(postcode).build())
+                                                .withDateOfBirth(LocalDate.now().minusYears(20))
+                                                .build()).build())
+                                .withOffences(List.of(Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build(),
+                        Defendant.defendant()
+                                .withId(defendantId2)
+                                .withMasterDefendantId(randomUUID())
+                                .withCourtProceedingsInitiated(courtProceedingsInitiated)
+                                .withPersonDefendant(PersonDefendant.personDefendant()
+                                        .withPersonDetails(Person.person()
+                                                .withAddress(Address.address().withPostcode(postcode).build())
+                                                .withDateOfBirth(LocalDate.now().minusYears(20))
+                                                .build()).build())
+                                .withOffences(List.of(Offence.offence()
+                                        .withId(offenceId)
+                                        .build()))
+                                .build()))
+                .withCaseMarkers(List.of(Marker.marker()
+                        .withMarkerTypeid(MARKER_TYPE_ID)
+                        .withMarkerTypeCode(MARKER_TYPE_CODE)
+                        .withMarkerTypeDescription(MARKER_TYPE_DESCRIPTION)
+                        .build()))
+                .withTrialReceiptType(TRANSFER)
                 .build();
     }
 

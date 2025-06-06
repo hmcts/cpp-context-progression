@@ -65,21 +65,21 @@
         <material.version>17.0.57</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.95</referencedata.version>
-        <listing.version>17.0.63</listing.version>
-        <hearing.version>17.0.65</hearing.version>
-        <usersgroups.version>17.0.19</usersgroups.version>
-        <defence.version>17.0.44</defence.version>
+        <referencedata.version>17.0.96</referencedata.version>
+        <listing.version>17.0.66</listing.version>
+        <hearing.version>17.0.81</hearing.version>
+        <usersgroups.version>17.0.33</usersgroups.version>
+        <defence.version>17.0.61</defence.version>
         <referencedata.offence.version>17.0.32</referencedata.offence.version>
-        <coredomain.version>17.101.4</coredomain.version>
+        <coredomain.version>17.101.5</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <results.version>17.0.1</results.version>
-        <notification.notify.version>17.0.1</notification.notify.version>
-        <unifiedsearch.version>17.0.23</unifiedsearch.version>
-        <systemdocgenerator.version>17.0.27</systemdocgenerator.version>
+        <results.version>17.0.55</results.version>
+        <notification.notify.version>17.0.24</notification.notify.version>
+        <unifiedsearch.version>17.0.25</unifiedsearch.version>
+        <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.19</applicationscourtorders.version>
-        <sjp.version>17.0.6</sjp.version>
+        <sjp.version>17.0.84</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.2</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>

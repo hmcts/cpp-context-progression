@@ -294,6 +294,12 @@ public class ListCourtHearingTransformer {
                 .withIsGroupProceedings(isGroupProceedings)
                 .withNumberOfGroupCases(isNotEmpty(prosecutionCases) ? prosecutionCases.size() : null)
                 .withWeekCommencingDate(listHearingRequest.getWeekCommencingDate())
+                .withBookedSlots(listHearingRequest.getBookedSlots())
+                .withBookingType(listHearingRequest.getBookingType())
+                .withJudiciary(listHearingRequest.getJudiciary())
+                .withNonDefaultDays(listHearingRequest.getNonDefaultDays())
+                .withSpecialRequirements(listHearingRequest.getSpecialRequirements())
+                .withPriority(listHearingRequest.getPriority())
                 .build();
     }
 
@@ -320,7 +326,7 @@ public class ListCourtHearingTransformer {
                 .filter(d -> d.getId().equals(defendantId))
                 .findFirst();
 
-        if (defendant.isPresent()) {
+        if (defendant.isPresent() && nonNull(expectedListingStartDateTime)) {
             final Optional<LocalDate> birthDate = getDateOfBirth(defendant.get());
             if (birthDate.isPresent() && calculateIsYouth(birthDate.get(), expectedListingStartDateTime)) {
                 isYouth = true;

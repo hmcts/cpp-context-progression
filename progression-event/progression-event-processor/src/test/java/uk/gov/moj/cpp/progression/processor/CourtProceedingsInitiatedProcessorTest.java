@@ -25,6 +25,7 @@ import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.ListDefendantRequest;
 import uk.gov.justice.core.courts.ListHearingRequest;
@@ -207,6 +208,7 @@ public class CourtProceedingsInitiatedProcessorTest {
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
 
+        doReturn(false).when(progressionService).checksIfUnscheduledHearingNeedsToBeCreated(any());
         this.eventProcessor.handle(requestMessage);
         verify(summonsHearingRequestService).addDefendantRequestToHearing(any(), anyList());
 
@@ -665,6 +667,8 @@ public class CourtProceedingsInitiatedProcessorTest {
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
 
+        doReturn(false).when(progressionService).checksIfUnscheduledHearingNeedsToBeCreated(any());
+
         this.eventProcessor.handle(requestMessage);
         verify(summonsHearingRequestService).addDefendantRequestToHearing(any(), anyList());
 
@@ -777,6 +781,8 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .build());
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
 
+        doReturn(false).when(progressionService).checksIfUnscheduledHearingNeedsToBeCreated(any());
+
         this.eventProcessor.handle(requestMessage);
         verify(summonsHearingRequestService).addDefendantRequestToHearing(any(), anyList());
 
@@ -868,6 +874,8 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
+
+        doReturn(false).when(progressionService).checksIfUnscheduledHearingNeedsToBeCreated(any());
 
         this.eventProcessor.handle(requestMessage);
 
@@ -967,6 +975,8 @@ public class CourtProceedingsInitiatedProcessorTest {
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
 
+        doReturn(false).when(progressionService).checksIfUnscheduledHearingNeedsToBeCreated(any());
+
         this.eventProcessor.handle(requestMessage);
         verify(summonsHearingRequestService).addDefendantRequestToHearing(any(), anyList());
 
@@ -1008,6 +1018,100 @@ public class CourtProceedingsInitiatedProcessorTest {
         assertThat(LocalDate.now().toString(), is(reportingRestrictionsOfUpdateDefendantListingStatus.getJsonObject(1).getString("orderedDate")));
     }
 
+    @Test
+    void shouldHandleCasesReferredToCourtEventMessageWhenHearingRequestIsUnscheduledHearingWithMultipleDefendant() throws IOException {
+        //Given
+        final UUID caseId = UUID.randomUUID();
+        final UUID defendantId1 = UUID.randomUUID();
+        final UUID defendantId2 = UUID.randomUUID();
+        final UUID offenceId = UUID.randomUUID();
+        final String offenceCode = RandomStringUtils.randomAlphanumeric(8);
+
+        final ProsecutionCase prosecutionCase = getProsecutionCase(caseId, List.of(defendantId1, defendantId2), offenceId, offenceCode, false);
+
+        final ListHearingRequest listHearingRequest = populateUnscheduledListHearingRequest(caseId, defendantId1, defendantId2, offenceId);
+
+        final List<ListHearingRequest> listHearingRequestList = List.of(listHearingRequest);
+
+        final List<JsonObject> referenceDataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, offenceCode, SEXUAL_OFFENCE_RR_DESCRIPTION, "/referencedataoffences.offences-list.json");
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.court-proceedings-initiated"),
+                payload);
+
+        //When
+        when(payload.getJsonObject("courtReferral")).thenReturn(courtReferralJson);
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
+        when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
+        when(courtReferral.getListHearingRequests()).thenReturn(listHearingRequestList);
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester)))
+                .thenReturn(Optional.of(referenceDataOffencesJsonObject));
+        when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
+
+        final List<HearingListingNeeds> hearingsList = new ArrayList<>();
+        hearingsList.add(HearingListingNeeds.hearingListingNeeds()
+                .withProsecutionCases(List.of(ProsecutionCase.prosecutionCase()
+                        .withDefendants(List.of(Defendant.defendant()
+                                .withOffences(List.of(Offence.offence()
+                                        .withId(UUID.randomUUID())
+                                        .withReportingRestrictions(List.of(ReportingRestriction.reportingRestriction()
+                                                        .withLabel(YOUTH_OFFENCE_RR_DESCRIPTION)
+                                                        .withOrderedDate(LocalDate.now())
+                                                        .build(),
+                                                ReportingRestriction.reportingRestriction()
+                                                        .withLabel(SEXUAL_OFFENCE_RR_DESCRIPTION)
+                                                        .withOrderedDate(LocalDate.now())
+                                                        .build()))
+                                        .build()))
+                                .build()))
+                        .withId(caseId)
+                        .build()))
+                .build());
+        when(listCourtHearingTransformer.transform(any(),anyList(), anyList(), any()))
+                .thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
+
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(buildProsecutionCase(caseId));
+        doReturn(true).when(progressionService).checksIfUnscheduledHearingNeedsToBeCreated(any());
+
+        this.eventProcessor.handle(requestMessage);
+        verify(summonsHearingRequestService).addDefendantRequestToHearing(any(), anyList());
+
+        verify(sender, times(4)).send(envelopeCaptor.capture());
+
+        final Envelope<JsonObject> jsonObjectEnvelope2 = envelopeCaptor.getAllValues().get(2);
+
+        assertThat("progression.command.create-prosecution-case", is(jsonObjectEnvelope2.metadata().name()));
+        assertThat(caseId.toString(), is(jsonObjectEnvelope2.payload().getJsonObject("prosecutionCase").getString("id")));
+
+        final JsonArray reportingRestrictionsArray = jsonObjectEnvelope2.payload().getJsonObject("prosecutionCase")
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("reportingRestrictions");
+
+
+        assertThat(reportingRestrictionsArray.size(), is(2));
+        assertThat(reportingRestrictionsArray.getJsonObject(0).getString("label"), is(YOUTH_OFFENCE_RR_DESCRIPTION));
+        assertThat(reportingRestrictionsArray.getJsonObject(0).getString("orderedDate"), is(LocalDate.now().toString()));
+        assertThat(reportingRestrictionsArray.getJsonObject(1).getString("label"), is(SEXUAL_OFFENCE_RR_DESCRIPTION));
+        assertThat(reportingRestrictionsArray.getJsonObject(1).getString("orderedDate"), is(LocalDate.now().toString()));
+
+        final Envelope<JsonObject> jsonObjectEnvelope3 = envelopeCaptor.getAllValues().get(3);
+
+        assertThat("progression.command.list-unscheduled-hearing", is(jsonObjectEnvelope3.metadata().name()));
+        assertThat(caseId.toString(), is(jsonObjectEnvelope3.payload().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("id")));
+
+        final JsonArray reportingRestrictionsOfUpdateDefendantListingStatus = jsonObjectEnvelope2.payload().getJsonObject("prosecutionCase")
+                .getJsonArray("prosecutionCases").getJsonObject(0)
+                .getJsonArray("defendants").getJsonObject(0)
+                .getJsonArray("offences").getJsonObject(0)
+                .getJsonArray("reportingRestrictions");
+
+        assertThat(reportingRestrictionsOfUpdateDefendantListingStatus.getJsonObject(0).getString("label"), is(YOUTH_OFFENCE_RR_DESCRIPTION));
+        assertThat(LocalDate.now().toString(), is(reportingRestrictionsOfUpdateDefendantListingStatus.getJsonObject(0).getString("orderedDate")));
+
+        assertThat(reportingRestrictionsOfUpdateDefendantListingStatus.getJsonObject(1).getString("label"), is(SEXUAL_OFFENCE_RR_DESCRIPTION));
+        assertThat(LocalDate.now().toString(), is(reportingRestrictionsOfUpdateDefendantListingStatus.getJsonObject(1).getString("orderedDate")));
+    }
 
     @Test
     public void shouldHandleCasesReferredToCourtEventMessageWhenNoHearingRequestExist() throws IOException {
@@ -1152,6 +1256,30 @@ public class CourtProceedingsInitiatedProcessorTest {
                 .withEstimatedDuration("1 week")
                 .withEstimateMinutes(20)
                 .withHearingType(HearingType.hearingType().withId(UUID.randomUUID()).withDescription("Sentence").build())
+                .build();
+    }
+
+    private ListHearingRequest populateUnscheduledListHearingRequest(final UUID caseId, final UUID defendantId1, final UUID defendantId2, final UUID offenceId) {
+        return ListHearingRequest.listHearingRequest()
+                .withCourtCentre(
+                        CourtCentre.courtCentre()
+                                .withId(UUID.randomUUID())
+                                .withName("Bristol Crown Court")
+                                .build())
+                .withListDefendantRequests(List.of(
+                        ListDefendantRequest.listDefendantRequest()
+                                .withProsecutionCaseId(caseId)
+                                .withDefendantId(defendantId1)
+                                .withDefendantOffences(List.of(offenceId))
+                                .build(),
+                        ListDefendantRequest.listDefendantRequest()
+                                .withProsecutionCaseId(caseId)
+                                .withDefendantId(defendantId2)
+                                .withDefendantOffences(List.of(offenceId))
+                                .build()))
+                .withEstimateMinutes(20)
+                .withHearingType(HearingType.hearingType().withId(UUID.randomUUID()).withDescription("Sentence").build())
+                .withJurisdictionType(JurisdictionType.CROWN)
                 .build();
     }
 

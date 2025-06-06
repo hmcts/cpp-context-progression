@@ -3978,8 +3978,9 @@ public class HearingAggregateTest {
                 .setConvicted(false)).build();
         final Stream<Object> eventStream =  hearingAggregate.listUnscheduledHearing(hearing);
 
-        final List<?> eventList = eventStream.collect(toList());
-        assertThat(eventList.get(0), instanceOf(UnscheduledHearingListingRequested.class));
+        final List<?> eventList = eventStream.toList();
+        assertThat(eventList.get(0), instanceOf(ProsecutionCaseDefendantListingStatusChangedV2.class));
+        assertThat(eventList.get(1), instanceOf(UnscheduledHearingListingRequested.class));
     }
 
 

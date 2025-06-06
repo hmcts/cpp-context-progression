@@ -999,7 +999,13 @@ public class ProgressionService {
             final List<ListHearingRequest> listHearingRequests = hearingListingList.stream()
                     .filter(h -> h.hearingId().equals(hearing.getId()))
                     .map(HearingListing::listHearingRequestList)
-                    .flatMap(Collection::stream).toList();
+                    .flatMap(Collection::stream)
+                    .toList();
+
+            if (checksIfUnscheduledHearingNeedsToBeCreated(listHearingRequests)) {
+                listUnscheduledHearings(jsonEnvelope, hearing);
+                return;
+            }
 
             updateHearingListingStatusToSentForListing(jsonEnvelope, listHearingRequests, hearing);
         });
@@ -1980,6 +1986,13 @@ public class ProgressionService {
                     .withName(PROGRESSION_COMMAND_UPDATE_CIVIL_FEES).build();
             sender.send(envelopeFrom(commandMetadata, payload));
         }
+    }
+
+    public boolean checksIfUnscheduledHearingNeedsToBeCreated(final List<ListHearingRequest> listHearingRequests) {
+        return listHearingRequests.stream().allMatch(listHearingRequest ->
+                isNull(listHearingRequest.getListedStartDateTime()) &&
+                        isNull(listHearingRequest.getEarliestStartDateTime()) &&
+                        isNull(listHearingRequest.getWeekCommencingDate()));
     }
 
 

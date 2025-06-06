@@ -49,8 +49,8 @@ public class UnscheduledCourtHearingListTransformer {
                     });
         } else if (hearing.getProsecutionCases() != null) {
 
-            hearing.getProsecutionCases().stream().forEach(
-                    prosecutionCase -> prosecutionCase.getDefendants().stream().forEach(
+            hearing.getProsecutionCases().forEach(
+                    prosecutionCase -> prosecutionCase.getDefendants().forEach(
                             defendant -> hearingUnscheduledListingNeeds.addAll(transformDefendant(hearing, prosecutionCase, defendant))
                     )
             );

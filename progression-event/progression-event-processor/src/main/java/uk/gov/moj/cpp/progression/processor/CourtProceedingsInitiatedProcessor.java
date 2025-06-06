@@ -144,25 +144,42 @@ public class CourtProceedingsInitiatedProcessor {
             return List.of();
         }
 
+        final boolean unscheduledHearing = progressionService.checksIfUnscheduledHearingNeedsToBeCreated(listHearingRequests);
+
         final Map<String, List<ListHearingRequest>> hearingRequestList = new HashMap<>();
 
         listHearingRequests.forEach(listHearingRequest -> {
 
-            final String key = generateKey(listHearingRequest);
-
             final List<ListDefendantRequest> listDefendantRequests = listHearingRequest.getListDefendantRequests();
 
-            if (hearings.containsKey(key)) {
-                final List<ListDefendantRequest> list = listDefendantRequests.stream()
-                        .filter(listDefendantRequest -> isDefendantNotExist(listDefendantRequest.getDefendantId(), hearings.get(key)))
-                        .toList();
+            if(unscheduledHearing) {
 
-                hearings.get(key).addAll(list);
-                hearingRequestList.get(key).add(listHearingRequest);
+                listDefendantRequests.forEach(listDefendantRequest -> {
+                    hearings.put(listDefendantRequest.getDefendantId().toString(), List.of(listDefendantRequest));
+                    final ListHearingRequest updatedListHearingRequest = ListHearingRequest
+                            .listHearingRequest()
+                            .withValuesFrom(listHearingRequest)
+                            .withListDefendantRequests(List.of(listDefendantRequest))
+                            .build();
+                    hearingRequestList.put(listDefendantRequest.getDefendantId().toString(), new ArrayList<>(List.of(updatedListHearingRequest)));
+                });
 
             } else {
-                hearings.put(key, new ArrayList<>(listDefendantRequests));
-                hearingRequestList.put(key, new ArrayList<>(List.of(listHearingRequest)));
+
+                final String key = generateKey(listHearingRequest);
+
+                if (hearings.containsKey(key)) {
+                    final List<ListDefendantRequest> list = listDefendantRequests.stream()
+                            .filter(listDefendantRequest -> isDefendantNotExist(listDefendantRequest.getDefendantId(), hearings.get(key)))
+                            .toList();
+
+                    hearings.get(key).addAll(list);
+                    hearingRequestList.get(key).add(listHearingRequest);
+
+                } else {
+                    hearings.put(key, new ArrayList<>(listDefendantRequests));
+                    hearingRequestList.put(key, new ArrayList<>(List.of(listHearingRequest)));
+                }
             }
         });
 

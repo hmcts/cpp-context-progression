@@ -42,9 +42,9 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED = "public.hearing.resulted";
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
     private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_MEMBER_CASE = "public.hearing.resulted-member-cases";
-    private static final String PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE_V2 = "public.events.hearing.hearing-resulted-multiple-prosecution-cases";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED = "public.progression.hearing-resulted-case-updated";
     private static final String PUBLIC_PROGRESSION_HEARING_RESULTED = "public.progression.hearing-resulted";
+    private static final String PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 = "public.events.hearing.hearing-resulted-case-updated";
 
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private final JmsMessageConsumerClient messageConsumerClientPublicForHearingResultedCaseUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_HEARING_RESULTED_CASE_UPDATED).getMessageConsumerClient();
@@ -104,23 +104,20 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldRaiseUpdateHearingCaseUpdatedEventWhenMultipleProsecutionCasesArePresentV2() throws Exception {
+    public void shouldUpdateHearingResultedCaseUpdatedV2() throws Exception {
         addProsecutionCaseToCrownCourt(caseId, defendantId);
-        final String caseId2 = randomUUID().toString();
-        addProsecutionCaseToCrownCourt(caseId2, defendantId);
-
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithMultipleCasesJsonObject(PUBLIC_HEARING_RESULTED_MULTIPLE_PROSECUTION_CASE_V2 + ".json", caseId, caseId2,
-                hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId, groupId, offenceId));
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
+                hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchers());
         verifyInMessagingQueueForHearingResultedCaseUpdated();
         verifyInMessagingQueueForHearingResulted();
-
     }
 
+    
     private Matcher[] getDefendantUpdatedMatchers() {
         return new Matcher[]{
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
@@ -187,8 +184,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         assertTrue(message.isPresent());
         assertThat(message.get().getJsonObject("hearing").getJsonArray("prosecutionCases").getJsonObject(0).getString("caseStatus"), equalTo("INACTIVE"));
     }
-
-
 
 }
 

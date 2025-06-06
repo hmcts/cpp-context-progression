@@ -115,7 +115,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
-    private static final long serialVersionUID = 9128521802762667499L;
+    private static final long serialVersionUID = 8888819367477517205L;
     private final List<ListDefendantRequest> listDefendantRequests = new ArrayList<>();
     private final List<CourtApplicationPartyListingNeeds> applicationListingNeeds = new ArrayList<>();
     private Hearing hearing;
@@ -754,10 +754,25 @@ public class HearingAggregate implements Aggregate {
             return empty();
         }
 
-        return apply(Stream.of(UnscheduledHearingListingRequested
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (isNull(hearingListingStatus)) {
+
+            final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChanged =
+                    prosecutionCaseDefendantListingStatusChangedV2()
+                            .withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING)
+                            .withHearing(hearing)
+                            .build();
+
+            streamBuilder.add(prosecutionCaseDefendantListingStatusChanged);
+        }
+
+        streamBuilder.add(UnscheduledHearingListingRequested
                 .unscheduledHearingListingRequested()
                 .withHearing(hearing)
-                .build()));
+                .build());
+
+        return apply(streamBuilder.build());
     }
 
     public Stream<Object> recordUnscheduledHearing(final UUID hearingId, final List<UUID> uuidList) {
