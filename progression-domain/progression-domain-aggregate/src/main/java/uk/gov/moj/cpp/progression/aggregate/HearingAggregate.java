@@ -39,6 +39,7 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHel
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.hasNewNextHearingsAndNextHearingOutsideOfMultiDaysHearing;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.isNextHearingDeleted;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.unscheduledNextHearingsRequiredFor;
+import static uk.gov.moj.cpp.progression.util.CaseHelper.addCaseToHearing;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
@@ -51,6 +52,7 @@ import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.AddedOffences;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.BookingReferencesAndCourtScheduleIdsStored;
+import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
 import uk.gov.justice.progression.courts.CustodyTimeLimitClockStopped;
 import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
@@ -89,6 +91,7 @@ import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.plea.json.schemas.OpaNoticeDocument;
+import uk.gov.moj.cpp.progression.util.CaseHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -277,6 +280,7 @@ public class HearingAggregate implements Aggregate {
                 when(CourtApplicationRemovedFromSeedingHearing.class).apply(this::handleCourtApplicationRemovedFromSeedingHearing),
                 when(AddedOffencesMovedToHearing.class).apply(this::handleAddedOffencesMovedToHearing),
                 when(AllCourtDocumentsShared.class).apply(this::updateAllCourtDocumentsShared),
+                when(CaseAddedToHearingBdf.class).apply(this::handleCaseAddedToHearingBdf),
                 otherwiseDoNothing());
     }
 
@@ -950,6 +954,16 @@ public class HearingAggregate implements Aggregate {
         if (hearingRequest.getCourtApplications() != null) {
             this.hearing.getCourtApplications().addAll(hearingRequest.getCourtApplications());
         }
+    }
+
+    private void handleCaseAddedToHearingBdf(CaseAddedToHearingBdf caseAddedToHearingBdf) {
+        if(isNull(this.hearing)){
+            return;
+        }
+        final Hearing updatedHearing = addCaseToHearing(this.hearing, caseAddedToHearingBdf.getProsecutionCases());
+
+        this.committingCourt = findCommittingCourt( updatedHearing);
+        setHearing(updatedHearing);
     }
 
     private void handleCaseMarkesUpdate(final CaseMarkersUpdatedInHearing caseMarkersUpdatedInHearing) {
@@ -3248,6 +3262,15 @@ public class HearingAggregate implements Aggregate {
 
 
         return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> addCasesToHearingBdf(final UUID hearingId, final List<ProsecutionCase> cases) {
+        final Stream<Object>  events = apply(Stream.of(CaseAddedToHearingBdf.caseAddedToHearingBdf()
+                        .withHearingId(hearingId)
+                        .withProsecutionCases(cases)
+                .build()));
+
+        return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
     }
 
     private boolean notInHearingState(final UUID caseId, final UUID defId){

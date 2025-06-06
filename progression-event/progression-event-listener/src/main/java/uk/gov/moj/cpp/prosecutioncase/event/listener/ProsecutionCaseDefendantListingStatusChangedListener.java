@@ -10,20 +10,27 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Stream;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3;
+import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.event.util.DuplicateOffencesHelper;
+import uk.gov.moj.cpp.progression.util.CaseHelper;
+import uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingKey;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
@@ -40,12 +47,13 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.json.JsonObject;
 
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseDefendantListingStatusChangedListener {
+
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectConverter;
@@ -103,6 +111,26 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
 
         saveCaseDefendantHearing(prosecutionCases, hearingEntity);
         updateHearingForMatchedDefendants(prosecutionCaseDefendantListingStatusChanged.getHearingListingStatus(), prosecutionCases, prosecutionCaseDefendantListingStatusChanged.getHearing().getId());
+    }
+
+    @Handles("progression.event.case-added-to-hearing-bdf")
+    public void handlerCaseAddedToHearingBdf(final JsonEnvelope event){
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseAddedToHearingBdf.class);
+        List<ProsecutionCase> cases = ReportingRestrictionHelper.dedupAllReportingRestrictionsForCases(caseAddedToHearingBdf.getProsecutionCases());
+
+        cases.forEach(DuplicateOffencesHelper::filterDuplicateOffencesByIdForCase);
+        removeNowsJudicialResultsFromCase(cases);
+
+        HearingEntity hearingEntity = hearingRepository.findBy(caseAddedToHearingBdf.getHearingId());
+        final JsonObject dbHearingJsonObject = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
+        Hearing hearing = jsonObjectConverter.convert(dbHearingJsonObject, Hearing.class);
+        final Hearing persistedHearing = CaseHelper.addCaseToHearing(hearing, caseAddedToHearingBdf.getProsecutionCases());
+
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(persistedHearing).toString());
+        hearingRepository.save(hearingEntity);
+
+        saveCaseDefendantHearing(persistedHearing.getProsecutionCases(), hearingEntity);
+        updateHearingForMatchedDefendants(hearingEntity.getListingStatus(), persistedHearing.getProsecutionCases(), caseAddedToHearingBdf.getHearingId());
     }
 
     private void updateHearingForMatchedDefendants(final HearingListingStatus hearingListingStatus, final List<ProsecutionCase> prosecutionCases, final UUID hearingId) {
@@ -187,11 +215,15 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
     }
 
     private void removeNowsJudicialResultsFromCase(final Hearing hearing){
-        ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+        ofNullable(hearing.getProsecutionCases()).ifPresent(this::removeNowsJudicialResultsFromCase);
+    }
+
+    private void removeNowsJudicialResultsFromCase(final List<ProsecutionCase> cases){
+        cases.stream()
                 .map(ProsecutionCase::getDefendants).flatMap(Collection::stream)
                 .map(Defendant::getOffences).flatMap(Collection::stream)
                 .filter(offence -> isNotEmpty(offence.getJudicialResults()))
                 .forEach(offence ->
-                  offence.getJudicialResults().removeIf(result -> Boolean.TRUE.equals(result.getPublishedForNows())));
+                        offence.getJudicialResults().removeIf(result -> Boolean.TRUE.equals(result.getPublishedForNows())));
     }
 }

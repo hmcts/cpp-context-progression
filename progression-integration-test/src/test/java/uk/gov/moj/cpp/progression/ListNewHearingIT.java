@@ -6,6 +6,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -45,7 +47,6 @@ import uk.gov.moj.cpp.progression.helper.QueueUtil;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -142,8 +143,54 @@ public class ListNewHearingIT extends AbstractIT {
 
     }
 
+    @Test
+    void shouldAddCaseToHearingBDF() throws IOException, JSONException {
+        final String CASE_ID = randomUUID().toString();
+        final String DEFENDANT_ID = randomUUID().toString();
+
+        final String CASE_ID2 = randomUUID().toString();
+        final String DEFENDANT_ID2 = randomUUID().toString();
+
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", DEFENDANT_ID);
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", DEFENDANT_ID2);
+
+        final JsonObject hearingPayload;
+
+        JmsMessageConsumerClient messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED).getMessageConsumerClient();
+        initiateCourtProceedingsWithCommittingCourt(CASE_ID, DEFENDANT_ID, ZonedDateTimes.fromString("2024-05-30T18:32:04.238Z").toString(), ZonedDateTimes.fromString("2024-05-30T18:32:04.238Z").toString());
+
+        pollProsecutionCasesProgressionFor(CASE_ID, getProsecutionCaseMatchers(CASE_ID, DEFENDANT_ID, singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
+        final JsonObject payload = retrieveMessageBody(messageConsumerListHearingRequested).get();
+        hearingPayload = payload.getJsonObject("hearing");
+
+        messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED).getMessageConsumerClient();
+
+        addProsecutionCaseToCrownCourtFirstHearing(CASE_ID2, DEFENDANT_ID2, false);
+
+        pollProsecutionCasesProgressionFor(CASE_ID2, getProsecutionCaseMatchers(CASE_ID2, DEFENDANT_ID2, singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
+
+        final String offenceId = retrieveMessageBody(messageConsumerListHearingRequested).get().getJsonObject("hearing")
+                .getJsonArray("prosecutionCases").getJsonObject(0).getJsonArray("defendants").getJsonObject(0).getJsonArray("offences").getJsonObject(0).getString("id");
+
+        pollForHearing(hearingPayload.getString("id"), withJsonPath("$.hearing.id", is(hearingPayload.getString("id"))), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")), withJsonPath("$.hearing.prosecutionCases.length()", is(1)));
+
+        JsonObjectBuilder payloadBuilder = createObjectBuilder().add("hearingId",hearingPayload.getString("id") )
+                .add("casesBdf", createArrayBuilder().add(createObjectBuilder().add("caseId", CASE_ID2)
+                        .add("defendantsBdf", createArrayBuilder().add(createObjectBuilder().add("defendantId", DEFENDANT_ID2)
+                                .add("offences", createArrayBuilder().add(offenceId).build())).build())));
+
+        JmsMessageConsumerClient messageConsumerBdfPrivateEvent = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames("progression.event.case-added-to-hearing-bdf").getMessageConsumerClient();
+
+        postCommand(getWriteUrl("/hearing/"+hearingPayload.getString("id")), "application/vnd.progression.add-case-to-hearing-bdf+json", payloadBuilder.build().toString());
+
+        doVerifyBdfPrivateEvent(messageConsumerBdfPrivateEvent, CASE_ID, CASE_ID2);
+
+        pollForHearing(hearingPayload.getString("id"), withJsonPath("$.hearing.id", is(hearingPayload.getString("id"))), withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")), withJsonPath("$.hearing.prosecutionCases.length()", is(2)));
+
+    }
+
     private JsonObjectBuilder prepareAdhocHearingPayload(final JsonObject hearingPayload, final JsonObject listHearingRequests, final JsonArray casePayload) {
-        JsonObjectBuilder listNewHearingBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder listNewHearingBuilder = createObjectBuilder();
         listNewHearingBuilder.add("id", hearingPayload.getString("id"));
         listNewHearingBuilder.add("hearingType", hearingPayload.getJsonObject("type"));
         listNewHearingBuilder.add("jurisdictionType", hearingPayload.getString("jurisdictionType"));
@@ -151,18 +198,18 @@ public class ListNewHearingIT extends AbstractIT {
         listNewHearingBuilder.add("estimatedMinutes", listHearingRequests.get("estimateMinutes"));
         listNewHearingBuilder.add("earliestStartDateTime", listHearingRequests.get("earliestStartDateTime"));
 
-        JsonArrayBuilder listDefendantRequestsBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder listDefendantRequestsBuilder = createArrayBuilder();
         casePayload.stream().map(jv -> (JsonObject) jv).forEach(pc -> pc.getJsonArray("defendants").stream().map(jv -> (JsonObject) jv).forEach(def -> {
-            JsonObjectBuilder listDefendantRequestBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder listDefendantRequestBuilder = createObjectBuilder();
             listDefendantRequestBuilder.add("prosecutionCaseId", pc.getString("id"));
             listDefendantRequestBuilder.add("defendantId", def.getString("id"));
-            JsonArrayBuilder defendantOffences = Json.createArrayBuilder();
+            JsonArrayBuilder defendantOffences = createArrayBuilder();
             def.getJsonArray("offences").stream().map(jv -> (JsonObject) jv).forEach(off -> defendantOffences.add(off.getString("id")));
             listDefendantRequestBuilder.add("defendantOffences", defendantOffences);
             listDefendantRequestsBuilder.add(listDefendantRequestBuilder);
         }));
         listNewHearingBuilder.add("listDefendantRequests", listDefendantRequestsBuilder);
-        JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder payloadBuilder = createObjectBuilder();
         payloadBuilder.add("listNewHearing", listNewHearingBuilder);
         payloadBuilder.add("sendNotificationToParties", true);
         return payloadBuilder;
@@ -176,6 +223,14 @@ public class ListNewHearingIT extends AbstractIT {
         assertThat(message1.get().getString("caseId"), anyOf(is(caseId), is(caseId2)));
         assertThat(message2.get().getString("caseId"), anyOf(is(caseId), is(caseId2)));
         assertThat(message1.get().getString("caseId"), not(is(message2.get().getString("caseId"))));
+
+    }
+
+    private void doVerifyBdfPrivateEvent(final JmsMessageConsumerClient messageConsumerProgressionCommandEmail, final String caseId, final String caseId2) {
+        final Optional<JsonObject> message1 = retrieveMessageBody(messageConsumerProgressionCommandEmail);
+        assertThat(message1.get(), notNullValue());
+        assertThat(message1.get().getJsonArray("prosecutionCases").size(), is(1));
+        assertThat(message1.get().getJsonArray("prosecutionCases").getJsonObject(0).getString("id"), is(caseId2));
 
     }
 

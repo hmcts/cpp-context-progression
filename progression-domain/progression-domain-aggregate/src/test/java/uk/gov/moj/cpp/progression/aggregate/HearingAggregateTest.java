@@ -25,6 +25,7 @@ import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments
 import uk.gov.justice.core.courts.*;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
+import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
 import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
@@ -5462,6 +5463,206 @@ public class HearingAggregateTest {
 
         assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
         assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
+
+    }
+
+
+    @Test
+    void shouldAddWholeCaseToAggregateIfTheCaseIsNotThere(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID case2 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3()
+                .withHearing(CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                                .setConvicted(false))
+                        .build())
+                .build());
+
+        final List<ProsecutionCase> cases = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case2, Map.of(defendant2, asList(offenceId2))))
+                        .setConvicted(false))
+                .build().getProsecutionCases();
+
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = hearingAggregate.addCasesToHearingBdf(randomUUID(), cases)
+                .filter( CaseAddedToHearingBdf.class::isInstance)
+                .map(CaseAddedToHearingBdf.class::cast).toList().get(0);
+
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().size(), is(2));
+
+    }
+
+    @Test
+    void shouldAddWholeCaseToAggregateIfTheCaseIsNull(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID case2 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                        .setConvicted(false))
+                .build();
+        hearing = Hearing.hearing().withValuesFrom(hearing).withProsecutionCases(null).build();
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3()
+                .withHearing(hearing)
+                .build());
+
+        final List<ProsecutionCase> cases = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case2, Map.of(defendant2, asList(offenceId2))))
+                        .setConvicted(false))
+                .build().getProsecutionCases();
+
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = hearingAggregate.addCasesToHearingBdf(randomUUID(), cases)
+                .filter( CaseAddedToHearingBdf.class::isInstance)
+                .map(CaseAddedToHearingBdf.class::cast).toList().get(0);
+
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().size(), is(1));
+
+    }
+
+    @Test
+    void shouldAddOnlySelectedDefendantsToAggregateIfTheDefendantIsNotThere(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID defendant2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final UUID defendant3 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3()
+                .withHearing(CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                                .setConvicted(false))
+                        .build())
+                .build());
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(1));
+
+        final List<ProsecutionCase> cases = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1), defendant2, asList(offenceId2), defendant3, asList(offenceId3))))
+                        .setConvicted(false))
+                .build().getProsecutionCases();
+
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = hearingAggregate.addCasesToHearingBdf(randomUUID(), cases)
+                .filter( CaseAddedToHearingBdf.class::isInstance)
+                .map(CaseAddedToHearingBdf.class::cast).toList().get(0);
+
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().size(), is(3));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().get(1).getOffences().size(), is(1));
+
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
+
+    }
+
+    @Test
+    void shouldAddOnlySelectedOffencesToAggregateIfTheOffenceIsNotThere(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3()
+                .withHearing(CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                                .setConvicted(false))
+                        .build())
+                .build());
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
+
+        final List<ProsecutionCase> cases = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1, offenceId2, offenceId3))))
+                        .setConvicted(false))
+                .build().getProsecutionCases();
+
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = hearingAggregate.addCasesToHearingBdf(randomUUID(), cases)
+                .filter( CaseAddedToHearingBdf.class::isInstance)
+                .map(CaseAddedToHearingBdf.class::cast).toList().get(0);
+
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(3));
+
+
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(3));
+
+    }
+
+    @Test
+    void shouldNotUpdateAggregateIfAllOfTheAreInAggregate(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3()
+                .withHearing(CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1, offenceId2, offenceId3))))
+                                .setConvicted(false))
+                        .build())
+                .build());
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(3));
+
+        final List<ProsecutionCase> cases = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId2, offenceId3))))
+                        .setConvicted(false))
+                .build().getProsecutionCases();
+
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = hearingAggregate.addCasesToHearingBdf(randomUUID(), cases)
+                .filter( CaseAddedToHearingBdf.class::isInstance)
+                .map(CaseAddedToHearingBdf.class::cast).toList().get(0);
+
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(caseAddedToHearingBdf.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(2));
+
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(3));
 
     }
 

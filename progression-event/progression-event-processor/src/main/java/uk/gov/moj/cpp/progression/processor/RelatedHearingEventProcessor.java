@@ -18,6 +18,7 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.listing.courts.UpdateRelatedHearing;
+import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingRequestedForAdhocHearing;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
@@ -144,7 +145,6 @@ public class RelatedHearingEventProcessor {
 
         final uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing relatedHearingUpdated = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), uk.gov.justice.progression.courts.RelatedHearingUpdatedForAdhocHearing.class);
         final UUID hearingId = relatedHearingUpdated.getHearingRequest().getId();
-        final List<CourtApplication> courtApplications = relatedHearingUpdated.getHearingRequest().getCourtApplications();
         final List<ProsecutionCase> prosecutionCases = relatedHearingUpdated.getHearingRequest().getProsecutionCases();
 
         if (isNotEmpty(prosecutionCases)) {
@@ -169,13 +169,26 @@ public class RelatedHearingEventProcessor {
                 sendHearingNotificationsToDefenceAndProsecutor(jsonEnvelope, relatedHearingUpdated);
             }
 
-        } else if (isNotEmpty(courtApplications)) {
-            // DD-8648: Application related hearings
-        } else {
-            LOGGER.info("Court Application / Prosecution Case not found for hearing: {}", hearingId);
         }
     }
 
+    @Handles("progression.event.case-added-to-hearing-bdf")
+    public void processCaseAddedToHearingBdf(final JsonEnvelope jsonEnvelope) {
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), CaseAddedToHearingBdf.class);
+        final UUID hearingId = caseAddedToHearingBdf.getHearingId();
+        final List<ProsecutionCase> prosecutionCases = caseAddedToHearingBdf.getProsecutionCases();
+
+        if (isNotEmpty(prosecutionCases)) {
+
+            final List<UUID> caseIds = prosecutionCases.stream()
+                    .map(ProsecutionCase::getId)
+                    .toList();
+
+            progressionService.linkProsecutionCasesToHearing(jsonEnvelope, hearingId, caseIds);
+
+        }
+    }
 
     @Handles("public.events.listing.cases-added-for-updated-related-hearing")
     public void handlePublicCasesAddedForUpdatedRelatedHearing(final JsonEnvelope jsonEnvelope) {

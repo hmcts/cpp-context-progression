@@ -1142,6 +1142,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.command.remove-deleted-hearing-child-entries-bdf+json
             name: progression.command.remove-deleted-hearing-child-entries-bdf
+        (mapping):
+            requestType: application/vnd.progression.add-case-to-hearing-bdf+json
+            name: progression.add-case-to-hearing-bdf
         ...
       body:
         application/vnd.progression.update-defendant-listing-status+json:
@@ -1164,6 +1167,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.command.remove-deleted-hearing-child-entries-bdf.json
             schema:
              !include json/schema/progression.command.remove-deleted-hearing-child-entries-bdf.json
+        application/vnd.progression.add-case-to-hearing-bdf+json:
+            example:
+             !include json/progression.add-case-to-hearing-bdf.json
+            schema:
+             !include json/schema/progression.add-case-to-hearing-bdf.json
       responses:
             202:
                 description: OK

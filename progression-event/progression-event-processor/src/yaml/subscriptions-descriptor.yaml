@@ -536,6 +536,10 @@ subscriptions_descriptor:
         - name: progression.event.delete-previous-hearings-and-create-next-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-previous-hearings-and-create-next-hearing.json
 
+        - name: progression.event.case-added-to-hearing-bdf
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.case-added-to-hearing-bdf.json
+
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

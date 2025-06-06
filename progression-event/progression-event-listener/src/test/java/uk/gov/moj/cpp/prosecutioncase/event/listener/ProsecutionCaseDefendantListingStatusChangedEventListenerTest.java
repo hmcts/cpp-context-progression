@@ -1,12 +1,17 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
+import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,15 +21,18 @@ import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChanged;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2;
+import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.test.CoreTestTemplates;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CaseDefendantHearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.MatchDefendantCaseHearingEntity;
@@ -34,6 +42,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.MatchDefendantCaseH
 import uk.gov.moj.cpp.util.FileUtil;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.json.Json;
@@ -218,6 +227,295 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
         assertThat(hearingEntity.getPayload().contains("publishedForNows\":true"), is(false));
 
 
+    }
+
+    @Test
+    void shouldAddWholeCaseToTableIfTheCaseIsNotThere(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID case2 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                        .setConvicted(false))
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(case1, defendant1)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(case2, defendant2)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = CaseAddedToHearingBdf.caseAddedToHearingBdf()
+                .withHearingId(hearingId)
+                .withProsecutionCases( CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case2, Map.of(defendant2, asList(offenceId2))))
+                                .setConvicted(false))
+                        .build().getProsecutionCases())
+                .build();
+
+        when(jsonObjectToObjectConverter.convert(payload, CaseAddedToHearingBdf.class)).thenReturn(caseAddedToHearingBdf);
+        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(hearing);
+
+        eventListener.handlerCaseAddedToHearingBdf(envelope);
+        final  JsonObjectToObjectConverter jsonObjectToObjectConverter2 = new JsonObjectToObjectConverter(objectMapper);
+        final Hearing updatedHearing = jsonObjectToObjectConverter2.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
+
+        assertThat(updatedHearing.getProsecutionCases().size(), is(2));
+
+        verify(caseDefendantHearingRepository, times(2)).save(argumentCaptorCaseDefendantHearingEntity.capture());
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getCaseId(), is(case1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getDefendantId(), is(defendant1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getHearing(), is(hearingEntity));
+
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getId().getCaseId(), is(case2));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getId().getDefendantId(), is(defendant2));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getHearing(), is(hearingEntity));
+
+        verify(matchDefendantCaseHearingRepository, times(2)).save(argumentCaptorMatchDefendantCaseHearingEntity.capture());
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(0).getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(0).getHearing(), is(hearingEntity));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(1).getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(1).getHearing(), is(hearingEntity));
+    }
+
+    @Test
+    void shouldAddWholeCaseToTableIfTheCaseIsNull(){
+        final UUID case2 = randomUUID();
+        final UUID defendant2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setConvicted(false))
+                .build();
+        hearing = Hearing.hearing().withValuesFrom(hearing).withProsecutionCases(null).build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(case2, defendant2)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = CaseAddedToHearingBdf.caseAddedToHearingBdf()
+                .withHearingId(hearingId)
+                .withProsecutionCases( CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case2, Map.of(defendant2, asList(offenceId2))))
+                                .setConvicted(false))
+                        .build().getProsecutionCases())
+                .build();
+
+        when(jsonObjectToObjectConverter.convert(payload, CaseAddedToHearingBdf.class)).thenReturn(caseAddedToHearingBdf);
+        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(hearing);
+
+        eventListener.handlerCaseAddedToHearingBdf(envelope);
+        final  JsonObjectToObjectConverter jsonObjectToObjectConverter2 = new JsonObjectToObjectConverter(objectMapper);
+        final Hearing updatedHearing = jsonObjectToObjectConverter2.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
+
+        assertThat(updatedHearing.getProsecutionCases().size(), is(1));
+
+        verify(caseDefendantHearingRepository, times(1)).save(argumentCaptorCaseDefendantHearingEntity.capture());
+
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getCaseId(), is(case2));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getDefendantId(), is(defendant2));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getHearing(), is(hearingEntity));
+
+        verify(matchDefendantCaseHearingRepository, times(1)).save(argumentCaptorMatchDefendantCaseHearingEntity.capture());
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(0).getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(0).getHearing(), is(hearingEntity));
+
+    }
+
+    @Test
+    void shouldAddOnlySelectedDefendantsToAggregateIfTheDefendantIsNotThere(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID defendant2 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                        .setConvicted(false))
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(case1, defendant1)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(case1, defendant2)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = CaseAddedToHearingBdf.caseAddedToHearingBdf()
+                .withHearingId(hearingId)
+                .withProsecutionCases( CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1), defendant2, asList(offenceId2))))
+                                .setConvicted(false))
+                        .build().getProsecutionCases())
+                .build();
+
+        when(jsonObjectToObjectConverter.convert(payload, CaseAddedToHearingBdf.class)).thenReturn(caseAddedToHearingBdf);
+        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(hearing);
+
+        eventListener.handlerCaseAddedToHearingBdf(envelope);
+        final  JsonObjectToObjectConverter jsonObjectToObjectConverter2 = new JsonObjectToObjectConverter(objectMapper);
+        final Hearing updatedHearing = jsonObjectToObjectConverter2.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
+
+        assertThat(updatedHearing.getProsecutionCases().size(), is(1));
+        assertThat(updatedHearing.getProsecutionCases().get(0).getDefendants().size(), is(2));
+
+        verify(caseDefendantHearingRepository, times(2)).save(argumentCaptorCaseDefendantHearingEntity.capture());
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getCaseId(), is(case1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getDefendantId(), is(defendant1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(0).getHearing(), is(hearingEntity));
+
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getId().getCaseId(), is(case1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getId().getDefendantId(), is(defendant2));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getAllValues().get(1).getHearing(), is(hearingEntity));
+
+        verify(matchDefendantCaseHearingRepository, times(2)).save(argumentCaptorMatchDefendantCaseHearingEntity.capture());
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(0).getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(0).getHearing(), is(hearingEntity));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(1).getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getAllValues().get(1).getHearing(), is(hearingEntity));
+
+    }
+
+    @Test
+    void shouldAddOnlySelectedOffencesToAggregateIfTheOffenceIsNotThere(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                        .setConvicted(false))
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(case1, defendant1)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = CaseAddedToHearingBdf.caseAddedToHearingBdf()
+                .withHearingId(hearingId)
+                .withProsecutionCases( CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1, offenceId2))))
+                                .setConvicted(false))
+                        .build().getProsecutionCases())
+                .build();
+
+        when(jsonObjectToObjectConverter.convert(payload, CaseAddedToHearingBdf.class)).thenReturn(caseAddedToHearingBdf);
+        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(hearing);
+
+        eventListener.handlerCaseAddedToHearingBdf(envelope);
+        final  JsonObjectToObjectConverter jsonObjectToObjectConverter2 = new JsonObjectToObjectConverter(objectMapper);
+        final Hearing updatedHearing = jsonObjectToObjectConverter2.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
+
+        assertThat(updatedHearing.getProsecutionCases().size(), is(1));
+        assertThat(updatedHearing.getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(updatedHearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(2));
+
+        verify(caseDefendantHearingRepository).save(argumentCaptorCaseDefendantHearingEntity.capture());
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getCaseId(), is(case1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getDefendantId(), is(defendant1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getHearing(), is(hearingEntity));
+
+        verify(matchDefendantCaseHearingRepository).save(argumentCaptorMatchDefendantCaseHearingEntity.capture());
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearing(), is(hearingEntity));
+
+    }
+
+    @Test
+    void shouldNotUpdateAggregateIfAllOfTheAreInAggregate(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+        final UUID offenceId2 = randomUUID();
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1, offenceId2))))
+                        .setConvicted(false))
+                .build();
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
+        hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());
+
+        final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(case1, defendant1)).thenReturn(Arrays.asList(matchDefendantCaseHearingEntity));
+
+        final CaseAddedToHearingBdf caseAddedToHearingBdf = CaseAddedToHearingBdf.caseAddedToHearingBdf()
+                .withHearingId(hearingId)
+                .withProsecutionCases( CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId2))))
+                                .setConvicted(false))
+                        .build().getProsecutionCases())
+                .build();
+
+        when(jsonObjectToObjectConverter.convert(payload, CaseAddedToHearingBdf.class)).thenReturn(caseAddedToHearingBdf);
+        when(jsonObjectToObjectConverter.convert(any(), eq(Hearing.class))).thenReturn(hearing);
+
+        eventListener.handlerCaseAddedToHearingBdf(envelope);
+        final  JsonObjectToObjectConverter jsonObjectToObjectConverter2 = new JsonObjectToObjectConverter(objectMapper);
+        final Hearing updatedHearing = jsonObjectToObjectConverter2.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
+
+        assertThat(updatedHearing.getProsecutionCases().size(), is(1));
+        assertThat(updatedHearing.getProsecutionCases().get(0).getDefendants().size(), is(1));
+        assertThat(updatedHearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(2));
+
+        verify(caseDefendantHearingRepository).save(argumentCaptorCaseDefendantHearingEntity.capture());
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getCaseId(), is(case1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getDefendantId(), is(defendant1));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getId().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorCaseDefendantHearingEntity.getValue().getHearing(), is(hearingEntity));
+
+        verify(matchDefendantCaseHearingRepository).save(argumentCaptorMatchDefendantCaseHearingEntity.capture());
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearingId(), is(hearingId));
+        assertThat(argumentCaptorMatchDefendantCaseHearingEntity.getValue().getHearing(), is(hearingEntity));
     }
 
     private ProsecutionCaseDefendantListingStatusChanged getEnvelope(final HearingListingStatus hearingListingStatus) {

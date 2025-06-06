@@ -32,4 +32,18 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApi {
                 .withMetadataFrom(envelope));
     }
 
+    @Handles("progression.add-case-to-hearing-bdf")
+    public void handleAddCaseToHearing(final JsonEnvelope envelope) {
+        /**
+         * DO NOT USE THIS COMMAND API EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+         * The command api is being added to be invoked only by the BDF, purpose of this command to raise 'progression.event.case-added-to-hearing-bdf'
+         * event to add case to hearing aggregate and viewstore to fix faulty hearings.
+         */
+        sender.send(Enveloper
+                .envelop(envelope.payloadAsJsonObject())
+                .withName("progression.command.add-case-to-hearing-bdf")
+                .withMetadataFrom(envelope));
+    }
+
+
 }
