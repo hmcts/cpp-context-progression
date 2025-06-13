@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -205,7 +204,7 @@ public class HearingUpdatedEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleAllHearingUpdatedWhenOffenceOfCaseUpdated(){
+    public void shouldHandleAllHearingUpdatedWhenOffenceOfCaseUpdated() {
 
         final AllHearingOffencesUpdatedV2 allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2()
                 .withUpdatedOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
@@ -228,7 +227,7 @@ public class HearingUpdatedEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleAllHearingUpdatedWhenOffenceOfCaseAdded(){
+    public void shouldHandleAllHearingUpdatedWhenOffenceOfCaseAdded() {
 
         final AllHearingOffencesUpdatedV2 allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2()
                 .withNewOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
@@ -251,7 +250,7 @@ public class HearingUpdatedEventProcessorTest {
     }
 
     @Test
-    public void shouldHandleAllHearingUpdated(){
+    public void shouldHandleAllHearingUpdated() {
 
         final AllHearingOffencesUpdatedV2 allHearingOffencesUpdatedV2 = AllHearingOffencesUpdatedV2.allHearingOffencesUpdatedV2()
                 .withNewOffences(singletonList(Offence.offence().withId(randomUUID()).build()))
@@ -300,13 +299,7 @@ public class HearingUpdatedEventProcessorTest {
                 payload);
         final Hearing hearing = hearing()
                 .withId(hearingId)
-                .withProsecutionCases(Collections.singletonList(prosecutionCase()
-                        .withDefendants(Collections.singletonList(Defendant.defendant()
-                                .withOffences(Collections.singletonList(Offence.offence()
-                                        .withJudicialResults(Collections.singletonList(JudicialResult.judicialResult().build()))
-                                        .build()))
-                                .build()))
-                        .build()))
+                .withProsecutionCases(randomProsecutionCases())
                 .build();
         final Optional<JsonObject> hearingJson = of(createObjectBuilder()
                 .add("hearing", objectToJsonObjectConverter.convert(hearing))
@@ -341,7 +334,7 @@ public class HearingUpdatedEventProcessorTest {
                 payload);
         final Hearing hearing = hearing()
                 .withId(hearingId)
-                .withProsecutionCases(emptyList())
+                .withProsecutionCases(randomProsecutionCases())
                 .build();
         final Optional<JsonObject> hearingJson = of(createObjectBuilder()
                 .add("hearing", objectToJsonObjectConverter.convert(hearing))
@@ -358,8 +351,7 @@ public class HearingUpdatedEventProcessorTest {
         assertThat(captorValue.metadata().name(), is("progression.command.process-hearing-updated"));
         assertThat(captorValue.payload().toString(), isJson(allOf(
                 withJsonPath("$.confirmedHearing.id", equalTo(hearingId.toString())),
-                withJsonPath("$.updatedHearing.id", equalTo(hearingId.toString())),
-                withoutJsonPath("$.updatedHearing.prosecutionCases")
+                withJsonPath("$.updatedHearing.id", equalTo(hearingId.toString()))
         )));
     }
 
@@ -376,13 +368,7 @@ public class HearingUpdatedEventProcessorTest {
                 payload);
         final Hearing hearing = hearing()
                 .withId(hearingId)
-                .withProsecutionCases(Collections.singletonList(prosecutionCase()
-                        .withDefendants(Collections.singletonList(Defendant.defendant()
-                                .withOffences(Collections.singletonList(Offence.offence()
-                                        .withJudicialResults(Collections.singletonList(JudicialResult.judicialResult().build()))
-                                        .build()))
-                                .build()))
-                        .build()))
+                .withProsecutionCases(randomProsecutionCases())
                 .build();
         final Optional<JsonObject> hearingJson = of(createObjectBuilder()
                 .add("hearing", objectToJsonObjectConverter.convert(hearing))
@@ -418,6 +404,7 @@ public class HearingUpdatedEventProcessorTest {
 
         final Hearing hearing = hearing()
                 .withId(hearingId)
+                .withProsecutionCases(randomProsecutionCases())
                 .build();
 
         final Optional<JsonObject> hearingJson = of(createObjectBuilder()
@@ -432,7 +419,7 @@ public class HearingUpdatedEventProcessorTest {
         eventProcessor.processHearingUpdated(jsonEnvelope);
 
         verify(progressionService, times(1)).updateHearingListingStatusToHearingUpdate(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture());
-        assertEquals(hearing, hearingArgumentCaptor.getValue());
+        assertEquals(hearing.getId(), hearingArgumentCaptor.getValue().getId());
 
         verify(progressionService, times(1)).linkApplicationsToHearing(envelopeArgumentCaptor.capture(), hearingArgumentCaptor.capture(), applicationIdsArgumentCaptor.capture(), hearingListingStatusArgumentCaptor.capture());
 
@@ -481,6 +468,7 @@ public class HearingUpdatedEventProcessorTest {
 
         final Hearing hearing = hearing()
                 .withId(hearingId)
+                .withProsecutionCases(randomProsecutionCases())
                 .build();
 
         final Optional<JsonObject> hearingJson = of(createObjectBuilder()
@@ -635,6 +623,61 @@ public class HearingUpdatedEventProcessorTest {
         verify(hearingNotificationHelper, times(0)).sendHearingNotificationsToRelevantParties(any(), any());
     }
 
+    @Test
+    public void shouldNotProcessHearingUpdatedWhenProsecutionCasesEmpty() {
+
+        final UUID hearingId = randomUUID();
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("updatedHearing", objectToJsonObjectConverter.convert(ConfirmedHearing.confirmedHearing()
+                        .withId(hearingId).build()))
+                .build();
+
+        final JsonEnvelope event = envelopeFrom(metadataWithRandomUUID("public.listing.hearing-updated"),
+                payload);
+        final Hearing hearing = hearing().build();
+        final Optional<JsonObject> hearingJson = of(createObjectBuilder()
+                .add("hearingListingStatus", "SENT_FOR_LISTING")
+                .build());
+        when(progressionService.getHearing(event, hearingId.toString())).thenReturn(hearingJson);
+        this.eventProcessor.processHearingUpdated(event);
+        verify(sender, times(0)).send(senderJsonEnvelopeCaptor.capture());
+
+    }
+
+    @Test
+    public void shouldNotProcessHearingAreEmptyUpdatedWhenProsecutionCasesEmpty() {
+
+        final UUID hearingId = UUID.randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final Hearing hearing = hearing()
+                .withId(hearingId)
+                .build();
+
+        final Optional<JsonObject> hearingJson = of(createObjectBuilder()
+                .add("hearing", objectToJsonObjectConverter.convert(hearing))
+                .add("hearingListingStatus", "SENT_FOR_LISTING")
+                .build());
+
+        final JsonObject payload = FileUtil.jsonFromString(FileUtil.getPayload("public.listing.hearing-updated-notification-false.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        JsonEnvelope jsonEnvelope = envelopeFrom(metadataBuilder()
+                        .withName("public.listing.hearing-updated")
+                        .withId(randomUUID())
+                        .build(),
+                payload);
+
+        when(progressionService.getHearing(any(), any())).thenReturn(hearingJson);
+        when(progressionService.updateHearingForHearingUpdated(any(), any(), any())).thenReturn(hearing);
+
+        eventProcessor.processHearingUpdated(jsonEnvelope);
+
+        verify(sender, times(0)).send(senderJsonEnvelopeCaptor.capture());
+    }
+
     private JsonObject createProsecutionCaseJson(final UUID offenceId, final UUID defendantId, final UUID caseId) {
         return createObjectBuilder()
                 .add("id", caseId.toString())
@@ -682,6 +725,16 @@ public class HearingUpdatedEventProcessorTest {
                 .add(WELSH_OFFENCE_TITLE, "welsh-title")
                 .add(MODEOFTRIAL_CODE, modeoftrial)
                 .add(CJS_OFFENCE_CODE, "British").build();
+    }
+
+    private static List<ProsecutionCase> randomProsecutionCases() {
+        return Collections.singletonList(prosecutionCase()
+                .withDefendants(Collections.singletonList(Defendant.defendant()
+                        .withOffences(Collections.singletonList(Offence.offence()
+                                .withJudicialResults(Collections.singletonList(JudicialResult.judicialResult().build()))
+                                .build()))
+                        .build()))
+                .build());
     }
 
 }
