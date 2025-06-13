@@ -480,6 +480,9 @@ protocols: [ HTTP, HTTPS ]
         Return the application details for the  Id.
         ...
         (mapping):
+            responseType: application/vnd.progression.query.application-laa+json
+            name: progression.query.application-laa
+        (mapping):
             responseType: application/vnd.progression.query.application+json
             name: progression.query.application
         (mapping):
@@ -508,6 +511,9 @@ protocols: [ HTTP, HTTPS ]
             200:
                 description: OK
                 body:
+                  application/vnd.progression.query.application-laa+json:
+                    example: !include json/progression.query.application-laa.json
+                    schema: !include json/schema/progression.query.application-laa.json
                   application/vnd.progression.query.application+json:
                     example:  !include json/progression.query.application.json
                     schema:  !include json/schema/progression.query.application.json

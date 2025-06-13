@@ -18,6 +18,9 @@ import org.apache.http.HttpHeaders;
 public class IdMapperStub {
     private static final String SYSTEM_ID_MAPPER_ENDPOINT = "/system-id-mapper-api/rest/systemid/mappings/*";
 
+    private static final String TARGET_TYPE_APPLICATION = "APPLICATION_ID_LAA";
+    private static final String SOURCE_TYPE_APPLICATION = "LAA_APP_SHORT_ID";
+
     public static void setupIdMapperStub() {
         stubFor(get(urlPathMatching(SYSTEM_ID_MAPPER_ENDPOINT))
                 .willReturn(aResponse()
@@ -47,6 +50,22 @@ public class IdMapperStub {
                                 "  \"sourceType\": \"PROGRESSION_NOTIFICATION_ID\",\n" +
                                 "  \"targetId\": \"" + targetMaterialId.toString() +"\",\n" +
                                 "  \"targetType\": \"MATERIAL_ID\",\n" +
+                                "  \"createdAt\": \"2016-09-07T14:30:53.294Z\"\n" +
+                                "}")
+                        .withStatus(200)));
+    }
+
+    public static void stubForApplicationShortId(final String laaApplicationShortId, final String applicationId) {
+        stubFor(get(urlPathMatching(SYSTEM_ID_MAPPER_ENDPOINT))
+                .withQueryParam("targetId", equalTo(applicationId))
+                .withQueryParam("targetType", equalTo(TARGET_TYPE_APPLICATION))
+                .willReturn(aResponse()
+                        .withBody("{\n" +
+                                "  \"mappingId\": \"166c0ae9-e276-4d29-b669-cb32013228b3\",\n" +
+                                "  \"sourceId\": \""+ laaApplicationShortId +"\",\n" +
+                                "  \"sourceType\": \""+SOURCE_TYPE_APPLICATION+"\",\n" +
+                                "  \"targetId\": \"" + applicationId +"\",\n" +
+                                "  \"targetType\": \""+TARGET_TYPE_APPLICATION+"\",\n" +
                                 "  \"createdAt\": \"2016-09-07T14:30:53.294Z\"\n" +
                                 "}")
                         .withStatus(200)));

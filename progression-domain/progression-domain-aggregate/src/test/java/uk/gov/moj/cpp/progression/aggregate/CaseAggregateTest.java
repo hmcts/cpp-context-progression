@@ -61,6 +61,7 @@ import static uk.gov.moj.cpp.progression.test.FileUtil.getPayload;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AllHearingOffencesUpdatedV2;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
@@ -80,6 +81,7 @@ import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CpsPersonDefendantDetails;
 import uk.gov.justice.core.courts.CustodialEstablishment;
+import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
@@ -317,8 +319,9 @@ public class CaseAggregateTest {
                             .build())
                     .build())
             .withCourtProceedingsInitiated(ZonedDateTime.now())
-            .withOffences(singletonList(offence().withId(randomUUID())
-                            .withIndicatedPlea(IndicatedPlea.indicatedPlea().withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY).build())
+            .withOffences(asList(offence().withId(randomUUID())
+                    .withIndicatedPlea(IndicatedPlea.indicatedPlea().withIndicatedPleaValue(IndicatedPleaValue.INDICATED_GUILTY).build())
+                    .build(), offence().withId(randomUUID())
                     .build()))
             .build();
 
@@ -4308,17 +4311,23 @@ public class CaseAggregateTest {
     }
 
     @Test
-    public void isDefendantAddressToBeChangedWhenAddressIsChanged() {
+    public void isDefendantAddressToBeChangedWhenAddressIsChangedAndProsecutionCaseDefendantUpdatedRetainLAARelatedFields() {
         final UUID caseId = randomUUID();
         final Map<UUID, Defendant> defendantsMap = new HashMap<>();
         final UUID defendantId1 = randomUUID();
         final UUID defendantId2 = randomUUID();
         final UUID masterDefendantId = randomUUID();
 
+        //create the case and defendants without the LaaApplnReference on offences
+
         final Defendant defendant1 = defendant()
                 .withId(defendantId1)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
+                .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        .withId(randomUUID())
+                        .withOffenceTitle("offenceTitle")
+                        .build()))
                 .withPersonDefendant(personDefendant().withPersonDetails(
                         uk.gov.justice.core.courts.Person.person().withAddress(Address.address().withAddress1("Address-defendantId1").build()).build()
                 ).build())
@@ -4327,13 +4336,55 @@ public class CaseAggregateTest {
                 .withId(defendantId2)
                 .withProsecutionCaseId(caseId)
                 .withMasterDefendantId(masterDefendantId)
+                .withOffences(singletonList(uk.gov.justice.core.courts.Offence.offence()
+                        .withId(randomUUID())
+                        .withOffenceTitle("offenceTitle")
+                        .build()))
                 .withPersonDefendant(personDefendant().withPersonDetails(
                         uk.gov.justice.core.courts.Person.person().withAddress(Address.address().withAddress1("Address-defendantId2").build()).build()
                 ).build())
                 .build();
         defendantsMap.put(defendantId1, defendant1);
         defendantsMap.put(defendantId2, defendant2);
+
+        setField(caseAggregate, "prosecutionCase", prosecutionCase().withId(caseId).withDefendants(asList(defendant1, defendant2)).build());
         setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        //update LaaApplnReference for the offence
+        final ProsecutionCaseOffencesUpdated prosecutionCaseOffencesUpdated = ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
+                .withDefendantCaseOffences(DefendantCaseOffences.defendantCaseOffences()
+                        .withDefendantId(defendantId1)
+                        .withProsecutionCaseId(caseId)
+                        .withOffences(singletonList(offence()
+                                .withValuesFrom(defendant1.getOffences().get(0))
+                                .withLaaApplnReference(laaReference()
+                                        .withLaaContractNumber("Laa-Contract-Number")
+                                        .withApplicationReference("Application-Reference")
+                                        .withStatusId(randomUUID())
+                                        .build())
+                                .build()))
+                        .build())
+                .build();
+        caseAggregate.apply(prosecutionCaseOffencesUpdated);
+
+        //update AssociatedDefenceOrganisation for the defendant
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdatedToUpdateDeffOrg = ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
+                .withDefendant(DefendantUpdate.defendantUpdate()
+                        .withProsecutionCaseId(caseId)
+                        .withPersonDefendant(defendant1.getPersonDefendant())
+                        .withId(defendant1.getId())
+                        .withMasterDefendantId(defendant1.getMasterDefendantId())
+                        .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                                .withApplicationReference("Application-Reference")
+                                .withIsAssociatedByLAA(true)
+                                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                                        .withLaaContractNumber("Laa-Contract-Number")
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        caseAggregate.apply(prosecutionCaseDefendantUpdatedToUpdateDeffOrg);
 
         final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
                 .withId(defendantId1)
@@ -4351,6 +4402,8 @@ public class CaseAggregateTest {
         assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
         assertThat(prosecutionCaseDefendantUpdated.getDefendant().getPersonDefendant(), notNullValue());
         assertThat(prosecutionCaseDefendantUpdated.getDefendant().getPersonDefendant().getCustodialEstablishment(), nullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getAssociatedDefenceOrganisation(), is(prosecutionCaseDefendantUpdatedToUpdateDeffOrg.getDefendant().getAssociatedDefenceOrganisation()));
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getOffences().get(0).getLaaApplnReference(), is(prosecutionCaseOffencesUpdated.getDefendantCaseOffences().getOffences().get(0).getLaaApplnReference()));
     }
 
     @Test
@@ -4687,6 +4740,127 @@ public class CaseAggregateTest {
         final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
         assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
         assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+    }
+
+    @Test
+    public void shouldUpdateDefendantDetailsAndRetainAssociatedDefenceOrganisation_WhenAssociatedDefenceOrganisationIsNotPresentInCommandPayload() {
+        final UUID caseId = randomUUID();
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        final UUID defendantId1 = randomUUID();
+        final UUID defendantId2 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                .withIsAssociatedByLAA(true)
+                .withApplicationReference("Application-Reference")
+                .build();
+
+        final Defendant defendant1 = Defendant.defendant()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                .withPersonDefendant(personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name1")
+                                .withId(custodialId)
+                                .withCustody("custody1")
+                                .build())
+                        .build())
+                .build();
+        final Defendant defendant2 = Defendant.defendant()
+                .withId(defendantId2)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                .withPersonDefendant(personDefendant()
+                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                                .withName("name2")
+                                .withId(randomUUID())
+                                .withCustody("custody2")
+                                .build())
+                        .build())
+                .build();
+        defendantsMap.put(defendantId1, defendant1);
+        defendantsMap.put(defendantId2, defendant2);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final CustodialEstablishment custodialEstablishment = CustodialEstablishment.custodialEstablishment()
+                .withName("name1")
+                .withId(custodialId)
+                .withCustody("custody1")
+                .build();
+
+        final DefendantUpdate payload = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(personDefendant()
+                        .withCustodialEstablishment(custodialEstablishment)
+                        .build())
+                .build();
+
+        final List<Object> eventList = caseAggregate.updateDefendantDetails(payload, asList()).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getAssociatedDefenceOrganisation(), is(associatedDefenceOrganisation));
+    }
+
+
+    @Test
+    public void shouldUpdateDefendantDetailsTwiceAndRetainAssociatedDefenceOrganisation_WhenAssociatedDefenceOrganisationIsNotPresentInSecondCommandPayload() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID masterDefendantId = randomUUID();
+        final UUID custodialId = randomUUID();
+
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                .withIsAssociatedByLAA(true)
+                .withApplicationReference("Application-Reference")
+                .build();
+
+        final CustodialEstablishment custodialEstablishment = CustodialEstablishment.custodialEstablishment()
+                .withName("name1")
+                .withId(custodialId)
+                .withCustody("custody1")
+                .build();
+
+        final DefendantUpdate payload1 = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                .withPersonDefendant(personDefendant()
+                        .withCustodialEstablishment(custodialEstablishment)
+                        .build())
+                .build();
+
+        List<Object> eventList = caseAggregate.updateDefendantDetails(payload1, asList()).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getAssociatedDefenceOrganisation(), is(associatedDefenceOrganisation));
+
+
+        final DefendantUpdate payload2 = DefendantUpdate.defendantUpdate()
+                .withId(defendantId1)
+                .withProsecutionCaseId(caseId)
+                .withMasterDefendantId(masterDefendantId)
+                .withPersonDefendant(personDefendant()
+                        .withCustodialEstablishment(custodialEstablishment)
+                        .build())
+                .build();
+
+        eventList = caseAggregate.updateDefendantDetails(payload2, asList()).collect(toList());
+        assertThat(eventList, hasSize(1));
+        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
+        prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
+        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getAssociatedDefenceOrganisation(), is(associatedDefenceOrganisation));
+
     }
 
 

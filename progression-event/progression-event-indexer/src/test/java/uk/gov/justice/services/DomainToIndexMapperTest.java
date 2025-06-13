@@ -1,16 +1,21 @@
 package uk.gov.justice.services;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static uk.gov.justice.core.courts.FundingType.REPRESENTATION_ORDER;
 import static uk.gov.justice.services.DomainToIndexMapper.addressLines;
-import static java.util.Arrays.asList;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
+import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Plea;
 import uk.gov.justice.core.courts.Verdict;
 import uk.gov.justice.core.courts.VerdictType;
@@ -95,7 +100,7 @@ public class DomainToIndexMapperTest {
     }
 
     @Test
-    public void shouldConverVerdictWhenThereAreOnlyMandatoryFields() {
+    public void shouldConvertVerdictWhenThereAreOnlyMandatoryFields() {
         final Defendant defendant = Defendant.defendant()
                 .withId(UUID.randomUUID())
                 .withOffences(Collections.singletonList(Offence.offence()
@@ -121,7 +126,7 @@ public class DomainToIndexMapperTest {
     }
 
     @Test
-    public void shouldConverVerdictWhenThereAreAllFields() {
+    public void shouldConvertVerdictWhenThereAreAllFields() {
         final Defendant defendant = Defendant.defendant()
                 .withId(UUID.randomUUID())
                 .withOffences(Collections.singletonList(Offence.offence()
@@ -298,6 +303,45 @@ public class DomainToIndexMapperTest {
         final Party party = domainToIndexMapper.party(defendant);
 
         assertNull(party.getOffences().get(0).getPleas());
+    }
+
+    @Test
+    public void shouldConvertAssociatedDefenceOrganisationWhenFieldHasValue() {
+
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                                .withLaaContractNumber("laaContractNumber")
+                                .withOrganisation(Organisation.organisation()
+                                        .withName("orgName")
+                                        .build())
+                                .build())
+                        .withApplicationReference("applicationReference")
+                        .withAssociationStartDate(LocalDate.now())
+                        .withAssociationEndDate(LocalDate.now().plusYears(1))
+                        .withFundingType(REPRESENTATION_ORDER)
+                        .withIsAssociatedByLAA(true)
+                        .build())
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertThat(party.getRepresentationOrder().getApplicationReference(), is(defendant.getAssociatedDefenceOrganisation().getApplicationReference()));
+        assertThat(party.getRepresentationOrder().getEffectiveFromDate(), is(defendant.getAssociatedDefenceOrganisation().getAssociationStartDate().toString()));
+        assertThat(party.getRepresentationOrder().getEffectiveToDate(), is(defendant.getAssociatedDefenceOrganisation().getAssociationEndDate().toString()));
+        assertThat(party.getRepresentationOrder().getLaaContractNumber(), is(defendant.getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber()));
+    }
+
+    @Test
+    public void shouldConvertAssociatedDefenceOrganisationWhenFieldDoNotHasValue() {
+        final Defendant defendant = Defendant.defendant()
+                .withId(UUID.randomUUID())
+                .build();
+
+        final Party party = domainToIndexMapper.party(defendant);
+
+        assertThat(party.getRepresentationOrder().getLaaContractNumber(), nullValue());
     }
 
 

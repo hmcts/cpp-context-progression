@@ -5,44 +5,61 @@ import static java.time.ZonedDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.ApplicationDefenceOrganisationChanged.applicationDefenceOrganisationChanged;
+import static uk.gov.justice.core.courts.ApplicationOffencesUpdated.applicationOffencesUpdated;
+import static uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated.applicationReporderOffencesUpdated;
 import static uk.gov.justice.core.courts.ApplicationStatus.DRAFT;
 import static uk.gov.justice.core.courts.ApplicationStatus.EJECTED;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ApplicationStatus.IN_PROGRESS;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
+import static uk.gov.justice.core.courts.AssociatedDefenceOrganisation.associatedDefenceOrganisation;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
+import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.CourtApplicationCreated.courtApplicationCreated;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsApproved.courtApplicationSummonsApproved;
 import static uk.gov.justice.core.courts.CourtApplicationSummonsRejected.courtApplicationSummonsRejected;
 import static uk.gov.justice.core.courts.HearingResultedApplicationUpdated.hearingResultedApplicationUpdated;
 import static uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved.initiateCourtHearingAfterSummonsApproved;
+import static uk.gov.justice.core.courts.Offence.offence;
 import static uk.gov.justice.core.courts.RemoveDefendantCustodialEstablishmentRequested.removeDefendantCustodialEstablishmentRequested;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.when;
 import static uk.gov.justice.progression.courts.SendStatdecAppointmentLetter.sendStatdecAppointmentLetter;
+import static uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation.applicationCaseDefendantOrganisation;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.getCourtApplicationWithConvictionDate;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
+import static uk.gov.moj.cpp.progression.events.ApplicationLaaAssociated.applicationLaaAssociated;
 import static uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated.courtApplicationDocumentUpdated;
+import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated;
+import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.ApplicationDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.ApplicationNoteAdded;
 import uk.gov.justice.core.courts.ApplicationNoteEdited;
+import uk.gov.justice.core.courts.ApplicationOffencesUpdated;
 import uk.gov.justice.core.courts.ApplicationReferredIgnored;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourt;
 import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
+import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.ApplicationStatus;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.ConvictionDateAdded;
 import uk.gov.justice.core.courts.ConvictionDateRemoved;
@@ -59,17 +76,19 @@ import uk.gov.justice.core.courts.CourtApplicationStatusChanged;
 import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
-import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
+import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAddressOnApplicationUpdated;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
+import uk.gov.justice.core.courts.FundingType;
 import uk.gov.justice.core.courts.FutureSummonsHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingApplicationLinkCreated;
@@ -79,8 +98,11 @@ import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SendNotificationForApplicationIgnored;
@@ -91,18 +113,27 @@ import uk.gov.justice.core.courts.SummonsApprovedOutcome;
 import uk.gov.justice.core.courts.SummonsRejectedOutcome;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.HearingDeletedForCourtApplication;
+import uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation;
 import uk.gov.moj.cpp.progression.domain.Notification;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestAccepted;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestFailed;
 import uk.gov.moj.cpp.progression.domain.NotificationRequestSucceeded;
 import uk.gov.moj.cpp.progression.domain.event.email.EmailRequested;
 import uk.gov.moj.cpp.progression.domain.event.print.PrintRequested;
+import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
+import uk.gov.moj.cpp.progression.events.DefenceOrganisationDissociatedForApplicationByDefenceContext;
+import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationAssociated;
+import uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated;
+import uk.gov.moj.cpp.progression.events.RepresentationType;
+import uk.gov.moj.cpp.progression.laa.LaaRepresentationOrder;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -114,7 +145,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1948"})
+@SuppressWarnings({"squid:S1948", "java:S6204"})
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
@@ -124,17 +155,25 @@ public class ApplicationAggregate implements Aggregate {
     private ApplicationStatus applicationStatus = DRAFT;
     private InitiateCourtApplicationProceedings initiateCourtApplicationProceedings;
     private CourtApplication courtApplication;
+    private List<ApplicationCaseDefendantOrganisation> applicationCaseDefendantOrganisations = new ArrayList<>();
     private UUID boxHearingId;
     private boolean applicationReferredToNewHearing;
+    private final Map<UUID, UUID> applicationAssociatedDefenceOrganisation = new HashMap<>();
+    private final Map<UUID, LaaReference> offenceLaaReference = new HashMap<>();
+    private final Map<UUID, Boolean> applicationOrganisationAsscociatedByRepOrder = new HashMap<>();
 
     @Override
     public Object apply(final Object event) {
         return match(event).with(
-                when(CourtApplicationProceedingsInitiated.class).apply(this::handleCourtApplicationProceedings),
+                when(CourtApplicationProceedingsInitiated.class).apply(courtApplicationProceedingsInitiated -> {
+                    handleCourtApplicationProceedings(courtApplicationProceedingsInitiated);
+                    setApplicationCaseDefendants(courtApplicationProceedingsInitiated.getCourtApplication());
+                }),
                 when(ApplicationReferredToCourt.class).apply(e -> this.applicationStatus = LISTED),
                 when(CourtApplicationCreated.class).apply(e -> {
                     this.applicationStatus = DRAFT;
                     setCourtApplication(e.getCourtApplication());
+                    setApplicationCaseDefendants(e.getCourtApplication());
                 }),
                 when(HearingApplicationLinkCreated.class).apply(
                         e -> {
@@ -145,7 +184,10 @@ public class ApplicationAggregate implements Aggregate {
                 ),
                 when(ApplicationReferredToBoxwork.class).apply(e -> this.applicationStatus = IN_PROGRESS),
                 when(ApplicationReferredToExistingHearing.class).apply(e -> this.applicationStatus = LISTED),
-                when(CourtApplicationProceedingsEdited.class).apply(this::handleEditCourtApplicationProceedings),
+                when(CourtApplicationProceedingsEdited.class).apply(courtApplicationProceedingsEdited -> {
+                    handleEditCourtApplicationProceedings(courtApplicationProceedingsEdited);
+                    setApplicationCaseDefendants(courtApplicationProceedingsEdited.getCourtApplication());
+                }),
                 when(ConvictionDateAdded.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), e.getConvictionDate())),
                 when(ConvictionDateRemoved.class).apply(e -> handleConvictionDateChanged(e.getOffenceId(), null)),
                 when(CourtApplicationSummonsRejected.class).apply(e -> this.applicationStatus = FINALISED),
@@ -158,7 +200,29 @@ public class ApplicationAggregate implements Aggregate {
                                 this.applicationStatus = EJECTED
 
                 ),
-                when(CourtApplicationUpdated.class).apply(e-> setCourtApplication(e.getCourtApplication())),
+                when(ApplicationOffencesUpdated.class).apply(e ->
+                        updatedOffences(e.getOffenceId(), e.getLaaReference())
+                ),
+                when(ApplicationReporderOffencesUpdated.class).apply(e ->
+                        updatedOffences(e.getOffenceId(), e.getLaaReference())
+                ),
+                when(ApplicationDefenceOrganisationChanged.class).apply(e -> {
+                    final CourtApplicationParty subject = this.courtApplication.getSubject();
+                    if (nonNull(subject) && subject.getId().equals(e.getSubjectId())) {
+                        final CourtApplicationParty updatedSubject = courtApplicationParty()
+                                .withValuesFrom(subject)
+                                .withAssociatedDefenceOrganisation(e.getAssociatedDefenceOrganisation())
+                                .build();
+
+                        setCourtApplication(courtApplication().withValuesFrom(this.courtApplication).withSubject(updatedSubject).build());
+                    }
+                }),
+                when(CourtApplicationUpdated.class).apply(courtApplicationUpdated -> {
+                    setCourtApplication(courtApplicationUpdated.getCourtApplication());
+                    setApplicationCaseDefendants(courtApplicationUpdated.getCourtApplication());
+                }),
+                when(DefendantDefenceOrganisationAssociated.class).apply(this::updateApplicationAssociatedDefenceOrganisation),
+                when(DefendantDefenceOrganisationDisassociated.class).apply(this::removeDefendantAssociatedDefenceOrganisation),
                 when(CourtApplicationStatusUpdated.class).apply(e -> {
                     this.applicationStatus = e.getCourtApplication().getApplicationStatus();
                     setCourtApplication(e.getCourtApplication());
@@ -166,6 +230,123 @@ public class ApplicationAggregate implements Aggregate {
                 otherwiseDoNothing());
     }
 
+    private void updatedOffences(final UUID offenceId, final LaaReference laaReference) {
+        if (!isNotEmpty(this.courtApplication.getCourtApplicationCases())) {
+            return;
+        }
+        final List<CourtApplicationCase> updatedCases = this.courtApplication.getCourtApplicationCases().stream()
+                .filter(a -> isNotEmpty(a.getOffences())).map(applicationCase -> {
+                    // Update offences within the current case
+                    final List<Offence> updatedOffences = applicationCase.getOffences().stream()
+                            .map(offence -> {
+                                // Match offence ID and update if necessary
+                                if (offence.getId().equals(offenceId)) {
+                                    offenceLaaReference.put(offenceId, laaReference);
+                                    return offence()
+                                            .withValuesFrom(offence)
+                                            .withLaaApplnReference(laaReference)
+                                            .build();
+                                }
+                                return offence; // Return unchanged offence
+                            })
+                            .toList();
+                    return courtApplicationCase()
+                            .withValuesFrom(applicationCase)
+                            .withOffences(updatedOffences)
+                            .build();
+                }).toList();
+        setCourtApplication(courtApplication().withValuesFrom(this.courtApplication).withCourtApplicationCases(updatedCases).build());
+    }
+
+    private void setApplicationCaseDefendants(final CourtApplication courtApplication) {
+        if (nonNull(courtApplication) && nonNull(courtApplication.getSubject())) {
+            setApplicationCaseDefendants(courtApplication.getSubject());
+        }
+    }
+
+    private void setApplicationCaseDefendants(final CourtApplicationParty subject) {
+        if (nonNull(subject.getMasterDefendant()) && nonNull(subject.getMasterDefendant().getDefendantCase())) {
+            subject.getMasterDefendant().getDefendantCase().forEach(defendantCase -> {
+                final ApplicationCaseDefendantOrganisation applicationCaseDefendantOrganisation = applicationCaseDefendantOrganisation()
+                        .withCaseId(defendantCase.getCaseId())
+                        .withDefendantId(defendantCase.getDefendantId())
+                        .build();
+                addOrUpdateApplicationCaseDefendantOrganisation(applicationCaseDefendantOrganisation);
+            });
+        }
+    }
+
+    private void addOrUpdateApplicationCaseDefendantOrganisation(final ApplicationCaseDefendantOrganisation applicationCaseDefendantOrganisation) {
+        if (applicationCaseDefendantOrganisations.stream().noneMatch(defendantOrganisation ->
+                applicationCaseDefendantOrganisation.getDefendantId().equals(defendantOrganisation.getDefendantId()) && applicationCaseDefendantOrganisation.getCaseId().equals(defendantOrganisation.getCaseId()))) {
+            this.applicationCaseDefendantOrganisations.add(applicationCaseDefendantOrganisation);
+        }
+    }
+
+    private void removeDefendantAssociatedDefenceOrganisation(final DefendantDefenceOrganisationDisassociated defendantDefenceOrganisationDisassociated) {
+        removeFromOrganisationMap(defendantDefenceOrganisationDisassociated.getDefendantId());
+    }
+
+    private void removeFromOrganisationMap(final UUID defendantId) {
+        this.applicationAssociatedDefenceOrganisation.remove(defendantId);
+    }
+
+    public Stream<Object> recordLAAReferenceForApplication(final UUID applicationId, final UUID subjectId, final UUID offenceId, final LaaReference laaReference) {
+        LOGGER.debug("LAA reference is recorded for Application.");
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+
+        if (isNull(this.courtApplication)) {
+            LOGGER.info("Application is not found for given applicationId {}", applicationId);
+            return apply(streamBuilder.build());
+
+        }
+
+        if (isNull(this.courtApplication.getSubject()) || !this.courtApplication.getSubject().getId().equals(subjectId)) {
+            LOGGER.info("Subject Id : {} is not matched for given applicationId : {}", subjectId, applicationId);
+            return apply(streamBuilder.build());
+        }
+
+        if (isEmpty(this.courtApplication.getCourtApplicationCases())) {
+            LOGGER.info("Application case is empty for given applicationId: {}", applicationId);
+            return apply(streamBuilder.build());
+        }
+
+        Offence existingOffence = findOffenceById(offenceId);
+        if (isNull(existingOffence)) {
+            LOGGER.info("OffenceId: {} not found for given applicationId: {}", offenceId, applicationId);
+            return apply(streamBuilder.build());
+        }
+
+        if (areLaaReferencesSame(existingOffence.getLaaApplnReference(), laaReference)) {
+            LOGGER.info("LaaReference {} is the same as the existing one, skipping new event creation",
+                    laaReference.getApplicationReference());
+            return apply(streamBuilder.build());
+        }
+
+        streamBuilder.add(applicationOffencesUpdated()
+                .withLaaReference(laaReference)
+                .withApplicationId(applicationId)
+                .withSubjectId(subjectId)
+                .withOffenceId(offenceId)
+                .build());
+        return apply(streamBuilder.build());
+    }
+
+    private boolean areLaaReferencesSame(LaaReference ref1, LaaReference ref2) {
+        if (isNull(ref1) || isNull(ref2)) return false;
+
+        return ref1.getStatusCode().equals(ref2.getStatusCode()) &&
+                ref1.getApplicationReference().equals(ref2.getApplicationReference()) &&
+                ref1.getStatusDate().equals(ref2.getStatusDate());
+    }
+
+    public Offence findOffenceById(UUID offenceId) {
+        return this.courtApplication.getCourtApplicationCases().stream()
+                .flatMap(applicationCase -> applicationCase.getOffences().stream())
+                .filter(offence -> offence.getId().equals(offenceId))
+                .findFirst()
+                .orElse(null);
+    }
 
     public Stream<Object> referApplicationToCourt(final HearingListingNeeds hearingListingNeeds) {
         LOGGER.debug("application has been referred to court");
@@ -209,7 +390,7 @@ public class ApplicationAggregate implements Aggregate {
                         .withCourtApplication(updatedCourtApplication)
                         .build());
 
-        if (checkCourtApplicationPartyHasCustodialEstablishment(courtApplication.getSubject())){
+        if (checkCourtApplicationPartyHasCustodialEstablishment(courtApplication.getSubject())) {
             streamBuilder.add(
                     removeDefendantCustodialEstablishmentRequested()
                             .withCourtApplication(updatedCourtApplication)
@@ -253,12 +434,12 @@ public class ApplicationAggregate implements Aggregate {
 
     private CourtApplication buildCourtApplicationWithoutCustodialEstablishment(CourtApplication updatedCourtApplication) {
         final boolean hasSubjectCustodialEstablishment = checkCourtApplicationPartyHasCustodialEstablishment(updatedCourtApplication.getSubject());
-        final boolean hasApplicantCustodialEstablishment =checkCourtApplicationPartyHasCustodialEstablishment(updatedCourtApplication.getApplicant());
+        final boolean hasApplicantCustodialEstablishment = checkCourtApplicationPartyHasCustodialEstablishment(updatedCourtApplication.getApplicant());
 
         final boolean caseInActive = nonNull(updatedCourtApplication.getCourtApplicationCases()) &&
                 updatedCourtApplication.getCourtApplicationCases()
-                .stream()
-                .anyMatch(courtApplicationCase -> "INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
+                        .stream()
+                        .anyMatch(courtApplicationCase -> "INACTIVE".equalsIgnoreCase(courtApplicationCase.getCaseStatus()));
 
 
         if (DRAFT.equals(updatedCourtApplication.getApplicationStatus())
@@ -360,10 +541,10 @@ public class ApplicationAggregate implements Aggregate {
         LOGGER.debug("Initiated Court Application Proceedings");
         if (isNull(this.courtApplication)) {
             CourtApplication updatedCourtApplication = updateCourtApplicationReference(initiateCourtApplicationProceedings.getCourtApplication());
-            if (initiateCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(initiateCourtApplicationProceedings.getCourtHearing())) {
+            if (toBoolean(initiateCourtApplicationProceedings.getSummonsApprovalRequired()) && nonNull(initiateCourtApplicationProceedings.getCourtHearing())) {
                 updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(updatedCourtApplication, initiateCourtApplicationProceedings.getCourtHearing());
             }
-            if(nonNull(courtApplicationCase)) {
+            if (nonNull(courtApplicationCase)) {
                 updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
             }
             return apply(
@@ -387,17 +568,17 @@ public class ApplicationAggregate implements Aggregate {
 
     private CourtApplication enrichApplicationIfAddressUpdatedFromApplication(final CourtApplication updatedCourtApplication, final ProsecutionCase courtApplicationCase) {
         final CourtApplication.Builder applicationBuilder = courtApplication().withValuesFrom(updatedCourtApplication);
-            final List<Defendant> caseDefendants = courtApplicationCase.getDefendants();
-            if (nonNull(caseDefendants)) {
-                caseDefendants.forEach(defendant -> {
-                    final boolean isDefendantOrganisation = nonNull(defendant.getLegalEntityDefendant());
-                    final Address defendantAddressOnCase = getDefendantAddressFromCase(defendant,isDefendantOrganisation);
-                    validateApplicantAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
-                    validateSubjectAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
-                    validateRespondentsAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
-                });
-            }
-            return applicationBuilder.build();
+        final List<Defendant> caseDefendants = courtApplicationCase.getDefendants();
+        if (nonNull(caseDefendants)) {
+            caseDefendants.forEach(defendant -> {
+                final boolean isDefendantOrganisation = nonNull(defendant.getLegalEntityDefendant());
+                final Address defendantAddressOnCase = getDefendantAddressFromCase(defendant, isDefendantOrganisation);
+                validateApplicantAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
+                validateSubjectAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
+                validateRespondentsAddress(updatedCourtApplication, applicationBuilder, defendant, isDefendantOrganisation, defendantAddressOnCase);
+            });
+        }
+        return applicationBuilder.build();
     }
 
     private void validateRespondentsAddress(final CourtApplication updatedCourtApplication, final CourtApplication.Builder applicationBuilder, final Defendant defendant, final boolean isDefendantOrganisation, final Address defendantAddressOnCase) {
@@ -407,7 +588,7 @@ public class ApplicationAggregate implements Aggregate {
                             .equals(defendant.getMasterDefendantId())).findFirst();
             if (updatedRespondent.isPresent()) {
                 final Address addressOnApplication = getDefendantAddressFromApplication(updatedRespondent.get().getMasterDefendant(), isDefendantOrganisation);
-                if(!isAddressMatches(defendantAddressOnCase,addressOnApplication)) {
+                if (!isAddressMatches(defendantAddressOnCase, addressOnApplication)) {
                     final List<CourtApplicationParty> courtApplicationRespondentsList = new ArrayList<>();
                     updatedCourtApplication.getRespondents().stream()
                             .filter(resp -> isNull(resp.getMasterDefendant()) || !resp.getMasterDefendant().getMasterDefendantId().equals(defendant.getMasterDefendantId()))
@@ -427,7 +608,7 @@ public class ApplicationAggregate implements Aggregate {
         if (nonNull(updatedCourtApplication.getSubject().getMasterDefendant()) && defendant.getMasterDefendantId()
                 .equals(updatedCourtApplication.getSubject().getMasterDefendant().getMasterDefendantId())) {
             final Address addressOnApplication = getDefendantAddressFromApplication(updatedCourtApplication.getSubject().getMasterDefendant(), isDefendantOrganisation);
-            if(!isAddressMatches(defendantAddressOnCase,addressOnApplication)) {
+            if (!isAddressMatches(defendantAddressOnCase, addressOnApplication)) {
                 applicationBuilder
                         .withSubject(courtApplicationParty()
                                 .withValuesFrom(updatedCourtApplication.getSubject())
@@ -441,7 +622,7 @@ public class ApplicationAggregate implements Aggregate {
         if (nonNull(updatedCourtApplication.getApplicant().getMasterDefendant()) && defendant.getMasterDefendantId()
                 .equals(updatedCourtApplication.getApplicant().getMasterDefendant().getMasterDefendantId())) {
             final Address addressOnApplication = getDefendantAddressFromApplication(updatedCourtApplication.getApplicant().getMasterDefendant(), isDefendantOrganisation);
-            if(!isAddressMatches(defendantAddressOnCase,addressOnApplication)) {
+            if (!isAddressMatches(defendantAddressOnCase, addressOnApplication)) {
                 applicationBuilder
                         .withApplicant(courtApplicationParty()
                                 .withValuesFrom(updatedCourtApplication.getApplicant())
@@ -463,12 +644,12 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> editCourtApplicationProceedings(final EditCourtApplicationProceedings editCourtApplicationProceedings, final ProsecutionCase courtApplicationCase) {
         CourtApplication updatedCourtApplication;
-        if (editCourtApplicationProceedings.getSummonsApprovalRequired() && nonNull(editCourtApplicationProceedings.getCourtHearing())) {
+        if (toBoolean(editCourtApplicationProceedings.getSummonsApprovalRequired()) && nonNull(editCourtApplicationProceedings.getCourtHearing())) {
             updatedCourtApplication = updateCourtApplicationWithFutureSummonsHearing(editCourtApplicationProceedings.getCourtApplication(), editCourtApplicationProceedings.getCourtHearing());
         } else {
             updatedCourtApplication = editCourtApplicationProceedings.getCourtApplication();
         }
-        if(nonNull(courtApplicationCase)) {
+        if (nonNull(courtApplicationCase)) {
             updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
         }
         return apply(
@@ -499,7 +680,7 @@ public class ApplicationAggregate implements Aggregate {
                                 .build())
                         .withBoxHearing(boxHearing)
                         .build());
-            }else{
+            } else {
                 //if standaloane application refer to boxwork, user's error
                 return Stream.empty();
             }
@@ -718,15 +899,19 @@ public class ApplicationAggregate implements Aggregate {
         return boxHearingId;
     }
 
+    public List<ApplicationCaseDefendantOrganisation> getApplicationCaseDefendantOrganisations() {
+        return this.applicationCaseDefendantOrganisations;
+    }
+
     private List<UUID> getCaseIds() {
         final List<UUID> caseIds = ofNullable(courtApplication.getCourtApplicationCases()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(CourtApplicationCase::getProsecutionCaseId)
-                .collect(Collectors.toList());
+                .collect(toList());
 
         final List<UUID> courtOrderCaseIds = ofNullable(courtApplication.getCourtOrder()).map(courtOrder -> courtOrder.getCourtOrderOffences().stream()).orElseGet(Stream::empty)
-                .map(CourtOrderOffence::getProsecutionCaseId).collect(Collectors.toList());
+                .map(CourtOrderOffence::getProsecutionCaseId).collect(toList());
 
-        return Stream.of(caseIds, courtOrderCaseIds).flatMap(Collection::stream).collect(Collectors.collectingAndThen(Collectors.toList(), list -> list.isEmpty() ? null : list));
+        return Stream.of(caseIds, courtOrderCaseIds).flatMap(Collection::stream).collect(Collectors.collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
     }
 
     private CourtApplication updateCourtApplicationWithFutureSummonsHearing(CourtApplication courtApplication, CourtHearingRequest courtHearingRequest) {
@@ -753,13 +938,13 @@ public class ApplicationAggregate implements Aggregate {
 
         if (isNotEmpty(courtApplication.getCourtApplicationCases())) {
             return courtApplication.getCourtApplicationCases().stream().map(courtApplicationCase ->
-                    nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                            nonNull(courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN()) ? courtApplicationCase.getProsecutionCaseIdentifier().getCaseURN() : courtApplicationCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
                     .distinct().collect(Collectors.joining(","));
         }
 
         if (nonNull(courtApplication.getCourtOrder())) {
             return courtApplication.getCourtOrder().getCourtOrderOffences().stream().map(courtOrderOffence ->
-                    nonNull(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ? courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
+                            nonNull(courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN()) ? courtOrderOffence.getProsecutionCaseIdentifier().getCaseURN() : courtOrderOffence.getProsecutionCaseIdentifier().getProsecutionAuthorityReference())
                     .distinct().collect(Collectors.joining(","));
         }
 
@@ -825,7 +1010,7 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> updateDefendantAddressOnApplication(final UUID applicationId, final DefendantUpdate defendantUpdate, final List<UUID> hearingIds) {
         final Stream.Builder<Object> builder = builder();
-        if(isAddressUpdatedForDefendant(defendantUpdate)){
+        if (isAddressUpdatedForDefendant(defendantUpdate)) {
             builder.add(DefendantAddressOnApplicationUpdated.defendantAddressOnApplicationUpdated()
                     .withApplicationId(applicationId)
                     .withDefendant(defendantUpdate)
@@ -845,19 +1030,18 @@ public class ApplicationAggregate implements Aggregate {
     private boolean isAddressUpdatedForDefendant(final DefendantUpdate defendantUpdate) {
         final boolean isApplicantOrganisation = nonNull(defendantUpdate.getLegalEntityDefendant());
         final UUID updatedDefendantId = ofNullable(defendantUpdate.getMasterDefendantId()).orElse(defendantUpdate.getId());
-
         final Address defendantAddressOnReceivedApplication = getUpdatedDefendantAddress(defendantUpdate, isApplicantOrganisation);
 
         Optional<MasterDefendant> defendantOnApplicationInAggregate = ofNullable(this.courtApplication.getSubject())
                 .map(CourtApplicationParty::getMasterDefendant)
                 .filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(updatedDefendantId));
 
-        if (!defendantOnApplicationInAggregate.isPresent()) {
-                defendantOnApplicationInAggregate = ofNullable(this.courtApplication.getApplicant())
-                        .map(CourtApplicationParty::getMasterDefendant)
-                        .filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(updatedDefendantId));
-            if (!defendantOnApplicationInAggregate.isPresent()) {
-                if(isNull(this.courtApplication.getRespondents())){
+        if (defendantOnApplicationInAggregate.isEmpty()) {
+            defendantOnApplicationInAggregate = ofNullable(this.courtApplication.getApplicant())
+                    .map(CourtApplicationParty::getMasterDefendant)
+                    .filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(updatedDefendantId));
+            if (defendantOnApplicationInAggregate.isEmpty()) {
+                if (isNull(this.courtApplication.getRespondents())) {
                     return false;
                 }
                 defendantOnApplicationInAggregate = this.courtApplication.getRespondents().stream()
@@ -866,8 +1050,8 @@ public class ApplicationAggregate implements Aggregate {
                         .filter(def -> nonNull(def.getMasterDefendantId()) && def.getMasterDefendantId().equals(updatedDefendantId)).findFirst();
             }
         }
-        if(defendantOnApplicationInAggregate.isPresent()){
-            return !isAddressMatches(defendantAddressOnReceivedApplication,getDefendantAddressFromApplication(defendantOnApplicationInAggregate.get(), isApplicantOrganisation));
+        if (defendantOnApplicationInAggregate.isPresent()) {
+            return !isAddressMatches(defendantAddressOnReceivedApplication, getDefendantAddressFromApplication(defendantOnApplicationInAggregate.get(), isApplicantOrganisation));
         }
         return false;
     }
@@ -882,11 +1066,11 @@ public class ApplicationAggregate implements Aggregate {
 
     private Address getDefendantAddressFromApplication(final MasterDefendant defendantOnApplicationInAggregate, final boolean isApplicantOrganisation) {
         if (!isApplicantOrganisation) {
-            if(nonNull(defendantOnApplicationInAggregate.getPersonDefendant()) && nonNull(defendantOnApplicationInAggregate.getPersonDefendant().getPersonDetails())){
+            if (nonNull(defendantOnApplicationInAggregate.getPersonDefendant()) && nonNull(defendantOnApplicationInAggregate.getPersonDefendant().getPersonDetails())) {
                 return defendantOnApplicationInAggregate.getPersonDefendant().getPersonDetails().getAddress();
             }
         } else {
-            if(nonNull(defendantOnApplicationInAggregate.getLegalEntityDefendant()) && nonNull(defendantOnApplicationInAggregate.getLegalEntityDefendant().getOrganisation())){
+            if (nonNull(defendantOnApplicationInAggregate.getLegalEntityDefendant()) && nonNull(defendantOnApplicationInAggregate.getLegalEntityDefendant().getOrganisation())) {
                 return defendantOnApplicationInAggregate.getLegalEntityDefendant().getOrganisation().getAddress();
             }
         }
@@ -900,17 +1084,19 @@ public class ApplicationAggregate implements Aggregate {
             return defendant.getLegalEntityDefendant().getOrganisation().getAddress();
         }
     }
+
     public Stream<Object> updateApplicationDefendant(final CourtApplication courtApplication) {
         return apply(Stream.of(CourtApplicationUpdated.courtApplicationUpdated()
                 .withCourtApplication(courtApplication)
                 .build()));
     }
+
     public Stream<Object> handleEditCourtFeeForCivilApplication(final UUID applicationId, final CourtApplicationPayment courtApplicationPayment) {
         return apply(Stream.of(
-                        CourtFeeForCivilApplicationUpdated.courtFeeForCivilApplicationUpdated()
-                                .withApplicationId(applicationId)
-                                .withCourtApplicationPayment(courtApplicationPayment)
-                                .build()));
+                CourtFeeForCivilApplicationUpdated.courtFeeForCivilApplicationUpdated()
+                        .withApplicationId(applicationId)
+                        .withCourtApplicationPayment(courtApplicationPayment)
+                        .build()));
     }
 
     public Stream<Object> patchUpdateApplicationStatus(final ApplicationStatus applicationStatus) {
@@ -926,5 +1112,269 @@ public class ApplicationAggregate implements Aggregate {
         return this.applicationStatus;
     }
 
+    public Stream<Object> receiveRepresentationOrderForApplication(final UUID applicationId, final UUID subjectId, final UUID offenceId, final LaaRepresentationOrder laaRepresentationOrder, final OrganisationDetails organisationDetailsForLaaContractNumber, final List<ApplicationCaseDefendantOrganisation> currentDefenceOrganisationForSubjectsCase) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Receive Representation Order for Application. applicationId : {}", applicationId);
+        }
+        final String laaContractNumber = laaRepresentationOrder.getDefenceOrganisation().getLaaContractNumber();
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        if (nonNull(this.courtApplication)) {
+
+            if (isNull(this.courtApplication.getSubject()) || !this.courtApplication.getSubject().getId().equals(subjectId)) {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Receive Representation Order for Application. Application applicationId : {} with Subject subjectId : {} is not exist", applicationId, subjectId);
+                }
+                return apply(streamBuilder.build());
+            }
+
+            final Optional<LaaReference> laaReferenceOptional = getUpdatedLaaReference(applicationId, subjectId, offenceId, laaRepresentationOrder.getLaaReference());
+            if (laaReferenceOptional.isPresent()) {
+
+                final Organisation organisation = laaRepresentationOrder.getDefenceOrganisation().getOrganisation();
+                final AssociatedDefenceOrganisation associatedDefenceOrganisation = nonNull(organisation.getAddress()) && isNotEmpty(organisation.getAddress().getAddress1()) ? createAssociatedDefenceOrganisation(laaRepresentationOrder) : createAssociatedDefenceOrganisation(laaRepresentationOrder, organisation, organisationDetailsForLaaContractNumber.getId());
+
+                streamBuilder.add(applicationDefenceOrganisationChanged()
+                        .withApplicationId(applicationId)
+                        .withSubjectId(subjectId)
+                        .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                        .withApplicationCaseDefendantOrganisations(currentDefenceOrganisationForSubjectsCase)
+                        .build());
+
+                streamBuilder.add(applicationReporderOffencesUpdated()
+                        .withApplicationId(applicationId)
+                        .withSubjectId(subjectId)
+                        .withOffenceId(offenceId)
+                        .withLaaReference(laaReferenceOptional.get())
+                        .withApplicationCaseDefendantOrganisations(currentDefenceOrganisationForSubjectsCase)
+                        .build());
+            }
+            handleDefenceOrganisationAssociation(organisationDetailsForLaaContractNumber.getId(), organisationDetailsForLaaContractNumber.getName(), currentDefenceOrganisationForSubjectsCase, laaContractNumber, streamBuilder);
+
+            return apply(streamBuilder.build());
+        }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Receive Representation Order for Application. Application with applicationId : {} is not exist", applicationId);
+        }
+        return apply(streamBuilder.build());
+    }
+
+    private boolean isOffenceExist(final UUID offenceId) {
+        return ofNullable(this.courtApplication.getCourtApplicationCases())
+                .map(Collection::stream)
+                .orElseGet(Stream::empty)
+                .anyMatch(courtApplicationCase -> ofNullable(courtApplicationCase.getOffences())
+                        .map(Collection::stream)
+                        .orElseGet(Stream::empty)
+                        .anyMatch(offence -> offence.getId().equals(offenceId)));
+    }
+
+    private Optional<LaaReference> getUpdatedLaaReference(final UUID applicationId, final UUID subjectId, final UUID offenceId, final LaaReference laaReference) {
+
+        if (!isOffenceExist(offenceId)) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Receive Representation Order for Application. Application applicationId : {} with Subject subjectId : {} with Offence offenceId: {} is not exist", applicationId, subjectId, offenceId);
+            }
+            return Optional.empty();
+        }
+
+        if (!offenceLaaReference.containsKey(offenceId)) {
+            return Optional.of(laaReference);
+        }
+
+        final LaaReference existingLaaReference = offenceLaaReference.get(offenceId);
+        if (isLaaReferenceChanged(laaReference, existingLaaReference)) {
+            return Optional.of(laaReference);
+        }
+        return Optional.empty();
+    }
+
+    private boolean isLaaReferenceChanged(final LaaReference currentLaaReference, final LaaReference existingLaaReference) {
+        if (isNull(currentLaaReference) || isNull(existingLaaReference)) {
+            return false;
+        }
+
+        if ((nonNull(currentLaaReference.getEffectiveEndDate()) && nonNull(existingLaaReference.getEffectiveEndDate())) &&
+                !currentLaaReference.getEffectiveEndDate().equals(existingLaaReference.getEffectiveEndDate())) {
+            return true;
+        }
+
+        if ((nonNull(currentLaaReference.getLaaContractNumber()) && nonNull(existingLaaReference.getLaaContractNumber())) &&
+                !currentLaaReference.getLaaContractNumber().equals(existingLaaReference.getLaaContractNumber())) {
+            return true;
+        }
+
+        if ((nonNull(currentLaaReference.getOffenceLevelStatus()) && nonNull(existingLaaReference.getOffenceLevelStatus())) &&
+                !currentLaaReference.getOffenceLevelStatus().equals(existingLaaReference.getOffenceLevelStatus())) {
+            return true;
+        }
+
+        return ! (isLaaReferenceSame(currentLaaReference, existingLaaReference));
+    }
+
+    private boolean isLaaReferenceSame(final LaaReference currentLaaReference, final LaaReference existingLaaReference) {
+        return (currentLaaReference.getStatusCode().equals(existingLaaReference.getStatusCode()) &&
+                currentLaaReference.getApplicationReference().equals(existingLaaReference.getApplicationReference()) &&
+                currentLaaReference.getStatusDate().equals(existingLaaReference.getStatusDate()) &&
+                currentLaaReference.getStatusDescription().equals(existingLaaReference.getStatusDescription()) &&
+                currentLaaReference.getEffectiveStartDate().equals(existingLaaReference.getEffectiveStartDate()) &&
+                currentLaaReference.getStatusId().equals(existingLaaReference.getStatusId()));
+    }
+
+    private AssociatedDefenceOrganisation createAssociatedDefenceOrganisation(final LaaRepresentationOrder laaRepresentationOrder) {
+        return associatedDefenceOrganisation()
+                .withDefenceOrganisation(laaRepresentationOrder.getDefenceOrganisation())
+                .withIsAssociatedByLAA(true)
+                .withFundingType(FundingType.REPRESENTATION_ORDER)
+                .withApplicationReference(laaRepresentationOrder.getLaaReference().getApplicationReference())
+                .withAssociationStartDate(laaRepresentationOrder.getLaaReference().getEffectiveStartDate())
+                .withAssociationEndDate(laaRepresentationOrder.getLaaReference().getEffectiveEndDate())
+                .build();
+    }
+
+    private AssociatedDefenceOrganisation createAssociatedDefenceOrganisation(final LaaRepresentationOrder laaRepresentationOrder, final Organisation organisation, final UUID organisationId) {
+        return associatedDefenceOrganisation()
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                        .withLaaContractNumber(laaRepresentationOrder.getDefenceOrganisation().getLaaContractNumber())
+                        .withOrganisation(Organisation.organisation()
+                                .withId(organisationId)
+                                .withName(organisation.getName())
+                                .withContact(organisation.getContact())
+                                .withIncorporationNumber(organisation.getIncorporationNumber())
+                                .withRegisteredCharityNumber(organisation.getRegisteredCharityNumber())
+                                .build())
+                        .build())
+                .withIsAssociatedByLAA(true)
+                .withFundingType(FundingType.REPRESENTATION_ORDER)
+                .withApplicationReference(laaRepresentationOrder.getLaaReference().getApplicationReference())
+                .withAssociationStartDate(laaRepresentationOrder.getLaaReference().getEffectiveStartDate())
+                .withAssociationEndDate(laaRepresentationOrder.getLaaReference().getEffectiveEndDate())
+                .build();
+    }
+
+    private void handleDefenceOrganisationAssociation(final UUID organisationId, final String organisationName, final List<ApplicationCaseDefendantOrganisation> currentDefenceOrganisationForSubjectsCase,
+                                                      final String laaContractNumber, final Stream.Builder<Object> streamBuilder) {
+        if (isNotEmpty(currentDefenceOrganisationForSubjectsCase)) {
+            currentDefenceOrganisationForSubjectsCase.forEach(applicationCaseDefendantOrganisation ->
+                    handleDefenceOrganisationAssociation(organisationId, organisationName, applicationCaseDefendantOrganisation.getOrganisationId(), applicationCaseDefendantOrganisation.getDefendantId(), applicationCaseDefendantOrganisation.getCaseId(), laaContractNumber, streamBuilder));
+        }
+    }
+
+    private void handleDefenceOrganisationAssociation(final UUID organisationId, final String organisationName, final UUID alreadyAssociatedOrganisationId,
+                                                      final UUID defendantId, final UUID caseId, final String laaContractNumber, final Stream.Builder<Object> streamBuilder) {
+
+        if (organisationId == null && alreadyAssociatedOrganisationId == null) {
+            return;
+        }
+
+        if (nonNull(organisationId) && nonNull(alreadyAssociatedOrganisationId)) {
+            checkAndSetDefenceOrganisation(organisationId, organisationName, alreadyAssociatedOrganisationId, defendantId, laaContractNumber, streamBuilder);
+            return;
+        }
+
+        if (nonNull(alreadyAssociatedOrganisationId)) {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Organisation not set up for LAA Contract Number {}", laaContractNumber);
+            }
+            defenceLaaAssociated(streamBuilder, defendantId, laaContractNumber);
+            //disassociate the existing defence organisation
+            defenceOrganisationDisassociated(streamBuilder, defendantId, caseId, alreadyAssociatedOrganisationId);
+            return;
+        }
+
+        if (isAlreadyAssociatedToOrganisation(defendantId, organisationId) || !isApplicationOrganisationAsscociatedByRepOrder(defendantId)) {
+            defenceOrganisationAssociated(streamBuilder, organisationId, organisationName, defendantId, laaContractNumber);
+            return;
+        }
+
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error("Organisation not set up for LAA Contract Number {} and there is no existing association for defendant {} ", laaContractNumber, defendantId);
+        }
+        defenceLaaAssociated(streamBuilder, defendantId, laaContractNumber);
+    }
+
+    private void checkAndSetDefenceOrganisation(final UUID organisationId, final String organisationName, final UUID alreadyAssociatedOrganisationId,
+                                                final UUID defendantId, final String laaContractNumber, final Stream.Builder<Object> streamBuilder) {
+
+        if (!organisationId.toString().equals(alreadyAssociatedOrganisationId.toString())) {
+            defenceOrganisationAssociated(streamBuilder, organisationId, organisationName, defendantId, laaContractNumber);
+            return;
+        }
+
+        if (isAlreadyAssociatedToOrganisation(defendantId, organisationId) || !isApplicationOrganisationAsscociatedByRepOrder(defendantId)) {                    // Handle wrong payload case, when it is not actually associated by payload says organisation is associated.
+            defenceOrganisationAssociated(streamBuilder, organisationId, organisationName, defendantId, laaContractNumber);
+            return;
+        }
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Organisation for LAA Contract Number {} is already associated", laaContractNumber);
+        }
+    }
+
+    private void defenceOrganisationAssociated(final Stream.Builder<Object> streamBuilder, final UUID organisationId, final String organisationName, final UUID defendantId, final String laaContractNumber) {
+        streamBuilder.add(defendantDefenceOrganisationAssociated()
+                .withDefendantId(defendantId)
+                .withLaaContractNumber(laaContractNumber)
+                .withOrganisationId(organisationId)
+                .withOrganisationName(organisationName)
+                .withRepresentationType(RepresentationType.REPRESENTATION_ORDER)
+                .build());
+    }
+
+    private void defenceOrganisationDisassociated(final Stream.Builder<Object> streamBuilder, final UUID defendantId, final UUID caseId, final UUID alreadyAssociatedOrganisationId) {
+        streamBuilder.add(defendantDefenceOrganisationDisassociated()
+                .withDefendantId(defendantId)
+                .withCaseId(caseId)
+                .withOrganisationId(alreadyAssociatedOrganisationId)
+                .build());
+    }
+
+    private void defenceLaaAssociated(final Stream.Builder<Object> streamBuilder, final UUID defendantId, final String laaContractNumber) {
+        streamBuilder.add(applicationLaaAssociated()
+                .withDefendantId(defendantId)
+                .withLaaContractNumber(laaContractNumber)
+                .withIsAssociatedByLAA(false)
+                .build());
+    }
+
+    private boolean isAlreadyAssociatedToOrganisation(final UUID defendantId, final UUID organisationId) {
+        return !this.applicationAssociatedDefenceOrganisation.containsKey(defendantId) || !this.applicationAssociatedDefenceOrganisation.get(defendantId).equals(organisationId);
+    }
+
+    private boolean isApplicationOrganisationAsscociatedByRepOrder(final UUID defendantId) {
+        return applicationOrganisationAsscociatedByRepOrder.getOrDefault(defendantId, false);
+    }
+
+    private void updateApplicationAssociatedDefenceOrganisation(final DefendantDefenceOrganisationAssociated applicationDefenceOrganisationAssociated) {
+        this.applicationAssociatedDefenceOrganisation.put(applicationDefenceOrganisationAssociated.getDefendantId(), applicationDefenceOrganisationAssociated.getOrganisationId());
+        final boolean byRepOrder = Objects.equals(RepresentationType.REPRESENTATION_ORDER, applicationDefenceOrganisationAssociated.getRepresentationType());
+        this.applicationOrganisationAsscociatedByRepOrder.put(applicationDefenceOrganisationAssociated.getDefendantId(), byRepOrder);
+    }
+
+    public Stream<Object> disassociateDefenceOrganisationForApplication(final UUID defendantId, final UUID organisationId) {
+        if(isAssociationNotFound(defendantId, organisationId)) {
+            return apply(empty());
+        }
+
+        final Stream.Builder<Object> eventStream = builder();
+
+        eventStream.add(ApplicationDefenceOrganisationChanged.applicationDefenceOrganisationChanged()
+                .withApplicationId(courtApplication.getId())
+                .withSubjectId(courtApplication.getSubject().getId())
+                .withAssociatedDefenceOrganisation(null) // for removing the association from subject
+                .withApplicationCaseDefendantOrganisations(null) // for not provisioning the data to defence
+                .build());
+
+        eventStream.add(DefenceOrganisationDissociatedForApplicationByDefenceContext.defenceOrganisationDissociatedForApplicationByDefenceContext()
+                .withApplicationId(courtApplication.getId())
+                .withDefendantId(defendantId)
+                .withOrganisationId(organisationId)
+                .build());
+
+        return apply(eventStream.build());
+    }
+
+    private boolean isAssociationNotFound(final UUID defendantId, final UUID organisationId) {
+        return !organisationId.equals(applicationAssociatedDefenceOrganisation.get(defendantId));
+    }
 
 }

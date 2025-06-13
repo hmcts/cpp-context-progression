@@ -7,16 +7,20 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.QueryClientTestBase;
 import uk.gov.justice.api.resource.service.DefenceQueryService;
+import uk.gov.justice.progression.query.laa.ApplicationLaa;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.ApplicationHearingQueryView;
@@ -58,6 +62,10 @@ public class ApplicationQueryApiTest {
 
     @Mock
     private JsonEnvelope response;
+
+    @Mock
+    private Envelope<ApplicationLaa> applicationLaaEnvelope;
+
 
     @Mock
     private JsonObject responseJson;
@@ -152,6 +160,26 @@ public class ApplicationQueryApiTest {
     public void shouldGetCourtProceedingsForApplication() {
         when(applicationQueryView.getCourtProceedingsForApplication(query)).thenReturn(response);
         assertThat(applicationQueryApi.getCourtProceedingsForApplication(query), equalTo(response));
+    }
+
+    @Test
+    void shouldGetApplicationForLaa() {
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("applicationId", randomUUID().toString()).build());
+        when(applicationQueryView.getApplicationForLaa(query)).thenReturn(applicationLaaEnvelope);
+        assertThat(applicationQueryApi.getApplicationForLaa(query), equalTo(applicationLaaEnvelope));
+        verify(applicationQueryView).getApplicationForLaa(query);
+    }
+
+    @Test
+    void shouldThrowBadRequestExceptionWhenApplicationIdIsNull() {
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().build());
+        assertThrows(BadRequestException.class, () -> applicationQueryApi.getApplicationForLaa(query));
+    }
+
+    @Test
+    void shouldThrowBadRequestExceptionWhenApplicationIdIsInvalid() {
+        when(query.payloadAsJsonObject()).thenReturn(createObjectBuilder().add("applicationId", "invalid-UUID").build());
+        assertThrows(BadRequestException.class, () -> applicationQueryApi.getApplicationForLaa(query));
     }
 
     @Test

@@ -1,16 +1,19 @@
 package uk.gov.moj.cpp.progression.event;
 
+import static java.lang.Integer.parseInt;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
+import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CommittingCourt;
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -20,6 +23,7 @@ import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
 import uk.gov.justice.progression.courts.HearingResulted;
+import uk.gov.justice.progression.courts.exract.LaaDefendantProceedingConcludedChanged;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -28,13 +32,17 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
+import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
+import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
+import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransformer;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
 import java.time.LocalDate;
@@ -54,6 +62,7 @@ import javax.json.JsonObjectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("java:S1874")
 @ServiceComponent(EVENT_PROCESSOR)
 public class HearingResultEventProcessor {
 
@@ -83,6 +92,9 @@ public class HearingResultEventProcessor {
     private HearingResultUnscheduledListingHelper hearingResultUnscheduledListingHelper;
 
     @Inject
+    private DefendantProceedingConcludedTransformer proceedingConcludedConverter;
+
+    @Inject
     private NextHearingService nextHearingService;
 
     @Inject
@@ -94,12 +106,18 @@ public class HearingResultEventProcessor {
     @Inject
     private SummonsHelper summonsHelper;
 
+    @Inject
+    private AzureFunctionService azureFunctionService;
+
+    @Inject
+    private ApplicationParameters applicationParameters;
+
     @Handles("public.hearing.resulted")
     public void handleHearingResultedPublicEvent(final JsonEnvelope event) {
 
         final HearingResulted hearingResulted = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), HearingResulted.class);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("public.hearing.resulted event arrived with hearingResulted json : {}", event.toObfuscatedDebugString());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("public.hearing.resulted event arrived with hearingResulted json : {}", event.toObfuscatedDebugString());
         }
 
         final Hearing hearing = hearingResulted.getHearing();
@@ -140,6 +158,12 @@ public class HearingResultEventProcessor {
         hearing.getCourtApplications().forEach(courtApplication -> {
             final JsonObjectBuilder payloadBuilder = createObjectBuilder().add("courtApplication", objectToJsonObjectConverter.convert(courtApplication));
             sender.send(envelop(payloadBuilder.build()).withName("progression.command.hearing-resulted-update-application").withMetadataFrom(event));
+            try {
+                laaProceedingConcluded(courtApplication, hearing.getId());
+            } catch (InterruptedException e) {
+                LOGGER.error("InterruptedException: ", e);
+                Thread.currentThread().interrupt();
+            }
         });
 
         //updateApplicationStatus
@@ -154,6 +178,42 @@ public class HearingResultEventProcessor {
                         progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), applicationStatus);
                     });
         }
+
+    }
+
+    private void laaProceedingConcluded(final CourtApplication courtApplication, final UUID hearingId) throws InterruptedException {
+
+        if (notEligibleForLAA(courtApplication)) {
+            LOGGER.info("Application result not eligible to be sent to LAA. applicationId = {} ", courtApplication.getId());
+            return;
+        }
+
+        final LaaDefendantProceedingConcludedChanged laaDefendantProceedingConcludedChanged = LaaDefendantProceedingConcludedChanged.laaDefendantProceedingConcludedChanged()
+                .withProsecutionConcludedRequest(proceedingConcludedConverter.getApplicationConcludedRequest(courtApplication, hearingId))
+                .build();
+        final String payload = objectToJsonObjectConverter.convert(laaDefendantProceedingConcludedChanged.getProsecutionConcludedRequest()).toString();
+
+        LOGGER.info("calling azure function for sending the concluded proceedings for applications to LAA. Payload = {} ", payload);
+
+        retryHelper()
+                .withSupplier(() -> azureFunctionService.concludeDefendantProceeding(payload))
+                .withApimUrl(applicationParameters.getDefendantProceedingsConcludedApimUrl())
+                .withPayload(payload)
+                .withRetryTimes(parseInt(applicationParameters.getRetryTimes()))
+                .withRetryInterval(parseInt(applicationParameters.getRetryInterval()))
+                .withExceptionSupplier(() -> new LaaAzureApimInvocationException(courtApplication.getId(), hearingId, applicationParameters.getDefendantProceedingsConcludedApimUrl()))
+                .withPredicate(statusCode -> statusCode > 429)
+                .build()
+                .postWithRetry();
+    }
+
+    private boolean notEligibleForLAA(final CourtApplication courtApplication) {
+        final boolean isEligible = ofNullable(courtApplication.getCourtApplicationCases()).orElse(emptyList()).stream()
+                .flatMap(courtApplicationCase ->
+                        ofNullable(courtApplicationCase.getOffences()).orElse(emptyList()).stream()
+                )
+                .anyMatch(offence -> nonNull(offence.getLaaApplnReference()));
+        return !isEligible;
     }
 
     private void initiateHearingAdjournment(JsonEnvelope event, Hearing hearing, final List<UUID> shadowListedOffences, final Optional<CommittingCourt> committingCourt) {
@@ -201,7 +261,7 @@ public class HearingResultEventProcessor {
         );
 
         final List<JudicialResult> judicialResultList = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
-                .map(courtApplication -> hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication)).flatMap(List::stream).collect(toList());
+                .map(courtApplication -> hearingResultHelper.getAllJudicialResultsFromApplication(courtApplication)).flatMap(List::stream).toList();
 
         judicialResultList.forEach(judicialResult -> {
             if (hasCommittingCourt(judicialResult)) {

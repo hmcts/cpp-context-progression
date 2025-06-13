@@ -102,8 +102,8 @@ public class HearingResultedEventProcessor {
     @Handles("public.events.hearing.hearing-resulted")
     public void handlePublicHearingResulted(final JsonEnvelope event) {
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Received 'public.events.hearing.hearing-resulted' event with payload: {}", event.toObfuscatedDebugString());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Received 'public.events.hearing.hearing-resulted' event with payload: {}", event.toObfuscatedDebugString());
         }
 
         final JsonObject eventPayload = event.payloadAsJsonObject();

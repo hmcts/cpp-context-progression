@@ -41,6 +41,9 @@ subscriptions_descriptor:
         - name: progression.events.offences-for-defendant-changed
           schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-changed.json
 
+        - name: progression.event.application-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/application-offences-updated.json
+
         - name: progression.event.print-requested
           schema_uri: http://justice.gov.uk/core/courts/progression.event.print-requested.json
 
@@ -223,11 +226,20 @@ subscriptions_descriptor:
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
 
+        - name: progression.event.application-defence-organisation-changed
+          schema_uri: http://justice.gov.uk/core/courts/application-defence-organisation-changed.json
+
+        - name: progression.event.application-reporder-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/application-reporder-offences-updated.json
+
         - name: progression.event.defendant-defence-association-locked
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
 
         - name: progression.event.defendant-laa-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
+
+        - name: progression.event.application-laa-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/application-laa-associated.json
 
         - name: progression.event.defendant-matched
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-matched.json

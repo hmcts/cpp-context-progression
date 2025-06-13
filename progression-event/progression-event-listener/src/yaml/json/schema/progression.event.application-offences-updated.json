@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/application-offences-updated.json",
+  "type": "object",
+  "properties": {
+    "subjectId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offenceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "laaReference": {
+      "$ref": "http://justice.gov.uk/core/courts/laaReference.json"
+    }
+  },
+  "required": [
+    "subjectId",
+    "applicationId",
+    "offenceId",
+    "laaReference"
+  ],
+  "additionalProperties": false
+}

@@ -35,6 +35,12 @@ subscriptions_descriptor:
         - name: public.progression.defendant-offences-changed
           schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-updated.json
 
+        - name: public.progression.application-offences-updated
+          schema_uri: http://justice.gov.uk/progression/courts/application-offences-updated.json
+
+        - name: public.progression.application-organisation-changed
+          schema_uri: http://justice.gov.uk/progression/courts/application-organisation-changed.json
+
         - name: public.hearing-detail-changed
           schema_uri: http://justice.gov.uk/json/schemas/hearing/public.hearing-detail-changed.json
 
@@ -148,7 +154,6 @@ subscriptions_descriptor:
 
         - name: public.progression.event.form-defendants-updated
           schema_uri: http://justice.gov.uk/core/courts/public.progression.event.form-defendants-updated.json
-
 
         - name: public.progression.offences-removed-from-existing-allocated-hearing
           schema_uri: http://justice.gov.uk/progression/courts/public.progression.offences-removed-from-existing-allocated-hearing.json

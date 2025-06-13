@@ -9,4 +9,8 @@ public class LaaAzureApimInvocationException extends RuntimeException  {
         super("Error: Something wrong with Azure APIM invocation with url: " + url + " for proceedings concluded for defendant(s): "+ defendantList + " in hearing: [" + hearingId + "]");
     }
 
+    public LaaAzureApimInvocationException(final UUID applicationId, final UUID hearingId, final String url) {
+        super("Error: Something wrong with Azure APIM invocation with url: " + url + " for application proceedings concluded. applicationId: "+ applicationId + " in hearing: [" + hearingId + "]");
+    }
+
 }

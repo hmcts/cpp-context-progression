@@ -46,6 +46,19 @@ public class CourtApplicationCaseCreatedTransformationTest {
     }
 
     @Test
+    public void shouldTransformStandaloneCourtCreatedApplicationForCorporateSubject() throws IOException {
+
+        final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-created-spec.json");
+        assertThat(specJson, is(notNullValue()));
+
+        final JsonObject inputJson = readJson("/progression.event.court-application-created-with-corporate-subject.json");
+        final DocumentContext inputCourtApplication = parse(inputJson);
+        final JsonObject transformedJson = joltTransformer.transformWithJolt(specJson.toString(), inputJson);
+        verifyStandaloneApplication(inputCourtApplication, transformedJson);
+        verifyAddApplication(inputCourtApplication, transformedJson, 2, 0);
+    }
+
+    @Test
     public void shouldTransformEmbeddedCourtCreatedApplication() throws IOException {
 
         final JsonObject specJson = readJsonViaPath("src/transformer/progression.event.court-application-created-spec.json");

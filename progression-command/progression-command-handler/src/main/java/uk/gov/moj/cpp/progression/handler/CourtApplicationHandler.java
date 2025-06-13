@@ -61,6 +61,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
@@ -123,6 +124,9 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
     @Inject
     private ProsecutionCaseQueryService prosecutionCaseQueryService;
 
+    @Inject
+    private ApplicationDetailsEnrichmentService applicationDetailsEnrichmentService;
+
     @Handles("progression.command.create-court-application")
     public void handle(final Envelope<CreateCourtApplication> courtApplicationEnv) throws EventStreamException {
         if (LOGGER.isDebugEnabled()) {
@@ -175,6 +179,7 @@ public class CourtApplicationHandler extends AbstractCommandHandler {
         if (validateInitiateCourtApplicationProceedings(initiateCourtProceedingsForApplication)) {
             final ProsecutionCase prosecutionCase = getProsecutionCase(initiateCourtApplicationProceedingsEnv.metadata(), initiateCourtProceedingsForApplication.getCourtApplication());
             final boolean applicationCreatedForSJPCase = isApplicationCreatedForSJPCase(initiateCourtProceedingsForApplication.getCourtApplication().getCourtApplicationCases());
+            applicationDetailsEnrichmentService.createAndStoreLaaApplicationShortIdWithSystemIdMapper(initiateCourtProceedingsForApplication.getCourtApplication().getId());
             final Stream<Object> events = applicationAggregate.initiateCourtApplicationProceedings(initiateCourtProceedingsForApplication, applicationReferredToNewHearing, applicationCreatedForSJPCase, prosecutionCase);
             appendEventsToStream(initiateCourtApplicationProceedingsEnv, eventStream, events);
         } else {

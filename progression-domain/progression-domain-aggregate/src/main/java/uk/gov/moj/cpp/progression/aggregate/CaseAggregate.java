@@ -107,6 +107,7 @@ import uk.gov.justice.core.courts.CpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.CustodyTimeLimit;
 import uk.gov.justice.core.courts.DefenceOrganisation;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCaseOffences;
 import uk.gov.justice.core.courts.DefendantDefenceOrganisationChanged;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -626,6 +627,13 @@ public class CaseAggregate implements Aggregate {
         this.prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
                 .withDefendants(defendantList)
                 .build();
+
+        this.defendantsMap.putAll(
+                defendantList.stream()
+                        .collect(Collectors.toMap(uk.gov.justice.core.courts.Defendant::getId, Function.identity()))
+        );
+
+
     }
 
     private void handleListingNumberDecreased(final ProsecutionCaseListingNumberDecreased prosecutionCaseListingNumberDecreased) {
@@ -714,6 +722,7 @@ public class CaseAggregate implements Aggregate {
         builder.withPncId(defendantUpdate.getPncId());
         builder.withAliases(defendantUpdate.getAliases());
         builder.withIsYouth(defendantUpdate.getIsYouth());
+        ofNullable(defendantUpdate.getAssociatedDefenceOrganisation()).ifPresent(builder::withAssociatedDefenceOrganisation);
 
         return builder.build();
     }
@@ -1029,7 +1038,10 @@ public class CaseAggregate implements Aggregate {
 
         final DefendantUpdate newDefendant;
         if (newTitle.isPresent() || !orgTitle.isPresent() || updatedDefendant.getPersonDefendant() == null) {
-            newDefendant = updatedDefendant;
+            newDefendant = DefendantUpdate.defendantUpdate()
+                    .withValuesFrom(updatedDefendant)
+                    .withAssociatedDefenceOrganisation(getAssociatedDefenceOrganisation(updatedDefendant, orgDefendant))
+                    .build();
         } else {
             newDefendant = DefendantUpdate.defendantUpdate().withValuesFrom(updatedDefendant)
                     .withPersonDefendant(PersonDefendant.personDefendant().withValuesFrom(updatedDefendant.getPersonDefendant())
@@ -1037,6 +1049,7 @@ public class CaseAggregate implements Aggregate {
                                     .withTitle(orgTitle.orElse(null))
                                     .build())
                             .build())
+                    .withAssociatedDefenceOrganisation(getAssociatedDefenceOrganisation(updatedDefendant, orgDefendant))
                     .build();
         }
 
@@ -1077,6 +1090,11 @@ public class CaseAggregate implements Aggregate {
         }
 
         return apply(builder.build());
+    }
+
+    private static AssociatedDefenceOrganisation getAssociatedDefenceOrganisation(final DefendantUpdate updatedDefendant, final Defendant orgDefendant) {
+        //keep the associatedDefenceOrganisation in the original state if it is not present in the command payload.
+        return nonNull(updatedDefendant.getAssociatedDefenceOrganisation()) ? updatedDefendant.getAssociatedDefenceOrganisation() : ofNullable(orgDefendant).map(Defendant::getAssociatedDefenceOrganisation).orElse(null);
     }
 
     public Stream<Object> updateDefendantAddress(final DefendantUpdate updatedDefendant) {
@@ -1436,11 +1454,12 @@ public class CaseAggregate implements Aggregate {
     }
 
     /**
-     * Patches original laaDefendantProceedingConcludedChanged event which was originally failed due to missing hearingID and regenerates the patched
-     * event with hearingID.
+     * Patches original laaDefendantProceedingConcludedChanged event which was originally failed due
+     * to missing hearingID and regenerates the patched event with hearingID.
      *
      * @param originalEvent Original laaDefendantProceedingConcludedChanged event
-     * @return Stream of events containing resend event with patched laaDefendantProceedingConcludedChanged event
+     * @return Stream of events containing resend event with patched
+     * laaDefendantProceedingConcludedChanged event
      */
     public Stream<Object> patchAndResendLaaOutcomeConcluded(LaaDefendantProceedingConcludedChanged originalEvent, UUID hearingID) {
         if (originalEvent.getHearingId() != null) {
@@ -1457,9 +1476,12 @@ public class CaseAggregate implements Aggregate {
     }
 
     /**
-     * Resend LAA defendant proceedings concluded outcome to LAA using BDF in case LAA system is not updated.
+     * Resend LAA defendant proceedings concluded outcome to LAA using BDF in case LAA system is not
+     * updated.
      *
-     * @param laaDefendantProceedingConcludedChangedList List of laaDefendantProceedingConcludedChanged events
+     * @param laaDefendantProceedingConcludedChangedList List of
+     *                                                   laaDefendantProceedingConcludedChanged
+     *                                                   events
      * @return Stream of events
      */
     public Stream<Object> resendLaaOutcomeConcluded(final List<LaaDefendantProceedingConcludedChanged> laaDefendantProceedingConcludedChangedList) {
@@ -2594,12 +2616,7 @@ public class CaseAggregate implements Aggregate {
                     .build());
         } else if (organisationId != null && alreadyAssociatedOrganisationId != null) {
             if (!organisationId.toString().equals(alreadyAssociatedOrganisationId)) {
-                // Disassociate the existing defence organisation and associate the one which is linked with one from payload
-                streamBuilder.add(defendantDefenceOrganisationDisassociated()
-                        .withDefendantId(defendantId)
-                        .withCaseId(prosecutionCaseId)
-                        .withOrganisationId(fromString(alreadyAssociatedOrganisationId))
-                        .build());
+                // No need to raise disassociation event. Association event will do disassociation automatically in defence context
                 streamBuilder.add(DefendantDefenceOrganisationAssociated.defendantDefenceOrganisationAssociated()
                         .withDefendantId(defendantId)
                         .withOrganisationId(organisationId)
@@ -2877,7 +2894,8 @@ public class CaseAggregate implements Aggregate {
      * Check for all offences of defendant are resulted to FINAL
      *
      * @param defendantId            - Id of the defendant
-     * @param currentUpdatedOffences - All offences of the defendant updated with proceedings concluded  flag
+     * @param currentUpdatedOffences - All offences of the defendant updated with proceedings
+     *                               concluded  flag
      * @return True if all the offences are resulted to FINAL.
      */
     private boolean checkIfDefendantProceedingsConcluded(final UUID defendantId, final List<uk.gov.justice.core.courts.Offence> currentUpdatedOffences) {

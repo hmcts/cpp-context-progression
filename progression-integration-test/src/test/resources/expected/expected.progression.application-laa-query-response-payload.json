@@ -1,0 +1,63 @@
+{
+  "applicationId": "f972cf21-7c0c-49c4-9dee-01aa8ede6b62",
+  "laaApplicationShortId": "aRandomLaaApplicationShortId",
+  "applicationReference": "TFL4359536",
+  "applicationStatus": "LISTED",
+  "applicationTitle": "Application for an order of reimbursement in relation to a closure order",
+  "applicationType": "AS14518",
+  "caseSummary": [
+    {
+      "caseStatus": "INACTIVE",
+      "prosecutionCaseId": "8ab0af4c-db0e-4535-9775-d52669d6b07e",
+      "prosecutionCaseReference": "TFL4359536"
+    }
+  ],
+  "hearingSummary": [
+    {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "postCode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 10,
+          "sittingDay": "2015-01-11T05:27:17.210Z"
+        }
+      ],
+      "hearingId": "7564bfd5-f63d-449c-a885-8b5a4538e179",
+      "hearingType": {
+        "description": "Sentence",
+        "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6"
+      },
+      "jurisdictionType": "MAGISTRATES"
+    }
+  ],
+  "receivedDate": "2020-01-01",
+  "subjectSummary": {
+    "dateOfNextHearing": "2015-01-11T05:27:17.210Z",
+    "offenceSummary": [
+      {
+        "chargeDate": "2020-03-14",
+        "modeOfTrial": "Summary",
+        "offenceCode": "CA03012",
+        "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e",
+        "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+        "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+        "orderIndex": 1,
+        "startDate": "2020-03-10",
+        "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+      }
+    ],
+    "subjectId": "cd3b251d-20e8-44ad-b95e-2f81afde56a4"
+  }
+}

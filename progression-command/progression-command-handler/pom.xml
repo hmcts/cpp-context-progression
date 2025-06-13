@@ -41,7 +41,15 @@
             <groupId>uk.gov.moj.cpp.core.domain</groupId>
             <artifactId>criminal-court-public-model</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.moj.cpp.system.id-mapper</groupId>
+            <artifactId>id-mapper-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons-text.version}</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
@@ -266,6 +274,18 @@
                         <groupId>uk.gov.moj.cpp.unifiedsearch.query</groupId>
                         <artifactId>unifiedsearchquery-api</artifactId>
                         <version>${unifiedsearch.version}</version>
+                        <classifier>raml</classifier>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>uk.gov.moj.cpp.defence</groupId>
+                        <artifactId>defence-query-api</artifactId>
+                        <version>${defence.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

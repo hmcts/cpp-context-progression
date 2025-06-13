@@ -32,6 +32,18 @@ subscriptions_descriptor:
         - name: progression.event.prosecution-case-offences-updated
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-offences-updated.json
 
+        - name: progression.event.application-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/application-offences-updated.json
+
+        - name: progression.event.application-laa-reference-updated-for-hearing
+          schema_uri: http://justice.gov.uk/progression/events/application-laa-reference-updated-for-hearing.json
+
+        - name: progression.event.application-reporder-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/application-reporder-offences-updated.json
+
+        - name: progression.event.application-rep-order-updated-for-hearing
+          schema_uri: http://justice.gov.uk/core/courts/application-rep-order-updated-for-hearing.json
+
         - name: progression.event.nows-material-status-updated
           schema_uri: http://justice.gov.uk/core/courts/nows-material-status-updated.json
 
@@ -142,6 +154,9 @@ subscriptions_descriptor:
 
         - name: progression.event.defendant-defence-organisation-changed
           schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
+
+        - name: progression.event.application-defence-organisation-changed
+          schema_uri: http://justice.gov.uk/core/courts/application-defence-organisation-changed.json
 
         - name : progression.event.defendant-laa-associated
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json

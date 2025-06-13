@@ -94,15 +94,9 @@ public class RecordLAAReferenceIT extends AbstractIT {
         assertTrue(message.isPresent());
     }
 
-    private static void verifyInMessagingQueueForDefenceOrganisationDisassociated(final JmsMessageConsumerClient messageConsumerClientPublicForLaaDisasociated) {
-        final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForLaaDisasociated);
-        assertTrue(message.isPresent());
-    }
-
-
     @SuppressWarnings("squid:S1607")
     @Test
-    public void recordLAAReferenceForOffence() throws IOException, JMSException, JSONException {
+    public void recordLAAReferenceForOffence() throws IOException, JSONException {
         userId = randomUUID().toString();
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
@@ -162,7 +156,6 @@ public class RecordLAAReferenceIT extends AbstractIT {
         //Then
         verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
         verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
-        verifyInMessagingQueueForDefenceOrganisationDisassociated(messageConsumerClientPublicForLaaDisasociated);
 
         final Matcher[] caseWitLAAReferenceForOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,
                 asList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),

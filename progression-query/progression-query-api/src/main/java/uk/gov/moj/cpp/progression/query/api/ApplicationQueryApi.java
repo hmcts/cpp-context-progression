@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.query.api;
 
+import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
@@ -8,6 +9,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
 import uk.gov.justice.api.resource.service.DefenceQueryService;
 import uk.gov.justice.core.courts.AssignedUser;
+import uk.gov.justice.progression.query.laa.ApplicationLaa;
+import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
@@ -15,6 +18,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.ApplicationHearingQueryView;
@@ -40,6 +44,8 @@ public class ApplicationQueryApi {
     private static final String NON_CPS_PROSECUTORS = "Non CPS Prosecutors";
     private static final String GROUPS = "groups";
     public static final String GROUP_NAME = "groupName";
+    private static final String APPLICATION_ID = "applicationId";
+    public static final String PROGRESSION_QUERY_APPLICATION_LAA = "progression.query.application-laa";
 
     @Inject
     private Requester requester;
@@ -100,6 +106,28 @@ public class ApplicationQueryApi {
 
         return response;
     }
+
+    @Handles(PROGRESSION_QUERY_APPLICATION_LAA)
+    public Envelope<ApplicationLaa> getApplicationForLaa(final JsonEnvelope query) {
+        if (hasInvalidQueryParameters(query)){
+            throw new BadRequestException(format("%s no or wrong search parameter specified!", PROGRESSION_QUERY_APPLICATION_LAA));
+        }
+        return applicationQueryView.getApplicationForLaa(query);
+    }
+
+    private boolean hasInvalidQueryParameters(final JsonEnvelope query) {
+        return !query.payloadAsJsonObject().containsKey(APPLICATION_ID) || isInValidUUID(query.payloadAsJsonObject().getString(APPLICATION_ID));
+    }
+
+    private boolean isInValidUUID(final String string) {
+        try {
+            fromString(string);
+            return false;
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
 
     @Handles("progression.query.application-only")
     public JsonEnvelope getApplicationOnly(final JsonEnvelope query) {

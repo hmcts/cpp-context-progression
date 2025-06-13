@@ -2,7 +2,15 @@ package uk.gov.moj.cpp.progression.applications.applicationHelper;
 
 import static com.google.common.io.Resources.getResource;
 import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.hamcrest.CoreMatchers.allOf;
+import static uk.gov.justice.services.common.http.HeaderConstants.USER_ID;
+import static uk.gov.justice.services.test.utils.core.http.RequestParamsBuilder.requestParams;
+import static uk.gov.justice.services.test.utils.core.http.RestPoller.poll;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponsePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher.status;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getReadUrl;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
@@ -50,6 +58,18 @@ public class ApplicationHelper {
                 getCourtApplicationJson3(applicationId, caseId, defendantId, masterDefendantId, hearingId, fileName));
     }
 
+    public static Response intiateCourtProceedingForApplicationUpdate(final String applicationId, final String subjectId, final String offenceId, final String defendantId, final String caseId, final String fileName) throws IOException {
+        return postCommand(getWriteUrl("/initiate-application"),
+                "application/vnd.progression.initiate-court-proceedings-for-application+json",
+                getCourtApplicationJson4(applicationId, subjectId, offenceId, defendantId, caseId, fileName));
+    }
+
+    public static Response intiateCourtProceedingForApplicationUpdateForRepOrder(final String applicationId, final String subjectId, final String offenceId, final String caseId, final String defendantId, final String applicationRefNumber, final String laaContractNumber, final String fileName) throws IOException {
+        return postCommand(getWriteUrl("/initiate-application"),
+                "application/vnd.progression.initiate-court-proceedings-for-application+json",
+                getCourtApplicationJsonForRepOrder(applicationId, subjectId, offenceId, caseId, defendantId, applicationRefNumber, laaContractNumber, fileName));
+    }
+
     public static Response intiateCourtProceedingForApplicationWithRespondents(final String defendantId1, final String defendantId2,
                                                                                final String applicationId, final String caseId, final String defendantId,
                                                                                final String masterDefendantId, final String address,
@@ -75,6 +95,19 @@ public class ApplicationHelper {
         return pollForResponse("/applications/" + applicationId, "application/vnd.progression.query.application+json",
                 randomUUID().toString(),
                 matchers);
+    }
+
+    public static String pollForCourtApplicationOnly(final String applicationId, final Matcher... matchers) {
+        return poll(requestParams(getReadUrl("/applications/" + applicationId),
+                "application/vnd.progression.query.application-only+json").withHeader(USER_ID, randomUUID()))
+                .until(status().is(OK), payload().isJson(allOf(matchers)))
+                .getPayload();
+    }
+
+    public static String pollCourtApplicationForLaa(final String applicationId, final Matcher... matchers) {
+        return poll(requestParams(getReadUrl("/applications/" + applicationId),
+                "application/vnd.progression.query.application-laa+json").withHeader(USER_ID, randomUUID()))
+                .until(status().is(OK), payload().isJson(allOf(matchers))).getPayload();
     }
 
     public static String pollForApplicationAtAGlance(final String applicationId, final Matcher... matchers) {
@@ -122,6 +155,30 @@ public class ApplicationHelper {
                 .replace("DEFENDANT_ID", defendantId)
                 .replace("MASTERDEFENDANTID", masterDefendantId)
                 .replace("HEARING_ID", hearingId);
+        return payloadJson;
+    }
+
+    private static String getCourtApplicationJson4(final String applicationId, final String subjectId, final String offenceId, final String defendantId, final String caseId, final String fileName) throws IOException {
+        String payloadJson;
+        payloadJson = Resources.toString(getResource(fileName), Charset.defaultCharset())
+                .replaceAll("APPLICATION_ID", applicationId)
+                .replaceAll("SUBJECT_ID", subjectId)
+                .replaceAll("OFFENCE_ID", offenceId)
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("CASE_ID", caseId);
+        return payloadJson;
+    }
+
+    private static String getCourtApplicationJsonForRepOrder(final String applicationId, final String subjectId, final String offenceId, final String caseId, final String defendantId, final String applicationRefNumber, final String laaContractNumber, final String fileName) throws IOException {
+        String payloadJson;
+        payloadJson = Resources.toString(getResource(fileName), Charset.defaultCharset())
+                .replace("APPLICATION_ID", applicationId)
+                .replace("SUBJECT_ID", subjectId)
+                .replace("OFFENCE_ID", offenceId)
+                .replace("CASE_ID", caseId)
+                .replace("DEFENDANT_ID", defendantId)
+                .replace("LAA_CONTRACT_NUMBER", laaContractNumber)
+                .replace("APPLICATION_REFERENCE", applicationRefNumber);
         return payloadJson;
     }
 

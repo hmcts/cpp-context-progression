@@ -7,14 +7,20 @@ import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
+import static uk.gov.moj.cpp.progression.query.view.utils.SchemaValidator.validateObjectAgainstSchema;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -35,14 +41,20 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.courts.progression.query.ApplicationDetails;
 import uk.gov.justice.progression.courts.ApplicantDetails;
+import uk.gov.justice.progression.query.laa.ApplicationLaa;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationStatus;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
+import uk.gov.moj.cpp.progression.query.utils.converters.laa.ApplicationLaaConverter;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
+import uk.gov.moj.cpp.progression.query.view.utils.FileUtil;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
@@ -59,6 +71,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationR
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -69,7 +82,9 @@ import java.util.UUID;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.persistence.NoResultException;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -77,7 +92,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapperClient;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -120,10 +138,30 @@ public class ApplicationQueryViewTest {
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
     @Mock
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
+    @Spy
+    private JsonObjectToObjectConverter jsonToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
     @Captor
     private ArgumentCaptor<Object> summaryToJsonCaptor;
     @Mock
     private ApplicationAtAGlanceHelper applicationAtAGlanceHelper;
+    @Mock
+    private ApplicationLaaConverter applicationLaaConverter;
+    @Mock
+    private SystemIdMapperClient systemIdMapperClient;
+    @Mock
+    private SystemUserProvider systemUserProvider;
+
+    private static final UUID SYSTEM_USER_ID = UUID.randomUUID();
+    private static final String TARGET_TYPE_APPLICATION = "APPLICATION_ID_LAA";
+    private static final String SOURCE_TYPE_APPLICATION= "LAA_APP_SHORT_ID";
+    private static final String LAA_APPLICATION_SHORTID = "A23ABCDEFGH";
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(SYSTEM_USER_ID));
+    }
 
     private static CourtApplication getCourtApplicationWithLegalEntityDefendant() {
         final MasterDefendant masterDefendant = MasterDefendant.masterDefendant().
@@ -379,6 +417,106 @@ public class ApplicationQueryViewTest {
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").size(), is(1));
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0), is(notNullValue()));
         assertThat(response.payloadAsJsonObject().getJsonObject("parentApplication"), is(notNullValue()));
+    }
+
+    @Test
+    void testGetApplicationForLaa() throws IOException {
+        final UUID hearingId = randomUUID();
+
+        final JsonObject incomingPayload = createObjectBuilder()
+                .add("applicationId", APPLICATION_ID.toString()).build();
+        final ApplicationLaa applicationLaa = jsonToObjectConverter.convert(FileUtil.getJsonPayload("stub-data/mock-laa-query-response.json"), ApplicationLaa.class);
+
+        final JsonObject courtApplicationJson = createObjectBuilder().build();
+        final CourtApplication courtApplication = getCourtApplication();
+
+        final JsonEnvelope incomingEnvelope = mock(JsonEnvelope.class);
+        final CourtApplicationEntity courtApplicationEntity = mock(CourtApplicationEntity.class);
+        final HearingApplicationEntity hearingApplicationEntity = mock(HearingApplicationEntity.class);
+        final HearingEntity hearingEntity = mock(HearingEntity.class);
+
+        when(hearingApplicationEntity.getId()).thenReturn(new HearingApplicationKey(APPLICATION_ID, hearingId));
+        when(hearingApplicationEntity.getHearing()).thenReturn(hearingEntity);
+        when(hearingEntity.getPayload()).thenReturn("{}");
+        when(incomingEnvelope.payloadAsJsonObject()).thenReturn(incomingPayload);
+        when(courtApplicationEntity.getPayload()).thenReturn("{}");
+        when(courtApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(courtApplicationEntity);
+        when(hearingApplicationRepository.findByApplicationId(APPLICATION_ID)).thenReturn(singletonList(hearingApplicationEntity));
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(courtApplicationJson);
+        when(jsonObjectToObjectConverter.convert(courtApplicationJson, CourtApplication.class)).thenReturn(courtApplication);
+
+        // Mock system user and mapper client
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(SYSTEM_USER_ID));
+        final SystemIdMapping mapping = new SystemIdMapping(SYSTEM_USER_ID, LAA_APPLICATION_SHORTID, SOURCE_TYPE_APPLICATION, APPLICATION_ID, TARGET_TYPE_APPLICATION, null);
+        when(systemIdMapperClient.findBy(APPLICATION_ID, TARGET_TYPE_APPLICATION, SYSTEM_USER_ID))
+                .thenReturn(Optional.of(mapping));
+
+        lenient().when(applicationLaaConverter.convert(any(CourtApplication.class), anyList(), eq(LAA_APPLICATION_SHORTID))).thenReturn(applicationLaa);
+
+        final Envelope<ApplicationLaa> result = applicationQueryView.getApplicationForLaa(incomingEnvelope);
+
+        assertNotNull(result, "Result envelope should not be null");
+        assertNotNull(result.payload(), "Result payload should not be null");
+        assertEquals(applicationLaa, result.payload());
+
+        verify(courtApplicationRepository).findByApplicationId(APPLICATION_ID);
+        verify(hearingApplicationRepository).findByApplicationId(APPLICATION_ID);
+        verify(applicationLaaConverter).convert(any(CourtApplication.class), anyList(), eq(LAA_APPLICATION_SHORTID));
+        verify(jsonObjectToObjectConverter).convert(courtApplicationJson, CourtApplication.class);
+        verify(systemUserProvider).getContextSystemUserId();
+        verify(systemIdMapperClient).findBy(APPLICATION_ID, TARGET_TYPE_APPLICATION, SYSTEM_USER_ID);
+
+        validateObjectAgainstSchema(objectToJsonConverter.convert(result.payload()), "progression.query.application-laa-response-schema.json");
+    }
+
+    @Test
+    void shouldReturnLaaApplicationShortIdWhenExists() {
+        final UUID applicationId = randomUUID();
+        final String expectedLaaId = "A23ABCDEFGH";
+
+        final SystemIdMapping mapping = new SystemIdMapping(
+                SYSTEM_USER_ID,
+                expectedLaaId,
+                SOURCE_TYPE_APPLICATION,
+                applicationId,
+                TARGET_TYPE_APPLICATION,
+                null
+        );
+
+        when(systemIdMapperClient.findBy(applicationId, TARGET_TYPE_APPLICATION, SYSTEM_USER_ID))
+                .thenReturn(Optional.of(mapping));
+
+        final String result = applicationQueryView.retrieveLaaApplicationShortIdFromSystemIdMapper(applicationId);
+
+        assertNotNull(result);
+        assertEquals(expectedLaaId, result);
+    }
+
+    @Test
+    void shouldReturnEmptyWhenLaaApplicationShortIdNotFound() {
+        final UUID applicationId = randomUUID();
+
+        when(systemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(SYSTEM_USER_ID));
+        when(systemIdMapperClient.findBy(applicationId, TARGET_TYPE_APPLICATION, SYSTEM_USER_ID))
+                .thenReturn(Optional.empty());
+
+        assertThat(applicationQueryView.retrieveLaaApplicationShortIdFromSystemIdMapper(applicationId), nullValue());
+    }
+
+    @Test
+    void getApplicationForLaaShouldReturnEmptyBodyWhenApplicationIdNotFound() throws IOException {
+        final JsonObject incomingPayload = createObjectBuilder()
+                .add("applicationId", APPLICATION_ID.toString()).build();
+
+        final JsonEnvelope incomingEnvelope = mock(JsonEnvelope.class);
+
+        when(incomingEnvelope.payloadAsJsonObject()).thenReturn(incomingPayload);
+        when(courtApplicationRepository.findByApplicationId(APPLICATION_ID)).thenThrow(new NoResultException());
+
+        final Envelope<ApplicationLaa> result = applicationQueryView.getApplicationForLaa(incomingEnvelope);
+
+        assertNotNull(result);
+        assertThat(objectToJsonConverter.convert(result.payload()).toString(), is("{}"));
     }
 
     @Test

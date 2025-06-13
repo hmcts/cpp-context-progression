@@ -42,7 +42,6 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
     private static final String PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON = "progression.command.create-court-application-aaag.json";
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED_FILE = "public.listing.hearing-confirmed.json";
     private static final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
-    private static final String DOCUMENT_TEXT = STRING.next();
 
     private String userId;
     private String caseId;

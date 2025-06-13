@@ -7,7 +7,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollCourtApplicationForLaa;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
+import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForApplicationShortId;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearing;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
@@ -26,6 +28,8 @@ public class CourtAppealApplicationIT extends AbstractIT {
     @Test
     public void shouldCreateLinkedApplicationForCourtAppeal() throws Exception {
         final String applicationId = randomUUID().toString();
+        final String applicationShortId = randomUUID().toString().replace("-", "").substring(0, 8);
+        stubForApplicationShortId(applicationShortId, applicationId);
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-court-appeal-application.json");
 
         final Matcher[] applicationMatchers = {
@@ -48,6 +52,14 @@ public class CourtAppealApplicationIT extends AbstractIT {
         String expectedListingRequest = Resources.toString(Resources.getResource("expected/expected.progression.application-referred-to-court-hearing.json"), Charset.defaultCharset());
         String listingRequest = getPostListCourtHearing(applicationId);
         assertEquals(expectedListingRequest, listingRequest, getCustomComparator(applicationId, applicationReference));
+
+        final Matcher[] applicationLaaMatchers = {
+                withJsonPath("$.applicationId", is(applicationId))
+        };
+
+        final String actualApplicationForLaaPayload = pollCourtApplicationForLaa(applicationId, applicationLaaMatchers);
+        final String expectedApplicationForLaaPayload = Resources.toString(Resources.getResource("expected/expected.progression.application-laa-query-response-payload.json"), Charset.defaultCharset());
+        assertEquals(expectedApplicationForLaaPayload, actualApplicationForLaaPayload, getCustomComparatorForLaaPayload());
     }
 
     @Test
@@ -75,6 +87,14 @@ public class CourtAppealApplicationIT extends AbstractIT {
                 new Customization("hearings[0].id", (o1, o2) -> o1 != null && o2 != null),
                 new Customization("hearings[0].courtApplications[0].id", (o1, o2) -> applicationId.equals(o1)),
                 new Customization("hearings[0].courtApplications[0].applicationReference", (o1, o2) -> applicationReference.equals(o1))
+        );
+    }
+
+    private CustomComparator getCustomComparatorForLaaPayload() {
+        return new CustomComparator(STRICT,
+                new Customization("applicationId", (o1, o2) -> o1 != null && o2 != null),
+                new Customization("laaApplicationShortId", (o1, o2) -> o1 != null && o2 != null),
+                new Customization("hearingSummary[0].hearingId", (o1, o2) -> o1 != null && o2 != null)
         );
     }
 }

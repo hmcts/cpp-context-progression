@@ -115,6 +115,18 @@ public class PreAndPostConditionHelper {
                 getLAAReferenceForOffenceJsonBody(statusCode));
     }
 
+    public static Response recordApplicationLAAReference(final String applicationId, final String subjectId, final String offenceId, final String statusCode) throws IOException {
+        return postCommand(getWriteUrl(String.format("/laaReference/applications/%s/subject/%s/offences/%s", applicationId, subjectId, offenceId)),
+                "application/vnd.progression.command.record-laareference-for-application+json",
+                getLAAReferenceForOffenceJsonBody(statusCode));
+    }
+
+    public static Response recordApplicationLAAReferenceWithDescription(final String applicationId, final String subjectId, final String offenceId, final String statusCode, final String statusDescription, final String applicationReference) throws IOException {
+        return postCommand(getWriteUrl(String.format("/laaReference/applications/%s/subject/%s/offences/%s", applicationId, subjectId, offenceId)),
+                "application/vnd.progression.command.record-laareference-for-application+json",
+                getLAAReferenceForApplicationOffenceJsonBodyWithStatus(statusCode, statusDescription, applicationReference));
+    }
+
 
     public static javax.ws.rs.core.Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) {
         final RestClient restClient = new RestClient();
@@ -129,6 +141,14 @@ public class PreAndPostConditionHelper {
         return restClient.postCommand(getWriteUrl(String.format("/representationOrder/cases/%s/defendants/%s/offences/%s", caseId, defendantId, offenceId)),
                 "application/vnd.progression.command.receive-representationorder-for-defendant+json",
                 getReceiveRepresentationOrderJsonBody(statusCode, laaContractNumber),
+                createHttpHeaders(userId));
+    }
+
+    public static javax.ws.rs.core.Response receiveRepresentationOrderForApplication(final String applicationId, final String subjectId, final String offenceId, final String statusCode, final String laaContractNumber, final String applicationReference, final String userId) {
+        final RestClient restClient = new RestClient();
+        return restClient.postCommand(getWriteUrl(String.format("/representationOrder/applications/%s/subject/%s/offences/%s", applicationId, subjectId, offenceId)),
+                "application/vnd.progression.command.receive-representationorder-for-application+json",
+                getReceiveRepresentationOrderJsonBodyForApplication(statusCode, laaContractNumber, applicationReference),
                 createHttpHeaders(userId));
     }
 
@@ -742,6 +762,14 @@ public class PreAndPostConditionHelper {
                 .replace("RANDOM_STATUS_CODE", statusCode);
     }
 
+    private static String getLAAReferenceForApplicationOffenceJsonBodyWithStatus(final String statusCode, final String statusDescription, final String applicationReference) {
+        return getPayload("progression.command-record-application-laareference-with-status-description.json")
+                .replace("RANDOM_STATUS_CODE", statusCode)
+                .replace("RANDOM_STATUS_DESCRIPTION", statusDescription)
+                .replace("APPLICATION_REFERENCE", applicationReference);
+    }
+
+
     private static String getLAAReferenceForOffenceJsonBodyWithStatus(final String statusCode, final String statusDescription) {
         return getPayload("progression.command-record-laareference-with-status-description.json")
                 .replace("RANDOM_STATUS_CODE", statusCode)
@@ -752,6 +780,13 @@ public class PreAndPostConditionHelper {
         return getPayload("progression.command-receive-representationorder.json")
                 .replace("RANDOM_STATUS_CODE", statusCode)
                 .replace("RANDOM_LAA_CONTRACT_NUMBER", laaContractNumber);
+    }
+
+    private static String getReceiveRepresentationOrderJsonBodyForApplication(final String statusCode, final String laaContractNumber, final String applicationReference) {
+        return getPayload("progression.command-receive-representationorder-for-application.json")
+                .replace("RANDOM_STATUS_CODE", statusCode)
+                .replace("RANDOM_LAA_CONTRACT_NUMBER", laaContractNumber)
+                .replace("APPLICATION_REFERENCE", applicationReference);
     }
 
     private static String getInitiateCourtProceedingsJsonFromResourceForDefendantMatching(final String resourceLocation,
@@ -1723,11 +1758,9 @@ public class PreAndPostConditionHelper {
     }
 
     public static void pollForApplication(final String applicationId) {
-        pollForResponse("/applications/" + applicationId,
-                "application/vnd.progression.query.application+json",
-                randomUUID().toString()
+        pollForApplication(applicationId,
+                withJsonPath("$.courtApplication.id", equalTo(applicationId))
         );
-
     }
 
     @SafeVarargs

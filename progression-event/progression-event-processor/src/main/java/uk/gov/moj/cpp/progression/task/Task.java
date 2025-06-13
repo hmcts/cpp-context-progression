@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.task;
 
-import static uk.gov.moj.cpp.progression.task.Task.TaskNames.*;
+import static uk.gov.moj.cpp.progression.task.Task.TaskNames.GENERATE_OPA_NOTICE_TASK;
 
 public enum Task {
 

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/laa/laaRepresentationOrder.json",
+  "type": "object",
+  "description": "Receiving Representation Order",
+  "properties": {
+    "laaReference": {
+      "description": "The laa reference",
+      "$ref": "http://justice.gov.uk/core/courts/laaReference.json#"
+    },
+    "defenceOrganisation": {
+      "description": "The defence organisation details",
+      "$ref": "http://justice.gov.uk/core/courts/defenceOrganisation.json#"
+    }
+  },
+  "required": [
+    "laaReference", "defenceOrganisation"
+  ],
+  "additionalProperties": false
+}

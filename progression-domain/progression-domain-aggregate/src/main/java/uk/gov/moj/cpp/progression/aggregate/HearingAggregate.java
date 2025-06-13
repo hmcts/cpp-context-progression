@@ -14,6 +14,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestCreated.extendHearingDefendantRequestCreated;
 import static uk.gov.justice.core.courts.ExtendHearingDefendantRequestUpdated.extendHearingDefendantRequestUpdated;
 import static uk.gov.justice.core.courts.Hearing.hearing;
@@ -83,8 +84,10 @@ import uk.gov.justice.progression.event.OpaPublicListNoticeSent;
 import uk.gov.justice.progression.event.OpaResultListNoticeDeactivated;
 import uk.gov.justice.progression.event.OpaResultListNoticeGenerated;
 import uk.gov.justice.progression.event.OpaResultListNoticeSent;
+import uk.gov.justice.progression.events.ApplicationLaaReferenceUpdatedForHearing;
 import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
+import uk.gov.moj.cpp.progression.aggregate.helper.ApplicationProceedingsHelper;
 import uk.gov.moj.cpp.progression.court.HearingAddMissingResultsBdf;
 import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
@@ -115,7 +118,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655"})
+@SuppressWarnings({"squid:S1948", "squid:S1172", "squid:S1188", "squid:S3655", "java:S6204"})
 public class HearingAggregate implements Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingAggregate.class);
     private static final long serialVersionUID = 8888819367477517205L;
@@ -256,6 +259,9 @@ public class HearingAggregate implements Aggregate {
                 when(BookingReferencesAndCourtScheduleIdsStored.class).apply(e ->
                         this.bookingReferencesAndCourtScheduleIdsForHearingDay.put(e.getHearingDay(), e.getBookingReferenceCourtScheduleIds())
                 ),
+                when(ApplicationLaaReferenceUpdatedForHearing.class).apply(e ->
+                        getUpdatedCourtApplications(e.getApplicationId(), e.getSubjectId(), e.getOffenceId(), e.getLaaReference())
+                ),
                 when(CustodyTimeLimitClockStopped.class).apply(this::onCustodyTimeLimitClockStopped),
                 when(ExtendCustodyTimeLimitResulted.class).apply(this::onExtendCustodyTimeLimitResulted),
                 when(CaseMarkersUpdatedInHearing.class).apply(this::handleCaseMarkesUpdate),
@@ -281,6 +287,7 @@ public class HearingAggregate implements Aggregate {
                 when(AddedOffencesMovedToHearing.class).apply(this::handleAddedOffencesMovedToHearing),
                 when(AllCourtDocumentsShared.class).apply(this::updateAllCourtDocumentsShared),
                 when(CaseAddedToHearingBdf.class).apply(this::handleCaseAddedToHearingBdf),
+                when(ApplicationRepOrderUpdatedForHearing.class).apply(this::handleApplicationRepOrderUpdatedForHearing),
                 otherwiseDoNothing());
     }
 
@@ -290,6 +297,31 @@ public class HearingAggregate implements Aggregate {
         }
         if(! addedOffencesMovedToHearings.contains(addedOffencesMovedToHearing)) {
             addedOffencesMovedToHearings.add(addedOffencesMovedToHearing);
+        }
+    }
+
+    private void handleApplicationRepOrderUpdatedForHearing(final ApplicationRepOrderUpdatedForHearing applicationRepOrderUpdatedForHearing) {
+        if (nonNull(this.hearing) && hearing.getId().equals(applicationRepOrderUpdatedForHearing.getHearingId())) {
+            final List<CourtApplication> updatedCourtApplications = this.hearing.getCourtApplications().stream()
+                    .map(courtApplication -> {
+                        if (courtApplication.getId().equals(applicationRepOrderUpdatedForHearing.getApplicationId()) &&
+                                !isNull(courtApplication.getSubject()) &&
+                                courtApplication.getSubject().getId().equals(applicationRepOrderUpdatedForHearing.getSubjectId())) {
+                            return CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                                    .withSubject(courtApplicationParty()
+                                            .withValuesFrom(courtApplication.getSubject())
+                                            .withAssociatedDefenceOrganisation(applicationRepOrderUpdatedForHearing.getAssociatedDefenceOrganisation())
+                                            .build())
+                                    .build();
+                        }
+                        return courtApplication;
+                    })
+                    .toList();
+
+            this.hearing = Hearing.hearing()
+                    .withValuesFrom(this.hearing)
+                    .withCourtApplications(updatedCourtApplications)
+                    .build();
         }
     }
 
@@ -484,6 +516,93 @@ public class HearingAggregate implements Aggregate {
         streamBuilder.add(prosecutionCaseDefendantListingStatusChanged.build());
         final Stream<Object> events = apply(streamBuilder.build());
         return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
+    }
+
+    public Stream<Object> updateApplicationLaaReferenceForHearing(final UUID hearingId, final UUID applicationId, final UUID subjectId, final UUID offenceId, final LaaReference laaReference) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        LOGGER.info("Hearing with id {} and the applicationId: {} subjectId: {} offenceId: {}", hearingId, applicationId, subjectId, offenceId);
+
+        if (!isNull(this.hearing.getCourtApplications())) {
+            Optional<CourtApplication> courtApplicationOptional = this.hearing.getCourtApplications().stream().filter(ca -> ca.getId().equals(applicationId)).findFirst();
+            if (courtApplicationOptional.isPresent()) {
+                CourtApplication courtApplication = courtApplicationOptional.get();
+                if (!isNull(courtApplication.getSubject()) && courtApplication.getSubject().getId().equals(subjectId)) {
+                    Offence offence = findOffenceById(courtApplication, offenceId);
+                    if (!areLaaReferencesSame(offence.getLaaApplnReference(), laaReference)) {
+                        streamBuilder.add(ApplicationLaaReferenceUpdatedForHearing.applicationLaaReferenceUpdatedForHearing()
+                                .withApplicationId(applicationId)
+                                .withSubjectId(subjectId)
+                                .withOffenceId(offenceId)
+                                .withLaaReference(laaReference)
+                                .withHearingId(hearingId)
+                                .build());
+                    }
+                }
+            }
+        }
+
+        return apply(streamBuilder.build());
+
+    }
+
+    private void getUpdatedCourtApplications(UUID applicationId, UUID subjectId, UUID offenceId, LaaReference laaReference) {
+        List<CourtApplication> updatedCourtApplications = this.hearing.getCourtApplications().stream()
+                .map(courtApplication -> {
+                    if (courtApplication.getId().equals(applicationId) &&
+                            !isNull(courtApplication.getSubject()) &&
+                            courtApplication.getSubject().getId().equals(subjectId)) {
+                        List<CourtApplicationCase> updatedCases = getUpdatedCases(courtApplication, offenceId, laaReference);
+                        return CourtApplication.courtApplication()
+                                .withValuesFrom(courtApplication)
+                                .withCourtApplicationCases(updatedCases)
+                                .build();
+                    }
+                    return courtApplication;
+                })
+                .toList();
+
+        this.hearing = Hearing.hearing()
+                .withValuesFrom(this.hearing)
+                .withCourtApplications(updatedCourtApplications)
+                .build();
+    }
+
+    private static List<CourtApplicationCase> getUpdatedCases(CourtApplication courtApplication, UUID offenceId, LaaReference laaReference) {
+        return courtApplication.getCourtApplicationCases().stream()
+                .map(applicationCase -> {
+                    List<Offence> updatedOffences = applicationCase.getOffences().stream()
+                            .map(offence -> {
+                                if (offence.getId().equals(offenceId)) {
+                                    return Offence.offence()
+                                            .withValuesFrom(offence)
+                                            .withLaaApplnReference(laaReference)
+                                            .build();
+                                }
+                                return offence;
+                            })
+                            .toList();
+                    return CourtApplicationCase.courtApplicationCase()
+                            .withValuesFrom(applicationCase)
+                            .withOffences(updatedOffences)
+                            .build();
+                })
+                .toList();
+    }
+
+    private boolean areLaaReferencesSame(LaaReference ref1, LaaReference ref2) {
+        if (isNull(ref1) || isNull(ref2)) return false;
+
+        return ref1.getStatusCode().equals(ref2.getStatusCode()) &&
+                ref1.getApplicationReference().equals(ref2.getApplicationReference()) &&
+                ref1.getStatusDate().equals(ref2.getStatusDate());
+    }
+
+    public Offence findOffenceById(CourtApplication courtApplication, UUID offenceId) {
+        return courtApplication.getCourtApplicationCases().stream()
+                .flatMap(applicationCase -> applicationCase.getOffences().stream())
+                .filter(offence -> offence.getId().equals(offenceId))
+                .findFirst()
+                .orElse(null);
     }
 
     public Stream<Object> addDefenceCounselToHearing(final DefenceCounsel defenceCounsel) {
@@ -1603,6 +1722,7 @@ public class HearingAggregate implements Aggregate {
 
         final List<CourtApplication> updatedCourtApplications = ofNullable(hearing.getCourtApplications()).map(Collection::stream).orElseGet(Stream::empty)
                 .map(this::updateApplicationWithAdjourn)
+                .map(ApplicationProceedingsHelper::determineApplicationProceedingsConcluded)
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
         final Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
                 .withCourtApplications(updatedCourtApplications)
@@ -3305,5 +3425,14 @@ public class HearingAggregate implements Aggregate {
                         .forEach(defendant -> addedOffencesMovedToHearing.getNewOffences().stream().filter(offence -> !defendant.getOffences().stream().map(Offence::getId).toList().contains(offence.getId()))
                                 .forEach(offence -> defendant.getOffences().add(offence))
                         ));
+    }
+
+    public Stream<Object> updateApplicationRepOrder(final UUID hearingId, final UUID applicationId, final UUID subjectId, final AssociatedDefenceOrganisation associatedDefenceOrganisation) {
+        return apply(Stream.of(ApplicationRepOrderUpdatedForHearing.applicationRepOrderUpdatedForHearing()
+                .withHearingId(hearingId)
+                .withApplicationId(applicationId)
+                .withSubjectId(subjectId)
+                .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                .build()));
     }
 }

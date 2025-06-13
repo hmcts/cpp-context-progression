@@ -23,6 +23,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import com.jayway.jsonpath.DocumentContext;
+import org.hamcrest.Matchers;
 
 public class CourtApplicationVerificationHelper {
 
@@ -125,6 +126,33 @@ public class CourtApplicationVerificationHelper {
         assertThat(applicationType, is(outputApplication.getString("applicationType")));
         assertThat(applicationReceivedDate, is(outputApplication.getString("receivedDate")));
         assertThat(applicationDecisionSoughtByDate, is(outputApplication.getString("decisionDate")));
+        final JsonObject inputApplication = courtApplication.read("$.courtApplication");
+        if(inputApplication.containsKey("subject")){
+            if(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").containsKey("personDefendant")){
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("firstName"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getString("firstName")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("lastName"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getString("lastName")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("dateOfBirth"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getString("dateOfBirth")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("masterDefendantId"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getString("masterDefendantId")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("subjectId"), is(inputApplication.getJsonObject("subject").getString("id")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address1"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getJsonObject("address").getString("address1")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address2"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getJsonObject("address").getString("address2")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address3"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getJsonObject("address").getString("address3")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address4"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getJsonObject("address").getString("address4")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address5"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getJsonObject("address").getString("address5")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("postCode"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("personDefendant").getJsonObject("personDetails").getJsonObject("address").getString("postcode")));
+            } else {
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("organisationName"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("legalEntityDefendant").getJsonObject("organisation").getString("name")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("masterDefendantId"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getString("masterDefendantId")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getString("subjectId"), is(inputApplication.getJsonObject("subject").getString("id")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address1"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("legalEntityDefendant").getJsonObject("organisation").getJsonObject("address").getString("address1")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address2"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("legalEntityDefendant").getJsonObject("organisation").getJsonObject("address").getString("address2")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address3"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("legalEntityDefendant").getJsonObject("organisation").getJsonObject("address").getString("address3")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address4"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("legalEntityDefendant").getJsonObject("organisation").getJsonObject("address").getString("address4")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("address5"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("legalEntityDefendant").getJsonObject("organisation").getJsonObject("address").getString("address5")));
+                assertThat(outputApplication.getJsonObject("subjectSummary").getJsonObject("address").getString("postCode"), is(inputApplication.getJsonObject("subject").getJsonObject("masterDefendant").getJsonObject("legalEntityDefendant").getJsonObject("organisation").getJsonObject("address").getString("postcode")));
+            }
+
+        }
     }
 
     private static void verifyApplicantTransformationWhenNoOrganisation(final JsonObject applicant, final JsonArray parties, final long expectedDefendantCount) {

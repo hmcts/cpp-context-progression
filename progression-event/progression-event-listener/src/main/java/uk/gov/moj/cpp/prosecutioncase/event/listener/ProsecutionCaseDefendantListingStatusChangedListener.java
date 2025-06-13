@@ -49,6 +49,9 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @ServiceComponent(EVENT_LISTENER)
 public class ProsecutionCaseDefendantListingStatusChangedListener {
 

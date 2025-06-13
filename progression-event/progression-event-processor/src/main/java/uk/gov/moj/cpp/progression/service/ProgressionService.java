@@ -78,6 +78,8 @@ import uk.gov.justice.hearing.courts.Initiate;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.listing.events.PublicListingNewDefendantAddedForCourtProceedings;
 import uk.gov.justice.progression.courts.StoreBookingReferenceCourtScheduleIds;
+import uk.gov.justice.progression.query.laa.ApplicationLaa;
+import uk.gov.justice.progression.query.laa.HearingSummary;
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
@@ -903,7 +905,7 @@ public class ProgressionService {
         final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
         final UUID systemUser = nonNull(serviceContextSystemUserProvider.getContextSystemUserId()) && serviceContextSystemUserProvider.getContextSystemUserId().isPresent() ? serviceContextSystemUserProvider.getContextSystemUserId().get() : null;
 
-        final MetadataBuilder metadataBuilder = metadataBuilder().withId(UUID.randomUUID())
+        final MetadataBuilder metadataBuilder = metadataBuilder().withId(randomUUID())
                 .withName(PROGRESSION_QUERY_CASE_HEARINGS)
                 .withUserId(nonNull(systemUser) ? systemUser.toString() : null);
 
@@ -1995,5 +1997,12 @@ public class ProgressionService {
                         isNull(listHearingRequest.getWeekCommencingDate()));
     }
 
+    public Optional<List<HearingSummary>> getHearingsForApplication(final UUID applicationId) {
+        final MetadataBuilder metadataBuilder = Envelope.metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.query.application-laa");
+        final Envelope<ApplicationLaa> response = requester.requestAsAdmin(JsonEnvelope.envelopeFrom(metadataBuilder, createObjectBuilder().add("applicationId", applicationId.toString()).build()), ApplicationLaa.class);
+        return Optional.of(response.payload().getHearingSummary());
+    }
 
 }

@@ -17,6 +17,8 @@ public class OrganisationService {
     private static final String DEFENCE_ASSOCIATION_QUERY = "progression.query.associated-organisation";
     private static final String ASSOCIATION = "association";
 
+    private static final String DEFENCE_ASSOCIATION_ORGANISATION_QUERY = "defence.query.associated-organisation";
+
     @Inject
     @ServiceComponent(COMMAND_HANDLER)
     private Requester requester;
@@ -30,4 +32,14 @@ public class OrganisationService {
         final JsonEnvelope response = requester.request(requestEnvelope);
         return response.payloadAsJsonObject().getJsonObject(ASSOCIATION);
     }
+
+    public JsonObject getAssociatedOrganisationForApplication(final Envelope<?> envelope, final String defendantId) {
+
+        final JsonObject getUserGroupsForUserRequest = Json.createObjectBuilder().add("defendantId", defendantId).build();
+        final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getUserGroupsForUserRequest)
+                .withName(DEFENCE_ASSOCIATION_ORGANISATION_QUERY).withMetadataFrom(envelope);
+        final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);
+        return response.payload().getJsonObject(ASSOCIATION);
+    }
+
 }

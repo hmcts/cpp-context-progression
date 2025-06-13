@@ -16,7 +16,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
@@ -1320,6 +1322,73 @@ public class HearingAggregateTest {
         assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().size(), is(1));
         assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getId(), is(caseId1));
         assertThat(((HearingPopulatedToProbationCaseworker) objectStream.get(0)).getHearing().getProsecutionCases().get(0).getDefendants().size(), is(3));
+    }
+
+    @Test
+    public void shouldUpdateHearingWithApplicationWhenRepOrderUpdateForHearing() {
+        final UUID hearingId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID subjectId = randomUUID();
+        final String laaContractNumber = "LAA123";
+        final String orgName = "Org1";
+        final String applicationReference = "ABC1234";
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withCourtApplications(new ArrayList<>(asList(CourtApplication.courtApplication()
+                        .withId(applicationId)
+                        .withSubject(CourtApplicationParty.courtApplicationParty()
+                                .withId(subjectId)
+                                .build())
+                        .build(),
+                        CourtApplication.courtApplication()
+                                .withId(randomUUID())
+                                .withSubject(CourtApplicationParty.courtApplicationParty()
+                                        .withId(subjectId)
+                                        .build())
+                                .build(),
+                        CourtApplication.courtApplication()
+                                .withId(randomUUID())
+                                .withSubject(CourtApplicationParty.courtApplicationParty()
+                                        .withId(randomUUID())
+                                        .build())
+                                .build())))
+                .build();
+
+        hearingAggregate.apply(createHearingResulted(hearing));
+
+        final AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                        .withLaaContractNumber(laaContractNumber)
+                        .withOrganisation(Organisation.organisation()
+                                .withName(orgName)
+                                .build())
+                        .build())
+                .withApplicationReference(applicationReference)
+                .withAssociationStartDate(LocalDate.now())
+                .withAssociationEndDate(LocalDate.now().plusYears(1))
+                .withFundingType(FundingType.REPRESENTATION_ORDER)
+                .withIsAssociatedByLAA(true)
+                .build();
+        hearingAggregate.apply(ApplicationRepOrderUpdatedForHearing.applicationRepOrderUpdatedForHearing()
+                .withHearingId(hearingId)
+                .withApplicationId(applicationId)
+                .withSubjectId(subjectId)
+                .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
+                .build());
+        hearingAggregate.updateApplicationRepOrder(hearingId, applicationId, subjectId, associatedDefenceOrganisation);
+        final Hearing updatedHearing = hearingAggregate.getHearing();
+        assertEquals(updatedHearing.getId(), hearingId);
+        assertEquals(updatedHearing.getCourtApplications().get(0).getId(), applicationId);
+        assertEquals(updatedHearing.getCourtApplications().get(0).getSubject().getId(), subjectId);
+        assertEquals(updatedHearing.getCourtApplications().get(0).getSubject().getAssociatedDefenceOrganisation().getFundingType(), FundingType.REPRESENTATION_ORDER);
+        assertEquals(updatedHearing.getCourtApplications().get(0).getSubject().getAssociatedDefenceOrganisation().getApplicationReference(), applicationReference);
+        assertEquals(updatedHearing.getCourtApplications().get(0).getSubject().getAssociatedDefenceOrganisation().getDefenceOrganisation().getLaaContractNumber(), laaContractNumber);
+        assertEquals(updatedHearing.getCourtApplications().get(0).getSubject().getAssociatedDefenceOrganisation().getDefenceOrganisation().getOrganisation().getName(), orgName);
+
+        assertNull(updatedHearing.getCourtApplications().get(1).getSubject().getAssociatedDefenceOrganisation());
+        assertNull(updatedHearing.getCourtApplications().get(2).getSubject().getAssociatedDefenceOrganisation());
     }
 
     @Test

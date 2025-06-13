@@ -65,17 +65,19 @@ public class DomainToIndexMapper {
         personDefendant(defendant, party);
         alias(defendant.getAliases(), party);
         offences(defendant.getOffences(), party);
+        party.setRepresentationOrder(getRepresentationOrder(defendant.getAssociatedDefenceOrganisation()));
+        return party;
+    }
+
+    private static RepresentationOrder getRepresentationOrder(final AssociatedDefenceOrganisation associatedDefenceOrganisation) {
         final RepresentationOrder representationOrder = new RepresentationOrder();
-        final AssociatedDefenceOrganisation associatedDefenceOrganisation = defendant.getAssociatedDefenceOrganisation();
         if (associatedDefenceOrganisation != null) {
             representationOrder.setApplicationReference(associatedDefenceOrganisation.getApplicationReference());
             representationOrder.setEffectiveFromDate(associatedDefenceOrganisation.getAssociationStartDate() != null ? associatedDefenceOrganisation.getAssociationStartDate().toString() : null);
             representationOrder.setEffectiveToDate(associatedDefenceOrganisation.getAssociationEndDate() != null ? associatedDefenceOrganisation.getAssociationEndDate().toString() : null);
             representationOrder.setLaaContractNumber(associatedDefenceOrganisation.getDefenceOrganisation() != null ? associatedDefenceOrganisation.getDefenceOrganisation().getLaaContractNumber() : null);
         }
-
-        party.setRepresentationOrder(representationOrder);
-        return party;
+        return representationOrder;
     }
 
     public Party party(final Defendant defendant) {
@@ -99,6 +101,7 @@ public class DomainToIndexMapper {
         personDefendant(defendant, party);
         alias(defendant.getAliases(), party);
         offences(defendant.getOffences(), party);
+        party.setRepresentationOrder(getRepresentationOrder(defendant.getAssociatedDefenceOrganisation()));
         return party;
     }
 

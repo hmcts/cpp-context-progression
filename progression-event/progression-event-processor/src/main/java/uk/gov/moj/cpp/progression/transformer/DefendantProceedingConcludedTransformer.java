@@ -1,12 +1,17 @@
 package uk.gov.moj.cpp.progression.transformer;
 
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.progression.courts.api.ApplicationConcluded;
 import uk.gov.justice.progression.courts.api.ProsecutionConcludedForLAA;
 import uk.gov.justice.progression.courts.exract.OffenceSummary;
 import uk.gov.justice.progression.courts.exract.Plea;
@@ -19,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -43,6 +49,20 @@ public class DefendantProceedingConcludedTransformer {
             });
         }
         return ProsecutionConcludedForLAA.prosecutionConcludedForLAA().withProsecutionConcluded(prosecutionConcludedArrayList).build();
+    }
+
+    public ProsecutionConcludedForLAA getApplicationConcludedRequest(final CourtApplication courtApplication, final UUID hearingId) {
+        final ProsecutionConcluded prosecutionConcluded = ProsecutionConcluded.prosecutionConcluded()
+                .withHearingIdWhereChangeOccurred(hearingId)
+                .withIsConcluded(courtApplication.getProceedingsConcluded())
+                .withOffenceSummary(getOffenceSummary(courtApplication, hearingId))
+                .withApplicationConcluded(ApplicationConcluded.applicationConcluded()
+                        .withApplicationId(courtApplication.getId())
+                        .withApplicationResultCode(courtApplication.getApplicationResultCodeForLaa())
+                        .withSubjectId(courtApplication.getSubject().getId())
+                        .build())
+                .build();
+        return ProsecutionConcludedForLAA.prosecutionConcludedForLAA().withProsecutionConcluded(singletonList(prosecutionConcluded)).build();
     }
 
     private OffenceSummary getOffenceSummary(final Offence offence, final UUID hearingId) {
@@ -82,5 +102,19 @@ public class DefendantProceedingConcludedTransformer {
 
         return offenceSummaryBuilder.build();
     }
+
+    private List<OffenceSummary> getOffenceSummary(final CourtApplication courtApplication, final UUID hearingId) {
+        if (isEmpty(courtApplication.getCourtApplicationCases())) {
+            return Collections.emptyList();
+        }
+        return courtApplication.getCourtApplicationCases().stream()
+                .map(CourtApplicationCase::getOffences)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .filter(Objects::nonNull)
+                .map(offence -> getOffenceSummary(offence, hearingId))
+                .toList();
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -14,6 +15,7 @@ import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelp
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
+import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.courts.progression.query.AagResults;
 import uk.gov.justice.courts.progression.query.ApplicationDetails;
@@ -22,13 +24,17 @@ import uk.gov.justice.courts.progression.query.Offences;
 import uk.gov.justice.courts.progression.query.ThirdParties;
 import uk.gov.justice.progression.courts.ApplicantDetails;
 import uk.gov.justice.progression.courts.RespondentDetails;
+import uk.gov.justice.progression.query.laa.ApplicationLaa;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
+import uk.gov.moj.cpp.progression.query.utils.converters.laa.ApplicationLaaConverter;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
@@ -42,6 +48,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentReposi
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapperClient;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,6 +92,7 @@ public class ApplicationQueryView {
     private static final String ERROR_MESSAGE = "errorMessage";
     private static final String STATUS_CODE = "statusCode";
     private static final String UPDATED = "updated";
+    private static final String TARGET_TYPE_APPLICATION = "APPLICATION_ID_LAA";
 
     @Inject
     private CourtApplicationRepository courtApplicationRepository;
@@ -118,6 +127,14 @@ public class ApplicationQueryView {
     @Inject
     private ObjectToJsonValueConverter objectToJsonValueConverter;
 
+    @Inject
+    private ApplicationLaaConverter applicationLaaConverter;
+
+    @Inject
+    private SystemUserProvider systemUserProvider;
+
+    @Inject
+    private SystemIdMapperClient systemIdMapperClient;
 
     @Handles("progression.query.application.aaag")
     @SuppressWarnings("squid:S3776")
@@ -126,9 +143,7 @@ public class ApplicationQueryView {
         final Optional<UUID> applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
         if (applicationId.isPresent()) {
             try {
-                final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId.get());
-                final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
-                final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(courtApplicationPayload, CourtApplication.class);
+                final CourtApplication courtApplication = getCourtApplication(applicationId.get());
 
                 jsonObjectBuilder.add(APPLICATION_ID, applicationId.get().toString());
 
@@ -184,6 +199,56 @@ public class ApplicationQueryView {
                 jsonObjectBuilder.build());
     }
 
+
+    @Handles("progression.query.application-laa")
+    public Envelope<ApplicationLaa> getApplicationForLaa(final JsonEnvelope envelope) {
+        final UUID applicationId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID).get();
+        try {
+            final CourtApplication courtApplication = getCourtApplication(applicationId);
+            final List<Hearing> hearingList = getHearingList(courtApplication.getId());
+            final String laaApplicationShortId = retrieveLaaApplicationShortIdFromSystemIdMapper(applicationId);
+            return Envelope.envelopeFrom(envelope.metadata(), applicationLaaConverter.convert(courtApplication, hearingList, laaApplicationShortId));
+
+        } catch (final NoResultException e) {
+            LOGGER.info(NO_APPLICATION_FOUND_WITH_APPLICATION_ID, applicationId, e);
+            return Envelope.envelopeFrom(envelope.metadata(), ApplicationLaa.applicationLaa().build());
+        }
+    }
+
+    public String retrieveLaaApplicationShortIdFromSystemIdMapper(final UUID applicationId) {
+        LOGGER.info("Retrieving laaApplicationShortId from SystemIdMapper for applicationId: {}", applicationId);
+
+        final UUID systemUserId = systemUserProvider.getContextSystemUserId()
+                .orElseThrow(ApplicationQueryView::get);
+
+        final Optional<String> laaApplicationShortId = systemIdMapperClient.findBy(applicationId, TARGET_TYPE_APPLICATION, systemUserId )
+                .map(SystemIdMapping::getSourceId);
+
+        if (laaApplicationShortId.isPresent()) {
+            LOGGER.info("Successfully retrieved laaApplicationShortId: {} for the applicationId:{}", laaApplicationShortId.get(), applicationId);
+        } else {
+            LOGGER.info("No laaApplicationShortId found for applicationId: {}", applicationId);
+        }
+
+        return laaApplicationShortId.orElse(null);
+    }
+
+    private static IllegalStateException get() {
+        return new IllegalStateException("Invalid context system user id");
+    }
+
+    private List<Hearing> getHearingList(final UUID applicationId) {
+        return getHearings(singletonList(applicationId)).stream()
+                .map(jsonValue -> jsonObjectToObjectConverter.convert((JsonObject) jsonValue, Hearing.class))
+                .toList();
+    }
+
+    private CourtApplication getCourtApplication(final UUID applicationId) {
+        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
+        final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
+        return jsonObjectToObjectConverter.convert(application, CourtApplication.class);
+    }
+
     @Handles("progression.query.application")
     public JsonEnvelope getApplication(final JsonEnvelope envelope) {
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
@@ -206,13 +271,17 @@ public class ApplicationQueryView {
             final List<CourtApplicationEntity> childApplications = courtApplicationRepository.findByParentApplicationId(applicationId);
             jsonObjectBuilder.add("linkedApplicationsSummary", buildApplicationSummaries(childApplications));
             childApplications.add(courtApplicationEntity);
-            jsonObjectBuilder.add("hearings", getHearings(childApplications));
+            jsonObjectBuilder.add("hearings", getHearings(getApplicationIds(childApplications)));
         } catch (final NoResultException e) {
             LOGGER.info(NO_APPLICATION_FOUND_WITH_APPLICATION_ID, applicationId, e);
         }
         return envelopeFrom(
                 envelope.metadata(),
                 jsonObjectBuilder.build());
+    }
+
+    private static List<UUID> getApplicationIds(final List<CourtApplicationEntity> childApplications) {
+        return childApplications.stream().map(CourtApplicationEntity::getApplicationId).toList();
     }
 
     /**
@@ -358,10 +427,10 @@ public class ApplicationQueryView {
     }
 
 
-    private JsonArray getHearings(final List<CourtApplicationEntity> courtApplicationEntities) {
+    private JsonArray getHearings(final List<UUID> applicationIds) {
         final List<HearingApplicationEntity> entities = new ArrayList<>();
-        courtApplicationEntities.forEach(courtApplicationEntity ->
-                entities.addAll(hearingApplicationRepository.findByApplicationId(courtApplicationEntity.getApplicationId())));
+        applicationIds.forEach(applicationId ->
+                entities.addAll(hearingApplicationRepository.findByApplicationId(applicationId)));
 
         final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final List<UUID> hearingIds = new ArrayList<>();

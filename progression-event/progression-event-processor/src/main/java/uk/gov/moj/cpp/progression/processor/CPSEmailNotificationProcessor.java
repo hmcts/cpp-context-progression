@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.lang.Boolean.parseBoolean;
+import static java.util.Objects.nonNull;
+import static java.util.UUID.fromString;
+import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;
 
@@ -51,12 +54,17 @@ import javax.json.JsonValue;
 
 import lombok.extern.slf4j.Slf4j;
 
+@SuppressWarnings({"java:S6204"})
 @Slf4j
 @ServiceComponent(Component.EVENT_PROCESSOR)
 public class CPSEmailNotificationProcessor {
 
     private static final String PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED = "progression.command.handler.disassociate-defence-organisation";
     private static final String IS_LAA = "isLAA";
+    public static final String LINKED_APPLICATIONS = "linkedApplications";
+    public static final String APPLICATION_ID = "applicationId";
+    public static final String DEFENDANT_ID = "defendantId";
+    public static final String ORGANISATION_ID = "organisationId";
 
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
@@ -83,13 +91,40 @@ public class CPSEmailNotificationProcessor {
     public void processDisassociatedEmailNotification(final JsonEnvelope jsonEnvelope) {
         final JsonObject requestJson = jsonEnvelope.payloadAsJsonObject();
         final boolean isLAA = parseBoolean(requestJson.containsKey(IS_LAA) ? requestJson.get(IS_LAA).toString() : "false");
+        final UUID caseId = fromString(requestJson.getString("caseId"));
 
         if (!isLAA) {
-            final Metadata metadata = metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED).build();
-            sender.send(envelopeFrom(metadata, removeProperty(requestJson, IS_LAA)));
+            sendCommandDisassociateDefenceOrganisation(jsonEnvelope, requestJson);
+            sendCommandDisassociateDefenceOrganisationForApplication(jsonEnvelope, requestJson, caseId);
         }
 
         populateCPSNotification(jsonEnvelope, requestJson, EmailTemplateType.DISASSOCIATION);
+    }
+
+    private void sendCommandDisassociateDefenceOrganisation(final JsonEnvelope jsonEnvelope, final JsonObject requestJson) {
+        final Metadata metadata = metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_COMMAND_FOR_DEFENCE_ORGANISATION_DISASSOCIATED).build();
+        sender.send(envelopeFrom(metadata, removeProperty(requestJson, IS_LAA)));
+    }
+
+    private void sendCommandDisassociateDefenceOrganisationForApplication(final JsonEnvelope jsonEnvelope, final JsonObject requestJson, final UUID caseId) {
+        final Optional<JsonObject> activeApplicationsOnCaseOptional = progressionService.getActiveApplicationsOnCase(jsonEnvelope, caseId.toString());
+        if (activeApplicationsOnCaseOptional.isPresent() && activeApplicationsOnCaseOptional.get().containsKey(LINKED_APPLICATIONS)){
+            activeApplicationsOnCaseOptional.get().getJsonArray(LINKED_APPLICATIONS).forEach(linkedApplicationJson->{
+                final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationJson;
+                final String applicationId = linkedApplicationJsonObject.getString(APPLICATION_ID);
+                final JsonObjectBuilder disassociateDefenceOrganisationForApplicationBuilder = Json.createObjectBuilder();
+                if(nonNull(applicationId)){
+                    disassociateDefenceOrganisationForApplicationBuilder
+                            .add(APPLICATION_ID, applicationId)
+                            .add(DEFENDANT_ID, requestJson.getString(DEFENDANT_ID))
+                            .add(ORGANISATION_ID, requestJson.getString(ORGANISATION_ID));
+                    sender.send(
+                            envelop(disassociateDefenceOrganisationForApplicationBuilder.build())
+                                    .withName("progression.command.handler.disassociate-defence-organisation-for-application")
+                                    .withMetadataFrom(jsonEnvelope));
+                }
+            });
+        }
     }
 
     @Handles("public.defence.event.record-instruction-details")
@@ -103,8 +138,8 @@ public class CPSEmailNotificationProcessor {
 
     private void populateCPSNotification(final JsonEnvelope jsonEnvelope, final JsonObject requestJson, final EmailTemplateType templateType) {
         final String caseId = requestJson.getString("caseId");
-        final String defendantId = requestJson.getString("defendantId");
-        final UUID organisationId = UUID.fromString(requestJson.getString("organisationId"));
+        final String defendantId = requestJson.getString(DEFENDANT_ID);
+        final UUID organisationId = fromString(requestJson.getString(ORGANISATION_ID));
 
         final Optional<JsonObject> prosecutionCaseOptional = progressionService.getProsecutionCaseDetailById(jsonEnvelope, caseId);
         final Optional<HearingVO> hearingVO = getHearingDetails(prosecutionCaseOptional);
@@ -148,7 +183,7 @@ public class CPSEmailNotificationProcessor {
         final JsonObject prosecutionCaseJson = prosecutionCaseOptional
                 .orElseThrow(() -> new RuntimeException("Prosecution Case not found")).getJsonObject("prosecutionCase");
 
-        final JsonObject defendantJson = getDefendantJson(prosecutionCaseJson, UUID.fromString(defendantId));
+        final JsonObject defendantJson = getDefendantJson(prosecutionCaseJson, fromString(defendantId));
 
         final Defendant defendant = jsonObjectToObjectConverter.convert(defendantJson, Defendant.class);
 

@@ -676,6 +676,35 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             202:
                 description: OK
 
+/laaReference/applications/{applicationId}/subject/{subjectId}/offences/{offenceId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+    subjectId:
+      description: The ID of the defendant
+      type: string
+    offenceId:
+      description: The ID of the offence
+      type: string
+  post:
+    description:  |
+      updating application with LAA reference
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.record-laareference-for-application+json
+          name: progression.command.record-laareference-for-application
+      ...
+    body:
+      application/vnd.progression.command.record-laareference-for-application+json:
+        example:
+          !include json/progression.command.record-laareference-for-application.json
+        schema:
+          !include json/schema/progression.command.record-laareference-for-application.json
+    responses:
+      202:
+        description: OK
+
 /laa/caseOutcome:
   post:
     description:  |
@@ -748,6 +777,36 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
             !include json/progression.command.receive-representationorder-for-defendant.json
           schema:
             !include json/schema/progression.command.receive-representationorder-for-defendant.json
+      responses:
+            202:
+                description: OK
+
+/representationOrder/applications/{applicationId}/subject/{subjectId}/offences/{offenceId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+    subjectId:
+      description: The ID of the subject
+      type: string
+    offenceId:
+      description: The ID of the offence
+      type: string
+
+  post:
+      description:  |
+        Receive representation order for application
+        ...
+        (mapping):
+            requestType: application/vnd.progression.command.receive-representationorder-for-application+json
+            name: progression.command.receive-representationorder-for-application
+        ...
+      body:
+        application/vnd.progression.command.receive-representationorder-for-application+json:
+          example:
+            !include json/progression.command.receive-representationorder-for-application.json
+          schema:
+            !include json/schema/progression.command.receive-representationorder-for-application.json
       responses:
             202:
                 description: OK

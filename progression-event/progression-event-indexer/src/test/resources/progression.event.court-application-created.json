@@ -1676,6 +1676,65 @@
         }
       }
     ],
+    "subject": {
+      "id": "f69e8087-0c38-406e-b50b-4c5f5ba475cc",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "3f1cba0c-6b7c-46d1-b192-4d3ddc4a559f",
+            "caseReference": "20NX4588177",
+            "defendantId": "06b5992f-4a19-439a-9bfe-921f0475def8"
+          }
+        ],
+        "masterDefendantId": "06b5992f-4a19-439a-9bfe-921f0475def8",
+        "personDefendant": {
+          "arrestSummonsNumber": "2213NX00000004588177",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "9999A9999AAAA",
+              "address2": "Woodlane",
+              "address3": "addressline 3",
+              "address4": "Bristol",
+              "address5": "Avon",
+              "postcode": "CR0 1XG"
+            },
+            "contact": {
+              "home": "0204588177",
+              "mobile": "07774588177",
+              "primaryEmail": "REDDY.TEST014588177@gmail.com"
+            },
+            "dateOfBirth": "1995-06-25",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Emmet",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Remington",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
     "applicationOutcome": {
       "originatingHearingId": "a9ba894f-c651-49bd-8b2e-f04caa4cabc4",
       "applicationId": "406267ea-057f-483b-84bc-9993bfb0871f",

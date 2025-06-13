@@ -106,7 +106,10 @@
             <artifactId>javaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>uk.gov.moj.cpp.system.id-mapper</groupId>
+            <artifactId>id-mapper-client</artifactId>
+        </dependency>
         <!-- JUnit regression testing framework. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

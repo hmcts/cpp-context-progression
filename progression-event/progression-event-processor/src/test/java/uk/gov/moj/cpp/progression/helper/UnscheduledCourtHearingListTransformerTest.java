@@ -9,7 +9,19 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.moj.cpp.progression.helper.UnscheduledCourtHearingListTransformer.RESULT_DEFINITION_SAC;
 
-import uk.gov.justice.core.courts.*;
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.core.courts.HearingType;
+import uk.gov.justice.core.courts.HearingUnscheduledListingNeeds;
+import uk.gov.justice.core.courts.JudicialResult;
+import uk.gov.justice.core.courts.JudicialResultPrompt;
+import uk.gov.justice.core.courts.JudicialResultPromptDurationElement;
+import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.NextHearing;
+import uk.gov.justice.core.courts.Offence;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,6 +35,9 @@ import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.justice.core.courts.Person;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.SeedingHearing;
 
 @ExtendWith(MockitoExtension.class)
 public class UnscheduledCourtHearingListTransformerTest {

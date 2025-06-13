@@ -104,7 +104,6 @@ public class ReceiveRepresentationOrderIT extends AbstractIT {
         assertInMessagingQueueForDefendantOffenceUpdated();
         assertInMessagingQueueForDefendantLegalAidStatusUpdated();
         assertInMessagingQueueForAssociationLockedForLAA();
-        assertInMessagingQueueForDefenceDisassociation(defendantId, caseId, "2fc69990-bf59-4c4a-9489-d766b9abde9a");
         assertMessageForDefenceAssociation(defendantId, organisationId, laaContractNumber);
 
         final Matcher[] caseWitLAAReferenceForOffenceMatchers = getProsecutionCaseMatchers(caseId, defendantId,

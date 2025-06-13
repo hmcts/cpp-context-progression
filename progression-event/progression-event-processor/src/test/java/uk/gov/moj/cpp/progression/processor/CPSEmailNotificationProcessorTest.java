@@ -1,9 +1,13 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.util.Optional.ofNullable;
+import static java.util.UUID.randomUUID;
+import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +21,10 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.requester.Requester;
+import uk.gov.justice.services.core.sender.Sender;
+import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
@@ -45,11 +52,14 @@ import com.google.common.io.Resources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.internal.verification.VerificationModeFactory;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.reflect.Whitebox;
 
@@ -97,7 +107,10 @@ public class CPSEmailNotificationProcessorTest {
 
     @Mock
     private Requester requester;
-
+    @Mock
+    private Sender sender;
+    @Captor
+    private ArgumentCaptor<Envelope<JsonObject>> envelopeCaptor;
 
 
     private final String prosecutionCaseSampleWithPersonDefendant = "progression.event.prosecutioncase.persondefendant.cpsnotification.json";
@@ -167,7 +180,7 @@ public class CPSEmailNotificationProcessorTest {
 
     @Test
     public void shouldGetCPSEmail() throws Exception {
-        final UUID courtCenterId = UUID.randomUUID();
+        final UUID courtCenterId = randomUUID();
         final String testCPSEmail = "abc@xyz.com";
         final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
 
@@ -220,7 +233,7 @@ public class CPSEmailNotificationProcessorTest {
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
         final UUID defendantId = UUID.fromString("924cbf53-0b51-4633-9e99-2682be854af4");
         final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
-        final UUID uuid = UUID.randomUUID();
+        final UUID uuid = randomUUID();
         hearingVOMock = HearingVO.builder().hearingDate(ZonedDateTime.now().toString()).courtCenterId(uuid).courtName("testName").build();
 
         when(referenceDataService.getOrganisationUnitById(uuid, jsonEnvelope, requester)).thenReturn(Optional.of(sampleJsonObject));
@@ -235,7 +248,7 @@ public class CPSEmailNotificationProcessorTest {
     @Test
     public void shouldPopulateCPSNotification() throws Exception {
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
-        final UUID randomUUID = UUID.randomUUID();
+        final UUID randomUUID = randomUUID();
 
         jsonObject = createObjectBuilder().add("caseId", randomUUID.toString())
                 .add("defendantId", randomUUID.toString())
@@ -251,7 +264,7 @@ public class CPSEmailNotificationProcessorTest {
     @Test
     public void shouldGetHearingDetailsWithNullHearingVO() throws Exception {
         final Optional<JsonObject> prosecutionCaseJsonOptional = Optional.of(getProsecutionCaseResponse(prosecutionCaseSampleWithPersonDefendant));
-        final UUID randomUUID = UUID.randomUUID();
+        final UUID randomUUID = randomUUID();
 
         jsonObject = createObjectBuilder().add("caseId", randomUUID.toString())
                 .add("defendantId", randomUUID.toString())
@@ -260,6 +273,85 @@ public class CPSEmailNotificationProcessorTest {
         Optional<HearingVO> hearingVO = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getHearingDetails", prosecutionCaseJsonOptional);
 
         assertThat("Hearing vo is not null", hearingVO.isPresent(), is(false));
+
+    }
+
+    @Test
+    void shouldCallDisassociationCommandForCaseAndApplicationWhenApplicationFoundForCase() {
+        
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final JsonObject defencePublicEventPayload = createObjectBuilder()
+                .add("defendantId", defendantId.toString())
+                .add("organisationId",organisationId.toString())
+                .add("caseId", caseId.toString())
+                .build();
+
+        final JsonObject applicationQueryResponsePayload = createObjectBuilder()
+                .add("linkedApplications", createArrayBuilder().add(
+                        createObjectBuilder().add("applicationId", applicationId.toString())
+                                .build()
+                ))
+                .build();;
+
+        final JsonEnvelope publiceventEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.defence.defence-organisation-disassociated"),
+                defencePublicEventPayload);
+
+        when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(ofNullable(applicationQueryResponsePayload));
+
+        cpsEmailNotificationProcessor.processDisassociatedEmailNotification(publiceventEnvelope);
+        verify(sender, VerificationModeFactory.times(2)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> capturedEvents = envelopeCaptor.getAllValues();
+        assertThat(capturedEvents.get(0).metadata().name(), is("progression.command.handler.disassociate-defence-organisation"));
+        JsonObject capturedEventPayload = capturedEvents.get(0).payload();
+        assertThat(capturedEventPayload.getString("defendantId"), is(defendantId.toString()));
+        assertThat(capturedEventPayload.getString("organisationId"), is(organisationId.toString()));
+        assertThat(capturedEventPayload.getString("caseId"),  is(caseId.toString()));
+
+        assertThat(capturedEvents.get(1).metadata().name(), is("progression.command.handler.disassociate-defence-organisation-for-application"));
+        capturedEventPayload = capturedEvents.get(1).payload();
+        assertThat(capturedEventPayload.getString("defendantId"), is(defendantId.toString()));
+        assertThat(capturedEventPayload.getString("organisationId"), is(organisationId.toString()));
+        assertThat(capturedEventPayload.getString("applicationId"),  is(applicationId.toString()));
+
+    }
+
+    @Test
+    void shouldCallDisassociationCommandForCaseOnlyWhenNoApplicationFoundForCase() {
+
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final UUID caseId = randomUUID();
+
+        final JsonObject defencePublicEventPayload = createObjectBuilder()
+                .add("defendantId", defendantId.toString())
+                .add("organisationId",organisationId.toString())
+                .add("caseId", caseId.toString())
+                .build();
+
+        final JsonObject applicationQueryResponsePayload = createObjectBuilder()
+                .build();
+
+        final JsonEnvelope publiceventEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.defence.defence-organisation-disassociated"),
+                defencePublicEventPayload);
+
+        when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(ofNullable(applicationQueryResponsePayload));
+
+        cpsEmailNotificationProcessor.processDisassociatedEmailNotification(publiceventEnvelope);
+        verify(sender, VerificationModeFactory.times(1)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> capturedEvents = envelopeCaptor.getAllValues();
+        assertThat(capturedEvents.get(0).metadata().name(), is("progression.command.handler.disassociate-defence-organisation"));
+        JsonObject capturedEventPayload = capturedEvents.get(0).payload();
+        assertThat(capturedEventPayload.getString("defendantId"), is(defendantId.toString()));
+        assertThat(capturedEventPayload.getString("organisationId"), is(organisationId.toString()));
+        assertThat(capturedEventPayload.getString("caseId"),  is(caseId.toString()));
 
     }
 
@@ -290,7 +382,7 @@ public class CPSEmailNotificationProcessorTest {
 
     private GetHearingsAtAGlance getCaseAtAGlanceWithFutureHearings() {
 
-        CourtCentre courtCentre = CourtCentre.courtCentre().withId(UUID.randomUUID()).withName("test court name").build();
+        CourtCentre courtCentre = CourtCentre.courtCentre().withId(randomUUID()).withName("test court name").build();
 
         List<Hearings> hearings = new ArrayList<>();
 
@@ -302,7 +394,7 @@ public class CPSEmailNotificationProcessorTest {
         hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build();
         hearingDays.add(hd);
 
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withCourtCentre(courtCentre)
+        hearings.add(Hearings.hearings().withId(randomUUID()).withCourtCentre(courtCentre)
                 .withHearingDays(hearingDays).build());
 
         List<HearingDay> hearingDays2 = new ArrayList<>();
@@ -312,9 +404,9 @@ public class CPSEmailNotificationProcessorTest {
 
         hearingDays2.add(hd);
 
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withHearingDays(hearingDays2).withCourtCentre(courtCentre).build());
+        hearings.add(Hearings.hearings().withId(randomUUID()).withHearingDays(hearingDays2).withCourtCentre(courtCentre).build());
 
-        hearings.add(Hearings.hearings().withId(UUID.randomUUID()).withCourtCentre(courtCentre).withHearingDays(Collections.singletonList(
+        hearings.add(Hearings.hearings().withId(randomUUID()).withCourtCentre(courtCentre).withHearingDays(Collections.singletonList(
                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build())).build());
 
         return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();

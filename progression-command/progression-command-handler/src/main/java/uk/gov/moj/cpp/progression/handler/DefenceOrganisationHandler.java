@@ -16,7 +16,9 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.command.handler.DisassociateDefenceOrganisationForApplication;
 import uk.gov.moj.cpp.progression.command.handler.service.UsersGroupService;
 import uk.gov.moj.cpp.progression.domain.pojo.OrganisationDetails;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
@@ -115,6 +117,21 @@ public class DefenceOrganisationHandler {
         final EventStream eventStream = eventSource.getStreamById(caseId);
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
         final Stream<Object> events = caseAggregate.receiveDisAssociateDefenceOrganisation(defendantId, caseId, disassociateDefenceOrganisation.getOrganisationId());
+        appendEventsToStream(envelope, eventStream, events);
+    }
+
+    @Handles("progression.command.handler.disassociate-defence-organisation-for-application")
+    public void handleDisassociationForApplication(final Envelope<DisassociateDefenceOrganisationForApplication> envelope) throws EventStreamException {
+        LOGGER.info("progression.command.handler.disassociate-defence-organisation-for-application {}", envelope.payload());
+
+        final DisassociateDefenceOrganisationForApplication disassociateDefenceOrganisationForApplication = envelope.payload();
+        final UUID applicationId = disassociateDefenceOrganisationForApplication.getApplicationId();
+        final UUID defendantId = disassociateDefenceOrganisationForApplication.getDefendantId();
+        final UUID organisationId = disassociateDefenceOrganisationForApplication.getOrganisationId();
+
+        final EventStream eventStream = eventSource.getStreamById(applicationId);
+        final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
+        final Stream<Object> events = applicationAggregate.disassociateDefenceOrganisationForApplication(defendantId, organisationId);
         appendEventsToStream(envelope, eventStream, events);
     }
 

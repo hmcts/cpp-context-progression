@@ -31,6 +31,18 @@ public class DefenceStub {
                         .withBody(body)));
     }
 
+    public static void stubForAssociatedOrganisationForRepresenationOrder(final JsonObject payload, final String defendantId, final String organisationId, final String organisationName) {
+        String body = payload.toString()
+                .replace("ORG_ID", organisationId)
+                .replace("ORG_NAME", organisationName);
+
+        stubFor(get(urlPathEqualTo(MessageFormat.format("/defence-service/query/api/rest/defence/defendants/{0}/associatedOrganisation", defendantId)))
+                .willReturn(aResponse().withStatus(SC_OK)
+                        .withHeader(ID, randomUUID().toString())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(body)));
+    }
+
     public static void stubForAssociatedOrganisation(final String resourceName, final String defendantId) {
         stubForAssociatedOrganisation(getPayloadAsJsonObject(resourceName), defendantId);
     }

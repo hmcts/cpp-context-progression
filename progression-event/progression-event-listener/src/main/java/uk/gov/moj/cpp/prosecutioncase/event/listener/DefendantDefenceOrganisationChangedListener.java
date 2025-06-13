@@ -102,31 +102,8 @@ public class DefendantDefenceOrganisationChangedListener {
     private Defendant updateDefendant(final Defendant originDefendant, final AssociatedDefenceOrganisation associatedDefenceOrganisation) {
 
         return Defendant.defendant()
-                .withOffences(originDefendant.getOffences())
-                .withCpsDefendantId(originDefendant.getCpsDefendantId())
-                .withPersonDefendant(originDefendant.getPersonDefendant())
-                .withLegalEntityDefendant(originDefendant.getLegalEntityDefendant())
-                .withAssociatedPersons(originDefendant.getAssociatedPersons())
-                .withId(originDefendant.getId())
-                .withMasterDefendantId(originDefendant.getMasterDefendantId())
-                .withCourtProceedingsInitiated(originDefendant.getCourtProceedingsInitiated())
-                .withMitigation(originDefendant.getMitigation())
-                .withMitigationWelsh(originDefendant.getMitigationWelsh())
-                .withNumberOfPreviousConvictionsCited(originDefendant.getNumberOfPreviousConvictionsCited())
-                .withProsecutionAuthorityReference(originDefendant.getProsecutionAuthorityReference())
-                .withProsecutionCaseId(originDefendant.getProsecutionCaseId())
-                .withWitnessStatement(originDefendant.getWitnessStatement())
-                .withWitnessStatementWelsh(originDefendant.getWitnessStatementWelsh())
-                .withDefenceOrganisation(originDefendant.getDefenceOrganisation())
-                .withPncId(originDefendant.getPncId())
-                .withAliases(originDefendant.getAliases())
-                .withIsYouth(originDefendant.getIsYouth())
-                .withLegalAidStatus(originDefendant.getLegalAidStatus())
-                .withDefendantCaseJudicialResults(originDefendant.getDefendantCaseJudicialResults())
-                .withCroNumber(originDefendant.getCroNumber())
-                .withProceedingsConcluded(originDefendant.getProceedingsConcluded())
+                .withValuesFrom(originDefendant)
                 .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
-                .withAssociationLockedByRepOrder(originDefendant.getAssociationLockedByRepOrder())
                 .build();
 
     }

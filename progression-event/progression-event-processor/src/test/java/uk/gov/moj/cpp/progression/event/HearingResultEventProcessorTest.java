@@ -9,7 +9,9 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -53,6 +55,7 @@ import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.core.courts.ListCourtHearing;
 import uk.gov.justice.core.courts.NextHearing;
@@ -61,6 +64,9 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCasesResulted;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
 import uk.gov.justice.progression.courts.HearingResulted;
+import uk.gov.justice.progression.courts.api.ApplicationConcluded;
+import uk.gov.justice.progression.courts.api.ProsecutionConcludedForLAA;
+import uk.gov.justice.progression.courts.exract.ProsecutionConcluded;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -70,16 +76,20 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
+import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
 import uk.gov.moj.cpp.progression.helper.TestHelper;
+import uk.gov.moj.cpp.progression.service.ApplicationParameters;
+import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
+import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransformer;
 import uk.gov.moj.cpp.progression.transformer.HearingListingNeedsTransformer;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
@@ -97,10 +107,12 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;import org.mockito.Captor;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -108,7 +120,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
+@SuppressWarnings({"squid:S5976"})
 @ExtendWith(MockitoExtension.class)
 public class HearingResultEventProcessorTest {
 
@@ -193,6 +205,15 @@ public class HearingResultEventProcessorTest {
 
     @Mock
     private HearingListingNeedsTransformer hearingListingNeedsTransformer;
+
+    @Mock
+    private DefendantProceedingConcludedTransformer proceedingConcludedConverter;
+
+    @Mock
+    private AzureFunctionService azureFunctionService;
+
+    @Mock
+    private ApplicationParameters applicationParameters;
 
     @Captor
     private ArgumentCaptor<UUID> hearingIdCaptor;
@@ -398,14 +419,51 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
-    public void shouldProcessHandleApplicationsResulted() {
-        final Hearing hearing = hearing().withCourtApplications(singletonList(courtApplication().withId(randomUUID()).withApplicationStatus(ApplicationStatus.LISTED).build())).build();
-        final ApplicationsResulted applicationsResulted = applicationsResulted().withHearing(hearing).build();
+    public void shouldProcessHandleApplicationsResultedAndShouldNotCallLaaApi() {
+        final ApplicationsResulted applicationsResulted = buildApplicationsResulted(false, false);
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
                 objectToJsonObjectConverter.convert(applicationsResulted));
 
         eventProcessor.processHandleApplicationsResulted(event);
+
+        verifyNoMoreInteractions(azureFunctionService);
+        verify(this.sender).send(this.envelopeArgumentCaptor2.capture());
+        final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
+        assertThat(allValues.size(), is(1));
+        assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
+
+        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
+        verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
+    }
+
+
+    @Test
+    public void shouldProcessHandleApplicationsResultedAndShouldCallLaaApiWhenProceedingsConcluded() {
+        final ApplicationsResulted applicationsResulted = buildApplicationsResulted(true, true);
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
+                objectToJsonObjectConverter.convert(applicationsResulted));
+
+        final ProsecutionConcludedForLAA prosecutionConcludedForLAA = ProsecutionConcludedForLAA.prosecutionConcludedForLAA()
+                .withProsecutionConcluded(singletonList(ProsecutionConcluded.prosecutionConcluded()
+                        .withIsConcluded(true)
+                        .withApplicationConcluded(ApplicationConcluded.applicationConcluded()
+                                .withSubjectId(randomUUID())
+                                .withApplicationResultCode("APP_RESULT_CODE")
+                                .withApplicationId(randomUUID())
+                                .build())
+                        .build()))
+                .build();
+
+        when(proceedingConcludedConverter.getApplicationConcludedRequest(any(), any())).thenReturn(prosecutionConcludedForLAA);
+        when(azureFunctionService.concludeDefendantProceeding(anyString())).thenReturn(HttpStatus.SC_ACCEPTED);
+        when(applicationParameters.getRetryTimes()).thenReturn("3");
+        when(applicationParameters.getRetryInterval()).thenReturn("1000");
+
+        eventProcessor.processHandleApplicationsResulted(event);
+
+        verify(azureFunctionService).concludeDefendantProceeding(anyString());
 
         verify(this.sender).send(this.envelopeArgumentCaptor2.capture());
         final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
@@ -419,13 +477,121 @@ public class HearingResultEventProcessorTest {
     }
 
     @Test
-    public void shouldNotProcessHandleApplicationsResultedAsAmendReshareFeatureEnabledByDefault() {
-        final ApplicationsResulted applicationsResulted = applicationsResulted().withHearing(hearing().withCourtApplications(singletonList(courtApplication().build())).build()).build();
+    public void shouldProcessHandleApplicationsResultedAndShouldNotCallLaaApiWhenOffencesNotThereForProsecutionCases() {
+        final ApplicationsResulted applicationsResulted = buildApplicationsResulted(true, true, false);
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
                 objectToJsonObjectConverter.convert(applicationsResulted));
 
         eventProcessor.processHandleApplicationsResulted(event);
+
+        verifyNoMoreInteractions(azureFunctionService);
+        verify(this.sender).send(this.envelopeArgumentCaptor2.capture());
+        final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
+        assertThat(allValues.size(), is(1));
+        assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
+
+        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
+        verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
+    }
+
+
+    private static ApplicationsResulted buildApplicationsResulted(final boolean proceedingsConcluded, final boolean isWithLaaApplnReference) {
+        return buildApplicationsResulted(proceedingsConcluded, isWithLaaApplnReference, true);
+    }
+
+    private static ApplicationsResulted buildApplicationsResulted(final boolean proceedingsConcluded, final boolean isWithLaaApplnReference, final boolean isWithOffences) {
+        return applicationsResulted().withHearing(hearing().withCourtApplications(singletonList(courtApplication()
+                .withId(randomUUID())
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withCourtApplicationCases(asList(CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(randomUUID())
+                                .withOffences(getOffences(isWithLaaApplnReference, isWithOffences))
+                                .build(),
+                        CourtApplicationCase.courtApplicationCase()
+                                .withProsecutionCaseId(randomUUID())
+                                .withOffences(getOffences(isWithLaaApplnReference, isWithOffences))
+                                .build()
+                ))
+                .withProceedingsConcluded(proceedingsConcluded)
+                .build())).build()).build();
+    }
+
+    private static List<Offence> getOffences(final boolean isWithLaaApplnReference, final boolean isWithOffences) {
+        if(!isWithOffences){
+            return null;
+        }
+        return asList(
+                offence()
+                        .withId(randomUUID())
+                        .withLaaApplnReference(getLaaApplnReference(isWithLaaApplnReference))
+                        .build(),
+                offence()
+                        .withId(randomUUID())
+                        .build());
+    }
+
+    private static LaaReference getLaaApplnReference(final boolean isWithLaaApplnReference) {
+        if (isWithLaaApplnReference) {
+            return LaaReference.laaReference()
+                    .withStatusId(randomUUID())
+                    .build();
+        }
+        return null;
+    }
+
+    @Test
+    public void shouldProcessHandleApplicationsResultedAndThrowDefendantProceedingConcludedExceptionAfterAllRetries() {
+        final ApplicationsResulted applicationsResulted = buildApplicationsResulted(true, true);
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
+                objectToJsonObjectConverter.convert(applicationsResulted));
+
+        final ProsecutionConcludedForLAA prosecutionConcludedForLAA = ProsecutionConcludedForLAA.prosecutionConcludedForLAA()
+                .withProsecutionConcluded(singletonList(ProsecutionConcluded.prosecutionConcluded()
+                        .withIsConcluded(true)
+                        .withApplicationConcluded(ApplicationConcluded.applicationConcluded()
+                                .withSubjectId(randomUUID())
+                                .withApplicationResultCode("APP_RESULT_CODE")
+                                .withApplicationId(randomUUID())
+                                .build())
+                        .build()))
+                .build();
+
+        when(proceedingConcludedConverter.getApplicationConcludedRequest(any(), any())).thenReturn(prosecutionConcludedForLAA);
+        when(azureFunctionService.concludeDefendantProceeding(anyString())).thenReturn(HttpStatus.SC_GATEWAY_TIMEOUT);
+        when(applicationParameters.getRetryTimes()).thenReturn("3");
+        when(applicationParameters.getRetryInterval()).thenReturn("1000");
+
+        assertThrows(LaaAzureApimInvocationException.class, () -> eventProcessor.processHandleApplicationsResulted(event));
+    }
+
+    @Test
+    public void shouldNotProcessHandleApplicationsResultedAsAmendReshareFeatureEnabledByDefault() {
+        final ApplicationsResulted applicationsResulted = buildApplicationsResulted(true, true);
+        final JsonEnvelope event = envelopeFrom(
+                metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
+                objectToJsonObjectConverter.convert(applicationsResulted));
+
+        final ProsecutionConcludedForLAA prosecutionConcludedForLAA = ProsecutionConcludedForLAA.prosecutionConcludedForLAA()
+                .withProsecutionConcluded(singletonList(ProsecutionConcluded.prosecutionConcluded()
+                        .withIsConcluded(false)
+                        .withApplicationConcluded(ApplicationConcluded.applicationConcluded()
+                                .withSubjectId(randomUUID())
+                                .withApplicationResultCode("APP_RESULT_CODE")
+                                .withApplicationId(randomUUID())
+                                .build())
+                        .build()))
+                .build();
+
+        when(proceedingConcludedConverter.getApplicationConcludedRequest(any(), any())).thenReturn(prosecutionConcludedForLAA);
+        when(azureFunctionService.concludeDefendantProceeding(anyString())).thenReturn(HttpStatus.SC_ACCEPTED);
+        when(applicationParameters.getRetryTimes()).thenReturn("3");
+        when(applicationParameters.getRetryInterval()).thenReturn("1000");
+
+        eventProcessor.processHandleApplicationsResulted(event);
+
+        verify(azureFunctionService).concludeDefendantProceeding(anyString());
 
         verify(this.sender).send(this.envelopeArgumentCaptor2.capture());
         final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
