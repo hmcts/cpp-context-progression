@@ -227,7 +227,7 @@ public class ApplicationAtAGlanceHelperTest {
 
         when(organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(any(Envelope.class), anyString()))
                 .thenReturn(representation);
-        when(prosecutionCaseRepository.findByCaseId(caseId1)).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseRepository.findOptionalByCaseId(caseId1)).thenReturn(prosecutionCaseEntity);
         when(prosecutionCaseEntity.getPayload()).thenReturn(prosecutionCaseEntityPayload);
         when(stringToJsonObjectConverter.convert(prosecutionCaseEntityPayload)).thenReturn(prosecutionCaseEntityJsonObject);
         when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase);
@@ -443,7 +443,7 @@ public class ApplicationAtAGlanceHelperTest {
 
         when(organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(any(Envelope.class), anyString()))
                 .thenReturn(representation);
-        when(prosecutionCaseRepository.findByCaseId(caseId1)).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseRepository.findOptionalByCaseId(caseId1)).thenReturn(prosecutionCaseEntity);
         when(prosecutionCaseEntity.getPayload()).thenReturn(prosecutionCaseEntityPayload);
         when(stringToJsonObjectConverter.convert(prosecutionCaseEntityPayload)).thenReturn(prosecutionCaseEntityJsonObject);
         when(jsonObjectToObjectConverter.convert(prosecutionCaseEntityJsonObject, ProsecutionCase.class)).thenReturn(prosecutionCase);

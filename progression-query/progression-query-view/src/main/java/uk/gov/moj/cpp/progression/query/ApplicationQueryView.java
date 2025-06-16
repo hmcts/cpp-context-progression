@@ -17,6 +17,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.courts.progression.query.AagResults;
 import uk.gov.justice.courts.progression.query.ApplicationDetails;
 import uk.gov.justice.courts.progression.query.LinkedCases;
@@ -450,8 +451,13 @@ public class ApplicationQueryView {
         ofNullable(courtApplication.getCourtApplicationCases()).ifPresent(courtApplicationCases ->
                 courtApplicationCases.forEach(courtApplicationCase -> {
                     final LinkedCases.Builder linkedCasesBuilder = new LinkedCases.Builder();
-                    linkedCasesBuilder.withProsecutionCaseId(courtApplicationCase.getProsecutionCaseId());
-                    linkedCasesBuilder.withProsecutionCaseIdentifier(courtApplicationCase.getProsecutionCaseIdentifier());
+                    linkedCasesBuilder.withCaseStatus(courtApplicationCase.getCaseStatus())
+                            .withProsecutionCaseId(courtApplicationCase.getProsecutionCaseId())
+                            .withProsecutionCaseIdentifier(courtApplicationCase.getProsecutionCaseIdentifier());
+                    final ProsecutionCase prosecutionCase = applicationAtAGlanceHelper.getProsecutionCase(courtApplicationCase.getProsecutionCaseId());
+                    if (prosecutionCase != null && prosecutionCase.getInitiationCode() != null) {
+                        linkedCasesBuilder.withInitiationCode(prosecutionCase.getInitiationCode().toString());
+                    }
                     ofNullable(courtApplicationCase.getOffences()).ifPresent(courtApplicationOffences ->
                             linkedCasesBuilder.withOffences(courtApplicationOffences.stream().map(this::getOffence).collect(toList()))
                     );

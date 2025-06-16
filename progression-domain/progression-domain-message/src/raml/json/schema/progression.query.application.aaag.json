@@ -17,6 +17,9 @@
         "applicationType": {
           "type": "string"
         },
+        "linkType": {
+          "type": "string"
+        },
         "appeal": {
           "type": "boolean"
         },
@@ -184,6 +187,12 @@
     "caseSummary": {
       "type": "object",
       "properties": {
+        "caseStatus": {
+          "type": "string"
+        },
+        "initiationCode": {
+          "type": "string"
+        },
         "prosecutionCaseId": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
         },

@@ -100,6 +100,9 @@ public class ApplicationAtAGlanceHelper {
         if (nonNull(type)) {
             applicationBuilder.withApplicationType(type.getType());
             applicationBuilder.withAppeal(type.getAppealFlag());
+            if (type.getLinkType() != null) {
+                applicationBuilder.withLinkType(type.getLinkType().toString());
+            }
             applicationBuilder.withApplicantAppellantFlag(type.getApplicantAppellantFlag());
         }
         ofNullable(courtApplication.getPlea()).ifPresent(applicationBuilder::withPlea);
@@ -176,15 +179,13 @@ public class ApplicationAtAGlanceHelper {
             final UUID subjectMasterDefendantId = courtApplication.getSubject().getMasterDefendant().getMasterDefendantId();
 
             if (courtApplication.getCourtApplicationCases() != null) {
-            for(final CourtApplicationCase courtApplicationCase : courtApplication.getCourtApplicationCases()) {
-                final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(courtApplicationCase.getProsecutionCaseId());
-                final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
-                final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
-                final Optional<UUID> optionalMatchingDefendantId = prosecutionCase.getDefendants()
-                        .stream()
-                        .filter(defendant -> defendant.getMasterDefendantId().equals(subjectMasterDefendantId))
-                        .map(Defendant::getId)
-                        .findFirst();
+                for (final CourtApplicationCase courtApplicationCase : courtApplication.getCourtApplicationCases()) {
+                    final ProsecutionCase prosecutionCase = getProsecutionCase(courtApplicationCase.getProsecutionCaseId());
+                    final Optional<UUID> optionalMatchingDefendantId = prosecutionCase.getDefendants()
+                            .stream()
+                            .filter(defendant -> defendant.getMasterDefendantId().equals(subjectMasterDefendantId))
+                            .map(Defendant::getId)
+                            .findFirst();
 
                 if (optionalMatchingDefendantId.isPresent()) {
                     final JsonObject associatedCaseDefendants = organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(envelope,
@@ -202,6 +203,15 @@ public class ApplicationAtAGlanceHelper {
             }
             }
         }
+    }
+
+    public ProsecutionCase getProsecutionCase(final UUID caseId) {
+        final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findOptionalByCaseId(caseId);
+        if (prosecutionCaseEntity != null) {
+            final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+            return jsonObjectToObjectConverter.convert(prosecutionCasePayload, ProsecutionCase.class);
+        }
+        return null;
     }
 
     private String getOrganisationPersons(final List<AssociatedPerson> associatedPersonList) {

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import uk.gov.justice.core.courts.LinkType;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -208,6 +209,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.applicationDetails.applicationParticulars", equalTo(particulars)),
                 withJsonPath("$.applicationDetails.applicationReceivedDate", equalTo(applicantReceivedDate)),
                 withJsonPath("$.applicationDetails.applicationType", equalTo(applicationType)),
+                withJsonPath("$.applicationDetails.linkType", equalTo(LinkType.STANDALONE.toString())),
                 withJsonPath("$.applicationDetails.appeal", equalTo(appeal)),
                 withJsonPath("$.applicationDetails.applicantAppellantFlag", equalTo(applicantAppellantFlag)),
                 withJsonPath("$.applicationDetails.aagResults.length()", equalTo(1)),
@@ -243,6 +245,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.respondentDetails[1].name", equalTo("David lloyd")),
                 withJsonPath("$.respondentDetails[1].address.address1", equalTo("44, Wilson Patten Street")),
                 withJsonPath("$.linkedCases[0].prosecutionCaseId", equalTo(prosecutionCaseId)),
+                withJsonPath("$.linkedCases[0].caseStatus", equalTo("ACTIVE")),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityCode", equalTo(prosecutionAuthorityCode)),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityReference", equalTo(prosecutionAuthorityReference))

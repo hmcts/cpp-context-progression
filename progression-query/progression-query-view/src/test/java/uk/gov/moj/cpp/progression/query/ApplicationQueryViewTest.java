@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -324,6 +325,8 @@ public class ApplicationQueryViewTest {
                 .build());
 
         final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withIsSJP(true)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withOffences(offences)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
@@ -342,13 +345,17 @@ public class ApplicationQueryViewTest {
         when(childCourtApplication.getId()).thenReturn(UUID.randomUUID());
         when(childCourtApplication.getApplicant()).thenReturn(getCourtApplicant());
 
-        when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(mock(ApplicationDetails.class));
+        final ApplicationDetails applicationDetailsMock = mock(ApplicationDetails.class);
+        when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
         final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
 
         when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
+
+        final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
+        when(applicationAtAGlanceHelper.getProsecutionCase(eq(prosecutionCaseId))).thenReturn(prosecutionCaseMock);
 
         final JsonEnvelope response = applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getString("applicationId"), is(applicationId.toString()));
@@ -357,6 +364,10 @@ public class ApplicationQueryViewTest {
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications").size(), is(1));
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").size(), is(1));
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0), is(notNullValue()));
+        verify(prosecutionCaseMock, atMostOnce()).getCaseStatus();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(applicationDetailsMock, atMostOnce()).getLinkType();
     }
 
     @Test
