@@ -227,8 +227,8 @@ public class CaseAtAGlanceHelper {
                 caagDefendantBuilder.withDefendantJudicialResults(defendantJudicialResultList);
             }
             caagDefendantBuilder.withLegalAidStatus(defendant.getLegalAidStatus());
-            if(nonNull(defendantUpdatedOn) && nonNull(defendantUpdatedOn.get(defendant.getId()))) {
-                caagDefendantBuilder.withUpdatedOn(defendantUpdatedOn.get(defendant.getId()));
+            if(!defendantUpdatedOn.isEmpty() && nonNull(defendantUpdatedOn.get(defendant.getMasterDefendantId()))) {
+                caagDefendantBuilder.withUpdatedOn(defendantUpdatedOn.get(defendant.getMasterDefendantId()));
             }
             setCtlExpiryDate(defendant, caagDefendantBuilder);
 

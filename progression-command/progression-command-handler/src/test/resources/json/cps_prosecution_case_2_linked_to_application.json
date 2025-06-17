@@ -1,0 +1,152 @@
+{
+  "caseStatus": "INACTIVE",
+  "cpsOrganisation": "A30AB00",
+  "defendants": [
+    {
+      "courtProceedingsInitiated": "2025-03-27T16:02:59.423Z",
+      "id": "b17e57ba-bc88-4d88-9658-f6cb9503b3d8",
+      "masterDefendantId": "b17e57ba-bc88-4d88-9658-f6cb9503b3d8",
+      "offences": [
+        {
+          "arrestDate": "2024-02-06",
+          "chargeDate": "2024-02-07",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "2cb9dea6-024e-4d4b-ba77-7e26b503f73a",
+          "isDisposed": true,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "FINAL",
+              "cjsCode": "1017",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "dvlaCode": "J",
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": true,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "416de85a-fa57-46a8-8e2a-f455cde6b61b",
+              "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+              "label": "Absolute discharge",
+              "lastSharedDateTime": "2025-03-27",
+              "level": "O",
+              "lifeDuration": false,
+              "orderedDate": "2025-03-27",
+              "orderedHearingId": "f540fa12-8414-4cea-91ad-f9c35efba141",
+              "policeSubjectLineTitle": "Final Sentence",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 53800,
+              "resultText": "AD - Absolute discharge",
+              "resultWording": "",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "416de85a-fa57-46a8-8e2a-f455cde6b61b",
+              "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Rhyddhad diamod"
+            }
+          ],
+          "listingNumber": 1,
+          "maxPenalty": "S:L3",
+          "modeOfTrial": "Summary",
+          "offenceCode": "CA03010",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+          "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+          "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+          "offenceTitle": "Use a television set without a licence",
+          "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+          "orderIndex": 1,
+          "proceedingsConcluded": true,
+          "startDate": "2024-02-01",
+          "wording": "Use / install a television set without a licence."
+        }
+      ],
+      "personDefendant": {
+        "arrestSummonsNumber": "2432NR9000009786016K",
+        "bailConditions": "",
+        "bailStatus": {
+          "code": "A",
+          "description": "Not applicable",
+          "id": "86009c70-759d-3308-8de4-194886ff9a77"
+        },
+        "driverNumber": "VANFL002222OW9PI",
+        "personDetails": {
+          "address": {
+            "address1": "9999H9999QQQJ",
+            "address2": "WplfoqqP",
+            "address3": "addressline 4",
+            "address4": "BtfgstQQ",
+            "address5": "Elfo",
+            "postcode": "YO43 4DF"
+          },
+          "contact": {
+            "home": "02012345679",
+            "mobile": "07771234568",
+            "primaryEmail": "test02@gmail.com"
+          },
+          "dateOfBirth": "1953-11-22",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "White",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "Hello Four",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Hi 3",
+          "title": "Mr"
+        },
+        "policeBailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        }
+      },
+      "proceedingsConcluded": true,
+      "prosecutionAuthorityReference": "2432NR9000009786016K",
+      "prosecutionCaseId": "ffc9f2c8-b649-4be2-a025-9ba620d16b75"
+    }
+  ],
+  "id": "ffc9f2c8-b649-4be2-a025-9ba620d16b75",
+  "initiationCode": "C",
+  "originatingOrganisation": "0450000",
+  "prosecutionCaseIdentifier": {
+    "address": {
+      "address1": "Surrey Police",
+      "address2": "Mount Browne",
+      "address3": "Sandy Lane",
+      "address4": "Guildford",
+      "postcode": "GU3 1HG"
+    },
+    "contact": {
+      "primaryEmail": "mail_data_bureau_res@surrey.police.uk"
+    },
+    "majorCreditorCode": "PO45",
+    "prosecutionAuthorityCode": "SURRPF",
+    "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+    "prosecutionAuthorityName": "Surrey Police",
+    "prosecutionAuthorityOUCode": "0450000",
+    "caseURN": "35NR0806016"
+  }
+}

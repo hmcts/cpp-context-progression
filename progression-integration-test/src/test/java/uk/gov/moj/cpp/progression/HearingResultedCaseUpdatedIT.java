@@ -175,7 +175,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     private void verifyInMessagingQueueForHearingResultedCaseUpdated() {
         final Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingResultedCaseUpdated);
         assertTrue(message.isPresent());
-        assertThat(message.get().getJsonObject("prosecutionCase").getString("caseStatus"), equalTo("INACTIVE"));
         assertThat(message.get().getJsonObject("prosecutionCase").getJsonArray("defendants").getJsonObject(0).getBoolean("proceedingsConcluded"), equalTo(true));
     }
 

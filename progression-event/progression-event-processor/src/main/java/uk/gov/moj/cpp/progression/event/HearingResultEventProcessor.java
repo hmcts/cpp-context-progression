@@ -14,6 +14,7 @@ import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.ExtendHearing;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -29,9 +30,12 @@ import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
+import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
+import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
@@ -41,10 +45,15 @@ import uk.gov.moj.cpp.progression.service.AzureFunctionService;
 import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+import uk.gov.moj.cpp.progression.service.RefDataService;
+import uk.gov.moj.cpp.progression.service.UpdateDefendantService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransformer;
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
+import javax.inject.Inject;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +78,7 @@ public class HearingResultEventProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingResultEventProcessor.class.getName());
     private static final String COMMITTED_TO_CC = "CommittedToCC";
     private static final String SENT_TO_CC = "SentToCC";
+    private static final String COURT_APPLICATIONS = "courtApplications";
 
     @Inject
     private Sender sender;
@@ -105,6 +115,19 @@ public class HearingResultEventProcessor {
 
     @Inject
     private SummonsHelper summonsHelper;
+
+    @Inject
+    private Requester requester;
+
+    @Inject
+    private RefDataService referenceDataService;
+
+    @Inject
+    private CustodialEstablishmentUpdateHelper custodialEstablishmentUpdateHelper;
+
+    @Inject
+    private UpdateDefendantService updateDefendantService;
+
 
     @Inject
     private AzureFunctionService azureFunctionService;
@@ -176,6 +199,24 @@ public class HearingResultEventProcessor {
                                 ? ApplicationStatus.FINALISED
                                 : courtApplication.getApplicationStatus();
                         progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), applicationStatus);
+                    });
+        }
+        updateCustodialEstablishment(event, hearing);
+
+    }
+
+    private void updateCustodialEstablishment(final JsonEnvelope event, final Hearing hearing) {
+        //update defendant custodial establishment when hearing resulted with Prison / Hospital selected
+        var hearingJsonObject = objectToJsonObjectConverter.convert(hearing);
+        if(Objects.nonNull(hearingJsonObject.get(COURT_APPLICATIONS))) {
+            final List<PrisonCustodySuite> prisonCustodySuites = referenceDataService.getPrisonsCustodySuites(requester);
+
+            hearingJsonObject.getJsonArray(COURT_APPLICATIONS).stream().map(JsonObject.class::cast)
+                    .forEach(application -> {
+                        final Optional<CustodialEstablishment> defendantsWithCustodialEstablishmentToUpdateOpt = custodialEstablishmentUpdateHelper.getCustodialEstablishmentUpdateFromJudicialResults(application, prisonCustodySuites);
+
+                        defendantsWithCustodialEstablishmentToUpdateOpt
+                                .ifPresent(custodialEstablishment -> updateDefendantService.updateDefendantCustodialEstablishment(event.metadata(), application, custodialEstablishment));
                     });
         }
 

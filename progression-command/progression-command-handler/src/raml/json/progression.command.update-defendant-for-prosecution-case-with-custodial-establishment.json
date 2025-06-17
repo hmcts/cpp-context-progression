@@ -1,0 +1,10 @@
+{
+  "prosecutionCaseId": "cf73207f-3ced-488a-82a0-3fba79c2ce02",
+  "custodialEstablishment": {
+    "custody": "Prison",
+    "id": "03eb8d61-f46e-43f4-b3f0-9a11e28c2ebe",
+    "name": "custody-name"
+  },
+  "masterDefendantId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+  "defendantId": "0f36a570-46ef-41d1-b290-9037a64fa1a4"
+}

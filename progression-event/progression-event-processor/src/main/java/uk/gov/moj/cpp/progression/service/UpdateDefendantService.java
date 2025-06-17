@@ -37,20 +37,45 @@ public class UpdateDefendantService {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
     private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_FOR_CASE = "progression.command.update-defendant-for-prosecution-case";
+    private static final String PROGRESSION_COMMAND_UPDATE_DEFENDANT_FOR_PROSECUTION_CASE_WITH_CUSTODIAL_ESTABLISHMENT = "progression.command.update-defendant-for-prosecution-case-with-custodial-establishment";
 
     public void updateDefendantCustodialEstablishment(final Metadata eventMetadata, final Defendant defendantWithPrisonSentence, final CustodialEstablishment custodialEstablishment) {
         final DefendantUpdate defendantUpdate = toDefendantUpdate(defendantWithPrisonSentence, custodialEstablishment);
         final JsonObject defendantUpdateJson = objectToJsonObjectConverter.convert(defendantUpdate);
 
         final JsonObject jsonPayload = createObjectBuilder()
-                .add("prosecutionCaseId", defendantUpdate.getProsecutionCaseId().toString())
+                .add(PROSECUTION_CASE_ID, defendantUpdate.getProsecutionCaseId().toString())
                 .add("id", defendantUpdate.getId().toString())
                 .add("defendant", defendantUpdateJson).build();
 
         LOGGER.info("Updating defendant custody establishment with payload={}", jsonPayload);
 
         sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(eventMetadata)
-                        .withName(PROGRESSION_COMMAND_UPDATE_DEFENDANT_FOR_CASE), jsonPayload));
+                .withName(PROGRESSION_COMMAND_UPDATE_DEFENDANT_FOR_CASE), jsonPayload));
+    }
+
+    public void updateDefendantCustodialEstablishment(final Metadata eventMetadata, final JsonObject application, final CustodialEstablishment custodialEstablishment) {
+        final JsonObject custodialEstablishmentJson = objectToJsonObjectConverter.convert(custodialEstablishment);
+
+        JsonObject masterDefendant = application.getJsonObject(APPLICANT).containsKey(MASTER_DEFENDANT) ?
+                application.getJsonObject(APPLICANT) : application.getJsonObject(SUBJECT);
+        String prosecutionCaseId;
+        if (application.containsKey("courtApplicationCases")) {
+            prosecutionCaseId = application.getJsonArray("courtApplicationCases").get(0).asJsonObject().getString(PROSECUTION_CASE_ID);
+        } else {
+            prosecutionCaseId = application.getJsonObject("courtOrder").getJsonArray("courtOrderOffences").get(0).asJsonObject().getString(PROSECUTION_CASE_ID);
+        }
+
+        final JsonObject jsonPayload = createObjectBuilder()
+                .add(PROSECUTION_CASE_ID, prosecutionCaseId)
+                .add("masterDefendantId", masterDefendant.getJsonObject(MASTER_DEFENDANT).getString("masterDefendantId"))
+                .add("defendantId", masterDefendant.getJsonObject(MASTER_DEFENDANT).getJsonArray("defendantCase").get(0).asJsonObject().getString("defendantId"))
+                .add("custodialEstablishment", custodialEstablishmentJson).build();
+
+        LOGGER.info("Updating defendant custody establishment with payload={}", jsonPayload);
+
+        sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(eventMetadata)
+                .withName(PROGRESSION_COMMAND_UPDATE_DEFENDANT_FOR_PROSECUTION_CASE_WITH_CUSTODIAL_ESTABLISHMENT), jsonPayload));
     }
 
     private DefendantUpdate toDefendantUpdate(final Defendant defendant, final CustodialEstablishment custodialEstablishment) {
