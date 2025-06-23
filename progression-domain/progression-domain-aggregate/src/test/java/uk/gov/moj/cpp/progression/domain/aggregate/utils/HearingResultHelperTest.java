@@ -798,6 +798,67 @@ public class HearingResultHelperTest {
         assertThat(HearingResultHelper.isNextHearingDeleted(newHearingResult, oldHearingResult), is(true));
     }
 
+    @Test
+    public void isUnscheduledHearingDeleted(){
+        final UUID resultId1 = randomUUID();
+        final UUID resultId2 = randomUUID();
+
+        final ZonedDateTime nextHearing1Day = ZonedDateTime.now().plusDays(2);
+        final ZonedDateTime nextHearing2Day = ZonedDateTime.now().plusDays(3);
+        final HearingType hearingType = HearingType.hearingType().withId(randomUUID()).build();
+        final List<JudicialResult> oldJudicialResults = Arrays.asList(JudicialResult.judicialResult()
+                .withJudicialResultId(resultId1)
+                .withIsNewAmendment(true)
+                .withNextHearing(NextHearing.nextHearing()
+                        .withListedStartDateTime(nextHearing1Day)
+                        .withType(hearingType)
+                        .withCourtCentre(CourtCentre.courtCentre()
+                                .withCode(COMMITTING_COURT_CODE)
+                                .withName(COMMITTING_COURT_NAME)
+                                .build())
+                        .build())
+                .build(), JudicialResult.judicialResult()
+                .withJudicialResultId(resultId2)
+                .withIsUnscheduled(true)
+                .build());
+
+        final List<JudicialResult> newJudicialResults = Arrays.asList(JudicialResult.judicialResult()
+                .withJudicialResultId(resultId1)
+                .withIsNewAmendment(false)
+                .withIsUnscheduled(false)
+                .withNextHearing(NextHearing.nextHearing()
+                        .withListedStartDateTime(nextHearing1Day)
+                        .withApplicationTypeCode("some code")
+                        .withType(hearingType)
+                        .withCourtCentre(CourtCentre.courtCentre()
+                                .withCode(COMMITTING_COURT_CODE)
+                                .withName(COMMITTING_COURT_NAME)
+                                .build())
+                        .build())
+                .build());
+        final Hearing oldHearingResult = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        oldJudicialResults,
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        final Hearing newHearingResult = buildHearingWithCourtApplications(
+                asList(buildProsecutionCase(PROSECUTION_CASE_ID_1,
+                        of(buildDefendant(DEFENDANT_ID_1,
+                                of(buildOffence(OFFENCE_ID_1,
+                                        newJudicialResults,
+                                        singletonList(buildReportingRestriction(REPORTING_RESTRICTION_ID_1, randomUUID(), randomUUID().toString(), LocalDate.now()))))
+                                        .collect(Collectors.toList())
+                        )).collect(Collectors.toList()))),
+                emptyList());
+
+        assertThat(HearingResultHelper.isUnscheduledHearingDeleted(newHearingResult, oldHearingResult), is(true));
+    }
+
     private void assertHearing(final HearingListingNeeds hearingListingNeeds, final UUID hearingId, final int size) {
         assertThat(hearingListingNeeds.getId(), is(hearingId));
         assertThat(hearingListingNeeds.getProsecutionCases().size(), is(size));

@@ -50,6 +50,8 @@ public class NotificationHandler {
     private static final String COMPLETED_AT = "completedAt";
     private static final String ACCEPTED_TIME = "acceptedTime";
 
+
+
     @Inject
     private EventSource eventSource;
 

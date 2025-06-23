@@ -22,21 +22,17 @@ import org.junit.jupiter.api.Test;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetLatestHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.*;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyDeleteNexHearingCommandToListing;
 import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyListUnscheduledHearingRequestsAsStreamV2;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 public class HearingResultedUnscheduledListingIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private static final String PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing";
+    private static final String PUBLIC_HEARING_RESULTED_DELETE_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-delete-unscheduled-listing";
     private static final String PUBLIC_HEARING_RESULTED_WITH_APPLICATION_RESULT_UNSCHEDULED_LISTING_V2 = "public.events.hearing.hearing-resulted-unscheduled-listing-with-application-resulted";
 
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";
@@ -106,6 +102,21 @@ public class HearingResultedUnscheduledListingIT extends AbstractIT {
         getHearingForDefendant(unscheduledHearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
     }
 
+    @Test
+    public void shouldDeleteUnscheduledHearingAfterAmendAndReshareExistingHearingRemovedUnscheduledHearingResult() throws Exception {
+        final String existingHearingId = prepareHearingForTest();
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_UNSCHEDULED_LISTING_V2 + ".json", caseId,
+                existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
+        final String unscheduledHearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, List.of(existingHearingId));
+        getHearingForDefendant(unscheduledHearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].id", is(EXPECTED_OFFENCE_ID))});
+
+        final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingJsonObject(PUBLIC_HEARING_RESULTED_DELETE_UNSCHEDULED_LISTING_V2 + ".json", caseId,
+                existingHearingId, defendantId, newCourtCentreId, newCourtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope2);
+        pollHearingWithStatusResulted(existingHearingId);
+        verifyDeleteNexHearingCommandToListing(existingHearingId);
+    }
 
     private Matcher[] getMatcherForCpsOrganisation() {
         return new Matcher[]{
