@@ -600,11 +600,11 @@ public class CourtApplicationProcessor {
         // then update application hearing listing status to hearing initiated
         progressionService.updateHearingListingStatusToHearingInitiated(event, hearingInitiate);
 
-        // then update application status and list hearing
-        progressionService.updateCourtApplicationStatus(event, application.getId(),
-                nonNull(application.getApplicationStatus()) ? application.getApplicationStatus() : ApplicationStatus.UN_ALLOCATED);
+        // then update application status - hearing initiated in the Listing hence applicationStatus == UN_ALLOCATED
+        progressionService.updateCourtApplicationStatus(event, application.getId(), ApplicationStatus.UN_ALLOCATED);
 
         final ListCourtHearing listCourtHearing = buildDefaultHearingNeeds(applicationReferredToCourtHearing.getCourtHearing(), application, prosecutionCases);
+        // then list hearing
         listingService.listCourtHearing(event, listCourtHearing);
     }
 

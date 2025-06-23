@@ -77,7 +77,7 @@ public class CreateCourtApplicationIT extends AbstractIT {
 
         Matcher[] firstApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(firstApplicationId)),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
                 withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
                 withJsonPath("$.courtApplication.applicationReference", notNullValue()),
         };
@@ -94,7 +94,7 @@ public class CreateCourtApplicationIT extends AbstractIT {
 
         Matcher[] secondApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(secondApplicationId)),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
                 withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
                 withJsonPath("$.courtApplication.applicationReference", notNullValue()),
         };

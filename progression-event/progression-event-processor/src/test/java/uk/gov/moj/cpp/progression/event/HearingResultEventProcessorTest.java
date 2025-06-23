@@ -433,7 +433,7 @@ public class HearingResultEventProcessorTest {
         assertThat(allValues.size(), is(1));
         assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
 
-        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
+        verify(progressionService, never()).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
         verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
     }
 
@@ -470,7 +470,7 @@ public class HearingResultEventProcessorTest {
         assertThat(allValues.size(), is(1));
         assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
 
-        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
+        verify(progressionService, never()).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
         verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
 
 
@@ -491,7 +491,7 @@ public class HearingResultEventProcessorTest {
         assertThat(allValues.size(), is(1));
         assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
 
-        verify(progressionService, times(1)).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
+        verify(progressionService, never()).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
         verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
     }
 

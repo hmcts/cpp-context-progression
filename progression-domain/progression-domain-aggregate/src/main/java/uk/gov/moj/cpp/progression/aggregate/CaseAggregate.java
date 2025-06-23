@@ -257,10 +257,6 @@ import uk.gov.moj.cpp.progression.plea.json.schemas.PleadOnlinePcqVisited;
 import uk.gov.moj.cpp.progression.plea.json.schemas.PleasAllocationDetails;
 import uk.gov.moj.cpp.progression.plea.json.schemas.TemplateType;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;

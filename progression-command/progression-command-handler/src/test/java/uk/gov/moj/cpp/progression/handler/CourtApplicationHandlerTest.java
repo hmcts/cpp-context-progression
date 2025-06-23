@@ -20,13 +20,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.BoxHearingRequest.boxHearingRequest;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
-import static uk.gov.justice.core.courts.HearingResultedUpdateApplication.hearingResultedUpdateApplication;
 import static uk.gov.justice.core.courts.InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings;
 import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
 import static uk.gov.justice.core.courts.SendNotificationForApplicationInitiated.sendNotificationForApplicationInitiated;
@@ -55,7 +53,6 @@ import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.ApplicationReferredToBoxwork;
 import uk.gov.justice.core.courts.ApplicationReferredToCourtHearing;
 import uk.gov.justice.core.courts.ApplicationReferredToExistingHearing;
-import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationAddedToCase;
@@ -77,13 +74,10 @@ import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingInitiateEnriched;
 import uk.gov.justice.core.courts.HearingResultedApplicationUpdated;
-import uk.gov.justice.core.courts.HearingResultedUpdateApplication;
 import uk.gov.justice.core.courts.HearingUpdatedWithCourtApplication;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.InitiateCourtHearingAfterSummonsApproved;
 import uk.gov.justice.core.courts.InitiationCode;
-import uk.gov.justice.core.courts.JudicialResult;
-import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JudicialRole;
 import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LinkType;
@@ -126,7 +120,6 @@ import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -2442,40 +2435,6 @@ public class CourtApplicationHandlerTest {
                                 withJsonPath("$.courtApplication.id", is(applicationId.toString())),
                                 withJsonPath("$.summonsRejectedOutcome.reasons", hasItem("Rejected")),
                                 withJsonPath("$.caseIds", hasItem(prosecutionCaseId.toString()))
-                        )))));
-    }
-
-    @Test
-    public void shouldGenerateHearingResultedApplicationUpdated() throws EventStreamException {
-        final UUID applicationId = randomUUID();
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.hearing-resulted-update-application")
-                .withId(randomUUID())
-                .build();
-
-        final HearingResultedUpdateApplication hearingResultedUpdateApplication = hearingResultedUpdateApplication().withCourtApplication(courtApplication().withId(applicationId).withJudicialResults(asList(JudicialResult.judicialResult().withCategory(JudicialResultCategory.FINAL).build())).build()).build();
-
-        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
-
-        courtApplicationHandler.hearingResultedUpdateApplication(envelopeFrom(metadata, hearingResultedUpdateApplication));
-
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata()
-                                .withName("progression.event.hearing-resulted-application-updated"),
-                        payload().isJson(allOf(
-                                withJsonPath("$.courtApplication.id", is(applicationId.toString())),
-                                withJsonPath("$.courtApplication.applicationStatus", is(ApplicationStatus.FINALISED.toString()))
                         )))));
     }
 

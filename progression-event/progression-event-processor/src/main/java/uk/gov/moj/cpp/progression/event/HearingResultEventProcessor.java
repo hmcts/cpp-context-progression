@@ -6,12 +6,10 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.processor.utils.RetryHelper.retryHelper;
 
-import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CommittingCourt;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.ExtendHearing;
@@ -46,7 +44,6 @@ import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransf
 import uk.gov.moj.cpp.progression.transformer.HearingToHearingListingNeedsTransformer;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -165,20 +162,6 @@ public class HearingResultEventProcessor {
                 Thread.currentThread().interrupt();
             }
         });
-
-        //updateApplicationStatus
-        if (isNotEmpty(hearing.getCourtApplications())) {
-            LOGGER.info("Hearing contains court applications resulted for hearing id :: {}", hearing.getId());
-            hearing.getCourtApplications()
-                    .forEach(courtApplication -> {
-                        final ApplicationStatus applicationStatus = ofNullable(courtApplication.getJudicialResults()).map(ArrayList::new).orElseGet(ArrayList::new).stream()
-                                .filter(Objects::nonNull).map(JudicialResult::getCategory).anyMatch(FINAL::equals)
-                                ? ApplicationStatus.FINALISED
-                                : courtApplication.getApplicationStatus();
-                        progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), applicationStatus);
-                    });
-        }
-
     }
 
     private void laaProceedingConcluded(final CourtApplication courtApplication, final UUID hearingId) throws InterruptedException {

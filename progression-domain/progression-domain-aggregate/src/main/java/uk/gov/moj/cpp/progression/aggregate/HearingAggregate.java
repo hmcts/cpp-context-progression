@@ -94,7 +94,6 @@ import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.plea.json.schemas.OpaNoticeDocument;
-import uk.gov.moj.cpp.progression.util.CaseHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;

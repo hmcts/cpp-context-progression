@@ -21,6 +21,7 @@ import static uk.gov.justice.core.courts.ApplicationStatus.EJECTED;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ApplicationStatus.IN_PROGRESS;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
+import static uk.gov.justice.core.courts.ApplicationStatus.UN_ALLOCATED;
 import static uk.gov.justice.core.courts.AssociatedDefenceOrganisation.associatedDefenceOrganisation;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
@@ -140,7 +141,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +149,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908499L;
+    private static final long serialVersionUID = 1331113876243908501L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private ApplicationStatus applicationStatus = DRAFT;
@@ -226,6 +226,15 @@ public class ApplicationAggregate implements Aggregate {
                 when(CourtApplicationStatusUpdated.class).apply(e -> {
                     this.applicationStatus = e.getCourtApplication().getApplicationStatus();
                     setCourtApplication(e.getCourtApplication());
+                }),
+                when(CourtApplicationStatusChanged.class).apply(e -> {
+                    this.applicationStatus = e.getApplicationStatus();
+                    if (nonNull(this.courtApplication)) {
+                        this.courtApplication = CourtApplication.courtApplication()
+                                .withValuesFrom(this.courtApplication)
+                                .withApplicationStatus(e.getApplicationStatus())
+                                .build();
+                    }
                 }),
                 otherwiseDoNothing());
     }
@@ -366,11 +375,14 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> updateApplicationStatus(final UUID applicationId, final ApplicationStatus applicationStatus) {
         LOGGER.debug("Application status being updated");
-        return apply(Stream.of(
-                CourtApplicationStatusChanged.courtApplicationStatusChanged()
-                        .withId(applicationId)
-                        .withApplicationStatus(applicationStatus)
-                        .build()));
+        return apply(Stream.of(getCourtApplicationStatusChanged(applicationId, applicationStatus)));
+    }
+
+    private static CourtApplicationStatusChanged getCourtApplicationStatusChanged(final UUID applicationId, final ApplicationStatus applicationStatus) {
+        return CourtApplicationStatusChanged.courtApplicationStatusChanged()
+                .withId(applicationId)
+                .withApplicationStatus(applicationStatus)
+                .build();
     }
 
     @SuppressWarnings({"squid:S1067"})
@@ -687,7 +699,7 @@ public class ApplicationAggregate implements Aggregate {
         } else if (applicationReferredToNewHearing) {
             streams.add(ApplicationReferredToCourtHearing.applicationReferredToCourtHearing()
                     .withApplication(courtApplication().withValuesFrom(courtApplication)
-                            .withApplicationStatus(LISTED)
+                            .withApplicationStatus(UN_ALLOCATED)
                             .build())
                     .withCourtHearing(courtHearing)
                     .build());
@@ -805,14 +817,21 @@ public class ApplicationAggregate implements Aggregate {
             });
         }
 
-        return streamBuilder.build();
+        if (applicationStatusAfterHearingResulted != this.courtApplication.getApplicationStatus()) {
+            streamBuilder.add(getCourtApplicationStatusChanged(courtApplication.getId(), applicationStatusAfterHearingResulted));
+        }
 
+        return apply(streamBuilder.build());
     }
 
     private ApplicationStatus getApplicationStatusAfterHearingResulted(final CourtApplication courtApplication) {
-        return ofNullable(courtApplication.getJudicialResults()).map(Collection::stream).orElseGet(Stream::empty)
-                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory()))
-                ? FINALISED : courtApplication.getApplicationStatus();
+        if (ofNullable(courtApplication.getJudicialResults()).stream().flatMap(Collection::stream)
+                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory()))) {
+            return FINALISED;
+        } else {
+            //fixing historical data, were application incorrectly created with FINALISED status
+            return courtApplication.getApplicationStatus() == FINALISED ? LISTED : courtApplication.getApplicationStatus();
+        }
     }
 
     public Stream<Object> deleteHearingRelatedToCourtApplication(final UUID hearingId, final UUID courtApplicationId) {

@@ -94,7 +94,7 @@ public class ReferApplicationToCourtIT extends AbstractIT {
 
         final Matcher[] firstApplicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
                 withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
                 withJsonPath("$.courtApplication.applicationReference", notNullValue(String.class)),
         };
@@ -106,7 +106,7 @@ public class ReferApplicationToCourtIT extends AbstractIT {
         Matcher[] caseMatchers = {
                 withJsonPath("$.prosecutionCase.id", is(caseId)),
                 withJsonPath("$.linkedApplicationsSummary", hasSize(1)),
-                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("LISTED"))
+                withJsonPath("$.linkedApplicationsSummary[0].applicationStatus", is("UN_ALLOCATED"))
         };
 
         pollProsecutionCasesProgressionFor(caseId, caseMatchers);

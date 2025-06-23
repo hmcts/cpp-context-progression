@@ -1,29 +1,12 @@
 package uk.gov.moj.cpp.progression;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import javax.json.JsonObject;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import io.restassured.response.Response;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.hamcrest.Matcher;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -45,6 +28,23 @@ import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.stub.AzureSteCaseFilterServiceStub.stubPostSetCaseEjected;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import javax.json.JsonObject;
+
+import io.restassured.response.Response;
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 public class EjectCaseApplicationIT extends AbstractIT {
     private static final String CASE_OR_APPLICATION_EJECTED
             = "public.progression.events.case-or-application-ejected";
@@ -56,7 +56,6 @@ public class EjectCaseApplicationIT extends AbstractIT {
     private static final String STATUS_EJECTED = "EJECTED";
     private static final String STATUS_DRAFT = "DRAFT";
     private static final String STATUS_UN_ALLOCATED = "UN_ALLOCATED";
-    private static final String STATUS_LISTED = "LISTED";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String hearingId;
@@ -127,7 +126,7 @@ public class EjectCaseApplicationIT extends AbstractIT {
         // Creating first application for the case
         String firstApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(firstApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
-        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_LISTED));
+        pollForApplication(firstApplicationId, getMatcherForApplication(STATUS_UN_ALLOCATED));
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed.json",
                 caseId, hearingId, defendantId, courtCentreId, randomUUID().toString(), courtCentreName));
@@ -137,10 +136,10 @@ public class EjectCaseApplicationIT extends AbstractIT {
         // Creating second application for the case
         String secondApplicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(secondApplicationId, caseId, "applications/progression.initiate-court-proceedings-for-court-order-linked-application.json");
-        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_LISTED));
+        pollForApplication(secondApplicationId, getMatcherForApplication(STATUS_UN_ALLOCATED));
 
         //assert linked applications
-        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_LISTED));
+        pollProsecutionCasesProgressionFor(caseId, getLinkedApplicationsMatcher(STATUS_UN_ALLOCATED));
 
         final JmsMessageConsumerClient consumerForCaseOrApplicationEjected = newPublicJmsMessageConsumerClientProvider().withEventNames(CASE_OR_APPLICATION_EJECTED).getMessageConsumerClient();
 
