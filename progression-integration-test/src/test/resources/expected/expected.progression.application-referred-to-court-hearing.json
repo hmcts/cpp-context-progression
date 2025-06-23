@@ -37,7 +37,7 @@
       "id": "f0ce442a-998a-4587-a803-13f4aa112046",
       "courtApplications": [
         {
-          "applicationStatus": "LISTED",
+          "applicationStatus": "UN_ALLOCATED",
           "courtApplicationCases": [
             {
               "offences": [
