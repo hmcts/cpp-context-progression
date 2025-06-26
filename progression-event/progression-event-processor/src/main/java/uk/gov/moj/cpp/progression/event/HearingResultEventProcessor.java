@@ -186,18 +186,6 @@ public class HearingResultEventProcessor {
             }
         });
 
-        //updateApplicationStatus
-        if (isNotEmpty(hearing.getCourtApplications())) {
-            LOGGER.info("Hearing contains court applications resulted for hearing id :: {}", hearing.getId());
-            hearing.getCourtApplications()
-                    .forEach(courtApplication -> {
-                        final ApplicationStatus applicationStatus = ofNullable(courtApplication.getJudicialResults()).map(ArrayList::new).orElseGet(ArrayList::new).stream()
-                                .filter(Objects::nonNull).map(JudicialResult::getCategory).anyMatch(FINAL::equals)
-                                ? ApplicationStatus.FINALISED
-                                : courtApplication.getApplicationStatus();
-                        progressionService.updateCourtApplicationStatus(event, courtApplication.getId(), applicationStatus);
-                    });
-        }
         updateCustodialEstablishment(event, hearing);
 
     }
