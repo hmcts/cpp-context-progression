@@ -1,0 +1,524 @@
+{
+  "hearing": {
+    "id": "HEARING_ID",
+    "estimatedDuration": "1 week",
+    "type": {
+      "id": "01234567-1234-1234-1234-123456789123",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "a",
+    "hearingLanguage": "ENGLISH",
+    "hearingDays": [
+      {
+        "sittingDay": "2015-01-12T05:27:17.210Z",
+        "listingSequence": 0,
+        "listedDurationMinutes": 0
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME",
+      "welshName": "a",
+      "roomId": "00000000-0000-0000-0000-000000000000",
+      "roomName": "a",
+      "welshRoomName": "a"
+    },
+    "judiciary": [
+      {
+        "judicialId": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType": "RECORDER"
+        },
+        "isDeputy": true,
+        "isBenchChairman": true
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "id": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+          "prosecutionAuthorityCode": "a",
+          "caseURN": "a"
+        },
+        "originatingOrganisation": "a",
+        "initiationCode": "J",
+        "caseStatus": "a",
+        "statementOfFacts": "a",
+        "statementOfFactsWelsh": "a",
+        "defendants": [
+          {
+            "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
+            "prosecutionCaseId": "CASE_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+            "numberOfPreviousConvictionsCited": 0,
+            "prosecutionAuthorityReference": "a",
+            "witnessStatement": "a",
+            "witnessStatementWelsh": "a",
+            "mitigation": "a",
+            "mitigationWelsh": "a",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "offenceCode": "TTH105HY",
+                "offenceTitle": "a",
+                "offenceTitleWelsh": "a",
+                "offenceLegislation": "a",
+                "offenceLegislationWelsh": "a",
+                "modeOfTrial": "a",
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh",
+                "startDate": "2018-01-01",
+                "endDate": "2018-01-01",
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "dateOfInformation": "2018-01-01",
+                "orderIndex": 1,
+                "count": 0,
+                "convictionDate": "2018-01-01",
+                "notifiedPlea": {
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "notifiedPleaDate": "2018-04-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY"
+                },
+                "custodyTimeLimit": {
+                  "timeLimit": "2018-09-14",
+                  "daysSpent": 55
+                },
+                "indicatedPlea": {
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "indicatedPleaDate": "2018-01-01",
+                  "indicatedPleaValue": "INDICATED_GUILTY",
+                  "source": "ONLINE"
+                },
+                "allocationDecision": {
+                  "allocationDecisionDate": "2019-10-08",
+                  "motReasonCode": "4",
+                  "motReasonDescription": "Defendant chooses trial by jury",
+                  "motReasonId": "f8eb278a-8bce-373e-b365-b45e939da38a",
+                  "offenceId": "0500e8f7-d1a4-439f-accf-7e4fd3eefe42",
+                  "originatingHearingId": "25ab493c-92b9-4735-ae9a-d04ef946ef5e",
+                  "sequenceNumber": 40
+                },
+                "plea": {
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "delegatedPowers": {
+                    "userId": "00000000-0000-0000-0000-000000000000",
+                    "firstName": "a",
+                    "lastName": "a"
+                  },
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "pleaDate": "2018-01-01",
+                  "pleaValue": "GUILTY"
+                },
+                "verdict": {
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "verdictDate": "2018-01-01",
+                  "verdictType": {
+                    "id": "00000000-0000-0000-0000-000000000000",
+                    "sequence": 0,
+                    "description": "a",
+                    "category": "a",
+                    "categoryType": "a"
+                  },
+                  "jurors": {
+                    "numberOfJurors": 1,
+                    "numberOfSplitJurors": 1,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                    "offenceCode": "a",
+                    "offenceTitle": "a",
+                    "offenceTitleWelsh": "a",
+                    "offenceLegislation": "a",
+                    "offenceLegislationWelsh": "a"
+                  }
+                },
+                "offenceFacts": {
+                  "vehicleRegistration": "AA12345",
+                  "alcoholReadingAmount": 111,
+                  "alcoholReadingMethodCode" : "2222"
+                },
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2025-05-16",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": true,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1116",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "durationEndDate": "12/12/2025"
+                    },
+                    "dvlaCode": "M",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "3bc1eccb-43b8-4c08-9346-019af754e95b",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isDurationEndDate": true,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                        "label": "End Date",
+                        "promptReference": "endDate",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "12/12/2025",
+                        "welshLabel": "Dyddiad terfyn",
+                        "welshValue": "12/12/2025"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                        "label": "Responsible officer",
+                        "promptReference": "responsibleOfficer",
+                        "promptSequence": 200,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "a member of the youth offending team",
+                        "welshLabel": "Swyddog cyfrifol",
+                        "welshValue": "aelod o'r tîm troseddwyr ifanc"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                        "label": "Supervising Court",
+                        "promptReference": "supervisingCourt",
+                        "promptSequence": 300,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "Aberdeen JP Court",
+                        "welshLabel": "Llys sy’n Goruchwylio",
+                        "welshValue": "Aberdeen JP Court"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "London Division NPS",
+                        "welshValue": "London Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "londonnps.court@justice.gov.uk",
+                        "welshValue": "londonnps.court@justice.gov.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "label": "Community order England / Wales",
+                    "lastSharedDateTime": "2025-05-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-16",
+                    "orderedHearingId": "6e405412-eb6d-4bdc-97b9-578a28ce66ba",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 64000,
+                    "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 12/12/2025. ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "3bc1eccb-43b8-4c08-9346-019af754e95b",
+                    "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ]
+                  }
+                ]
+              }
+            ],
+            "associatedPersons": [
+              {
+                "person": {
+                  "title": "DR",
+                  "firstName": "a",
+                  "middleName": "Jack",
+                  "lastName": "Kane",
+                  "dateOfBirth": "1995-01-01",
+                  "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "nationalityCode": "a",
+                  "nationalityDescription": "a",
+                  "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "additionalNationalityCode": "a",
+                  "additionalNationalityDescription": "a",
+                  "disabilityStatus": "a",
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "Hindi",
+                  "documentationLanguageNeeds": "WELSH",
+                  "nationalInsuranceNumber": "NH222222B",
+                  "occupation": "Footballer",
+                  "occupationCode": "F",
+                  "specificRequirements": "a",
+                  "address": {
+                    "address1": "22",
+                    "address2": "Acacia Avenue",
+                    "address3": "Acacia Town",
+                    "address4": "Acacia City",
+                    "address5": "Acacia Country",
+                    "postcode": "CR7 0AA"
+                  },
+                  "contact": {
+                    "home": "123456",
+                    "work": "7891011",
+                    "mobile": "+45678910",
+                    "primaryEmail": "harry.kane@spurs.co.uk",
+                    "secondaryEmail": "harry.kane@hotmail.com",
+                    "fax": "3425678"
+                  }
+                },
+                "role": "a"
+              }
+            ],
+            "defenceOrganisation": {
+              "name": "a",
+              "incorporationNumber": "a",
+              "registeredCharityNumber": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
+            },
+            "personDefendant": {
+              "personDetails": {
+                "title": "DR",
+                "firstName": "a",
+                "middleName": "Jack",
+                "lastName": "Kane Junior",
+                "dateOfBirth": "2018-01-01",
+                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH171717B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                },
+                "ethnicity" : {
+                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+                }
+              },
+              "bailStatus": {
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+                "code": "C",
+                "description": "Remanded into Custody",
+                "custodyTimeLimit": {
+                  "timeLimit": "2018-09-10",
+                  "daysSpent": 44
+                }
+              },
+              "custodyTimeLimit": "2018-01-01",
+              "perceivedBirthYear": 0,
+              "driverNumber": "AACC12345",
+              "arrestSummonsNumber": "a",
+              "employerOrganisation": {
+                "name": "Disneyland Paris",
+                "incorporationNumber": "Mickeymouse1",
+                "registeredCharityNumber": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              },
+              "employerPayrollReference": "a"
+            },
+            "legalEntityDefendant": {
+              "organisation": {
+                "name": "a",
+                "incorporationNumber": "a",
+                "registeredCharityNumber": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "hasSharedResults": true,
+    "defendantReferralReasons": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "description": "a",
+        "defendantId": "00000000-0000-0000-0000-000000000000"
+      }
+    ],
+    "prosecutionCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defenceCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "defendants": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defendantAttendance": [
+      {
+        "defendantId": "00000000-0000-0000-0000-000000000000",
+        "attendanceDays": [
+          {
+            "day": "2018-01-01",
+            "attendanceType": "IN_PERSON"
+          }
+        ]
+      }
+    ],
+    "hearingCaseNotes": [
+      {
+        "id": "a4cd3c1d-be10-410d-a50d-e260cdaf6d19",
+        "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+        "courtClerk": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "noteDateTime": "2016-06-01T10:00:00Z",
+        "noteType": "HMCTS",
+        "note": "a"
+      }
+    ]
+  },
+  "sharedTime": "2016-06-01T10:00:00Z",
+  "isReshare": true,
+  "hearingDay": "2015-01-12"
+}

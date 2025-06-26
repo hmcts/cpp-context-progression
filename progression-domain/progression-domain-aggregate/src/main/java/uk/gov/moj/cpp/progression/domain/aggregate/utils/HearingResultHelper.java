@@ -94,6 +94,35 @@ public class HearingResultHelper {
         return currentJudicialResult.isEmpty() && !previousJudicialResult.isEmpty();
 
     }
+
+    public static boolean isUnscheduledHearingDeleted(final Hearing resultedHearing, final Hearing aggregateHearing){
+        if (aggregateHearing == null){
+            return false;
+        }
+
+        final List<UUID> currentJudicialResult = getProsecutionCasesJudicialResultsUnscheduled(resultedHearing.getProsecutionCases());
+
+        final List<UUID> previousJudicialResult = getProsecutionCasesJudicialResultsUnscheduled(aggregateHearing.getProsecutionCases());
+
+        return currentJudicialResult.isEmpty() && !previousJudicialResult.isEmpty();
+
+    }
+
+
+    private static List<UUID> getProsecutionCasesJudicialResultsUnscheduled(final List<ProsecutionCase> prosecutionCases) {
+        return isEmpty(prosecutionCases) ? new ArrayList<>(): prosecutionCases.stream()
+                .map(ProsecutionCase::getDefendants)
+                .flatMap(Collection::stream)
+                .map(Defendant::getOffences)
+                .flatMap(Collection::stream)
+                .map(Offence::getJudicialResults)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .filter(judicialResult -> TRUE.equals(judicialResult.getIsUnscheduled())
+                ).map(JudicialResult::getJudicialResultId)
+                .collect(Collectors.toList());
+    }
+
     private static List<UUID> getProsecutionCasesJudiricalResultsNextHearing(final List<ProsecutionCase> prosecutionCases) {
         return isEmpty(prosecutionCases) ? new ArrayList<>(): prosecutionCases.stream()
                 .map(ProsecutionCase::getDefendants)

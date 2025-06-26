@@ -41,6 +41,7 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHel
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.isNextHearingDeleted;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.unscheduledNextHearingsRequiredFor;
 import static uk.gov.moj.cpp.progression.util.CaseHelper.addCaseToHearing;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper.*;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
@@ -90,11 +91,11 @@ import uk.gov.justice.staginghmi.courts.UpdateHearingFromHmi;
 import uk.gov.moj.cpp.progression.aggregate.helper.ApplicationProceedingsHelper;
 import uk.gov.moj.cpp.progression.court.HearingAddMissingResultsBdf;
 import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
+import uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.plea.json.schemas.OpaNoticeDocument;
-import uk.gov.moj.cpp.progression.util.CaseHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -2741,8 +2742,10 @@ public class HearingAggregate implements Aggregate {
         final boolean hasNewOrAmendedNextHearingsOrRelatedNextHearings = doHearingContainNewOrAmendedNextHearingResults(hearing);
         final boolean hasNewOrAmendedUnscheduledNextHearings = unscheduledNextHearingsRequiredFor(hearing);
         final boolean isNextHearingDeleted = isNextHearingDeleted(hearing, this.hearing);
+        final boolean isUnscheduledHearingDeleted = isUnscheduledHearingDeleted(hearing, this.hearing);
 
-        if (isDeleteNextHearing(sittingDay, hasNewOrAmendedNextHearingsOrRelatedNextHearings, hasNewOrAmendedUnscheduledNextHearings, isNextHearingDeleted)) {
+
+        if (isDeleteNextHearing(sittingDay, hasNewOrAmendedNextHearingsOrRelatedNextHearings, hasNewOrAmendedUnscheduledNextHearings, isNextHearingDeleted, isUnscheduledHearingDeleted)) {
             events.add(DeleteNextHearingsRequested.deleteNextHearingsRequested()
                     .withHearingId(hearing.getId())
                     .withSeedingHearing(seedingHearing)
@@ -2816,8 +2819,8 @@ public class HearingAggregate implements Aggregate {
                 .build()));
     }
 
-    private boolean isDeleteNextHearing(final String sittingDay, final boolean hasNewOrAmendedNextHearingsOrRelatedNextHearings, final boolean hasNewOrAmendedUnscheduledNextHearings, final boolean isNextHearingDeleted) {
-        return (hasNewOrAmendedNextHearingsOrRelatedNextHearings || hasNewOrAmendedUnscheduledNextHearings || isNextHearingDeleted)
+    private boolean isDeleteNextHearing(final String sittingDay, final boolean hasNewOrAmendedNextHearingsOrRelatedNextHearings, final boolean hasNewOrAmendedUnscheduledNextHearings, final boolean isNextHearingDeleted,final boolean isUnscheduledHearingDeleted) {
+        return (hasNewOrAmendedNextHearingsOrRelatedNextHearings || hasNewOrAmendedUnscheduledNextHearings || isNextHearingDeleted || isUnscheduledHearingDeleted)
                 && hasNextHearingForHearingDay.getOrDefault(sittingDay, Boolean.FALSE);
     }
 

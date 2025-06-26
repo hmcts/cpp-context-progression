@@ -21,7 +21,7 @@ public class StandaloneApplicationIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsForCourtHearing() throws Exception {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-standalone-application-2.json");
-        final Matcher[] applicationMatchers = createMatchersForAssertion(applicationId, "LISTED");
+        final Matcher[] applicationMatchers = createMatchersForAssertion(applicationId, "UN_ALLOCATED");
         pollForCourtApplication(applicationId, applicationMatchers);
 
     }
@@ -30,7 +30,7 @@ public class StandaloneApplicationIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsWithStandardOrganizationProsecutionAuthority() throws Exception {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-standalone-application-with-standard-organization-prosecution-authority.json");
-        final Matcher[] applicationMatchers = createMatchersForAssertion(applicationId, "LISTED");
+        final Matcher[] applicationMatchers = createMatchersForAssertion(applicationId, "UN_ALLOCATED");
         pollForCourtApplication(applicationId, applicationMatchers);
 
     }
@@ -39,7 +39,7 @@ public class StandaloneApplicationIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsWithNonStandardOrganizationProsecutionAuthority() throws Exception {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-standalone-application-with-non-standard-organization-prosecution-authority.json");
-        final Matcher[] applicationMatchers = createMatchersForAssertionForNonStandardProsecutionAuthority(applicationId, "LISTED");
+        final Matcher[] applicationMatchers = createMatchersForAssertionForNonStandardProsecutionAuthority(applicationId, "UN_ALLOCATED");
         pollForCourtApplication(applicationId, applicationMatchers);
 
     }
@@ -48,7 +48,7 @@ public class StandaloneApplicationIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsWithRespondentStandardOrganizationProsecutionAuthority() throws Exception {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-standalone-application-with-respondent-standard-organization-prosecution-authority.json");
-        final Matcher[] applicationMatchers = createMatchersForAssertionwithOrganiztionProsectionAuthorityRespondent(applicationId, "LISTED", null);
+        final Matcher[] applicationMatchers = createMatchersForAssertionwithOrganiztionProsectionAuthorityRespondent(applicationId, "UN_ALLOCATED", null);
         pollForCourtApplication(applicationId, applicationMatchers);
 
     }
@@ -58,7 +58,7 @@ public class StandaloneApplicationIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsWithRespondentNonStandardOrganizationProsecutionAuthority() throws Exception {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-standalone-application-with-respondent-non-standard-organization-prosecution-authority.json");
-        final Matcher[] applicationMatchers = createMatchersForAssertionwithOrganiztionProsectionAuthorityRespondent(applicationId, "LISTED", "Org name");
+        final Matcher[] applicationMatchers = createMatchersForAssertionwithOrganiztionProsectionAuthorityRespondent(applicationId, "UN_ALLOCATED", "Org name");
         pollForCourtApplication(applicationId, applicationMatchers);
 
     }
@@ -68,7 +68,7 @@ public class StandaloneApplicationIT extends AbstractIT {
     public void shouldInitiateCourtProceedingsWithNonStandardIndividualProsecutionAuthority() throws Exception {
         final String applicationId = randomUUID().toString();
         initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-standalone-application-with-non-standard-individual-prosecution-authority.json");
-        final Matcher[] applicationMatchers = createMatchersForAssertionForIndividualProsecutionAuthority(applicationId, "LISTED");
+        final Matcher[] applicationMatchers = createMatchersForAssertionForIndividualProsecutionAuthority(applicationId, "UN_ALLOCATED");
         pollForCourtApplication(applicationId, applicationMatchers);
     }
 

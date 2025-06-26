@@ -64,7 +64,7 @@ public class UpdateCourtApplicationIT extends AbstractIT {
 
         Matcher[] applicationMatchers = {
                 withJsonPath("$.courtApplication.id", is(applicationId)),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
                 withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of times reasons for linked application test")),
                 withJsonPath("$.courtApplication.applicationReference", notNullValue()),
         };

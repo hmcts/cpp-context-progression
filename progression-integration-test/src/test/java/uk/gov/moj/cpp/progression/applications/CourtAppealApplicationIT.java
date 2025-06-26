@@ -38,7 +38,7 @@ public class CourtAppealApplicationIT extends AbstractIT {
                 withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
                 withJsonPath("$.courtApplication.type.appealFlag", is(true)),
                 withJsonPath("$.courtApplication.type.courtOfAppealFlag", is(true)),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
                 withJsonPath("$.courtApplication.applicant.id", notNullValue()),
                 withJsonPath("$.courtApplication.subject.id", notNullValue()),
                 withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", notNullValue()),
@@ -73,7 +73,7 @@ public class CourtAppealApplicationIT extends AbstractIT {
                 withJsonPath("$.courtApplication.type.linkType", is("STANDALONE")),
                 withJsonPath("$.courtApplication.type.appealFlag", is(true)),
                 withJsonPath("$.courtApplication.type.courtOfAppealFlag", is(true)),
-                withJsonPath("$.courtApplication.applicationStatus", is("LISTED")),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
                 withJsonPath("$.courtApplication.applicant.id", notNullValue()),
                 withJsonPath("$.courtApplication.subject.id", notNullValue()),
                 withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of Time reason for Court appeal"))
