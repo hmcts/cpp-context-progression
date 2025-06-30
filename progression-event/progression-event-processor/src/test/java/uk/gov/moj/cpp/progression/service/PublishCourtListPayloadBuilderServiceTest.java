@@ -73,6 +73,7 @@ public class PublishCourtListPayloadBuilderServiceTest {
                 Arguments.of("publish-court-list/fixed-date/event/draft-court-list-published-single-hearing.json",
                         "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-defence.json",
                         "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-defence-advocate.json"
+
                 ),
                 Arguments.of("publish-court-list/fixed-date/event/draft-court-list-published-single-hearing-no-courtroom.json",
                         "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-no-courtroom-defence.json",
@@ -85,7 +86,10 @@ public class PublishCourtListPayloadBuilderServiceTest {
                 Arguments.of("publish-court-list/fixed-date/event/final-court-list-published-single-hearing-no-courtroom.json",
                         "publish-court-list/fixed-date/payload/expected-final-publish-court-list-single-hearing-no-courtroom-defence.json",
                         "publish-court-list/fixed-date/payload/expected-final-publish-court-list-single-hearing-no-courtroom-defence-advocate.json"
-                )
+                ),
+                Arguments.of("publish-court-list/fixed-date/event/draft-court-list-published-hearing-without-caseIdentifier.json",
+                        "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-defence.json",
+                        "publish-court-list/fixed-date/payload/expected-draft-publish-court-list-single-hearing-defence-advocate.json")
                 );
     }
 

@@ -71,7 +71,7 @@ public class ProgressionQueryRuleExecutorTest extends BaseDroolsAccessControlTes
 
     public enum ProgressionRules {
         GetProgressionCaseQuery("progression.query.case", new String[]{"Defence Lawyers", "CPS", "Court Associates",  "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-                "Youth Offending Service Admin", "Magistrates", "Advocates", "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "Online Plea System Users", "Non CPS Prosecutors"});
+                "Youth Offending Service Admin", "Magistrates", "Advocates", "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "Online Plea System Users", "Non CPS Prosecutors", "Operational Delivery Admin"});
         private final String actionName;
         private final String[] allowedUserGroups;
         ProgressionRules(final String actionName, final String... allowedUserGroups) {

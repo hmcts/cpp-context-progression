@@ -141,7 +141,8 @@ public class PublishCourtListPayloadBuilderService {
         courtListPublished.getCourtLists().forEach(courtList -> {
             final String courtroomName = isNull(courtList.getCourtRoomId()) ? null : courtroomsById.get(courtList.getCourtRoomId()).getString("courtroomName");
 
-            courtList.getHearings().forEach(hearing -> {
+            courtList.getHearings().stream().filter(hearing ->nonNull(hearing.getCaseIdentifier())).forEach(hearing -> {
+
                 final String hearingType = hearing.getHearingType().getDescription();
                 final String caseUrn = hearing.getCaseIdentifier().getCaseReference();
 

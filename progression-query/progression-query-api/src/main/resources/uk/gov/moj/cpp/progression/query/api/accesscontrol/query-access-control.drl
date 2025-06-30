@@ -71,7 +71,7 @@ rule "Query - Access control for  progression.query.case"
     $outcome: Outcome();
     $action: Action(name == "progression.query.case");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"Defence Lawyers", "CPS", "Court Associates",  "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates", "Advocates", "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "Online Plea System Users", "Non CPS Prosecutors"))
+    "Youth Offending Service Admin", "Magistrates", "Advocates", "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "Online Plea System Users", "Non CPS Prosecutors", "Operational Delivery Admin"))
   then
     $outcome.setSuccess(true);
 end
@@ -90,7 +90,7 @@ rule "Query - Access control for  progression.query.prosecutioncase"
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors"))
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors","Operational Delivery Admin"))
   then
     $outcome.setSuccess(true);
 end
@@ -100,7 +100,7 @@ rule "Query - Access control for  progression.query.prosecutioncase-v2"
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase-v2");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors", "Non CPS Prosecutors"))
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group", "CPS" ,"Defence Lawyers", "Advocates","Non Police Prosecutors", "Non CPS Prosecutors","Operational Delivery Admin"))
   then
     $outcome.setSuccess(true);
 end
@@ -129,7 +129,7 @@ rule "Query - Access control for  progression.query.prosecutioncase-details"
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase-details");
     eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users","Court Clerks", "Crown Court Admin", "Listing Officers", "Court Administrators", "Legal Advisers", "Probation Admin", "Judiciary", "Court Associate", "Deputies", "DJMC", "Judge",
-    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group"))
+    "Youth Offending Service Admin", "Magistrates",  "District Judge", "Second Line Support", "Police Admin", "NCES", "Victims & Witness Care Admin", "Recorders", "Eject Case Group","Operational Delivery Admin"))
   then
     $outcome.setSuccess(true);
 end
@@ -159,7 +159,7 @@ rule "Query - Access control for  progression.query.prosecutioncase.caag"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.prosecutioncase.caag");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "System Users","Advocates","Defence Lawyers"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Judiciary", "Listing Officers", "Legal Advisers", "Court Associate", "Court Clerks", "NCES", "CPS", "Probation Admin", "Youth Offending Service Admin", "Court Administrators", "Crown Court Admin", "Judge", "Police Admin","Recorders","DJMC","Deputies","Victims & Witness Care Admin", "System Users","Advocates","Defence Lawyers","Operational Delivery Admin"))
   then
     $outcome.setSuccess(true);
 end
@@ -295,7 +295,7 @@ rule "progression - Query - API - court-extract"
   when
     $outcome: Outcome();
     $action: Action(name == "progression.query.court-extract");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Associate"))
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Associate", "Operational Delivery Admin"))
   then
     $outcome.setSuccess(true);
 end
