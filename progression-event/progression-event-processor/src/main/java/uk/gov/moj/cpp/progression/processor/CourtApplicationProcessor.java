@@ -318,7 +318,7 @@ public class CourtApplicationProcessor {
             courtApplicationProceedingsInitiated.getCourtApplication().getCourtApplicationCases().forEach(courtApplicationCase ->
                     progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString()).ifPresent(pc -> {
                         final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-                        updateDefendantAddressOnCase(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationCase);
+                        updateDefendantAddressOnCase(event, courtApplicationProceedingsInitiated.getCourtApplication(), courtApplicationCase.getProsecutionCaseId().toString(), prosecutionCase.getDefendants());
                         final ProsecutionCase enrichedCase = enrichProsecutionCaseWithAddressFromApplication(prosecutionCase, courtApplicationProceedingsInitiated.getCourtApplication());
                         prosecutionCases.add(enrichedCase);
                     }));
@@ -327,7 +327,7 @@ public class CourtApplicationProcessor {
             .forEach(prosecutionCaseId ->
                 progressionService.getProsecutionCase(event, prosecutionCaseId.toString()).ifPresent(pc -> {
                     final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
-                    updateDefendantAddressOnCase(event, courtApplicationProceedingsInitiated.getCourtApplication(), prosecutionCaseId.toString());
+                    updateDefendantAddressOnCase(event, courtApplicationProceedingsInitiated.getCourtApplication(), prosecutionCaseId.toString(), prosecutionCase.getDefendants());
                     final ProsecutionCase enrichedCase = enrichProsecutionCaseWithAddressFromApplication(prosecutionCase, courtApplicationProceedingsInitiated.getCourtApplication());
                     prosecutionCases.add(enrichedCase);
                 }));
@@ -393,46 +393,43 @@ public class CourtApplicationProcessor {
         return true;
     }
 
-    private void updateDefendantAddressOnCase(JsonEnvelope event, CourtApplication courtApplication, CourtApplicationCase courtApplicationCase) {
+    private void updateDefendantAddressOnCase(final JsonEnvelope event, final CourtApplication courtApplication, final String prosecutionCaseId, final List<Defendant> defendants) {
         if (nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getMasterDefendant())) {
-            final DefendantUpdate defendantUpdate = getDefendantUpdate(courtApplicationCase, courtApplication.getApplicant());
-            buildAndSendCommandForDefendantAddressUpdate(event, defendantUpdate, courtApplicationCase.getProsecutionCaseId().toString());
-        }
-
-        if (nonNull(courtApplication.getRespondents())) {
-            courtApplication.getRespondents().stream().filter(r -> nonNull(r.getMasterDefendant())).forEach(respondent -> {
-                final DefendantUpdate defendantUpdate = getDefendantUpdate(courtApplicationCase, respondent);
-                buildAndSendCommandForDefendantAddressUpdate(event, defendantUpdate, courtApplicationCase.getProsecutionCaseId().toString());
-            });
-        }
-    }
-
-    private void updateDefendantAddressOnCase(final JsonEnvelope event, final CourtApplication courtApplication, final String prosecutionCaseId) {
-        if (nonNull(courtApplication.getApplicant()) && nonNull(courtApplication.getApplicant().getMasterDefendant())) {
-            final DefendantUpdate defendantUpdate = getDefendantUpdate(prosecutionCaseId, courtApplication.getApplicant());
+            DefendantUpdate defendantUpdate = getDefendantUpdate(prosecutionCaseId, courtApplication.getApplicant());
+            defendantUpdate = enrichDefendantUpdateWithDefendantId(defendants, defendantUpdate);
             buildAndSendCommandForDefendantAddressUpdate(event, defendantUpdate, prosecutionCaseId);
         }
 
         if (nonNull(courtApplication.getRespondents())) {
             courtApplication.getRespondents().stream().filter(r -> nonNull(r.getMasterDefendant())).forEach(respondent -> {
-                final DefendantUpdate defendantUpdate = getDefendantUpdate(prosecutionCaseId, respondent);
+                DefendantUpdate defendantUpdate = getDefendantUpdate(prosecutionCaseId, respondent);
+                defendantUpdate = enrichDefendantUpdateWithDefendantId(defendants, defendantUpdate);
                 buildAndSendCommandForDefendantAddressUpdate(event, defendantUpdate, prosecutionCaseId);
             });
         }
     }
 
-    private DefendantUpdate getDefendantUpdate(CourtApplicationCase courtApplicationCase, CourtApplicationParty courtApplicationParty) {
-        return DefendantUpdate.defendantUpdate()
-                .withId(courtApplicationParty.getMasterDefendant().getMasterDefendantId())
-                .withProsecutionCaseId(courtApplicationCase.getProsecutionCaseId())
-                .withLegalEntityDefendant(courtApplicationParty.getMasterDefendant().getLegalEntityDefendant())
-                .withPersonDefendant(getPersonDefendant(courtApplicationParty))
-                .build();
+    private static DefendantUpdate enrichDefendantUpdateWithDefendantId(final List<Defendant> defendants, DefendantUpdate defendantUpdate) {
+        final Optional<UUID> defendantId = getMatchingDefendantIdFromDefendantList(defendants, defendantUpdate);
+        if(defendantId.isPresent()){
+            defendantUpdate = DefendantUpdate.defendantUpdate().withValuesFrom(defendantUpdate).withId(defendantId.get()).build();
+        }
+        return defendantUpdate;
+    }
+
+    private static Optional<UUID> getMatchingDefendantIdFromDefendantList(final List<Defendant> defendants, final DefendantUpdate defendantUpdate) {
+        return Optional.ofNullable(defendants)
+                .map(list -> list.stream()
+                        .filter(defendant -> defendant.getMasterDefendantId() != null &&
+                                defendant.getMasterDefendantId().equals(defendantUpdate.getMasterDefendantId()))
+                        .map(Defendant::getId)
+                        .findFirst())
+                .orElse(Optional.empty());
     }
 
     private DefendantUpdate getDefendantUpdate(final String prosecutionCaseId, CourtApplicationParty courtApplicationParty) {
         return DefendantUpdate.defendantUpdate()
-                .withId(courtApplicationParty.getMasterDefendant().getMasterDefendantId())
+                .withMasterDefendantId(courtApplicationParty.getMasterDefendant().getMasterDefendantId())
                 .withProsecutionCaseId(fromString(prosecutionCaseId))
                 .withLegalEntityDefendant(courtApplicationParty.getMasterDefendant().getLegalEntityDefendant())
                 .withPersonDefendant(getPersonDefendant(courtApplicationParty))
@@ -495,20 +492,18 @@ public class CourtApplicationProcessor {
 
         if (nonNull(courtApplicationProceedingsEdited.getCourtApplication()) && nonNull(courtApplicationProceedingsEdited.getCourtApplication().getCourtApplicationCases())) {
             courtApplicationProceedingsEdited.getCourtApplication().getCourtApplicationCases().forEach(courtApplicationCase ->
-                    progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString()).ifPresent(pc ->
-                            updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), courtApplicationCase)
-                    ));
+                    progressionService.getProsecutionCase(event, courtApplicationCase.getProsecutionCaseId().toString()).ifPresent(pc -> {
+                        final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                        updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), courtApplicationCase.getProsecutionCaseId().toString(), prosecutionCase.getDefendants());
+                    }));
         } else if (nonNull(courtApplicationProceedingsEdited.getCourtApplication()) && nonNull(courtApplicationProceedingsEdited.getCourtApplication().getCourtOrder())) {
-
             courtApplicationProceedingsEdited.getCourtApplication().getCourtOrder().getCourtOrderOffences().stream().map(CourtOrderOffence::getProsecutionCaseId).collect(Collectors.toSet())
                     .forEach(prosecutionCaseId ->
-                            progressionService.getProsecutionCase(event, prosecutionCaseId.toString()).ifPresent(pc ->
-                                    updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), prosecutionCaseId.toString())
-                            ));
+                            progressionService.getProsecutionCase(event, prosecutionCaseId.toString()).ifPresent(pc -> {
+                                    final ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(pc.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+                                    updateDefendantAddressOnCase(event, courtApplicationProceedingsEdited.getCourtApplication(), prosecutionCaseId.toString(), prosecutionCase.getDefendants());
+                            }));
         }
-
-
-
         sender.send(envelopeFrom(metadataFrom(event.metadata()).withName(PUBLIC_PROGRESSION_EVENTS_HEARING_EXTENDED), publicPayload.build()));
     }
 

@@ -1579,6 +1579,7 @@ public class CourtApplicationProcessorTest {
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId.toString())
                         .add("defendants", createArrayBuilder().add(createObjectBuilder()
                                 .add("masterDefendantId", masterDefendantId.toString())
+                                .add("id", masterDefendantId.toString())
                                 .add("personDefendant",createObjectBuilder().add("personDetails",
                                                 createObjectBuilder().add("address",createObjectBuilder().add("address1","old address")
                                                         .add("postcode","RG1 7DS").build()).build()))
@@ -2028,6 +2029,10 @@ public class CourtApplicationProcessorTest {
         final UUID caseId2 = randomUUID();
         final UUID masterDefendantId = randomUUID();
         final UUID masterDefendantId2 = randomUUID();
+        final UUID defendantId1 = masterDefendantId;
+        final UUID defendantId2 = masterDefendantId2;
+        final UUID defendantId3 = randomUUID();
+        final UUID defendantId4 = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-edited");
         final UUID hearingId = randomUUID();
         final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = courtApplicationProceedingsEdited()
@@ -2058,16 +2063,32 @@ public class CourtApplicationProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
         when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(caseId1.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId1.toString())
-                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId.toString())
-                                .add("offences", createArrayBuilder()
-                                        .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
-                                )))).build()));
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                        .add("masterDefendantId", masterDefendantId2.toString())
+                                        .add("id", defendantId2.toString())
+                                        .add("offences", createArrayBuilder()
+                                                .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        ))
+                                .add(createObjectBuilder()
+                                        .add("masterDefendantId", masterDefendantId.toString())
+                                        .add("id", defendantId1.toString())
+                                        .add("offences", createArrayBuilder()
+                                                .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        )))).build()));
         when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(caseId2.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId2.toString())
-                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId2.toString())
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                .add("masterDefendantId", masterDefendantId2.toString())
+                                .add("id", defendantId3.toString())
                                 .add("offences", createArrayBuilder()
                                         .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
-                                )))).build()));
+                                ))
+                                .add(createObjectBuilder()
+                                        .add("masterDefendantId", masterDefendantId.toString())
+                                        .add("id", defendantId4.toString())
+                                        .add("offences", createArrayBuilder()
+                                                .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
+                                        )))).build()));
         courtApplicationProcessor.processCourtApplicationEdited(event);
         final ArgumentCaptor<Envelope> captor = forClass(Envelope.class);
         verify(sender, times(6)).send(captor.capture());
@@ -2080,22 +2101,22 @@ public class CourtApplicationProcessorTest {
         assertThat(captor.getAllValues().get(1).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command1 = objectToJsonObjectConverter.convert(captor.getAllValues().get(1).payload());
         assertThat(command1.getString("prosecutionCaseId"), is(caseId1.toString()));
-        assertThat(command1.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId.toString()));
+        assertThat(command1.getJsonObject("defendant").getString("id").toString(), is(defendantId1.toString()));
 
         assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command2 = objectToJsonObjectConverter.convert(captor.getAllValues().get(2).payload());
         assertThat(command2.getString("prosecutionCaseId"), is(caseId1.toString()));
-        assertThat(command2.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId2.toString()));
+        assertThat(command2.getJsonObject("defendant").getString("id").toString(), is(defendantId2.toString()));
 
         assertThat(captor.getAllValues().get(3).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command3 = objectToJsonObjectConverter.convert(captor.getAllValues().get(3).payload());
         assertThat(command3.getString("prosecutionCaseId"), is(caseId2.toString()));
-        assertThat(command3.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId.toString()));
+        assertThat(command3.getJsonObject("defendant").getString("id").toString(), is(defendantId4.toString()));
 
         assertThat(captor.getAllValues().get(4).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command4 = objectToJsonObjectConverter.convert(captor.getAllValues().get(4).payload());
         assertThat(command4.getString("prosecutionCaseId"), is(caseId2.toString()));
-        assertThat(command4.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId2.toString()));
+        assertThat(command4.getJsonObject("defendant").getString("id").toString(), is(defendantId3.toString()));
 
         assertThat(captor.getAllValues().get(5).metadata().name(), is("public.progression.events.hearing-extended"));
         final JsonObject publicEvent = objectToJsonObjectConverter.convert(captor.getAllValues().get(5).payload());
@@ -2108,6 +2129,7 @@ public class CourtApplicationProcessorTest {
         final UUID caseId2 = fromString("ed4b202b-5be8-41f6-aaf2-5281b71f2a8d");
         final UUID masterDefendantId = randomUUID();
         final UUID masterDefendantId2 = randomUUID();
+        final UUID id1 = randomUUID();
         final MetadataBuilder metadataBuilder = getMetadata("progression.event.court-application-proceedings-edited");
         final UUID hearingId = randomUUID();
         final CourtApplicationProceedingsEdited courtApplicationProceedingsEdited = courtApplicationProceedingsEdited()
@@ -2144,13 +2166,17 @@ public class CourtApplicationProcessorTest {
         when(jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), CourtApplicationProceedingsEdited.class)).thenReturn(courtApplicationProceedingsEdited);
         when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(caseId1.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId1.toString())
-                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId.toString())
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                .add("masterDefendantId", masterDefendantId2.toString())
+                                .add("id", id1.toString())
                                 .add("offences", createArrayBuilder()
                                         .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
                                 )))).build()));
         when(progressionService.getProsecutionCase(any(JsonEnvelope.class), eq(caseId2.toString())))
                 .thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", createObjectBuilder().add("id", caseId2.toString())
-                        .add("defendants", createArrayBuilder().add(createObjectBuilder().add("masterDefendantId", masterDefendantId2.toString())
+                        .add("defendants", createArrayBuilder().add(createObjectBuilder()
+                                .add("masterDefendantId", masterDefendantId2.toString())
+                                .add("id", masterDefendantId2.toString())
                                 .add("offences", createArrayBuilder()
                                         .add(createObjectBuilder().add("id", randomUUID().toString()).add("proceedingsConcluded", true))
                                 )))).build()));
@@ -2166,17 +2192,15 @@ public class CourtApplicationProcessorTest {
         assertThat(captor.getAllValues().get(1).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command1 = objectToJsonObjectConverter.convert(captor.getAllValues().get(1).payload());
         assertThat(command1.getString("prosecutionCaseId"), is(caseId1.toString()));
-        assertThat(command1.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId.toString()));
 
         assertThat(captor.getAllValues().get(2).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command2 = objectToJsonObjectConverter.convert(captor.getAllValues().get(2).payload());
         assertThat(command2.getString("prosecutionCaseId"), is(caseId1.toString()));
-        assertThat(command2.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId2.toString()));
+        assertThat(command2.getJsonObject("defendant").getString("id").toString(), is(id1.toString()));
 
         assertThat(captor.getAllValues().get(3).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command3 = objectToJsonObjectConverter.convert(captor.getAllValues().get(3).payload());
         assertThat(command3.getString("prosecutionCaseId"), is(caseId2.toString()));
-        assertThat(command3.getJsonObject("defendant").getString("id").toString(), is(masterDefendantId.toString()));
 
         assertThat(captor.getAllValues().get(4).metadata().name(), is("progression.command.update-defendant-address-on-case"));
         final JsonObject command4 = objectToJsonObjectConverter.convert(captor.getAllValues().get(4).payload());

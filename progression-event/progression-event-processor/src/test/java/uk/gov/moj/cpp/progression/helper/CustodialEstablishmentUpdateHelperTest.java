@@ -11,6 +11,8 @@ import static uk.gov.justice.core.courts.Defendant.defendant;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.justice.core.courts.JudicialResultPrompt.judicialResultPrompt;
 import static uk.gov.justice.core.courts.Offence.offence;
+import static uk.gov.moj.cpp.progression.utils.FileUtil.getPayload;
+import static uk.gov.moj.cpp.progression.utils.FileUtil.jsonFromString;
 
 import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
@@ -19,6 +21,8 @@ import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
 
@@ -130,6 +134,57 @@ public class CustodialEstablishmentUpdateHelperTest {
         assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getCustody(), is(hospitalCustodyOrgName));
         assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getName(), is(hospitalCustodyOrgName));
         assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getId(), is(notNullValue()));
+    }
+
+
+    @Test
+    public void shouldReturnCustodialEstablishmentUpdateFromJudicialResults() {
+        final PrisonCustodySuite prisonCustodySuite = PrisonCustodySuite.prisonCustodySuite().withId(randomUUID())
+                .withName("HMP Channings Wood")
+                .withType("Prison")
+                .build();
+        final List<PrisonCustodySuite> prisonCustodySuites = singletonList(prisonCustodySuite);
+
+        final UUID caseId = randomUUID();
+        final String masterDefendantId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+        final JsonObject applicationJsonObject = jsonFromString(getPayload("stub-data/progression.event.hearing-application-link-created-single-application.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%MASTER_DEFENDANT_ID%",masterDefendantId)
+                .replaceAll("%DEFENDANT_ID%",defendantId)
+        );
+
+
+        final Optional<CustodialEstablishment> defendantsResultedWithCustodialEstablishmentUpdate = custodialEstablishmentUpdateHelper.getCustodialEstablishmentUpdateFromJudicialResults(applicationJsonObject, prisonCustodySuites);
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.isPresent(), is(true));
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getName(), is(prisonCustodySuite.getName()));
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getCustody(), is(prisonCustodySuite.getType()));
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getId(), is(prisonCustodySuite.getId()));
+    }
+
+    @Test
+    void shouldReturnCustodialEstablishmentUpdateFromCortOrderJudicialResults() {
+        final PrisonCustodySuite prisonCustodySuite = PrisonCustodySuite.prisonCustodySuite().withId(randomUUID())
+                .withName("HMP Ashfield")
+                .withType("Prison")
+                .build();
+        final List<PrisonCustodySuite> prisonCustodySuites = singletonList(prisonCustodySuite);
+
+        final UUID caseId = randomUUID();
+        final String masterDefendantId = randomUUID().toString();
+        final String defendantId = randomUUID().toString();
+        final JsonObject applicationJsonObject = jsonFromString(getPayload("stub-data/progression.event.hearing-application-link-created-single-application_with_court_order.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%MASTER_DEFENDANT_ID%",masterDefendantId)
+                .replaceAll("%DEFENDANT_ID%",defendantId)
+        );
+
+
+        final Optional<CustodialEstablishment> defendantsResultedWithCustodialEstablishmentUpdate = custodialEstablishmentUpdateHelper.getCustodialEstablishmentUpdateFromJudicialResults(applicationJsonObject, prisonCustodySuites);
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.isPresent(), is(true));
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getName(), is(prisonCustodySuite.getName()));
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getCustody(), is(prisonCustodySuite.getType()));
+        assertThat(defendantsResultedWithCustodialEstablishmentUpdate.get().getId(), is(prisonCustodySuite.getId()));
     }
 
 }
