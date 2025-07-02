@@ -1,17 +1,12 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
-import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Stream.builder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
@@ -22,7 +17,6 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation.updateMatchedDefendantCustodialInformation;
-import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested;
 
 import uk.gov.justice.core.courts.ApplicationDefendantUpdateRequested;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
@@ -43,13 +37,9 @@ import uk.gov.justice.core.courts.UpdateCaseDefendantWithDriverNumber;
 import uk.gov.justice.core.courts.UpdateDefendantForHearing;
 import uk.gov.justice.core.courts.UpdateDefendantForMatchedDefendant;
 import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCase;
-import uk.gov.justice.core.courts.UpdateDefendantForProsecutionCaseWithCustodialEstablishment;
 import uk.gov.justice.core.courts.UpdateHearingWithNewDefendant;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
 import uk.gov.justice.progression.courts.HearingResulted;
-import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
-import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
-import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -64,10 +54,7 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.command.CustodialEstablishment;
 import uk.gov.moj.cpp.progression.command.UpdateMatchedDefendantCustodialInformation;
-import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
-import uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
-import uk.gov.moj.cpp.progression.service.service.ProgressionService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,14 +62,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -102,11 +86,7 @@ public class UpdateDefendantHandlerTest {
             NewDefendantAddedToHearing.class,
             UpdateMatchedDefendantCustodialInformation.class,
             CaseDefendantUpdatedWithDriverNumber.class,
-            ApplicationDefendantUpdateRequested.class,
-            DefendantCustodialInformationUpdateRequested.class);
-
-    @Mock
-    private CaseAggregate aggregateMock;
+            ApplicationDefendantUpdateRequested.class);
     @Mock
     private EventSource eventSource;
     @Mock
@@ -117,18 +97,6 @@ public class UpdateDefendantHandlerTest {
     private UpdateDefendantHandler updateDefendantHandler;
     @Mock
     private ProsecutionCaseQueryService prosecutionCaseQueryService;
-    private final FileResourceObjectMapper handlerTestHelper = new FileResourceObjectMapper();
-    @Mock
-    private ProgressionService progressionService;
-    @Spy
-    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
-    private final ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter();
-
-    @BeforeEach
-    void setup() {
-        setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
-        setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());
-    }
 
     @Test
     public void shouldHandleCommand() {
@@ -257,58 +225,6 @@ public class UpdateDefendantHandlerTest {
 
                 )
         );
-    }
-
-    @Test
-    public void shouldProcessUpdateDefendantForProsecutionCaseWithCustodialEstablishment() throws Exception {
-
-        UUID prosecutionCaseId = randomUUID();
-        UUID masterDefendantId = randomUUID();
-        UUID defendantId = randomUUID();
-        UUID custodyId = randomUUID();
-
-        UpdateDefendantForProsecutionCaseWithCustodialEstablishment updateDefendant = UpdateDefendantForProsecutionCaseWithCustodialEstablishment.updateDefendantForProsecutionCaseWithCustodialEstablishment()
-                .withProsecutionCaseId(prosecutionCaseId)
-                .withMasterDefendantId(masterDefendantId)
-                .withDefendantId(defendantId)
-                .withCustodialEstablishment(uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment()
-                        .withName("Name")
-                        .withCustody("Custody")
-                        .withId(custodyId)
-                        .build())
-                .build();
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.update-defendant-for-prosecution-case")
-                .withId(randomUUID())
-                .build();
-
-        final Envelope<UpdateDefendantForProsecutionCaseWithCustodialEstablishment> envelope = envelopeFrom(metadata, updateDefendant);
-
-
-        final Stream.Builder<Object> builder = builder();
-        builder.add(prosecutionCaseDefendantUpdated().build());
-        builder.add(defendantCustodialInformationUpdateRequested().build());
-
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(aggregateMock);
-        when(aggregateMock.updateDefendantCustodialInformation(any(),any(),any(), any())).thenReturn(builder.build());
-
-        updateDefendantHandler.handleUpdateDefendantForProsecutionCaseWithCustodialEstablishment(envelope);
-
-        final List<JsonEnvelope> jsonEnvelopes = verifyAppendAndGetArgumentFrom(eventStream).collect(Collectors.toList());
-        final JsonEnvelope  resultEnvelope = jsonEnvelopes.stream().filter(
-                env -> env.metadata().name().equals("progression.event.prosecution-case-defendant-updated")).findFirst().get();
-
-        MatcherAssert.assertThat(resultEnvelope.payloadAsJsonObject()
-                , notNullValue());
-
-        final JsonEnvelope  resultEnvelope2 = jsonEnvelopes.stream().filter(
-                env -> env.metadata().name().equals("progression.event.defendant-custodial-information-update-requested")).findFirst().get();
-
-        MatcherAssert.assertThat(resultEnvelope2.payloadAsJsonObject()
-                , notNullValue());
     }
 
     @Test
@@ -464,65 +380,6 @@ public class UpdateDefendantHandlerTest {
                                 withJsonPath("$.matchedDefendants[0].id", is(defendant2Id.toString()))
                                 )
                         ))
-
-                )
-        );
-    }
-
-    @Test
-    void shouldUpdateDefendantsAddressOnLinkedCases() throws Exception {
-        final UUID caseId1 = fromString("54063b7d-bc78-4d2d-b0c6-eb5b9b259127");
-        final UUID caseId2 = fromString("ffc9f2c8-b649-4be2-a025-9ba620d16b75");
-        final UUID masterDefendantId = UUID.fromString("b17e57ba-bc88-4d88-9658-f6cb9503b3d8");
-        final UUID defendantId = fromString("9410e372-6372-40f1-826d-e0e3df88b5a4");
-        final UUID matchedDefendantHearingId = randomUUID();
-        final DefendantUpdate defendant =
-                DefendantUpdate.defendantUpdate().withPersonDefendant(PersonDefendant.personDefendant().build())
-                        .withProsecutionCaseId(caseId1)
-                        .withId(defendantId)
-                        .withMasterDefendantId(masterDefendantId)
-                        .build();
-
-        final UpdateDefendantForMatchedDefendant updateDefendant = UpdateDefendantForMatchedDefendant.updateDefendantForMatchedDefendant()
-                .withDefendant(defendant)
-                .withMatchedDefendantHearingId(matchedDefendantHearingId)
-                .build();
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.update-defendant-for-matched-defendant")
-                .withId(randomUUID())
-                .build();
-
-        final Envelope<UpdateDefendantForMatchedDefendant> envelope = envelopeFrom(metadata, updateDefendant);
-
-        final HearingAggregate hearingAggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(hearingAggregate);
-        final Hearing hearing = handlerTestHelper.convertFromFile("json/resulted_hearing_for_court_appln_linked_to_multiple_case.json", Hearing.class);
-        hearingAggregate.apply(HearingResulted.hearingResulted()
-                .withHearing(hearing)
-                .build());
-        final ProsecutionCase case2 = handlerTestHelper.convertFromFile("json/cps_prosecution_case_2_linked_to_application.json", ProsecutionCase.class);
-        when(progressionService.getProsecutionCase(caseId2,envelope))
-                .thenReturn(Optional.of(this.objectToJsonObjectConverter.convert(case2)));
-        final ProsecutionCase case1 = handlerTestHelper.convertFromFile("json/cps_prosecution_case_1_linked_to_application.json", ProsecutionCase.class);
-        when(progressionService.getProsecutionCase(caseId1,envelope))
-                .thenReturn(Optional.of(this.objectToJsonObjectConverter.convert(case1)));
-
-        updateDefendantHandler.handleUpdateDefendantForMatchedDefendant(envelope);
-
-        Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-
-        assertThat(envelopeStream, streamContaining(
-                        jsonEnvelope(
-                                metadata()
-                                        .withName("progression.event.prosecution-case-update-defendants-with-matched-requested-v2"),
-                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                                withJsonPath("$.defendant.id", is(defendantId.toString())),
-                                                withJsonPath("$.matchedDefendants", is(notNullValue()))
-                                        )
-                                ))
 
                 )
         );

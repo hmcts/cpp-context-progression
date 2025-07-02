@@ -137,6 +137,7 @@ import org.slf4j.Logger;
 public class ProsecutionCaseQueryViewTest {
 
     private static final UUID APPLICATION_ID = UUID.randomUUID();
+    private static final UUID LINKED_CASE_ID = UUID.randomUUID();
     private static final String APPLICATION_ARN = new StringGenerator().next();
     private static final String APPLICANT_FIRST_NAME = new StringGenerator().next();
     private static final String APPLICANT_LAST_NAME = new StringGenerator().next();
@@ -479,7 +480,7 @@ public class ProsecutionCaseQueryViewTest {
         prosecutionCaseEntity.setCaseId(fromString(caseId));
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase(caseURN, defendant)).toString());
 
-        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(defendantId, randomUUID(), masterDefendantId);
+        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(defendantId, randomUUID());
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
@@ -519,13 +520,15 @@ public class ProsecutionCaseQueryViewTest {
     @Test
     public void shouldFindApplicationsLinkedToCaseAtAGlanceProsecutionCase() {
         final String caseURN = "05PP1000915";
+        final JsonEnvelope jsonEnvelope = buildEnvelope(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, "progression.query.prosecutioncase.caag.with.urn.json");
+
         final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseId(PROGRESSION_QUERY_PROSECUTIONCASE_CAAG, randomUUID());
         final String caseId = envelopeWithCaseId.payloadAsJsonObject().getString("caseId");
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(fromString(caseId));
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(getProsecutionCase(caseURN, defendant().withMasterDefendantId(randomUUID())
                 .withId(randomUUID()).build())).toString());
-        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(randomUUID(), randomUUID(), randomUUID());
+        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(randomUUID(), randomUUID());
         final CourtApplicationEntity parentCourtApplicationEntity = new CourtApplicationEntity();
         parentCourtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
         final CourtApplicationCaseEntity parentCourtApplicationCaseEntity = new CourtApplicationCaseEntity();
@@ -563,10 +566,10 @@ public class ProsecutionCaseQueryViewTest {
         prosecutionCaseEntity.setCaseId(fromString(caseId));
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(
                 getProsecutionCase(prosecutionCaseEntityJson.getJsonObject("prosecutionCaseIdentifier").getString("caseURN"),
-                        defendant().withMasterDefendantId(applicantId).withId(applicantId).build(),
+                        defendant().withMasterDefendantId(randomUUID()).withId(applicantId).build(),
                         defendant().withMasterDefendantId(randomUUID()).withId(respondentId).build())).toString());
 
-        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(applicantId, respondentId, applicantId);
+        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(applicantId, respondentId);
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(objectToJsonObjectConverter.convert(courtApplication).toString());
@@ -574,6 +577,15 @@ public class ProsecutionCaseQueryViewTest {
         final CourtApplicationCaseEntity courtApplicationCaseEntity = new CourtApplicationCaseEntity();
         courtApplicationCaseEntity.setId(new CourtApplicationCaseKey(randomUUID(), randomUUID(), UUID.fromString(caseId)));
         courtApplicationCaseEntity.setCourtApplication(courtApplicationEntity);
+
+        final GetHearingsAtAGlance getCaseAtAGlance = GetHearingsAtAGlance.getHearingsAtAGlance()
+                .withHearings(asList(
+                        Hearings.hearings()
+                                .build()
+                ))
+                .withDefendantHearings(asList(DefendantHearings.defendantHearings().build()))
+                .withId(randomUUID())
+                .build();
 
         final CaseCpsProsecutorEntity caseCpsProsecutorEntity = new CaseCpsProsecutorEntity();
         caseCpsProsecutorEntity.setOldCpsProsecutor("OLDCPSPROSECUTOR");
@@ -912,7 +924,7 @@ public class ProsecutionCaseQueryViewTest {
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(prosecutionCase).toString());
 
         final List<CourtApplication> courtApplications = new ArrayList<>();
-        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(randomUUID(),randomUUID(), randomUUID());
+        final CourtApplication courtApplication = getCourtApplicationWithLegalEntityDefendant(randomUUID(),randomUUID());
         courtApplications.add(courtApplication);
         final GetHearingsAtAGlance getCaseAtAGlance = getHearingsAtAGlance()
                 .withHearings(asList(hearings().build()))
@@ -1392,7 +1404,7 @@ public class ProsecutionCaseQueryViewTest {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.active-applications-on-case").build(),
                 jsonObject);
-        final CourtApplication activeCourtApplication = getCourtApplicationWithLegalEntityDefendant(randomUUID(), randomUUID(), randomUUID());
+        final CourtApplication activeCourtApplication = getCourtApplicationWithLegalEntityDefendant(randomUUID(), randomUUID());
         final CourtApplication inactiveCourtApplication = getInactiveCourtApplicationWithLegalEntityDefendant();
 
         final CourtApplicationEntity activeCourtApplicationEntity = new CourtApplicationEntity();
@@ -1631,9 +1643,9 @@ public class ProsecutionCaseQueryViewTest {
         );
     }
 
-    private CourtApplication getCourtApplicationWithLegalEntityDefendant(final UUID defendantId1, final UUID defendantId2, final UUID masterDefendantId) {
+    private CourtApplication getCourtApplicationWithLegalEntityDefendant(final UUID defendantId1, final UUID defendantId2) {
         final MasterDefendant masterDefendant = MasterDefendant.masterDefendant().
-                withMasterDefendantId(masterDefendantId).
+                withMasterDefendantId(defendantId1).
                 withLegalEntityDefendant(LegalEntityDefendant.legalEntityDefendant()
                         .withOrganisation(Organisation.organisation()
                                 .withName("ABC LTD").build()).build()).build();

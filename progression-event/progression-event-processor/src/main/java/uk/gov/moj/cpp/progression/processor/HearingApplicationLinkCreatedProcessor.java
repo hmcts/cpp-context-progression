@@ -16,7 +16,6 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 public class HearingApplicationLinkCreatedProcessor {
 
     private static final String HEARING_LANGUAGE = "hearingLanguage";
-    private static final String COURT_APPLICATIONS = "courtApplications";
     @Inject
     private Sender sender;
     @Inject
@@ -33,8 +32,8 @@ public class HearingApplicationLinkCreatedProcessor {
         if(Objects.nonNull(hearing.get(HEARING_LANGUAGE))) {
             payload.add(HEARING_LANGUAGE, hearing.getString(HEARING_LANGUAGE));
         }
-        if(Objects.nonNull(hearing.get(COURT_APPLICATIONS))) {
-            hearing.getJsonArray(COURT_APPLICATIONS).stream().map(JsonObject.class::cast)
+        if(Objects.nonNull(hearing.get("courtApplications"))) {
+            hearing.getJsonArray("courtApplications").stream().map(JsonObject.class::cast)
                     .filter(app -> app.getString("id").equals(event.payloadAsJsonObject().getString("applicationId")))
                     .forEach(app -> payload.add("courtApplication", app));
         }

@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -35,8 +34,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 import static uk.gov.moj.cpp.progression.service.RefDataService.REFERENCEDATA_GET_ALL_RESULT_DEFINITIONS;
-import static uk.gov.moj.cpp.progression.utils.FileUtil.getPayload;
-import static uk.gov.moj.cpp.progression.utils.FileUtil.jsonFromString;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.AttendanceDay;
@@ -48,7 +45,6 @@ import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtOrder;
 import uk.gov.justice.core.courts.CourtOrderOffence;
-import uk.gov.justice.core.courts.CustodialEstablishment;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
@@ -77,13 +73,9 @@ import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
 import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
-import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
-import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
-import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
 import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
@@ -95,7 +87,6 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NextHearingService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
-import uk.gov.moj.cpp.progression.service.UpdateDefendantService;
 import uk.gov.moj.cpp.progression.service.dto.NextHearingDetails;
 import uk.gov.moj.cpp.progression.service.utils.OffenceToCommittingCourtConverter;
 import uk.gov.moj.cpp.progression.transformer.DefendantProceedingConcludedTransformer;
@@ -112,12 +103,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -142,6 +131,8 @@ public class HearingResultEventProcessorTest {
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
 
+    @InjectMocks
+    private HearingResultEventProcessor eventProcessor;
 
     @Mock
     private Sender sender;
@@ -215,25 +206,6 @@ public class HearingResultEventProcessorTest {
     @Mock
     private HearingListingNeedsTransformer hearingListingNeedsTransformer;
 
-    @Captor
-    private ArgumentCaptor<Envelope> argumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<Metadata> argumentCaptorMetadata;
-
-    @Captor
-    private ArgumentCaptor<JsonObject> argumentCaptorJsonObject;
-
-    @Captor
-    private ArgumentCaptor<CustodialEstablishment> argumentCaptorCustodialEstablishment;
-
-    @Mock
-    private UpdateDefendantService updateDefendantService;
-
-    @Spy
-    private CustodialEstablishmentUpdateHelper custodialEstablishmentUpdateHelper;
-
-
     @Mock
     private DefendantProceedingConcludedTransformer proceedingConcludedConverter;
 
@@ -251,14 +223,6 @@ public class HearingResultEventProcessorTest {
     private ArgumentCaptor<JurisdictionType> jurisdictionTypeCaptor;
     @Captor
     private ArgumentCaptor<Boolean> isBoxHearingCaptor;
-
-    @InjectMocks
-    private HearingResultEventProcessor eventProcessor;
-
-
-    private static final UUID HEARING_ID = randomUUID();
-    private static final UUID COURTROOM_ID = randomUUID();
-
 
     @BeforeEach
     public void initMocks() {
@@ -633,40 +597,6 @@ public class HearingResultEventProcessorTest {
         final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
         assertThat(allValues.size(), is(1));
         assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
-    }
-
-    @Test
-    public void shouldCallCommandWithCustodialEstablishment() {
-
-        final JsonObject payload = jsonFromString(getPayload("stub-data/progression.event.applications-resulted.json")
-                .replaceAll("%HEARING_ID%", HEARING_ID.toString())
-                .replaceAll("%COURTROOM_ID%", COURTROOM_ID.toString())
-        );
-
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
-                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.hearing-application-link-created"),
-                payload);
-        final UUID prisonId = randomUUID();
-        final String prisonType = "prison";
-        final String prisonName = "HMP Channings Wood";
-
-        when(referenceDataService.getPrisonsCustodySuites(any())).thenReturn(asList(PrisonCustodySuite.prisonCustodySuite()
-                .withId(prisonId)
-                .withType(prisonType)
-                .withName(prisonName)
-                .build()));
-
-        eventProcessor.processHandleApplicationsResulted(envelope);
-
-        verify(sender).send(argumentCaptor.capture());
-        verify(updateDefendantService).updateDefendantCustodialEstablishment(argumentCaptorMetadata.capture(), argumentCaptorJsonObject.capture(), argumentCaptorCustodialEstablishment.capture());
-
-        assertThat(argumentCaptor.getAllValues().get(0).metadata().name(), is("progression.command.hearing-resulted-update-application"));
-
-        final CustodialEstablishment custodialEstablishment = argumentCaptorCustodialEstablishment.getValue();
-        assertThat(custodialEstablishment.getId(), is(prisonId));
-        assertThat(custodialEstablishment.getName(), is(prisonName));
-        assertThat(custodialEstablishment.getCustody(), is(prisonType));
     }
 
     @Test

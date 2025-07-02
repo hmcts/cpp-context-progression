@@ -36,9 +36,7 @@ import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedChanged.
 import static uk.gov.justice.core.courts.LaaDefendantProceedingConcludedResent.laaDefendantProceedingConcludedResent;
 import static uk.gov.justice.core.courts.LockStatus.lockStatus;
 import static uk.gov.justice.core.courts.Organisation.organisation;
-import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
 import static uk.gov.justice.core.courts.ProsecutionCaseDefendantOrganisationUpdatedByLaa.prosecutionCaseDefendantOrganisationUpdatedByLaa;
-import static uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated;
 import static uk.gov.justice.core.courts.UpdatedOrganisation.updatedOrganisation;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.match;
 import static uk.gov.justice.domain.aggregate.matcher.EventSwitcher.otherwiseDoNothing;
@@ -74,7 +72,6 @@ import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.REFU
 import static uk.gov.moj.cpp.progression.domain.constant.LegalAidStatusEnum.WITHDRAWN;
 import static uk.gov.moj.cpp.progression.events.CivilCaseExists.civilCaseExists;
 import static uk.gov.moj.cpp.progression.events.DefendantCustodialEstablishmentRemoved.defendantCustodialEstablishmentRemoved;
-import static uk.gov.moj.cpp.progression.events.DefendantCustodialInformationUpdateRequested.defendantCustodialInformationUpdateRequested;
 import static uk.gov.moj.cpp.progression.events.DefendantDefenceOrganisationDisassociated.defendantDefenceOrganisationDisassociated;
 import static uk.gov.moj.cpp.progression.events.Reason.PLEA_ALREADY_SUBMITTED;
 import static uk.gov.moj.cpp.progression.plea.json.schemas.PleaNotificationType.COMPANYONLINEPLEA;
@@ -192,7 +189,6 @@ import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.OnlinePleaAllocationAdded;
 import uk.gov.justice.progression.courts.OnlinePleaAllocationUpdated;
 import uk.gov.justice.progression.courts.RelatedCaseRequestedForAdhocHearing;
-import uk.gov.moj.cpp.progression.aggregate.convertor.DefendateUpdateConverter;
 import uk.gov.moj.cpp.progression.aggregate.rules.DartsRetentionPolicyHelper;
 import uk.gov.moj.cpp.progression.aggregate.rules.HearingInfo;
 import uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicy;
@@ -1095,46 +1091,6 @@ public class CaseAggregate implements Aggregate {
     private static AssociatedDefenceOrganisation getAssociatedDefenceOrganisation(final DefendantUpdate updatedDefendant, final Defendant orgDefendant) {
         //keep the associatedDefenceOrganisation in the original state if it is not present in the command payload.
         return nonNull(updatedDefendant.getAssociatedDefenceOrganisation()) ? updatedDefendant.getAssociatedDefenceOrganisation() : ofNullable(orgDefendant).map(Defendant::getAssociatedDefenceOrganisation).orElse(null);
-    }
-
-    public Stream<Object> updateDefendantCustodialInformation(final UUID prosecutionCaseId, final UUID masterDefendantId, final UUID defendantId, final CustodialEstablishment custodialEstablishment) {
-        LOGGER.debug("Defendant information is being updated.");
-        final Stream.Builder<Object> builder = builder();
-
-        final uk.gov.justice.core.courts.Defendant defendant = defendantsMap.get(defendantId);
-
-        final PersonDefendant personDefendant = personDefendant().withValuesFrom(defendant.getPersonDefendant())
-                .withPersonDetails(uk.gov.justice.core.courts.Person.person().withValuesFrom(defendant.getPersonDefendant().getPersonDetails())
-                        .build())
-                .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
-                        .withId(custodialEstablishment.getId())
-                        .withCustody(custodialEstablishment.getCustody())
-                        .withName(custodialEstablishment.getName())
-                        .build())
-                .build();
-
-        final DefendantUpdate newDefendant = DefendateUpdateConverter
-                .convertWithPersonDefendant(defendant, personDefendant);
-
-        builder.add(prosecutionCaseDefendantUpdated()
-                .withDefendant(newDefendant)
-                .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(hearingIds) : emptyList())
-                .build());
-
-        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = defendantCustodialInformationUpdateRequested()
-                .withDefendantId(defendantId)
-                .withMasterDefendantId(masterDefendantId)
-                .withProsecutionCaseId(prosecutionCaseId)
-                .withCustodialEstablishment(uk.gov.moj.cpp.progression.events.CustodialEstablishment.custodialEstablishment()
-                        .withId(custodialEstablishment.getId())
-                        .withCustody(custodialEstablishment.getCustody())
-                        .withName(custodialEstablishment.getName())
-                        .build())
-                .build();
-
-        builder.add(defendantCustodialInformationUpdateRequested);
-
-        return apply(builder.build());
     }
 
     public Stream<Object> updateDefendantAddress(final DefendantUpdate updatedDefendant) {
