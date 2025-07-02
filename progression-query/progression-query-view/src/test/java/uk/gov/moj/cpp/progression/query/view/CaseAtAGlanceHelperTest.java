@@ -237,8 +237,8 @@ public class CaseAtAGlanceHelperTest {
     public void shouldGetDefendantPersonalDetails() {
         caseAtAGlanceHelper = new CaseAtAGlanceHelper(getProsecutionCaseWithCaseDetails(), new ArrayList<>(), referenceDataService, civilFeeRepository, relatedReferenceRepository);
         final Map<UUID, LocalDate> defendantUpdatedOn = new HashMap<>();
-        defendantUpdatedOn.put(getProsecutionCaseWithCaseDetails().getDefendants().get(0).getMasterDefendantId(), LocalDate.now());
-        defendantUpdatedOn.put(getProsecutionCaseWithCaseDetails().getDefendants().get(1).getMasterDefendantId(), LocalDate.now().minusDays(10));
+        defendantUpdatedOn.put(getProsecutionCaseWithCaseDetails().getDefendants().get(0).getId(), LocalDate.now());
+        defendantUpdatedOn.put(getProsecutionCaseWithCaseDetails().getDefendants().get(1).getId(), LocalDate.now().minusDays(10));
         final List<CaagDefendants> defendants = caseAtAGlanceHelper.getCaagDefendantsList(defendantUpdatedOn);
         assertThat(defendants, notNullValue());
         assertThat(defendants.size(), is(3));

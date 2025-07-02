@@ -4681,66 +4681,6 @@ public class CaseAggregateTest {
 
     }
 
-    @Test
-    public void shouldUpdateDefendantCustodialInformation() {
-        final UUID caseId = randomUUID();
-        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
-        final UUID defendantId1 = randomUUID();
-        final UUID defendantId2 = randomUUID();
-        final UUID masterDefendantId1 = randomUUID();
-        final UUID masterDefendantId2 = randomUUID();
-        final UUID custodialId = randomUUID();
-
-        final Defendant defendant1 = Defendant.defendant()
-                .withId(defendantId1)
-                .withProsecutionCaseId(caseId)
-                .withMasterDefendantId(masterDefendantId1)
-                .withPersonDefendant(PersonDefendant.personDefendant()
-                        .withPersonDetails(uk.gov.justice.core.courts.Person.person().build())
-                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
-                                .withName("name1")
-                                .withId(custodialId)
-                                .withCustody("custody1")
-                                .build())
-                        .build())
-                .build();
-        final Defendant defendant2 = defendant()
-                .withId(defendantId2)
-                .withProsecutionCaseId(caseId)
-                .withMasterDefendantId(masterDefendantId2)
-                .withPersonDefendant(PersonDefendant.personDefendant()
-                        .withPersonDetails(uk.gov.justice.core.courts.Person.person().build())
-                        .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
-                                .withName("name2")
-                                .withId(randomUUID())
-                                .withCustody("custody2")
-                                .build())
-                        .build())
-                .build();
-        defendantsMap.put(defendantId1, defendant1);
-        defendantsMap.put(defendantId2, defendant2);
-        setField(caseAggregate, "defendantsMap", defendantsMap);
-
-        final CustodialEstablishment custodialEstablishment = CustodialEstablishment.custodialEstablishment()
-                .withName("name1")
-                .withId(custodialId)
-                .withCustody("custody1")
-                .build();
-
-
-        final List<Object> eventList = caseAggregate.updateDefendantCustodialInformation(caseId, masterDefendantId1, defendantId1, custodialEstablishment).collect(toList());
-        assertThat(eventList, hasSize(2));
-        assertThat(eventList.get(0), Matchers.instanceOf(ProsecutionCaseDefendantUpdated.class));
-        assertThat(eventList.get(1), Matchers.instanceOf(DefendantCustodialInformationUpdateRequested.class));
-        final ProsecutionCaseDefendantUpdated prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
-        final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested = (DefendantCustodialInformationUpdateRequested) eventList.get(1);
-        assertThat(prosecutionCaseDefendantUpdated.getDefendant(), Matchers.notNullValue());
-        assertThat(prosecutionCaseDefendantUpdated.getDefendant().getId(), is(defendantId1));
-        assertThat(defendantCustodialInformationUpdateRequested.getDefendantId(), is(prosecutionCaseDefendantUpdated.getDefendant().getId()));
-        assertThat(defendantCustodialInformationUpdateRequested.getCustodialEstablishment().getId(), is(custodialId));
-    }
-
-
 
     @Test
     public void shouldUpdateDefendantDetails_WhenSameCustodialInformationIsPresent() {

@@ -1,4 +1,5 @@
 {
+  "applicationId": "3a464ad3-e16c-43ec-bb24-86ea125ace30",
   "hearing": {
     "courtApplications": [
       {
@@ -1192,5 +1193,6 @@
       "description": "Application",
       "id": "3449743b-95d6-4836-8941-57f588b52068"
     }
-  }
+  },
+  "hearingListingStatus": "HEARING_RESULTED"
 }
