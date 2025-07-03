@@ -41,7 +41,8 @@ public class DefendantUpdateDifferenceServiceTest {
                 Arguments.of("allfields"),
                 Arguments.of("parent-guardian-remove"),
                 Arguments.of("new-fields"),
-                Arguments.of("custodial-establishment")
+                Arguments.of("custodial-establishment"),
+                Arguments.of("matched-defendant-without-custody")
         );
     }
 
