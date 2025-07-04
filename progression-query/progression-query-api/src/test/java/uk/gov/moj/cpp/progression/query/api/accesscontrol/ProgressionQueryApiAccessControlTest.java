@@ -346,6 +346,16 @@ public class ProgressionQueryApiAccessControlTest extends BaseDroolsAccessContro
         assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.application-hearing-case-details", "Legal Advisers");
     }
 
+    @Test
+    void shouldAllowUserInAuthorisedGroupToGetJudicialChildResults() {
+        assertSuccessfulOutcomeOnActionForTheSuppliedGroups("progression.query.judicial-child-results", "System Users");
+    }
+
+    @Test
+    void shouldNotAllowUserInAuthorisedGroupToGetJudicialChildResults() {
+        assertFailureOutcomeOnActionForTheSuppliedGroups("progression.query.judicial-child-results", "System Users");
+    }
+
     private void assertFailureOutcomeOnActionForTheSuppliedGroups(final String actionName, final String... groupNames) {
         final Action action = createActionFor(actionName);
    /*     given(this.userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups(action, groupNames))
