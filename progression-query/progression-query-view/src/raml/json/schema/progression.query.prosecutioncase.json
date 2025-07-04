@@ -507,7 +507,7 @@
           "type": "array",
           "minItems": 1,
           "items": {
-            "$ref": "http://justice.gov.uk/core/courts/courtOrder.json#"
+            "$ref": "#/definitions/queryCourtOrder"
           }
         }
       },
@@ -516,6 +516,13 @@
         "courtOrders"
       ],
       "additionalProperties": false
+    },
+    "queryCourtOrder": {
+      "type": "object",
+      "properties": {
+
+      },
+      "additionalProperties": true
     },
     "relatedCase": {
       "type": "object",

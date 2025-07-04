@@ -1422,3 +1422,31 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.form-directions+json:
             example: !include json/progression.query.form-directions.json
             schema:  !include json/schema/progression.query.form-directions.json
+
+/hearings/{hearingId}/childResults:
+  uriParameters:
+    hearingId:
+      type: string
+  get:
+    description: |
+      Return child results
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.judicial-child-results+json
+          name: progression.query.judicial-child-results
+      ...
+
+    queryParameters:
+      masterDefendantId:
+        type: string
+        required: true
+      judicialResultTypeId:
+        type: string
+        required: true
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.judicial-child-results+json:
+            example: !include json/progression.query.judicial-child-results.json
+            schema: !include json/schema/progression.query.judicial-child-results.json
