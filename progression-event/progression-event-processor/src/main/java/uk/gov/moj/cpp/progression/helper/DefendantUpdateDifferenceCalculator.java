@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.helper;
 
+import static java.util.Objects.nonNull;
+
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.AssociatedPerson;
@@ -126,27 +128,7 @@ public class DefendantUpdateDifferenceCalculator {
                 .withNumberOfPreviousConvictionsCited(matchedDefendantPreviousVersion.getNumberOfPreviousConvictionsCited())
                 .withOffences(matchedDefendantPreviousVersion.getOffences())
                 .withPersonDefendant(
-                        PersonDefendant.personDefendant()
-                                .withPersonDetails(
-                                        calculatePerson(defendantUpdate -> defendantUpdate.getPersonDefendant().getPersonDetails(), personDetails)
-                                )
-                                .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
-                                .withBailStatus(personDefendant.getBailStatus())
-                                .withBailConditions(personDefendant.getBailConditions())
-                                .withCustodialEstablishment(
-                                        calculateCustodialEstablishment(defendantUpdate -> defendantUpdate.getPersonDefendant().getCustodialEstablishment()))
-                                .withCustodyTimeLimit(personDefendant.getCustodyTimeLimit())
-                                .withDriverLicenceCode(newValue(
-                                        defendantUpdate -> defendantUpdate.getPersonDefendant().getDriverLicenceCode()))
-                                .withDriverNumber(newValue(
-                                        defendantUpdate -> defendantUpdate.getPersonDefendant().getDriverNumber()))
-                                .withDriverLicenseIssue(newValue(
-                                        defendantUpdate -> defendantUpdate.getPersonDefendant().getDriverLicenseIssue()))
-                                .withEmployerOrganisation(
-                                        calculateEmployerOrganization(defendantUpdate -> defendantUpdate.getPersonDefendant().getEmployerOrganisation()))
-                                .withEmployerPayrollReference(newValue(
-                                        defendantUpdate -> defendantUpdate.getPersonDefendant().getEmployerPayrollReference()))
-                                .build()
+                        getPersonDefendant(personDefendant, personDetails)
                 )
                 .withPncId(matchedDefendantPreviousVersion.getPncId())
                 .withProceedingsConcluded(matchedDefendantPreviousVersion.getProceedingsConcluded())
@@ -155,6 +137,36 @@ public class DefendantUpdateDifferenceCalculator {
                 .withWitnessStatement(matchedDefendantPreviousVersion.getWitnessStatement())
                 .withWitnessStatementWelsh(matchedDefendantPreviousVersion.getWitnessStatementWelsh())
                 .build();
+    }
+
+    private PersonDefendant getPersonDefendant(final PersonDefendant personDefendant, final Person personDetails) {
+        PersonDefendant.Builder personDefendantBuilder =  PersonDefendant.personDefendant()
+                .withPersonDetails(
+                        calculatePerson(defendantUpdate -> defendantUpdate.getPersonDefendant().getPersonDetails(), personDetails)
+                )
+                .withArrestSummonsNumber(personDefendant.getArrestSummonsNumber())
+                .withBailStatus(personDefendant.getBailStatus())
+                .withBailConditions(personDefendant.getBailConditions())
+
+                .withCustodyTimeLimit(personDefendant.getCustodyTimeLimit())
+                .withDriverLicenceCode(newValue(
+                        defendantUpdate -> defendantUpdate.getPersonDefendant().getDriverLicenceCode()))
+                .withDriverNumber(newValue(
+                        defendantUpdate -> defendantUpdate.getPersonDefendant().getDriverNumber()))
+                .withDriverLicenseIssue(newValue(
+                        defendantUpdate -> defendantUpdate.getPersonDefendant().getDriverLicenseIssue()))
+                .withEmployerOrganisation(
+                        calculateEmployerOrganization(defendantUpdate -> defendantUpdate.getPersonDefendant().getEmployerOrganisation()))
+                .withEmployerPayrollReference(newValue(
+                        defendantUpdate -> defendantUpdate.getPersonDefendant().getEmployerPayrollReference()));
+
+        CustodialEstablishment custodialEstablishment =
+                calculateCustodialEstablishment(defendantUpdate -> defendantUpdate.getPersonDefendant().getCustodialEstablishment());
+
+        if(nonNull(custodialEstablishment.getCustody()) && nonNull(custodialEstablishment.getId()) && nonNull(custodialEstablishment.getName())){
+            personDefendantBuilder.withCustodialEstablishment(custodialEstablishment);
+        }
+        return personDefendantBuilder.build();
     }
 
     @SuppressWarnings("squid:S2589")
