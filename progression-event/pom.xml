@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>17.0.155-SNAPSHOT</version>
+        <version>17.0.154</version>
     </parent>
     <artifactId>progression-event</artifactId>
     <packaging>pom</packaging>
