@@ -78,7 +78,7 @@
         <notification.notify.version>17.0.24</notification.notify.version>
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
-        <applicationscourtorders.version>17.0.19</applicationscourtorders.version>
+        <applicationscourtorders.version>17.0.50</applicationscourtorders.version>
         <sjp.version>17.0.84</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.2</stagingpubhub.version>
