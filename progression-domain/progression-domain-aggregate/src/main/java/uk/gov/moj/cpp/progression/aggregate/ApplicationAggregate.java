@@ -149,7 +149,7 @@ import org.slf4j.LoggerFactory;
 public class ApplicationAggregate implements Aggregate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationAggregate.class);
-    private static final long serialVersionUID = 1331113876243908501L;
+    private static final long serialVersionUID = 1331113876243908502L;
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE = "MC80527";
     private static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION_CODE_SJP = "MC80528";
     private ApplicationStatus applicationStatus = DRAFT;
@@ -817,21 +817,13 @@ public class ApplicationAggregate implements Aggregate {
             });
         }
 
-        if (applicationStatusAfterHearingResulted != this.courtApplication.getApplicationStatus()) {
-            streamBuilder.add(getCourtApplicationStatusChanged(courtApplication.getId(), applicationStatusAfterHearingResulted));
-        }
-
         return apply(streamBuilder.build());
     }
 
     private ApplicationStatus getApplicationStatusAfterHearingResulted(final CourtApplication courtApplication) {
-        if (ofNullable(courtApplication.getJudicialResults()).stream().flatMap(Collection::stream)
-                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory()))) {
-            return FINALISED;
-        } else {
-            //fixing historical data, were application incorrectly created with FINALISED status
-            return courtApplication.getApplicationStatus() == FINALISED ? LISTED : courtApplication.getApplicationStatus();
-        }
+        return ofNullable(courtApplication.getJudicialResults()).stream().flatMap(Collection::stream)
+                .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory()))
+                ? FINALISED : courtApplication.getApplicationStatus();
     }
 
     public Stream<Object> deleteHearingRelatedToCourtApplication(final UUID hearingId, final UUID courtApplicationId) {

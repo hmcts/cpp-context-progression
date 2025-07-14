@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -11,6 +12,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
+import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
+import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
@@ -196,7 +199,7 @@ public class ApplicationAggregateTest {
         final UUID applicationId = randomUUID();
         final HearingResultedApplicationUpdated hearingResultedApplicationUpdated = HearingResultedApplicationUpdated.hearingResultedApplicationUpdated().withCourtApplication(courtApplication()
                         .withId(applicationId)
-                        .withApplicationStatus(ApplicationStatus.FINALISED)
+                        .withApplicationStatus(FINALISED)
                         .build())
                 .build();
         aggregate.apply(Stream.of(hearingResultedApplicationUpdated));
@@ -212,7 +215,7 @@ public class ApplicationAggregateTest {
         final HearingApplicationLinkCreated hearingApplicationLinkCreated = (HearingApplicationLinkCreated) eventStream.get(0);
         assertThat(hearingApplicationLinkCreated.getHearing().getCourtApplications().stream()
                 .filter(c -> c.getId().equals(applicationId))
-                .findFirst().get().getApplicationStatus(), is(ApplicationStatus.FINALISED));
+                .findFirst().get().getApplicationStatus(), is(FINALISED));
         assertThat(hearingApplicationLinkCreated.getHearing().getCourtApplications().stream()
                 .filter(c -> !c.getId().equals(applicationId))
                 .findFirst().get().getApplicationStatus(), is(ApplicationStatus.IN_PROGRESS));
@@ -683,23 +686,42 @@ public class ApplicationAggregateTest {
                                 .build()))
                         .build())
                 .toList();
-        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.size(), is(1));
         final HearingResultedApplicationUpdated event = (HearingResultedApplicationUpdated) eventStream.get(0);
-        assertThat(event.getCourtApplication().getApplicationStatus(), is(ApplicationStatus.FINALISED));
-
-        final CourtApplicationStatusChanged statusEvent = (CourtApplicationStatusChanged) eventStream.get(1);
-        assertThat(statusEvent.getApplicationStatus(), is(ApplicationStatus.FINALISED));
+        assertThat(event.getCourtApplication().getApplicationStatus(), is(FINALISED));
     }
 
     @Test
-    void givenApplicationStatusAlreadyFinalisedAndHearingResultedShouldNotRaiseCourtApplicationStatusChangedEvent() {
+    void givenApplicationStatusResultedWithFinalResultShouldHaveFinalisedStatus() {
+        final UUID applicationId = randomUUID();
+        final CourtApplication courtApplication = buildCourtapplication(applicationId, LocalDate.now());
+
+        aggregate.apply(new CourtApplicationCreated.Builder().withCourtApplication(courtApplication).build());
+
+        final List<Object> eventStream = aggregate.hearingResulted(courtApplication()
+                        .withValuesFrom(courtApplication)
+                        .withJudicialResults(Arrays.asList(JudicialResult.judicialResult()
+                                .withCategory(JudicialResultCategory.INTERMEDIARY)
+                                .build(), JudicialResult.judicialResult()
+                                .withCategory(JudicialResultCategory.FINAL)
+                                .build()))
+                        .build())
+                .toList();
+
+        assertThat(eventStream.size(), is(1));
+        final HearingResultedApplicationUpdated event = (HearingResultedApplicationUpdated) eventStream.get(0);
+        assertThat(event.getCourtApplication().getApplicationStatus(), is(FINALISED));
+    }
+
+    @Test
+    void givenApplicationStatusAlreadyFinalisedAndHearingResultedWithFinalShouldHaveFinalisedStatus() {
         final UUID applicationId = randomUUID();
         final CourtApplication courtApplication = buildCourtapplication(applicationId, LocalDate.now());
 
         aggregate.apply(new CourtApplicationCreated.Builder().withCourtApplication(courtApplication).build());
         aggregate.apply(new HearingResultedApplicationUpdated(courtApplication()
                 .withValuesFrom(courtApplication)
-                .withApplicationStatus(ApplicationStatus.FINALISED)
+                .withApplicationStatus(FINALISED)
                 .withJudicialResults(singletonList(JudicialResult.judicialResult()
                         .withCategory(JudicialResultCategory.FINAL)
                         .build())).build()));
@@ -716,34 +738,59 @@ public class ApplicationAggregateTest {
 
         assertThat(eventStream.size(), is(1));
         final HearingResultedApplicationUpdated event = (HearingResultedApplicationUpdated) eventStream.get(0);
-        assertThat(event.getCourtApplication().getApplicationStatus(), is(ApplicationStatus.FINALISED));
+        assertThat(event.getCourtApplication().getApplicationStatus(), is(FINALISED));
     }
 
     @Test
-    void givenApplicationStatusAlreadyFinalisedAndHearingResultedWithNonFinalResultShouldRaiseCourtApplicationStatusChangedEvent() {
+    void givenApplicationStatusAlreadyFinalisedAndHearingResultedWithNoJudicialResultRetainStatusOfApplication() {
         final UUID applicationId = randomUUID();
         final CourtApplication courtApplication = buildCourtapplication(applicationId, LocalDate.now());
 
         aggregate.apply(new CourtApplicationCreated.Builder().withCourtApplication(courtApplication).build());
         aggregate.apply(new HearingResultedApplicationUpdated(courtApplication()
                 .withValuesFrom(courtApplication)
-                .withApplicationStatus(ApplicationStatus.FINALISED)
+                .withApplicationStatus(FINALISED)
                 .withJudicialResults(singletonList(JudicialResult.judicialResult()
                         .withCategory(JudicialResultCategory.FINAL)
                         .build())).build()));
 
         final List<Object> eventStream = aggregate.hearingResulted(courtApplication()
                         .withValuesFrom(courtApplication)
+                        .withApplicationStatus(FINALISED)
+                        .withJudicialResults(emptyList())
+                        .build())
+                .toList();
+
+        assertThat(eventStream.size(), is(1));
+        final HearingResultedApplicationUpdated event = (HearingResultedApplicationUpdated) eventStream.get(0);
+        assertThat(event.getCourtApplication().getApplicationStatus(), is(FINALISED));
+    }
+
+    @Test
+    void givenApplicationStatusAlreadyFinalisedAndApplicationAmendedWithNonFinalJudicialResultsAndHearingResultedShouldRetainApplicationStatusOnRequest() {
+        final UUID applicationId = randomUUID();
+        final CourtApplication courtApplication = buildCourtapplication(applicationId, LocalDate.now());
+
+        aggregate.apply(new CourtApplicationCreated.Builder().withCourtApplication(courtApplication).build());
+        aggregate.apply(new HearingResultedApplicationUpdated(courtApplication()
+                .withValuesFrom(courtApplication)
+                .withApplicationStatus(FINALISED)
+                .withJudicialResults(singletonList(JudicialResult.judicialResult()
+                        .withCategory(JudicialResultCategory.FINAL)
+                        .build())).build()));
+
+        final List<Object> eventStream = aggregate.hearingResulted(courtApplication()
+                        .withValuesFrom(courtApplication)
+                        .withApplicationStatus(LISTED)
                         .withJudicialResults(singletonList(JudicialResult.judicialResult()
                                 .withCategory(JudicialResultCategory.INTERMEDIARY)
                                 .build()))
                         .build())
                 .toList();
 
-        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.size(), is(1));
         final HearingResultedApplicationUpdated event = (HearingResultedApplicationUpdated) eventStream.get(0);
-        final CourtApplicationStatusChanged statusEvent = (CourtApplicationStatusChanged) eventStream.get(1);
-        assertThat(statusEvent.getApplicationStatus(), is(ApplicationStatus.IN_PROGRESS));
+        assertThat(event.getCourtApplication().getApplicationStatus(), is(LISTED));
     }
 
     @Test
@@ -787,22 +834,22 @@ public class ApplicationAggregateTest {
                         .withJudicialResults(judicialResults)
                         .build())
                 .collect(toList());
-        assertThat(eventStream.size(), is(2));
+        assertThat(eventStream.size(), is(1));
         final HearingResultedApplicationUpdated event = (HearingResultedApplicationUpdated) eventStream.get(0);
-        assertThat(event.getCourtApplication().getApplicationStatus(), is(ApplicationStatus.FINALISED));
+        assertThat(event.getCourtApplication().getApplicationStatus(), is(FINALISED));
         aggregate.apply(eventStream);
 
         final List<Object> eventStream2 = aggregate.hearingResulted(courtApplication()
                         .withValuesFrom(courtApplication)
-                        .withApplicationStatus(ApplicationStatus.FINALISED)
+                        .withApplicationStatus(FINALISED)
                         .withJudicialResults(null)
                         .build())
                 .toList();
-        assertThat(eventStream2.size(), is(2));
+        assertThat(eventStream2.size(), is(1));
 
         final HearingResultedApplicationUpdated secondEvent = (HearingResultedApplicationUpdated) eventStream2.get(0);
         final CourtApplication expectedCourtApplication = courtApplication().withValuesFrom(courtApplication)
-                .withApplicationStatus(ApplicationStatus.FINALISED)
+                .withApplicationStatus(FINALISED)
                 .withJudicialResults(judicialResults)
                 .build();
         assertThat(secondEvent.getCourtApplication(), is(expectedCourtApplication));
