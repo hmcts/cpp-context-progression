@@ -827,9 +827,6 @@ subscriptions_descriptor:
         - name: public.prosecutioncasefile.cps-serve-ptph-submitted
           schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-ptph-submitted.json
 
-        - name: public.staginghmi.hearing-updated-from-hmi
-          schema_uri: http://justice.gov.uk/staginghmi/courts/public.staginghmi.hearing-updated-from-hmi.json
-
         - name: public.listing.cases-added-to-hearing
           schema_uri: http://justice.gov.uk/listing/events/public.listing.case-added-to-hearing.json
 

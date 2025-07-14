@@ -43,16 +43,6 @@ public class HmiEventProcessor {
     @Inject
     private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
-
-    @Handles("public.staginghmi.hearing-updated-from-hmi")
-    public void handleHearingUpdatedFromHmi(final JsonEnvelope event) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("public.staginghmi.hearing-updated-from-hmi event received {}", event.toObfuscatedDebugString());
-        }
-        sender.send(Enveloper.envelop(event.payloadAsJsonObject()).withName("progression.command.update-hearing-from-hmi")
-                .withMetadataFrom(event));
-    }
-
     @Handles("progression.event.hearing-moved-to-unallocated")
     public void handleHearingMovedToUnallocated(final JsonEnvelope event) {
         final JsonObject payload = event.payloadAsJsonObject();

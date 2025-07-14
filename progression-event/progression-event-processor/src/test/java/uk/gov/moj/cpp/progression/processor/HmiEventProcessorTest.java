@@ -64,21 +64,6 @@ public class HmiEventProcessorTest {
 
 
     @Test
-    public void shouldCallCommandWhenPublicEventReceived() {
-        final UUID hearingId = UUID.randomUUID();
-        final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID("public.staginghmi.hearing-updated-from-hmi"),
-                createObjectBuilder().add("hearingId", hearingId.toString()).build());
-
-        hmiEventProcessor.handleHearingUpdatedFromHmi(event);
-
-        verify(sender).send(envelopeArgumentCaptor.capture());
-
-        assertThat(envelopeArgumentCaptor.getValue().metadata().name(), is("progression.command.update-hearing-from-hmi"));
-        assertThat(envelopeArgumentCaptor.getValue().payload().getString("hearingId"), is(hearingId.toString()));
-    }
-
-    @Test
     public void shouldRaiseListingNumberEventWhenHaringMovedToUnAllocated() {
         final UUID hearingId = UUID.randomUUID();
         final UUID prosecutionCaseId = UUID.randomUUID();
