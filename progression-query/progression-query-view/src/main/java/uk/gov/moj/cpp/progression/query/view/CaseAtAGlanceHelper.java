@@ -214,7 +214,7 @@ public class CaseAtAGlanceHelper {
             final Builder caagDefendantBuilder = caagDefendants().withMasterDefendantId(defendant.getMasterDefendantId());
             setDefendantPersonalDetails(defendant, caagDefendantBuilder);
             final List<CaagDefendantOffences> caagDefendantOffencesList = getCaagDefendantOffencesList(defendant);
-            final List<JudicialResult> defendantJudicialResultList = getDefendantLevelJudicialResults(defendant.getMasterDefendantId());
+            final List<JudicialResult> defendantJudicialResultList = getDefendantLevelJudicialResults(defendant);
             final List<JudicialResult> defendantCaseJudicialResultList = getCaseLevelJudicialResults(defendant.getId());
 
             if (!isEmpty(caagDefendantOffencesList)) {
@@ -458,15 +458,23 @@ public class CaseAtAGlanceHelper {
         return Optional.ofNullable(hearingVerdict.orElse(offence.getVerdict()));
     }
 
-    private List<JudicialResult> getDefendantLevelJudicialResults(final UUID defendantId) {
+    private List<JudicialResult> getDefendantLevelJudicialResults(final Defendant defendant) {
         return getResultedHearings()
                 .map(Hearings::getDefendantJudicialResults)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
-                .filter(d -> defendantId.equals(d.getMasterDefendantId()))
+                .filter(defendantJudicialResult -> filterDefendantJudicialResult(defendantJudicialResult, defendant))
                 .map(DefendantJudicialResult::getJudicialResult)
                 .filter(Objects::nonNull)
                 .collect(toList());
+    }
+
+    private boolean filterDefendantJudicialResult(final DefendantJudicialResult defendantJudicialResult, final Defendant defendant) {
+        if (nonNull(defendantJudicialResult.getDefendantId())) {
+            return defendant.getId().equals(defendantJudicialResult.getDefendantId());
+        } else {
+            return defendant.getMasterDefendantId().equals(defendantJudicialResult.getMasterDefendantId());
+        }
     }
 
     private List<JudicialResult> getCaseLevelJudicialResults(final UUID defendantId) {

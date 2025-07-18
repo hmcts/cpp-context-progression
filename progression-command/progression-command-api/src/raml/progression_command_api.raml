@@ -406,7 +406,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       (mapping):
           requestType: application/vnd.progression.delete-related-reference+json
           name: progression.delete-related-reference
-
+      (mapping):
+          requestType: application/vnd.progression.insert-case-bdf+json
+          name: progression.insert-case-bdf
       ...
     body:
       application/vnd.progression.update-case-markers+json:
@@ -426,6 +428,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       application/vnd.progression.delete-related-reference+json:
         example: !include json/progression.delete-related-reference.json
         schema:  !include json/schema/progression.delete-related-reference.json
+      application/vnd.progression.insert-case-bdf+json:
+        example: !include json/progression.insert-case-bdf.json
+        schema:  !include json/schema/progression.insert-case-bdf.json
 
     responses:
           202:

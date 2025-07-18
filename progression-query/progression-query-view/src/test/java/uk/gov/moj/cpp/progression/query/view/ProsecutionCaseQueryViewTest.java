@@ -344,6 +344,7 @@ public class ProsecutionCaseQueryViewTest {
     public void shouldAddOldProsecutionAuthorityCode() {
         final UUID caseId = randomUUID();
         final UUID masterDefendantId = randomUUID();
+        final UUID defendantId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("caseId", caseId.toString()).build();
 
@@ -355,6 +356,7 @@ public class ProsecutionCaseQueryViewTest {
         final List<Defendant> defendants = new ArrayList<>();
         defendants.add(Defendant.defendant()
                 .withMasterDefendantId(masterDefendantId)
+                .withId(defendantId)
                 .build());
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
                 .withDefendants(defendants)
@@ -379,7 +381,7 @@ public class ProsecutionCaseQueryViewTest {
         when(matchDefendantCaseHearingRepository.findByMasterDefendantId(anyList())).thenReturn(new ArrayList<>());
         when(caseCpsProsecutorRepository.findBy(caseId)).thenReturn(caseCpsProsecutorEntity);
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getCaseAtAGlance);
-        when(hearingAtAGlanceService.getCaseHearings(any(UUID.class))).thenReturn(getHearingsList(masterDefendantId));
+        when(hearingAtAGlanceService.getCaseHearings(any(UUID.class))).thenReturn(getHearingsList(masterDefendantId, defendantId));
 
         final JsonEnvelope response = prosecutionCaseQuery.getProsecutionCase(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().get("prosecutionCase"), notNullValue());
@@ -491,7 +493,7 @@ public class ProsecutionCaseQueryViewTest {
         when(courtApplicationCaseRepository.findByCaseId(fromString(caseId))).thenReturn(asList(courtApplicationCaseEntity));
         when(prosecutionCaseRepository.findByCaseId(any(UUID.class))).thenReturn(prosecutionCaseEntity);
         when(referenceDataService.getProsecutor(anyString())).thenReturn(Optional.empty());
-        when(hearingAtAGlanceService.getCaseHearings(any(UUID.class))).thenReturn(getHearingsList(masterDefendantId));
+        when(hearingAtAGlanceService.getCaseHearings(any(UUID.class))).thenReturn(getHearingsList(masterDefendantId, defendantId));
         final RelatedReference relatedReference = new RelatedReference();
         relatedReference.setProsecutionCaseId(UUID.fromString(caseId));
         relatedReference.setReference("testReference");
@@ -1590,7 +1592,7 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
     }
 
-    private List<Hearings> getHearingsList(final UUID masterDefendantId) {
+    private List<Hearings> getHearingsList(final UUID masterDefendantId,final UUID defendantId) {
         return asList(
                 hearings()
                         .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
@@ -1601,6 +1603,7 @@ public class ProsecutionCaseQueryViewTest {
                                                 .withResultText("code - " + LABEL1)
                                                 .build())
                                         .withMasterDefendantId(masterDefendantId)
+                                        .withDefendantId(defendantId)
                                         .build(),
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()
@@ -1608,6 +1611,7 @@ public class ProsecutionCaseQueryViewTest {
                                                 .withResultText(LABEL2)
                                                 .build())
                                         .withMasterDefendantId(masterDefendantId)
+                                        .withDefendantId(defendantId)
                                         .build()
                         ))
                         .build(),
@@ -1619,12 +1623,14 @@ public class ProsecutionCaseQueryViewTest {
                                                 .withLabel(LABEL3)
                                                 .build())
                                         .withMasterDefendantId(masterDefendantId)
+                                        .withDefendantId(defendantId)
                                         .build(),
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()
                                                 .withLabel(LABEL4)
                                                 .build())
                                         .withMasterDefendantId(masterDefendantId)
+                                        .withDefendantId(defendantId)
                                         .build()
                         ))
                         .build()

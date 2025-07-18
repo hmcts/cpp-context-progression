@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -27,6 +28,7 @@ import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
+import uk.gov.justice.progression.courts.CaseInsertedBdf;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ListToJsonArrayConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -110,6 +112,8 @@ public class ProsecutionCaseEventListenerTest {
     @Mock
     private ProsecutionCaseCreated prosecutionCaseCreated;
     @Mock
+    private CaseInsertedBdf caseInsertedBdf;
+    @Mock
     private CaseEjected caseEjected;
     @Mock
     private ProsecutionCase prosecutionCase;
@@ -158,6 +162,33 @@ public class ProsecutionCaseEventListenerTest {
         when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(jsonObject);
         eventListener.processProsecutionCaseCreated(envelope);
         verify(repository).save(argumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldHandleProsecutionCaseInsertedEvent() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CaseInsertedBdf.class))
+                .thenReturn(caseInsertedBdf);
+        when(caseInsertedBdf.getProsecutionCase()).thenReturn(prosecutionCase);
+        when(repository.findOptionalByCaseId(any())).thenReturn(null);
+        when(prosecutionCase.getId()).thenReturn(randomUUID());
+        when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(jsonObject);
+        eventListener.prosecutionCaseInserted(envelope);
+        verify(repository).save(argumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldNotHandleProsecutionCaseInsertedEventIfCaseIsThere() {
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, CaseInsertedBdf.class))
+                .thenReturn(caseInsertedBdf);
+        when(caseInsertedBdf.getProsecutionCase()).thenReturn(prosecutionCase);
+        when(repository.findOptionalByCaseId(any())).thenReturn(new ProsecutionCaseEntity());
+        when(prosecutionCase.getId()).thenReturn(randomUUID());
+        eventListener.prosecutionCaseInserted(envelope);
+        verify(repository, never()).save(argumentCaptor.capture());
     }
 
     @Test

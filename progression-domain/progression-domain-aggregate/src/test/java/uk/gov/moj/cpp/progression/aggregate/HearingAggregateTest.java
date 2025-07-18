@@ -104,6 +104,7 @@ public class HearingAggregateTest {
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(objectMapper);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperProducer().objectMapper();
 
+    
     @Test
     public void aggregateShouldHandleDuplicateOffences(){
         final UUID offenceId = randomUUID();

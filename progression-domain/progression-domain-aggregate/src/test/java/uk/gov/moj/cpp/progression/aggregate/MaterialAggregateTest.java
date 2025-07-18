@@ -345,6 +345,49 @@ public class MaterialAggregateTest {
         assertThat(nowNotificationGenerated.getUserId(), is(userId));
     }
 
+    @Test
+    public void shouldRecordNowsDocumentGeneratedAfterRecorded() {
+        final UUID materialId = randomUUID();
+        final UUID userId = randomUUID();
+        final UUID payloadFileId = randomUUID();
+        final UUID systemDocGeneratorId =  randomUUID();
+        final UUID requestId = randomUUID();
+
+        final NowDocumentRequest nowDocumentRequest = NowDocumentRequest.nowDocumentRequest()
+                .withMaterialId(materialId)
+                .withRequestId(requestId.toString())
+                .withNowContent(NowDocumentContent.nowDocumentContent()
+                        .withCases(Collections.singletonList(ProsecutionCase.prosecutionCase()
+                                .withIsCps(false)
+                                .build()))
+                        .withOrderingCourt(OrderCourt.orderCourt()
+                                .withWelshCourtCentre(true)
+                                .build())
+                        .withFinancialOrderDetails(FinancialOrderDetails.financialOrderDetails()
+                                .build())
+                        .build())
+                .withNowDistribution(NowDistribution.nowDistribution().withSecondClassLetter(true).build())
+                .build();
+
+        final NowDocumentRequested nowDocumentRequested = NowDocumentRequested.nowDocumentRequested().withUserId(userId).withNowDocumentRequest(nowDocumentRequest).build();
+        aggregate.apply(nowDocumentRequested);
+
+        final RecordNowsDocumentGenerated recordNowsDocumentGenerated = RecordNowsDocumentGenerated.recordNowsDocumentGenerated()
+                .withMaterialId(materialId)
+                .withPayloadFileId(payloadFileId)
+                .withSystemDocGeneratorId(systemDocGeneratorId)
+                .build();
+
+        final List<Object> events = aggregate.recordNowsDocumentGenerated(materialId, recordNowsDocumentGenerated).collect(toList());
+
+        assertThat(events.size(), is(1));
+        final NowsDocumentGenerated nowsDocumentGenerated = (NowsDocumentGenerated) events.get(0);
+        assertThat(nowsDocumentGenerated.getMaterialId(), is(materialId));
+        assertThat(nowsDocumentGenerated.getSystemDocGeneratorId(), is(systemDocGeneratorId));
+        assertThat(nowsDocumentGenerated.getUserId(), is(userId));
+        assertThat(nowsDocumentGenerated.getNowDistribution().getSecondClassLetter(), is(true));
+    }
+
     private Notification createNotification(final UUID notificationId, final UUID templateId, final String sendToAddress, final UUID materialId) {
         return new Notification(notificationId, templateId, sendToAddress, "replyTo@hmcts.net", Collections.emptyMap(), materialId.toString());
     }

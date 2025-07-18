@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -237,7 +238,7 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
         final ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
         prosecutionCaseEntity.setCaseId(prosecutionCaseId);
         prosecutionCaseEntity.setPayload(objectToJsonObjectConverter.convert(caseInDb).toString());
-        when(prosecutionCaseRepository.findByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
+        when(prosecutionCaseRepository.findOptionalByCaseId(prosecutionCaseId)).thenReturn(prosecutionCaseEntity);
 
         prosecutionCaseDefendantUpdatedEventListener.processProsecutionCaseListingNumberDecreased(jsonEnvelope);
 
@@ -248,6 +249,25 @@ public class ProsecutionCaseDefendantUpdatedEventListenerTest {
         assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getId(), is(offenceId));
         assertThat(updatedCase.getDefendants().get(0).getOffences().get(0).getListingNumber(), is(4));
         assertThat(updatedCase.getDefendants().get(0).getOffences().get(1).getListingNumber(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldNotUpdateViewStoreWithDecreasedListingNumberIfCaseNotThere(){
+        final UUID offenceId = randomUUID();
+
+        ProsecutionCaseListingNumberDecreased event = ProsecutionCaseListingNumberDecreased.prosecutionCaseListingNumberDecreased()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withOffenceIds(singletonList(offenceId))
+                .build();
+
+        final JsonObject eventPayloadJsonObject = objectToJsonObjectConverter.convert(event);
+        when(jsonEnvelope.payloadAsJsonObject()).thenReturn(eventPayloadJsonObject);
+        when(prosecutionCaseRepository.findOptionalByCaseId(prosecutionCaseId)).thenReturn(null);
+
+        prosecutionCaseDefendantUpdatedEventListener.processProsecutionCaseListingNumberDecreased(jsonEnvelope);
+
+        verify(prosecutionCaseRepository, never()).save(argumentCaptor.capture());
+
     }
 
     private ProsecutionCase getProsecutionCase(final UUID prosecutionCaseId,

@@ -12,3 +12,12 @@ rule "Command - add cases to hearing by bdf"
   then
     $outcome.setSuccess(true);
 end
+
+rule "Command - insert case by bdf"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.insert-case-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"));
+  then
+    $outcome.setSuccess(true);
+end

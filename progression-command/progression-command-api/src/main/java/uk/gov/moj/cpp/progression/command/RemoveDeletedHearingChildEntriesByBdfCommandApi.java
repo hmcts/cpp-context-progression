@@ -45,5 +45,16 @@ public class RemoveDeletedHearingChildEntriesByBdfCommandApi {
                 .withMetadataFrom(envelope));
     }
 
-
+    @Handles("progression.insert-case-bdf")
+    public void handleInsertCase(final JsonEnvelope envelope) {
+        /**
+         * DO NOT USE THIS COMMAND API EXCEPT FOR THE PURPOSE MENTIONED BELOW.
+         * The command api is being added to be invoked only by the BDF, purpose of this command to raise 'progression.event.case-inserted-bdf'
+         * event to insert case to viewstore (prosecution_case table) to fix deleted cases mistakenly.
+         */
+        sender.send(Enveloper
+                .envelop(envelope.payloadAsJsonObject())
+                .withName("progression.command.insert-case-bdf")
+                .withMetadataFrom(envelope));
+    }
 }

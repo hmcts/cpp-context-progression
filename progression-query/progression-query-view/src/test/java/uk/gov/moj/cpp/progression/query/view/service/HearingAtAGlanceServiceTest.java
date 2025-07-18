@@ -1349,7 +1349,7 @@ public class HearingAtAGlanceServiceTest {
                 .withIsAdjournmentResult(true)
                 .withAmendmentDate(AMENDMENT_DATE)
                 .build();
-        final DefendantJudicialResult defendantJudicialResult = new DefendantJudicialResult(judicialResult, DEFENDANT_ID_1);
+        final DefendantJudicialResult defendantJudicialResult = new DefendantJudicialResult(DEFENDANT_ID_1, judicialResult, DEFENDANT_ID_1);
 
         return Hearing.hearing()
                 .withId(hearingId)

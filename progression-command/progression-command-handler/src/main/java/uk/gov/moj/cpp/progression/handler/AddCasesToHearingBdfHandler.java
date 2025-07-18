@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.progression.courts.InsertCaseBdf;
 import uk.gov.justice.progression.courts.application.AddCaseToHearingBdf;
 import uk.gov.justice.progression.courts.application.CasesBdf;
 import uk.gov.justice.progression.courts.application.DefendantsBdf;
@@ -16,6 +17,7 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
@@ -64,6 +66,16 @@ public class AddCasesToHearingBdfHandler {
         appendEventsToStream(addCaseToHearingBdfEnvelope, eventStream, events);
 
     }
+
+    @Handles("progression.command.insert-case-bdf")
+    public void handleInsertCase(final Envelope<InsertCaseBdf> insertCaseBdfEnvelope) throws EventStreamException {
+        final EventStream eventStream = eventSource.getStreamById(insertCaseBdfEnvelope.payload().getProsecutionCaseId());
+        final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+        final Stream<Object> events = caseAggregate.insertCase(insertCaseBdfEnvelope.payload().getProsecutionCase());
+        appendEventsToStream(insertCaseBdfEnvelope, eventStream, events);
+
+    }
+
 
     private static ProsecutionCase filterCase(final ProsecutionCase pc, final AddCaseToHearingBdf addCaseToHearingBdf) {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withValuesFrom(pc)

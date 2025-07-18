@@ -477,7 +477,8 @@
           ],
           "welshLabel":"Gordal"
         },
-        "masterDefendantId":"DEFENDANT_ID"
+        "masterDefendantId":"MASTER_DEFENDANTID",
+        "defendantId":"DEFENDANT_ID"
       }
     ],
     "hasSharedResults": true,

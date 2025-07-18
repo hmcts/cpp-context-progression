@@ -180,6 +180,7 @@ import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.UpdatedOrganisation;
 import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
+import uk.gov.justice.progression.courts.CaseInsertedBdf;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdatedV2;
@@ -3775,5 +3776,33 @@ public class CaseAggregate implements Aggregate {
                         .withIsGroupMaster(isGroupMaster)
                         .build())
                 .build()));
+    }
+
+    public Stream<Object> insertCase(final ProsecutionCase prosecutionCase) {
+        if(isNull(this.prosecutionCase)){
+            return apply(Stream.empty());
+        }
+        if(! this.prosecutionCase.getId().equals(prosecutionCase.getId())){
+            return apply(Stream.empty());
+        }
+
+        String newReference = getReference(prosecutionCase);
+        if(! this.reference.equals(newReference)){
+            return apply(Stream.empty());
+        }
+
+        return apply(Stream.of(CaseInsertedBdf.caseInsertedBdf().withProsecutionCase(prosecutionCase).build()));
+
+    }
+
+    private static String getReference(final ProsecutionCase prosecutionCase) {
+        final ProsecutionCaseIdentifier prosecutionCaseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
+        String newReference = "";
+        if (nonNull(prosecutionCaseIdentifier.getProsecutionAuthorityReference())) {
+            newReference = prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityReference();
+        } else if (nonNull(prosecutionCaseIdentifier.getCaseURN())) {
+            newReference = prosecutionCase.getProsecutionCaseIdentifier().getCaseURN();
+        }
+        return newReference;
     }
 }

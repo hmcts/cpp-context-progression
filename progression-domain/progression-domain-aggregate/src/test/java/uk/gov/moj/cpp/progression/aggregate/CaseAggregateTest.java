@@ -148,6 +148,7 @@ import uk.gov.justice.core.courts.ProsecutionCasesToRemove;
 import uk.gov.justice.core.courts.ReapplyMiReportingRestrictions;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReportingRestriction;
+import uk.gov.justice.progression.courts.CaseInsertedBdf;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdatedV2;
@@ -7434,6 +7435,73 @@ public class CaseAggregateTest {
 
         // Verify that masterDefendantIdUpdated not linked with deleted hearing
         assertThat(masterDefendantIdUpdated.getHearingId(), is(Matchers.nullValue()));
+    }
+
+    @Test
+   void shouldNotRaiseInsertCaseEventIfStreamDoesNotExists(){
+        final Stream<Object> eventStream = caseAggregate.insertCase(prosecutionCase().build());
+        assertThat(eventStream.toList().isEmpty(), is(true));
+    }
+
+    @Test
+    void shouldNotRaiseInsertCaseEventIfStreamDifferentId(){
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(randomUUID())
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        caseAggregate.apply(prosecutionCaseCreated);
+        final Stream<Object> eventStream = caseAggregate.insertCase(prosecutionCase().withId(randomUUID()).build());
+        assertThat(eventStream.toList().isEmpty(), is(true));
+    }
+
+    @Test
+    void shouldNotRaiseInsertCaseEventIfReferenceIsDifferentId(){
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(fromString(CASE_ID))
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("A").build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        caseAggregate.apply(prosecutionCaseCreated);
+        final Stream<Object> eventStream = caseAggregate.insertCase(prosecutionCase().withId(fromString(CASE_ID))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN("B").build())
+                .build());
+        assertThat(eventStream.toList().isEmpty(), is(true));
+    }
+
+    @Test
+    void shouldRaiseInsertCaseEvent(){
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(fromString(CASE_ID))
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN).build())
+                .build();
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = prosecutionCaseCreated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        caseAggregate.apply(prosecutionCaseCreated);
+        final ProsecutionCase newPayload =  prosecutionCase().withId(fromString(CASE_ID))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN).build())
+                .build();
+        final Stream<Object> eventStream = caseAggregate.insertCase(newPayload);
+
+        Optional<CaseInsertedBdf> event = eventStream.filter(s -> s instanceof CaseInsertedBdf).findFirst().map(CaseInsertedBdf.class::cast);
+        assertThat(event.isPresent(), is(true));
+        assertThat(event.get().getProsecutionCase().equals(newPayload), is(true));
     }
 
     private Defendant getDefendant(final UUID defendantId1) {

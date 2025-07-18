@@ -56,12 +56,14 @@ public class HearingAtAGlanceIT extends AbstractIT {
     private static String hearingId;
     private static String caseId;
     private static String defendantId;
+    private static String masterDefendantId;
     private static String offenceId;
 
     @BeforeEach
     public void setUp() {
         caseId = randomUUID().toString();
         defendantId = randomUUID().toString();
+        masterDefendantId = randomUUID().toString();
         offenceId = UUID.fromString("3789ab16-0bb7-4ef1-87ef-c936bf0364f1").toString();
         userId = randomUUID().toString();
     }
@@ -74,7 +76,25 @@ public class HearingAtAGlanceIT extends AbstractIT {
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
-                hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
+                hearingId, defendantId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
+
+        pollProsecutionCasesProgressionFor(caseId, getHearingAtaGlanceMatchersWithReportingRestrictions());
+        pollProsecutionCasesProgressionForCAAG(caseId, getCaseAtAGlanceMatchers());
+
+        verifyPublicEventHearingResultedCaseUpdated();
+
+    }
+
+    @Test
+    public void shouldRetainCurrentReportingRestrictionsAfterManuallyAddingOneWithHearingMasterDefendantIdNotEqualDefendantId() throws Exception {
+        stubForAssociatedCaseDefendantsOrganisation("stub-data/defence.get-associated-case-defendants-organisation.json", caseId);
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
+                hearingId, defendantId, masterDefendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtaGlanceMatchersWithReportingRestrictions());
@@ -90,7 +110,7 @@ public class HearingAtAGlanceIT extends AbstractIT {
         hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject("public.events.hearing.hearing-resulted-and-hearing-at-a-glance-updated.json", caseId,
-                hearingId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
+                hearingId, defendantId, defendantId, offenceId, NEW_COURT_CENTRE_ID, BAIL_STATUS_CODE, BAIL_STATUS_DESCRIPTION, BAIL_STATUS_ID));
         messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
 
         pollProsecutionCasesProgressionFor(caseId, getHearingAtAGlanceMatchersForCpsOrganisation());
@@ -125,13 +145,14 @@ public class HearingAtAGlanceIT extends AbstractIT {
 
 
     private JsonObject getHearingWithSingleCaseJsonObject(final String path, final String caseId, final String hearingId,
-                                                          final String defendantId, final String offenceId, final String courtCentreId,
+                                                          final String defendantId,final String masterDefendantId,  final String offenceId, final String courtCentreId,
                                                           final String bailStatusCode, final String bailStatusDescription, final String bailStatusId) {
         return stringToJsonObjectConverter.convert(
                 getPayload(path)
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("MASTER_DEFENDANTID", masterDefendantId)
                         .replaceAll("OFFENCE_ID", offenceId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("BAIL_STATUS_ID", bailStatusId)

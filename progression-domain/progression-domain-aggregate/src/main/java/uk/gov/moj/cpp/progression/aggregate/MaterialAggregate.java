@@ -104,6 +104,7 @@ public class MaterialAggregate implements Aggregate {
                         if (isNotEmpty(e.getNowDocumentRequest().getCases())) {
                             caseIds.addAll(e.getNowDocumentRequest().getCases());
                         }
+                    nowDistribution = e.getNowDocumentRequest().getNowDistribution();
                  }),
                 when(NowsDocumentSent.class).apply(e -> {
                     hearingId = e.getHearingId();

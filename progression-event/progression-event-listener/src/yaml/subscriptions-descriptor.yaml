@@ -398,6 +398,10 @@ subscriptions_descriptor:
         - name: progression.event.case-added-to-hearing-bdf
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.case-added-to-hearing-bdf.json
 
+        - name: progression.event.case-inserted-bdf
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.case-inserted-bdf.json
+
+
           # ***** Deprecated API - Start ********
           # ***** Do not add any new API in this section *****
 

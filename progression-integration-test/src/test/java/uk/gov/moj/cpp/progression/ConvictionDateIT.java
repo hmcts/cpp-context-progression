@@ -108,6 +108,7 @@ public class ConvictionDateIT extends AbstractIT {
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("MASTER_DEFENDANTID", defendantId)
                         .replaceAll("OFFENCE_ID", offenceId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
                         .replaceAll("BAIL_STATUS_ID", bailStatusId)

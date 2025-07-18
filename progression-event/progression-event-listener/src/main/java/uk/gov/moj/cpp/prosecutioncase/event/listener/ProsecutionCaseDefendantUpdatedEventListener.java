@@ -214,7 +214,10 @@ public class ProsecutionCaseDefendantUpdatedEventListener {
     @Handles("progression.event.prosecution-case-listing-number-decreased")
     public void processProsecutionCaseListingNumberDecreased(final JsonEnvelope event) {
         final ProsecutionCaseListingNumberDecreased prosecutionCaseListingNumberDecreased = jsonObjectConverter.convert(event.payloadAsJsonObject(), ProsecutionCaseListingNumberDecreased.class);
-        final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(prosecutionCaseListingNumberDecreased.getProsecutionCaseId());
+        final ProsecutionCaseEntity prosecutionCaseEntity = repository.findOptionalByCaseId(prosecutionCaseListingNumberDecreased.getProsecutionCaseId());
+        if(isNull(prosecutionCaseEntity)){
+            return;
+        }
         final Set<UUID> listingSet = prosecutionCaseListingNumberDecreased.getOffenceIds().stream().collect(Collectors.toSet());
 
         saveListingNumber(prosecutionCaseEntity, listingSet, -1);
