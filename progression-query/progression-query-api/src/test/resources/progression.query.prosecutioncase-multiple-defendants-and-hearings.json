@@ -358,6 +358,7 @@
               "defendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666"
             },
             "id": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
+            "masterDefendantId": "42df5ca0-0cd6-47a7-b777-ab1a5e822666",
             "judicialResults": [],
             "name": "Euna Heaney",
             "offences": [
@@ -523,6 +524,7 @@
               "defendantId": "779e559b-4864-4a2e-b819-c1760b7cab22"
             },
             "id": "779e559b-4864-4a2e-b819-c1760b7cab22",
+            "masterDefendantId": "779e559b-4864-4a2e-b819-c1760b7cab22",
             "judicialResults": [],
             "name": "Lindsay Hermiston",
             "offences": [

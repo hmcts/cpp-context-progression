@@ -792,6 +792,7 @@
               "defendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf"
             },
             "id": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
+            "masterDefendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
             "judicialResults": [
 
             ],
@@ -1006,6 +1007,7 @@
               "defendantId": "5c75653a-e264-4b59-a419-66221b725a58"
             },
             "id": "5c75653a-e264-4b59-a419-66221b725a58",
+            "masterDefendantid": "5c75653a-e264-4b59-a419-66221b725a58",
             "judicialResults": [
 
             ],
@@ -1355,6 +1357,7 @@
               "defendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf"
             },
             "id": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
+            "masterDefendantId": "72b58e64-7551-4b08-97d1-61ec584a8ebf",
             "judicialResults": [
 
             ],

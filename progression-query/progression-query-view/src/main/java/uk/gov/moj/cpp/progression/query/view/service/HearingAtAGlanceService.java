@@ -196,6 +196,7 @@ public class HearingAtAGlanceService {
         prosecutionCase.getDefendants().forEach(defendant ->
                 defendantHearingsList.add(DefendantHearings.defendantHearings()
                         .withDefendantId(defendant.getId())
+                        .withMasterDefendantId(defendant.getMasterDefendantId())
                         .withDefendantName(getDefendantName(defendant.getPersonDefendant(), defendant.getLegalEntityDefendant()))
                         .withHearingIds(getHearingIdsForDefendant(caseDefendantHearingEntities, defendant))
                         .build())
@@ -415,6 +416,7 @@ public class HearingAtAGlanceService {
         defendants.forEach(defendant -> {
             final Defendants defendantView = Defendants.defendants()
                     .withId(defendant.getId())
+                    .withMasterDefendantId(defendant.getMasterDefendantId())
                     .withName(getDefendantName(defendant.getPersonDefendant(), defendant.getLegalEntityDefendant()))
                     .withAge(getDefendantAge(defendant.getPersonDefendant(), hearing.getHearingDays()))
                     .withDateOfBirth(getDefendantDataOfBirth(defendant.getPersonDefendant()))
@@ -457,6 +459,7 @@ public class HearingAtAGlanceService {
             if (nonNull(masterDefendant)) {
                 final Defendants defendantView = Defendants.defendants()
                         .withId(masterDefendant.getMasterDefendantId())
+                        .withMasterDefendantId(masterDefendant.getMasterDefendantId())
                         .withName(getDefendantName(masterDefendant.getPersonDefendant(), masterDefendant.getLegalEntityDefendant()))
                         .withAge(getDefendantAge(masterDefendant.getPersonDefendant(), hearing.getHearingDays()))
                         .withDateOfBirth(getDefendantDataOfBirth(masterDefendant.getPersonDefendant()))
@@ -478,6 +481,7 @@ public class HearingAtAGlanceService {
     private static Defendants getDefendantsView(final List<CourtApplication> courtApplications, final CourtApplicationParty courtApplicationParty) {
         return Defendants.defendants()
                 .withId(courtApplicationParty.getId())
+                .withMasterDefendantId(nonNull(courtApplicationParty.getMasterDefendant()) ? courtApplicationParty.getMasterDefendant().getMasterDefendantId() : courtApplicationParty.getId())
                 .withName(getCourtApplicationPartyName(courtApplicationParty))
                 .withCourtApplications(getCourtApplicationsForNonDefendant(courtApplications, courtApplicationParty.getId()))
                 .withJudicialResults(getJudicialResults(null))

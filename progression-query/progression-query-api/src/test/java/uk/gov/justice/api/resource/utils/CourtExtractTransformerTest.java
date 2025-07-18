@@ -9,6 +9,7 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -307,6 +308,45 @@ public class CourtExtractTransformerTest {
         assertThat(defendant.getHearings().size(), is(1));
         assertThat(defendant.getHearings().get(0).getOffences().size(), is(1));
         assertThat(defendant.getHearings().get(0).getOffences().get(0).getResults().size(), is(1));
+
+    }
+
+    @Test
+    void shouldTransformToRecordSheetPayload_WhenOneOfHearingDaysIsNull() throws IOException {
+        String defendantId = "a7b845dc-5dfe-484c-8d1c-65197121885a";
+
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-oneof-hearingDays-is-null.json"));
+        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
+        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
+        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+        ProsecutionCase prosecutionCase1 = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "RecordSheet", emptyList(), randomUUID(), prosecutionCase1);
+
+        final uk.gov.justice.progression.courts.exract.Defendant defendant = courtExtractRequested.getDefendant();
+
+        assertThat(defendant.getHearings().size(), is(5));
+        assertThat(defendant.getHearings().stream().anyMatch(h-> isEmpty(h.getHearingDays())), is(true));
+
+    }
+
+    @Test
+    void shouldTransformToRecordSheetPayload_WhenmasterDefendantRelatedWithOtherHearings()  {
+        final String defendantId = "b17b37ba-acd7-4c58-ac63-85324dd6b545";
+
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-multiple-defendants-and-hearings-and-different-masterDefendantId.json"));
+        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
+        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
+        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+        ProsecutionCase prosecutionCase1 = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "RecordSheet", emptyList(), randomUUID(), prosecutionCase1);
+
+        final uk.gov.justice.progression.courts.exract.Defendant defendant = courtExtractRequested.getDefendant();
+
+        assertThat(defendant.getHearings().size(), is(2));
+        assertThat(defendant.getHearings().get(0).getId(), is(fromString("83c588bc-f457-4812-9620-0184d6708386")));
+        assertThat(defendant.getHearings().get(1).getId(), is(fromString("52659deb-29a8-4bec-bf29-16077ff6d0ed")));
 
     }
 
@@ -1832,6 +1872,7 @@ public class CourtExtractTransformerTest {
     private Defendants createDefendant(final UUID defendantId, final String hearing, final UUID hearingId) {
         return Defendants.defendants()
                 .withId(defendantId)
+                .withMasterDefendantId(defendantId)
                 .withAddress(createAddress())
                 .withDateOfBirth(DOB)
                 .withAge(DEFENDANT_AGE)
@@ -2027,6 +2068,7 @@ public class CourtExtractTransformerTest {
 
         return Stream.of(DEFENDANT_ID, DEFENDANT_ID_2ND).map(id -> DefendantHearings.defendantHearings()
                 .withDefendantId(id)
+                .withMasterDefendantId(id)
                 .withHearingIds(hearingIds)
                 .withDefendantName(DEFENDANT_NAME)
                 .build()).collect(toList());

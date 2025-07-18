@@ -200,6 +200,7 @@ public class ProgressionService {
     private static final String IS_BOX_HEARING = "isBoxHearing";
     private static final String PROGRESSION_QUERY_CASE_HEARINGS = "progression.query.casehearings";
     private static final String PROGRESSION_QUERY_RECORD_SHEET = "progression.query.record-sheet";
+    private static final String PROGRESSION_QUERY_RECORD_SHEET_FOR_APPLICATION = "progression.query.record-sheet-for-application";
     private static final String PROGRESSION_QUERY_CASE_DEFENDANT_HEARINGS = "progression.query.case-defendant-hearings";
 
     private static final String PROSECUTION_CASE_ID = "prosecutionCaseId";
@@ -621,6 +622,21 @@ public class ProgressionService {
         return requester.requestAsAdmin(enveloper
                 .withMetadataFrom(envelope, PROGRESSION_QUERY_RECORD_SHEET)
                 .apply(requestParameter)).payloadAsJsonObject();
+    }
+
+    public JsonArray generateTrialRecordSheetPayloadForApplication(JsonEnvelope envelope, final UUID caseId, final List<UUID> offenceIds) {
+        LOGGER.info(">>1300 Generating trial record sheet for caseId {} and offenceIds {}", caseId, offenceIds);
+        final JsonObject requestParameter = createObjectBuilder()
+                .add("caseId", caseId.toString())
+                .add("offenceIds", String.join(",", offenceIds.stream().map(UUID::toString).toList()))
+                .build();
+        final JsonEnvelope response = requester.requestAsAdmin(enveloper.withMetadataFrom(envelope, PROGRESSION_QUERY_RECORD_SHEET_FOR_APPLICATION).apply(requestParameter));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("trial record sheet response for application {}", response.toObfuscatedDebugString());
+        }
+
+        return response.payloadAsJsonObject().getJsonArray("payloads");
     }
 
     /**

@@ -180,12 +180,14 @@ public class HearingAtAGlanceServiceTest {
         assertThat(response.getDefendantHearings().size(), is(2));
         // Defendant 1
         assertThat(response.getDefendantHearings().get(0).getDefendantId(), is(DEFENDANT_ID_1));
+        assertThat(response.getDefendantHearings().get(0).getMasterDefendantId(), is(DEFENDANT_ID_1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(0).getHearingIds().get(0), is(CASE_HEARING_ID_1));
         assertThat(response.getDefendantHearings().get(0).getDefendantName(), is("John Williams"));
 
         // Defendant 2
         assertThat(response.getDefendantHearings().get(1).getDefendantId(), is(DEFENDANT_ID_2));
+        assertThat(response.getDefendantHearings().get(1).getMasterDefendantId(), is(DEFENDANT_ID_2));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().size(), is(1));
         assertThat(response.getDefendantHearings().get(1).getHearingIds().get(0), is(CASE_HEARING_ID_1));
         assertThat(response.getDefendantHearings().get(1).getDefendantName(), is("John Williams"));
@@ -203,6 +205,8 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse.getDefendants().size(), is(2));
         assertEquals("15", hearingResponse.getDefendants().get(0).getAge());
         assertEquals("15", hearingResponse.getDefendants().get(1).getAge());
+        assertEquals(DEFENDANT_ID_1, hearingResponse.getDefendants().get(0).getMasterDefendantId());
+        assertEquals(DEFENDANT_ID_2, hearingResponse.getDefendants().get(1).getMasterDefendantId());
 
         // Prosecution Case Identifier assertions
         final ProsecutionCaseIdentifier prosecutionCaseIdentifierResponse = response.getProsecutionCaseIdentifier();
@@ -487,6 +491,7 @@ public class HearingAtAGlanceServiceTest {
         // Hearing level defendant details
         assertThat(hearingResponse.getDefendants().size(), is(1));
         assertThat(hearingResponse.getDefendants().get(0).getCourtApplications().size(), is(1));
+        assertThat(hearingResponse.getDefendants().get(0).getMasterDefendantId(), is(DEFENDANT_ID_1));
 
         CourtApplications courtApplications = hearingResponse.getDefendants().get(0).getCourtApplications().get(0);
         // GPE-15039 Commented temporarily
@@ -652,7 +657,8 @@ public class HearingAtAGlanceServiceTest {
     public void hearingAtAGlanceHearingWithCaseWithTwoDefendantsAndOneApplicationWithIndividualInSameHearing() {
 
         ProsecutionCase prosecutionCase = createProsecutionCase(CASE_ID, Arrays.asList(DEFENDANT_ID_1, DEFENDANT_ID_2));
-        CourtApplication courtApplication = createCourtApplicationWithIndividuals(APPLICATION_ID, randomUUID());
+        final UUID personId = randomUUID();
+        CourtApplication courtApplication = createCourtApplicationWithIndividuals(APPLICATION_ID, personId);
         Hearing caseHearing = createCaseHearing(prosecutionCase, courtApplication, CASE_HEARING_ID_1);
 
         ProsecutionCaseEntity prosecutionCaseEntity = createProsecutionCaseEntity(prosecutionCase);
@@ -721,6 +727,7 @@ public class HearingAtAGlanceServiceTest {
         assertThat(hearingResponse.getDefendants().size(), is(3));
         assertThat(hearingResponse.getDefendants().get(2).getCourtApplications().size(), is(1));
         assertThat(hearingResponse.getDefendants().get(2).getName(), is("FIRST MIDDLE LAST"));
+        assertThat(hearingResponse.getDefendants().get(2).getMasterDefendantId(), is(personId));
 
         // Prosecution Case Identifier assertions
         final ProsecutionCaseIdentifier prosecutionCaseIdentifierResponse = response.getProsecutionCaseIdentifier();
@@ -1316,6 +1323,7 @@ public class HearingAtAGlanceServiceTest {
     private List<CourtApplicationParty> createIndividualRespondents(UUID personId) {
         return singletonList(CourtApplicationParty.courtApplicationParty()
                 .withId(personId)
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(personId).build())
                 .withPersonDetails(Person.person()
                         .withFirstName("FIRST")
                         .withMiddleName("MIDDLE")
@@ -1327,6 +1335,7 @@ public class HearingAtAGlanceServiceTest {
     private List<CourtApplicationParty> createOrganisationRespondents(UUID organisationId) {
         return singletonList(CourtApplicationParty.courtApplicationParty()
                 .withId(organisationId)
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(DEFENDANT_ID_1).build())
                 .withOrganisation(Organisation.organisation()
                         .withName("Lava Timber Limited")
                         .build())
@@ -1336,6 +1345,7 @@ public class HearingAtAGlanceServiceTest {
     private List<CourtApplicationParty> createProsecutingAuthorityRespondents(UUID organisationId) {
         return singletonList(CourtApplicationParty.courtApplicationParty()
                 .withId(organisationId)
+                .withMasterDefendant(MasterDefendant.masterDefendant().withMasterDefendantId(DEFENDANT_ID_1).build())
                 .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                         .withProsecutionAuthorityCode("TFL")
                         .build())
@@ -1485,6 +1495,7 @@ public class HearingAtAGlanceServiceTest {
     private Defendant createDefendant(UUID defendantId) {
         return Defendant.defendant()
                 .withId(defendantId)
+                .withMasterDefendantId(defendantId)
                 .withPersonDefendant(createPersonDefendant())
                 .withOffences(createOffences())
                 .withLegalAidStatus("Granted")
