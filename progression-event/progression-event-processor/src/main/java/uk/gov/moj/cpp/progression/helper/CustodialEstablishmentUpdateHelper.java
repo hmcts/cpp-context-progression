@@ -14,17 +14,78 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.json.JsonObject;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class CustodialEstablishmentUpdateHelper {
 
-    private static final List<String> JUDICIAL_RESULT_PROMPTS_LOOKUP = asList("prisonOrganisationName", "hospitalOrganisationName");
+    private static final String PRISON_ORGANISATION_NAME = "prisonOrganisationName";
+    private static final List<String> JUDICIAL_RESULT_PROMPTS_LOOKUP = asList(PRISON_ORGANISATION_NAME, "hospitalOrganisationName");
+    private static final String COURT_APPLICATION_CASES = "courtApplicationCases";
+    private static final String JUDICIAL_RESULTS = "judicialResults";
+    private static final String JUDICIAL_RESULT_PROMPTS = "judicialResultPrompts";
+    private static final String VALUE = "value";
 
     public Optional<CustodialEstablishment> getDefendantsResultedWithCustodialEstablishmentUpdate(final Defendant defendant, final List<PrisonCustodySuite> prisonCustodySuites) {
         return nonNull(defendant.getOffences()) && !defendant.getOffences().isEmpty()
                 ? getCustodialEstablishmentUpdate(defendant.getOffences(), prisonCustodySuites)
                 : Optional.empty();
     }
+
+    public Optional<CustodialEstablishment> getCustodialEstablishmentUpdateFromJudicialResults(final JsonObject application, final List<PrisonCustodySuite> prisonCustodySuites) {
+
+        if (!application.containsKey(COURT_APPLICATION_CASES) && !application.containsKey("courtOrder")) {
+            return Optional.empty();
+        }
+
+        Optional<JsonObject> judicialResultPromptWithCustody;
+        if (application.containsKey(COURT_APPLICATION_CASES)) {
+            judicialResultPromptWithCustody = application
+                    .getJsonArray(COURT_APPLICATION_CASES).stream().map(JsonObject.class::cast)
+                    .filter(jr -> nonNull(jr.getJsonArray("offences")))
+                    .flatMap(jr -> jr.getJsonArray("offences").stream().map(JsonObject.class::cast))
+                    .filter(jr -> nonNull(jr.getJsonArray(JUDICIAL_RESULTS)))
+                    .flatMap(jr -> jr.getJsonArray(JUDICIAL_RESULTS).stream().map(JsonObject.class::cast))
+                    .filter(jr -> nonNull(jr.getJsonArray(JUDICIAL_RESULT_PROMPTS)))
+                    .flatMap(jr -> jr.getJsonArray(JUDICIAL_RESULT_PROMPTS).stream().map(JsonObject.class::cast))
+                    .filter(jrp -> PRISON_ORGANISATION_NAME.equalsIgnoreCase(jrp.getString("promptReference"))
+                            && StringUtils.isNotEmpty(jrp.getString(VALUE)))
+                    .findFirst();
+        } else {
+            judicialResultPromptWithCustody = application
+                    .getJsonObject("courtOrder")
+                    .getJsonArray("courtOrderOffences").stream().map(JsonObject.class::cast)
+                    .filter(jr -> nonNull(jr.getJsonObject("offence")))
+                    .map(jr -> jr.getJsonObject("offence"))
+                    .filter(jr -> nonNull(jr.getJsonArray(JUDICIAL_RESULTS)))
+                    .flatMap(jr -> jr.getJsonArray(JUDICIAL_RESULTS).stream().map(JsonObject.class::cast))
+                    .filter(jr -> nonNull(jr.getJsonArray(JUDICIAL_RESULT_PROMPTS)))
+                    .flatMap(jr -> jr.getJsonArray(JUDICIAL_RESULT_PROMPTS).stream().map(JsonObject.class::cast))
+                    .filter(jrp -> PRISON_ORGANISATION_NAME.equalsIgnoreCase(jrp.getString("promptReference"))
+                            && StringUtils.isNotEmpty(jrp.getString(VALUE)))
+                    .findFirst();
+        }
+
+        if (judicialResultPromptWithCustody.isPresent()) {
+            final Optional<PrisonCustodySuite> prisonCustody = getPrisonCustody(judicialResultPromptWithCustody.get().getString(VALUE), prisonCustodySuites);
+
+            return prisonCustody.map(prisonCustodySuite -> Optional.of(custodialEstablishment()
+                    .withId(prisonCustodySuite.getId())
+                    .withCustody(prisonCustodySuite.getType())
+                    .withName(prisonCustodySuite.getName())
+                    .build()))
+                    .orElseGet(() -> Optional.of(custodialEstablishment()
+                            .withId(UUID.randomUUID())
+                            .withCustody(judicialResultPromptWithCustody.get().toString())
+                            .withName(judicialResultPromptWithCustody.get().toString())
+                            .build()));
+        }
+
+
+        return Optional.empty();
+    }
+
 
     private Optional<CustodialEstablishment> getCustodialEstablishmentUpdate(final List<Offence> offences, final List<PrisonCustodySuite> prisonCustodySuites) {
 

@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.aggregate;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
@@ -90,7 +89,6 @@ import uk.gov.justice.progression.events.HearingDaysWithoutCourtCentreCorrected;
 import uk.gov.moj.cpp.progression.aggregate.helper.ApplicationProceedingsHelper;
 import uk.gov.moj.cpp.progression.court.HearingAddMissingResultsBdf;
 import uk.gov.moj.cpp.progression.court.HearingResultedBdf;
-import uk.gov.moj.cpp.progression.domain.aggregate.utils.HearingResultHelper;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
@@ -1177,16 +1175,31 @@ public class HearingAggregate implements Aggregate {
     }
 
     public Stream<Object> recordUpdateMatchedDefendantDetailRequest(final DefendantUpdate defendantUpdate) {
+        return recordUpdateMatchedDefendantDetailRequest(defendantUpdate, emptyList());
+    }
+
+    public Stream<Object> recordUpdateMatchedDefendantDetailRequest(final DefendantUpdate defendantUpdate, final List<Defendant> defendants) {
         final UUID defendantId = defendantUpdate.getId();
 
         if (isNull(hearing.getProsecutionCases())){
             if (isNull(hearing.getCourtApplications())){
                 return empty();
             }
-            return apply(Stream.of(ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.prosecutionCaseUpdateDefendantsWithMatchedRequestedV2()
-                    .withDefendantUpdate(defendantUpdate)
-                    .withMatchedDefendants(asList())
-                    .build()));
+            if(isNotEmpty(defendants)) {
+                final Optional<Defendant> originalDefendantPreviousVersion = defendants.stream()
+                        .filter(defendant -> defendant.getId().equals(defendantId))
+                        .findFirst();
+                return apply(Stream.of(ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.prosecutionCaseUpdateDefendantsWithMatchedRequestedV2()
+                        .withDefendantUpdate(defendantUpdate)
+                        .withDefendant(originalDefendantPreviousVersion.get())
+                        .withMatchedDefendants(defendants.stream().filter(defendant -> !defendant.getId().equals(defendantId)).toList())
+                        .build()));
+            }else{
+                return apply(Stream.of(ProsecutionCaseUpdateDefendantsWithMatchedRequestedV2.prosecutionCaseUpdateDefendantsWithMatchedRequestedV2()
+                        .withDefendantUpdate(defendantUpdate)
+                        .withMatchedDefendants(List.of())
+                        .build()));
+            }
         }
 
         final Optional<Defendant> originalDefendantPreviousVersion = hearing.getProsecutionCases().stream()
