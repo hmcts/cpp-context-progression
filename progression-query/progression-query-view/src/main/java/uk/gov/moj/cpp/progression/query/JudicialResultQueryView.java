@@ -23,6 +23,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -76,6 +77,7 @@ public class JudicialResultQueryView {
                     .map(Defendant::getOffences)
                     .flatMap(Collection::stream)
                     .map(Offence::getJudicialResults)
+                    .filter(Objects::nonNull)
                     .flatMap(Collection::stream)
                     .filter(judicialResult -> judicialResult.getJudicialResultTypeId().equals(judicialResultTypeId))
                     .map(JudicialResult::getJudicialResultId)
@@ -90,6 +92,7 @@ public class JudicialResultQueryView {
                         .map(Defendant::getOffences)
                         .flatMap(Collection::stream)
                         .map(Offence::getJudicialResults)
+                        .filter(Objects::nonNull)
                         .flatMap(Collection::stream)
                         .toList();
 
