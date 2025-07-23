@@ -51,9 +51,6 @@
         "id": {
           "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
-        "masterDefendantId": {
-          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-        },
         "name": {
           "type": "string"
         },
@@ -369,9 +366,6 @@
       "type": "object",
       "properties": {
         "defendantId": {
-          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-        },
-        "masterDefendantId": {
           "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
         },
         "defendantName": {

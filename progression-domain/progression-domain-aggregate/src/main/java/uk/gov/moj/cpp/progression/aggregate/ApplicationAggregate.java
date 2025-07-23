@@ -85,7 +85,7 @@ import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAddressOnApplicationUpdated;
-import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
+import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
 import uk.gov.justice.core.courts.DefendantUpdate;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
@@ -786,6 +786,7 @@ public class ApplicationAggregate implements Aggregate {
 
     public Stream<Object> hearingResulted(CourtApplication courtApplication) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
+
         final ApplicationStatus applicationStatusAfterHearingResulted = getApplicationStatusAfterHearingResulted(courtApplication);
 
         if (FINALISED.equals(courtApplication.getApplicationStatus()) && isEmpty(courtApplication.getJudicialResults())) {
@@ -806,26 +807,17 @@ public class ApplicationAggregate implements Aggregate {
         }
 
         if (nonNull(courtApplication.getCourtOrder()) && nonNull(courtApplication.getCourtOrder().getDefendantIds()) && applicationStatusAfterHearingResulted.equals(FINALISED)) {
-            addDefendantTrialRecordSheetRequestedForApplication(courtApplication, streamBuilder);
-
+            courtApplication.getCourtOrder().getDefendantIds().forEach(defendant -> {
+                if (nonNull(courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseId())) {
+                    streamBuilder.add(DefendantTrialRecordSheetRequested.defendantTrialRecordSheetRequested()
+                            .withCaseId(courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseId())
+                            .withDefendantId(UUID.fromString(defendant))
+                            .build());
+                }
+            });
         }
 
         return apply(streamBuilder.build());
-    }
-
-    private static void addDefendantTrialRecordSheetRequestedForApplication(final CourtApplication courtApplication, final Stream.Builder<Object> streamBuilder) {
-        final Map<UUID, List<UUID>> caseToOffencesMap = courtApplication.getCourtOrder().getCourtOrderOffences().stream()
-                .collect(Collectors.groupingBy(
-                        CourtOrderOffence::getProsecutionCaseId,
-                        Collectors.mapping(courtOrderOffence -> courtOrderOffence.getOffence().getId(), Collectors.toList())
-                ));
-
-        caseToOffencesMap.forEach((caseId, offenceIds) ->
-            streamBuilder.add(DefendantTrialRecordSheetRequestedForApplication.defendantTrialRecordSheetRequestedForApplication()
-                    .withCaseId(caseId)
-                    .withOffenceIds(offenceIds)
-                    .build())
-        );
     }
 
     private ApplicationStatus getApplicationStatusAfterHearingResulted(final CourtApplication courtApplication) {

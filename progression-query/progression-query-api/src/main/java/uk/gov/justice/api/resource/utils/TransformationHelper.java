@@ -33,7 +33,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -121,11 +120,11 @@ public class TransformationHelper {
     }
 
     public Hearings getLatestHearings(final List<Hearings> hearingsList) {
-        return hearingsList.stream().filter(h->nonNull(h.getHearingDays())).sorted(comparing(h -> getSittingDay(h.getHearingDays()))).reduce((first, second) -> second).orElse(null);
+        return hearingsList.stream().sorted(comparing(h -> getSittingDay(h.getHearingDays()))).reduce((first, second) -> second).orElse(null);
     }
 
     public Hearing getLatestHearing(final List<Hearing> hearingsList) {
-        return hearingsList.stream().filter(h->nonNull(h.getHearingDays())).sorted(comparing(h -> getSittingDay(h.getHearingDays()))).reduce((first, second) -> second).orElse(null);
+        return hearingsList.stream().sorted(comparing(h -> getSittingDay(h.getHearingDays()))).reduce((first, second) -> second).orElse(null);
     }
 
     private ZonedDateTime getSittingDay(final List<HearingDay> hearingDays) {
@@ -243,10 +242,6 @@ public class TransformationHelper {
     }
 
     List<HearingDays> transformHearingDays(final List<HearingDay> hearingDaysList) {
-        if (isNull(hearingDaysList)) {
-            return Collections.emptyList();
-        }
-
         if (hearingDaysList.size() > 2) {
             return getToAndFromHearingDays(hearingDaysList);
         }

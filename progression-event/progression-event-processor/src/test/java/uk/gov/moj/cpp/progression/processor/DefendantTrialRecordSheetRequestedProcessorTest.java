@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.processor;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -10,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
-import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
@@ -19,26 +17,17 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
-import uk.gov.moj.cpp.progression.service.ConversionFormat;
-import uk.gov.moj.cpp.progression.service.DocumentGenerationRequest;
 import uk.gov.moj.cpp.progression.service.FileService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.SystemDocGeneratorService;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-
-import java.util.Arrays;
-import java.util.Map;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -99,60 +88,5 @@ public class DefendantTrialRecordSheetRequestedProcessorTest {
 
         this.eventProcessor.process(event);
         verify(sender, times(0)).send(envelopeArgumentCaptor.capture());
-    }
-
-    @Test
-    void shouldProcessForApplication() {
-        ArgumentCaptor<DocumentGenerationRequest> captor = ArgumentCaptor.forClass(DocumentGenerationRequest.class);
-        final UUID applicationId = randomUUID();
-        final UUID caseId = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID fileId1 = randomUUID();
-        final UUID fileId2 = randomUUID();
-        final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID("progression.event.defendant-trial-record-sheet-requested-for-application").withStreamId(applicationId),
-                objectToJsonObjectConverter.convert(DefendantTrialRecordSheetRequestedForApplication.defendantTrialRecordSheetRequestedForApplication()
-                        .withCaseId(caseId)
-                        .withOffenceIds(Arrays.asList(offenceId1, offenceId2))
-                        .build()));
-        final JsonObject payload1 = createObjectBuilder().add("random", randomUUID().toString()).build();
-        final JsonObject payload2 = createObjectBuilder().add("random", randomUUID().toString()).build();
-        final String defendantName1 = "name1";
-        final String defendantName2 = "name2";
-        when(progressionService.generateTrialRecordSheetPayloadForApplication(event, caseId, Arrays.asList(offenceId1, offenceId2))).thenReturn(Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
-                        .add("payload", payload1)
-                        .add("defendantName", defendantName1)
-                        .build())
-                .add(Json.createObjectBuilder()
-                        .add("payload", payload2)
-                        .add("defendantName", defendantName2)
-                        .build())
-                .build());
-
-        when(fileService.storePayload(eq(payload1), anyString(), eq("RecordSheet"))).thenReturn((fileId1));
-        when(fileService.storePayload(eq(payload2), anyString(), eq("RecordSheet"))).thenReturn((fileId2));
-
-        eventProcessor.processForApplication(event);
-        verify(systemDocGeneratorService, times(2)).generateDocument(captor.capture(), eq(event));
-
-        final Map<String, String> additionalInformation1 = ImmutableMap.of("caseId", caseId.toString(), "defendantName", defendantName1);
-        final DocumentGenerationRequest firstRequest = captor.getAllValues().get(0);
-        assertThat(firstRequest.getPayloadFileServiceId(), is((fileId1)));
-        assertThat(firstRequest.getAdditionalInformation(), is(additionalInformation1));
-        assertThat(firstRequest.getConversionFormat(), is((ConversionFormat.PDF)));
-        assertThat(firstRequest.getSourceCorrelationId(), is((applicationId.toString())));
-        assertThat(firstRequest.getOriginatingSource(), is(("RECORD_SHEET")));
-        assertThat(firstRequest.getTemplateIdentifier(), is(("RecordSheet")));
-
-        final Map<String, String> additionalInformation2 = ImmutableMap.of("caseId", caseId.toString(), "defendantName", defendantName2);
-        final DocumentGenerationRequest secondRequest = captor.getAllValues().get(1);
-        assertThat(secondRequest.getPayloadFileServiceId(), is((fileId2)));
-        assertThat(secondRequest.getAdditionalInformation(), is(additionalInformation2));
-        assertThat(secondRequest.getConversionFormat(), is((ConversionFormat.PDF)));
-        assertThat(secondRequest.getSourceCorrelationId(), is((applicationId.toString())));
-        assertThat(secondRequest.getOriginatingSource(), is(("RECORD_SHEET")));
-        assertThat(secondRequest.getTemplateIdentifier(), is(("RecordSheet")));
     }
 }

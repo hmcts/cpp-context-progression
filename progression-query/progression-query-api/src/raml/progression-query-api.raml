@@ -85,7 +85,7 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.court-extract+json:
 
 /prosecutioncases/{caseId}/defendants/{defendantId}/record-sheet:
-  description: get record sheet content as pdf
+  description: get court extract content as pdf
   uriParameters:
     caseId:
       description: ID of prosecution case
@@ -110,30 +110,6 @@ protocols: [ HTTP, HTTPS ]
       200:
         body:
           application/vnd.progression.query.record-sheet+json:
-
-/prosecutioncases/{caseId}/record-sheet-for-application:
-  description: get record sheet content as pdf
-  uriParameters:
-    caseId:
-      description: ID of prosecution case
-      type: string
-  get:
-    description: |
-      ...
-      (mapping):
-          responseType: application/vnd.progression.query.record-sheet-for-application+json
-          name: progression.query.record-sheet-for-application
-      ...
-    queryParameters:
-      offenceIds:
-        description: comma separated list of offenceIds
-        type: string
-        example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
-        required: true
-    responses:
-      200:
-        body:
-          application/vnd.progression.query.record-sheet-for-application+json:
 
 /prosecutioncases/{caseId}:
   uriParameters:

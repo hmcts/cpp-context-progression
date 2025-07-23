@@ -242,12 +242,12 @@ public class CourtExtractTransformer {
         return courtExtract.build();
     }
 
-    private void buildRecordSheetHearingDetails(final GetHearingsAtAGlance hearingsAtAGlance, final String defendantId, final UUID userId, final CourtExtractRequested.Builder courtExtract,
+    public void buildRecordSheetHearingDetails(final GetHearingsAtAGlance hearingsAtAGlance, final String defendantId, final UUID userId, final CourtExtractRequested.Builder courtExtract,
                                                final Defendant.Builder defendantBuilder, final Optional<uk.gov.justice.core.courts.Defendant>  caseDefendant, final Prosecutor prosecutor, final Optional<UUID> masterDefendantId) {
         if(caseDefendant.isPresent() && masterDefendantId.isPresent()){
             final List<Hearings> filteredHearings = hearingsAtAGlance.getHearings().stream()
                     .filter(h -> h.getDefendants().stream()
-                            .anyMatch(d -> d.getId().toString().equals(defendantId) || d.getMasterDefendantId().toString().equals(masterDefendantId.get().toString())))
+                            .anyMatch(d -> d.getId().toString().equals(defendantId)))
                     .filter(h -> h.getIsBoxHearing() == null || !h.getIsBoxHearing())
                     .toList();
             extractHearingDetails(hearingsAtAGlance, fromString(defendantId), userId, courtExtract, defendantBuilder, filteredHearings, caseDefendant.get(), prosecutor, RECORD_SHEET);
@@ -565,11 +565,10 @@ public class CourtExtractTransformer {
         }
     }
 
-    @SuppressWarnings("squid:S3776")
     private Defendant transformDefendants(final List<Defendants> defendantsList, final UUID defendantId, final UUID masterDefendantId, final UUID userId, final Defendant.Builder defendantBuilder,
                                           final List<Hearings> hearingsList, final uk.gov.justice.core.courts.Defendant caseDefendant, GetHearingsAtAGlance hearingsAtAGlance, final String extractType) {
 
-        final Optional<Defendants> defendants = defendantsList.stream().filter(d -> d.getId().equals(defendantId) || d.getMasterDefendantId().equals(masterDefendantId)).findFirst();
+        final Optional<Defendants> defendants = defendantsList.stream().filter(d -> d.getId().equals(defendantId)).findFirst();
         if (defendants.isPresent()) {
             final Defendants defendant = defendants.get();
             defendantBuilder.withDateOfBirth(defendant.getDateOfBirth());

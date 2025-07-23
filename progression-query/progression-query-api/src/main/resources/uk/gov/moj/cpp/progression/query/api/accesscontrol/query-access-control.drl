@@ -309,15 +309,6 @@ rule "progression - Query - API - record-sheet"
     $outcome.setSuccess(true);
 end
 
-rule "progression - Query - API - record-sheet-for-application"
-  when
-    $outcome: Outcome();
-    $action: Action(name == "progression.query.record-sheet-for-application");
-    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer", "Court Associate"))
-  then
-    $outcome.setSuccess(true);
-end
-
 rule "progression - Query - API - eject-case"
   when
     $outcome: Outcome();

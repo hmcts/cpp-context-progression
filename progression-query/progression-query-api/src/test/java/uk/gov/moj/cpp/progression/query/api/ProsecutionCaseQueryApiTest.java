@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.progression.query.api;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -20,11 +19,6 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.api.service.CourtOrderService;
 import uk.gov.moj.cpp.progression.query.api.service.OrganisationService;
-import uk.gov.moj.cpp.progression.query.api.service.RecordSheetService;
-import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
-
-import java.util.Optional;
-import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -87,12 +81,6 @@ public class ProsecutionCaseQueryApiTest {
 
     @Mock
     private CourtOrderService courtOrderService;
-
-    @Mock
-    private RecordSheetService recordSheetService;
-
-    @Mock
-    private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
 
     @Spy
     private JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
@@ -448,22 +436,5 @@ public class ProsecutionCaseQueryApiTest {
         final JsonEnvelope actualProsecutionCaseResponse = prosecutionCaseQueryApi.getCaseProsecutionCaseV2(queryEnvelope);
 
         assertThat(actualProsecutionCaseResponse.payloadAsJsonObject(), equalTo(casePayload));
-    }
-
-    @Test
-    void shouldGetRecordSheetForApplication() {
-        final UUID userId = randomUUID();
-        final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY_V2, randomUUID());
-        final JsonObject casePayload = readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
-        final JsonEnvelope documentEnvelope = envelopeFrom(metadata, casePayload);
-
-        final JsonObject payload = createObjectBuilder().add(CASE_ID, randomUUID().toString()).add("offenceIds", randomUUID().toString()).build();
-        final JsonEnvelope envelope = envelopeFrom(QueryClientTestBase.metadataFor("progression.query.record-sheet-for-application", randomUUID()), payload);
-        when(prosecutionCaseQuery.getProsecutionCase(any())).thenReturn(documentEnvelope);
-        when(recordSheetService.getTrialRecordSheetPayloadForApplication(envelope, documentEnvelope, userId)).thenReturn(response);
-        when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(userId));
-
-        final JsonEnvelope actual = prosecutionCaseQueryApi.getRecordSheetForApplication(envelope);
-        assertThat(actual, is(response));
     }
 }

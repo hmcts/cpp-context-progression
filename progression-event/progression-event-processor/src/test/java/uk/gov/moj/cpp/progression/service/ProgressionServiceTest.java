@@ -142,7 +142,9 @@ import java.util.function.Function;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -1742,38 +1744,5 @@ public class ProgressionServiceTest {
         final Optional<JsonObject> activeApplicationsOnCase = progressionService.getActiveApplicationsOnCase(inputEnvelop, caseId.toString());
 
         assertThat(activeApplicationsOnCase, is(Optional.empty()));
-    }
-
-    @Test
-    void shouldGenerateTrialRecordSheetPayloadForApplication() {
-        ArgumentCaptor<JsonEnvelope> argumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
-        final UUID caseId = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final JsonEnvelope inputEnvelop = envelopeFrom(metadataBuilder()
-                .withName("progression.event.defendant-trial-record-sheet-requested-for-application")
-                .withId(randomUUID())
-                .build(), Json.createObjectBuilder().build());
-
-        final JsonArray payloads = createArrayBuilder().add(createObjectBuilder().
-                        add("defendantId", randomUUID().toString())
-                        .add("payload", createObjectBuilder().add("random", randomUUID().toString()).build())
-                        .build())
-                .build();
-        final JsonObject responsePayload = createObjectBuilder().add("payloads", payloads).build();
-        when(requester.requestAsAdmin(any())).thenReturn(JsonEnvelope.envelopeFrom(inputEnvelop.metadata(), responsePayload));
-
-        final JsonArray result = progressionService.generateTrialRecordSheetPayloadForApplication(inputEnvelop, caseId, Arrays.asList(offenceId1, offenceId2));
-
-        verify(requester).requestAsAdmin(argumentCaptor.capture());
-
-        final JsonEnvelope captorValue = argumentCaptor.getValue();
-        assertThat(captorValue.metadata().name(), is("progression.query.record-sheet-for-application"));
-        final JsonObject payload = (JsonObject) captorValue.payload();
-        assertThat(payload.getString("caseId"), is(caseId.toString()));
-        assertThat(payload.getString("offenceIds"), is(offenceId1 + "," + offenceId2));
-
-        assertThat(result, is(payloads));
-
     }
 }
