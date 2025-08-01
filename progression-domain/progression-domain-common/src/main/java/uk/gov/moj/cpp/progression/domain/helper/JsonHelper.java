@@ -63,4 +63,16 @@ public class JsonHelper {
         builder.add(key, value);
         return builder.build();
     }
+
+    public static JsonObject renameProperty(final JsonObject origin, final String key, final String newName){
+        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        for (final Map.Entry<String, JsonValue> entry : origin.entrySet()){
+            if (!entry.getKey().equals(key)){
+                builder.add(entry.getKey(), entry.getValue());
+            } else {
+                builder.add(newName, entry.getValue());
+            }
+        }
+        return builder.build();
+    }
 }

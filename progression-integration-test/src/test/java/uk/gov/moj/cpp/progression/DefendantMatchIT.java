@@ -15,6 +15,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initia
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.matchDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.unmatchDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.updateMasterDefendant;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchForCJSSpec;
@@ -52,7 +53,7 @@ public class DefendantMatchIT extends AbstractIT {
     private final JmsMessageConsumerClient publicEventConsumerForDefendantMatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-matched").getMessageConsumerClient();
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private final JmsMessageConsumerClient publicEventConsumerForDefendantUnmatched = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-unmatched").getMessageConsumerClient();
-
+    private final JmsMessageConsumerClient publicEventConsumerForCaseDefendantChanged = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.case-defendant-changed").getMessageConsumerClient();
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private String prosecutionCaseId_1;
@@ -175,6 +176,52 @@ public class DefendantMatchIT extends AbstractIT {
     }
 
     @Test
+    void shouldUpdateMasterDefendant() throws IOException {
+        final String newMasterDefendantId = randomUUID().toString();
+        // initiation of first case
+        initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_1, defendantId_1, masterDefendantId_1, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        final String hearingId = PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant(prosecutionCaseId_1, defendantId_1);
+        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId);
+
+        JsonEnvelope publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, randomUUID()), getHearingJsonObject("public.listing.hearing-confirmed.json",
+                prosecutionCaseId_1, hearingId, defendantId_1, courtCentreId));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        Matcher<? super ReadContext>[] prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_1, defendantId_1, emptyList());
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_1, prosecutionCaseMatchers);
+
+        // initiation of second case
+        initiateCourtProceedingsForDefendantMatching(prosecutionCaseId_2, defendantId_2, defendantId_2, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
+
+        final String hearingId2 = PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant(prosecutionCaseId_2, defendantId_2);
+        ListingStub.stubListingSearchHearingsQuery("stub-data/listing.search.hearings.json", hearingId2);
+
+        publicEventEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, randomUUID()), getHearingJsonObject("public.listing.hearing-confirmed.json",
+                prosecutionCaseId_2, hearingId2, defendantId_2, courtCentreId));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
+
+        prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2, emptyList());
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+
+        // match defendant2 associated to case 2
+        matchDefendant(prosecutionCaseId_2, defendantId_2, prosecutionCaseId_1, defendantId_1, masterDefendantId_1);
+
+        // check master defendant id updated for defendant in case 2
+        prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is(masterDefendantId_1))));
+        verifyInMessagingQueueForDefendantMatched();
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+
+        //Update defendant2 masterdefendantId to newMasterDefendantId
+        updateMasterDefendant(prosecutionCaseId_2, defendantId_2, newMasterDefendantId);
+        verifyInMessagingQueueForCaseDefendantChanged();
+
+        prosecutionCaseMatchers = getProsecutionCaseMatchers(prosecutionCaseId_2, defendantId_2,
+                singletonList(withJsonPath("$.prosecutionCase.defendants[0].masterDefendantId", is(newMasterDefendantId))));
+        pollProsecutionCasesProgressionFor(prosecutionCaseId_2, prosecutionCaseMatchers);
+    }
+
+    @Test
     public void shouldRaiseDuplicatePublicEventWhenMatchedDefendantAlreadyBeenDeleted() throws IOException {
 
         // initiation of case
@@ -232,6 +279,11 @@ public class DefendantMatchIT extends AbstractIT {
 
     private void verifyInMessagingQueueForDefendantUnmatched() {
         final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForDefendantUnmatched);
+        assertTrue(message.isPresent());
+    }
+
+    private void verifyInMessagingQueueForCaseDefendantChanged() {
+        final Optional<JsonObject> message = retrieveMessageBody(publicEventConsumerForCaseDefendantChanged);
         assertTrue(message.isPresent());
     }
 

@@ -163,7 +163,7 @@ public class DefendantUpdateDifferenceCalculator {
         CustodialEstablishment custodialEstablishment =
                 calculateCustodialEstablishment(defendantUpdate -> defendantUpdate.getPersonDefendant().getCustodialEstablishment());
 
-        if(nonNull(custodialEstablishment.getCustody()) && nonNull(custodialEstablishment.getId()) && nonNull(custodialEstablishment.getName())){
+        if(nonNull(custodialEstablishment) && nonNull(custodialEstablishment.getCustody()) && nonNull(custodialEstablishment.getId()) && nonNull(custodialEstablishment.getName())){
             personDefendantBuilder.withCustodialEstablishment(custodialEstablishment);
         }
         return personDefendantBuilder.build();

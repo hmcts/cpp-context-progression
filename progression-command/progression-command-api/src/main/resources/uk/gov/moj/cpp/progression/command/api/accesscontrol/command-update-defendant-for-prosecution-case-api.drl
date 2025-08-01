@@ -15,5 +15,11 @@ rule "Command - Rule for update defendant for prosecution case"
     $outcome.setSuccess(true);
 end
 
-
-
+rule "Command - Rule for update master defendant for prosecution case"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-master-defendant");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"));
+  then
+    $outcome.setSuccess(true);
+end

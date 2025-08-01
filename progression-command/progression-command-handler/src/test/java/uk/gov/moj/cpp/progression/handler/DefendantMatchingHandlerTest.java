@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.Offence.offence;
@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +70,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class DefendantMatchingHandlerTest {
+class DefendantMatchingHandlerTest {
 
     @Mock
     private EventSource eventSource;
@@ -163,7 +164,7 @@ public class DefendantMatchingHandlerTest {
     }
 
     @Test
-    public void shouldUpdateMatchedDefendant() throws EventStreamException {
+    void shouldUpdateMatchedDefendant() throws EventStreamException {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
@@ -185,14 +186,43 @@ public class DefendantMatchingHandlerTest {
         final Envelope<UpdateMatchedDefendant> envelope = envelopeFrom(metadata, updateMatchedDefendant);
         defendantMatchingHandler.updateMatchedDefendant(envelope);
 
-        final Stream<JsonEnvelope > envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        final JsonEnvelope event = verifyAppendAndGetArgumentFrom(eventStream).filter(
+                env -> env.metadata().name().equals("progression.event.defendants-master-defendant-id-updated")).findFirst().orElse(null);
 
-        final List<Envelope> envelopes = envelopeStream.map(value -> (Envelope) value).collect(Collectors.toList());
-        final JsonEnvelope  defendantPartialMatchCreatedEnvelope = (JsonEnvelope)envelopes.stream().filter(
-                env -> env.metadata().name().equals("progression.event.defendants-master-defendant-id-updated")).findFirst().get();
+        assertThat(event, notNullValue());
+        assertThat(event.payloadAsJsonObject(), notNullValue());
+        assertThat(event.payloadAsJsonObject().getBoolean("processInactiveCase"), Matchers.is(false));
+    }
 
-        MatcherAssert.assertThat(defendantPartialMatchCreatedEnvelope.payloadAsJsonObject()
-                , notNullValue());
+    @Test
+    void shouldUpdateMasterDefendant() throws EventStreamException {
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        final UUID defendantId = prosecutionCase.getDefendants().get(0).getId();
+
+        final UpdateMatchedDefendant updateMatchedDefendant = UpdateMatchedDefendant.updateMatchedDefendant()
+                .withDefendantId(defendantId)
+                .withMasterDefendantId(randomUUID())
+                .withProsecutionCaseId(prosecutionCase.getId())
+                .withProcessInactiveCase(true)
+                .build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.update-matched-defendant")
+                .withId(randomUUID())
+                .build();
+
+        defendantMatchingHandler.updateMatchedDefendant(envelopeFrom(metadata, updateMatchedDefendant));
+
+        final JsonEnvelope event = verifyAppendAndGetArgumentFrom(eventStream).filter(
+                env -> env.metadata().name().equals("progression.event.defendants-master-defendant-id-updated")).findFirst().orElse(null);
+
+        assertThat(event, notNullValue());
+        assertThat(event.payloadAsJsonObject(), notNullValue());
+        assertThat(event.payloadAsJsonObject().getBoolean("processInactiveCase"), Matchers.is(true));
     }
 
     @Test

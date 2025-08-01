@@ -21,26 +21,8 @@
       }
     }
   },
-  "anyOf": [
-    {
-      "required": [
-        "hearingId",
-        "prosecutionCaseIds",
-        "courtApplicationIds"
-      ]
-    },
-    {
-      "required": [
-        "hearingId",
-        "prosecutionCaseIds"
-      ]
-    },
-    {
-      "required": [
-        "hearingId",
-        "courtApplicationIds"
-      ]
-    }
+  "required": [
+    "hearingId"
   ],
   "additionalProperties": false
 }

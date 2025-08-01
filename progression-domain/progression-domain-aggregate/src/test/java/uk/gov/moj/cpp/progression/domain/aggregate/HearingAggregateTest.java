@@ -1162,6 +1162,32 @@ public class HearingAggregateTest {
         assertThat(seedingHearingId, is(prosecutionCaseDefendantListingStatusChangedV3.getListNextHearings().getSeedingHearing().getSeedingHearingId()));
     }
 
+    @Test
+    public void shouldDeleteHearingWhenNoCaseLeftOnHearing() {
+        final UUID hearingId = randomUUID();
+        final UUID prosecutionCaseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID offence1 = randomUUID();
+        final UUID offence2 = randomUUID();
+
+        final ProsecutionCase prosecutionCase = createProsecutionCase(prosecutionCaseId, defendantId, offence1, offence2);
+
+        final Hearing hearing = Hearing
+                .hearing()
+                .withId(hearingId)
+                .withProsecutionCases(new ArrayList<>(Arrays.asList(prosecutionCase))).build();
+        setField(hearingAggregate, "hearing", hearing);
+
+        final List<Object> eventStream1 = hearingAggregate.removeOffenceFromHearing(hearingId, Arrays.asList(offence1, offence2), false).collect(toList());
+
+        assertThat(eventStream1.size(), is(1));
+
+        final HearingDeleted hearingDeleted = (HearingDeleted) eventStream1.get(0);
+        assertThat(hearingDeleted.getHearingId(), is(hearingId));
+        assertThat(hearingDeleted.getProsecutionCaseIds().size(), is(1));
+        assertThat(hearingDeleted.getProsecutionCaseIds().get(0), is(prosecutionCaseId));
+    }
+
     private HearingType getHearingType(UUID hearingTypeId) {
         return HearingType.hearingType().withId(hearingTypeId).withDescription("First Hearing").withWelshDescription("welsh").withDescription("First Hearing")
                 .build();

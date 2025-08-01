@@ -11,6 +11,9 @@
     },
     "masterDefendantId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "processInactiveCase": {
+      "type": "boolean"
     }
   },
   "required": [

@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_API;
-
+import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.renameProperty;
 
 import uk.gov.justice.services.adapter.rest.exception.BadRequestException;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -35,6 +35,13 @@ public class UpdateDefendantCommandApi {
         }
 
         sender.send(commandEnvelope);
+    }
+
+    @Handles("progression.update-master-defendant")
+    public void handleUpdateMasterDefendant(final JsonEnvelope envelope) {
+        sender.send(Enveloper.envelop(renameProperty(envelope.payloadAsJsonObject(), "id", "defendantId"))
+                .withName("progression.command.update-matched-defendant")
+                .withMetadataFrom(envelope));
     }
 
     private JsonEnvelope envelopeWithUpdatedActionName(final JsonEnvelope existingEnvelope, final String name) {

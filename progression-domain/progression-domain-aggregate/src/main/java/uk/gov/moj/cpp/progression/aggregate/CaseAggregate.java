@@ -2143,9 +2143,10 @@ public class CaseAggregate implements Aggregate {
                 .build()));
     }
 
-    public Stream<Object> updateMatchedDefendant(final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId) {
+    public Stream<Object> updateMatchedDefendant(final UUID prosecutionCaseId, final UUID defendantId, final UUID masterDefendantId, final Boolean processInactiveCase) {
         return apply(Stream.of(DefendantsMasterDefendantIdUpdated.defendantsMasterDefendantIdUpdated()
                 .withProsecutionCaseId(prosecutionCaseId)
+                .withProcessInactiveCase(Boolean.TRUE.equals(processInactiveCase))
                 .withDefendant(uk.gov.justice.core.courts.Defendant.defendant()
                         .withValuesFrom(defendantsMap.get(defendantId))
                         .withMasterDefendantId(masterDefendantId)

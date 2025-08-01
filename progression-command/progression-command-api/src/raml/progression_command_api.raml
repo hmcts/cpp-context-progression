@@ -338,7 +338,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       (mapping):
           requestType: application/vnd.progression.update-offences-for-prosecution-case+json
           name: progression.update-offences-for-prosecution-case
-
+      (mapping):
+          requestType: application/vnd.progression.update-master-defendant+json
+          name: progression.update-master-defendant
       ...
     body:
       application/vnd.progression.update-defendant-for-prosecution-case+json:
@@ -351,7 +353,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
           !include json/progression.update-offences-for-prosecution-case.json
         schema:
           !include json/schema/progression.update-offences-for-prosecution-case.json
-
+      application/vnd.progression.update-master-defendant+json:
+        example:
+          !include json/progression.update-master-defendant.json
+        schema:
+          !include json/schema/progression.update-master-defendant.json
     responses:
           202:
               description: OK

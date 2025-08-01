@@ -1332,6 +1332,19 @@ public class HearingAggregate implements Aggregate {
         final List<UUID> defendantsToBeRemoved = getDefendantsToBeRemoved(offencesToBeRemoved);
         final List<UUID> prosecutionCasesToBeRemoved = getProsecutionCasesToBeRemoved(defendantsToBeRemoved);
 
+        final List<UUID> prosecutionCaseRemainingList = ofNullable(this.hearing).map(hearing -> hearing.getProsecutionCases().stream()).orElseGet(Stream::empty)
+                .map(prosecutionCase -> prosecutionCase.getId())
+                .filter(caseId -> !prosecutionCasesToBeRemoved.contains(caseId))
+                .collect(toList());
+
+        // Hearing left with no case on it so delete the hearing
+        if(prosecutionCaseRemainingList.isEmpty()) {
+            return apply(Stream.of(HearingDeleted.hearingDeleted()
+                    .withHearingId(this.hearing.getId())
+                    .withProsecutionCaseIds(prosecutionCasesToBeRemoved)
+                    .build()));
+        }
+
         return apply(Stream.of(OffencesRemovedFromHearing.offencesRemovedFromHearing()
                 .withHearingId(hearingId)
                 .withOffenceIds(offencesToBeRemoved)

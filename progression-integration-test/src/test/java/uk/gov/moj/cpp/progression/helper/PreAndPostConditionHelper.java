@@ -491,6 +491,18 @@ public class PreAndPostConditionHelper {
 
     }
 
+    public static Response updateMasterDefendant(final String prosecutionCaseId, final String defendantId, final String masterDefendantId) throws IOException {
+        return postCommand(getWriteUrl(String.format("/prosecutioncases/%s/defendants/%s", prosecutionCaseId, defendantId)),
+                "application/vnd.progression.update-master-defendant+json",
+                getUpdateMasterDefendantJsonBody(masterDefendantId));
+    }
+
+    private static String getUpdateMasterDefendantJsonBody(final String masterDefendantId) {
+        return getPayload("progression.update-master-defendant.json")
+                .replace("MASTER_DEFENDANT_ID", masterDefendantId);
+    }
+
+
     public static Response unmatchDefendant(final String prosecutionCaseId_2, final String defendantId_2, final String prosecutionCaseId_1, final String defendantId_1, final String masterDefendantId) {
         return postCommand(getWriteUrl(String.format("/prosecutioncases/%s/defendants/%s/match", prosecutionCaseId_2, defendantId_2)),
                 "application/vnd.progression.unmatch-defendant+json",

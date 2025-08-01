@@ -9,6 +9,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addPro
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.verifyHearingIsEmpty;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
@@ -44,7 +45,8 @@ public class HearingUnallocatedIT extends AbstractIT {
 
         final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_EVENTS_LISTING_HEARING_UNALLOCATED, userId), hearingUnallocatedJson);
         messageProducerClientPublic.sendMessage(PUBLIC_EVENTS_LISTING_HEARING_UNALLOCATED, publicEventEnvelope);
-        getHearingForDefendant(hearingId, new Matcher[]{withJsonPath("$.hearing.prosecutionCases", hasSize(0))});
+        // Hearing left with no prosecution case should be deleted
+        verifyHearingIsEmpty(hearingId);
     }
 
     private String createHearingAndReturnHearingId(final String prosecutionCaseId, final String defendantId, final String urn) throws IOException, JSONException {

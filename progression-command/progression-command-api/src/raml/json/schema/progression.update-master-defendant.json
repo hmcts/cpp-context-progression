@@ -1,22 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.defendants-master-defendant-id-updated.json",
+  "id": "http://justice.gov.uk/core/courts/progression.update-master-defendant.json",
   "type": "object",
   "properties": {
-    "prosecutionCaseId": {
+    "masterDefendantId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-    },
-    "defendant": {
-      "$ref": "http://justice.gov.uk/core/courts/defendant.json"
     },
     "processInactiveCase": {
       "type": "boolean"
     }
   },
   "required": [
-    "prosecutionCaseId",
-    "defendant",
-    "processInactiveCase"
+    "masterDefendantId"
   ],
   "additionalProperties": false
 }

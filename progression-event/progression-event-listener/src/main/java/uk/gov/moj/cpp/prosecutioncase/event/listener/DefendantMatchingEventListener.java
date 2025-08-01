@@ -127,7 +127,7 @@ public class DefendantMatchingEventListener {
         }
         final DefendantsMasterDefendantIdUpdated updatedDefendant = jsonObjectConverter.convert(event.payloadAsJsonObject(), DefendantsMasterDefendantIdUpdated.class);
 
-        associateMasterDefendantToDefendant(updatedDefendant.getDefendant().getId(), updatedDefendant.getDefendant().getMasterDefendantId(), updatedDefendant.getProsecutionCaseId(), null);
+        associateMasterDefendantToDefendant(updatedDefendant.getDefendant().getId(), updatedDefendant.getDefendant().getMasterDefendantId(), updatedDefendant.getProsecutionCaseId(), null, updatedDefendant.getProcessInactiveCase());
     }
 
 
@@ -170,6 +170,10 @@ public class DefendantMatchingEventListener {
     }
 
     private void associateMasterDefendantToDefendant(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID hearingId) {
+        associateMasterDefendantToDefendant(defendantId, masterDefendantId, prosecutionCaseId, hearingId, false);
+    }
+
+    private void associateMasterDefendantToDefendant(final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID hearingId, final boolean processInactiveCase) {
         final ProsecutionCaseEntity prosecutionCaseEntity = prosecutionCaseRepository.findOptionalByCaseId(prosecutionCaseId);
         if (isNull(prosecutionCaseEntity)) {
             LOGGER.warn("ProsecutionCase not found: {}", prosecutionCaseId);
@@ -177,31 +181,36 @@ public class DefendantMatchingEventListener {
         }
 
         final ProsecutionCase prosecutionCase = jsonObjectConverter.convert(jsonFromString(prosecutionCaseEntity.getPayload()), ProsecutionCase.class);
-        if (isNull(prosecutionCase.getCaseStatus()) ||
+
+        if (isNull(prosecutionCase.getCaseStatus()) || processInactiveCase ||
                 !(CLOSED.equalsIgnoreCase(prosecutionCase.getCaseStatus()) || INACTIVE.equalsIgnoreCase(prosecutionCase.getCaseStatus()))) {
             updateMasterDefendant(defendantId, masterDefendantId, prosecutionCase);
 
-            MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
+            updateMatchDefendantCaseHearing(defendantId, masterDefendantId, prosecutionCaseId, hearingId);
+        }
+    }
 
-            if (isNull(matchDefendantCaseHearingEntity)) {
-                final List<MatchDefendantCaseHearingEntity> entities = matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCaseId, defendantId);
-                matchDefendantCaseHearingEntity = nonNull(entities) && !entities.isEmpty()? entities.get(0):null;
-            }
+    private void updateMatchDefendantCaseHearing (final UUID defendantId, final UUID masterDefendantId, final UUID prosecutionCaseId, final UUID hearingId) {
+        final MatchDefendantCaseHearingEntity defendantCaseHearingEntity = matchDefendantCaseHearingRepository.findByHearingIdAndProsecutionCaseIdAndDefendantId(hearingId, prosecutionCaseId, defendantId);
 
-            if (nonNull(matchDefendantCaseHearingEntity)) {
-                matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
-            } else {
-                matchDefendantCaseHearingEntity = new MatchDefendantCaseHearingEntity();
-                matchDefendantCaseHearingEntity.setId(randomUUID());
-                matchDefendantCaseHearingEntity.setDefendantId(defendantId);
-                matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
-                matchDefendantCaseHearingEntity.setProsecutionCaseId(prosecutionCaseId);
-                matchDefendantCaseHearingEntity.setHearingId(hearingId);
-                if (nonNull(hearingId)) {
-                    matchDefendantCaseHearingEntity.setHearing(hearingRepository.findBy(hearingId));
-                }
-                matchDefendantCaseHearingEntity.setProsecutionCase(prosecutionCaseRepository.findByCaseId(prosecutionCaseId));
+        final List<MatchDefendantCaseHearingEntity> defendantCaseHearings = nonNull(defendantCaseHearingEntity) ? List.of(defendantCaseHearingEntity) : matchDefendantCaseHearingRepository.findByProsecutionCaseIdAndDefendantId(prosecutionCaseId, defendantId);
+
+        if (nonNull(defendantCaseHearings) && !defendantCaseHearings.isEmpty()) {
+            for (MatchDefendantCaseHearingEntity defendantCaseHearing : defendantCaseHearings) {
+                defendantCaseHearing.setMasterDefendantId(masterDefendantId);
+                matchDefendantCaseHearingRepository.save(defendantCaseHearing);
             }
+        } else {
+            final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = new MatchDefendantCaseHearingEntity();
+            matchDefendantCaseHearingEntity.setId(randomUUID());
+            matchDefendantCaseHearingEntity.setDefendantId(defendantId);
+            matchDefendantCaseHearingEntity.setMasterDefendantId(masterDefendantId);
+            matchDefendantCaseHearingEntity.setProsecutionCaseId(prosecutionCaseId);
+            matchDefendantCaseHearingEntity.setHearingId(hearingId);
+            if (nonNull(hearingId)) {
+                matchDefendantCaseHearingEntity.setHearing(hearingRepository.findBy(hearingId));
+            }
+            matchDefendantCaseHearingEntity.setProsecutionCase(prosecutionCaseRepository.findByCaseId(prosecutionCaseId));
             matchDefendantCaseHearingRepository.save(matchDefendantCaseHearingEntity);
         }
     }

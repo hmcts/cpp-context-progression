@@ -255,7 +255,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
 @ExtendWith(MockitoExtension.class)
-public class CaseAggregateTest {
+class CaseAggregateTest {
 
     private static final String CASE_ID = randomUUID().toString();
     private static final String DEFENDANT_ID = randomUUID().toString();
@@ -1447,7 +1447,7 @@ public class CaseAggregateTest {
 
 
     @Test
-    public void shouldDefendantMasterDefendantIdUpdatedEvent_whenDefendantAddToCourtProceedings_expectMandatoryAttributes() {
+    void shouldDefendantMasterDefendantIdUpdatedEvent_whenDefendantAddToCourtProceedings_expectMandatoryAttributes() {
         final UUID caseId = fromString(CASE_ID);
         final UUID defendantId = fromString(DEFENDANT_ID);
         final UUID offenceId = fromString(OFFENCE_ID);
@@ -1460,14 +1460,37 @@ public class CaseAggregateTest {
         final List<Object> defendantStream = caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
                 defendantsAddedToCourtProceedings.getListHearingRequests(), Optional.of(createJsonList())).collect(toList());
         caseAggregate.apply(defendantStream);
-        final Stream<Object> eventStream = caseAggregate.updateMatchedDefendant(caseId, defendantId, masterDefendantId);
-        final DefendantsMasterDefendantIdUpdated defendantsMasterDefendantIdUpdated = (DefendantsMasterDefendantIdUpdated) eventStream.collect(toList()).get(0);
+        final Stream<Object> eventStream = caseAggregate.updateMatchedDefendant(caseId, defendantId, masterDefendantId, null);
+        final DefendantsMasterDefendantIdUpdated defendantsMasterDefendantIdUpdated = (DefendantsMasterDefendantIdUpdated) eventStream.toList().get(0);
         assertThat(defendantsMasterDefendantIdUpdated.getProsecutionCaseId(), is(caseId));
         assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getId(), is(defendantId));
         assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getOffences().size(), is(1));
+        assertThat(defendantsMasterDefendantIdUpdated.getProcessInactiveCase(), is(false));
         assertNotNull(defendantsMasterDefendantIdUpdated.getDefendant().getCourtProceedingsInitiated());
+    }
 
+    @Test
+    void shouldDefendantMasterDefendantIdUpdatedEventWhenCalledFromApi() {
+        final UUID caseId = fromString(CASE_ID);
+        final UUID defendantId = fromString(DEFENDANT_ID);
+        final UUID offenceId = fromString(OFFENCE_ID);
+        final UUID defendantId2 = randomUUID();
+        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = buildDefendantsAddedToCourtProceedings(
+                caseId, defendantId, defendantId2, offenceId);
+        final UUID masterDefendantId = defendantsAddedToCourtProceedings.getDefendants().get(0).getMasterDefendantId();
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        caseAggregate.apply(new ProsecutionCaseCreated(prosecutionCase, null));
+        final List<Object> defendantStream = caseAggregate.defendantsAddedToCourtProceedings(defendantsAddedToCourtProceedings.getDefendants(),
+                defendantsAddedToCourtProceedings.getListHearingRequests(), Optional.of(createJsonList())).collect(toList());
+        caseAggregate.apply(defendantStream);
 
+        final Stream<Object> eventStream = caseAggregate.updateMatchedDefendant(caseId, defendantId, masterDefendantId, true);
+        final DefendantsMasterDefendantIdUpdated defendantsMasterDefendantIdUpdated = (DefendantsMasterDefendantIdUpdated) eventStream.toList().get(0);
+        assertThat(defendantsMasterDefendantIdUpdated.getProsecutionCaseId(), is(caseId));
+        assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getId(), is(defendantId));
+        assertThat(defendantsMasterDefendantIdUpdated.getDefendant().getOffences().size(), is(1));
+        assertThat(defendantsMasterDefendantIdUpdated.getProcessInactiveCase(), is(true));
+        assertNotNull(defendantsMasterDefendantIdUpdated.getDefendant().getCourtProceedingsInitiated());
     }
 
     @Test

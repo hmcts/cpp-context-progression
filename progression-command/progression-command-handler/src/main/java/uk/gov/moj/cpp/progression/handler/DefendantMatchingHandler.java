@@ -56,7 +56,7 @@ public class DefendantMatchingHandler {
         final UpdateMatchedDefendant updateMatchedDefendant = envelope.payload();
         final EventStream eventStream = eventSource.getStreamById(updateMatchedDefendant.getProsecutionCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.updateMatchedDefendant(updateMatchedDefendant.getProsecutionCaseId(), updateMatchedDefendant.getDefendantId(), updateMatchedDefendant.getMasterDefendantId());
+        final Stream<Object> events = caseAggregate.updateMatchedDefendant(updateMatchedDefendant.getProsecutionCaseId(), updateMatchedDefendant.getDefendantId(), updateMatchedDefendant.getMasterDefendantId(), updateMatchedDefendant.getProcessInactiveCase());
         appendEventsToStream(envelope, eventStream, events);
     }
 
