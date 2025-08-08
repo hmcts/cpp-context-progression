@@ -4,6 +4,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -55,7 +56,8 @@ import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCase;
-import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequested;
+import uk.gov.justice.core.courts.CourtOrderOffence;
+import uk.gov.justice.core.courts.DefendantTrialRecordSheetRequestedForApplication;
 import uk.gov.justice.core.courts.DeleteCourtApplicationHearingRequested;
 import uk.gov.justice.core.courts.EditCourtApplicationProceedings;
 import uk.gov.justice.core.courts.Hearing;
@@ -67,9 +69,9 @@ import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.JudicialResultCategory;
 import uk.gov.justice.core.courts.JurisdictionType;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.MasterDefendant;
-import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
@@ -869,7 +871,32 @@ public class ApplicationAggregateTest {
         assertThat(eventStream.size(), is(2));
 
         assertThat(eventStream.get(0).getClass(), is(equalTo(HearingResultedApplicationUpdated.class)));
-        assertThat(eventStream.get(1).getClass(), is(equalTo(DefendantTrialRecordSheetRequested.class)));
+        final DefendantTrialRecordSheetRequestedForApplication event = (DefendantTrialRecordSheetRequestedForApplication) eventStream.get(1);
+        assertThat(event.getCaseId(), is(courtApplication.getCourtOrder().getCourtOrderOffences().get(0).getProsecutionCaseId()));
+        assertThat(event.getOffenceIds(), is(courtApplication.getCourtOrder().getCourtOrderOffences().stream().map(CourtOrderOffence::getOffence).map(Offence::getId).toList()));
+        assertThat(event.getCourtApplication(), is(courtApplication));
+    }
+
+    @Test
+    void shouldHearingResultedRaiseDefendantTrialRecordSheetRequestedEventsWhenMultipleCases() {
+        final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(getPayload("json/court-application-with-court-order-for-multiple-case.json"));
+        final JsonObject courtApplicationJson = courtApplicationPayload.getJsonObject("courtApplication");
+        CourtApplication courtApplication = jsonObjectToObjectConverter.convert(courtApplicationJson, CourtApplication.class);
+        aggregate.apply(new CourtApplicationCreated.Builder().withCourtApplication(courtApplication).build());
+
+        final List<Object> eventStream = aggregate.hearingResulted(courtApplication).toList();
+        assertThat(eventStream.size(), is(3));
+
+        assertThat(eventStream.get(0).getClass(), is(equalTo(HearingResultedApplicationUpdated.class)));
+        final DefendantTrialRecordSheetRequestedForApplication event1 = (DefendantTrialRecordSheetRequestedForApplication) eventStream.get(1);
+        assertThat(event1.getCaseId(), is(fromString("62a6bcc7-55c4-4cb6-91b8-a918cd37d086")));
+        assertThat(event1.getOffenceIds(), is(List.of(fromString("92fd500a-e5c4-4881-8580-fd4754908585"))));
+        assertThat(event1.getCourtApplication(), is(courtApplication));
+
+        final DefendantTrialRecordSheetRequestedForApplication event2 = (DefendantTrialRecordSheetRequestedForApplication) eventStream.get(2);
+        assertThat(event2.getCaseId(), is(fromString("74672631-fd20-466d-b806-b85a97953476")));
+        assertThat(event2.getOffenceIds(), is(List.of(fromString("6073185c-2f85-4c2b-a45c-e1b84e881725"))));
+        assertThat(event2.getCourtApplication(), is(courtApplication));
     }
 
     @Test

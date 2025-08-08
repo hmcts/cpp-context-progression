@@ -223,6 +223,14 @@ public class ProsecutionCaseQueryApi {
         return recordSheetService.getTrialRecordSheetPayload(query, getCaseProsecutionCase(documentQuery), userId );
     }
 
+    @Handles("progression.query.record-sheet-for-application")
+    public JsonEnvelope getRecordSheetForApplication(final JsonEnvelope query) {
+        final UUID userId = getUserId();
+        final JsonEnvelope documentQuery = getDocumentQuery(query, userId);
+        return recordSheetService.getTrialRecordSheetPayloadForApplication(query, getCaseProsecutionCase(documentQuery), userId);
+    }
+
+
     private JsonEnvelope getDocumentQuery(final JsonEnvelope query, final UUID userId) {
         final JsonObject payloadAsJsonObject = query.payloadAsJsonObject();
         String caseId = payloadAsJsonObject.containsKey(CASE_ID) ? payloadAsJsonObject.getString(CASE_ID) : null;

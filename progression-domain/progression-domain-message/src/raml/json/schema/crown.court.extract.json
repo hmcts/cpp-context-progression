@@ -609,6 +609,9 @@
         {
           "type": "object",
           "properties": {
+            "id": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            },
             "applicationType": {
               "type": "string"
             },
@@ -746,7 +749,8 @@
             "results",
             "applicationResults",
             "representation"
-          ]
+          ],
+          "additionalProperties": false
         }
       ]
     },
