@@ -4,6 +4,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.deltaspike.core.util.CollectionUtils.isEmpty;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 
@@ -29,6 +30,7 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.Prosecutor;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReferredListHearingRequest;
+import uk.gov.justice.core.courts.RotaSlot;
 import uk.gov.justice.core.courts.SjpReferral;
 import uk.gov.justice.core.courts.SummonsType;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -131,19 +133,30 @@ public class ListCourtHearingTransformer {
 
         LOGGER.debug("Transforming SJP reference with nextHearing  to ListCourtHearing");
 
-        final HearingListingNeeds hearings = HearingListingNeeds.hearingListingNeeds()
+        List<RotaSlot> hmiSlots = nonNull(nextHearing.getHmiSlots()) ? nextHearing.getHmiSlots() : new ArrayList<>();
+        if (isEmpty(hmiSlots) && nonNull(nextHearing.getCourtScheduleId())) {
+            hmiSlots.add(RotaSlot.rotaSlot()
+                    .withStartTime(nextHearing.getListedStartDateTime())
+                    .withCourtScheduleId(nextHearing.getCourtScheduleId())
+                    .withCourtCentreId(nextHearing.getCourtCentre().getId().toString())
+                    .withRoomId(nextHearing.getCourtCentre().getRoomId().toString())
+                    .withDuration(nextHearing.getEstimatedMinutes())
+                    .build());
+        }
+        final HearingListingNeeds.Builder hearingsbuilder = HearingListingNeeds.hearingListingNeeds()
                 .withId(hearingId)
                 .withProsecutionCases(prosecutionCases)
                 .withCourtCentre(progressionService.transformCourtCentre(nextHearing.getCourtCentre(), jsonEnvelope))
-                .withBookedSlots(nextHearing.getHmiSlots())
                 .withListedStartDateTime(nextHearing.getListedStartDateTime())
                 .withEstimatedMinutes(nextHearing.getEstimatedMinutes())
                 .withType(nextHearing.getType())
                 .withJurisdictionType(MAGISTRATES)
-                .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, referredListHearingRequests.stream().flatMap(r->r.getListDefendantRequests().stream()).toList()))
-                .build();
+                .withDefendantListingNeeds(getListDefendantRequests(jsonEnvelope, referredListHearingRequests.stream().flatMap(r -> r.getListDefendantRequests().stream()).toList()));
+        if (isNotEmpty(hmiSlots)) {
+            hearingsbuilder.withBookedSlots(hmiSlots);
+        }
 
-        return ListCourtHearing.listCourtHearing().withHearings(List.of(hearings)).build();
+        return ListCourtHearing.listCourtHearing().withHearings(List.of(hearingsbuilder.build())).build();
     }
 
     @SuppressWarnings({"pmd:NullAssignment"})
@@ -349,7 +362,7 @@ public class ListCourtHearingTransformer {
     }
 
     private String getReferralReasonDescription(final JsonEnvelope jsonEnvelope, final ReferralReason referralReason) {
-        if(referralReason == null){
+        if (referralReason == null) {
             return null;
         }
         final UUID referralId = referralReason.getId();
@@ -457,7 +470,7 @@ public class ListCourtHearingTransformer {
                     .withStatementOfFacts(matchedProsecutionCase.getStatementOfFacts())
                     .withStatementOfFactsWelsh(matchedProsecutionCase.getStatementOfFactsWelsh());
 
-            if(nonNull(matchedProsecutionCase.getProsecutor())){
+            if (nonNull(matchedProsecutionCase.getProsecutor())) {
                 builder.withProsecutor(Prosecutor.prosecutor()
                         .withValuesFrom(matchedProsecutionCase.getProsecutor())
                         .build());

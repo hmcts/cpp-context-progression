@@ -10,9 +10,12 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.JurisdictionType.MAGISTRATES;
 import static uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory.createEnveloper;
@@ -395,6 +398,37 @@ public class ListCourtHearingTransformerTest {
                 .getProsecutionCaseIdentifier().getProsecutionAuthorityCode(), is(prosecutingAuth));
         assertThat(hearing.getCourtCentre().getName(), is("South Western (Lavender Hill)"));
 
+    }
+
+    @Test
+    void shouldPopulateCourtScheduleIdWhenNoHmiSlotsPresent() {
+        final UUID hearingId = randomUUID();
+        final UUID courtScheduleId = randomUUID();
+        final ZonedDateTime startTime = ZonedDateTime.now();
+        final JsonEnvelope envelopeReferral = createReferralEnvelope();
+        final NextHearing nextHearing = mock(NextHearing.class);
+        final List<RotaSlot> emptyHmiSlots = new ArrayList<>();
+        final CourtCentre mockCourtCentre = createCourtCentre();
+
+        when(nextHearing.getHmiSlots()).thenReturn(emptyHmiSlots);
+        when(nextHearing.getListedStartDateTime()).thenReturn(startTime);
+        when(nextHearing.getCourtScheduleId()).thenReturn(String.valueOf(courtScheduleId));
+        when(nextHearing.getCourtCentre()).thenReturn(mockCourtCentre);
+        when(progressionService.transformCourtCentre(eq(mockCourtCentre), any(JsonEnvelope.class))).thenReturn(mockCourtCentre);
+        when(nextHearing.getEstimatedMinutes()).thenReturn(30);
+        when(nextHearing.getType()).thenReturn(mock(HearingType.class));
+        when(nextHearing.getCourtCentre()).thenReturn(mockCourtCentre);
+
+        final ListCourtHearing result = listCourtHearingTransformer.transformSjpReferralNextHearing(
+                envelopeReferral, List.of(), hearingId, nextHearing, List.of()
+        );
+
+        final List<HearingListingNeeds> hearings = result.getHearings();
+        assertEquals(1, hearings.size());
+        final RotaSlot rotaSlot = hearings.get(0).getBookedSlots().get(0);
+
+        assertEquals(startTime, rotaSlot.getStartTime());
+        assertEquals(courtScheduleId.toString(), rotaSlot.getCourtScheduleId());
     }
 
     void validateDefendant(final Defendant defendant) {
@@ -1253,6 +1287,7 @@ public class ListCourtHearingTransformerTest {
                         .withAddress1("address1")
                         .withPostcode("CB2 5MN")
                         .build())
+                .withRoomId(randomUUID())
                 .withRoomName("CourtRoom 04")
                 .build();
     }

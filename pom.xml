@@ -71,7 +71,7 @@
         <usersgroups.version>17.0.33</usersgroups.version>
         <defence.version>17.0.61</defence.version>
         <referencedata.offence.version>17.0.32</referencedata.offence.version>
-        <coredomain.version>17.102.8</coredomain.version>
+        <coredomain.version>17.102.9</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.58</results.version>
