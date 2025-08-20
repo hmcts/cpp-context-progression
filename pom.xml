@@ -66,8 +66,8 @@
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
         <referencedata.version>17.0.111</referencedata.version>
-        <listing.version>17.0.102</listing.version>
-        <hearing.version>17.0.109</hearing.version>
+        <listing.version>17.0.107</listing.version>
+        <hearing.version>17.0.113</hearing.version>
         <usersgroups.version>17.0.33</usersgroups.version>
         <defence.version>17.0.61</defence.version>
         <referencedata.offence.version>17.0.32</referencedata.offence.version>
