@@ -116,6 +116,12 @@ public class ApplicationHelper {
                 matchers);
     }
 
+    public static String pollForApplicationStatus(final String applicationIds, final Matcher... matchers) {
+        return pollForResponse("/applications/application-status?applicationIds=" + applicationIds, "application/vnd.progression.query.application-status+json",
+                randomUUID().toString(),
+                matchers);
+    }
+
     private static String getCourtApplicationJson(final String applicationId, final String caseId, final String hearingId, final String masterDefendantId, final String fileName) throws IOException {
 
         String payload = Resources.toString(getResource(fileName), Charset.defaultCharset());

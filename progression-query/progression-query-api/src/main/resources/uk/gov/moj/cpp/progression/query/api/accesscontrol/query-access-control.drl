@@ -336,6 +336,15 @@ rule "progression - Query - API - application-extract"
     $outcome.setSuccess(true);
 end
 
+rule "progression - Query - API - application-status"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.application-status");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users", "Crown Court Admin", "Listing Officers", "Judiciary", "Case Officer"))
+  then
+    $outcome.setSuccess(true);
+end
+
 rule "progression - Query - API - progression.query.material-nows-content"
   when
     $outcome: Outcome();

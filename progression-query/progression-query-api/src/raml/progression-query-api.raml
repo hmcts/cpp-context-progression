@@ -628,6 +628,27 @@ protocols: [ HTTP, HTTPS ]
         body:
           application/vnd.progression.query.court-extract-application+json:
 
+/applications/application-status:
+  description: get application status for a given list of comma separated applicationIds
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application-status+json
+          name: progression.query.application-status
+      ...
+    queryParameters:
+        applicationIds:
+          description: comma separated list of application Ids
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: true
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.application-status+json:
+
+
 /applications/{applicationId}/notification-status:
   description: get notification status for application Id
   uriParameters:

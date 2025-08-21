@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -82,8 +83,11 @@ public class ApplicationQueryView {
     public static final String CASEID_SEARCH_PARAM = "caseId";
     private static final String APPLICATION_ID_NOT_FOUND = "### applicationId not found";
     private static final String NO_APPLICATION_FOUND_WITH_APPLICATION_ID = "### No application found with applicationId='{}'";
+    private static final String NO_APPLICATIONS_FOUND_WITH_APPLICATION_IDS = "### No applications found with applicationIds='{}'";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationQueryView.class);
     private static final String APPLICATION_ID = "applicationId";
+    private static final String APPLICATION_IDS = "applicationIds";
+    private static final String APPLICATION_STATUS = "applicationStatus";
     private static final String ID = "id";
     private static final String NOTIFICATION_ID = "notificationId";
     private static final String CASE_ID = "caseId";
@@ -222,7 +226,7 @@ public class ApplicationQueryView {
         final UUID systemUserId = systemUserProvider.getContextSystemUserId()
                 .orElseThrow(ApplicationQueryView::get);
 
-        final Optional<String> laaApplicationShortId = systemIdMapperClient.findBy(applicationId, TARGET_TYPE_APPLICATION, systemUserId )
+        final Optional<String> laaApplicationShortId = systemIdMapperClient.findBy(applicationId, TARGET_TYPE_APPLICATION, systemUserId)
                 .map(SystemIdMapping::getSourceId);
 
         if (laaApplicationShortId.isPresent()) {
@@ -309,6 +313,33 @@ public class ApplicationQueryView {
                 envelope.metadata(),
                 jsonObjectBuilder.build());
     }
+
+    @Handles("progression.query.application-status")
+    public JsonEnvelope getApplicationStatus(final JsonEnvelope envelope) {
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+
+        final List<UUID> applicationIdList = JsonObjects.getString(envelope.payloadAsJsonObject(), APPLICATION_IDS)
+                .map(applicationIdStr -> Arrays.stream(applicationIdStr.split(",")).map(UUID::fromString).toList())
+                .orElse(emptyList());
+
+        try {
+            final List<CourtApplicationEntity> courtApplicationEntityList = courtApplicationRepository.findByApplicationIds(applicationIdList);
+            final JsonArrayBuilder applicationStatusJsonArray = createArrayBuilder();
+            courtApplicationEntityList.forEach(courtApplicationEntity -> {
+                final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
+                applicationStatusJsonArray.add(Json.createObjectBuilder()
+                        .add(APPLICATION_ID, application.getString(ID))
+                        .add(APPLICATION_STATUS, application.getString(APPLICATION_STATUS)));
+            });
+            jsonObjectBuilder.add("applicationsWithStatus", applicationStatusJsonArray);
+        } catch (final NoResultException e) {
+            LOGGER.info(NO_APPLICATIONS_FOUND_WITH_APPLICATION_IDS, applicationIdList, e);
+        }
+        return envelopeFrom(
+                envelope.metadata(),
+                jsonObjectBuilder.build());
+    }
+
 
     @Handles("progression.query.application.summary")
     public JsonEnvelope getApplicationSummary(final JsonEnvelope envelope) {

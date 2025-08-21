@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 @RunWith(CdiTestRunner.class)
 public class CourtApplicationRepositoryTest {
 
-    private UUID APPLICATION_ID;
     private CourtApplicationEntity courtApplicationEntity;
 
     @Inject
@@ -28,19 +27,38 @@ public class CourtApplicationRepositoryTest {
 
     @Before
     public void setUp() {
-
-        APPLICATION_ID = randomUUID();
-        courtApplicationEntity = new CourtApplicationEntity();
-        courtApplicationEntity.setPayload(Json.createObjectBuilder().build().toString());
-        courtApplicationEntity.setApplicationId(APPLICATION_ID);
-        courtApplicationRepository.save(courtApplicationEntity);
+        courtApplicationRepository.findAll().forEach(entity -> {
+            courtApplicationRepository.remove(entity);
+        });
     }
 
     @Test
     public void shouldDeleteByApplicationId() {
-        courtApplicationRepository.removeByApplicationId(APPLICATION_ID);
+        final UUID applicationId = randomUUID();
+        saveApplication(applicationId);
+        courtApplicationRepository.removeByApplicationId(applicationId);
 
         final List<CourtApplicationEntity> actual = courtApplicationRepository.findAll();
         assertThat(actual.size(), is(0));
+    }
+
+    @Test
+    public void shouldGetApplicationsByListOfApplicationIds() {
+        final UUID applicationId1 = randomUUID();
+        saveApplication(applicationId1);
+
+        final UUID applicationId2 = randomUUID();
+        saveApplication(applicationId2);
+
+        final List<CourtApplicationEntity> actual = courtApplicationRepository.findByApplicationIds(List.of(applicationId1, applicationId2));
+
+        assertThat(actual.size(), is(2));
+    }
+
+    private void saveApplication(final UUID applicationId) {
+        courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload(Json.createObjectBuilder().build().toString());
+        courtApplicationEntity.setApplicationId(applicationId);
+        courtApplicationRepository.save(courtApplicationEntity);
     }
 }

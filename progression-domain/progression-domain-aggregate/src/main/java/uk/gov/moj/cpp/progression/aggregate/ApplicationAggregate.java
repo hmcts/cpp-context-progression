@@ -789,14 +789,18 @@ public class ApplicationAggregate implements Aggregate {
 
         final ApplicationStatus applicationStatusAfterHearingResulted = getApplicationStatusAfterHearingResulted(courtApplication);
 
-        if (FINALISED.equals(courtApplication.getApplicationStatus()) && isEmpty(courtApplication.getJudicialResults())) {
+        //when application was previously resulted with FINAL result and status updated as FINALISED
+        //however possible that subsequent hearings may have resulted only offences, in such case application must retain its previous
+        // status and results ref. CCT-2260
+        if ((this.applicationStatus == FINALISED || FINALISED.equals(courtApplication.getApplicationStatus()))
+                && isEmpty(courtApplication.getJudicialResults())) {
             streamBuilder.add((hearingResultedApplicationUpdated().withCourtApplication(
                             courtApplication()
                                     .withValuesFrom(courtApplication)
+                                    .withApplicationStatus(FINALISED)
                                     .withJudicialResults(this.courtApplication.getJudicialResults())
                                     .build())
                     .build()));
-
         } else {
             streamBuilder.add((hearingResultedApplicationUpdated().withCourtApplication(
                             courtApplication()
@@ -808,7 +812,6 @@ public class ApplicationAggregate implements Aggregate {
 
         if (nonNull(courtApplication.getCourtOrder()) && nonNull(courtApplication.getCourtOrder().getDefendantIds()) && applicationStatusAfterHearingResulted.equals(FINALISED)) {
             addDefendantTrialRecordSheetRequestedForApplication(courtApplication, streamBuilder);
-
         }
 
         return apply(streamBuilder.build());
@@ -833,7 +836,7 @@ public class ApplicationAggregate implements Aggregate {
     private ApplicationStatus getApplicationStatusAfterHearingResulted(final CourtApplication courtApplication) {
         return ofNullable(courtApplication.getJudicialResults()).stream().flatMap(Collection::stream)
                 .anyMatch(judicialResult -> JudicialResultCategory.FINAL.equals(judicialResult.getCategory()))
-                ? FINALISED : courtApplication.getApplicationStatus();
+                ? FINALISED : LISTED;
     }
 
     public Stream<Object> deleteHearingRelatedToCourtApplication(final UUID hearingId, final UUID courtApplicationId) {

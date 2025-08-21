@@ -134,6 +134,11 @@ public class ApplicationQueryApi {
         return applicationQueryView.getApplicationOnly(query);
     }
 
+    @Handles("progression.query.application-status")
+    public JsonEnvelope getApplicationStatus(final JsonEnvelope query) {
+        return applicationQueryView.getApplicationStatus(query);
+    }
+
     @Handles("progression.query.application.summary")
     public JsonEnvelope getApplicationSummary(final JsonEnvelope query) {
         return applicationQueryView.getApplicationSummary(query);

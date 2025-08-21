@@ -5,6 +5,7 @@ import org.apache.deltaspike.data.api.Modifying;
 import org.apache.deltaspike.data.api.Query;
 import org.apache.deltaspike.data.api.QueryParam;
 import org.apache.deltaspike.data.api.Repository;
+
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 
 import java.util.List;
@@ -24,4 +25,6 @@ public interface CourtApplicationRepository extends EntityRepository<CourtApplic
     @Query("delete from CourtApplicationEntity entity where entity.applicationId = :applicationId")
     void removeByApplicationId(@QueryParam("applicationId") UUID applicationId);
 
+    @Query("from CourtApplicationEntity entity where entity.applicationId in (:applicationIds)")
+    List<CourtApplicationEntity> findByApplicationIds(@QueryParam("applicationIds") List<UUID> applicationIds);
 }

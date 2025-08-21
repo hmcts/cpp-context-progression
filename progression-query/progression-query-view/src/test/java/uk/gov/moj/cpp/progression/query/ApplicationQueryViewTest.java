@@ -11,14 +11,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atMostOnce;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.lenient;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.query.view.utils.SchemaValidator.validateObjectAgainstSchema;
@@ -71,6 +71,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentReposi
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapperClient;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -95,8 +97,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapperClient;
-import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -156,7 +156,7 @@ public class ApplicationQueryViewTest {
 
     private static final UUID SYSTEM_USER_ID = UUID.randomUUID();
     private static final String TARGET_TYPE_APPLICATION = "APPLICATION_ID_LAA";
-    private static final String SOURCE_TYPE_APPLICATION= "LAA_APP_SHORT_ID";
+    private static final String SOURCE_TYPE_APPLICATION = "LAA_APP_SHORT_ID";
     private static final String LAA_APPLICATION_SHORTID = "A23ABCDEFGH";
 
     @BeforeEach
@@ -178,13 +178,13 @@ public class ApplicationQueryViewTest {
                         .withMasterDefendant(masterDefendant)
                         .build())
                 .withRespondents(Arrays.asList(CourtApplicationParty.courtApplicationParty()
-                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                        .withName(APPLICATION_PROSECUTOR_NAME)
-                                        .build())
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withName(APPLICATION_PROSECUTOR_NAME)
+                                .build())
                         .build(), CourtApplicationParty.courtApplicationParty()
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_ORG_NAME)
-                                        .build())
+                        .withOrganisation(Organisation.organisation()
+                                .withName(RESPONDENTS_ORG_NAME)
+                                .build())
                         .build()))
                 .build();
     }
@@ -227,13 +227,13 @@ public class ApplicationQueryViewTest {
                                 .build())
                         .build())
                 .withRespondents(Arrays.asList(CourtApplicationParty.courtApplicationParty()
-                                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
-                                        .withName(APPLICATION_PROSECUTOR_NAME)
-                                        .build())
+                        .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                                .withName(APPLICATION_PROSECUTOR_NAME)
+                                .build())
                         .build(), CourtApplicationParty.courtApplicationParty()
-                                .withOrganisation(Organisation.organisation()
-                                        .withName(RESPONDENTS_ORG_NAME)
-                                        .build())
+                        .withOrganisation(Organisation.organisation()
+                                .withName(RESPONDENTS_ORG_NAME)
+                                .build())
                         .build()))
                 .build();
     }
@@ -303,6 +303,37 @@ public class ApplicationQueryViewTest {
         final JsonEnvelope response = applicationQueryView.getApplicationOnly(jsonEnvelope);
 
         assertThat(response.payloadAsJsonObject().get("courtApplication"), notNullValue());
+    }
+
+    @Test
+    public void shouldFindApplicationStatusForGivenApplicationIdList() {
+        final UUID applicationId = randomUUID();
+        final UUID applicationId2 = randomUUID();
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("applicationIds", applicationId + "," + applicationId2).build();
+
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName("progression.query.application-only").build(),
+                jsonObject);
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload("{\"applicationStatus\":\"LISTED\",\"id\":\"" + applicationId + "\"}");
+        courtApplicationEntity.setAssignedUserId(UUID.randomUUID());
+
+        final CourtApplicationEntity courtApplicationEntity2 = new CourtApplicationEntity();
+        courtApplicationEntity2.setPayload("{\"applicationStatus\":\"FINALISED\",\"id\":\"" + applicationId2 + "\"}");
+        courtApplicationEntity2.setAssignedUserId(UUID.randomUUID());
+
+        when(courtApplicationRepository.findByApplicationIds(List.of(applicationId, applicationId2))).thenReturn(List.of(courtApplicationEntity, courtApplicationEntity2));
+        when(stringToJsonObjectConverter.convert(any(String.class))).thenReturn(applicationJson);
+        when(applicationJson.getString("id")).thenReturn(applicationId.toString(), applicationId2.toString());
+        when(applicationJson.getString("applicationStatus")).thenReturn("LISTED", "FINALISED");
+
+        final JsonEnvelope response = applicationQueryView.getApplicationStatus(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().getJsonArray("applicationsWithStatus").size(), is(2));
+        assertThat(response.payloadAsJsonObject().getJsonArray("applicationsWithStatus").getJsonObject(0).getString("applicationId"), is(applicationId.toString()));
+        assertThat(response.payloadAsJsonObject().getJsonArray("applicationsWithStatus").getJsonObject(0).getString("applicationStatus"), is("LISTED"));
     }
 
     @Test
@@ -629,7 +660,7 @@ public class ApplicationQueryViewTest {
                         asList(
                                 createHearingApplicationEntity(hearing1),
                                 createHearingApplicationEntity(hearing2)
-                ));
+                        ));
 
         when(stringToJsonObjectConverter.convert(hearing1.toString())).thenReturn(hearing1);
         when(stringToJsonObjectConverter.convert(hearing2.toString())).thenReturn(hearing2);
@@ -649,7 +680,7 @@ public class ApplicationQueryViewTest {
         assertThat(hearings.size(), is(2));
 
         final Optional<JsonObject> actualHearing1 = hearings.stream()
-                .map(h -> (JsonObject)h)
+                .map(h -> (JsonObject) h)
                 .filter(h -> hearingId1.toString().equals(h.getString("hearingId")))
                 .findFirst();
         assertThat(actualHearing1.isPresent(), is(true));
@@ -657,7 +688,7 @@ public class ApplicationQueryViewTest {
         assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
 
         final Optional<JsonObject> actualHearing2 = hearings.stream()
-                .map(h -> (JsonObject)h)
+                .map(h -> (JsonObject) h)
                 .filter(h -> hearingId2.toString().equals(h.getString("hearingId")))
                 .findFirst();
         assertThat(actualHearing2.isPresent(), is(true));
@@ -665,7 +696,7 @@ public class ApplicationQueryViewTest {
         assertThat(actualCourtCentre2, is(courtCentreId2.toString()));
     }
 
-    private JsonObject createHearingPayload(final UUID hearingId, final UUID courtCentreId){
+    private JsonObject createHearingPayload(final UUID hearingId, final UUID courtCentreId) {
         return createObjectBuilder()
                 .add("id", hearingId.toString())
                 .add("courtCentre", createObjectBuilder()
@@ -676,7 +707,7 @@ public class ApplicationQueryViewTest {
                 ).build();
     }
 
-    private HearingApplicationEntity createHearingApplicationEntity(final JsonObject hearingPayload){
+    private HearingApplicationEntity createHearingApplicationEntity(final JsonObject hearingPayload) {
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setPayload(hearingPayload.toString());
 

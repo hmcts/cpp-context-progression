@@ -33,25 +33,37 @@ public class TestHelper {
     private static final String MC_80527 = "MC80527";
     public static final String APPEARANCE_TO_MAKE_STATUTORY_DECLARATION = "Appearance to make statutory declaration";
 
-    private TestHelper(){
+    private TestHelper() {
         throw new IllegalStateException("Utility class");
     }
 
+    public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate, final ApplicationStatus applicationStatus) {
+        return getCourtApplicationBuilder(courtApplicationId)
+                .withConvictionDate(convictionDate)
+                .withApplicationStatus(applicationStatus)
+                .build();
+    }
+
     public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate) {
+        return getCourtApplicationBuilder(courtApplicationId)
+                .withConvictionDate(convictionDate)
+                .build();
+    }
+
+    private static CourtApplication.Builder getCourtApplicationBuilder(final UUID courtApplicationId) {
         return CourtApplication.courtApplication()
                 .withId(courtApplicationId)
                 .withType(CourtApplicationType.courtApplicationType()
                         .withType(APPEARANCE_TO_MAKE_STATUTORY_DECLARATION)
                         .withCode(MC_80527)
                         .build())
-                .withConvictionDate(convictionDate)
+                .withConvictionDate(LocalDate.now())
                 .withApplicant(CourtApplicationParty.courtApplicationParty()
                         .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                                 .withProsecutionAuthorityId(randomUUID())
                                 .build())
                         .build())
-                .withApplicationStatus(ApplicationStatus.IN_PROGRESS)
-                .build();
+                .withApplicationStatus(ApplicationStatus.IN_PROGRESS);
     }
 
     public static CourtApplication buildCourtapplication(final UUID courtApplicationId, final LocalDate convictionDate, final List<JudicialResult> judicialResults) {
@@ -72,7 +84,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static CourtApplication buildCourtapplicationWithCustodialEstablisment(final UUID courtApplicationId, final LocalDate convictionDate, final UUID masterDefendantId){
+    public static CourtApplication buildCourtapplicationWithCustodialEstablisment(final UUID courtApplicationId, final LocalDate convictionDate, final UUID masterDefendantId) {
         final CourtApplicationParty applicationParty = CourtApplicationParty.courtApplicationParty()
                 .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                         .withProsecutionAuthorityId(randomUUID())
@@ -83,7 +95,7 @@ public class TestHelper {
                                 .withPersonDetails(Person.person()
                                         .withFirstName("John")
                                         .withLastName("Smith")
-                                        .withDateOfBirth(LocalDate.of(1988,6,11))
+                                        .withDateOfBirth(LocalDate.of(1988, 6, 11))
                                         .build())
                                 .withCustodialEstablishment(custodialEstablishment()
                                         .withName("John Smith")
@@ -122,7 +134,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static CourtApplication buildCourtApplicationWithCustody(final UUID courtApplicationId, final UUID masterDefendantId, final LocalDate convictionDate, final String custody){
+    public static CourtApplication buildCourtApplicationWithCustody(final UUID courtApplicationId, final UUID masterDefendantId, final LocalDate convictionDate, final String custody) {
         final CourtApplicationParty applicationParty = CourtApplicationParty.courtApplicationParty()
                 .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
                         .withProsecutionAuthorityId(randomUUID())
@@ -133,7 +145,7 @@ public class TestHelper {
                                 .withPersonDetails(Person.person()
                                         .withFirstName("John")
                                         .withLastName("Smith")
-                                        .withDateOfBirth(LocalDate.of(1988,6,11))
+                                        .withDateOfBirth(LocalDate.of(1988, 6, 11))
                                         .build())
                                 .withCustodialEstablishment(custodialEstablishment()
                                         .withName("John Smith")
