@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Arrays.asList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -10,12 +11,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getHearingForDefendant;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.receiveRepresentationOrder;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordLAAReference;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordLAAReferenceWithUserId;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.*;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.getJsonObject;
 import static uk.gov.moj.cpp.progression.stub.DefenceStub.stubForAssociatedOrganisation;
@@ -30,8 +29,15 @@ import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisa
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetails;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetOrganisationDetailsForUser;
 import static uk.gov.moj.cpp.progression.stub.UsersAndGroupsStub.stubGetUsersAndGroupsQueryForSystemUsers;
+import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.setupAsAuthorisedUser;
 
+import com.google.common.collect.Lists;
+import com.jayway.jsonpath.ReadContext;
+import uk.gov.justice.core.courts.Hearing;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
 import java.io.IOException;
@@ -48,6 +54,9 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 public class RecordLAAReferenceIT extends AbstractIT {
     private static final String PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED = "public.progression.defendant-offences-changed";
@@ -63,6 +72,8 @@ public class RecordLAAReferenceIT extends AbstractIT {
 
     private String statusCode;
     private String userId;
+    private ProsecutionCaseUpdateDefendantHelper helper;
+    private final JsonObjectToObjectConverter jsonObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
 
     @BeforeAll
     public static void setupOnce() {
@@ -202,6 +213,89 @@ public class RecordLAAReferenceIT extends AbstractIT {
         pollProsecutionCasesProgressionFor(caseId, caseWithDefendantLaaReferenceWithDrawnMatchers);
     }
 
+    @Test
+    public void shouldSaveCustodyEstablishmentAfterLAA() throws Exception {
+        userId = randomUUID().toString();
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        helper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
+        statusCode = "GR";
+        stubGetOrganisationDetails(organisationId, organisationName);
+        stubGetUsersAndGroupsQueryForSystemUsers(userId);
+        setupAsAuthorisedUser(fromString(userId), "stub-data/usersgroups.get-specific-groups-by-user.json");
+        stubGetGroupsForLoggedInQuery(userId);
+        stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", "GRANTED", "Granted");
+
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+        resultHearingWithBailAndCustomEstablishment(hearingId);
+
+        verifyHearingWithMatchers(hearingId, new Matcher[]{
+                withJsonPath("$.hearingListingStatus", is("HEARING_RESULTED")),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].judicialResults.length()", is(1)),
+                withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].judicialResults[0].orderedDate", is("2025-08-05")),
+        });
+
+        stubGetOrganisationDetailForLAAContractNumber(laaContractNumber, randomUUID().toString(), "Smith Associates Ltd.");
+        stubGetUsersAndGroupsQueryForSystemUsers(userId);
+        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
+
+        final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+        final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED).getMessageConsumerClient();
+
+        //Record LAA reference
+        //When
+        stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", "GR", "Granted");
+        stubGetOrganisationDetailsForUser(userId, organisationId, organisationName);
+
+        try (Response withdrawResponse = recordLAAReferenceWithUserId(caseId, defendantId, offenceId, statusCode, "Granted", userId)) {
+            assertThat(withdrawResponse.getStatus(), equalTo(SC_ACCEPTED));
+        }
+
+        //Then
+        verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference);
+        verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated);
+
+        final Matcher[] caseWitLAAReferenceForOffenceMatchers = Lists.newArrayList
+                (withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusCode", is("GR")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusDescription", is("Granted")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusDate", is("1980-07-15")),
+                        withJsonPath("$.prosecutionCase.defendants[0].legalAidStatus", is("")),
+                        withJsonPath("$.prosecutionCase.id", equalTo(caseId))
+                ).toArray(Matcher[]::new);
+
+        pollProsecutionCasesProgressionFor(caseId, caseWitLAAReferenceForOffenceMatchers);
+
+        final JmsMessageConsumerClient messageConsumerClientPublicForRecordLAAReference2 = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_OFFENCES_UPDATED).getMessageConsumerClient();
+        final JmsMessageConsumerClient messageConsumerClientPublicForDefendantLegalAidStatusUpdated2 = newPublicJmsMessageConsumerClientProvider().withEventNames(PUBLIC_PROGRESSION_DEFENDANT_LEGALAID_STATUS_UPDATED).getMessageConsumerClient();
+
+        //Receive Representation Order
+        //when
+        try (Response responseForRepOrder = receiveRepresentationOrder(caseId, defendantId, offenceId, "GR", laaContractNumber, userId)) {
+            assertThat(responseForRepOrder.getStatus(), equalTo(SC_ACCEPTED));
+        }
+
+        //Then
+        verifyInMessagingQueueForDefendantOffenceUpdated(messageConsumerClientPublicForRecordLAAReference2);
+        verifyInMessagingQueueForDefendantLegalAidStatusUpdated(messageConsumerClientPublicForDefendantLegalAidStatusUpdated2);
+
+        final Matcher[] caseWithDefendantLaaReferenceWithDrawnMatchers = Lists.newArrayList(
+                withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusDate", is("2019-07-15")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusCode", is("GR")),
+                        withJsonPath("$.prosecutionCase.defendants[0].offences[0].laaApplnReference.statusDescription", is("Granted")),
+                        withJsonPath("$.prosecutionCase.defendants[0].legalAidStatus", is("")),
+                        withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
+                        withJsonPath("$.prosecutionCase.defendants[0].associationLockedByRepOrder", equalTo(true)),
+                        withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.custody", equalTo("HMP/YOI Bristol")),
+                        withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.code", equalTo("C")),
+                        withJsonPath("$.prosecutionCase.defendants[0].personDefendant.bailStatus.description", equalTo("Custody")),
+                        withJsonPath("$.prosecutionCase.defendants[0].personDefendant.custodialEstablishment.name", equalTo("HMP/YOI Bristol"))).toArray(Matcher[]::new);
+
+        pollProsecutionCasesProgressionFor(caseId, caseWithDefendantLaaReferenceWithDrawnMatchers);
+    }
+
     private Matcher[] getHearingMatchers() {
         final List<Matcher> matchers = newArrayList(withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].laaApplnReference.applicationReference", is("AB746921")),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].laaApplnReference.statusCode", is("G2")),
@@ -210,6 +304,42 @@ public class RecordLAAReferenceIT extends AbstractIT {
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].legalAidStatus", is("Granted"))
         );
         return matchers.toArray(new Matcher[0]);
+    }
+
+    private void resultHearingWithBailAndCustomEstablishment(final String hearingId){
+        final JsonObject hearingConfirmedJson =  stringToJsonObjectConverter.convert(
+                getPayload("public.listing.hearing-confirmed.json")
+                        .replaceAll("CASE_ID", caseId)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("COURT_CENTRE_ID", "88cdf36e-93e4-41b0-8277-17d9dba7f06f")
+                        .replaceAll("COURT_CENTRE_NAME", "Lavender Hill Magistrate Court")
+        );
+
+        final JsonObject hearingResultedJson =  stringToJsonObjectConverter.convert(
+                getPayload("public.events.hearing.hearing-resulted-with-custody.json")
+                        .replaceAll("CASE_ID", caseId)
+                        .replaceAll("HEARING_ID", hearingId)
+                        .replaceAll("DEFENDANT_ID", defendantId)
+                        .replaceAll("COURT_CENTRE_ID", "88cdf36e-93e4-41b0-8277-17d9dba7f06f")
+                        .replaceAll("COURT_CENTRE_NAME", "Lavender Hill Magistrate Court")
+        );
+
+        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata("public.listing.hearing-confirmed", userId), hearingConfirmedJson);
+        JmsMessageProducerClient messageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
+        messageProducerClient.sendMessage("public.listing.hearing-confirmed", publicEventEnvelope);
+        pollHearingWithStatusInitialised(hearingId);
+
+        final JsonEnvelope publicEventResultedEnvelope = envelopeFrom(buildMetadata("public.events.hearing.hearing-resulted", userId),
+                hearingResultedJson);
+        messageProducerClient.sendMessage("public.events.hearing.hearing-resulted", publicEventResultedEnvelope);
+    }
+
+    private Hearing verifyHearingWithMatchers(final String hearingId, final Matcher<? super ReadContext>[] matchers) {
+        final String hearingPayloadAsString = getHearingForDefendant(hearingId, matchers);
+        final JsonObject hearingJsonObject = getJsonObject(hearingPayloadAsString);
+        JsonObject hearingJson = hearingJsonObject.getJsonObject("hearing");
+        return jsonObjectConverter.convert(hearingJson, Hearing.class);
     }
 
 }

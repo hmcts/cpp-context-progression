@@ -615,9 +615,20 @@ public class CaseAggregate implements Aggregate {
                 final Set<uk.gov.justice.core.courts.Offence> offenceSet = new TreeSet<>((o1, o2) -> o1.getId().compareTo(o2.getId()));
                 offenceSet.addAll(prosecutionCaseOffencesUpdated.getDefendantCaseOffences().getOffences());
                 offenceSet.addAll(defendant.getOffences());
-
-                defendantList.add(uk.gov.justice.core.courts.Defendant.defendant().withValuesFrom(defendant)
-                        .withOffences(offenceSet.stream().collect(toList()))
+                Defendant.Builder builder = Defendant.defendant().withValuesFrom(defendant);
+                uk.gov.moj.cpp.progression.events.CustodialEstablishment custodialEstablishment = defendantCustodialEstablishmentMap.get(defendant.getId());
+                if(custodialEstablishment != null) {
+                    final uk.gov.justice.core.courts.CustodialEstablishment.Builder custodialEstablishmentBuilder = uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment();
+                    custodialEstablishmentBuilder.withCustody(custodialEstablishment.getCustody())
+                            .withId(custodialEstablishment.getId())
+                            .withName(custodialEstablishment.getName());
+                    Defendant latestDefendant = this.defendantsMap.get(defendant.getId());
+                    PersonDefendant personDefendant = PersonDefendant.personDefendant().withValuesFrom(defendant.getPersonDefendant())
+                            .withBailStatus(latestDefendant.getPersonDefendant().getBailStatus())
+                            .withCustodialEstablishment(custodialEstablishmentBuilder.build()).build();
+                    builder.withPersonDefendant(personDefendant);
+                }
+                defendantList.add(builder.withOffences(offenceSet.stream().collect(toList()))
                         .build());
             } else {
                 defendantList.add(defendant);

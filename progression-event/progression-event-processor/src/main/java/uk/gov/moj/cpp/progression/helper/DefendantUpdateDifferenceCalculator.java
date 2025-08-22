@@ -112,12 +112,12 @@ public class DefendantUpdateDifferenceCalculator {
     public DefendantUpdate calculateDefendantUpdate() {
         final PersonDefendant personDefendant = matchedDefendantPreviousVersion.getPersonDefendant();
         final Person personDetails = personDefendant.getPersonDetails();
-        return DefendantUpdate.defendantUpdate()
-                .withId(matchedDefendantPreviousVersion.getId())
+        DefendantUpdate.Builder defendantUpdateBuilder = DefendantUpdate.defendantUpdate();
+
+        defendantUpdateBuilder.withId(matchedDefendantPreviousVersion.getId())
                 .withMasterDefendantId(matchedDefendantPreviousVersion.getMasterDefendantId())
                 .withAliases(matchedDefendantPreviousVersion.getAliases())
                 .withAssociatedDefenceOrganisation(matchedDefendantPreviousVersion.getAssociatedDefenceOrganisation())
-                .withAssociatedPersons(calculateAssociatedPersons())
                 .withCroNumber(matchedDefendantPreviousVersion.getCroNumber())
                 .withDefenceOrganisation(matchedDefendantPreviousVersion.getDefenceOrganisation())
                 .withIsYouth(newValue(DefendantUpdate::getIsYouth))
@@ -135,8 +135,16 @@ public class DefendantUpdateDifferenceCalculator {
                 .withProsecutionAuthorityReference(matchedDefendantPreviousVersion.getProsecutionAuthorityReference())
                 .withProsecutionCaseId(matchedDefendantPreviousVersion.getProsecutionCaseId())
                 .withWitnessStatement(matchedDefendantPreviousVersion.getWitnessStatement())
-                .withWitnessStatementWelsh(matchedDefendantPreviousVersion.getWitnessStatementWelsh())
-                .build();
+                .withWitnessStatementWelsh(matchedDefendantPreviousVersion.getWitnessStatementWelsh());
+
+
+                List<AssociatedPerson> associatedPersonList = calculateAssociatedPersons();
+                if(nonNull(associatedPersonList) && !associatedPersonList.isEmpty())
+                {
+                    defendantUpdateBuilder.withAssociatedPersons(associatedPersonList);
+                }
+
+                return defendantUpdateBuilder.build();
     }
 
     private PersonDefendant getPersonDefendant(final PersonDefendant personDefendant, final Person personDetails) {
@@ -169,6 +177,10 @@ public class DefendantUpdateDifferenceCalculator {
         return personDefendantBuilder.build();
     }
 
+    /**
+     * It seems many unnecessary conditions are written, this needs understanding user journey / refactoring / regression testing.
+     * @return
+     */
     @SuppressWarnings("squid:S2589")
     public List<AssociatedPerson> calculateAssociatedPersons() {
         final List<AssociatedPerson> associatedPersons = matchedDefendantPreviousVersion.getAssociatedPersons();
@@ -193,7 +205,7 @@ public class DefendantUpdateDifferenceCalculator {
         // removed, (I know unnecessary conditions above, These are kept for clarification)
         if (previousParent.isPresent() && !nextParent.isPresent()) {
             LOGGER.info("AssociatedPersons validation DefendantUpdate is Not PARENT, Defendant have: {}", previousParent.get().getRole());
-            return associatedPersons.stream()
+            return checkNullList(associatedPersons)
                     .filter(associatedPerson -> !ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole()))
                     .collect(Collectors.toList());
         }
@@ -204,18 +216,26 @@ public class DefendantUpdateDifferenceCalculator {
                     .filter(associatedPerson -> (!ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole())))
                     .collect(Collectors.toList());
 
-            final Person newParentPerson = calculatePerson(
-                    defendantUpdate -> defendantUpdate.getAssociatedPersons().stream()
-                            .filter(associatedPerson -> (ROLE_PARENT.equalsIgnoreCase(associatedPerson.getRole()) || ROLE_PARENT_GUARDIAN.equalsIgnoreCase(associatedPerson.getRole())))
-                            .findFirst()
-                            .get().getPerson(),
-                    nextParent.get().getPerson());
-
-            newAssociatedPersons.add(AssociatedPerson.associatedPerson()
-                    .withPerson(newParentPerson)
-                    .withRole(ROLE_PARENT)
-                    .build());
-            LOGGER.info("calculateAssociatedPersons newAssociatedPersons: {}", newParentPerson);
+            Function<DefendantUpdate, Person> parentPersonFunction = defendantUpdate ->
+                    Optional.ofNullable(defendantUpdate)
+                            .map(DefendantUpdate::getAssociatedPersons)
+                            .map(this::checkNullList)
+                            .flatMap(list -> list
+                                    .filter(ap -> ROLE_PARENT.equalsIgnoreCase(ap.getRole()) ||
+                                            ROLE_PARENT_GUARDIAN.equalsIgnoreCase(ap.getRole()))
+                                    .map(AssociatedPerson::getPerson)
+                                    .findFirst()
+                            )
+                            .orElse(null);
+            final Person parentPerson = calculatePerson(parentPersonFunction, nextParent.get().getPerson());
+            LOGGER.info("calculateAssociatedPerson newAssociatedPersons: {}", parentPerson);
+            //Check if parent person to be set is not empty.
+            if (nonNull(parentPerson.getLastName()) && nonNull(parentPerson.getGender())){
+                newAssociatedPersons.add(AssociatedPerson.associatedPerson()
+                        .withPerson(parentPerson)
+                        .withRole(ROLE_PARENT)
+                        .build());
+            }
             return newAssociatedPersons;
         }
 

@@ -17,6 +17,7 @@ import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated;
 import uk.gov.justice.core.courts.UpdatedOrganisation;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -266,25 +268,38 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     }
 
     private List<Hearings> getFutureHearings(GetHearingsAtAGlance hearingsAtAGlance) {
-        return hearingsAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
-                .anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0
-                )).collect(Collectors.toList());
+
+        List<Hearings> hearingsWithSentForListingStatus = hearingsAtAGlance.getHearings()
+                .stream()
+                .filter(t -> t.getHearingListingStatus().equals(HearingListingStatus.SENT_FOR_LISTING))
+                .toList();
+
+        List<Hearings> hearings = hearingsAtAGlance.getHearings().stream()
+                .filter(t -> !t.getHearingListingStatus().equals(HearingListingStatus.SENT_FOR_LISTING))
+                .filter(h -> h.getHearingDays().stream().anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0))
+                .toList();
+
+        return Stream.concat(hearingsWithSentForListingStatus.stream(), hearings.stream()).toList();
     }
 
     private Optional<Map.Entry<UUID, ZonedDateTime>> getEarliestHearing(List<Hearings> futureHearings) {
         final Map<UUID, ZonedDateTime> hearingDaysMap = new HashMap<>();
 
-        for (final Hearings hearings : futureHearings) {
-            final List<HearingDay> futureHearingDays = hearings.getHearingDays().stream()
-                    .filter(hd -> hd.getSittingDay().toLocalDate().isAfter(LocalDate.now()))
-                    .collect(Collectors.toList());
+        for (final Hearings hearing : futureHearings) {
+            if (!(hearing.getHearingListingStatus() == HearingListingStatus.SENT_FOR_LISTING)) {
+                final List<HearingDay> futureHearingDays = hearing
+                        .getHearingDays().stream()
+                        .filter(hd -> hd.getSittingDay().toLocalDate().isAfter(LocalDate.now()))
+                        .collect(Collectors.toList());
 
-            if (!futureHearingDays.isEmpty()) {
-                hearingDaysMap.put(hearings.getId(), getEarliestHearingDay(futureHearingDays));
+                if (!futureHearingDays.isEmpty()) {
+                    hearingDaysMap.put(hearing.getId(), getEarliestHearingDay(futureHearingDays));
+                }
+                return hearingDaysMap.entrySet()
+                        .stream().min(Map.Entry.comparingByValue());
             }
         }
-        return hearingDaysMap.entrySet()
-                .stream().min(Map.Entry.comparingByValue());
+        return Optional.empty();
     }
 
     private static ZonedDateTime getEarliestHearingDay(final List<HearingDay> hearingDays) {

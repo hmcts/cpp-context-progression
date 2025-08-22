@@ -719,6 +719,40 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         verify(this.sender, times(3)).send(this.envelopeArgumentCaptor.capture());
     }
 
+    @Test
+    public void shouldSendUpdateDefendantAssociationNotification_whenFutureHearingExistsAndWEEKCommencingHearingPresent() {
+        final UUID PROSECUTOR_ID = randomUUID();
+        final String PROSECUTOR_CODE = "D24AW";
+        final String CASE_URN = "90GD8989122";
+        final UUID hearingId = randomUUID();
+        final ProsecutionCaseDefendantUpdated inputEvent = buildProsecutionCaseDefendantUpdatedObject(CASE_URN, PROSECUTOR_CODE, PROSECUTOR_ID, asList(hearingId));
+
+        when(objectToJsonObjectConverter.convert(Mockito.any())).thenReturn(payload);
+
+        final GetHearingsAtAGlance buildGetHearingsAtAGlanceObject = buildGetHearingsAtAGlance();
+        when(jsonObjectConverter.convert(payload, ProsecutionCaseDefendantUpdated.class)).thenReturn(inputEvent);
+        when(jsonObjectToObjectConverter.convert(any(), eq(GetHearingsAtAGlance.class))).thenReturn(buildGetHearingsAtAGlanceObject);
+        when(referenceDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getReferenceDataProsecutorResponse()));
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(getProsecutionCaseResponse()));
+        when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(Optional.empty());
+
+        final String testCPSEmail = "abc@xyz.com";
+        final JsonObject sampleJsonObject = createObjectBuilder().add("cpsEmailAddress", testCPSEmail).build();
+
+        when(referenceDataService.getOrganisationUnitById(any(), any(), any())).thenReturn(Optional.of(sampleJsonObject));
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder()
+                        .withUserId(randomUUID().toString())
+                        .withId(randomUUID())
+                        .withName("progression.event.prosecution-case-defendant-updated")
+                        .build(),
+                objectToJsonObjectConverter.convert(inputEvent));
+
+        this.eventProcessor.handleProsecutionCaseDefendantUpdatedEvent(jsonEnvelope);
+
+        verify(this.sender, times(2)).send(this.envelopeArgumentCaptor.capture());
+        verify(notificationService, times(1)).sendCPSNotification(any(), any());
+    }
 
     private JsonObject getProsecutionCaseResponse() {
         String response = null;
@@ -819,6 +853,19 @@ public class ProsecutionCaseDefendantUpdatedProcessorTest {
         final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectConverterSpy.convert(defendantJsonObject, GetHearingsAtAGlance.class);
         return hearingsAtAGlance;
     }
+
+    private GetHearingsAtAGlance buildGetHearingsAtAGlance() {
+        String defendantString = null;
+        try {
+            defendantString = Resources.toString(getResource("progression.event.prosecutioncase.defendantAssociation.hearingsataglance-date-withWeekCommencing.json"), defaultCharset());
+        } catch (final Exception ignored) {
+        }
+
+        final JsonObject defendantJsonObject = new StringToJsonObjectConverter().convert(defendantString);
+        final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectConverterSpy.convert(defendantJsonObject, GetHearingsAtAGlance.class);
+        return hearingsAtAGlance;
+    }
+
 
 
     private ProsecutionCaseDefendantUpdated buildProsecutionCaseDefendantUpdatedObject_WithOutProsecutionId(final String caseUrn, final String prosecutorCode, final UUID prosecutorId, List<UUID> hearingIdList) {
