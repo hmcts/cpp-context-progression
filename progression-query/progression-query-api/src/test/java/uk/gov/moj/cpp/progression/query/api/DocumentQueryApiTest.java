@@ -35,6 +35,8 @@ import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
 import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
 import java.util.HashMap;
 import java.util.List;

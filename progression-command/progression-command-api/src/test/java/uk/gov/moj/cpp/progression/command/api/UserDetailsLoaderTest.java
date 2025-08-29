@@ -18,15 +18,16 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.command.CommandClientTestBase;
 import uk.gov.moj.cpp.progression.command.api.vo.Permission;
 import uk.gov.moj.cpp.progression.command.api.vo.UserOrganisationDetails;
+import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.util.List;
 
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -203,4 +204,49 @@ public class UserDetailsLoaderTest {
 
         assertThrows(IllegalArgumentException.class, () ->userDetailsLoader.isDefenceClient(envelopeAddCourtDoc, requester));
     }
+
+    @Test
+    public void shouldReturnFalseForIsUserHasPermissionForApplicationTypeCodeWhenUsersGroupsQueryReturnFalse() {
+
+        final JsonObject responsePayload = FileUtil.jsonFromString(FileUtil
+                .getPayload("json/permission-for-application-type.json")
+                .replaceAll("%HAS_PERMISSION%", "false"));
+
+        final Metadata metadata = CommandClientTestBase.metadataFor("usersgroups.is-logged-in-user-has-permission-for-object", randomUUID().toString());
+        final String applicationTypeCode = "anyCode";
+
+        final Envelope envelope = Envelope.envelopeFrom(metadata, responsePayload);
+        when(requester.request(any(), any())).thenReturn(envelope);
+        final boolean isUserHasPermissionForApplicationTypeCode = userDetailsLoader.isUserHasPermissionForApplicationTypeCode(metadata, requester, applicationTypeCode);
+        assertThat(isUserHasPermissionForApplicationTypeCode, is(false));
+    }
+
+    @Test
+    public void shouldReturnTrueForIsUserHasPermissionForApplicationTypeCodeWhenUsersGroupsQueryReturnEmptyResponse() {
+
+        final Metadata metadata = CommandClientTestBase.metadataFor("usersgroups.is-logged-in-user-has-permission-for-object", randomUUID().toString());
+        final String applicationTypeCode = "anyCode";
+
+        final Envelope envelope = Envelope.envelopeFrom(metadata, createObjectBuilder().build());
+        when(requester.request(any(), any())).thenReturn(envelope);
+        final boolean isUserHasPermissionForApplicationTypeCode = userDetailsLoader.isUserHasPermissionForApplicationTypeCode(metadata, requester, applicationTypeCode);
+        assertThat(isUserHasPermissionForApplicationTypeCode, is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueForIsUserHasPermissionForApplicationTypeCodeWhenUsersGroupsQueryReturnTrue() {
+
+        final JsonObject responsePayload = FileUtil.jsonFromString(FileUtil
+                .getPayload("json/permission-for-application-type.json")
+                .replaceAll("%HAS_PERMISSION%", "true"));
+
+        final Metadata metadata = CommandClientTestBase.metadataFor("usersgroups.is-logged-in-user-has-permission-for-object", randomUUID().toString());
+        final String applicationTypeCode = "anyCode";
+
+        final Envelope envelope = Envelope.envelopeFrom(metadata, responsePayload);
+        when(requester.request(any(), any())).thenReturn(envelope);
+        final boolean isUserHasPermissionForApplicationTypeCode = userDetailsLoader.isUserHasPermissionForApplicationTypeCode(metadata, requester, applicationTypeCode);
+        assertThat(isUserHasPermissionForApplicationTypeCode, is(true));
+    }
+
 }

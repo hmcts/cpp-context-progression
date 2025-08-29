@@ -39,6 +39,8 @@ import uk.gov.moj.cpp.progression.query.CourtDocumentQueryView;
 import uk.gov.moj.cpp.progression.query.ProsecutionCaseQuery;
 import uk.gov.moj.cpp.progression.query.SharedCourtDocumentsQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.util.ArrayList;

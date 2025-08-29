@@ -11,7 +11,7 @@ import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.MetadataBuilder;
-import uk.gov.moj.cpp.progression.query.api.UserGroupsDetails;
+import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -41,6 +41,25 @@ public class UserDetailsLoader {
     public static final String ORGANISATION_NAME = "organisationName";
     public static final String USER_ID_NOT_SUPPLIED_FOR_THE_USER_GROUPS_LOOK_UP = "User id Not Supplied for the UserGroups look up";
     private static final String DEFENDANT_ID = "defendantId";
+    private static final String ACCESS_TO_STANDALONE_APPLICATION = "Access to Standalone Application";
+
+
+    public static boolean isUserHasPermissionForApplicationTypeCode(final Metadata metadata, final Requester requester, final String applicationTypeCode) {
+        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder()
+                .add(ACTION, ACCESS_TO_STANDALONE_APPLICATION)
+                .add(OBJECT, applicationTypeCode)
+                .build();
+        final MetadataBuilder metadataWithActionName = Envelope.metadataFrom(metadata).withName("usersgroups.is-logged-in-user-has-permission-for-object");
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);
+        final Envelope<JsonObject> response = requester.request(requestEnvelope, JsonObject.class);
+
+        if (response.payload().isEmpty()) {
+            return true;
+        }
+        return response.payload().getBoolean("hasPermission");
+
+    }
 
 
     public List<Permission> getPermissions(final Metadata metadata, final Requester requester, String defendantId) {

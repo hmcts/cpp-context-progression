@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.query;
 
 import static java.lang.Boolean.TRUE;
-import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
@@ -19,6 +18,7 @@ import static uk.gov.justice.services.messaging.JsonObjects.getLong;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.core.courts.CourtDocumentSummary;
@@ -30,6 +30,7 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -44,11 +45,14 @@ import uk.gov.moj.cpp.progression.domain.pojo.SearchCriteria;
 import uk.gov.moj.cpp.progression.enums.SortField;
 import uk.gov.moj.cpp.progression.enums.SortOrder;
 import uk.gov.moj.cpp.progression.json.schemas.DocumentTypeAccessReferenceData;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 import uk.gov.moj.cpp.progression.query.view.service.CourtDocumentIndexService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.NotificationStatusEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CpsSendNotificationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.NotificationStatusRepository;
@@ -65,6 +69,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -81,6 +86,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
+import javax.persistence.NoResultException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
@@ -166,6 +172,9 @@ public class CourtDocumentQueryView {
     private ProsecutionCaseRepository prosecutionCaseRepository;
 
     @Inject
+    private CourtApplicationRepository courtApplicationRepository;
+
+    @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
 
     @Inject
@@ -173,6 +182,9 @@ public class CourtDocumentQueryView {
 
     @Inject
     private CpsSendNotificationRepository cpsSendNotificationRepository;
+    
+    @Inject
+    private UserDetailsLoader userDetailsLoader;
 
     @Handles(COURT_DOCUMENT_SEARCH_NAME)
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
@@ -293,6 +305,11 @@ public class CourtDocumentQueryView {
 
         if (isNotEmpty(strApplicationIds)) {
             foundSearchParameter = true;
+
+            if(isNotAuthorisedToViewMaterials(envelope.metadata(), commaSeparatedUuidParam2UUIDs(strApplicationIds))){
+                throw new ForbiddenRequestException("User does not have permission to view material list!");
+            }
+
             final List<CourtDocumentEntity> byApplicationIds = courtDocumentRepository
                     .findByApplicationIds(commaSeparatedUuidParam2UUIDs(strApplicationIds));
 
@@ -377,6 +394,26 @@ public class CourtDocumentQueryView {
         final JsonObject resultJson = objectToJsonObjectConverter.convert(result);
 
         return envelopeFrom(envelope.metadata(), resultJson);
+    }
+
+    private boolean isNotAuthorisedToViewMaterials(final Metadata metadata, final List<UUID> applicationIds) {
+        if(CollectionUtils.isEmpty(applicationIds)){
+            return false;
+        }
+        return applicationIds.stream()
+                .map(this::getCourtApplication)
+                .filter(Objects::nonNull)
+                .anyMatch(courtApplication -> !userDetailsLoader.isUserHasPermissionForApplicationTypeCode(metadata, courtApplication.getType().getCode()));
+    }
+
+    private CourtApplication getCourtApplication(final UUID applicationId) {
+        try {
+            final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
+            final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
+            return jsonObjectToObjectConverter.convert(application, CourtApplication.class);
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     @Handles(COURT_DOCUMENTS_SEARCH_NAME_ALL)

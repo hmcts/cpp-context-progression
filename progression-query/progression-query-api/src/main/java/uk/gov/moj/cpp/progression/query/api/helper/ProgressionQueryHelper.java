@@ -4,9 +4,9 @@ import static java.util.UUID.fromString;
 
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.query.api.UserDetailsLoader;
-import uk.gov.moj.cpp.progression.query.api.vo.Permission;
-import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.Permission;
+import uk.gov.moj.cpp.progression.query.view.UserOrganisationDetails;
 
 import java.util.List;
 import java.util.Map;

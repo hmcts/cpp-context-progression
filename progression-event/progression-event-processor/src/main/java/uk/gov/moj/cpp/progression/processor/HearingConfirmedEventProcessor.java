@@ -91,7 +91,6 @@ import javax.json.JsonObject;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 @SuppressWarnings({"squid:S3655", "squid:S2629", "squid:CallToDeprecatedMethod", "pmd:BeanMembersShouldSerialize"})
@@ -126,8 +125,11 @@ public class HearingConfirmedEventProcessor {
     public static final String JURISDICTION_TYPE = "jurisdictionType";
     public static final String COURT_APPLICATION = "courtApplication";
     public static final String COURT_CENTRE = "courtCentre";
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(HearingConfirmedEventProcessor.class.getName());
+    public static final String WARRANT_OF_FURTHER_DETENTION_HEARING_TYPE_ID = "638ced9d-3f95-4e99-b27b-47fa5a2c6add";
+    public static final String PRE_CHARGE_BAIL_HEARING_TYPE_ID = "3a2d160f-363b-4360-96e1-0007a400a64c";
+
+    @Inject
+    private Logger LOGGER;
     @Inject
     ProgressionService progressionService;
 
@@ -220,14 +222,8 @@ public class HearingConfirmedEventProcessor {
             final List<CourtApplication> courtApplications = ofNullable(hearing.getCourtApplications()).orElse(new ArrayList<>());
 
             courtApplications.forEach(courtApplication -> LOGGER.info("sending notification for Application : {}", objectToJsonObjectConverter.convert(courtApplication)));
-            courtApplications.forEach(
-            courtApplication -> sender.send(enveloper.withMetadataFrom(jsonEnvelope, PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION)
-                    .apply(objectToJsonObjectConverter.convert( createObjectBuilder()
-                            .add(HEARING_START_DATE_TIME, hearingStartDateTime.toString())
-                            .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString())
-                            .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
-                            .add(COURT_CENTRE, objectToJsonObjectConverter.convert(hearing.getCourtCentre())).build()))));
 
+            sendApplicationNotification(jsonEnvelope, confirmedHearing.getType().getId().toString(), hearing, hearingStartDateTime, courtApplications);
 
             if (isNotEmpty(applicationIds)) {
                 LOGGER.info("Based on JudicialResults of the application, update application status to LISTED for Applications with ids {}, in associate Hearing id: {}  ", applicationIds, hearing.getId());
@@ -269,6 +265,41 @@ public class HearingConfirmedEventProcessor {
         } else {
             LOGGER.info("Notification is not sent for HearingId {}  , Notification sent flag {}", confirmedHearing.getId(), false);
         }
+    }
+
+    private void sendApplicationNotification(final JsonEnvelope jsonEnvelope, final String hearingTypeId, final Hearing hearing,
+                                             final ZonedDateTime hearingStartDateTime, final List<CourtApplication> courtApplications) {
+        boolean isWarrantHearingType = WARRANT_OF_FURTHER_DETENTION_HEARING_TYPE_ID.equalsIgnoreCase(hearingTypeId);
+        boolean isPCBHearingType = PRE_CHARGE_BAIL_HEARING_TYPE_ID.equalsIgnoreCase(hearingTypeId);
+
+        if (!isWarrantHearingType && !isPCBHearingType) {
+            LOGGER.info("Sending notification as hearing type is not : Warrant of Further Detention or Pre-Charge Bail");
+            courtApplications.forEach(courtApplication ->
+                    sendNotification(jsonEnvelope, hearing, hearingStartDateTime, courtApplication)
+            );
+        }
+    }
+
+    private void sendNotification(final JsonEnvelope jsonEnvelope,
+                                  final Hearing hearing,
+                                  final ZonedDateTime hearingStartDateTime,
+                                  final CourtApplication courtApplication) {
+
+        JsonObject payload = createObjectBuilder()
+                .add(HEARING_START_DATE_TIME, hearingStartDateTime.toString())
+                .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString())
+                .add(COURT_APPLICATION, objectToJsonObjectConverter.convert(courtApplication))
+                .add(COURT_CENTRE, objectToJsonObjectConverter.convert(hearing.getCourtCentre()))
+                .build();
+
+        sender.send(enveloper.withMetadataFrom(jsonEnvelope, PRIVATE_PROGRESSION_COMMAND_SEND_NOTIFICATION_FOR_AUTO_APPLICATION)
+                .apply(objectToJsonObjectConverter.convert(payload)));
+    }
+
+    private boolean hasNextHearing(CourtApplication courtApplication) {
+        return courtApplication.getJudicialResults() != null &&
+                courtApplication.getJudicialResults().stream()
+                        .anyMatch(result -> result.getNextHearing() != null);
     }
 
     @SuppressWarnings("squid:S1188")

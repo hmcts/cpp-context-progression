@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.query.view;
 
 import static java.lang.String.format;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
@@ -263,38 +264,67 @@ public class ApplicationAtAGlanceHelper {
         final Organisation organisation = respondent.getOrganisation();
         final Person personDetails = respondent.getPersonDetails();
         if (nonNull(organisation)) {
-            respondentDetailsBuilder.withName(organisation.getName());
-            respondentDetailsBuilder.withAddress(organisation.getAddress());
-            respondentDetailsBuilder.withIsProbationBreach(organisation.getIsProbationBreach());
-            final List<AssociatedPerson> organisationPersons = respondent.getOrganisationPersons();
-            if (nonNull(organisationPersons)) {
-                respondentDetailsBuilder.withRespondentRepresentatives(getRespondentRepresentatives(organisationPersons));
-            }
+            updateOrganisationDetails(respondent, respondentDetailsBuilder, organisation);
         } else if (nonNull(personDetails)) {
-            respondentDetailsBuilder.withName(getName(personDetails));
-            respondentDetailsBuilder.withAddress(personDetails.getAddress());
-            final Organisation representationOrganisation = respondent.getRepresentationOrganisation();
-            if (nonNull(representationOrganisation)) {
-                respondentDetailsBuilder.withRespondentRepresentatives(getRespondentRepresentatives(representationOrganisation));
-            }
+            updatePersonDetails(respondent, respondentDetailsBuilder, personDetails);
         } else if (nonNull(respondent.getMasterDefendant())) {
-            final Optional<PersonDefendant> personDefendantDetails = ofNullable(respondent.getMasterDefendant().getPersonDefendant());
-            final Optional<LegalEntityDefendant> organisationDefendantDetails = ofNullable(respondent.getMasterDefendant().getLegalEntityDefendant());
-            if (personDefendantDetails.isPresent()) {
-                respondentDetailsBuilder.withName(getName(personDefendantDetails.get().getPersonDetails()));
-                respondentDetailsBuilder.withAddress(personDefendantDetails.get().getPersonDetails().getAddress());
-            } else if (organisationDefendantDetails.isPresent()) {
-                respondentDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
-                respondentDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
-            }
+            updateRespondentDetails(respondent, respondentDetailsBuilder);
         } else if (nonNull(respondent.getProsecutingAuthority())) {
             updateRespondentDetailsWithProsecutingAuthority(respondent, respondentDetailsBuilder);
         }
-        respondentDetailsBuilder.withIsSubject(nonNull(subject) && nonNull(subject.getMasterDefendant()) && nonNull(respondent.getMasterDefendant()) && respondent.getMasterDefendant().getMasterDefendantId().equals(subject.getMasterDefendant().getMasterDefendantId()));
+        if(nonNull(subject)) {
+            updateIsSubjectFlag(respondent, subject, respondentDetailsBuilder);
+        }
         if(nonNull(respondent.getUpdatedOn())){
             respondentDetailsBuilder.withUpdatedOn(respondent.getUpdatedOn());
         }
         return respondentDetailsBuilder.build();
+    }
+
+    private void updateRespondentDetails(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder) {
+        final Optional<PersonDefendant> personDefendantDetails = ofNullable(respondent.getMasterDefendant().getPersonDefendant());
+        final Optional<LegalEntityDefendant> organisationDefendantDetails = ofNullable(respondent.getMasterDefendant().getLegalEntityDefendant());
+        if (personDefendantDetails.isPresent()) {
+            respondentDetailsBuilder.withName(getName(personDefendantDetails.get().getPersonDetails()));
+            respondentDetailsBuilder.withAddress(personDefendantDetails.get().getPersonDetails().getAddress());
+        } else if (organisationDefendantDetails.isPresent()) {
+            respondentDetailsBuilder.withName(organisationDefendantDetails.get().getOrganisation().getName());
+            respondentDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
+        }
+    }
+
+    private void updatePersonDetails(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder, Person personDetails) {
+        respondentDetailsBuilder.withName(getName(personDetails));
+        respondentDetailsBuilder.withAddress(personDetails.getAddress());
+        if(nonNull(personDetails.getDateOfBirth())){
+            respondentDetailsBuilder.withDateOfBirth(personDetails.getDateOfBirth());
+        }
+        final Organisation representationOrganisation = respondent.getRepresentationOrganisation();
+        if (nonNull(representationOrganisation)) {
+            respondentDetailsBuilder.withRespondentRepresentatives(getRespondentRepresentatives(representationOrganisation));
+        }
+    }
+
+    private void updateOrganisationDetails(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder, Organisation organisation) {
+        respondentDetailsBuilder.withName(organisation.getName());
+        respondentDetailsBuilder.withAddress(organisation.getAddress());
+        respondentDetailsBuilder.withIsProbationBreach(organisation.getIsProbationBreach());
+        final List<AssociatedPerson> organisationPersons = respondent.getOrganisationPersons();
+        if (nonNull(organisationPersons)) {
+            respondentDetailsBuilder.withRespondentRepresentatives(getRespondentRepresentatives(organisationPersons));
+        }
+    }
+
+    private static void updateIsSubjectFlag(CourtApplicationParty respondent, CourtApplicationParty subject, RespondentDetails.Builder respondentDetailsBuilder) {
+        if (isNull(subject.getMasterDefendant()) && isNull(respondent.getMasterDefendant())
+                && nonNull(subject.getId()) && nonNull(respondent.getId())) {
+            //added this change for standalone application as the standalone doesn't have masterDefendant object in  subject, applicant and respondent.
+            respondentDetailsBuilder.withIsSubject(subject.getId().equals(respondent.getId()));
+        } else {
+            respondentDetailsBuilder.withIsSubject(nonNull(subject.getMasterDefendant())
+                    && nonNull(respondent.getMasterDefendant())
+                    && respondent.getMasterDefendant().getMasterDefendantId().equals(subject.getMasterDefendant().getMasterDefendantId()));
+        }
     }
 
     private void updateRespondentDetailsWithProsecutingAuthority(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder) {

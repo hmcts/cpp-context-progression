@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,7 +48,9 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.random.StringGenerator;
@@ -55,6 +58,7 @@ import uk.gov.moj.cpp.progression.domain.constant.NotificationStatus;
 import uk.gov.moj.cpp.progression.domain.constant.NotificationType;
 import uk.gov.moj.cpp.progression.query.utils.converters.laa.ApplicationLaaConverter;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 import uk.gov.moj.cpp.progression.query.view.utils.FileUtil;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
@@ -83,6 +87,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.persistence.NoResultException;
@@ -158,6 +164,10 @@ public class ApplicationQueryViewTest {
     private static final String TARGET_TYPE_APPLICATION = "APPLICATION_ID_LAA";
     private static final String SOURCE_TYPE_APPLICATION = "LAA_APP_SHORT_ID";
     private static final String LAA_APPLICATION_SHORTID = "A23ABCDEFGH";
+    @Mock
+    private Requester requester;
+    @Mock
+    private UserDetailsLoader userDetailsLoader;
 
     @BeforeEach
     void setUp() {
@@ -304,6 +314,29 @@ public class ApplicationQueryViewTest {
 
         assertThat(response.payloadAsJsonObject().get("courtApplication"), notNullValue());
     }
+
+    @Test
+    public void shouldThrowForbiddenRequestExceptionWhenGetApplicationAtAGlanceIsRestrictedForTheUser() {
+        final UUID applicationId = randomUUID();
+        final JsonObject jsonObject = createObjectBuilder()
+                .add("applicationId", applicationId.toString()).build();
+        final JsonEnvelope jsonEnvelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID()).withName("progression.query.application.aaag").build(),
+                jsonObject);
+
+        final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
+        courtApplicationEntity.setPayload("{\"id\": \"9aec6dcc-564c-11ea-8e2d-0242ac130003\"}");
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(stringToJsonObjectConverter.convert(any())).thenReturn(applicationJson);
+        CourtApplication courtApplication = CourtApplication.courtApplication()
+                .withId(applicationId)
+                .withType(CourtApplicationType.courtApplicationType().withCode("PL02134").build()).build();
+        when(jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class)).thenReturn(courtApplication);
+        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(false);
+
+        assertThrows(ForbiddenRequestException.class, () -> applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope));
+    }
+
 
     @Test
     public void shouldFindApplicationStatusForGivenApplicationIdList() {

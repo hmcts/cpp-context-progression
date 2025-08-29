@@ -1,12 +1,19 @@
 package uk.gov.moj.cpp.progression.command;
 
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
@@ -30,6 +37,9 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
     @Mock
     private Sender sender;
 
+    @Mock
+    private Requester requester;
+
     @Captor
     private ArgumentCaptor<DefaultEnvelope> envelopeCaptor;
 
@@ -40,6 +50,11 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
     public void shouldInitialCourtProceedingsForCourtApplication() {
         final JsonEnvelope commandEnvelope = buildEnvelope();
 
+        final Envelope queryResponseEnvelope = mock(Envelope.class);
+        when(queryResponseEnvelope.payload()).thenReturn(createObjectBuilder().add("hasPermission", true).build());
+        when(requester.request(any(), any())).thenReturn(queryResponseEnvelope);
+
+
         initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope);
 
         verify(sender, times(1)).send(envelopeCaptor.capture());
@@ -48,6 +63,17 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
 
         assertThat(newCommand.metadata().name(), is("progression.command.initiate-court-proceedings-for-application"));
         assertThat(newCommand.payload(), equalTo(commandEnvelope.payloadAsJsonObject()));
+    }
+
+    @Test
+    public void shouldThrowForbiddenRequestExceptionForInitialCourtProceedingsForCourtApplicationWhenUserNotAuthorisedForTheApplicationType() {
+        final JsonEnvelope commandEnvelope = buildEnvelope();
+
+        final Envelope queryResponseEnvelope = mock(Envelope.class);
+        when(queryResponseEnvelope.payload()).thenReturn(createObjectBuilder().add("hasPermission", false).build());
+        when(requester.request(any(), any())).thenReturn(queryResponseEnvelope);
+
+        assertThrows(ForbiddenRequestException.class, () -> initiateCourtApplicationProceedingsCommandApi.initiateCourtApplicationProceedings(commandEnvelope));
     }
 
     @Test
@@ -79,8 +105,11 @@ public class InitiateCourtApplicationProceedingsCommandApiTest {
     }
 
     private JsonEnvelope buildEnvelope() {
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("courtApplication", Json.createObjectBuilder().add("id", randomUUID().toString()).build())
+        final JsonObject payload = createObjectBuilder()
+                .add("courtApplication", createObjectBuilder()
+                        .add("id", randomUUID().toString())
+                        .add("type", createObjectBuilder().add("code", "anyCode"))
+                        .build())
                 .build();
 
         final Metadata metadata = Envelope

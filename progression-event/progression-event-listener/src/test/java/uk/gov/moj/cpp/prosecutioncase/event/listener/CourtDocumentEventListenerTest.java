@@ -2,10 +2,12 @@ package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
 import static java.time.ZonedDateTime.now;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,12 +39,16 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
+import uk.gov.moj.cpp.util.FileUtil;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -60,6 +66,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,8 +80,8 @@ public class CourtDocumentEventListenerTest {
     @Mock
     private ObjectToJsonObjectConverter objectToJsonObjectConverter;
 
-    @Mock
-    private StringToJsonObjectConverter stringToJsonObjectConverter;
+    @Spy
+    private StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();;
 
     @Mock
     private CourtDocumentRepository repository;
@@ -123,6 +130,10 @@ public class CourtDocumentEventListenerTest {
 
     @Mock
     private DefendantDocument defendantDocument;
+    @Mock
+    private NowDocument nowDocument;
+    @Mock
+    private CourtApplicationRepository applicationRepository;
 
     @InjectMocks
     private CourtDocumentEventListener eventListener;
@@ -155,25 +166,6 @@ public class CourtDocumentEventListenerTest {
 
                 ).build();
         return courtDocument;
-    }
-
-    private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return Json.createObjectBuilder()
-                .add("courtDocumentTypeRBAC",
-                        Json.createObjectBuilder()
-                                .add("uploadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer").build()).build())
-                                .add("readUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build())
-                                .add("downloadUserGroups", createArrayBuilder().add(buildUserGroup("Listing Officer")).add(buildUserGroup("Magistrates")).build()).build())
-                .add("seqNum",10)
-                .build();
-    }
-
-    private static JsonObject createDocumentTypeRBAC() {
-        return Json.createObjectBuilder()
-                .add("canCreateUserGroups", Json.createArrayBuilder().add("Listing Officer"))
-                .add("canReadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
-                .add("canDownloadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
-                .build();
     }
 
     private static DocumentTypeRBAC createDocumentTypeRBACObject() {
@@ -260,12 +252,95 @@ public class CourtDocumentEventListenerTest {
                 entity.getContainsFinancialMeans());
     }
 
-    public JsonObject enrich(final JsonObject source, final String key, final JsonObject value) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
-        builder.add(key, value);
-        source.entrySet().
-                forEach(e -> builder.add(e.getKey(), e.getValue()));
-        return builder.build();
+    @Test
+    public void shouldHandleCourtDocumentCreatedEventForStandaloneApplication() {
+
+        final JsonObject courtDocumentPayload = stringToJsonObjectConverter.convert(FileUtil.getPayload("json/progression.event.court-document-created_for-standalone-application.json")
+                .replaceAll("%COURT_DOCUMENT_ID%", CASE_DOCUMENT_ID)
+                .replaceAll("%CASE_ID%", CASE_DOCUMENT_ID)
+        );
+
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                metadataWithRandomUUID("progression.event.court-document-created"),
+                courtDocumentPayload);
+
+        final Material material = new Material("Generated",
+                fromString("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"),
+                "TestPDF",
+                null,
+                null,
+                null, Arrays.asList("TestUser"));
+        final List<Material> materialIds = Arrays.asList(material);
+
+        //Setting all the conditions on the Mocks to behave as expected for the code to execute
+        when(jsonObjectToObjectConverter.convert(requestMessage.payloadAsJsonObject(), CourtsDocumentCreated.class))
+                .thenReturn(courtsDocumentCreated);
+        when(courtsDocumentCreated.getCourtDocument()).thenReturn(courtDocument);
+        when(courtDocument.getCourtDocumentId()).thenReturn(fromString(CASE_DOCUMENT_ID));
+
+        when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
+        when(documentCategory.getNowDocument()).thenReturn(nowDocument);
+        when(nowDocument.getProsecutionCases()).thenReturn(singletonList(fromString(CASE_DOCUMENT_ID)));
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(courtDocumentPayload);
+        when(courtDocument.getMaterials()).thenReturn(materialIds);
+        when(courtDocument.getContainsFinancialMeans()).thenReturn(null);
+        when(applicationRepository.findByApplicationId(fromString(CASE_DOCUMENT_ID))).thenReturn(new CourtApplicationEntity());
+
+        eventListener.processCourtDocumentCreated(requestMessage);
+
+        verify(repository, times(1)).save(argumentCaptorForCourtDocumentEntity.capture());
+        verify(courtDocumentMaterialRepository, times(1)).save(argumentCaptorForCourtDocumentMaterialEntity.capture());
+
+        final CourtDocumentEntity entity = argumentCaptorForCourtDocumentEntity.getValue();
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = entity.getIndices().iterator().next();
+        assertThat(courtDocumentIndexEntity.getApplicationId(), is(fromString(CASE_DOCUMENT_ID)));
+        assertThat(courtDocumentIndexEntity.getProsecutionCaseId(), nullValue());
+
+    }
+
+    @Test
+    public void shouldHandleCourtDocumentCreatedEventWhenNowsDocumentGeneratedForCase() {
+
+        final JsonObject courtDocumentPayload = stringToJsonObjectConverter.convert(FileUtil.getPayload("json/progression.event.court-document-created_for-standalone-application.json")
+                .replaceAll("%COURT_DOCUMENT_ID%", CASE_DOCUMENT_ID)
+                .replaceAll("%CASE_ID%", CASE_DOCUMENT_ID)
+        );
+
+        final JsonEnvelope requestMessage = JsonEnvelope.envelopeFrom(
+                metadataWithRandomUUID("progression.event.court-document-created"),
+                courtDocumentPayload);
+
+        final Material material = new Material("Generated",
+                fromString("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"),
+                "TestPDF",
+                null,
+                null,
+                null, Arrays.asList("TestUser"));
+        final List<Material> materialIds = Arrays.asList(material);
+
+        //Setting all the conditions on the Mocks to behave as expected for the code to execute
+        when(jsonObjectToObjectConverter.convert(requestMessage.payloadAsJsonObject(), CourtsDocumentCreated.class))
+                .thenReturn(courtsDocumentCreated);
+        when(courtsDocumentCreated.getCourtDocument()).thenReturn(courtDocument);
+        when(courtDocument.getCourtDocumentId()).thenReturn(fromString(CASE_DOCUMENT_ID));
+
+        when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
+        when(documentCategory.getNowDocument()).thenReturn(nowDocument);
+        when(nowDocument.getProsecutionCases()).thenReturn(singletonList(fromString(CASE_DOCUMENT_ID)));
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(courtDocumentPayload);
+        when(courtDocument.getMaterials()).thenReturn(materialIds);
+        when(courtDocument.getContainsFinancialMeans()).thenReturn(null);
+
+        eventListener.processCourtDocumentCreated(requestMessage);
+
+        verify(repository, times(1)).save(argumentCaptorForCourtDocumentEntity.capture());
+        verify(courtDocumentMaterialRepository, times(1)).save(argumentCaptorForCourtDocumentMaterialEntity.capture());
+
+        final CourtDocumentEntity entity = argumentCaptorForCourtDocumentEntity.getValue();
+        final CourtDocumentIndexEntity courtDocumentIndexEntity = entity.getIndices().iterator().next();
+        assertThat(courtDocumentIndexEntity.getProsecutionCaseId(), is(fromString(CASE_DOCUMENT_ID)));
+        assertThat(courtDocumentIndexEntity.getApplicationId(), nullValue());
+
     }
 
     private void executeHandleCourtDocumentCreatedWithDocumentRBACType(final boolean rbacTypeexists) {
@@ -310,7 +385,7 @@ public class CourtDocumentEventListenerTest {
 
     private void setUpMockData(final JsonObject courtDocumentPayload, final JsonEnvelope requestMessage) {
         final Material material = new Material("Generated",
-                UUID.fromString("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"),
+                fromString("5e1cc18c-76dc-47dd-99c1-d6f87385edf1"),
                 "TestPDF",
                 null,
                 null,
@@ -321,7 +396,7 @@ public class CourtDocumentEventListenerTest {
         when(jsonObjectToObjectConverter.convert(requestMessage.payloadAsJsonObject(), CourtsDocumentCreated.class))
                 .thenReturn(courtsDocumentCreated);
         when(courtsDocumentCreated.getCourtDocument()).thenReturn(courtDocument);
-        when(courtDocument.getCourtDocumentId()).thenReturn(UUID.fromString(CASE_DOCUMENT_ID));
+        when(courtDocument.getCourtDocumentId()).thenReturn(fromString(CASE_DOCUMENT_ID));
 
         when(courtDocument.getDocumentCategory()).thenReturn(documentCategory);
         when(documentCategory.getDefendantDocument()).thenReturn(defendantDocument);

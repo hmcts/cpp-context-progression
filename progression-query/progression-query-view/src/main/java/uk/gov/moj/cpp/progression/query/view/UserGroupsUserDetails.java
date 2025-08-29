@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.query.api;
+package uk.gov.moj.cpp.progression.query.view;
 
 import java.util.UUID;
 

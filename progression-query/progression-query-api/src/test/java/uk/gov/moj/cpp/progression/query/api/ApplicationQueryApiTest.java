@@ -27,6 +27,8 @@ import uk.gov.moj.cpp.progression.query.ApplicationHearingQueryView;
 import uk.gov.moj.cpp.progression.query.ApplicationNotesQueryView;
 import uk.gov.moj.cpp.progression.query.ApplicationQueryView;
 import uk.gov.moj.cpp.progression.query.api.service.UsersGroupQueryService;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.UserGroupsUserDetails;
 
 import java.util.HashSet;
 import java.util.UUID;

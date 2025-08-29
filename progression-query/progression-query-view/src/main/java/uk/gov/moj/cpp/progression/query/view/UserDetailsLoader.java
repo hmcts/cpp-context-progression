@@ -1,4 +1,4 @@
-package uk.gov.moj.cpp.progression.query.api;
+package uk.gov.moj.cpp.progression.query.view;
 
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
@@ -7,14 +7,14 @@ import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
+import uk.gov.justice.services.core.annotation.Component;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.messaging.MetadataBuilder;
-import uk.gov.moj.cpp.progression.query.api.vo.Permission;
-import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -45,7 +46,28 @@ public class UserDetailsLoader {
     public static final String ACTION = "action";
     public static final String ORGANISATION_ID = "organisationId";
     public static final String ORGANISATION_NAME = "organisationName";
+    private static final String ACCESS_TO_STANDALONE_APPLICATION = "Access to Standalone Application";
 
+    @ServiceComponent(Component.QUERY_VIEW)
+    @Inject
+    private Requester requester;
+
+    public boolean isUserHasPermissionForApplicationTypeCode(final Metadata metadata, final String applicationTypeCode) {
+        final JsonObject getOrganisationForUserRequest = Json.createObjectBuilder()
+                .add(ACTION, ACCESS_TO_STANDALONE_APPLICATION)
+                .add(OBJECT, applicationTypeCode)
+                .build();
+        final MetadataBuilder metadataWithActionName = Envelope.metadataFrom(metadata).withName("usersgroups.is-logged-in-user-has-permission-for-object");
+
+        final JsonEnvelope requestEnvelope = envelopeFrom(metadataWithActionName, getOrganisationForUserRequest);
+        final Envelope<JsonObject> response = this.requester.request(requestEnvelope, JsonObject.class);
+
+        if (response.payload().isEmpty()) {
+            return true;
+        }
+        return response.payload().getBoolean("hasPermission");
+
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserDetailsLoader.class);
 

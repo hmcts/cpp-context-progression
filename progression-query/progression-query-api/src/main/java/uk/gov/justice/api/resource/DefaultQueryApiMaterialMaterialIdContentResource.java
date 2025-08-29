@@ -1,11 +1,13 @@
 package uk.gov.justice.api.resource;
 
+import static java.util.Objects.isNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
@@ -14,19 +16,25 @@ import static uk.gov.justice.services.core.interceptor.InterceptorContext.interc
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
+import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.services.adapter.rest.mapping.ActionMapper;
 import uk.gov.justice.services.adapter.rest.multipart.FileInputDetailsFactory;
 import uk.gov.justice.services.adapter.rest.parameter.ParameterCollectionBuilderFactory;
 import uk.gov.justice.services.adapter.rest.processor.RestProcessor;
+import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Adapter;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
-import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.logging.HttpTraceLoggerHelper;
 import uk.gov.justice.services.messaging.logging.TraceLogger;
 import uk.gov.moj.cpp.material.client.MaterialClient;
-import uk.gov.moj.cpp.progression.query.api.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.util.Optional;
@@ -35,7 +43,6 @@ import java.util.UUID;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -95,16 +102,23 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
     @Inject
     private ServiceContextSystemUserProvider serviceContextSystemUserProvider;
 
+    @Inject
+    private CourtDocumentIndexRepository courtDocumentIndexRepository;
+
+    @Inject
+    private CourtApplicationRepository courtApplicationRepository;
+
+    @Inject
+    private StringToJsonObjectConverter stringToJsonObjectConverter;
+
+    @Inject
+    private JsonObjectToObjectConverter jsonObjectToObjectConverter;
 
     @Inject
     private MaterialClient materialClient;
 
     @Inject
-    private Requester requester;
-
-    @Inject
     private UserDetailsLoader userDetailsLoader;
-
 
     @Override
     public Response getMaterialByMaterialIdContent(final String materialId, final UUID userId) {
@@ -184,12 +198,21 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
 
             final String materialId = document.payloadAsJsonObject().getString(MATERIAL_ID);
 
+            if(isNotAuthorisedToViewMaterial(document, materialId)){
+                return Response
+                        .status(FORBIDDEN)
+                        .entity(createObjectBuilder().build())
+                        .header(CONTENT_TYPE, JSON_MIME_TYPE)
+                        .build();
+            }
+
+
             final Response documentContentResponse = materialClient.getMaterial(fromString(materialId), systemUser);
 
             final Response.Status documentContentResponseStatus = fromStatusCode(documentContentResponse.getStatus());
             if (OK.equals(documentContentResponseStatus)) {
                 final String url = documentContentResponse.readEntity(String.class);
-                final JsonObject jsonObject = Json.createObjectBuilder()
+                final JsonObject jsonObject = createObjectBuilder()
                         .add("url", url)
                         .build();
 
@@ -202,5 +225,28 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
                 return Response.fromResponse(documentContentResponse).build();
             }
         }
+    }
+
+    private boolean isNotAuthorisedToViewMaterial(final JsonEnvelope document, final String materialId) {
+        final Optional<CourtDocumentIndexEntity> courtDocumentIndexEntity = courtDocumentIndexRepository.findByMaterialId(fromString(materialId));
+        if(courtDocumentIndexEntity.isEmpty()){
+            return false;
+        }
+
+        final UUID applicationId = courtDocumentIndexEntity.get().getApplicationId();
+        if(isNull(applicationId)){
+            return false;
+        }
+
+        final CourtApplication courtApplication = getCourtApplication(applicationId);
+
+        return !userDetailsLoader.isUserHasPermissionForApplicationTypeCode(document.metadata(), courtApplication.getType().getCode());
+
+    }
+
+    private CourtApplication getCourtApplication(final UUID applicationId) {
+        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
+        final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
+        return jsonObjectToObjectConverter.convert(application, CourtApplication.class);
     }
 }

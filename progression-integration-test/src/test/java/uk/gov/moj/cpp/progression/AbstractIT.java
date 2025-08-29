@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.reset;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.HOST;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupPermissionsForApplicationTypeStub;
 import static uk.gov.moj.cpp.progression.helper.StubUtil.setupUsersGroupQueryStub;
 import static uk.gov.moj.cpp.progression.stub.CourtOrderStub.setupCourtOrdersStub;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.stubSynchronousDocumentGeneratorEndpoint;
@@ -116,6 +117,7 @@ public class AbstractIT {
         setupAsAuthorisedUser(USER_ID_VALUE);
         setupAsSystemUser(USER_ID_VALUE_AS_ADMIN);
         setupUsersGroupQueryStub();
+        setupUsersGroupPermissionsForApplicationTypeStub(true);
         stubQueryLocalJusticeArea("/restResource/referencedata.query.local-justice-areas.json");
         stubQueryCourtsCodeData("/restResource/referencedata.query.local-justice-area-court-prosecutor-mapping-courts.json");
         stubQueryOrganisationUnitsData("/restResource/referencedata.query.organisationunits.json");

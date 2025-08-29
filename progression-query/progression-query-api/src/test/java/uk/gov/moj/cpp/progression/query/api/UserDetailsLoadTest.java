@@ -11,6 +11,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
+import uk.gov.moj.cpp.progression.query.view.UserGroupsUserDetails;
 
 import java.util.UUID;
 

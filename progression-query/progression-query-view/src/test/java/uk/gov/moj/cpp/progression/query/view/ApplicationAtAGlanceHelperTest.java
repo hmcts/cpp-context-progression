@@ -613,6 +613,7 @@ public class ApplicationAtAGlanceHelperTest {
                 .withFirstName(firstName)
                 .withLastName(lastName)
                 .withAddress(address)
+                .withDateOfBirth(now().minusYears(18L))
                 .build();
 
         final String representationOrgName = STRING_GENERATOR.next();
@@ -634,7 +635,7 @@ public class ApplicationAtAGlanceHelperTest {
         final RespondentDetails details = respondentDetails.get(0);
         assertThat(details.getName(), is(firstName+" "+lastName));
         assertThat(details.getAddress(), is(address));
-
+        assertThat(details.getDateOfBirth(), is(person.getDateOfBirth()));
         assertThat(details.getRespondentRepresentatives().size(), is(1));
         final RespondentRepresentatives respondentRepresentatives = details.getRespondentRepresentatives().get(0);
         assertThat(respondentRepresentatives.getRepresentativeName(), is(representationOrgName));
@@ -801,5 +802,39 @@ public class ApplicationAtAGlanceHelperTest {
         final CourtApplication courtApplication = courtApplication().build();
         final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
         assertThat(respondentDetails, empty());
+    }
+
+    @Test
+    public void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
+        final UUID subjectId = randomUUID();
+        final UUID applicantId = randomUUID();
+
+        final CourtApplicationParty courtApplicationPartyApplicant = courtApplicationParty()
+                .withId(applicantId)
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withProsecutionAuthorityCode("ABCD").build())
+                .build();
+
+        final CourtApplicationParty courtApplicationPartyRespondent = courtApplicationParty()
+                .withId(subjectId)
+                .withPersonDetails(Person.person().withFirstName("John")
+                        .withLastName("Doe")
+                        .withAddress(Address.address().build()).build())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority().withProsecutionAuthorityCode("ABCD").build())
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = Collections.singletonList(courtApplicationPartyRespondent);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withApplicant(courtApplicationPartyApplicant)
+                .withSubject(courtApplicationPartyRespondent)
+                .withRespondents(courtApplicationRespondents)
+                .build();
+
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getIsSubject(),is(true));
+
     }
 }

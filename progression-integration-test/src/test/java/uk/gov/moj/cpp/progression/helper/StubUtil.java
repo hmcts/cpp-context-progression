@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.helper;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -8,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static java.util.UUID.randomUUID;
+import static javax.json.Json.createObjectBuilder;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
@@ -33,6 +35,17 @@ public class StubUtil {
                         .withHeader("CPPID", randomUUID().toString())
                         .withHeader("Content-Type", "application/json")
                         .withBody(getPayload("stub-data/usersgroups.get-groups-by-user.json"))));
+
+    }
+
+    public static void setupUsersGroupPermissionsForApplicationTypeStub(final boolean hasPermission) {
+        stubFor(get(urlMatching("/usersgroups-service/query/api/rest/usersgroups/users/logged-in-user/permissions.*"))
+                .atPriority(1)
+                .withHeader("Accept", containing("application/vnd.usersgroups.is-logged-in-user-has-permission-for-object+json"))
+                .willReturn(aResponse().withStatus(HTTP_STATUS_OK)
+                        .withHeader("CPPID", randomUUID().toString())
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(String.valueOf(createObjectBuilder().add("hasPermission", hasPermission).build()))));
 
     }
 

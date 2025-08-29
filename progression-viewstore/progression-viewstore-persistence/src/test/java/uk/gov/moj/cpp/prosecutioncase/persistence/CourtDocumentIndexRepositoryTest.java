@@ -1,17 +1,20 @@
 package uk.gov.moj.cpp.prosecutioncase.persistence;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
 
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,6 +32,9 @@ public class CourtDocumentIndexRepositoryTest  {
 
     @Inject
     private CourtDocumentRepository courtDocumentRepository;
+
+    @Inject
+    private CourtDocumentMaterialRepository courtDocumentMaterialRepository;
 
     @Test
     public void shouldFindByCaseIdDefendantIdAndCourtDocumentId() {
@@ -59,6 +65,41 @@ public class CourtDocumentIndexRepositoryTest  {
 
         byCaseIdDefendantIdAndCaseDocumentId = courtDocumentIndexRepository.findByCaseIdDefendantIdAndCaseDocumentId(caseId, defendantId, courtDocumentId);
         assertNull(byCaseIdDefendantIdAndCaseDocumentId);
+
+    }
+
+
+    @Test
+    public void shouldFindByMaterialId() {
+
+        final UUID courtDocumentId = UUID.randomUUID();
+        final UUID materialId = UUID.randomUUID();
+        final UUID applicationId = UUID.randomUUID();
+
+        final CourtDocumentMaterialEntity courtDocumentMaterial = new CourtDocumentMaterialEntity();
+        courtDocumentMaterial.setMaterialId(materialId);
+        courtDocumentMaterial.setCourtDocumentId(courtDocumentId);
+
+        final CourtDocumentEntity courtDocument = new CourtDocumentEntity();
+        courtDocument.setIsRemoved(false);
+        courtDocument.setCourtDocumentId(courtDocumentId);
+
+        final CourtDocumentIndexEntity courtDocumentIndex = new CourtDocumentIndexEntity();
+        courtDocumentIndex.setId(UUID.randomUUID());
+        courtDocumentIndex.setApplicationId(applicationId);
+        courtDocumentIndex.setCourtDocument(courtDocument);
+
+        final Set<CourtDocumentIndexEntity> indices = new HashSet<>();
+        indices.add(courtDocumentIndex);
+        courtDocument.setIndices(indices);
+        courtDocumentRepository.save(courtDocument);
+        courtDocumentMaterialRepository.save(courtDocumentMaterial);
+
+        Optional<CourtDocumentIndexEntity> indexEntity = courtDocumentIndexRepository.findByMaterialId(materialId);
+
+        assertThat(indexEntity.isPresent(), is(true));
+        assertThat(indexEntity.get().getCourtDocument().getCourtDocumentId(), is(courtDocumentId));
+        assertThat(indexEntity.get().getApplicationId(), is(applicationId));
 
     }
 

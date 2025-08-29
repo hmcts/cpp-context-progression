@@ -45,6 +45,7 @@ public class ApplicationMapper {
         final CourtApplicationType type = courtApplication.getType();
         if (type != null) {
             application.setApplicationType(type.getType());
+            application.setApplicationTypeCode(type.getCode());
         }
         application.setSubjectSummary(getSubjectSummary(courtApplication.getSubject()));
         return application;

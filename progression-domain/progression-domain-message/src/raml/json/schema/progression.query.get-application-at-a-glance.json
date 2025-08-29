@@ -103,6 +103,9 @@
         "isSubject": {
           "type": "boolean"
         },
+        "dateOfBirth": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
         "updatedOn": {
           "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
         }

@@ -84,7 +84,8 @@ public abstract class BaseCourtApplicationTransformer implements Transform {
                 caseDocumentsMap.put(caseId, getCaseDetails(applications, caseId, getDefaultCaseStatus()));
             }
         } else {
-            LOGGER.error("Unexpected state .... expecting at least linked cases or only one courtApplication");
+            //standalone applications
+            transformCourtApplication(courtApplication, caseDocumentsMap);
         }
         return caseDocumentsMap;
     }

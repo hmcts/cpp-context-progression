@@ -23,11 +23,13 @@ import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentMaterialEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentTypeRBAC;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CpsSendNotificationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentMaterialRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentRepository;
@@ -62,6 +64,8 @@ public class CourtDocumentEventListener {
 
     @Inject
     private CourtDocumentRepository repository;
+    @Inject
+    private CourtApplicationRepository applicationRepository;
 
     @Inject
     private CourtDocumentMaterialRepository courtDocumentMaterialRepository;
@@ -140,7 +144,13 @@ public class CourtDocumentEventListener {
         final DocumentCategory documentCategory = courtDocument.getDocumentCategory();
         final List<UUID> linkedCaseIds = getLinkedCaseIds(documentCategory);
         if (!linkedCaseIds.isEmpty()) {
-            linkedCaseIds.forEach(caseId -> addCourtDocumentIndexEntity(courtDocument, courtDocumentEntity, caseId, null));
+            if(isStandaloneApplicationDocument(documentCategory)){
+                //standalone applications produce only NowDocument and there will be only one applicationId that is passed over prosecutionCases array.
+                final UUID applicationId = documentCategory.getNowDocument().getProsecutionCases().get(0);
+                addCourtDocumentIndexEntity(courtDocument, courtDocumentEntity, null, applicationId);
+            } else {
+                linkedCaseIds.forEach(caseId -> addCourtDocumentIndexEntity(courtDocument, courtDocumentEntity, caseId, null));
+            }
         }
         if (nonNull(documentCategory.getApplicationDocument())) {
             if (!linkedCaseIds.isEmpty()) {
@@ -160,6 +170,22 @@ public class CourtDocumentEventListener {
         courtDocumentEntity.setSeqNum(courtDocument.getSeqNum());
         courtDocumentEntity.setIsRemoved(false);
         return courtDocumentEntity;
+    }
+
+    private boolean isStandaloneApplicationDocument(final DocumentCategory documentCategory) {
+        if(nonNull(documentCategory.getNowDocument()) && nonNull(documentCategory.getNowDocument().getProsecutionCases()) && documentCategory.getNowDocument().getProsecutionCases().size() == 1){
+            return isApplication(documentCategory.getNowDocument().getProsecutionCases().get(0));
+        }
+        return false;
+    }
+
+    private boolean isApplication(final UUID uuid) {
+        try {
+            final CourtApplicationEntity courtApplicationEntity = applicationRepository.findByApplicationId(uuid);
+            return nonNull(courtApplicationEntity);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private void addCourtDocumentIndexEntity(final CourtDocument courtDocument,

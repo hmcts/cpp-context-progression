@@ -13,8 +13,9 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.Metadata;
-import uk.gov.moj.cpp.progression.query.api.vo.Permission;
-import uk.gov.moj.cpp.progression.query.api.vo.UserOrganisationDetails;
+import uk.gov.moj.cpp.progression.query.view.Permission;
+import uk.gov.moj.cpp.progression.query.view.UserOrganisationDetails;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 
 import java.util.List;
 

@@ -31,13 +31,18 @@ import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.justice.services.common.exception.ForbiddenRequestException;
+import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
+import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.core.dispatcher.SystemUserProvider;
+import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.utils.converters.laa.ApplicationLaaConverter;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
+import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
@@ -77,6 +82,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S3655", "squid:S1612"})
+@ServiceComponent(Component.QUERY_VIEW)
 public class ApplicationQueryView {
 
     public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
@@ -140,6 +146,10 @@ public class ApplicationQueryView {
 
     @Inject
     private SystemIdMapperClient systemIdMapperClient;
+    @Inject
+    private Requester requester;
+    @Inject
+    private UserDetailsLoader userDetailsLoader;
 
     @Handles("progression.query.application.aaag")
     @SuppressWarnings("squid:S3776")
@@ -149,7 +159,7 @@ public class ApplicationQueryView {
         if (applicationId.isPresent()) {
             try {
                 final CourtApplication courtApplication = getCourtApplication(applicationId.get());
-
+                validateUserPermissionForApplicationType(envelope, courtApplication);
                 jsonObjectBuilder.add(APPLICATION_ID, applicationId.get().toString());
 
                 final ApplicationDetails applicationDetails = applicationAtAGlanceHelper.getApplicationDetails(courtApplication);
@@ -202,6 +212,14 @@ public class ApplicationQueryView {
         return envelopeFrom(
                 envelope.metadata(),
                 jsonObjectBuilder.build());
+    }
+
+    private void validateUserPermissionForApplicationType(final JsonEnvelope envelope, final CourtApplication courtApplication) {
+        if(nonNull(courtApplication.getType()) &&
+                nonNull(courtApplication.getType().getCode()) &&
+                    !userDetailsLoader.isUserHasPermissionForApplicationTypeCode(envelope.metadata(), courtApplication.getType().getCode())){
+            throw new ForbiddenRequestException("User doesn't have permission to view this application");
+        }
     }
 
 
