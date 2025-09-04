@@ -17,6 +17,9 @@
     "defendantId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
     "isHearingInitiateEnriched": {
       "type": "boolean"
     }

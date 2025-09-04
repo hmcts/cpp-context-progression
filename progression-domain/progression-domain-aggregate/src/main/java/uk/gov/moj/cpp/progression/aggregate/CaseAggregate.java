@@ -91,7 +91,6 @@ import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
 import uk.gov.justice.core.courts.CaseGroupInfoUpdated;
-import uk.gov.justice.core.courts.CaseInactiveBdf;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
 import uk.gov.justice.core.courts.CaseMarkersUpdated;
@@ -182,6 +181,7 @@ import uk.gov.justice.cpp.progression.events.DefendantDefenceAssociationLocked;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
+import uk.gov.justice.progression.courts.CaseStatusUpdatedBdf;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdatedV2;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
@@ -739,6 +739,34 @@ public class CaseAggregate implements Aggregate {
         return builder.build();
     }
 
+    private uk.gov.justice.core.courts.Defendant updateDefendantFrom(final Defendant defendant) {
+        final uk.gov.justice.core.courts.Defendant.Builder builder = uk.gov.justice.core.courts.Defendant.defendant();
+
+        if (defendantsMap.containsKey(defendant.getId())) {
+            builder.withValuesFrom(defendantsMap.get(defendant.getId()));
+        }
+
+        builder.withId(defendant.getId());
+        builder.withMasterDefendantId(defendant.getMasterDefendantId());
+        builder.withProsecutionCaseId(defendant.getProsecutionCaseId());
+        builder.withNumberOfPreviousConvictionsCited(defendant.getNumberOfPreviousConvictionsCited());
+        builder.withProsecutionAuthorityReference(defendant.getProsecutionAuthorityReference());
+        builder.withWitnessStatement(defendant.getWitnessStatement());
+        builder.withWitnessStatementWelsh(defendant.getWitnessStatementWelsh());
+        builder.withMitigation(defendant.getMitigation());
+        builder.withMitigationWelsh(defendant.getMitigationWelsh());
+        builder.withAssociatedPersons(defendant.getAssociatedPersons());
+        builder.withDefenceOrganisation(defendant.getDefenceOrganisation());
+        builder.withPersonDefendant(defendant.getPersonDefendant());
+        builder.withLegalEntityDefendant(defendant.getLegalEntityDefendant());
+        builder.withPncId(defendant.getPncId());
+        builder.withAliases(defendant.getAliases());
+        builder.withIsYouth(defendant.getIsYouth());
+        ofNullable(defendant.getAssociatedDefenceOrganisation()).ifPresent(builder::withAssociatedDefenceOrganisation);
+
+        return builder.build();
+    }
+
     private uk.gov.justice.core.courts.Defendant updateDefendantFromMatchedDefendant(final MasterDefendantIdUpdatedV2 masterDefendantIdUpdatedV2) {
         final uk.gov.justice.core.courts.Defendant.Builder builder = uk.gov.justice.core.courts.Defendant.defendant();
 
@@ -807,6 +835,8 @@ public class CaseAggregate implements Aggregate {
         final ProsecutionCase pc = hearingResultedCaseUpdated.getProsecutionCase();
         final String currentProsecutionCaseStatus = pc.getCaseStatus();
         hearingResultedCaseUpdated.getProsecutionCase().getDefendants().forEach(defendant -> {
+            defendantsMap.put(defendant.getId(), updateDefendantFrom(defendant));
+
             final List<uk.gov.justice.core.courts.Offence> existingOffences = this.defendantCaseOffences.get(defendant.getId());
             this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
             updateDefendantProceedingConcluded(defendant, defendant.getProceedingsConcluded());
@@ -898,14 +928,18 @@ public class CaseAggregate implements Aggregate {
     }
 
     /**
-     * Make case Inactive using BDF, this is used in MI Report Data to make the case status inactive consistent with progression and unified search
-     *
-     * @param prosecutionCaseId prosecution id
-     * @return Stream of events
+     * Update MI case status using BDF
+     * @param prosecutionCaseId
+     * @param caseStatus
+     * @param notes
+     * @return
      */
-    public Stream<Object> inactiveCaseBdf(final UUID prosecutionCaseId) {
-        return apply(Stream.of(CaseInactiveBdf.caseInactiveBdf()
-                .withProsecutionCaseId(prosecutionCaseId).build()));
+    public Stream<Object> updateCaseStatusBdf(final UUID prosecutionCaseId, final String caseStatus, final String notes) {
+        return apply(Stream.of(CaseStatusUpdatedBdf.caseStatusUpdatedBdf()
+                .withProsecutionCaseId(prosecutionCaseId)
+                .withCaseStatus(caseStatus)
+                .withNotes(notes)
+                .build()));
     }
 
     private uk.gov.justice.core.courts.Defendant getUpdatedDefendantWithIsYouth(final uk.gov.justice.core.courts.Defendant defendant, final List<ListHearingRequest> listHearingRequests) {

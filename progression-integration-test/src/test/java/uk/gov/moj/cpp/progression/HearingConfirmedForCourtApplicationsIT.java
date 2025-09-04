@@ -33,6 +33,7 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private static final String MAGISTRATES_JURISDICTION_TYPE = "MAGISTRATES";
+    private static final String PUBLIC_EVENT_HEARING_APPLICATION_LINK_CREATED = "progression.event.hearing-application-link-created";
 
     private final StringToJsonObjectConverter stringToJsonObjectConverter = new StringToJsonObjectConverter();
     private String userId;
@@ -72,6 +73,31 @@ public class HearingConfirmedForCourtApplicationsIT extends AbstractIT {
         verifyPostInitiateCourtHearing(hearingId);
     }
 
+    @Test
+    public void shouldLinkCaseAndApplication() throws Exception {
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        courtCentreId = UUID.randomUUID().toString();
+        courtCentreName = "Lavender Hill Magistrate's Court";
+        applicationId = UUID.randomUUID().toString();
+
+        initiateCourtProceedingsForCourtApplication(applicationId, caseId, hearingId, "applications/progression.initiate-court-proceedings-for-standalone-application-box-hearing.json");
+        pollForApplication(applicationId);
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
+
+        final JsonEnvelope publicEventEnvelopeHearingConfirmed = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), getHearingJsonObject("public.listing.hearing-confirmed-application-with-linked-case.json",
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelopeHearingConfirmed);
+
+        final JsonEnvelope publicEventEnvelopeLinkCreated = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_EVENT_HEARING_APPLICATION_LINK_CREATED, userId), getHearingJsonObject("applications/progression.event.hearing-application-link-created.json",
+                caseId, hearingId, defendantId, courtCentreId, courtCentreName));
+        messageProducerClientPublic.sendMessage(PUBLIC_EVENT_HEARING_APPLICATION_LINK_CREATED, publicEventEnvelopeLinkCreated);
+
+        pollForApplicationStatus(applicationId, "LISTED");
+        pollForCaseAtAGlance("LISTED");
+        verifyPostInitiateCourtHearing(hearingId);
+    }
     private JsonObject getHearingJsonObject(final String path, final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId, final String courtCentreName) {
         final String strPayload = getPayload(path)

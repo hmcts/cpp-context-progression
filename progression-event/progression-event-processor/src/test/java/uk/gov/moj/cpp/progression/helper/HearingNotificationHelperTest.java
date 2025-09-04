@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
@@ -52,6 +53,8 @@ import uk.gov.moj.cpp.progression.transformer.ListCourtHearingTransformer;
 import uk.gov.moj.cpp.progression.utils.FileUtil;
 
 import java.nio.charset.Charset;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +67,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -142,13 +144,24 @@ public class HearingNotificationHelperTest {
     @Captor
     private ArgumentCaptor<UUID> caseIdCapture;
 
+    @Captor
+    private ArgumentCaptor<JsonObject> docPayloadCaptor;
+
     @InjectMocks
     private HearingNotificationHelper hearingNotificationHelper;
 
     private JsonEnvelope jsonEnvelope;
 
+    private UUID caseId;
+    private UUID defendantId;
+    private UUID hearingId;
+
     @BeforeEach
     public void initMocks() {
+        caseId = UUID.randomUUID();
+        defendantId = UUID.randomUUID();
+        hearingId = UUID.randomUUID();
+
         final Address address = Address.address()
                 .withAddress1("testAddress1")
                 .withAddress2("testAddress2")
@@ -627,5 +640,164 @@ public class HearingNotificationHelperTest {
         hearingNotificationInputData.setCourtCenterId(randomUUID());
         hearingNotificationInputData.setCourtRoomId(randomUUID());
         return hearingNotificationInputData;
+    }
+
+    @Test
+    void shouldConvertHearingTimeToUKTimeZone() {
+        // Given - Create a hearing time in a different timezone (UTC+5)
+        ZonedDateTime hearingDateTimeUTC = ZonedDateTime.of(2025, 8, 12, 14, 30, 0, 0, ZoneId.of("UTC"));
+        ZonedDateTime hearingDateTimeUTCPlus5 = hearingDateTimeUTC.withZoneSameInstant(ZoneId.of("UTC+5"));
+
+        // Expected UK time (UTC+1 during summer time)
+        String expectedUKTime = LocalTime.of(15, 30).toString(); // 14:30 UTC + 1 hour = 15:30 UK time
+
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingDateTimeUTCPlus5);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        // When
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        // Then - Verify that the hearing time was converted to UK timezone
+        // The method sends notifications to both defendant and prosecutor, so expect 2 calls
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), docPayloadCaptor.capture(), any(), any(), any());
+        assertEquals(expectedUKTime, docPayloadCaptor.getValue().getJsonObject("hearingCourtDetails").getString("hearingTime"));
+
+    }
+
+    @Test
+    void shouldHandleHearingTimeInUKTimeZone() {
+        // Given - Create a hearing time already in UK timezone
+        ZonedDateTime hearingDateTimeUK = ZonedDateTime.of(2025, 8, 12, 15, 30, 0, 0, ZoneId.of("Europe/London"));
+        String expectedUKTime = hearingDateTimeUK.getHour() + ":" + hearingDateTimeUK.getMinute();
+
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingDateTimeUK);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        // When
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        // Then - Verify processing continues normally
+        // The method sends notifications to both defendant and prosecutor, so expect 2 calls
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), docPayloadCaptor.capture(), any(), any(), any());
+        assertEquals(expectedUKTime, docPayloadCaptor.getValue().getJsonObject("hearingCourtDetails").getString("hearingTime"));
+    }
+
+
+    @Test
+    void shouldHandleHearingTimeAtMidnight() {
+        // Given - Create a hearing time at midnight in UTC
+        ZonedDateTime hearingDateTimeUTC = ZonedDateTime.of(2025, 8, 12, 0, 0, 0, 0, ZoneId.of("UTC"));
+
+        // Expected UK time (UTC+1 during summer time)
+        // 00:00 UTC = 01:00 UK time
+        String expectedUKTime = LocalTime.of(1, 0).toString();
+
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingDateTimeUTC);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        // When
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        // Then - Verify processing continues with timezone conversion
+        // The method sends notifications to both defendant and prosecutor, so expect 2 calls
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), docPayloadCaptor.capture(), any(), any(), any());
+        assertEquals(expectedUKTime, docPayloadCaptor.getValue().getJsonObject("hearingCourtDetails").getString("hearingTime"));
+    }
+
+    @Test
+    void shouldHandleHearingTimeDuringDaylightSavingTransition() {
+        // Given - Create a hearing time during daylight saving transition
+        // March 30, 2025 - clocks go forward (UTC+0 to UTC+1)
+        ZonedDateTime hearingDateTimeUTC = ZonedDateTime.of(2025, 3, 30, 2, 30, 0, 0, ZoneId.of("UTC"));
+        final ZonedDateTime ukDateTime = hearingDateTimeUTC.withZoneSameInstant(ZoneId.of("Europe/London"));
+        final String expectedUKTime = LocalTime.of(ukDateTime.getHour(), ukDateTime.getMinute()).toString();
+
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingDateTimeUTC);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        // When
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        // Then - Verify processing continues with timezone conversion
+        // The method sends notifications to both defendant and prosecutor, so expect 2 calls
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), docPayloadCaptor.capture(), any(), any(), any());
+        assertEquals(expectedUKTime, docPayloadCaptor.getValue().getJsonObject("hearingCourtDetails").getString("hearingTime"));
+    }
+
+    @Test
+    void shouldHandleHearingTimeDuringWinterTime() {
+        // Given - Create a hearing time during winter time (UTC+0)
+        // January 15, 2025 - UK is on UTC+0
+        ZonedDateTime hearingDateTimeUTC = ZonedDateTime.of(2025, 1, 15, 14, 30, 0, 0, ZoneId.of("UTC"));
+
+        // Expected UK time (UTC+0 during winter time)
+        // 14:30 UTC = 14:30 UK time (no offset)
+        String expectedUKTime = LocalTime.of(14, 30).toString();
+
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingDateTimeUTC);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        // When
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        // Then - Verify processing continues with timezone conversion
+        // The method sends notifications to both defendant and prosecutor, so expect 2 calls
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), docPayloadCaptor.capture(), any(), any(), any());
+        assertEquals(expectedUKTime, docPayloadCaptor.getValue().getJsonObject("hearingCourtDetails").getString("hearingTime"));
     }
 }

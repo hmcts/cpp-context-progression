@@ -55,7 +55,7 @@ public class UnlinkCasesEventProcessor {
         payloadBuilder.add(LINK_ACTION_TYPE, UNLINK);
         final JsonArrayBuilder casesArrayBuilder = Json.createArrayBuilder();
 
-        casesUnlinked.getUnlinkedCases().stream().forEach(
+        casesUnlinked.getUnlinkedCases().forEach(
                 unlinkedCases ->
                         buildCaseLinkedOrUnlinkedEventJson(casesArrayBuilder, casesUnlinked.getProsecutionCaseId(), casesUnlinked.getProsecutionCaseUrn(),
                                 unlinkedCases.getCaseId().toString(), unlinkedCases.getCaseUrn())

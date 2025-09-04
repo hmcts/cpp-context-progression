@@ -15,6 +15,7 @@ import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.
 
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.HearingDay;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -164,7 +165,7 @@ public class CPSEmailNotificationProcessorTest {
     @Test
     public void shouldGetFutureHearings() throws Exception {
         final GetHearingsAtAGlance getHearingAtAGlance = getCaseAtAGlanceWithFutureHearings();
-        assertThat("Hearing size mismatched ", 3, is(getHearingAtAGlance.getHearings().size()));
+        assertThat("Hearing size mismatched ", 4, is(getHearingAtAGlance.getHearings().size()));
 
         final List<Hearings> futureHearings = Whitebox.invokeMethod(cpsEmailNotificationProcessor, "getFutureHearings", getHearingAtAGlance);
         assertThat("Future hearing size mismatched ", 2, is(futureHearings.size()));
@@ -355,6 +356,51 @@ public class CPSEmailNotificationProcessorTest {
 
     }
 
+    @Test
+    void shouldCallDisassociationCommandForCaseAndApplicationWhenApplicationForCaseHearingStatusIsSendForListing() {
+
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID applicationId = randomUUID();
+
+        final JsonObject defencePublicEventPayload = createObjectBuilder()
+                .add("defendantId", defendantId.toString())
+                .add("organisationId",organisationId.toString())
+                .add("caseId", caseId.toString())
+                .build();
+
+        final JsonObject applicationQueryResponsePayload = createObjectBuilder()
+                .add("linkedApplications", createArrayBuilder().add(
+                        createObjectBuilder().add("applicationId", applicationId.toString())
+                                .build()
+                ))
+                .build();;
+
+        final JsonEnvelope publiceventEnvelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("public.defence.defence-organisation-disassociated"),
+                defencePublicEventPayload);
+
+        when(progressionService.getActiveApplicationsOnCase(any(), any())).thenReturn(ofNullable(applicationQueryResponsePayload));
+
+        cpsEmailNotificationProcessor.processDisassociatedEmailNotification(publiceventEnvelope);
+        verify(sender, VerificationModeFactory.times(2)).send(envelopeCaptor.capture());
+
+        final List<Envelope<JsonObject>> capturedEvents = envelopeCaptor.getAllValues();
+        assertThat(capturedEvents.get(0).metadata().name(), is("progression.command.handler.disassociate-defence-organisation"));
+        JsonObject capturedEventPayload = capturedEvents.get(0).payload();
+        assertThat(capturedEventPayload.getString("defendantId"), is(defendantId.toString()));
+        assertThat(capturedEventPayload.getString("organisationId"), is(organisationId.toString()));
+        assertThat(capturedEventPayload.getString("caseId"),  is(caseId.toString()));
+
+        assertThat(capturedEvents.get(1).metadata().name(), is("progression.command.handler.disassociate-defence-organisation-for-application"));
+        capturedEventPayload = capturedEvents.get(1).payload();
+        assertThat(capturedEventPayload.getString("defendantId"), is(defendantId.toString()));
+        assertThat(capturedEventPayload.getString("organisationId"), is(organisationId.toString()));
+        assertThat(capturedEventPayload.getString("applicationId"),  is(applicationId.toString()));
+
+    }
+
     private JsonObject getProsecutionCaseResponse(String sampleJson) {
         String response = null;
         try {
@@ -394,7 +440,7 @@ public class CPSEmailNotificationProcessorTest {
         hd = HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusDays(1)).build();
         hearingDays.add(hd);
 
-        hearings.add(Hearings.hearings().withId(randomUUID()).withCourtCentre(courtCentre)
+        hearings.add(Hearings.hearings().withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED).withId(randomUUID()).withCourtCentre(courtCentre)
                 .withHearingDays(hearingDays).build());
 
         List<HearingDay> hearingDays2 = new ArrayList<>();
@@ -404,10 +450,12 @@ public class CPSEmailNotificationProcessorTest {
 
         hearingDays2.add(hd);
 
-        hearings.add(Hearings.hearings().withId(randomUUID()).withHearingDays(hearingDays2).withCourtCentre(courtCentre).build());
+        hearings.add(Hearings.hearings().withId(randomUUID()).withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED).withHearingDays(hearingDays2).withCourtCentre(courtCentre).build());
 
-        hearings.add(Hearings.hearings().withId(randomUUID()).withCourtCentre(courtCentre).withHearingDays(Collections.singletonList(
+        hearings.add(Hearings.hearings().withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED).withId(randomUUID()).withCourtCentre(courtCentre).withHearingDays(Collections.singletonList(
                 HearingDay.hearingDay().withSittingDay(ZonedDateTime.now().plusWeeks(1)).build())).build());
+
+        hearings.add(Hearings.hearings().withHearingListingStatus(HearingListingStatus.SENT_FOR_LISTING).withId(randomUUID()).withCourtCentre(courtCentre).build());
 
         return GetHearingsAtAGlance.getHearingsAtAGlance().withHearings(hearings).build();
 

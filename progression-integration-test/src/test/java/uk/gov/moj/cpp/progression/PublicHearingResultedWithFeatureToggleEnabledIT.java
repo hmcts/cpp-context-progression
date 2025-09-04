@@ -322,51 +322,6 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
     }
 
     @Test
-    public void shouldMoveNewDefendantToNewNextHearingWhenHearingAmended() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-        System.out.println("hearingId : " + hearingId);
-
-        JsonObject payload = getHearingJsonObject("public.events.hearing.hearing-resulted-unscheduled-listing.json", caseId,
-                hearingId, defendantId, newCourtCentreId, newCourtCentreName);
-        JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata("public.events.hearing.hearing-resulted", userId), payload);
-        messageProducerClientPublic.sendMessage("public.events.hearing.hearing-resulted", publicEventEnvelope);
-        final String nextHearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 2, List.of(hearingId));
-        System.out.println("nextHearingId : " + nextHearingId);
-
-        final ProsecutionCaseUpdateOffencesHelper helper = new ProsecutionCaseUpdateOffencesHelper(caseId, defendantId, "3789ab16-0bb7-4ef1-87ef-c936bf0364f1");
-        final String newOffenceId = randomUUID().toString();
-        System.out.println("newOffenceId : " + newOffenceId);
-        helper.updateOffences(newOffenceId, OFFENCE_CODE);
-        helper.verifyInMessagingQueueForOffencesUpdated(newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient());
-
-        payload = getHearingJsonObject("public.events.hearing.hearing-resulted-unscheduled-listing.json", caseId,
-                hearingId, defendantId, newCourtCentreId, newCourtCentreName);
-        publicEventEnvelope = envelopeFrom(buildMetadata("public.events.hearing.hearing-resulted", userId), payload);
-        messageProducerClientPublic.sendMessage("public.events.hearing.hearing-resulted", publicEventEnvelope);
-        final String newNextHearingId = pollCaseAndGetLatestHearingForDefendant(caseId, defendantId, 3, List.of(hearingId,nextHearingId ));
-        System.out.println("newNextHearingId : " + newNextHearingId);
-
-        JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, newNextHearingId, defendantId, courtCentreId, courtCentreName);
-        publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
-        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-
-        final JmsMessageConsumerClient messageConsumerPublicEvent1 = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient();
-
-
-        final JsonObject publicEvent = createObjectBuilder().add("newHearingId", newNextHearingId).add("seedingHearingId", hearingId)
-                .add("oldHearingIds", createArrayBuilder().add(nextHearingId)).build();
-        publicEventEnvelope = envelopeFrom(buildMetadata("public.listing.offences-moved-to-next-hearing", userId), publicEvent);
-        messageProducerClientPublic.sendMessage("public.listing.offences-moved-to-next-hearing", publicEventEnvelope);
-
-        assertTrue(retrieveMessageBody(messageConsumerPublicEvent1).isPresent());
-
-        pollForHearing(newNextHearingId, withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[*].id", hasItem(newOffenceId)));
-    }
-
-    @Test
     public void shouldMoveNewOffenceToNewNextHearingWhenHearingAmended() throws Exception {
 
         addProsecutionCaseToCrownCourt(caseId, defendantId);
@@ -416,7 +371,7 @@ public class PublicHearingResultedWithFeatureToggleEnabledIT extends AbstractIT 
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences", hasSize(1))
         );
 
-        final JmsMessageConsumerClient messageConsumerPublicEvent1 = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient();
+        final JmsMessageConsumerClient messageConsumerPublicEvent1 = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.related-hearing-updated-for-adhoc-hearing").getMessageConsumerClient();
 
         final JsonObject publicEvent = createObjectBuilder().add("newHearingId", newHearingId).add("seedingHearingId", hearingId)
                 .add("oldHearingIds", createArrayBuilder().add(nextHearingId)).build();

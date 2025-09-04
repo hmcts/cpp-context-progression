@@ -13,6 +13,7 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.progression.courts.GetHearingsAtAGlance;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -245,9 +246,15 @@ public class CPSEmailNotificationProcessor {
     }
 
     private List<Hearings> getFutureHearings(GetHearingsAtAGlance hearingsAtAGlance) {
-        return hearingsAtAGlance.getHearings().stream().filter(h -> h.getHearingDays().stream()
-                .anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0
-                )).collect(Collectors.toList());
+
+        long sendForListingStatusHearings = hearingsAtAGlance.getHearings().stream().filter(t -> t.getHearingListingStatus().equals(HearingListingStatus.SENT_FOR_LISTING))
+                .count();
+        log.info("Found SENT_FOR_LISTING status hearings size {} ", sendForListingStatusHearings );
+
+        return hearingsAtAGlance.getHearings().stream()
+                .filter(h -> (!h.getHearingListingStatus().equals(HearingListingStatus.SENT_FOR_LISTING) &&
+                        h.getHearingDays().stream().anyMatch(hearingDay -> hearingDay.getSittingDay().toLocalDate().compareTo(LocalDate.now()) >= 0)))
+                .toList();
     }
 
     private Optional<HearingVO> getHearingVO(final String hearingDate, List<Hearings> futureHearings, final Optional<Entry<UUID, ZonedDateTime>> resultMap) {

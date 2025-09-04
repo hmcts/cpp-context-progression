@@ -4,6 +4,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.HearingApplicationLinkCreated.hearingApplicationLinkCreated;
@@ -154,5 +155,32 @@ public class HearingApplicationLinkCreatedProcessorTest {
         assertThat(cmdPayload.getString("hearingLanguage"), is("ENGLISH"));
         assertThat(cmdPayload.getJsonArray("hearingDays").getJsonObject(0).getString("courtRoomId"), is (COURTROOM_ID.toString()));
         assertThat(cmdPayload.getJsonObject("courtApplication"), is (nullValue()));
+    }
+
+    @Test
+    void shouldCallCommandWithoutHearingDays(){
+        final Hearing hearing = Hearing.hearing().withId(HEARING_ID)
+                .withCourtApplications(singletonList(courtApplication()
+                        .withId(APPLICATION_ID)
+                        .build()))
+                .withCourtCentre(CourtCentre.courtCentre().withCode("A01").build())
+                .withType(HearingType.hearingType().withDescription("Application").build())
+                .build();
+
+        HearingApplicationLinkCreated hearingApplicationLinkCreated
+                = hearingApplicationLinkCreated()
+                .withApplicationId(APPLICATION_ID)
+                .withHearing(hearing)
+                .build();
+        final JsonObject payload = objectToJsonObjectConverter.convert(hearingApplicationLinkCreated);
+
+        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.hearing-application-link-created"),
+                payload);
+
+        hearingApplicationLinkCreatedProcessor.process(envelope);
+
+        verify(sender, never()).send(argumentCaptor.capture());
+
     }
 }

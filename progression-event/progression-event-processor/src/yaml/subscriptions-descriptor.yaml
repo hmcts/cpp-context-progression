@@ -11,9 +11,6 @@ subscriptions_descriptor:
         - name: progression.event.added-offences-moved-to-hearing
           schema_uri: http://justice.gov.uk/core/courts/progression.event.added-offences-moved-to-hearing.json
 
-        - name: progression.event.added-defendants-moved-to-hearing
-          schema_uri: http://justice.gov.uk/core/courts/progression.event.added-defendants-moved-to-hearing.json
-
         - name: progression.event.prosecution-case-defendant-updated
           schema_uri: http://justice.gov.uk/core/courts/prosecution-case-defendant-updated.json
 

@@ -17,6 +17,8 @@ public class HearingApplicationLinkCreatedProcessor {
 
     private static final String HEARING_LANGUAGE = "hearingLanguage";
     private static final String COURT_APPLICATIONS = "courtApplications";
+    public static final String HEARING_DAYS = "hearingDays";
+
     @Inject
     private Sender sender;
     @Inject
@@ -38,9 +40,10 @@ public class HearingApplicationLinkCreatedProcessor {
                     .filter(app -> app.getString("id").equals(event.payloadAsJsonObject().getString("applicationId")))
                     .forEach(app -> payload.add("courtApplication", app));
         }
-        payload.add("type",hearing.getJsonObject("type"));
-        payload.add("hearingDays",hearing.getJsonArray("hearingDays"));
-
-        sender.send(Enveloper.envelop(payload.build()).withName("progression.command.update-hearing-for-allocation-fields").withMetadataFrom(event));
+        payload.add("type", hearing.getJsonObject("type"));
+        if (hearing.containsKey(HEARING_DAYS)) {
+            payload.add(HEARING_DAYS, hearing.getJsonArray(HEARING_DAYS));
+            sender.send(Enveloper.envelop(payload.build()).withName("progression.command.update-hearing-for-allocation-fields").withMetadataFrom(event));
+        }
     }
 }

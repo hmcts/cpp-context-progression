@@ -182,8 +182,8 @@ public class VejCaseworkerProcessor {
         for (int i = 0; i < policeCaseProsecutors1.size(); i++) {
             final JsonObject item = policeCaseProsecutors1.getJsonObject(i);
             final JsonArray defendants = (JsonArray) item.get(DEFENDANTS);
-            final JsonArrayBuilder laaRmDefendents = createArrayBuilder();
-            iterateDefendants(policeCases, item, defendants, laaRmDefendents);
+            final JsonArrayBuilder laaRmDefendants = createArrayBuilder();
+            iterateDefendants(policeCases, item, defendants, laaRmDefendants);
             if (null != courtApplications && !courtApplications.isEmpty()) {
                 hearingObj1 = iterateCourtApplications(courtApplications, policeCourtApplications, hearingObj1, item);
             }

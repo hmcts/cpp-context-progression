@@ -150,6 +150,7 @@ import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.progression.courts.CaseInsertedBdf;
 import uk.gov.justice.progression.courts.CaseRetentionLengthCalculated;
+import uk.gov.justice.progression.courts.CaseStatusUpdatedBdf;
 import uk.gov.justice.progression.courts.CustodyTimeLimitExtended;
 import uk.gov.justice.progression.courts.DefendantLegalaidStatusUpdatedV2;
 import uk.gov.justice.progression.courts.DefendantsAndListingHearingRequestsStored;
@@ -243,6 +244,7 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -1430,12 +1432,32 @@ class CaseAggregateTest {
     }
 
     @Test
-    public void shouldReturnCaseInactive() {
-        final List<Object> eventStream = caseAggregate.inactiveCaseBdf(randomUUID()).collect(toList());
+    void shouldReturnCaseInactive() {
+        final List<Object> eventStream = caseAggregate.updateCaseStatusBdf(randomUUID(), "INACTIVE", StringUtils.EMPTY).toList();
         assertThat(eventStream.size(), is(1));
         final Object object = eventStream.get(0);
-        assertThat(object.getClass(), is(equalTo(CaseInactiveBdf.class)));
+        assertThat(object.getClass(), is(equalTo(CaseStatusUpdatedBdf.class)));
     }
+
+    @Test
+    void shouldReturnCaseEject() {
+        final List<Object> eventStream = caseAggregate.updateCaseStatusBdf(randomUUID(), "EJECTED", "Legal").toList();
+        assertThat(eventStream.size(), is(1));
+        final CaseStatusUpdatedBdf object = (CaseStatusUpdatedBdf) eventStream.get(0);
+        assertThat(object.getCaseStatus(), is("EJECTED"));
+        assertThat(object.getNotes(), is("Legal"));
+    }
+
+
+    @Test
+    void shouldReturnCaseStatusUpdated() {
+        final List<Object> eventStream = caseAggregate.updateCaseStatusBdf(randomUUID(), "EJECTED", null).toList();
+        assertThat(eventStream.size(), is(1));
+        final CaseStatusUpdatedBdf object = (CaseStatusUpdatedBdf) eventStream.get(0);
+        assertThat(object.getCaseStatus(), is("EJECTED"));
+        assertNull(object.getNotes());
+    }
+
 
     @Test
     public void shouldNotReturnCaseEjected() {
@@ -4945,6 +4967,121 @@ class CaseAggregateTest {
         prosecutionCaseDefendantUpdated = (uk.gov.justice.core.courts.ProsecutionCaseDefendantUpdated) eventList.get(0);
         assertThat(prosecutionCaseDefendantUpdated.getDefendant().getAssociatedDefenceOrganisation(), is(associatedDefenceOrganisation));
 
+    }
+
+
+    @Test
+    public void shouldMergeIntoDefendantsMap_onHearingResultedCaseUpdated_preservingAssociatedDefenceOrganisationWhenMissingInEvent() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        final AssociatedDefenceOrganisation existingAssocDefOrg = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                .withIsAssociatedByLAA(true)
+                .withApplicationReference("APP-REF-1")
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation().withLaaContractNumber("LA-1").build())
+                .build();
+
+        final Defendant existing = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withWitnessStatement("old-witness")
+                .withMitigation("old-mitigation")
+                .withPncId("old-pnc")
+                .withAssociatedDefenceOrganisation(existingAssocDefOrg)
+                .build();
+
+        final Map<UUID, Defendant> defendantsMap = new HashMap<>();
+        defendantsMap.put(defendantId, existing);
+        setField(caseAggregate, "defendantsMap", defendantsMap);
+
+        final Defendant eventDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withWitnessStatement("new-witness")
+                // AssociatedDefenceOrganisation intentionally omitted to verify preservation from map
+                .withPersonDefendant(personDefendant()
+                        .withBailStatus(uk.gov.justice.core.courts.BailStatus.bailStatus().withCode("U").build())
+                        .build())
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(eventDefendant))
+                .build();
+
+        final HearingResultedCaseUpdated event = hearingResultedCaseUpdated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        caseAggregate.apply(event);
+
+        @SuppressWarnings("unchecked")
+        final Map<UUID, uk.gov.justice.core.courts.Defendant> updatedMap = ReflectionUtil.getValueOfField(this.caseAggregate, "defendantsMap", Map.class);
+        final uk.gov.justice.core.courts.Defendant merged = updatedMap.get(defendantId);
+
+        assertThat(merged, notNullValue());
+        assertThat(merged.getId(), is(defendantId));
+        assertThat(merged.getProsecutionCaseId(), is(caseId));
+        assertThat(merged.getWitnessStatement(), is("new-witness"));
+        // should retain existing associated defence organisation when not provided in event
+        assertThat(merged.getAssociatedDefenceOrganisation(), is(existingAssocDefOrg));
+        // verify personDefendant.bailStatus
+        assertThat(merged.getPersonDefendant(), notNullValue());
+        assertThat(merged.getPersonDefendant().getBailStatus(), notNullValue());
+        assertThat(merged.getPersonDefendant().getBailStatus().getCode(), is("U"));
+    }
+
+    @Test
+    public void shouldInsertIntoDefendantsMap_onHearingResultedCaseUpdated_whenNoExistingEntry() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        setField(caseAggregate, "defendantsMap", new HashMap<UUID, Defendant>());
+
+        final AssociatedDefenceOrganisation assocDefOrg = AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                .withIsAssociatedByLAA(false)
+                .withApplicationReference("APP-REF-2")
+                .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation().withLaaContractNumber("LA-2").build())
+                .build();
+
+        final Defendant eventDefendant = defendant()
+                .withId(defendantId)
+                .withProsecutionCaseId(caseId)
+                .withWitnessStatement("witness")
+                .withMitigation("mitigation")
+                .withPncId("PNC-1")
+                .withPersonDefendant(personDefendant()
+                        .withBailStatus(uk.gov.justice.core.courts.BailStatus.bailStatus().withCode("C").build())
+                        .build())
+                .withAssociatedDefenceOrganisation(assocDefOrg)
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(caseId)
+                .withDefendants(singletonList(eventDefendant))
+                .build();
+
+        final HearingResultedCaseUpdated event = hearingResultedCaseUpdated()
+                .withProsecutionCase(prosecutionCase)
+                .build();
+
+        caseAggregate.apply(event);
+
+        @SuppressWarnings("unchecked")
+        final Map<UUID, uk.gov.justice.core.courts.Defendant> updatedMap = ReflectionUtil.getValueOfField(this.caseAggregate, "defendantsMap", Map.class);
+        final uk.gov.justice.core.courts.Defendant stored = updatedMap.get(defendantId);
+
+        assertThat(stored, notNullValue());
+        assertThat(stored.getId(), is(defendantId));
+        assertThat(stored.getProsecutionCaseId(), is(caseId));
+        assertThat(stored.getWitnessStatement(), is("witness"));
+        assertThat(stored.getMitigation(), is("mitigation"));
+        assertThat(stored.getPncId(), is("PNC-1"));
+        assertThat(stored.getAssociatedDefenceOrganisation(), is(assocDefOrg));
+        // verify personDefendant.bailStatus
+        assertThat(stored.getPersonDefendant(), notNullValue());
+        assertThat(stored.getPersonDefendant().getBailStatus(), notNullValue());
+        assertThat(stored.getPersonDefendant().getBailStatus().getCode(), is("C"));
     }
 
 

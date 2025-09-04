@@ -1,22 +1,21 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 
 
-import java.util.Collections;
 import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.justice.core.courts.AddedDefendantsMovedToHearing;
 import uk.gov.justice.core.courts.AddedOffencesMovedToHearing;
-import uk.gov.justice.core.courts.DefendantsAddedToCourtProceedings;
-import uk.gov.justice.core.courts.Hearing;
-import uk.gov.justice.core.courts.ListDefendantRequest;
-import uk.gov.justice.core.courts.ListHearingRequest;
-import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.OffencesMovedToNewNextHearing;
+import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.listing.courts.RelatedHearingUpdatedForAdhocHearing;
 import uk.gov.justice.listing.events.OffencesMovedToNextHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -27,6 +26,9 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class NextHearingEventProcessor {
@@ -57,7 +59,7 @@ public class NextHearingEventProcessor {
         offencesMovedToNextHearing.getOldHearingIds().forEach(oldHearingId ->
                 this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
                         .withName("progression.command.move-offences-from-old-next-hearing")
-                        .build(), Json.createObjectBuilder()
+                        .build(), createObjectBuilder()
                         .add("oldHearingId", oldHearingId.toString())
                         .add("newHearingId", offencesMovedToNextHearing.getNewHearingId().toString())
                         .add("seedingHearingId", offencesMovedToNextHearing.getSeedingHearingId().toString())
@@ -75,46 +77,32 @@ public class NextHearingEventProcessor {
     @Handles("progression.event.added-offences-moved-to-hearing")
     public void processAddedOffencesMovedToHearing(final Envelope<AddedOffencesMovedToHearing> event){
         if(event.payload().getIsHearingInitiateEnriched()) {
+            // add new offence to the hearing in progression context.
             this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
                     .withName("progression.command.update-offences-for-hearing"), AddedOffencesMovedToHearing.addedOffencesMovedToHearing()
                             .withValuesFrom(event.payload())
+                            .withCaseId(null)
                             .withIsHearingInitiateEnriched(null)
+                    .build()));
+
+            final JsonObject pcFromViewStore = progressionService.getProsecutionCaseDetailById(JsonEnvelope.envelopeFrom(event.metadata(), createObjectBuilder().build()), event.payload().getCaseId().toString()).orElseThrow();
+            final ProsecutionCase orgProsecutionCase = jsonObjectToObjectConverter.convert(pcFromViewStore.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+            final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                    .withValuesFrom(orgProsecutionCase)
+                    .withDefendants(orgProsecutionCase.getDefendants().stream().filter( def -> def.getId().equals(event.payload().getDefendantId()))
+                            .map(def -> Defendant.defendant().withValuesFrom(def)
+                                    .withOffences(event.payload().getNewOffences())
+                                    .build())
+                            .toList())
+                    .build();
+
+            // inform other context to add new offence to the hearing
+            this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
+                    .withName("public.progression.related-hearing-updated-for-adhoc-hearing"), RelatedHearingUpdatedForAdhocHearing.relatedHearingUpdatedForAdhocHearing()
+                    .withHearingId(event.payload().getHearingId())
+                    .withProsecutionCases(Stream.of(prosecutionCase).toList())
                     .build()));
         }
     }
 
-    @Handles("progression.event.added-defendants-moved-to-hearing")
-    public void processAddedDefendantsMovedToHearing(final JsonEnvelope event){
-        LOGGER.info("progression.event.added-defendants-moved-to-hearing");
-        final AddedDefendantsMovedToHearing addedDefendantsMovedToHearing = jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), AddedDefendantsMovedToHearing.class);
-
-        this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
-                .withName("progression.command.update-hearing-with-new-defendant"), event.payload()));
-
-        final Hearing hearing = progressionService.retrieveHearing(event, addedDefendantsMovedToHearing.getHearingId() );
-
-        final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings = DefendantsAddedToCourtProceedings.defendantsAddedToCourtProceedings()
-                .withDefendants(addedDefendantsMovedToHearing.getDefendants())
-                .withListHearingRequests(Collections.singletonList(ListHearingRequest.listHearingRequest()
-                        .withHearingType(hearing.getType())
-                        .withCourtCentre(hearing.getCourtCentre())
-                        .withJurisdictionType(hearing.getJurisdictionType())
-                        .withListDefendantRequests(addedDefendantsMovedToHearing.getDefendants().stream()
-                                .map(def -> ListDefendantRequest.listDefendantRequest()
-                                        .withDefendantId(def.getId())
-                                        .withProsecutionCaseId(addedDefendantsMovedToHearing.getProsecutionCaseId())
-                                        .withDefendantOffences(def.getOffences().stream().map(Offence::getId).toList())
-                                        .build())
-                                .toList())
-                        .build()))
-                .build();
-
-        LOGGER.info("public.progression.defendants-added-to-court-proceedings");
-        this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
-                .withName("public.progression.defendants-added-to-court-proceedings"), objectToJsonObjectConverter.convert(defendantsAddedToCourtProceedings)));
-        this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
-                .withName("public.progression.defendants-added-to-case"), objectToJsonObjectConverter.convert(defendantsAddedToCourtProceedings)));
-        this.sender.send(Envelope.envelopeFrom(metadataFrom(event.metadata())
-                .withName("public.progression.defendants-added-to-hearing"), objectToJsonObjectConverter.convert(defendantsAddedToCourtProceedings)));
-    }
 }

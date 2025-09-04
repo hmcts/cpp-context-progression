@@ -18,7 +18,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.CoreTemplateArguments.toMap;
@@ -32,11 +31,9 @@ import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
-import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
-import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
@@ -4941,7 +4938,7 @@ public class HearingAggregateTest {
 
 
     @Test
-    public void shouldMoveAllOffencesWhenHearingResultedByFirstHearingWithOneCase(){
+    public void shouldNotMoveOffencesWhenHearingResultedByFirstHearingWithOneCase(){
         final UUID seedingHearingId = randomUUID();
         final UUID case1Id = randomUUID();
         final UUID offenceId1 = randomUUID();
@@ -4963,14 +4960,7 @@ public class HearingAggregateTest {
                 .build();
 
         final List<Object> events = hearingAggregate.moveOffencesFromHearing(moveOffencesFromNextHearing).collect(toList());
-        assertThat(events.size(), is(1));
-
-        final OffencesMovedToNewNextHearing offencesMovedToNewNextHearing = (OffencesMovedToNewNextHearing) events.get(0);
-        assertThat(offencesMovedToNewNextHearing.getHearingId(), is (moveOffencesFromNextHearing.getNewHearingId()));
-        assertThat(offencesMovedToNewNextHearing.getSeededCase().get(0).getId(), is(hearing.getProsecutionCases().get(0).getId()));
-        assertThat(offencesMovedToNewNextHearing.getSeededCase().get(0).getNewDefendants().get(0).getId(), is(hearing.getProsecutionCases().get(0).getDefendants().get(0).getId()));
-        assertThat(offencesMovedToNewNextHearing.getSeededCase().get(0).getNewDefendants().get(0).getOffences().get(0).getId(), is(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId()));
-        assertThat(offencesMovedToNewNextHearing.getSeededCase().get(0).getNewDefendants().get(0).getOffences().get(1).getId(), is(hearing.getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getId()));
+        assertThat(events.size(), is(0));
 
     }
 
@@ -5190,109 +5180,15 @@ public class HearingAggregateTest {
                 .build();
 
         final List<Object> events = hearingAggregate.moveOffencesToHearing(moveOffencesToNextHearing).collect(toList());
-        assertThat(events.size(), is(2));
+        assertThat(events.size(), is(1));
         final AddedOffencesMovedToHearing addedOffencesMovedToHearing = (AddedOffencesMovedToHearing) events.get(0);
         assertThat(addedOffencesMovedToHearing.getHearingId(), is(hearing.getId()));
         assertThat(addedOffencesMovedToHearing.getDefendantId(), is(defendant1));
         assertThat(addedOffencesMovedToHearing.getNewOffences().size(), is(1));
         assertThat(addedOffencesMovedToHearing.getNewOffences().get(0).getId(), is(offenceId3));
 
-        final OffencesForDefendantChanged offencesForDefendantChanged = (OffencesForDefendantChanged) events.get(1);
-        assertThat(offencesForDefendantChanged.getAddedOffences().size(), is(1));
     }
 
-    @Test
-    public void shouldMoveOffencesToHearingForExistingDefendantButItLooksNewDefendant(){
-        final UUID seedingHearingId = randomUUID();
-        final UUID case1 = randomUUID();
-        final UUID defendant1 = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID offenceId3 = randomUUID();
-
-
-        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
-                        .setJurisdictionType(JurisdictionType.CROWN)
-                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
-                        .setSeedingHearingIds(Map.of(offenceId1, seedingHearingId))
-                        .setConvicted(false))
-                .build();
-
-        hearingAggregate.apply(createHearingResulted(hearing));
-
-        final MoveOffencesToNewNextHearing moveOffencesToNextHearing = MoveOffencesToNewNextHearing.moveOffencesToNewNextHearing()
-                .withHearingId(hearing.getId())
-                .withSeededCase(singletonList(SeededCase.seededCase()
-                        .withId(case1)
-                        .withNewDefendants(singletonList(Defendant.defendant()
-                                .withId(defendant1)
-                                .withOffences(asList(Offence.offence()
-                                        .withId(offenceId2)
-                                        .build(),Offence.offence()
-                                        .withId(offenceId3)
-                                        .build()))
-                                .build()))
-                        .build()))
-                .build();
-
-        final List<Object> events = hearingAggregate.moveOffencesToHearing(moveOffencesToNextHearing).collect(toList());
-        assertThat(events.size(), is(2));
-        final AddedOffencesMovedToHearing addedOffencesMovedToHearing = (AddedOffencesMovedToHearing) events.get(0);
-        assertThat(addedOffencesMovedToHearing.getHearingId(), is(hearing.getId()));
-        assertThat(addedOffencesMovedToHearing.getDefendantId(), is(defendant1));
-        assertThat(addedOffencesMovedToHearing.getNewOffences().size(), is(2));
-        assertThat(addedOffencesMovedToHearing.getNewOffences().get(0).getId(), is(offenceId2));
-        assertThat(addedOffencesMovedToHearing.getNewOffences().get(1).getId(), is(offenceId3));
-
-        final OffencesForDefendantChanged offencesForDefendantChanged = (OffencesForDefendantChanged) events.get(1);
-        assertThat(offencesForDefendantChanged.getAddedOffences().get(0).getOffences().size(), is(2));
-    }
-
-    @Test
-    public void shouldMoveDefendantToHearingForNewDefendant(){
-        final UUID seedingHearingId = randomUUID();
-        final UUID case1 = randomUUID();
-        final UUID defendant1 = randomUUID();
-        final UUID defendant2 = randomUUID();
-        final UUID offenceId1 = randomUUID();
-        final UUID offenceId2 = randomUUID();
-        final UUID offenceId3 = randomUUID();
-
-
-        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
-                        .setJurisdictionType(JurisdictionType.CROWN)
-                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
-                        .setSeedingHearingIds(Map.of(offenceId1, seedingHearingId))
-                        .setConvicted(false))
-                .build();
-
-        hearingAggregate.apply(createHearingResulted(hearing));
-
-        final MoveOffencesToNewNextHearing moveOffencesToNextHearing = MoveOffencesToNewNextHearing.moveOffencesToNewNextHearing()
-                .withHearingId(hearing.getId())
-                .withSeededCase(singletonList(SeededCase.seededCase()
-                        .withId(case1)
-                        .withNewDefendants(singletonList(Defendant.defendant()
-                                .withId(defendant2)
-                                .withOffences(asList(Offence.offence()
-                                        .withId(offenceId2)
-                                        .build(),Offence.offence()
-                                        .withId(offenceId3)
-                                        .build()))
-                                .build()))
-                        .build()))
-                .build();
-
-        final List<Object> events = hearingAggregate.moveOffencesToHearing(moveOffencesToNextHearing).collect(toList());
-        assertThat(events.size(), is(1));
-        final AddedDefendantsMovedToHearing addedDefendantsMovedToHearing = (AddedDefendantsMovedToHearing) events.get(0);
-        assertThat(addedDefendantsMovedToHearing.getHearingId(), is(hearing.getId()));
-        assertThat(addedDefendantsMovedToHearing.getDefendants().size(), is(1));
-        assertThat(addedDefendantsMovedToHearing.getDefendants().get(0).getId(), is(defendant2));
-        assertThat(addedDefendantsMovedToHearing.getDefendants().get(0).getOffences().size(), is(2));
-        assertThat(addedDefendantsMovedToHearing.getDefendants().get(0).getOffences().get(0).getId(), is(offenceId2));
-        assertThat(addedDefendantsMovedToHearing.getDefendants().get(0).getOffences().get(1).getId(), is(offenceId3));
-    }
 
     @Test
     public void shouldKeepsSeedHearingsWhenHearingEnrich(){
@@ -5351,9 +5247,9 @@ public class HearingAggregateTest {
                 .withHearingId(randomUUID())
                 .withSeededCase(singletonList(SeededCase.seededCase()
                         .withId(case1)
-                        .withNewDefendants(singletonList(Defendant.defendant()
+                        .withSeededDefendants(singletonList(SeededDefendant.seededDefendant()
                                 .withId(defendant1)
-                                .withOffences(singletonList(Offence.offence()
+                                .withSeededOffences(singletonList(Offence.offence()
                                         .withId(offenceId2)
                                         .build()))
                                 .build()))
@@ -5374,10 +5270,24 @@ public class HearingAggregateTest {
         assertThat(events.get(0), Matchers.instanceOf(HearingInitiateEnriched.class));
 
         final Stream<Object> events2 = hearingAggregate.populateHearingToProbationCaseWorker();
-        final HearingPopulatedToProbationCaseworker event = (HearingPopulatedToProbationCaseworker) events2.findFirst().get();
+        HearingPopulatedToProbationCaseworker event = (HearingPopulatedToProbationCaseworker) events2.findFirst().get();
 
         assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
         assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getId(), is(offenceId2));
+
+        final Hearing hearing2 = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1))))
+                        .setSeedingHearingIds(Map.of(offenceId1, seedingHearingId))
+                        .setConvicted(false))
+                .build();
+        final Stream<Object> events3 = hearingAggregate.updateDefendantListingStatus(hearing2, HearingListingStatus.HEARING_INITIALISED, false, new ArrayList<>());
+        event = (HearingPopulatedToProbationCaseworker) events3.filter(obj -> obj instanceof HearingPopulatedToProbationCaseworker).findFirst().get();
+
+        assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
+        assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(1).getId(), is(offenceId2));
+
+        assertThat(hearingAggregate.getNewOffences().contains(offenceId2), is(true));
 
     }
 
@@ -5411,9 +5321,9 @@ public class HearingAggregateTest {
                 .withHearingId(randomUUID())
                 .withSeededCase(singletonList(SeededCase.seededCase()
                         .withId(case1)
-                        .withNewDefendants(singletonList(Defendant.defendant()
+                        .withSeededDefendants(singletonList(SeededDefendant.seededDefendant()
                                 .withId(defendant1)
-                                .withOffences(singletonList(Offence.offence()
+                                .withSeededOffences(singletonList(Offence.offence()
                                         .withId(offenceId2)
                                         .build()))
                                 .build()))
@@ -5433,6 +5343,7 @@ public class HearingAggregateTest {
         assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().size(), is(1));
         assertThat(event.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences().get(0).getId(), is(offenceId1));
 
+        assertThat(hearingAggregate.getNewOffences().contains(offenceId2), is(true));
     }
 
 

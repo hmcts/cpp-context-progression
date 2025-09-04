@@ -1667,6 +1667,25 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
       202:
         description: OK
 
+/update-case-status-bdf:
+  post:
+    description: |
+      Update Case Status.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-case-status-bdf+json
+          name: progression.update-case-status-bdf
+      ...
+    body:
+      application/vnd.progression.update-case-status-bdf+json:
+        example:
+          !include json/progression.update-case-status-bdf.json
+        schema:
+          !include json/schema/progression.update-case-status-bdf.json
+    responses:
+      202:
+        description: OK
+
 /notification:
   post:
     description:  |

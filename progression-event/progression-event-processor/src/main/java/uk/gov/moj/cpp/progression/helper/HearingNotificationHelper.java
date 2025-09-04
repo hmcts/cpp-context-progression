@@ -56,6 +56,7 @@ import uk.gov.moj.cpp.progression.value.object.DefenceOrganisationVO;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -78,6 +79,8 @@ import org.slf4j.LoggerFactory;
 public class HearingNotificationHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HearingNotificationHelper.class);
+
+    private static final ZoneId UK_TIME_ZONE = ZoneId.of("Europe/London");
 
     private static final String EMPTY = "";
     private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
@@ -371,7 +374,7 @@ public class HearingNotificationHelper {
                 .withCourtroomNameWelsh(enrichedCourtCentre.getWelshRoomName())
                 .withHearingDate(hearingNotificationInputData.getHearingDateTime().toLocalDate().toString())
                 .withCourtAddress(buildPostalAddress(enrichedCourtCentre.getAddress(), false))
-                .withHearingTime(hearingNotificationInputData.getHearingDateTime().toLocalTime().toString());
+                .withHearingTime(hearingNotificationInputData.getHearingDateTime().withZoneSameInstant(UK_TIME_ZONE).toLocalTime().toString());
 
         if (enrichedCourtCentre.getWelshCourtCentre()) {
             postalHearingCourtDetailsBuilder.withCourtAddressWelsh(buildPostalAddress(enrichedCourtCentre.getWelshAddress(), enrichedCourtCentre.getWelshCourtCentre()));
