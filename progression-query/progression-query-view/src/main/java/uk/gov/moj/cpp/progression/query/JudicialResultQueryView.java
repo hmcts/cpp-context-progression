@@ -1,11 +1,16 @@
 package uk.gov.moj.cpp.progression.query;
 
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 
+import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -51,9 +56,17 @@ public class JudicialResultQueryView {
         final UUID judicialResultTypeId = getUUID(envelope.payloadAsJsonObject(), "judicialResultTypeId").orElseThrow(() -> new IllegalArgumentException("No judicialResultTypeId Supplied"));
 
         final HearingEntity hearingEntity = hearingRepository.findBy(hearingId);
+        if (isNull(hearingEntity)) {
+            return JsonEnvelope.envelopeFrom(
+                    envelope.metadata(),
+                    createObjectBuilder().add("judicialChildResults",jsonArrayBuilder.build()).build());
+        }
         final Hearing hearing = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(hearingEntity.getPayload()), Hearing.class);
 
         findJudicialResultFromProsecutionCase(hearing, masterDefendantId, judicialResultTypeId, judicialChildResult);
+        findJudicialResultFromApplication(hearing, masterDefendantId, judicialResultTypeId, judicialChildResult);
+        findJudicialResultFromApplicationOffence(hearing, masterDefendantId, judicialResultTypeId, judicialChildResult);
+        findJudicialResultFromApplicationCourtOrderOffence(hearing, masterDefendantId, judicialResultTypeId, judicialChildResult);
 
         judicialChildResult.forEach(childResult ->
                 jsonArrayBuilder.add(createObjectBuilder()
@@ -88,9 +101,107 @@ public class JudicialResultQueryView {
                         .map(ProsecutionCase::getDefendants)
                         .flatMap(Collection::stream)
                         .filter(defendant -> defendant.getMasterDefendantId().equals(masterDefendantId))
-                        .filter(defendant -> defendant.getMasterDefendantId().equals(masterDefendantId))
                         .map(Defendant::getOffences)
                         .flatMap(Collection::stream)
+                        .map(Offence::getJudicialResults)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream)
+                        .toList();
+
+                findChildResults(judicialResults, judicialChildResult, judicialResultId.get());
+            }
+        }
+    }
+
+    private void findJudicialResultFromApplication(final Hearing hearing, final UUID masterDefendantId, final UUID judicialResultTypeId, final List<JudicialResult> judicialChildResult) {
+        if (nonNull(hearing.getCourtApplications())) {
+            final Optional<UUID> judicialResultId = hearing.getCourtApplications().stream()
+                    .filter(c-> nonNull(c.getSubject()) && nonNull(c.getSubject().getMasterDefendant())
+                            && masterDefendantId.equals(c.getSubject().getMasterDefendant().getMasterDefendantId()))
+                    .map(CourtApplication::getJudicialResults)
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
+                    .filter(judicialResult -> judicialResult.getJudicialResultTypeId().equals(judicialResultTypeId))
+                    .map(JudicialResult::getJudicialResultId)
+                    .findFirst();
+
+            if (judicialResultId.isPresent()) {
+                final List<JudicialResult> judicialResults = hearing.getCourtApplications().stream()
+                        .map(CourtApplication::getJudicialResults)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream)
+                        .toList();
+
+                findChildResults(judicialResults, judicialChildResult, judicialResultId.get());
+            }
+        }
+    }
+
+    private void findJudicialResultFromApplicationOffence(final Hearing hearing, final UUID masterDefendantId, final UUID judicialResultTypeId, final List<JudicialResult> judicialChildResult) {
+        if (nonNull(hearing.getCourtApplications())) {
+            final Optional<UUID> judicialResultId = hearing.getCourtApplications().stream()
+                    .filter(c-> nonNull(c.getSubject()) && nonNull(c.getSubject().getMasterDefendant())
+                            && masterDefendantId.equals(c.getSubject().getMasterDefendant().getMasterDefendantId()))
+                    .map(CourtApplication::getCourtApplicationCases)
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
+                    .map(CourtApplicationCase::getOffences)
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
+                    .map(Offence::getJudicialResults)
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
+                    .filter(judicialResult -> judicialResult.getJudicialResultTypeId().equals(judicialResultTypeId))
+                    .filter(Objects::nonNull)
+                    .map(JudicialResult::getJudicialResultId)
+                    .findFirst();
+
+            if (judicialResultId.isPresent()) {
+                final List<JudicialResult> judicialResults = hearing.getCourtApplications().stream()
+                        .map(CourtApplication::getCourtApplicationCases)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream)
+                        .map(CourtApplicationCase::getOffences)
+                        .flatMap(Collection::stream)
+                        .map(Offence::getJudicialResults)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream)
+                        .toList();
+
+                findChildResults(judicialResults, judicialChildResult, judicialResultId.get());
+            }
+        }
+    }
+
+    private void findJudicialResultFromApplicationCourtOrderOffence(final Hearing hearing, final UUID masterDefendantId, final UUID judicialResultTypeId, final List<JudicialResult> judicialChildResult) {
+        if (nonNull(hearing.getCourtApplications())) {
+            final Optional<UUID> judicialResultId = hearing.getCourtApplications().stream()
+                    .filter(c-> nonNull(c.getSubject()) && nonNull(c.getSubject().getMasterDefendant())
+                            && masterDefendantId.equals(c.getSubject().getMasterDefendant().getMasterDefendantId()))
+                    .map(CourtApplication::getCourtOrder)
+                    .filter(Objects::nonNull)
+                    .map(CourtOrder::getCourtOrderOffences)
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
+                    .map(CourtOrderOffence::getOffence)
+                    .filter(Objects::nonNull)
+                    .map(Offence::getJudicialResults)
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
+                    .filter(judicialResult -> judicialResult.getJudicialResultTypeId().equals(judicialResultTypeId))
+                    .filter(Objects::nonNull)
+                    .map(JudicialResult::getJudicialResultId)
+                    .findFirst();
+
+            if (judicialResultId.isPresent()) {
+                final List<JudicialResult> judicialResults = hearing.getCourtApplications().stream()
+                        .map(CourtApplication::getCourtOrder)
+                        .filter(Objects::nonNull)
+                        .map(CourtOrder::getCourtOrderOffences)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream)
+                        .map(CourtOrderOffence::getOffence)
+                        .filter(Objects::nonNull)
                         .map(Offence::getJudicialResults)
                         .filter(Objects::nonNull)
                         .flatMap(Collection::stream)
@@ -104,7 +215,7 @@ public class JudicialResultQueryView {
 
     private void findChildResults(final List<JudicialResult> judicialResults, final List<JudicialResult> childJudicialResults, final UUID judicialResultId) {
         judicialResults.forEach(judicialResult -> {
-            if (judicialResult.getRootJudicialResultId().equals(judicialResultId) && !judicialResult.getJudicialResultId().equals(judicialResultId)) {
+            if (judicialResultId.equals(judicialResult.getRootJudicialResultId()) && !judicialResultId.equals(judicialResult.getJudicialResultId())) {
                 childJudicialResults.add(judicialResult);
                 findChildResults(judicialResults, childJudicialResults, judicialResult.getJudicialResultId());
             }
