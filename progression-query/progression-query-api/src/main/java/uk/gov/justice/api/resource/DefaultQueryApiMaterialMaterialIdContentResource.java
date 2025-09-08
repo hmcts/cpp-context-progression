@@ -1,6 +1,6 @@
 package uk.gov.justice.api.resource;
 
-import static java.util.Objects.isNull;
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
@@ -12,6 +12,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static javax.ws.rs.core.Response.status;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.core.interceptor.InterceptorContext.interceptorContextWithInput;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
@@ -37,6 +38,8 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRep
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtDocumentIndexRepository;
 import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,6 +55,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * http endpoint adapter which overrides default framework adapter. It handles transfer of files
@@ -66,6 +71,7 @@ import org.apache.commons.lang3.tuple.Pair;
 @Stateless
 @Adapter(Component.QUERY_API)
 public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryApiMaterialMaterialIdContentResource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQueryApiMaterialMaterialIdContentResource.class);
     public static final String PROGRESSION_QUERY_MATERIAL_CONTENT = "progression.query.material-content";
     public static final String PROGRESSION_QUERY_MATERIAL_CONTENT_DEFENCE = "progression.query.material-content-for-defence";
     public static final String PROGRESSION_QUERY_MATERIAL_CONTENT_PROSECUTION = "progression.query.material-content-for-prosecution";
@@ -198,7 +204,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
 
             final String materialId = document.payloadAsJsonObject().getString(MATERIAL_ID);
 
-            if(isNotAuthorisedToViewMaterial(document, materialId)){
+            if (isNotAuthorisedToViewMaterial(document, materialId)) {
                 return Response
                         .status(FORBIDDEN)
                         .entity(createObjectBuilder().build())
@@ -228,20 +234,21 @@ public class DefaultQueryApiMaterialMaterialIdContentResource implements QueryAp
     }
 
     private boolean isNotAuthorisedToViewMaterial(final JsonEnvelope document, final String materialId) {
-        final Optional<CourtDocumentIndexEntity> courtDocumentIndexEntity = courtDocumentIndexRepository.findByMaterialId(fromString(materialId));
-        if(courtDocumentIndexEntity.isEmpty()){
+        try {
+            final List<CourtDocumentIndexEntity> courtDocumentIndexEntities = courtDocumentIndexRepository.findByMaterialId(fromString(materialId));
+            if (isEmpty(courtDocumentIndexEntities)) {
+                return false;
+            }
+
+            return courtDocumentIndexEntities.stream()
+                    .map(CourtDocumentIndexEntity::getApplicationId)
+                    .filter(Objects::nonNull)
+                    .map(this::getCourtApplication)
+                    .anyMatch(courtApplication -> !userDetailsLoader.isUserHasPermissionForApplicationTypeCode(document.metadata(), courtApplication.getType().getCode()));
+        } catch (final Exception e) {
+            LOGGER.error(format("Error checking authorisation for materialId: %s", materialId), e);
             return false;
         }
-
-        final UUID applicationId = courtDocumentIndexEntity.get().getApplicationId();
-        if(isNull(applicationId)){
-            return false;
-        }
-
-        final CourtApplication courtApplication = getCourtApplication(applicationId);
-
-        return !userDetailsLoader.isUserHasPermissionForApplicationTypeCode(document.metadata(), courtApplication.getType().getCode());
-
     }
 
     private CourtApplication getCourtApplication(final UUID applicationId) {

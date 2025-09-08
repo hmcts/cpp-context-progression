@@ -26,14 +26,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
 import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
 
-import uk.gov.QueryClientTestBase;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.accesscontrol.AccessControlViolationException;
 import uk.gov.justice.services.core.interceptor.InterceptorChainProcessor;
 import uk.gov.justice.services.core.interceptor.InterceptorContext;
 import uk.gov.justice.services.core.requester.Requester;
-import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
@@ -47,10 +45,10 @@ import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -122,8 +120,10 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
     @Test
     public void shouldRunAllInterceptorsAndFetchAndStreamDocumentWhenUserHasPermissionForApplicationDocument() {
         final JsonEnvelope documentDetails = documentDetails(materialId);
-        final UUID applicationId = randomUUID();
+        final UUID applicationId1 = randomUUID();
+        final UUID applicationId2 = randomUUID();
         final String applicationTypeCode = "any-code";
+        final String applicationTypeCode2 = "any-code2";
 
         final MultivaluedMap headers = new MultivaluedHashMap(ImmutableMap.of(CONTENT_TYPE, JSON_CONTENT_TYPE));
 
@@ -132,11 +132,19 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
                 .build();
 
         final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
-        courtDocumentIndexEntity.setApplicationId(applicationId);
+        courtDocumentIndexEntity.setApplicationId(applicationId1);
+
+        final CourtDocumentIndexEntity courtDocumentIndexEntity2 = new CourtDocumentIndexEntity();
+        courtDocumentIndexEntity2.setApplicationId(applicationId2);
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(createObjectBuilder()
                         .add("type", createObjectBuilder().add("code", applicationTypeCode).build())
+                .build().toString());
+
+        final CourtApplicationEntity courtApplicationEntity2 = new CourtApplicationEntity();
+        courtApplicationEntity2.setPayload(createObjectBuilder()
+                .add("type", createObjectBuilder().add("code", applicationTypeCode2).build())
                 .build().toString());
 
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
@@ -144,8 +152,9 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
         when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
-        when(courtDocumentIndexRepository.findByMaterialId(materialId)).thenReturn(Optional.of(courtDocumentIndexEntity));
-        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(courtDocumentIndexRepository.findByMaterialId(materialId)).thenReturn(Arrays.asList(courtDocumentIndexEntity, courtDocumentIndexEntity2));
+        when(courtApplicationRepository.findByApplicationId(applicationId1)).thenReturn(courtApplicationEntity);
+        when(courtApplicationRepository.findByApplicationId(applicationId2)).thenReturn(courtApplicationEntity2);
 
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(true);
 
@@ -162,22 +171,34 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
     public void shouldRunAllInterceptorsAndFetchAndStreamDocumentAndReturnForbiddenWhenUserHasNoPermissionForApplicationDocument() {
         final JsonEnvelope documentDetails = documentDetails(materialId);
         final UUID applicationId = randomUUID();
+        final UUID applicationId2 = randomUUID();
         final String applicationTypeCode = "any-code";
+        final String applicationTypeCode2 = "any-code2";
 
         final CourtDocumentIndexEntity courtDocumentIndexEntity = new CourtDocumentIndexEntity();
         courtDocumentIndexEntity.setApplicationId(applicationId);
+
+        final CourtDocumentIndexEntity courtDocumentIndexEntity2 = new CourtDocumentIndexEntity();
+        courtDocumentIndexEntity2.setApplicationId(applicationId2);
 
         final CourtApplicationEntity courtApplicationEntity = new CourtApplicationEntity();
         courtApplicationEntity.setPayload(createObjectBuilder()
                 .add("type", createObjectBuilder().add("code", applicationTypeCode).build())
                 .build().toString());
 
+        final CourtApplicationEntity courtApplicationEntity2 = new CourtApplicationEntity();
+        courtApplicationEntity2.setPayload(createObjectBuilder()
+                .add("type", createObjectBuilder().add("code", applicationTypeCode2).build())
+                .build().toString());
+
         when(serviceContextSystemUserProvider.getContextSystemUserId()).thenReturn(Optional.of(systemUserId));
         when(interceptorChainProcessor.process(argThat((any(InterceptorContext.class))))).thenReturn(Optional.ofNullable(documentDetails));
-        when(courtDocumentIndexRepository.findByMaterialId(materialId)).thenReturn(Optional.of(courtDocumentIndexEntity));
+        when(courtDocumentIndexRepository.findByMaterialId(materialId)).thenReturn(Arrays.asList(courtDocumentIndexEntity, courtDocumentIndexEntity2));
         when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(courtApplicationEntity);
+        when(courtApplicationRepository.findByApplicationId(applicationId2)).thenReturn(courtApplicationEntity2);
 
-        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(false);
+        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(ArgumentMatchers.any(Metadata.class), ArgumentMatchers.eq(applicationTypeCode))).thenReturn(true);
+        when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(ArgumentMatchers.any(Metadata.class), ArgumentMatchers.eq(applicationTypeCode2))).thenReturn(false);
 
         final Response documentContentResponse = endpointHandler.getMaterialByMaterialIdContent(materialId.toString(), userId);
 
@@ -210,7 +231,7 @@ public class DefaultQueryApiMaterialMaterialIdContentResourceTest {
         when(materialClient.getMaterial(materialId, systemUserId)).thenReturn(documentContentResponse);
         when(documentContentResponse.readEntity(String.class)).thenReturn(documentUrl);
         when(documentContentResponse.getStatus()).thenReturn(SC_OK);
-        when(courtDocumentIndexRepository.findByMaterialId(materialId)).thenReturn(Optional.of(courtDocumentIndexEntity));
+        when(courtDocumentIndexRepository.findByMaterialId(materialId)).thenReturn(Arrays.asList(courtDocumentIndexEntity));
 
         final Response documentContentResponse = endpointHandler.getMaterialByMaterialIdContent(materialId.toString(), userId);
 

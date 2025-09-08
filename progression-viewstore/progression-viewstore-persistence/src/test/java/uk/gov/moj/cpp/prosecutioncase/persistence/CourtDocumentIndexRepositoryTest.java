@@ -95,11 +95,11 @@ public class CourtDocumentIndexRepositoryTest  {
         courtDocumentRepository.save(courtDocument);
         courtDocumentMaterialRepository.save(courtDocumentMaterial);
 
-        Optional<CourtDocumentIndexEntity> indexEntity = courtDocumentIndexRepository.findByMaterialId(materialId);
+        List<CourtDocumentIndexEntity> indexEntities = courtDocumentIndexRepository.findByMaterialId(materialId);
 
-        assertThat(indexEntity.isPresent(), is(true));
-        assertThat(indexEntity.get().getCourtDocument().getCourtDocumentId(), is(courtDocumentId));
-        assertThat(indexEntity.get().getApplicationId(), is(applicationId));
+        assertThat(indexEntities.size(), is(1));
+        assertThat(indexEntities.get(0).getCourtDocument().getCourtDocumentId(), is(courtDocumentId));
+        assertThat(indexEntities.get(0).getApplicationId(), is(applicationId));
 
     }
 

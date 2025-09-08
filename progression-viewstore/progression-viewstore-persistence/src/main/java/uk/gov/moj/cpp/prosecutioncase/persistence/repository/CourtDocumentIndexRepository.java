@@ -3,7 +3,6 @@ package uk.gov.moj.cpp.prosecutioncase.persistence.repository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentIndexEntity;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.deltaspike.data.api.EntityRepository;
@@ -21,9 +20,8 @@ public interface CourtDocumentIndexRepository extends EntityRepository<CourtDocu
     CourtDocumentIndexEntity findByCaseIdDefendantIdAndCaseDocumentId(@QueryParam("caseId") UUID caseId, @QueryParam("defendantId") UUID defendantId,
                                                                       @QueryParam("courtDocumentId") UUID courtDocumentId);
 
-    @Query(value = "select di from CourtDocumentIndexEntity di, CourtDocumentMaterialEntity dm where dm.materialId =:materialId and dm.courtDocumentId=di.courtDocument.courtDocumentId",
-            singleResult = SingleResultType.OPTIONAL)
-    Optional<CourtDocumentIndexEntity> findByMaterialId(@QueryParam("materialId") UUID materialId);
+    @Query(value = "select di from CourtDocumentIndexEntity di, CourtDocumentMaterialEntity dm where dm.materialId =:materialId and dm.courtDocumentId=di.courtDocument.courtDocumentId")
+    List<CourtDocumentIndexEntity> findByMaterialId(@QueryParam("materialId") UUID materialId);
 
     @Modifying
     @Query(value = "update CourtDocumentIndexEntity cdie set cdie.applicationId =:newApplicationId where  cdie.applicationId =:applicationId")
