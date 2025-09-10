@@ -144,6 +144,7 @@ import uk.gov.justice.core.courts.ListHearingRequest;
 import uk.gov.justice.core.courts.LockStatus;
 import uk.gov.justice.core.courts.Marker;
 import uk.gov.justice.core.courts.Material;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.OffenceListingNumbers;
 import uk.gov.justice.core.courts.OnlinePleasAllocation;
 import uk.gov.justice.core.courts.Organisation;
@@ -270,8 +271,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -413,7 +412,7 @@ public class CaseAggregate implements Aggregate {
                                     }
                                     if (nonNull(e.getProsecutionCase()) && !e.getProsecutionCase().getDefendants().isEmpty()) {
                                         e.getProsecutionCase().getDefendants().forEach(defendant -> {
-                                            this.defendantCaseOffences.put(defendant.getId(), getOffencesWithDefaultOrderIndex(defendant.getOffences()));
+                                            addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
                                             this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
                                             this.defendantLegalAidStatus.put(defendant.getId(), NO_VALUE.getDescription());
                                             updateDefendantProceedingConcluded(defendant, false);
@@ -428,7 +427,7 @@ public class CaseAggregate implements Aggregate {
 
                 when(ProsecutionCaseOffencesUpdated.class).apply(e -> {
                             if (e.getDefendantCaseOffences().getOffences() != null && !e.getDefendantCaseOffences().getOffences().isEmpty()) {
-                                this.defendantCaseOffences.put(e.getDefendantCaseOffences().getDefendantId(), getOffencesWithDefaultOrderIndex(e.getDefendantCaseOffences().getOffences()));
+                                addToDefendantCaseOffences(e.getDefendantCaseOffences().getDefendantId(), e.getDefendantCaseOffences().getOffences());
                                 this.offenceProceedingConcluded.put(e.getDefendantCaseOffences().getDefendantId(), e.getDefendantCaseOffences().getOffences());
                                 this.defendantLegalAidStatus.put(e.getDefendantCaseOffences().getDefendantId(), e.getDefendantCaseOffences().getLegalAidStatus());
                                 this.handleProsecutionCaseOffencesUpdated(e);
@@ -441,7 +440,7 @@ public class CaseAggregate implements Aggregate {
                             if (!e.getDefendants().isEmpty()) {
                                 e.getDefendants().forEach(
                                         defendant -> {
-                                            this.defendantCaseOffences.put(defendant.getId(), getOffencesWithDefaultOrderIndex(defendant.getOffences()));
+                                            addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
                                             this.offenceProceedingConcluded.put(defendant.getId(), defendant.getOffences());
                                             updateDefendantProceedingConcluded(defendant, false);
                                             this.defendantsMap.putIfAbsent(defendant.getId(), defendant);
@@ -555,7 +554,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void caseLinkedToHearing(final CaseLinkedToHearing caseLinkedToHearing) {
-        if(!this.deletedHearingIds.contains(caseLinkedToHearing.getHearingId())){
+        if (!this.deletedHearingIds.contains(caseLinkedToHearing.getHearingId())) {
             this.hearingIds.add(caseLinkedToHearing.getHearingId());
             this.latestHearingId = caseLinkedToHearing.getHearingId();
         }
@@ -617,7 +616,7 @@ public class CaseAggregate implements Aggregate {
                 offenceSet.addAll(defendant.getOffences());
                 Defendant.Builder builder = Defendant.defendant().withValuesFrom(defendant);
                 uk.gov.moj.cpp.progression.events.CustodialEstablishment custodialEstablishment = defendantCustodialEstablishmentMap.get(defendant.getId());
-                if(custodialEstablishment != null) {
+                if (custodialEstablishment != null) {
                     final uk.gov.justice.core.courts.CustodialEstablishment.Builder custodialEstablishmentBuilder = uk.gov.justice.core.courts.CustodialEstablishment.custodialEstablishment();
                     custodialEstablishmentBuilder.withCustody(custodialEstablishment.getCustody())
                             .withId(custodialEstablishment.getId())
@@ -838,7 +837,7 @@ public class CaseAggregate implements Aggregate {
             defendantsMap.put(defendant.getId(), updateDefendantFrom(defendant));
 
             final List<uk.gov.justice.core.courts.Offence> existingOffences = this.defendantCaseOffences.get(defendant.getId());
-            this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+            addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
             updateDefendantProceedingConcluded(defendant, defendant.getProceedingsConcluded());
             if (existingOffences != null) {
                 final List<UUID> updatedDefendantOffences = defendant.getOffences().stream().map(uk.gov.justice.core.courts.Offence::getId).collect(toList());
@@ -846,9 +845,9 @@ public class CaseAggregate implements Aggregate {
                 final List<uk.gov.justice.core.courts.Offence> concludedPlusOngoingOffences = new ArrayList<>();
                 concludedPlusOngoingOffences.addAll(defendant.getOffences());
                 concludedPlusOngoingOffences.addAll(noLongerInHearing);
-                this.defendantCaseOffences.put(defendant.getId(), concludedPlusOngoingOffences);
+                addToDefendantCaseOffences(defendant.getId(), concludedPlusOngoingOffences);
             } else {
-                this.defendantCaseOffences.put(defendant.getId(), defendant.getOffences());
+                addToDefendantCaseOffences(defendant.getId(), defendant.getOffences());
             }
 
             //capture all the offences that are resulted/actioned with ANY category offence level JudicialResults
@@ -870,6 +869,12 @@ public class CaseAggregate implements Aggregate {
             previousNotInactiveCaseStatus = pc.getCaseStatus();
         }
 
+    }
+
+    private void addToDefendantCaseOffences(final UUID defendantId, final List<Offence> concludedPlusOngoingOffences) {
+        if (nonNull(concludedPlusOngoingOffences)){
+            this.defendantCaseOffences.put(defendantId, getOffencesWithDefaultOrderIndex(concludedPlusOngoingOffences));
+        }
     }
 
     private void populateFinancialData(final FinancialDataAdded financialDataAdded) {
@@ -1674,7 +1679,10 @@ public class CaseAggregate implements Aggregate {
 
     public Stream<Object> updateOffences(final List<uk.gov.justice.core.courts.Offence> offences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {
         LOGGER.debug("Offences information is being updated.");
-        final AtomicInteger maxOrderIndex = new AtomicInteger(Collections.max(this.defendantCaseOffences.get(defendantId), Comparator.comparing(uk.gov.justice.core.courts.Offence::getOrderIndex)).getOrderIndex());
+        final AtomicInteger maxOrderIndex = new AtomicInteger(this.defendantCaseOffences.get(defendantId).stream()
+                .mapToInt(offence -> Optional.ofNullable(offence.getOrderIndex()).orElse(0))
+                .max()
+                .orElse(0));
         final List<uk.gov.justice.core.courts.Offence> newOffences = new ArrayList<>();
 
         final List<uk.gov.justice.core.courts.Offence> allOffences = offences.stream().map(commandOffence -> {
@@ -1826,7 +1834,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> linkProsecutionCaseToHearing(final UUID hearingId, final UUID caseId) {
-        if(!this.deletedHearingIds.contains(hearingId)){
+        if (!this.deletedHearingIds.contains(hearingId)) {
             return apply(Stream.of(CaseLinkedToHearing.caseLinkedToHearing()
                     .withHearingId(hearingId).withCaseId(caseId).build()));
         } else {
@@ -3825,15 +3833,15 @@ public class CaseAggregate implements Aggregate {
     }
 
     public Stream<Object> insertCase(final ProsecutionCase prosecutionCase) {
-        if(isNull(this.prosecutionCase)){
+        if (isNull(this.prosecutionCase)) {
             return apply(Stream.empty());
         }
-        if(! this.prosecutionCase.getId().equals(prosecutionCase.getId())){
+        if (!this.prosecutionCase.getId().equals(prosecutionCase.getId())) {
             return apply(Stream.empty());
         }
 
         String newReference = getReference(prosecutionCase);
-        if(! this.reference.equals(newReference)){
+        if (!this.reference.equals(newReference)) {
             return apply(Stream.empty());
         }
 

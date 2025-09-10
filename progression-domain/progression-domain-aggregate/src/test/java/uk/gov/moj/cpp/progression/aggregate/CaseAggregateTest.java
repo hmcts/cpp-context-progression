@@ -6751,6 +6751,39 @@ class CaseAggregateTest {
     }
 
     @Test
+    public void shouldAddNewOffenceWithLaaApplicationReferenceIfExistingOffenceHasLaaApplicationReferenceAndHearingResultedCaseUpdated() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId1 = randomUUID();
+        final UUID offenceId = randomUUID();
+        final String applicationReference = "AB746921";
+
+
+        final ProsecutionCaseCreated prosecutionCaseCreated = createProsecutionCaseCreated(caseId, defendantId1, offenceId, applicationReference, true);
+        this.caseAggregate.apply(prosecutionCaseCreated);
+        this.caseAggregate.apply(HearingResultedCaseUpdated.hearingResultedCaseUpdated()
+                .withProsecutionCase(prosecutionCaseCreated.getProsecutionCase())
+                .build());
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(1));
+        assertThat(this.caseAggregate.getDefendantCaseOffences().get(defendantId1).size(), is(1));
+
+        uk.gov.justice.core.courts.Offence offence = uk.gov.justice.core.courts.Offence.offence()
+                .withId(randomUUID())
+                .withProceedingsConcluded(false)
+                .withCount(7)
+                .withIndictmentParticular("Indictment Particular")
+                .build();
+
+        this.caseAggregate.updateOffences(Arrays.asList(offence), caseId, defendantId1, Optional.of(createJsonList()));
+
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().size(), is(1));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().size(), is(2));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(applicationReference));
+        assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(1).getLaaApplnReference().getApplicationReference(), is(applicationReference));
+    }
+
+    @Test
     public void shouldNotAddNewOffenceWithLaaApplicationReferenceIfExistingOffenceHasLaaApplicationReferenceAndNewOffenceWithoutCount() {
         final UUID caseId = randomUUID();
         final UUID defendantId1 = randomUUID();
