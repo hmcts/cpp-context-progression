@@ -47,4 +47,22 @@ class JudicialResultQueryApiTest {
 
         assertThat(result, is(expectedJsonEnvelope));
     }
+
+    @Test
+    void shouldGetJudicialChildResultsV2() {
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearingId", randomUUID().toString())
+                .add("masterDefendantId", randomUUID().toString())
+                .add("judicialResultTypeId", randomUUID().toString())
+                .build();
+
+        final JsonEnvelope query = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.judicial-child-results-v2").build(),
+                jsonObject);
+        when(judicialResultQueryView.getJudicialChildResultsV2(query)).thenReturn(expectedJsonEnvelope);
+
+        final JsonEnvelope result = judicialResultQueryApi.getJudicialChildResultsV2(query);
+
+        assertThat(result, is(expectedJsonEnvelope));
+    }
 }

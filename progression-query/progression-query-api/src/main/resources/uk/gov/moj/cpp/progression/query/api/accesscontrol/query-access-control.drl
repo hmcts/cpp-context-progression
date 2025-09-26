@@ -819,4 +819,13 @@ rule "Query - Access control for  progression.query.judicial-child-results"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Access control for  progression.query.judicial-child-results-v2"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.judicial-child-results-v2");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
+  then
+    $outcome.setSuccess(true);
+end
+
 

@@ -83,6 +83,40 @@ class JudicialResultQueryViewTest {
     }
 
     @Test
+    void shouldGetJudicialChildResultsV2WhenResultInProsecutionCaseAndExistInMoreThanOneOffence() throws IOException {
+        final UUID hearingId = randomUUID();
+        final String masterDefendantId = "29d01450-34e3-4676-9bac-303427db4c3a";
+        final String judicialResultTypeId = "418b3aa7-65ab-4a4a-bab9-2f96b698118c";
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(getPayload("hearing-payload-for-prosecutionCase-with-two-offence-child-judicial-results.json"));
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .add("masterDefendantId", masterDefendantId)
+                .add("judicialResultTypeId", judicialResultTypeId)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.judicial-child-results-v2").build(),
+                jsonObject);
+
+        final JsonEnvelope response = judicialResultQueryView.getJudicialChildResultsV2(jsonEnvelope);
+
+        final JsonObject result = response.payloadAsJsonObject();
+
+        assertThat(result.getString("latestEndDate"), is("2027-09-15"));
+
+        final JsonArray judicialChildResults = result.getJsonArray("judicialChildResults");
+
+        assertThat(judicialChildResults.size(), is(2));
+        assertThat(judicialChildResults.get(0).asJsonObject().getString("label"), is("Unpaid work. Requirement to be completed within 12 months."));
+        assertThat(judicialChildResults.get(1).asJsonObject().getString("label"), is("Attendance centre"));
+    }
+
+    @Test
     void shouldNotGetJudicialChildResultWhenNoChildResultExists() throws IOException {
         final UUID hearingId = randomUUID();
         final String masterDefendantId = "16e6e0d2-20fa-4de9-a821-fcbed849b149";
@@ -172,6 +206,38 @@ class JudicialResultQueryViewTest {
     }
 
     @Test
+    void shouldGetJudicialChildResultsWhenResultInApplicationAndExistsInMoreThanOneApplication() throws IOException {
+        final UUID hearingId = UUID.fromString("5ad33538-d02e-405b-aff2-d681483afdf4");
+        final String masterDefendantId = "72e601f0-bd44-416f-a076-b37808ebfd6b";
+        final String judicialResultTypeId = "418b3aa7-65ab-4a4a-bab9-2f96b698118c";
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(getPayload("hearing-payload-for-two-application-child-judicial-results.json"));
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .add("masterDefendantId", masterDefendantId)
+                .add("judicialResultTypeId", judicialResultTypeId)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.judicial-child-results-v2").build(),
+                jsonObject);
+
+        final JsonEnvelope response = judicialResultQueryView.getJudicialChildResultsV2(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().getString("latestEndDate"), is("2027-08-01"));
+
+        final JsonArray judicialChildResults = response.payloadAsJsonObject().getJsonArray("judicialChildResults");
+
+        assertThat(judicialChildResults.size(), is(2));
+        assertThat(judicialChildResults.get(0).asJsonObject().getString("label"), is("Unpaid work. Requirement to be completed within 12 months."));
+        assertThat(judicialChildResults.get(1).asJsonObject().getString("label"), is("Attendance centre"));
+       }
+
+    @Test
     void shouldGetJudicialChildResultsWhenResultInApplicationCourtOrderOffences() throws IOException {
         final UUID hearingId = UUID.fromString("247a5f0a-c231-4177-b5d0-20d69f20e55b");
         final String masterDefendantId = "e87d9fc8-325d-471a-bc2e-dd834ba9fb24";
@@ -200,6 +266,37 @@ class JudicialResultQueryViewTest {
         assertThat(result.get(0).asJsonObject().getString("label"), is("Unpaid work. Requirement to be completed within 12 months."));
         assertThat(result.get(0).asJsonObject().getString("judicialResultId"), is("02bd60d6-c912-4664-822e-821ccd762740"));
         assertThat(result.get(0).asJsonObject().getString("judicialResultTypeId"), is("9bec5977-1796-4645-9b9e-687d4f23d37d"));
+    }
+
+    @Test
+    void shouldGetJudicialChildResultsWhenResultInApplicationCourtOrderOffencesAndHasTwoOffence() throws IOException {
+        final UUID hearingId = UUID.fromString("247a5f0a-c231-4177-b5d0-20d69f20e55b");
+        final String masterDefendantId = "e87d9fc8-325d-471a-bc2e-dd834ba9fb24";
+        final String judicialResultTypeId = "418b3aa7-65ab-4a4a-bab9-2f96b698118c";
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(getPayload("hearing-payload-for-application-court-order-two-offence-child-judicial-results.json"));
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .add("masterDefendantId", masterDefendantId)
+                .add("judicialResultTypeId", judicialResultTypeId)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.judicial-child-results-v2").build(),
+                jsonObject);
+
+        final JsonEnvelope response = judicialResultQueryView.getJudicialChildResultsV2(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().getString("latestEndDate"), is("2027-02-10"));
+        final JsonArray judicialChildResults = response.payloadAsJsonObject().getJsonArray("judicialChildResults");
+
+        assertThat(judicialChildResults.size(), is(2));
+        assertThat(judicialChildResults.get(0).asJsonObject().getString("label"), is("Unpaid work. Requirement to be completed within 12 months."));
+        assertThat(judicialChildResults.get(1).asJsonObject().getString("label"), is("Attendance centre"));
     }
 
     @Test
@@ -259,6 +356,39 @@ class JudicialResultQueryViewTest {
         assertThat(result.get(0).asJsonObject().getString("label"), is("Unpaid work. Requirement to be completed within 12 months."));
         assertThat(result.get(0).asJsonObject().getString("judicialResultId"), is("c52b2860-a5a5-490b-93b4-f00c7f287d88"));
         assertThat(result.get(0).asJsonObject().getString("judicialResultTypeId"), is("9bec5977-1796-4645-9b9e-687d4f23d37d"));
+    }
+
+    @Test
+    void shouldGetJudicialChildResultsWhenResultInApplicationTwoOffence() throws IOException {
+        final UUID hearingId = UUID.fromString("5ad33538-d02e-405b-aff2-d681483afdf4");
+        final String masterDefendantId = "72e601f0-bd44-416f-a076-b37808ebfd6b";
+        final String judicialResultTypeId = "418b3aa7-65ab-4a4a-bab9-2f96b698118c";
+        final HearingEntity hearingEntity = new HearingEntity();
+        hearingEntity.setHearingId(hearingId);
+        hearingEntity.setPayload(getPayload("hearing-payload-for-application-two-offence-child-judicial-results.json"));
+
+        when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);
+
+        final JsonObject jsonObject = Json.createObjectBuilder()
+                .add("hearingId", hearingId.toString())
+                .add("masterDefendantId", masterDefendantId)
+                .add("judicialResultTypeId", judicialResultTypeId)
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
+                JsonEnvelope.metadataBuilder().withId(randomUUID()).withName("progression.query.judicial-child-results-v2").build(),
+                jsonObject);
+
+        final JsonEnvelope response = judicialResultQueryView.getJudicialChildResultsV2(jsonEnvelope);
+
+        assertThat(response.payloadAsJsonObject().getString("latestEndDate"), is("2027-08-01"));
+
+        final JsonArray judicialChildResults = response.payloadAsJsonObject().getJsonArray("judicialChildResults");
+
+        assertThat(judicialChildResults.size(), is(2));
+        assertThat(judicialChildResults.get(0).asJsonObject().getString("label"), is("Unpaid work. Requirement to be completed within 12 months."));
+        assertThat(judicialChildResults.get(1).asJsonObject().getString("label"), is("Attendance centre"));
+
     }
 
     @Test
