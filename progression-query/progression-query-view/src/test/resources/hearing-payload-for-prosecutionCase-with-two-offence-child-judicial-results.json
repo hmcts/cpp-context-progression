@@ -1,0 +1,605 @@
+{
+  "courtCentre": {
+    "address": {
+      "address1": "Norwich Place",
+      "address2": "Bexleyheath",
+      "address3": "Kent",
+      "address4": "",
+      "address5": "",
+      "postcode": "DA6 7ND"
+    },
+    "code": "B01BH00",
+    "courtHearingLocation": "B01BH01",
+    "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+    "lja": {
+      "ljaCode": "2575",
+      "ljaName": "South East London Magistrates' Court"
+    },
+    "name": "Bexley Magistrates' Court",
+    "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+    "roomName": "Courtroom 01"
+  },
+  "defendantAttendance": [
+    {
+      "attendanceDays": [
+        {
+          "attendanceType": "IN_PERSON",
+          "day": "2025-09-15"
+        }
+      ],
+      "defendantId": "29d01450-34e3-4676-9bac-303427db4c3a"
+    }
+  ],
+  "hasSharedResults": true,
+  "hearingDays": [
+    {
+      "courtCentreId": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+      "courtRoomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+      "hasSharedResults": true,
+      "isCancelled": false,
+      "listedDurationMinutes": 20,
+      "listingSequence": 0,
+      "sittingDay": "2025-09-15T09:30:00.000Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "acf6ed35-8638-4a47-a744-0768abb27651",
+  "isGroupProceedings": false,
+  "jurisdictionType": "MAGISTRATES",
+  "prosecutionCases": [
+    {
+      "caseStatus": "ACTIVE",
+      "cpsOrganisation": "A30AB00",
+      "defendants": [
+        {
+          "courtProceedingsInitiated": "2025-09-15T09:11:55.623Z",
+          "id": "29d01450-34e3-4676-9bac-303427db4c3a",
+          "isYouth": false,
+          "masterDefendantId": "29d01450-34e3-4676-9bac-303427db4c3a",
+          "offences": [
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2025-09-15",
+                "motReasonCode": "01",
+                "motReasonDescription": "Summary-only offence",
+                "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                "offenceId": "11eaeaae-4625-4219-961a-7b0e2487504a",
+                "originatingHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                "sequenceNumber": 90
+              },
+              "arrestDate": "2025-08-31",
+              "chargeDate": "2025-09-05",
+              "convictingCourt": {
+                "code": "B01BH00",
+                "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                "lja": {
+                  "ljaCode": "2575",
+                  "ljaName": "South East London Magistrates' Court"
+                },
+                "name": "Bexley Magistrates' Court",
+                "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+              },
+              "convictionDate": "2025-09-15",
+              "count": 0,
+              "dvlaOffenceCode": "DR20",
+              "endorsableFlag": true,
+              "id": "11eaeaae-4625-4219-961a-7b0e2487504a",
+              "isDisposed": true,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": true,
+                  "canBeSubjectOfVariation": true,
+                  "canExtendActiveOrder": false,
+                  "category": "FINAL",
+                  "cjsCode": "1116",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "durationElement": {
+                    "durationEndDate": "15/09/2025"
+                  },
+                  "dvlaCode": "M",
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": false,
+                  "isUnscheduled": false,
+                  "judicialResultId": "22aa3ea6-7024-437f-be8c-7b56dd90ce11",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isDurationEndDate": true,
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                      "label": "End Date",
+                      "promptReference": "endDate",
+                      "promptSequence": 100,
+                      "type": "DATE",
+                      "usergroups": [
+                      ],
+                      "value": "15/09/2025",
+                      "welshLabel": "Dyddiad terfyn",
+                      "welshValue": "15/09/2025"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                      "label": "Responsible officer",
+                      "promptReference": "responsibleOfficer",
+                      "promptSequence": 200,
+                      "type": "FIXL",
+                      "usergroups": [
+                      ],
+                      "value": "a probation officer",
+                      "welshLabel": "Swyddog cyfrifol",
+                      "welshValue": "swyddog prawf"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                      "label": "Supervising Court",
+                      "promptReference": "supervisingCourt",
+                      "promptSequence": 300,
+                      "type": "FIXL",
+                      "usergroups": [
+                      ],
+                      "value": "Aberdeen Sheriff Court District",
+                      "welshLabel": "Llys sy’n Goruchwylio",
+                      "welshValue": "Aberdeen Sheriff Court District"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                      "label": "Probation team to be notified organisation name",
+                      "promptReference": "probationteamtobenotifiedOrganisationName",
+                      "promptSequence": 700,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [
+                      ],
+                      "value": "London Division NPS",
+                      "welshValue": "London Division NPS"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                      "label": "Probation team to be notified email address 1",
+                      "promptReference": "probationteamtobenotifiedEmailAddress1",
+                      "promptSequence": 700,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [
+                      ],
+                      "value": "londonnps.court@justice.gov.uk",
+                      "welshValue": "londonnps.court@justice.gov.uk"
+                    }
+                  ],
+                  "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "label": "Community order England / Wales",
+                  "lastSharedDateTime": "2025-09-15",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-09-15",
+                  "orderedHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                  "policeSubjectLineTitle": "Final Sentence",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 50400,
+                  "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 15/09/2025. ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "22aa3ea6-7024-437f-be8c-7b56dd90ce11",
+                  "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                  ]
+                },
+                {
+                  "alwaysPublished": true,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "canExtendActiveOrder": false,
+                  "category": "ANCILLARY",
+                  "cjsCode": "3101",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": false,
+                  "isUnscheduled": false,
+                  "judicialResultId": "05ee057d-e3d0-48d3-b02a-87300f713066",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                      "label": "Number of hours",
+                      "promptReference": "numberOfHours",
+                      "promptSequence": 100,
+                      "type": "INT",
+                      "usergroups": [
+                      ],
+                      "value": "45 Hours",
+                      "welshLabel": "Nifer yr oriau",
+                      "welshValue": "45 Hours"
+                    }
+                  ],
+                  "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+                  "label": "Unpaid work. Requirement to be completed within 12 months.",
+                  "lastSharedDateTime": "2025-09-15",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-09-15",
+                  "orderedHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                  "parentJudicialResultId": "0d663446-bb06-47e1-9bad-93fad0fcc99f",
+                  "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 68500,
+                  "resultDefinitionGroup": "Community Requirement",
+                  "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 45 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "22aa3ea6-7024-437f-be8c-7b56dd90ce11",
+                  "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                  ]
+                }
+              ],
+              "listingNumber": 1,
+              "maxPenalty": "S:6M &/or Ultd FineOblig disq LE  LE 3-11pp",
+              "modeOfTrial": "Summary",
+              "offenceCode": "RT88339",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "932537a8-2ae7-308e-9786-b11fa5f69d52",
+              "offenceLegislation": "Contrary to section 4(1) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+              "offenceLegislationWelsh": "Yn groes i adran 4(1) Deddf Traffig Ffyrdd 1988 ac Atodlen 2 Deddf Troseddwyr Traffig Ffyrdd 1988.",
+              "offenceTitle": "Drive whilst unfit through drink",
+              "offenceTitleWelsh": "Gyrru a'r unigolyn heb fod mewn cyflwr i yrru oherwydd diod",
+              "orderIndex": 1,
+              "plea": {
+                "offenceId": "11eaeaae-4625-4219-961a-7b0e2487504a",
+                "originatingHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                "pleaDate": "2025-09-15",
+                "pleaValue": "GUILTY"
+              },
+              "proceedingsConcluded": true,
+              "startDate": "2025-07-17",
+              "wording": "Drive whilst unfit through drink"
+            },
+            {
+              "allocationDecision": {
+                "allocationDecisionDate": "2025-09-15",
+                "motReasonCode": "01",
+                "motReasonDescription": "Summary-only offence",
+                "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                "offenceId": "c9aa9519-1862-4011-98a8-3789123c18f3",
+                "originatingHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                "sequenceNumber": 90
+              },
+              "arrestDate": "2025-08-31",
+              "chargeDate": "2025-09-05",
+              "convictingCourt": {
+                "code": "B01BH00",
+                "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+                "lja": {
+                  "ljaCode": "2575",
+                  "ljaName": "South East London Magistrates' Court"
+                },
+                "name": "Bexley Magistrates' Court",
+                "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3"
+              },
+              "convictionDate": "2025-09-15",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "c9aa9519-1862-4011-98a8-3789123c18f3",
+              "isDisposed": true,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "amendmentDate": "2025-09-15",
+                  "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                  "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                  "canBeSubjectOfBreach": true,
+                  "canBeSubjectOfVariation": true,
+                  "canExtendActiveOrder": false,
+                  "category": "FINAL",
+                  "cjsCode": "1116",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "durationElement": {
+                    "durationEndDate": "15/09/2027"
+                  },
+                  "dvlaCode": "M",
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "8fc66f84-feea-4d52-b55e-5a1f8ce1672a",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isDurationEndDate": true,
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                      "label": "End Date",
+                      "promptReference": "endDate",
+                      "promptSequence": 100,
+                      "type": "DATE",
+                      "usergroups": [
+                      ],
+                      "value": "15/09/2027",
+                      "welshLabel": "Dyddiad terfyn",
+                      "welshValue": "15/09/2027"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                      "label": "Responsible officer",
+                      "promptReference": "responsibleOfficer",
+                      "promptSequence": 200,
+                      "type": "FIXL",
+                      "usergroups": [
+                      ],
+                      "value": "a probation officer",
+                      "welshLabel": "Swyddog cyfrifol",
+                      "welshValue": "swyddog prawf"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                      "label": "Supervising Court",
+                      "promptReference": "supervisingCourt",
+                      "promptSequence": 300,
+                      "type": "FIXL",
+                      "usergroups": [
+                      ],
+                      "value": "Aberdeen Sheriff Court District",
+                      "welshLabel": "Llys sy’n Goruchwylio",
+                      "welshValue": "Aberdeen Sheriff Court District"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                      "label": "Probation team to be notified organisation name",
+                      "promptReference": "probationteamtobenotifiedOrganisationName",
+                      "promptSequence": 700,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [
+                      ],
+                      "value": "London Division NPS",
+                      "welshValue": "London Division NPS"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                      "label": "Probation team to be notified email address 1",
+                      "promptReference": "probationteamtobenotifiedEmailAddress1",
+                      "promptSequence": 700,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [
+                      ],
+                      "value": "londonnps.court@justice.gov.uk",
+                      "welshValue": "londonnps.court@justice.gov.uk"
+                    }
+                  ],
+                  "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "label": "Community order England / Wales",
+                  "lastSharedDateTime": "2025-09-15",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-09-15",
+                  "orderedHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                  "policeSubjectLineTitle": "Final Sentence",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 50400,
+                  "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 15/09/2027. ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "8fc66f84-feea-4d52-b55e-5a1f8ce1672a",
+                  "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                  ]
+                },
+                {
+                  "alwaysPublished": true,
+                  "amendmentDate": "2025-09-15",
+                  "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                  "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "canExtendActiveOrder": false,
+                  "category": "ANCILLARY",
+                  "cjsCode": "3111",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "8c0272a3-e05f-4da2-a584-b1a0b0395529",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                      "label": "Number of hours",
+                      "promptReference": "numberOfHours",
+                      "promptSequence": 100,
+                      "type": "INT",
+                      "usergroups": [
+                      ],
+                      "value": "67 Hours",
+                      "welshLabel": "Nifer yr oriau",
+                      "welshValue": "67 Hours"
+                    }
+                  ],
+                  "judicialResultTypeId": "f9eac601-a1e7-4d45-99ee-c49e2c4ca85b",
+                  "label": "Attendance centre",
+                  "lastSharedDateTime": "2025-09-15",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-09-15",
+                  "orderedHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                  "parentJudicialResultId": "0d6e0c1a-bc0a-4944-bb20-00d93b337ece",
+                  "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 40900,
+                  "resultDefinitionGroup": "Community Requirement",
+                  "resultText": "ACR - Attendance centre\nAttendance Centre Requirement: Attend for 67 Hours.",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "8fc66f84-feea-4d52-b55e-5a1f8ce1672a",
+                  "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                  ],
+                  "welshLabel": "Canolfan ymbresenoli"
+                }
+              ],
+              "listingNumber": 1,
+              "maxPenalty": "S:L3",
+              "modeOfTrial": "Summary",
+              "offenceCode": "RT88056",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "9dd42272-969b-367d-abba-e4ae69f09d66",
+              "offenceLegislation": "Contrary to section 29 of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+              "offenceLegislationWelsh": "Yn groes i adran 29 Deddf Traffig Ffyrdd 1988 ac Atodlen 2 Deddf Troseddwyr Traffig Ffyrdd 1988.",
+              "offenceTitle": "Ride a cycle on a road / bridle way / footpath without due care and attention",
+              "offenceTitleWelsh": "Reidio beic ar ffordd / llwybr ceffyl / llwybr troed heb y gofal a'r sylw dyladwy",
+              "orderIndex": 2,
+              "plea": {
+                "offenceId": "c9aa9519-1862-4011-98a8-3789123c18f3",
+                "originatingHearingId": "acf6ed35-8638-4a47-a744-0768abb27651",
+                "pleaDate": "2025-09-15",
+                "pleaValue": "GUILTY"
+              },
+              "proceedingsConcluded": true,
+              "startDate": "2025-07-17",
+              "wording": "Drive whilst unfit through drink"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "2391NX0000931892369D",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "driverNumber": "VANFL002222OW9PH",
+            "personDetails": {
+              "address": {
+                "address1": "60 London Road",
+                "address2": "London Road",
+                "address3": "Leicester",
+                "address4": "Leicestershire",
+                "postcode": "LE1 1AA"
+              },
+              "contact": {
+                "home": "0534958786",
+                "mobile": "07389998589",
+                "primaryEmail": "galen.prohaska@example.com"
+              },
+              "dateOfBirth": "1997-09-15",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Galen",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Prohaska",
+              "title": "Mr"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          },
+          "prosecutionAuthorityReference": "2391NX0000931892369D",
+          "prosecutionCaseId": "436ab5c9-0c9a-419b-b0fc-d553cda773ac"
+        }
+      ],
+      "id": "436ab5c9-0c9a-419b-b0fc-d553cda773ac",
+      "initiationCode": "C",
+      "originatingOrganisation": "0480000",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "Bishopsgate police station",
+          "address2": "182, Bishopsgate",
+          "address5": "London",
+          "postcode": "EC2M 4NP"
+        },
+        "contact": {
+          "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+        },
+        "majorCreditorCode": "COLP",
+        "prosecutionAuthorityCode": "CITYPF",
+        "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+        "prosecutionAuthorityName": "City of London Police",
+        "prosecutionAuthorityOUCode": "0480000",
+        "caseURN": "IJ132256771"
+      }
+    }
+  ],
+  "type": {
+    "description": "First hearing",
+    "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+  }
+}
