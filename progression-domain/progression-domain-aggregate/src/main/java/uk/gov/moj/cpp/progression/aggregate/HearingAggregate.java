@@ -2,7 +2,6 @@ package uk.gov.moj.cpp.progression.aggregate;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
@@ -50,7 +49,6 @@ import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.listing.courts.ListNextHearingsV3;
-import uk.gov.justice.progression.courts.AddedOffences;
 import uk.gov.justice.progression.courts.BookingReferenceCourtScheduleIds;
 import uk.gov.justice.progression.courts.BookingReferencesAndCourtScheduleIdsStored;
 import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
@@ -65,7 +63,6 @@ import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
-import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingRequestedForAdhocHearing;
@@ -612,7 +609,7 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> addDefenceCounselToHearing(final DefenceCounsel defenceCounsel) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
-        final List<DefenceCounsel> newList = ofNullable(hearing.getDefenceCounsels()).map(Collection::stream).orElseGet(Stream::empty).collect(toList());
+        final List<DefenceCounsel> newList = ofNullable(hearing.getDefenceCounsels()).stream().flatMap(Collection::stream).collect(toList());
         newList.add(defenceCounsel);
         final Hearing hearingWithDefenceCounsel = Hearing.hearing().withValuesFrom(hearing)
                 .withDefenceCounsels(newList.stream().distinct().collect(toList()))
@@ -676,7 +673,7 @@ public class HearingAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         final Hearing hearingWithOutDefenceCounsel = Hearing.hearing().withValuesFrom(hearing)
-                .withDefenceCounsels(hearing.getDefenceCounsels().stream()
+                .withDefenceCounsels(ofNullable(hearing.getDefenceCounsels()).stream().flatMap(Collection::stream)
                         .filter(defenceCounselFromAggregate -> !defenceCounselFromAggregate.getId().equals(defenceCounselId))
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                 .build();
@@ -1827,6 +1824,7 @@ public class HearingAggregate implements Aggregate {
             newHearingListingNeeds.getProsecutionCases().addAll(resultCases);
 
             final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
+                    .withValuesFrom(this.hearing)
                     .withId(newHearingListingNeeds.getId())
                     .withHearingDays(this.getHearing().getHearingDays())
                     .withHasSharedResults(false)
@@ -1867,44 +1865,49 @@ public class HearingAggregate implements Aggregate {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final HearingListingNeeds newHearingListingNeeds = HearingListingNeeds.hearingListingNeeds().withValuesFrom(hearingListingNeeds).build();
+        if (! HearingListingStatus.HEARING_RESULTED.equals(this.hearingListingStatus)) {
+
+            final Set<ProsecutionCase> resultCases = new HashSet<>();
+            getProsecutionCasesAfterMergeAtDifferentLevel(hearingListingNeeds, resultCases);
+
+            newHearingListingNeeds.getProsecutionCases().clear();
+            newHearingListingNeeds.getProsecutionCases().addAll(resultCases);
+
+            final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
+                    .withValuesFrom(this.hearing)
+                    .withId(newHearingListingNeeds.getId())
+                    .withHearingDays(this.getHearing().getHearingDays())
+                    .withHasSharedResults(false)
+                    .withCourtApplications(newHearingListingNeeds.getCourtApplications())
+                    .withCourtCentre(newHearingListingNeeds.getCourtCentre())
+                    .withJurisdictionType(newHearingListingNeeds.getJurisdictionType())
+                    .withType(newHearingListingNeeds.getType())
+                    .withReportingRestrictionReason(newHearingListingNeeds.getReportingRestrictionReason())
+                    .withJudiciary(newHearingListingNeeds.getJudiciary())
+                    .withBookingType(newHearingListingNeeds.getBookingType())
+                    .withProsecutionCases(newHearingListingNeeds.getProsecutionCases()).build();
+
+            final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = prosecutionCaseDefendantListingStatusChangedV2()
+                    .withHearing(prosecutionCaseDefendantListingHearing)
+                    .withHearingListingStatus(this.hearingListingStatus)
+                    .build();
+
+            streamBuilder.add(prosecutionCaseDefendantListingStatusChangedV2);
+
+            final RelatedHearingUpdatedForAdhocHearing relatedHearingUpdated = RelatedHearingUpdatedForAdhocHearing.relatedHearingUpdatedForAdhocHearing()
+                    .withHearingRequest(newHearingListingNeeds)
+                    .withSendNotificationToParties(sendNotificationToParties)
+                    .build();
+
+            streamBuilder.add(relatedHearingUpdated);
+            final Stream events = apply(streamBuilder.build());
+            return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
+
+        }   else {
+            return Stream.empty();
+        }
 
 
-        final Set<ProsecutionCase> resultCases = new HashSet<>();
-        getProsecutionCasesAfterMergeAtDifferentLevel(hearingListingNeeds, resultCases);
-
-        newHearingListingNeeds.getProsecutionCases().clear();
-        newHearingListingNeeds.getProsecutionCases().addAll(resultCases);
-
-        final Hearing prosecutionCaseDefendantListingHearing = Hearing.hearing()
-                .withId(newHearingListingNeeds.getId())
-                .withHearingDays(this.getHearing().getHearingDays())
-                .withHasSharedResults(false)
-                .withCourtApplications(newHearingListingNeeds.getCourtApplications())
-                .withCourtCentre(newHearingListingNeeds.getCourtCentre())
-                .withJurisdictionType(newHearingListingNeeds.getJurisdictionType())
-                .withType(newHearingListingNeeds.getType())
-                .withReportingRestrictionReason(newHearingListingNeeds.getReportingRestrictionReason())
-                .withJudiciary(newHearingListingNeeds.getJudiciary())
-                .withBookingType(newHearingListingNeeds.getBookingType())
-                .withProsecutionCases(newHearingListingNeeds.getProsecutionCases()).build();
-
-        final ProsecutionCaseDefendantListingStatusChangedV2 prosecutionCaseDefendantListingStatusChangedV2 = prosecutionCaseDefendantListingStatusChangedV2()
-                .withHearing(prosecutionCaseDefendantListingHearing)
-                .withHearingListingStatus(HearingListingStatus.HEARING_INITIALISED)
-                .build();
-
-        streamBuilder.add(prosecutionCaseDefendantListingStatusChangedV2);
-
-
-
-        final RelatedHearingUpdatedForAdhocHearing relatedHearingUpdated = RelatedHearingUpdatedForAdhocHearing.relatedHearingUpdatedForAdhocHearing()
-                .withHearingRequest(newHearingListingNeeds)
-                .withSendNotificationToParties(sendNotificationToParties)
-                .build();
-
-        streamBuilder.add(relatedHearingUpdated);
-        final Stream events = apply(streamBuilder.build());
-        return Stream.concat(Stream.concat(events, populateHearingToProbationCaseWorker()), populateHearingToVEP());
     }
 
 

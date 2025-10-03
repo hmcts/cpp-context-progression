@@ -37,7 +37,7 @@ public class DefenceCounselIT extends AbstractIT {
     private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED = "public.hearing.defence-counsel-added";
+    public static final String PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED = "public.hearing.defence-counsel-added";
     private static final String PUBLIC_HEARING_DEFENCE_COUNSEL_UPDATED = "public.hearing.defence-counsel-updated";
     private static final String PUBLIC_HEARING_DEFENCE_COUNSEL_REMOVED = "public.hearing.defence-counsel-removed";
 
@@ -173,7 +173,7 @@ public class DefenceCounselIT extends AbstractIT {
         );
     }
 
-    private JsonObject getDefenceCounselPublicEventPayload(final String hearingId, final String firstName) {
+    public static  JsonObject getDefenceCounselPublicEventPayload(final String hearingId, final String firstName) {
         final String strPayload = getPayloadForCreatingRequest("public.hearing.defence-counsel-added-or-updated.json")
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("FIRST_NAME", firstName);
@@ -186,7 +186,7 @@ public class DefenceCounselIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private String getPayloadForCreatingRequest(final String ramlPath) {
+    private static String getPayloadForCreatingRequest(final String ramlPath) {
         String request = null;
         try {
             request = Resources.toString(

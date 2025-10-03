@@ -18,6 +18,9 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPrivateJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
+import static uk.gov.moj.cpp.progression.DefenceCounselIT.PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED;
+import static uk.gov.moj.cpp.progression.DefenceCounselIT.getDefenceCounselPublicEventPayload;
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtFirstHearing;
@@ -26,6 +29,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initia
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.listNewHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageAsJsonPath;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
@@ -42,6 +46,8 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
+import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.QueueUtil;
 
 import java.io.IOException;
@@ -62,7 +68,7 @@ import org.junit.jupiter.api.Test;
 public class ListNewHearingIT extends AbstractIT {
 
     private static final String PROGRESSION_EVENT_LISTING_STATUS_CHANGED = "progression.event.prosecutionCase-defendant-listing-status-changed-v2";
-
+    private final JmsMessageProducerClient messageProducerClientPublic = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
     private String prosecutorEmail;
 
     @BeforeEach
@@ -120,6 +126,15 @@ public class ListNewHearingIT extends AbstractIT {
 
         messageConsumerListHearingRequested = newPrivateJmsMessageConsumerClientProvider(CONTEXT_NAME).withEventNames(PROGRESSION_EVENT_LISTING_STATUS_CHANGED).getMessageConsumerClient();
 
+        final JsonObject hearingAddDefenceCounselJson = getDefenceCounselPublicEventPayload(hearingPayload.getString("id"), "Harry");
+        final JsonEnvelope publicEventAddedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED,  randomUUID().toString()), hearingAddDefenceCounselJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED, publicEventAddedEnvelope);
+
+        pollForHearing(hearingPayload.getString("id"),
+                withJsonPath("$.hearing.id", CoreMatchers.is(hearingPayload.getString("id"))),
+                withJsonPath("$.hearing.defenceCounsels[0].id", CoreMatchers.is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d"))
+        );
+
         addProsecutionCaseToCrownCourtFirstHearing(CASE_ID2, DEFENDANT_ID2, false);
 
         pollProsecutionCasesProgressionFor(CASE_ID2, getProsecutionCaseMatchers(CASE_ID2, DEFENDANT_ID2, singletonList(withJsonPath("$.prosecutionCase.defendants[0].offences[0].offenceCode", CoreMatchers.is("TTH105HY")))));
@@ -139,7 +154,13 @@ public class ListNewHearingIT extends AbstractIT {
         assertNotNull(message);
         doVerifyListHearingRequestedPrivateEvent(messageConsumerEmailRequestPrivateEvent, CASE_ID, CASE_ID2);
 
-        pollForHearing(hearingPayload.getString("id"), withJsonPath("$.hearing.id", is(hearingPayload.getString("id"))), withJsonPath("$.hearingListingStatus", is("HEARING_INITIALISED")), withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")), withJsonPath("$.hearing.prosecutionCases.length()", is(2)));
+        pollForHearing(hearingPayload.getString("id"),
+                withJsonPath("$.hearing.id", is(hearingPayload.getString("id"))),
+                withJsonPath("$.hearingListingStatus", is("SENT_FOR_LISTING")),
+                withJsonPath("$.hearing.jurisdictionType", is("MAGISTRATES")),
+                withJsonPath("$.hearing.prosecutionCases.length()", is(2)),
+                withJsonPath("$.hearing.defenceCounsels[0].id", CoreMatchers.is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d"))
+        );
 
     }
 

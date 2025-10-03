@@ -20,6 +20,8 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+
+import org.hamcrest.CoreMatchers;
 import org.json.JSONException;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +30,8 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAST_LOCAL_DATE;
+import static uk.gov.moj.cpp.progression.DefenceCounselIT.PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED;
+import static uk.gov.moj.cpp.progression.DefenceCounselIT.getDefenceCounselPublicEventPayload;
 import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourtWithOneGrownDefendantAndTwoOffences;
@@ -128,6 +132,16 @@ public class HearingResultedIT extends AbstractIT {
 
         verifyInMessagingQueueForCasesReferredToCourts();
 
+        final JsonObject hearingAddDefenceCounselJson = getDefenceCounselPublicEventPayload(hearingId3, "a");
+        final JsonEnvelope publicEventAddedEnvelope = JsonEnvelope.envelopeFrom(buildMetadata(PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED,  randomUUID().toString()), hearingAddDefenceCounselJson);
+        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_DEFENCE_COUNSEL_ADDED, publicEventAddedEnvelope);
+
+        pollForHearing(hearingId3,
+                withJsonPath("$.hearing.id", CoreMatchers.is(hearingId3)),
+                withJsonPath("$.hearing.defenceCounsels[0].id", CoreMatchers.is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d"))
+        );
+
+
         final JsonObject payload2 = getHearingJsonObjectWithExistingHearingId("public.events.hearing.hearing-resulted-with-existing-next-hearing.json", prosecutionCaseId2,
                 hearingId2, defendantId2, newCourtCentreId, newCourtCentreName, hearingId3);
         final JsonEnvelope publicEventEnvelope2 = envelopeFrom(buildMetadata("public.events.hearing.hearing-resulted", userId), payload2);
@@ -137,7 +151,8 @@ public class HearingResultedIT extends AbstractIT {
                 withJsonPath("$.hearing.id", is(hearingId3)),
                 withJsonPath("$.hearing.prosecutionCases.length()", is(2)),
                 withJsonPath("$.hearing.prosecutionCases[0].defendants[0].offences[0].seedingHearing", is(notNullValue())),
-                withJsonPath("$.hearing.prosecutionCases[1].defendants[0].offences[0].seedingHearing", is(notNullValue()))
+                withJsonPath("$.hearing.prosecutionCases[1].defendants[0].offences[0].seedingHearing", is(notNullValue())),
+                withJsonPath("$.hearing.defenceCounsels[0].id", CoreMatchers.is("fab947a3-c50c-4dbb-accf-b2758b1d2d6d"))
         );
     }
 

@@ -4,8 +4,12 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterCaseOrApplication;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
+import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterHearingVenue;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.util.UtcClock;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -33,8 +37,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static javax.json.Json.createObjectBuilder;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
@@ -172,15 +178,16 @@ public class PrisonCourtRegisterEventProcessor {
     public void sendPrisonCourtRegister(final JsonEnvelope envelope) {
         LOGGER.info("progression.event.prison-court-register-generated {}", envelope.payload());
         final JsonObject payload = envelope.payloadAsJsonObject();
+        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = converter.convert(payload, PrisonCourtRegisterGenerated.class);
+        final PrisonCourtRegisterDefendant defendant = prisonCourtRegisterGenerated.getDefendant();
+        final PrisonCourtRegisterHearingVenue hearingVenue = prisonCourtRegisterGenerated.getHearingVenue();
+        final UUID fileId = prisonCourtRegisterGenerated.getFileId();
 
-        final JsonObject defendant = payload.getJsonObject(DEFENDANT);
-        final JsonObject hearingVenue = payload.getJsonObject(HEARING_VENUE);
-        final String fileId = payload.getString(FILE_ID);
+
         final JsonArray recipients = payload.getJsonArray(FIELD_RECIPIENTS);
 
         final String emailSubject = String.format("RESULTS SUMMARY: %s; %s; %s; %s",
-                hearingVenue.getString("courtHouse"),
-                defendant.getString("name"), defendant.getString("dateOfBirth"), generateURN(defendant));
+                getCourtHouse(hearingVenue), defendant.getName(), getDefendantDateOfBirth(defendant), generateURN(defendant));
 
         recipients.stream().map(JsonObject.class::cast)
                 .filter(recipient -> recipient.containsKey("emailAddress1"))
@@ -193,14 +200,28 @@ public class PrisonCourtRegisterEventProcessor {
                     notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, UUID.randomUUID().toString());
                     notifyObjectBuilder.add(FIELD_TEMPLATE_ID, applicationParameters.getEmailTemplateId(pair.getTemplate()));
                     notifyObjectBuilder.add(SEND_TO_ADDRESS, pair.getEmail());
-                    notifyObjectBuilder.add(FILE_ID, fileId);
+                    notifyObjectBuilder.add(FILE_ID, fileId.toString());
                     notifyObjectBuilder.add(PERSONALISATION, createObjectBuilder()
                             .add("subject", emailSubject)
-                            .add("name_of_defendant", defendant.getString("name"))
+                            .add("name_of_defendant", defendant.getName())
                             .build());
 
                     this.notificationNotifyService.sendEmailNotification(envelope, notifyObjectBuilder.build());
                 });
+    }
+
+    private String getDefendantDateOfBirth(final PrisonCourtRegisterDefendant defendant) {
+        if(nonNull(defendant.getDateOfBirth())) {
+            return defendant.getDateOfBirth();
+        }
+        return EMPTY;
+    }
+
+    private String getCourtHouse(final PrisonCourtRegisterHearingVenue hearingVenue) {
+        if(nonNull(hearingVenue) && nonNull(hearingVenue.getCourtHouse())){
+            return hearingVenue.getCourtHouse();
+        }
+        return EMPTY;
     }
 
     private void sendRequestToGenerateDocumentAsync(
@@ -222,10 +243,11 @@ public class PrisonCourtRegisterEventProcessor {
         systemDocGeneratorService.generateDocument(documentGenerationRequest, envelope);
     }
 
-    private String generateURN(JsonObject defendant) {
-        final Optional<JsonObject> op = defendant.getJsonArray("prosecutionCasesOrApplications").stream()
-                .map(JsonObject.class::cast).findFirst();
-        return op.isPresent() ? op.get().getString("caseOrApplicationReference") : "";
+    private String generateURN(PrisonCourtRegisterDefendant defendant) {
+        if(nonNull(defendant.getProsecutionCasesOrApplications()) && !defendant.getProsecutionCasesOrApplications().isEmpty()) {
+            return defendant.getProsecutionCasesOrApplications().get(0).getCaseOrApplicationReference();
+        }
+        return EMPTY;
     }
 
     class EmailPair {

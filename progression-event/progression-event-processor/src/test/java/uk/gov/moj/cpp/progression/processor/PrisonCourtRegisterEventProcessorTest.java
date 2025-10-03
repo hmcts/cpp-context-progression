@@ -191,4 +191,32 @@ public class PrisonCourtRegisterEventProcessorTest {
         assertThat(notificationJsonObjectCaptor.getValue().getString("notificationId"), is(notNullValue()));
     }
 
+
+    @Test
+    public void shouldSendPrisonCourtRegisterWithDefendantHasNoDateOfBirth() {
+        final UUID fileId = randomUUID();
+        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = PrisonCourtRegisterGenerated.prisonCourtRegisterGenerated().withCourtCentreId(randomUUID())
+                .withRecipients(singletonList(new PrisonCourtRegisterRecipient.Builder()
+                        .withEmailAddress1("test@hmcst.net")
+                        .withEmailTemplateName("emailTemplateName").build()))
+                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant()
+                        .withName("defendant-name")
+                        .withProsecutionCasesOrApplications(
+                                singletonList(new PrisonCourtRegisterCaseOrApplication.Builder().withCaseOrApplicationReference("URN-999999").build())
+                        ).build())
+                .withHearingVenue(new PrisonCourtRegisterHearingVenue.Builder().withCourtHouse("liverpool Crown Court").build())
+                .withFileId(fileId)
+                .build();
+
+        final JsonObject jsonObject = objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated);
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.prison-court-register-generated"),
+                jsonObject);
+        when(applicationParameters.getEmailTemplateId(anyString())).thenReturn(randomUUID().toString());
+        prisonCourtRegisterEventProcessor.sendPrisonCourtRegister(requestMessage);
+        verify(notificationNotifyService).sendEmailNotification(eq(requestMessage), notificationJsonObjectCaptor.capture());
+        assertThat(notificationJsonObjectCaptor.getValue().getString("fileId"), is(fileId.toString()));
+        assertThat(notificationJsonObjectCaptor.getValue().getString("notificationId"), is(notNullValue()));
+    }
+
 }

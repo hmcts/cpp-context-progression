@@ -20,6 +20,8 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 
 import java.util.ArrayList;
 import java.util.Collections;
+
+import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
@@ -153,6 +155,9 @@ public class RelatedHearingCommandHandlerTest {
                                                 .build()))
                                         .build()))
                                 .build()))
+                        .withDefenceCounsels(Collections.singletonList(DefenceCounsel.defenceCounsel()
+                                .withId(randomUUID())
+                                .build()))
                         .build()).build());
         final UpdateRelatedHearingCommandForAdhocHearing command = createUpdateRelatedHearingCommandForAdhocHearing(hearingId, prosecutionCaseId, offenceId);
 
@@ -174,8 +179,9 @@ public class RelatedHearingCommandHandlerTest {
                                 .withName("progression.event.prosecutionCase-defendant-listing-status-changed-v2"),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.hearing.id", is(hearingId.toString())),
-                                withJsonPath("$.hearing.prosecutionCases.length()", is(2)))
-                        )),
+                                withJsonPath("$.hearing.prosecutionCases.length()", is(2)),
+                                withJsonPath("$.hearing.defenceCounsels", notNullValue())
+                        ))),
                 jsonEnvelope(
                         metadata()
                                 .withName("progression.event.related-hearing-updated-for-adhoc-hearing"),
@@ -192,7 +198,8 @@ public class RelatedHearingCommandHandlerTest {
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.hearing.id", is(hearingId.toString())),
                                 withJsonPath("$.hearing.prosecutionCases", notNullValue()),
-                                withJsonPath("$.hearing.prosecutionCases.length()", is(2))
+                                withJsonPath("$.hearing.prosecutionCases.length()", is(2)),
+                                withJsonPath("$.hearing.defenceCounsels", notNullValue())
                         ))),
                 jsonEnvelope(
                         metadata()
@@ -200,7 +207,8 @@ public class RelatedHearingCommandHandlerTest {
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
                                 withJsonPath("$.hearing.id", is(hearingId.toString())),
                                 withJsonPath("$.hearing.prosecutionCases", notNullValue()),
-                                withJsonPath("$.hearing.prosecutionCases.length()", is(2))
+                                withJsonPath("$.hearing.prosecutionCases.length()", is(2)),
+                                withJsonPath("$.hearing.defenceCounsels", notNullValue())
                         )))
         ));
     }

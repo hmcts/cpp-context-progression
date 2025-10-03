@@ -2827,6 +2827,31 @@ public class HearingAggregateTest {
         assertThat(hearingDefenceCounselUpdated.getDefenceCounsel().getFirstName(), is("FirstName"));
     }
 
+    // This is for DLQs
+    @Test
+    public void shouldRemoveDefenceCounselWhenDefenceCounselListIsNull() {
+        final UUID defenceCounselId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
+
+        final List<Object> events = hearingAggregate.removeDefenceCounselFromHearing(defenceCounselId).collect(toList());
+
+        ProsecutionCaseDefendantListingStatusChanged prosecutionCaseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChanged) events.get(1);
+
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getId(), is(hearingId));
+        assertThat(prosecutionCaseDefendantListingStatusChanged.getHearing().getDefenceCounsels(), is(nullValue()));
+
+        HearingDefenceCounselRemoved hearingDefenceCounselRemoved = (HearingDefenceCounselRemoved) events.get(0);
+
+        assertThat(hearingDefenceCounselRemoved.getHearingId(), is(hearingId));
+        assertThat(hearingDefenceCounselRemoved.getId(), is(defenceCounselId));
+    }
+
     @Test
     public void shouldRemoveNewDefenceCounsel() {
         final UUID defenceCounselId = randomUUID();
@@ -3396,6 +3421,7 @@ public class HearingAggregateTest {
 
         assertThat(eventStream.size(), is(2));
         ProsecutionCaseDefendantListingStatusChangedV2 caseDefendantListingStatusChanged = (ProsecutionCaseDefendantListingStatusChangedV2) eventStream.get(0);
+        assertThat(caseDefendantListingStatusChanged.getHearing().getSeedingHearing(), notNullValue());
         assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().size(), is(2));
         assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(0).getDefendants().size(), is(1));
         assertThat(caseDefendantListingStatusChanged.getHearing().getProsecutionCases().get(1).getDefendants().size(), is(1));

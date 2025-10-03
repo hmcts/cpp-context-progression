@@ -41,22 +41,22 @@
     ],
     "hearingDays": [
       {
-        "sittingDay": "2025-09-28T12:13:00.000Z",
+        "sittingDay": "SITTING_DAY_1",
         "listedDurationMinutes": 0,
         "hasSharedResults": true
       },
       {
-        "sittingDay": "2026-09-30T09:30:00.000Z",
+        "sittingDay": "SITTING_DAY_2",
         "listedDurationMinutes": 0,
         "hasSharedResults": true
       },
       {
-        "sittingDay": "2027-05-23T09:30:00.000Z",
+        "sittingDay": "SITTING_DAY_3",
         "listedDurationMinutes": 0,
         "hasSharedResults": true
       },
       {
-        "sittingDay": "2028-05-23T09:30:00.000Z",
+        "sittingDay": "SITTING_DAY_4",
         "listedDurationMinutes": 0,
         "hasSharedResults": true
       }
