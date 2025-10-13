@@ -630,7 +630,7 @@ public class CaseAggregate implements Aggregate {
                 defendantList.add(builder.withOffences(offenceSet.stream().collect(toList()))
                         .build());
             } else {
-                defendantList.add(defendant);
+                defendantList.add(this.defendantsMap.get(defendant.getId()));
 
             }
         }
