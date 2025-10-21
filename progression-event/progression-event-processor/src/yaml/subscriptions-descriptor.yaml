@@ -98,6 +98,9 @@ subscriptions_descriptor:
         - name: progression.event.case-ejected
           schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
 
+        - name: progression.event.case-ejected-via-bdf
+          schema_uri: http://justice.gov.uk/core/courts/case-ejected-via-bdf.json
+
         - name: progression.events.hearing-days-without-court-centre-corrected
           schema_uri: http://justice.gov.uk/progression/events/progression.events.hearing-days-without-court-centre-corrected.json
 

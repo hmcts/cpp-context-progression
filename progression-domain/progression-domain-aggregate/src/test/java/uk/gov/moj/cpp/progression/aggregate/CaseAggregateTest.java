@@ -66,6 +66,7 @@ import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseEjectedViaBdf;
 import uk.gov.justice.core.courts.CaseInactiveBdf;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
@@ -1465,6 +1466,26 @@ class CaseAggregateTest {
         final List<Object> eventStream = caseAggregate.ejectCase(randomUUID(), "Legal").collect(toList());
 
         assertThat(eventStream.size(), is(0));
+    }
+
+    @Test
+    public void shouldReturnCaseEjectedViaBDF() {
+        final List<Object> eventStream = caseAggregate.ejectCaseViaBdf(randomUUID(), "Legal").collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(CaseEjectedViaBdf.class)));
+    }
+
+
+    @Test
+    public void shouldReturnCaseEjectedViaBDFWhenInactive() {
+        ReflectionUtil.setField(this.caseAggregate, "caseStatus", "EJECTED");
+        final List<Object> eventStream = caseAggregate.ejectCaseViaBdf(randomUUID(), "Legal").collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+        final Object object = eventStream.get(0);
+        assertThat(object.getClass(), is(equalTo(CaseEjectedViaBdf.class)));
     }
 
 

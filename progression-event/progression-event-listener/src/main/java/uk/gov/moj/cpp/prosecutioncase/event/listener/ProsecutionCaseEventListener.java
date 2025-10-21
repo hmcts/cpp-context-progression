@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseEjectedViaBdf;
 import uk.gov.justice.core.courts.CaseNoteAdded;
 import uk.gov.justice.core.courts.CaseNoteAddedV2;
 import uk.gov.justice.core.courts.CaseNoteEdited;
@@ -153,7 +154,7 @@ public class ProsecutionCaseEventListener {
         final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
         final ProsecutionCase updatedProsecutionCase = updateProsecutionCase(persistentProsecutionCase, caseEjected.getRemovalReason());
         repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
-        updateLinkedApplications(caseEjected);
+        updateLinkedApplications(caseEjected.getProsecutionCaseId(),caseEjected.getRemovalReason());
         final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseEjected.getProsecutionCaseId());
         caseDefendantHearingEntities.forEach(caseDefendantHearingEntity -> {
             final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
@@ -166,12 +167,33 @@ public class ProsecutionCaseEventListener {
         });
     }
 
-    private void updateLinkedApplications(CaseEjected caseEjected) {
-        final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(caseEjected.getProsecutionCaseId());
+    @Handles("progression.event.case-ejected-via-bdf")
+    public void processProsecutionCaseEjectedViaBDF(final JsonEnvelope event) {
+        final CaseEjectedViaBdf caseEjected = jsonObjectConverter.convert(event.payloadAsJsonObject(), CaseEjectedViaBdf.class);
+        final ProsecutionCaseEntity prosecutionCaseEntity = repository.findByCaseId(caseEjected.getProsecutionCaseId());
+        final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
+        final ProsecutionCase persistentProsecutionCase = jsonObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
+        final ProsecutionCase updatedProsecutionCase = updateProsecutionCase(persistentProsecutionCase, caseEjected.getRemovalReason());
+        repository.save(getProsecutionCaseEntity(updatedProsecutionCase));
+        updateLinkedApplications(caseEjected.getProsecutionCaseId(),caseEjected.getRemovalReason());
+        final List<CaseDefendantHearingEntity> caseDefendantHearingEntities = caseDefendantHearingRepository.findByCaseId(caseEjected.getProsecutionCaseId());
+        caseDefendantHearingEntities.forEach(caseDefendantHearingEntity -> {
+            final HearingEntity hearingEntity = caseDefendantHearingEntity.getHearing();
+            final UUID caseId = caseDefendantHearingEntity.getId().getCaseId();
+            final JsonObject hearingJson = stringToJsonObjectConverter.convert(hearingEntity.getPayload());
+            final Hearing hearing = jsonObjectConverter.convert(hearingJson, Hearing.class);
+            final Hearing updatedHearing = HearingEntityUtil.updateHearingWithCase(hearing, caseId);
+            hearingEntity.setPayload(objectToJsonObjectConverter.convert(updatedHearing).toString());
+            hearingRepository.save(hearingEntity);
+        });
+    }
+
+    private void updateLinkedApplications(UUID prosecutionCaseId, String removalReason) {
+        final List<CourtApplicationCaseEntity> courtApplicationCaseEntities = courtApplicationCaseRepository.findByCaseId(prosecutionCaseId);
         courtApplicationCaseEntities.forEach(courtApplicationCaseEntity -> {
             final JsonObject applicationJson = stringToJsonObjectConverter.convert(courtApplicationCaseEntity.getCourtApplication().getPayload());
             final CourtApplication persistedApplication = jsonObjectConverter.convert(applicationJson, CourtApplication.class);
-            final CourtApplication updatedCourtApplication = updateCourtApplication(persistedApplication, caseEjected.getRemovalReason());
+            final CourtApplication updatedCourtApplication = updateCourtApplication(persistedApplication, removalReason);
             courtApplicationCaseEntity.getCourtApplication().setPayload(objectToJsonObjectConverter.convert(updatedCourtApplication).toString());
             courtApplicationCaseRepository.save(courtApplicationCaseEntity);
 

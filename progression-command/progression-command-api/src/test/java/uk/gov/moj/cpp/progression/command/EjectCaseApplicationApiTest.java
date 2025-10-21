@@ -48,4 +48,16 @@ public class EjectCaseApplicationApiTest {
         verify(sender, times(1)).send(commandEnvelope);
     }
 
+    @Test
+    public void shouldEjectCaseViaBDF() {
+        final JsonEnvelope commandEnvelope = mock(JsonEnvelope.class);
+        when(enveloper.withMetadataFrom(command, "progression.command.eject-case-via-bdf"))
+                .thenReturn(function);
+        when(function.apply(any())).thenReturn(commandEnvelope);
+
+        ejectCaseApplicationApi.handleForBdf(command);
+
+        verify(sender, times(1)).send(commandEnvelope);
+    }
+
 }

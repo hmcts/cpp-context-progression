@@ -39,8 +39,8 @@ import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
 import uk.gov.moj.cpp.progression.domain.PostalHearingCourtDetails;
-import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
 import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.entity.NotificationInfo;
+import uk.gov.moj.cpp.progression.eventprocessorstore.persistence.repository.NotificationInfoJdbcRepository;
 import uk.gov.moj.cpp.progression.service.DefenceService;
 import uk.gov.moj.cpp.progression.service.DocumentGeneratorService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
@@ -86,7 +86,7 @@ public class HearingNotificationHelper {
     private static final String HEARING_NOTIFICATION_DATE = "hearing_notification_date";
 
     public static final String OFFENCE_TITLE = "title";
-    private static final String HEARING_DATE_PATTERN = "dd/MM/yyy HH:mm a";
+    public static final String HEARING_DATE_PATTERN = "dd/MM/yyy HH:mm";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSSS");
     private static final Map<String, String> welshTemplateResolverMap = ImmutableMap.of("AmendedHearingNotification", "BilingualAmendedHearingNotification",
             "NewHearingNotification", "BilingualNewHearingNotification");
@@ -274,10 +274,10 @@ public class HearingNotificationHelper {
     }
 
     private void sendEmail(final HearingNotificationInputData hearingNotificationInputData, final JsonEnvelope jsonEnvelope, final UUID caseId, final String email, final UUID materialId, final String materialUrl, final UUID notificationId) {
-        EmailChannel emailChannel;
-        emailChannel = EmailChannel.emailChannel()
+        final EmailChannel emailChannel = EmailChannel.emailChannel()
                 .withPersonalisation(Personalisation.personalisation()
-                        .withAdditionalProperty(HEARING_NOTIFICATION_DATE, hearingNotificationInputData.getHearingDateTime().format(DateTimeFormatter.ofPattern(HEARING_DATE_PATTERN)))
+                        .withAdditionalProperty(HEARING_NOTIFICATION_DATE, hearingNotificationInputData.getHearingDateTime()
+                                .withZoneSameInstant(UK_TIME_ZONE).format(DateTimeFormatter.ofPattern(HEARING_DATE_PATTERN)))
                         .build())
                 .withMaterialUrl(materialUrl)
                 .withTemplateId(hearingNotificationInputData.getEmailNotificationTemplateId())
@@ -530,5 +530,12 @@ public class HearingNotificationHelper {
 
     private String getNotificationPdfName(final String templateName, String receipientType) {
         return templateName + " " + formatter.format(LocalDateTime.now()) + " " + receipientType + " copy";
+    }
+
+    public ZonedDateTime getEarliestStartDateTime(final ZonedDateTime earliestStartDateTime) {
+        if(earliestStartDateTime != null){
+            return earliestStartDateTime.withZoneSameInstant(ZoneId.of("Europe/London"));
+        }
+        return null;
     }
 }

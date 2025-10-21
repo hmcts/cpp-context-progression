@@ -7,23 +7,18 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import uk.gov.justice.core.courts.CasesAddedForUpdatedRelatedHearing;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
+import uk.gov.justice.core.courts.UpdateRelatedHearingCommandForAdhocHearing;
 import uk.gov.justice.listing.courts.UpdateRelatedHearing;
 import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingRequestedForAdhocHearing;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
-import uk.gov.justice.core.courts.UpdateRelatedHearingCommandForAdhocHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -34,10 +29,17 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.helper.HearingNotificationHelper;
 import uk.gov.moj.cpp.progression.service.ApplicationParameters;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
-import javax.inject.Inject;
+import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceComponent(EVENT_PROCESSOR)
 public class RelatedHearingEventProcessor {
@@ -235,7 +237,7 @@ public class RelatedHearingEventProcessor {
                 .collect(Collectors.toMap(Defendant::getId, def -> def.getOffences().stream().map(Offence::getId).collect(toList()))));
         hearingNotificationInputData.setTemplateName(NEW_HEARING_NOTIFICATION_TEMPLATE_NAME);
         hearingNotificationInputData.setHearingId(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getId());
-        hearingNotificationInputData.setHearingDateTime(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getEarliestStartDateTime());
+        hearingNotificationInputData.setHearingDateTime(hearingNotificationHelper.getEarliestStartDateTime(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getEarliestStartDateTime()));
         hearingNotificationInputData.setEmailNotificationTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()));
         hearingNotificationInputData.setCourtCenterId(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getCourtCentre().getId());
         hearingNotificationInputData.setCourtRoomId(relatedHearingUpdatedForAdhocHearing.getHearingRequest().getCourtCentre().getRoomId());

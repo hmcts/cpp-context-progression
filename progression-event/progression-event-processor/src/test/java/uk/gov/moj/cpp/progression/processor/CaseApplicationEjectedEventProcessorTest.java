@@ -132,6 +132,43 @@ public class CaseApplicationEjectedEventProcessorTest {
     }
 
     @Test
+    public void shouldHandleCaseEjectedViaBdfEventEventMessage() throws IOException {
+        final String prosecutionCaseId = randomUUID().toString();
+        final UUID hearingId = randomUUID();
+        final String prosecutionCaseURN = randomUUID().toString();
+        final String prosecutionCaseAuthorityCode = randomUUID().toString();
+        final InitiationCode initiationCode = InitiationCode.Q;
+
+        //Given
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(payload.getString("prosecutionCaseId")).thenReturn(prosecutionCaseId);
+        when(payload.getString("removalReason")).thenReturn(REMOVAL_REASON);
+        when(enveloper.withMetadataFrom(envelope, "public.progression.events.case-or-application-ejected")).thenReturn(enveloperFunction);
+        when(enveloperFunction.apply(any(JsonObject.class))).thenReturn(finalEnvelope);
+        when(progressionService.getProsecutionCaseDetailById(envelope,
+                prosecutionCaseId)).thenReturn(of(prosecutionCaseJsonObject));
+        when(prosecutionCaseJsonObject.getJsonObject("hearingsAtAGlance")).thenReturn(payload);
+        when(prosecutionCaseJsonObject.getJsonObject("prosecutionCase")).thenReturn(payload);
+        when(jsonObjectToObjectConverter.convert(payload, GetHearingsAtAGlance.class)).thenReturn(hearingsAtAGlance);
+        when(jsonObjectToObjectConverter.convert(payload, ProsecutionCase.class)).thenReturn(prosecutionCase);
+        when(hearingsAtAGlance.getHearings()).thenReturn(singletonList(Hearings.hearings().withId(hearingId).build()));
+        when(prosecutionCase.getProsecutionCaseIdentifier()).thenReturn(prosecutionCaseIdentifier);
+        when(prosecutionCase.getOriginatingOrganisation()).thenReturn(SURREY_POLICE_ORIG_ORGANISATION);
+        when(prosecutionCaseIdentifier.getProsecutionAuthorityReference()).thenReturn(prosecutionCaseURN);
+        when(prosecutionCase.getInitiationCode()).thenReturn(initiationCode);
+
+        //When
+        caseApplicationEjectedEventProcessor.processCaseEjectedViaBdf(envelope);
+
+
+        //Then
+        verify(sender).send(finalEnvelope);
+        verify(progressionService, times(2)).getProsecutionCaseDetailById(envelope, prosecutionCaseId);
+        verify(azureFunctionService).makeFunctionCall(anyString());
+
+    }
+
+    @Test
     public void shouldHandleApplicationEjectedEventEventMessage() {
         final String applicationId = randomUUID().toString();
         final String hearingId = randomUUID().toString();

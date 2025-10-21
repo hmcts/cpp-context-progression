@@ -22,4 +22,9 @@ public class EjectCaseApplicationApi {
     public void handle(final JsonEnvelope envelope) {
         sender.send(enveloper.withMetadataFrom(envelope, "progression.command.eject-case-or-application").apply(envelope.payloadAsJsonObject()));
     }
+
+    @Handles("progression.eject-case-via-bdf")
+    public void handleForBdf(final JsonEnvelope envelope) {
+        sender.send(enveloper.withMetadataFrom(envelope, "progression.command.eject-case-via-bdf").apply(envelope.payloadAsJsonObject()));
+    }
 }

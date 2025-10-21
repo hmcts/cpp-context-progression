@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.handler;
 import static java.util.Objects.nonNull;
 
 import uk.gov.justice.core.courts.EjectCaseOrApplication;
+import uk.gov.justice.core.courts.EjectCaseViaBdf;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
 import uk.gov.justice.services.core.annotation.Handles;
@@ -52,6 +53,18 @@ public class EjectCaseApplicationHandler {
             final EventStream eventStream = eventSource.getStreamById(ejectCaseOrApplication.getApplicationId());
             final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
             final Stream<Object> events = applicationAggregate.ejectApplication(ejectCaseOrApplication.getApplicationId(), ejectCaseOrApplication.getRemovalReason());
+            appendEventsToStream(envelope, eventStream, events);
+        }
+    }
+
+    @Handles("progression.command.eject-case-via-bdf")
+    public void handleForBdf(final Envelope<EjectCaseViaBdf> envelope) throws EventStreamException {
+        LOGGER.debug("progression.command.eject-case-via-bdf {}", envelope);
+        final EjectCaseViaBdf ejectCaseViaBdf = envelope.payload();
+        if(nonNull(ejectCaseViaBdf.getProsecutionCaseId())) {
+            final EventStream eventStream = eventSource.getStreamById(ejectCaseViaBdf.getProsecutionCaseId());
+            final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+            final Stream<Object> events = caseAggregate.ejectCaseViaBdf(ejectCaseViaBdf.getProsecutionCaseId(), ejectCaseViaBdf.getRemovalReason());
             appendEventsToStream(envelope, eventStream, events);
         }
     }

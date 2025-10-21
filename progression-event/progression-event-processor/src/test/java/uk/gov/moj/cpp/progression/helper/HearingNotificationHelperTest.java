@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
+import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.HEARING_DATE_PATTERN;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
 import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
@@ -56,6 +57,7 @@ import java.nio.charset.Charset;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -799,5 +801,48 @@ public class HearingNotificationHelperTest {
         // The method sends notifications to both defendant and prosecutor, so expect 2 calls
         verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), docPayloadCaptor.capture(), any(), any(), any());
         assertEquals(expectedUKTime, docPayloadCaptor.getValue().getJsonObject("hearingCourtDetails").getString("hearingTime"));
+    }
+
+    @Test
+    void sendHearingNotifications_VerifyUTCTimeConvertedToUKTimeZone() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+
+        // Given - Create a hearing time in a different timezone (UTC+5)
+        ZonedDateTime hearingDateTimeUTC = ZonedDateTime.of(2025, 8, 12, 14, 30, 0, 0, ZoneId.of("UTC"));
+
+        // Expected UK time (UTC+1 during summer time)
+        String expectedUKTime = hearingDateTimeUTC.withZoneSameInstant(ZoneId.of("Europe/London")).format(DateTimeFormatter.ofPattern(HEARING_DATE_PATTERN));
+
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingDateTimeUTC);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor-with-no-email.json")));
+        AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verify(notificationService, times(1)).sendEmail(any(), any(), any(), any(), any(), defendantEmailCapture.capture());
+        final List<EmailChannel> emailChannels = defendantEmailCapture.getValue();
+        verifyEmailChannel(emailChannels, "defendant_email@email.com", fromString(TEMPLATE_ID));
+        assertThat(emailChannels, hasSize(1));
+        final EmailChannel emailChannel = emailChannels.get(0);
+        assertThat(emailChannel.getSendToAddress(), is("defendant_email@email.com"));
+
+        assertThat(emailChannel.getTemplateId(), is(fromString(TEMPLATE_ID)));
+        assertThat(emailChannel.getPersonalisation(), notNullValue());
+        assertThat(emailChannel.getPersonalisation().getAdditionalProperties().containsKey(HEARING_NOTIFICATION_DATE),is(true));
+        assertThat(emailChannel.getPersonalisation().getAdditionalProperties().get(HEARING_NOTIFICATION_DATE), is(expectedUKTime));
     }
 }

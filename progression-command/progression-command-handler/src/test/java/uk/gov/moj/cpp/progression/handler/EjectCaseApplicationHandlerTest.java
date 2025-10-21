@@ -18,7 +18,9 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStrea
 
 import uk.gov.justice.core.courts.ApplicationEjected;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseEjectedViaBdf;
 import uk.gov.justice.core.courts.EjectCaseOrApplication;
+import uk.gov.justice.core.courts.EjectCaseViaBdf;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.eventsourcing.source.core.EventSource;
@@ -55,7 +57,7 @@ public class EjectCaseApplicationHandlerTest {
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            CaseEjected.class, ApplicationEjected.class);
+            CaseEjected.class, ApplicationEjected.class, CaseEjectedViaBdf.class);
 
     @InjectMocks
     private EjectCaseApplicationHandler ejectCaseApplicationHandler;
@@ -104,6 +106,41 @@ public class EjectCaseApplicationHandlerTest {
                                 withJsonPath("$.prosecutionCaseId", is(CASE_ID.toString()))
                                 )
                         ))
+
+                )
+        );
+    }
+
+    @Test
+    public void shouldProcessCommandWithProsecutionCaseIdViaBDF() throws Exception {
+
+        final CaseAggregate caseAggregate = new CaseAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+
+        EjectCaseViaBdf eject = EjectCaseViaBdf.ejectCaseViaBdf().withProsecutionCaseId(CASE_ID).withRemovalReason("Legal").build();
+
+        final Metadata metadata = Envelope
+                .metadataBuilder()
+                .withName("progression.command.eject-case-via-bdf")
+                .withId(randomUUID())
+                .build();
+
+        final Envelope<EjectCaseViaBdf> envelope = envelopeFrom(metadata, eject);
+
+        ejectCaseApplicationHandler.handleForBdf(envelope);
+
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.case-ejected-via-bdf"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                                withJsonPath("$.removalReason", is(REMOVAL_REASON)),
+                                                withJsonPath("$.prosecutionCaseId", is(CASE_ID.toString()))
+                                        )
+                                ))
 
                 )
         );

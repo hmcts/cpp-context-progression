@@ -24,6 +24,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.SeedingHearing;
 import uk.gov.justice.core.courts.WeekCommencingDate;
+import uk.gov.justice.core.courts.HearingType;
 import uk.gov.moj.cpp.progression.helper.HearingBookingReferenceListExtractor;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.service.ProvisionalBookingServiceAdapter;
@@ -188,7 +189,7 @@ public class HearingToHearingListingNeedsTransformer {
                 logger.warn("CourtScheduleId not found for BookingReference: {} for prosecutionCase: {}", bookingReference, prosecutionCase.getId());
                 return;
             }
-            key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference));
+            key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference), nextHearing.getType());
         } else {
             key = createMapKey(nextHearing);
         }
@@ -265,7 +266,7 @@ public class HearingToHearingListingNeedsTransformer {
     private String getKey(Map<UUID, Set<UUID>> bookingReferenceCourtScheduleIdMap, NextHearing nextHearing, UUID bookingReference) {
         final String key;
         if (nonNull(bookingReference)) {
-            key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference));
+            key = createMapKey(bookingReferenceCourtScheduleIdMap.get(bookingReference), nextHearing.getType());
         } else {
             key = createMapKey(nextHearing);
         }
@@ -399,9 +400,10 @@ public class HearingToHearingListingNeedsTransformer {
                 "Type:" + nextHearing.getType().getId();
     }
 
-    private String createMapKey(final Set<UUID> courtScheduleIds) {
+    private String createMapKey(final Set<UUID> courtScheduleIds, final HearingType type) {
         final String mergedCourtScheduleIds = courtScheduleIds.stream().map(UUID::toString).sorted().collect(Collectors.joining(","));
-        return "CourtScheduleId:" + mergedCourtScheduleIds;
+        return "CourtScheduleId:" + mergedCourtScheduleIds+ ',' +
+                "Type:" + type.getId();
     }
 
 

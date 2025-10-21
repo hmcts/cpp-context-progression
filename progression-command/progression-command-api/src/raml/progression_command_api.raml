@@ -491,6 +491,9 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
         (mapping):
             requestType: application/vnd.progression.eject-case-or-application+json
             name: progression.eject-case-or-application
+        (mapping):
+            requestType: application/vnd.progression.eject-case-via-bdf+json
+            name: progression.eject-case-via-bdf
         ...
       body:
         application/vnd.progression.eject-case-or-application+json:
@@ -498,6 +501,11 @@ baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progres
              !include json/progression.eject-case-or-application.json
             schema:
              !include json/schema/progression.eject-case-or-application.json
+        application/vnd.progression.eject-case-via-bdf+json:
+            example:
+              !include json/progression.eject-case-via-bdf.json
+            schema:
+              !include json/schema/progression.eject-case-via-bdf.json
       responses:
             202:
                 description: OK

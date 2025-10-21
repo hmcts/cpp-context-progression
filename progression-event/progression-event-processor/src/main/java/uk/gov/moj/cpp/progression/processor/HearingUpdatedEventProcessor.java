@@ -211,7 +211,7 @@ public class HearingUpdatedEventProcessor {
         hearingNotificationInputData.setDefendantOffenceListMap(defendantOffenceListMap);
         hearingNotificationInputData.setTemplateName(AMENDED_HEARING_NOTIFICATION_TEMPLATE_NAME);
         hearingNotificationInputData.setHearingId(confirmedUpdatedHearing.getId());
-        hearingNotificationInputData.setHearingDateTime(hearingStartDateTime);
+        hearingNotificationInputData.setHearingDateTime(hearingNotificationHelper.getEarliestStartDateTime(hearingStartDateTime));
         hearingNotificationInputData.setEmailNotificationTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()));
         hearingNotificationInputData.setCourtCenterId(confirmedUpdatedHearing.getCourtCentre().getId());
         hearingNotificationInputData.setCourtRoomId(confirmedUpdatedHearing.getCourtCentre().getRoomId());

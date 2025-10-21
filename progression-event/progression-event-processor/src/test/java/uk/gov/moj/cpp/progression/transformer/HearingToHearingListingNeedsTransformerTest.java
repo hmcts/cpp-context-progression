@@ -820,6 +820,49 @@ public class HearingToHearingListingNeedsTransformerTest {
         assertThat(hearingListingNeeds.getProsecutionCases().size(), is(1));
     }
 
+    @Test
+    public void shouldReturnTwoHearingNeedsWhenTwoHearingTypeNotMatchWithBookingReferenceIsPresent() {
+        final UUID bookingReferenceId1 = randomUUID();
+        final UUID bookingReferenceId2 = randomUUID();
+        final Map<UUID, Set<UUID>> slotsMap = new HashMap<>();
+        slotsMap.put(bookingReferenceId1, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
+        slotsMap.put(bookingReferenceId2, new HashSet<>(Arrays.asList(COURT_SCHEDULE_ID_1)));
+        when(provisionalBookingServiceAdapter.getSlots(anyList())).thenReturn(slotsMap);
+        when(offenceToCommittingCourtConverter.convert(any(), any(), any())).thenReturn(Optional.empty());
+
+        final Hearing hearing = TestHelper.buildHearing(Arrays.asList(
+                buildProsecutionCase(CASE_ID_1, DEFENDANT_ID_1, OFFENCE_ID_1, buildNextHearing(HEARING_TYPE_1, bookingReferenceId1, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null)),
+                buildProsecutionCase(CASE_ID_2, DEFENDANT_ID_2, OFFENCE_ID_2, buildNextHearing(HEARING_TYPE_2, bookingReferenceId2, COURT_LOCATION, WEEK_COMMENCING_DATE_1, null))
+        ));
+
+        final List<HearingListingNeeds> hearingListingNeedsList = transformer.transform(hearing);
+        assertThat(hearingListingNeedsList.size(), is(2));
+
+        assertThat(hearingListingNeedsList.get(0).getProsecutionCases().size(), is(1));
+        assertThat(hearingListingNeedsList.get(1).getProsecutionCases().size(), is(1));
+
+        final ProsecutionCase prosecutionCase1 = hearingListingNeedsList.get(0).getProsecutionCases().get(0);
+        final ProsecutionCase prosecutionCase2 = hearingListingNeedsList.get(1).getProsecutionCases().get(0);
+        assertThat(prosecutionCase1.getDefendants().size(), is(1));
+        assertThat(prosecutionCase2.getDefendants().size(), is(1));
+
+        final Defendant defendant1;
+        final Defendant defendant2;
+        if (prosecutionCase1.getDefendants().get(0).getId().equals(DEFENDANT_ID_1)) {
+            defendant1 = prosecutionCase1.getDefendants().get(0);
+            defendant2 = prosecutionCase2.getDefendants().get(0);
+        } else {
+            defendant1 = prosecutionCase2.getDefendants().get(0);
+            defendant2 = prosecutionCase1.getDefendants().get(0);
+        }
+
+        assertThat(defendant1.getOffences().size(), is(1));
+        assertThat(defendant1.getOffences().get(0).getId(), equalTo(OFFENCE_ID_1));
+
+        assertThat(defendant2.getOffences().size(), is(1));
+        assertThat(defendant2.getOffences().get(0).getId(), equalTo(OFFENCE_ID_2));
+    }
+
     private JsonObject getHearing(final String path) {
         return stringToJsonObjectConverter.convert(getPayload(path));
     }

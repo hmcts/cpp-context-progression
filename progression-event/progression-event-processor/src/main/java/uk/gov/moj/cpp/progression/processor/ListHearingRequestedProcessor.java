@@ -184,7 +184,7 @@ public class ListHearingRequestedProcessor {
         hearingNotificationInputData.setTemplateName(NEW_HEARING_NOTIFICATION_TEMPLATE_NAME);
 
         hearingNotificationInputData.setHearingId(listHearingRequested.getHearingId());
-        hearingNotificationInputData.setHearingDateTime(listHearingRequested.getListNewHearing().getEarliestStartDateTime());
+        hearingNotificationInputData.setHearingDateTime(hearingNotificationHelper.getEarliestStartDateTime(listHearingRequested.getListNewHearing().getEarliestStartDateTime()));
         hearingNotificationInputData.setEmailNotificationTemplateId(fromString(applicationParameters.getNotifyHearingTemplateId()));
         hearingNotificationInputData.setCourtCenterId(listHearingRequested.getListNewHearing().getCourtCentre().getId());
         hearingNotificationInputData.setCourtRoomId(listHearingRequested.getListNewHearing().getCourtCentre().getRoomId());
@@ -194,5 +194,8 @@ public class ListHearingRequestedProcessor {
 
     }
 
+    public ListHearingRequestedProcessor() {
+        super();
+    }
 
 }

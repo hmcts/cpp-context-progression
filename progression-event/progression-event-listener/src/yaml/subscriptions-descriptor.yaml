@@ -113,6 +113,9 @@ subscriptions_descriptor:
         - name: progression.event.case-ejected
           schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
 
+        - name: progression.event.case-ejected-via-bdf
+          schema_uri: http://justice.gov.uk/core/courts/case-ejected-via-bdf.json
+
         - name: progression.event.application-ejected
           schema_uri: http://justice.gov.uk/core/courts/application-ejected.json
 

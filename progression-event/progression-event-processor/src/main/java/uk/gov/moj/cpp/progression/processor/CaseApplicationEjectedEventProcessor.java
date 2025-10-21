@@ -43,6 +43,7 @@ public class CaseApplicationEjectedEventProcessor {
     private static final String SUSSEX_POLICE_ORIG_ORGANISATION = "047AA00";
     private static final String A_4 = "A4";
     private static final String ZERO_FOUR = "04";
+    private static final String EVENT_RECEIVED = "Received '{}' event with payload {}";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -63,7 +64,19 @@ public class CaseApplicationEjectedEventProcessor {
     @Handles("progression.event.case-ejected")
     public void processCaseEjected(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received '{}' event with payload {}", "progression.event.case-ejected", event.toObfuscatedDebugString());
+            LOGGER.info(EVENT_RECEIVED, "progression.event.case-ejected", event.toObfuscatedDebugString());
+        }
+        final JsonArray hearingIds = getHearingIdsForCaseAllApplications(event);
+        final JsonObject payload = event.payloadAsJsonObject();
+        final String removalReason = payload.getString(REMOVAL_REASON);
+        sendPublicMessage(event, hearingIds, payload.getString(PROSECUTION_CASE_ID), PROSECUTION_CASE_ID, removalReason);
+        setCaseEjectedStorage(event, payload.getString(PROSECUTION_CASE_ID));
+    }
+
+    @Handles("progression.event.case-ejected-via-bdf")
+    public void processCaseEjectedViaBdf(final JsonEnvelope event) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(EVENT_RECEIVED, "progression.event.case-ejected-via-bdf", event.toObfuscatedDebugString());
         }
         final JsonArray hearingIds = getHearingIdsForCaseAllApplications(event);
         final JsonObject payload = event.payloadAsJsonObject();
@@ -75,7 +88,7 @@ public class CaseApplicationEjectedEventProcessor {
     @Handles("progression.event.application-ejected")
     public void processApplicationEjected(final JsonEnvelope event) {
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Received '{}' event with payload {}", "progression.event.application-ejected", event.toObfuscatedDebugString());
+            LOGGER.info(EVENT_RECEIVED, "progression.event.application-ejected", event.toObfuscatedDebugString());
         }
         final JsonObject payload = event.payloadAsJsonObject();
         final String applicationId = payload.getString(APPLICATION_ID);

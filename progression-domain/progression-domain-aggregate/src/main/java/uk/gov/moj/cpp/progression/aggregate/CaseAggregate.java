@@ -90,6 +90,7 @@ import uk.gov.justice.core.courts.CaseCpsDetailsUpdatedFromCourtDocument;
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
 import uk.gov.justice.core.courts.CaseDefendantUpdatedWithDriverNumber;
 import uk.gov.justice.core.courts.CaseEjected;
+import uk.gov.justice.core.courts.CaseEjectedViaBdf;
 import uk.gov.justice.core.courts.CaseGroupInfoUpdated;
 import uk.gov.justice.core.courts.CaseLinkedToHearing;
 import uk.gov.justice.core.courts.CaseMarkersSharedWithHearings;
@@ -929,6 +930,11 @@ public class CaseAggregate implements Aggregate {
             return empty();
         }
         return apply(Stream.of(CaseEjected.caseEjected()
+                .withProsecutionCaseId(prosecutionCaseId).withRemovalReason(removalReason).build()));
+    }
+
+    public Stream<Object> ejectCaseViaBdf(final UUID prosecutionCaseId, final String removalReason) {
+        return apply(Stream.of(CaseEjectedViaBdf.caseEjectedViaBdf()
                 .withProsecutionCaseId(prosecutionCaseId).withRemovalReason(removalReason).build()));
     }
 
