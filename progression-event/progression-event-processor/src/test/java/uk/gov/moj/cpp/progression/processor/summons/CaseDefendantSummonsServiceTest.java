@@ -22,6 +22,7 @@ import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProce
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.assertOnProsecutor;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.assertOnReferralReason;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.assertOnSummonsData;
+import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateCivilProsecutionCase;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateCourtCentreJson;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateProsecutionCase;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.generateReferralReasonsJson;
@@ -29,6 +30,8 @@ import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProce
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getLjaDetails;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getProsecutor;
 import static uk.gov.moj.cpp.progression.processor.helper.DataPreparedEventProcessorTestHelper.getRefDataOffences;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.APPLICATION;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.BREACH_OFFENCES;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.EITHER_WAY;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.MCA;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.WITNESS;
@@ -113,10 +116,27 @@ public class CaseDefendantSummonsServiceTest {
         );
     }
 
+    public static Stream<Arguments> civilCaseSummonsSpecification() {
+        return Stream.of(
+                Arguments.of(FIRST_HEARING, MCA, MCA.getSubType()),
+                Arguments.of(FIRST_HEARING, WITNESS, WITNESS.getSubType()),
+                Arguments.of(FIRST_HEARING, EITHER_WAY, EITHER_WAY.getSubType()),
+                Arguments.of(FIRST_HEARING, APPLICATION, APPLICATION.getSubType()),
+                Arguments.of(FIRST_HEARING, BREACH_OFFENCES, BREACH_OFFENCES.getSubType()),
+                Arguments.of(SJP_REFERRAL, null, "SJP_REFERRAL")
+        );
+    }
+
     @MethodSource("caseSummonsSpecification")
     @ParameterizedTest
-    public void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
+    void shouldGenerateEnglishSummonsPayloadForFirstHearing(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
         verifySummonsPayloadGeneratedFor(summonsRequired, summonsCode, summonsType);
+    }
+
+    @MethodSource("caseSummonsSpecification")
+    @ParameterizedTest
+    void shouldGenerateEnglishSummonsPayloadForFirstHearingCivilCase(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
+        verifyCivilSummonsPayloadGeneratedFor(summonsRequired, summonsCode, summonsType);
     }
 
     public void verifySummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
@@ -125,7 +145,7 @@ public class CaseDefendantSummonsServiceTest {
             when(referenceDataService.getReferralReasonByReferralReasonId(envelope, REFERRAL_ID, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
         }
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester))).thenReturn(getRefDataOffences());
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester), eq(Optional.empty()))).thenReturn(getRefDataOffences());
 
         final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared().withSummonsData(generateSummonsData(summonsRequired, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID, BOOLEAN.next())).build();
         final String summonsCodeAsString = nonNull(summonsCode) ? summonsCode.getCode() : StringUtils.EMPTY;
@@ -141,6 +161,30 @@ public class CaseDefendantSummonsServiceTest {
         //Then
         assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
     }
+
+    public void verifyCivilSummonsPayloadGeneratedFor(final SummonsType summonsRequired, final SummonsCode summonsCode, final String summonsType) {
+
+        if (SJP_REFERRAL == summonsRequired) {
+            when(referenceDataService.getReferralReasonByReferralReasonId(envelope, REFERRAL_ID, requester)).thenReturn(Optional.of(generateReferralReasonsJson(REFERRAL_ID.toString())));
+        }
+
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(envelope), eq(requester), eq(Optional.of("MoJ")))).thenReturn(getRefDataOffences());
+
+        final SummonsDataPrepared summonsDataPrepared = summonsDataPrepared().withSummonsData(generateSummonsData(summonsRequired, CASE_ID, DEFENDANT_ID, COURT_CENTRE_ID, REFERRAL_ID, BOOLEAN.next())).build();
+        final String summonsCodeAsString = nonNull(summonsCode) ? summonsCode.getCode() : StringUtils.EMPTY;
+        final ProsecutionCase prosecutionCase = generateCivilProsecutionCase(CASE_ID.toString(), DEFENDANT_ID.toString(), summonsCodeAsString, true);
+        final Defendant defendant = prosecutionCase.getDefendants().get(0);
+        final ListDefendantRequest listDefendantRequest = summonsDataPrepared.getSummonsData().getListDefendantRequests().get(0);
+        final JsonObject courtCentreJson = generateCourtCentreJson(true);
+        final Optional<LjaDetails> optionalLjaDetails = getLjaDetails();
+        final SummonsProsecutor summonsProsecutor = getProsecutor();
+
+        final SummonsDocumentContent summonsDocumentContent = caseDefendantSummonsService.generateSummonsPayloadForDefendant(envelope, summonsDataPrepared, prosecutionCase, defendant, listDefendantRequest, courtCentreJson, optionalLjaDetails, summonsProsecutor);
+
+        //Then
+        assertTemplatePayloadValues(summonsRequired, summonsType, OBJECT_TO_JSON_OBJECT_CONVERTER.convert(summonsDocumentContent), true);
+    }
+
 
     private void assertTemplatePayloadValues(final SummonsType summonsRequired, final String summonsType, final JsonObject summonsDataJson, final boolean defendantVersion) {
         assertOnSummonsData(summonsDataJson, summonsRequired, summonsType);

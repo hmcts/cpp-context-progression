@@ -56,6 +56,8 @@ import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHea
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getCivilProsecutionCaseMatchers;
+
 @SuppressWarnings("squid:S1607")
 public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
@@ -114,7 +116,7 @@ public class CourtProceedingsInitiatedForGroupCasesIT extends AbstractIT {
         //when
         verifyInMessagingQueueForNumberOfTimes(1, publicCourtProceedingsInitiatedEventConsumer);
 
-        final Matcher[] prosecutionCaseMatchers = getProsecutionCaseMatchers(caseId, defendantId, emptyList());
+        final Matcher[] prosecutionCaseMatchers = getCivilProsecutionCaseMatchers(caseId, defendantId, emptyList());
 
         pollProsecutionCasesProgressionFor(caseId, prosecutionCaseMatchers);
     }

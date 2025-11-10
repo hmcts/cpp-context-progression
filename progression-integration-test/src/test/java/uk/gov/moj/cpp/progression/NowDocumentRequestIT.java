@@ -22,7 +22,7 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
 import static uk.gov.moj.cpp.progression.stub.MaterialStub.verifyMaterialCreated;
 import static uk.gov.moj.cpp.progression.stub.NotificationServiceStub.verifyCreateLetterRequested;
-import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegister;
+import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.core.courts.nowdocument.NowDocumentRequest;
@@ -34,7 +34,6 @@ import uk.gov.justice.services.messaging.JsonMetadata;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.progression.helper.NowsRequestHelper;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -61,7 +60,6 @@ public class NowDocumentRequestIT extends AbstractIT {
     private static final String HEARING_ID = "%HEARING_ID%";
     private static final String ORIGINATOR = "originator";
     private static final String ORIGINATOR_VALUE = "court";
-    private static int counter = 1;
     private String materialId;
     private String hearingId;
     private String defendantId;
@@ -219,17 +217,16 @@ public class NowDocumentRequestIT extends AbstractIT {
     }
 
     private void sendPublicEventForDocumentAvailable() throws JSONException {
-        final List<JSONObject> jsonObjects = pollSysDocGenerationRequestsForPrisonCourtRegister(
-                Matchers.hasSize(counter), "NOWs");
+        final List<JSONObject> jsonObjects = pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(
+                Matchers.hasSize(1), "NOWs", materialId);
 
-        final UUID payloadFileServiceId = fromString(jsonObjects.get(counter - 1).getString("payloadFileServiceId"));
+        final UUID payloadFileServiceId = fromString(jsonObjects.get(0).getString("payloadFileServiceId"));
 
         final String commandName = "public.systemdocgenerator.events.document-available";
 
         final Metadata metadata = getMetadataFrom(userId.toString(), fromString(materialId), commandName);
 
         messageProducerClientPublic.sendMessage(commandName, JsonEnvelope.envelopeFrom(metadata, documentAvailablePayload(payloadFileServiceId, "OPE_Layout16", materialId, randomUUID())));
-        counter++;
     }
 
     private Metadata getMetadataFrom(final String userId, final UUID materialId, final String name) {

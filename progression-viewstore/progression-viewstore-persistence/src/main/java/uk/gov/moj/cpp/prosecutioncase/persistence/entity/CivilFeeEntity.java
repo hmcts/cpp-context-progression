@@ -24,9 +24,6 @@ public class CivilFeeEntity implements Serializable {
     @Column(name = "fee_id", unique = true, nullable = false)
     private UUID feeId;
 
-    @Column(name = "offence_id", unique = true, nullable = false)
-    private UUID offenceId;
-
     @Column(name = "prosecutor_id", unique = true, nullable = false)
     private UUID prosecutorId ;
 
@@ -57,14 +54,6 @@ public class CivilFeeEntity implements Serializable {
 
     public void setFeeId(final UUID feeId) {
         this.feeId = feeId;
-    }
-
-    public UUID getOffenceId() {
-        return offenceId;
-    }
-
-    public void setOffenceId(UUID offenceId) {
-        this.offenceId = offenceId;
     }
 
     public UUID getProsecutorId() {

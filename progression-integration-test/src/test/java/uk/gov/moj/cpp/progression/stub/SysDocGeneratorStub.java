@@ -7,9 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpStatus.SC_ACCEPTED;
 import static org.awaitility.Awaitility.await;
@@ -21,20 +19,14 @@ import java.util.Collection;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matcher;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SysDocGeneratorStub {
 
     private static final String SYS_DOC_GENERATOR_URL = "/.*/rest/systemdocgenerator/generate-document";
 
     private static final String GENERATE_DOCUMENT_MEDIA_TYPE = "application/vnd.systemdocgenerator.generate-document+json";
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(SysDocGeneratorStub.class);
 
     public static void stubAsyncDocumentGeneratorEndPoint() {
         stubFor(post(urlPathMatching(SYS_DOC_GENERATOR_URL))
@@ -45,67 +37,19 @@ public class SysDocGeneratorStub {
                 ));
     }
 
-    public static List<JSONObject> pollSysDocGenerationRequests(final Matcher<Collection<?>> matcher) {
-        try {
-
-            return await().until(() ->
-                    findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))
-                            .stream()
-                            .map(LoggedRequest::getBodyAsString)
-                            .map(t -> {
-                                try {
-                                    return new JSONObject(t);
-                                } catch (JSONException e) {
-                                    return null;
-                                }
-                            })
-                            .collect(toList()), matcher);
-        } catch (final ConditionTimeoutException timeoutException) {
-            LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
-            return emptyList();
-        }
-    }
-
-    public static List<JSONObject> pollSysDocGenerationRequestsForPrisonCourtRegister(final Matcher<Collection<?>> matcher, final String originatingSource) {
-        try {
-
-            return await().until(() ->
-            {
-                List<JSONObject> list = new ArrayList<>();
-                for (LoggedRequest loggedRequest : findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))) {
-                    String bodyAsString = loggedRequest.getBodyAsString();
-                    JSONObject j = new JSONObject(bodyAsString);
-                    if (j.getString("originatingSource").equals(originatingSource)) {
-                        list.add(j);
-                    }
+    public static List<JSONObject> pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(final Matcher<Collection<?>> matcher, final String originatingSource, final String sourceCorrelationId) {
+        return await().until(() ->
+        {
+            List<JSONObject> list = new ArrayList<>();
+            for (LoggedRequest loggedRequest : findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))) {
+                String bodyAsString = loggedRequest.getBodyAsString();
+                JSONObject j = new JSONObject(bodyAsString);
+                if (j.getString("originatingSource").equals(originatingSource) && j.getString("sourceCorrelationId").contains(sourceCorrelationId)) {
+                    list.add(j);
                 }
-                return list;
-            }, matcher);
-        } catch (final ConditionTimeoutException timeoutException) {
-            LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
-            return emptyList();
-        }
-    }
-
-    public static List<JSONObject> pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(final Matcher<Collection<?>> matcher, final String originatingSource, final String courtCentreId) {
-        try {
-
-            return await().until(() ->
-            {
-                List<JSONObject> list = new ArrayList<>();
-                for (LoggedRequest loggedRequest : findAll(postRequestedFor(urlPathMatching(SYS_DOC_GENERATOR_URL)))) {
-                    String bodyAsString = loggedRequest.getBodyAsString();
-                    JSONObject j = new JSONObject(bodyAsString);
-                    if (j.getString("originatingSource").equals(originatingSource) && j.getString("sourceCorrelationId").contains(courtCentreId)) {
-                        list.add(j);
-                    }
-                }
-                return list;
-            }, matcher);
-        } catch (final ConditionTimeoutException timeoutException) {
-            LOGGER.info("Exception while finding the captured requests in wire mock:" + timeoutException);
-            return emptyList();
-        }
+            }
+            return list;
+        }, matcher);
     }
 
 }

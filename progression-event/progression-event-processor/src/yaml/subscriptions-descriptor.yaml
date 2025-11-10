@@ -494,6 +494,9 @@ subscriptions_descriptor:
         - name: progression.event.civil-fees-updated
           schema_uri: http://justice.gov.uk/core/courts/civil-fees-updated.json
 
+        - name: progression.event.civil-fees-added
+          schema_uri: http://justice.gov.uk/core/courts/civil-fees-added.json
+
         - name: progression.event.civil-bulk-proceedings-initiated
           schema_uri: http://justice.gov.uk/core/courts/civil-bulk-proceedings-initiated.json
 

@@ -1,6 +1,9 @@
 package uk.gov.moj.cpp.progression.processor;
 
+import static java.lang.Boolean.valueOf;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static javax.json.Json.createObjectBuilder;
@@ -10,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
+import uk.gov.justice.core.courts.CivilOffence;
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.ListCourtHearing;
@@ -69,6 +73,7 @@ public class CourtProceedingsInitiatedProcessor {
 
     public static final String CASE_ID = "caseId";
     private static final String PUBLIC_PROGRESSION_EVENTS_GROUP_PROSECUTION_CASES_CREATED = "public.progression.group-prosecution-cases-created";
+    private static final String SOW_REF_VALUE = "MoJ";
 
     @Inject
     @ServiceComponent(EVENT_PROCESSOR)
@@ -210,32 +215,34 @@ public class CourtProceedingsInitiatedProcessor {
                 .distinct()
                 .collect(Collectors.toList());
 
-        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, jsonEnvelope, requester);
+        final Optional<String> sowRef = getSowRef(courtReferral.getProsecutionCases().get(0));
+        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, jsonEnvelope, requester, sowRef);
 
+        final boolean isCivil = nonNull(courtReferral.getProsecutionCases().get(0).getIsCivil()) && courtReferral.getProsecutionCases().get(0).getIsCivil();
         courtReferral.getProsecutionCases().stream()
                 .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
-                .forEach(defendant -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendant));
+                .forEach(defendant -> populateReportingRestrictionsForOffences(offencesJsonObjectOptional, defendant, isCivil));
 
 
     }
 
     @SuppressWarnings("squid:S1188")
-    private void populateReportingRestrictionsForOffences(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Defendant defendant) {
+    private void populateReportingRestrictionsForOffences(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Defendant defendant, final boolean isCivil) {
         final Function<JsonObject, String> offenceKey = offenceJsonObject -> offenceJsonObject.getString("cjsOffenceCode");
 
         final List<Offence> offencesWithReportingRestriction = new ArrayList<>();
-        defendant.getOffences().forEach(offence -> populateReportingRestrictionForOffence(referenceDataOffencesJsonObjectOptional, defendant, offenceKey, offencesWithReportingRestriction, offence));
+        defendant.getOffences().forEach(offence -> populateReportingRestrictionForOffence(referenceDataOffencesJsonObjectOptional, defendant, offenceKey, offencesWithReportingRestriction, offence, isCivil));
         if (isNotEmpty(defendant.getOffences())) {
             defendant.getOffences().clear();
             defendant.getOffences().addAll(offencesWithReportingRestriction);
         }
     }
 
-    private void populateReportingRestrictionForOffence(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Defendant defendant, final Function<JsonObject, String> offenceKey, final List<Offence> offencesWithReportingRestriction, final Offence offence) {
+    private void populateReportingRestrictionForOffence(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Defendant defendant, final Function<JsonObject, String> offenceKey, final List<Offence> offencesWithReportingRestriction, final Offence offence, final boolean isCivil) {
         final List<ReportingRestriction> reportingRestrictions = new ArrayList<>();
         populateYouthReportingRestriction(defendant, reportingRestrictions);
         final Offence.Builder builder = new Offence.Builder().withValuesFrom(offence);
-        populateSexualReportingRestriction(referenceDataOffencesJsonObjectOptional, offenceKey, offence, reportingRestrictions, builder);
+        populateSexualReportingRestrictionAndExparteValue(referenceDataOffencesJsonObjectOptional, offenceKey, offence, reportingRestrictions, builder, isCivil);
 
         if (isNotEmpty(offence.getReportingRestrictions())) {
             reportingRestrictions.addAll(offence.getReportingRestrictions());
@@ -248,13 +255,19 @@ public class CourtProceedingsInitiatedProcessor {
         offencesWithReportingRestriction.add(builder.build());
     }
 
-    private void populateSexualReportingRestriction(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Function<JsonObject, String> offenceKey, final Offence offence, final List<ReportingRestriction> reportingRestrictions, final Offence.Builder builder) {
+    private void populateSexualReportingRestrictionAndExparteValue(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Function<JsonObject, String> offenceKey, final Offence offence, final List<ReportingRestriction> reportingRestrictions,
+                                                                   final Offence.Builder builder, final boolean isCivil) {
         if (referenceDataOffencesJsonObjectOptional.isPresent()) {
             final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
             final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
             if (nonNull(referenceDataOffenceInfo)) {
                 builder.withEndorsableFlag(referenceDataOffenceInfo.getBoolean(ENDORSABLE_FLAG, false));
             }
+
+            if (isCivil && isNull(offence.getCivilOffence()) && nonNull(referenceDataOffenceInfo)) {
+                builder.withCivilOffence(getCivilOffence(getExparteValueFromRefDataOffenceJsonObject(of(referenceDataOffenceInfo))));
+            }
+
             if (nonNull(referenceDataOffenceInfo) && equalsIgnoreCase(referenceDataOffenceInfo.getString("reportRestrictResultCode", StringUtils.EMPTY), SEXUAL_OFFENCE_RR_CODE)) {
                 reportingRestrictions.add(new ReportingRestriction.Builder()
                         .withId(randomUUID())
@@ -314,5 +327,26 @@ public class CourtProceedingsInitiatedProcessor {
 
     private boolean isGroupCases(final List<ProsecutionCase> prosecutionCases) {
         return prosecutionCases.stream().filter(prosecutionCase -> nonNull(prosecutionCase.getIsGroupMaster())).anyMatch(ProsecutionCase::getIsGroupMaster);
+    }
+
+    private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {
+        boolean isCivil = nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
+        return isCivil ? of(SOW_REF_VALUE) : Optional.empty();
+    }
+
+    private static CivilOffence getCivilOffence(final Boolean isExParte) {
+        if(isExParte == null) {
+            return null;
+        }
+        return CivilOffence.civilOffence().withIsExParte(isExParte).build();
+    }
+
+    private static Boolean getExparteValueFromRefDataOffenceJsonObject(Optional<JsonObject> refDataOffence) {
+        Boolean exparteValue = null;
+        if (refDataOffence.isPresent()) {
+            JsonObject offence = refDataOffence.get();
+            exparteValue = offence.containsKey("exParte") ? valueOf(offence.getBoolean("exParte")) : null;
+        }
+        return exparteValue;
     }
 }

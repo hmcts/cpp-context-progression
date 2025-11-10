@@ -24,9 +24,8 @@
     },
     "applicationStatus": "DRAFT",
     "courtApplicationPayment": {
-      "isFeePaid": false,
-      "isFeeExempt": true,
-      "isFeeUndertakingAttached": false
+      "feeStatus":"OUTSTANDING",
+      "paymentReference": "Some reference provided"
     },
     "applicant": {
       "id": "87d8611b-50ee-4ae5-852f-52b0300ff83f",

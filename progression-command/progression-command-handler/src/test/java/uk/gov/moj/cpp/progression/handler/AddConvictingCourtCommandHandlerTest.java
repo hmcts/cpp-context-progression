@@ -116,7 +116,7 @@ public class AddConvictingCourtCommandHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -144,7 +144,7 @@ public class AddConvictingCourtCommandHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -172,7 +172,7 @@ public class AddConvictingCourtCommandHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

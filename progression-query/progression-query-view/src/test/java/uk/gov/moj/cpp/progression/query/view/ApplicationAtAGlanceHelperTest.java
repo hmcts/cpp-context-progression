@@ -18,6 +18,8 @@ import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationParty.courtApplicationParty;
 import static uk.gov.justice.core.courts.CourtApplicationPayment.courtApplicationPayment;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
+import static uk.gov.justice.core.courts.FeeStatus.NOT_APPLICABLE;
+import static uk.gov.justice.core.courts.FeeStatus.SATISFIED;
 import static uk.gov.justice.core.courts.Organisation.organisation;
 import static uk.gov.justice.core.courts.Person.person;
 import static uk.gov.justice.core.courts.PersonDefendant.personDefendant;
@@ -97,7 +99,12 @@ public class ApplicationAtAGlanceHelperTest {
                 .withType(courtApplicationType().withType(STRING_GENERATOR.next()).withAppealFlag(BOOLEAN_GENERATOR.next()).withApplicantAppellantFlag(BOOLEAN_GENERATOR.next()).build())
                 .withApplicationReceivedDate(now())
                 .withApplicationParticulars(STRING_GENERATOR.next())
-                .withCourtApplicationPayment(courtApplicationPayment().withPaymentReference(STRING_GENERATOR.next()).build())
+                .withCourtApplicationPayment(courtApplicationPayment()
+                        .withPaymentReference(STRING_GENERATOR.next())
+                        .withContestedPaymentReference(STRING_GENERATOR.next())
+                        .withFeeStatus(SATISFIED)
+                        .withContestedFeeStatus(NOT_APPLICABLE)
+                        .build())
                 .withJudicialResults(Collections.singletonList(JudicialResult.judicialResult()
                         .withResultText("REVU - Further review of court order")
                         .build()))
@@ -112,6 +119,9 @@ public class ApplicationAtAGlanceHelperTest {
         assertThat(applicationDetails.getApplicationReceivedDate(), is(courtApplication.getApplicationReceivedDate()));
         assertThat(applicationDetails.getApplicationParticulars(), is(courtApplication.getApplicationParticulars()));
         assertThat(applicationDetails.getPaymentReference(), is(courtApplication.getCourtApplicationPayment().getPaymentReference()));
+        assertThat(applicationDetails.getFeeStatus().name(), is(courtApplication.getCourtApplicationPayment().getFeeStatus().name()));
+        assertThat(applicationDetails.getContestedPaymentReference(), is(courtApplication.getCourtApplicationPayment().getContestedPaymentReference()));
+        assertThat(applicationDetails.getContestedFeeStatus().name(), is(courtApplication.getCourtApplicationPayment().getContestedFeeStatus().name()));
         assertThat(applicationDetails.getAagResults().get(0).getResultText(), is("REVU - Further review of court order"));
         assertThat(applicationDetails.getAagResults().get(0).getUseResultText(), is(true));
     }

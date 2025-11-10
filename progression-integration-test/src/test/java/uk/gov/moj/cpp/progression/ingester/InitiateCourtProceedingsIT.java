@@ -1,12 +1,17 @@
 package uk.gov.moj.cpp.progression.ingester;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.JsonPath.parse;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static junit.framework.TestCase.fail;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.anyOf;
 import static uk.gov.justice.services.test.utils.core.messaging.JsonObjects.getJsonArray;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCaseCivilFeesFor;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.getPoller;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.IngesterUtil.jsonFromString;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.ProsecutionCaseVerificationHelper.verifyCaseCreated;
@@ -18,6 +23,7 @@ import uk.gov.moj.cpp.progression.AbstractIT;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,6 +32,8 @@ import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.ReadContext;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -62,6 +70,11 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         //given
         initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB);
 
+        final String feeIds = "3034e172-99d3-4970-bc5e-fd95dd62c9d7"+','+ "3034e172-99d3-4970-bc5e-fd95dd62c9d6";
+
+        List<Matcher<? super ReadContext>> matchers = getCivilFeeMatchers();
+        pollProsecutionCaseCivilFeesFor(feeIds, matchers.toArray(new Matcher[7]));
+
         final DocumentContext inputProsecutionCase = documentContext(caseUrn);
 
         final Optional<JsonObject> prosecutionCaseResponseJsonObject = getPoller().pollUntilFound(() -> {
@@ -80,6 +93,19 @@ public class InitiateCourtProceedingsIT extends AbstractIT {
         final JsonObject outputCase = jsonFromString(getJsonArray(prosecutionCaseResponseJsonObject.get(), "index").get().getString(0));
         verifyCaseCreated(1l, inputProsecutionCase, outputCase);
         verifyCaseDefendant(inputProsecutionCase, outputCase,false);
+    }
+
+    private static List<Matcher<? super ReadContext>> getCivilFeeMatchers() {
+        List<Matcher<? super ReadContext>> matchers = newArrayList(
+                withJsonPath("$.civilFees.size()", is(2)),
+                withJsonPath("$.civilFees.[0].feeId", anyOf(is("3034e172-99d3-4970-bc5e-fd95dd62c9d6"), is("3034e172-99d3-4970-bc5e-fd95dd62c9d7"))),
+                withJsonPath("$.civilFees.[0].feeType", anyOf(is("INITIAL"), is("CONTESTED"))),
+                withJsonPath("$.civilFees.[0].feeStatus", is("OUTSTANDING")),
+                withJsonPath("$.civilFees.[1].feeId", anyOf(is("3034e172-99d3-4970-bc5e-fd95dd62c9d6"), is("3034e172-99d3-4970-bc5e-fd95dd62c9d7"))),
+                withJsonPath("$.civilFees.[1].feeType", anyOf(is("CONTESTED"), is("INITIAL"))),
+                withJsonPath("$.civilFees.[1].feeStatus", is("OUTSTANDING"))
+        );
+        return matchers;
     }
 
     private boolean isPartiesPopulated(final JsonObject jsonObject, final int partySize) {

@@ -289,7 +289,8 @@ public class ProsecutionCaseQuery {
                 }
             });
 
-            jsonObjectBuilder.add(PROSECUTION_CASE, newJsonObjectBuilder.build());
+            final JsonObject prosecutionCaseWithFees = newJsonObjectBuilder.build();
+            jsonObjectBuilder.add(PROSECUTION_CASE, prosecutionCaseWithFees);
 
             final JsonObject getCaseAtAGlanceJson = objectToJsonObjectConverter.convert(getHearingsAtAGlance(jsonObjectBuilder, caseId));
             jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE, getCaseAtAGlanceJson);
@@ -297,8 +298,8 @@ public class ProsecutionCaseQuery {
             final CaseCpsProsecutorEntity caseCpsProsecutorEntity = caseCpsProsecutorRepository.findBy(caseId.get());
             if (nonNull(caseCpsProsecutorEntity) && StringUtils.isNotEmpty(caseCpsProsecutorEntity.getOldCpsProsecutor())) {
                 final String oldCpsProsecutor = caseCpsProsecutorEntity.getOldCpsProsecutor();
-                JsonObject prosecutionCaseIdentifier = addProperty(prosecutionCase.getJsonObject(PROSECUTION_CASE_IDENTIFIER), OLD_PROSECUTION_AUTHORITY_CODE, oldCpsProsecutor);
-                jsonObjectBuilder.add(PROSECUTION_CASE, addProperty(prosecutionCase, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
+                JsonObject prosecutionCaseIdentifier = addProperty(prosecutionCaseWithFees.getJsonObject(PROSECUTION_CASE_IDENTIFIER), OLD_PROSECUTION_AUTHORITY_CODE, oldCpsProsecutor);
+                jsonObjectBuilder.add(PROSECUTION_CASE, addProperty(prosecutionCaseWithFees, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
 
                 prosecutionCaseIdentifier = addProperty(getCaseAtAGlanceJson.getJsonObject(PROSECUTION_CASE_IDENTIFIER), OLD_PROSECUTION_AUTHORITY_CODE, oldCpsProsecutor);
                 jsonObjectBuilder.add(HEARINGS_AT_A_GLANCE, addProperty(getCaseAtAGlanceJson, PROSECUTION_CASE_IDENTIFIER, prosecutionCaseIdentifier));
@@ -313,7 +314,7 @@ public class ProsecutionCaseQuery {
                     .filter(matchDefendantCaseHearingEntity -> !matchDefendantCaseHearingEntity.getProsecutionCaseId().equals(caseId.get()))
                     .collect(Collectors.groupingBy(MatchDefendantCaseHearingEntity::getMasterDefendantId));
 
-            final String statusOfPrimaryCase = prosecutionCase.getString(CASE_STATUS);
+            final String statusOfPrimaryCase = prosecutionCaseWithFees.getString(CASE_STATUS);
             final JsonArrayBuilder relatedCasesArrayBuilder = Json.createArrayBuilder();
             matchedCasesGroupedByMasterDefendantId.forEach((masterDefendantId, cases) -> buildRelatedCasesForDefendant(masterDefendantId, cases, relatedCasesArrayBuilder, statusOfPrimaryCase));
             final JsonArray relatedCases = relatedCasesArrayBuilder.build();

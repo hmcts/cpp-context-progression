@@ -72,6 +72,8 @@ public class CaseDefendantSummonsService {
     @Inject
     private Requester requester;
 
+    private static final String SOW_REF_VALUE = "MoJ";
+
     public SummonsDocumentContent generateSummonsPayloadForDefendant(final JsonEnvelope jsonEnvelope,
                                                                      final SummonsDataPrepared summonsDataPrepared,
                                                                      final ProsecutionCase prosecutionCaseQueried,
@@ -106,7 +108,7 @@ public class CaseDefendantSummonsService {
         final SummonsDefendant summonsDefendant = extractSummonsDefendant(defendantQueried);
         summonsDocumentContent.withDefendant(summonsDefendant);
 
-        summonsDocumentContent.withOffences(extractOffences(jsonEnvelope, defendantQueried));
+        summonsDocumentContent.withOffences(extractOffences(jsonEnvelope, defendantQueried, prosecutionCaseQueried));
 
         final SummonsAddressee summonsAddressee = summonsAddressee().withName(summonsDefendant.getName()).withAddress(summonsDefendant.getAddress()).build();
         summonsDocumentContent.withAddressee(summonsAddressee);
@@ -138,11 +140,12 @@ public class CaseDefendantSummonsService {
     }
 
 
-    private List<SummonsOffence> extractOffences(final JsonEnvelope jsonEnvelope, final Defendant defendant) {
+    private List<SummonsOffence> extractOffences(final JsonEnvelope jsonEnvelope, final Defendant defendant, final ProsecutionCase prosecutionCase) {
         final List<SummonsOffence> summonsOffences = newArrayList();
         final List<Offence> offencesFromDefendant = defendant.getOffences();
         final List<String> cjsOffenceCodes = offencesFromDefendant.stream().map(Offence::getOffenceCode).collect(toList());
-        final Optional<List<JsonObject>> offencesPayloadFromRefData = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(cjsOffenceCodes, jsonEnvelope, requester);
+        final Optional<String> sowRef = getSowRef(prosecutionCase);
+        final Optional<List<JsonObject>> offencesPayloadFromRefData = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(cjsOffenceCodes, jsonEnvelope, requester, sowRef);
         offencesFromDefendant.forEach(offenceFromDefendant -> {
 
             JsonObject offenceForCjsCodeFromRefData = EMPTY_JSON_OBJECT;
@@ -223,6 +226,11 @@ public class CaseDefendantSummonsService {
                 .withSummonsWording(referralReason.getString("summonsWording", EMPTY))
                 .withSummonsWordingWelsh(referralReason.getString("summonsWordingWelsh", EMPTY))
                 .build();
+    }
+
+    private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {
+        boolean isCivil = nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
+        return isCivil ? Optional.of(SOW_REF_VALUE) : Optional.empty();
     }
 
 }

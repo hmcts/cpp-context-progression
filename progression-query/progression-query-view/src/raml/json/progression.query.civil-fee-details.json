@@ -1,0 +1,16 @@
+{
+  "civilFees": [
+    {
+      "feeId": "3034e172-99d3-4970-bc5e-fd95dd62c9d6",
+      "feeType": "INITIAL",
+      "feeStatus": "OUTSTANDING",
+      "paymentReference": "payRef01"
+    },
+    {
+      "feeId": "3034e172-99d3-4970-bc5e-fd95dd62c9d7",
+      "feeType": "CONTESTED",
+      "feeStatus": "OUTSTANDING",
+      "paymentReference": "payRef02"
+    }
+  ]
+}

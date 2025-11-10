@@ -1,9 +1,11 @@
 package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -57,7 +59,7 @@ public class DefendantHelperTest {
     Organisation organisation;
 
     private static Offence createOffence(final UUID offenceId, final String offenceCode) {
-        return Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withStartDate(LocalDate.now()).withArrestDate(LocalDate.now()).withChargeDate(LocalDate.now()).withConvictionDate(LocalDate.now()).withEndDate(LocalDate.now()).withOffenceTitle("title").withOffenceTitleWelsh("welsh title").withWording("wording").withOffenceLegislation("legisltation").withOffenceLegislationWelsh("welsh legisltation").withCount(1).withOrderIndex(500).withOffenceFacts(OffenceFacts.offenceFacts().withAlcoholReadingAmount(new Integer(100)).withAlcoholReadingMethodCode("B").build()).build();
+        return Offence.offence().withId(offenceId).withOffenceCode(offenceCode).withStartDate(LocalDate.now()).withArrestDate(LocalDate.now()).withChargeDate(LocalDate.now()).withConvictionDate(LocalDate.now()).withEndDate(LocalDate.now()).withOffenceTitle("title").withOffenceTitleWelsh("welsh title").withWording("wording").withOffenceLegislation("legisltation").withOffenceLegislationWelsh("welsh legisltation").withCount(1).withOrderIndex(500).withOffenceFacts(OffenceFacts.offenceFacts().withAlcoholReadingAmount(100).withAlcoholReadingMethodCode("B").build()).build();
     }
 
     private static Offence.Builder createOffenceWithDefaults(final UUID offenceId, final String offenceCode) {
@@ -127,9 +129,27 @@ public class DefendantHelperTest {
         final JsonObject jsonObjectOffence = Json.createObjectBuilder().add("maxPenalty", "Indicated").add("cjsOffenceCode", "first").build();
         jsonObjects.add(jsonObjectOffence);
         final Optional<List<JsonObject>> refDataOffences = Optional.of(jsonObjects);
-        Offence offence = DefendantHelper.updateOrderIndex(offenceOne, 100, refDataOffences);
+        Offence offence = DefendantHelper.updateOrderIndexAndExparteValue(offenceOne, 100, refDataOffences, false);
         assertThat(offence.getOrderIndex(), is(100));
         assertThat(offence.getMaxPenalty(), is("Indicated"));
+    }
+
+    @Test
+    public void shouldUpdateOrderIndexForCivilOffence() {
+        final Offence offenceOne = createOffence(randomUUID(), "first");
+        final ArrayList<JsonObject> jsonObjects = new ArrayList<>();
+        final JsonObject jsonObjectOffence = Json.createObjectBuilder()
+                .add("maxPenalty", "Indicated")
+                .add("cjsOffenceCode", "first")
+                .add("exParte", true)
+                .build();
+        jsonObjects.add(jsonObjectOffence);
+        final Optional<List<JsonObject>> refDataOffences = Optional.of(jsonObjects);
+        Offence offence = DefendantHelper.updateOrderIndexAndExparteValue(offenceOne, 100, refDataOffences, true);
+        assertThat(offence.getOrderIndex(), is(100));
+        assertThat(offence.getMaxPenalty(), is("Indicated"));
+        assertThat(offence.getCivilOffence(), notNullValue());
+        assertThat(offence.getCivilOffence().getIsExParte(), is(TRUE));
     }
 
     @Test
@@ -394,7 +414,7 @@ public class DefendantHelperTest {
         List<Offence> offences = Stream.concat(newOffences.stream(), updatedOffences.stream()).collect(Collectors.toList());
         Optional<List<JsonObject>> referenceDataOffences = Optional.empty();
 
-        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences, false);
 
         assertTrue(result.isPresent());
         OffencesForDefendantChanged offencesForDefendantChanged = result.get();
@@ -412,7 +432,7 @@ public class DefendantHelperTest {
         List<Offence> offences = List.of(createOffence(existingOffences.get(0).getId(), "existingOffence"));
         Optional<List<JsonObject>> referenceDataOffences = Optional.empty();
 
-        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences, false);
 
         assertFalse(result.isPresent());
     }
@@ -425,7 +445,7 @@ public class DefendantHelperTest {
         List<Offence> offences = List.of();
         Optional<List<JsonObject>> referenceDataOffences = Optional.empty();
 
-        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+        Optional<OffencesForDefendantChanged> result = DefendantHelper.getOffencesForDefendantChanged(offences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences, false);
 
         assertFalse(result.isPresent());
 

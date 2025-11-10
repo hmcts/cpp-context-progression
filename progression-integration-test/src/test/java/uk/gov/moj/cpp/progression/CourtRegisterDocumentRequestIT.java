@@ -16,7 +16,7 @@ import static uk.gov.moj.cpp.progression.domain.helper.CourtRegisterHelper.getCo
 import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
-import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequests;
+import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
@@ -40,6 +40,8 @@ import org.junit.jupiter.api.Test;
 public class CourtRegisterDocumentRequestIT extends AbstractIT {
 
     private final JmsMessageConsumerClient consumerForCourtApplicationCreated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.court-application-proceedings-initiated").getMessageConsumerClient();
+
+    private final String ORIGINATING_SOURCE_COURT_REGISTER = "CourtRegister";
 
     @Test
     public void shouldCreateCourtRegisterDocumentRequest() throws IOException {
@@ -65,7 +67,8 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         generateCourtRegister();
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId);
 
-        pollSysDocGenerationRequests(hasSize(1));
+        final String courtRegisterStreamId = getCourtRegisterStreamId(courtCentreId.toString(), LocalDate.now().toString()).toString();
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(1), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId);
 
         final UUID courtCentreStreamId = getCourtRegisterStreamId(courtCentreId.toString(), registerDate.toLocalDate().toString());
         courtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicEvent(USER_ID_VALUE_AS_ADMIN, courtCentreStreamId);
@@ -107,6 +110,11 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         generateCourtRegister();
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId_1, courtCentreId_2);
 
+        final String courtRegisterStreamId1 = getCourtRegisterStreamId(courtCentreId_1.toString(), LocalDate.now().toString()).toString();
+        final String courtRegisterStreamId2 = getCourtRegisterStreamId(courtCentreId_2.toString(), LocalDate.now().toString()).toString();
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(1), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId1);
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(1), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId2);
+
         final String body = getPayload("progression.generate-court-register-by-date-and-court-house.json")
                 .replaceAll("%REGISTER_DATE%", LocalDate.now().toString())
                 .replaceAll("%COURT_HOUSE%", courtHouse_1 + "," + courtHouse_2);
@@ -117,7 +125,46 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
                 body);
         assertThat(generateRegisterResponse.getStatusCode(), equalTo(SC_ACCEPTED));
 
-        pollSysDocGenerationRequests(hasSize(1));
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(2), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId1);
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(2), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId2);
+    }
+
+    @Test
+    public void shouldGenerateCourtRegisterOnlyByRequestDate() throws IOException {
+        CourtRegisterDocumentRequestHelper courtRegisterDocumentRequestHelper = new CourtRegisterDocumentRequestHelper();
+        final UUID courtCentreId = randomUUID();
+        final String courtHouse = STRING.next();
+        final UUID hearingId = randomUUID();
+        final UUID courtApplicationId = randomUUID();
+        final ZonedDateTime registerDate = ZonedDateTime.now(UTC);
+        final ZonedDateTime hearingDate = ZonedDateTime.now(UTC).minusHours(1);
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+
+        intiateCourtProceedingForApplication(courtApplicationId.toString(), caseId.toString(), defendantId.toString(), defendantId.toString(), hearingId.toString(), "applications/progression.initiate-court-proceedings-for-application_for_prison_court_register.json");
+        verifyCourtApplicationCreatedPublicEvent();
+        recordCourtRegister(courtCentreId, courtHouse, registerDate, hearingId, hearingDate, courtApplicationId);
+
+        courtRegisterDocumentRequestHelper.verifyCourtRegisterRequestsExists(courtCentreId);
+
+        generateCourtRegister();
+        courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId);
+
+        final String courtRegisterStreamId = getCourtRegisterStreamId(courtCentreId.toString(), LocalDate.now().toString()).toString();
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(1), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId);
+
+        final String body = getPayload("progression.generate-court-register-by-date.json")
+                .replaceAll("%REGISTER_DATE%", LocalDate.now().toString());
+
+        final Response generateRegisterResponse = postCommand(
+                getWriteUrl("/court-register/generate"),
+                "application/vnd.progression.generate-court-register-by-date+json",
+                body);
+        assertThat(generateRegisterResponse.getStatusCode(), equalTo(SC_ACCEPTED));
+
+        courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId);
+
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(2), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId);
     }
 
     @Test
@@ -156,6 +203,9 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         generateCourtRegister();
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId);
 
+        final String courtRegisterStreamId = getCourtRegisterStreamId(courtCentreId.toString(), LocalDate.now().toString()).toString();
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(1), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId);
+
 
         final ZonedDateTime registerDate4 = ZonedDateTime.now(UTC).minusMinutes(3);
         final Response writeResponse5 = recordCourtRegister(courtCentreId, courtHouse, registerDate4, hearingId, hearingDate, courtApplicationId);
@@ -165,7 +215,7 @@ public class CourtRegisterDocumentRequestIT extends AbstractIT {
         generateCourtRegister();
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsGenerated(courtCentreId);
 
-        pollSysDocGenerationRequests(hasSize(1));
+        pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(hasSize(2), ORIGINATING_SOURCE_COURT_REGISTER, courtRegisterStreamId);
         courtRegisterDocumentRequestHelper.sendSystemDocGeneratorPublicEvent(USER_ID_VALUE_AS_ADMIN, getCourtRegisterStreamId(courtCentreId.toString(), registerDate4.toLocalDate().toString()));
         courtRegisterDocumentRequestHelper.verifyCourtRegisterIsNotified(courtCentreId);
         NotificationServiceStub.verifyEmailNotificationIsRaisedWithoutAttachment(Lists.newArrayList("john.smith@hmcts.net"));

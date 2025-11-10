@@ -161,7 +161,7 @@ public class AddDefendantsToCourtProceedingsHandlerTest {
         final List<JsonObject> referencedataOffencesJsonObject = prepareReferenceDataOffencesJsonObject(offenceId, "offenceCode",
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
 
         final Envelope<AddDefendantsToCourtProceedings> envelope = envelopeFrom(metadata, addDefendantsToCourtProceedings);

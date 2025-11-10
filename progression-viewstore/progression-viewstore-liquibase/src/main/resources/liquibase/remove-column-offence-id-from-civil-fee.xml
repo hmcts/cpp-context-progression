@@ -1,0 +1,18 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="remove-column-offence-id-from-civil-fee" author="sbegari">
+        <dropColumn tableName="civil_fee">
+            <column name="offence_id" />
+        </dropColumn>
+
+        <rollback>
+            <addColumn tableName="civil_fee">
+                <column name="offence_id" type="UUID"/>
+            </addColumn>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -164,10 +164,8 @@
       }
     },
     "courtApplicationPayment": {
-    	"isFeePaid": true,
-    	"isFeeUndertakingAttached": true,
-    	"isFeeExempt": true,
-        "paymentReference": "a"
+      "feeStatus":"OUTSTANDING",
+      "paymentReference": "a"
     },
     "linkedCaseId": "RANDOM_CASE_ID",
     "applicationStatus": "DRAFT",

@@ -1146,6 +1146,12 @@ public class PreAndPostConditionHelper {
     }
 
     @SafeVarargs
+    public static String pollProsecutionCaseCivilFeesFor(final String feeIds, final Matcher<? super ReadContext>... matchers) {
+        final String queryParam = "?feeIds=" + feeIds;
+        return pollForResponse("/civilfees/" + queryParam, "application/vnd.progression.query.civil-fee-details+json", matchers);
+    }
+
+    @SafeVarargs
     public static String pollProsecutionCasesWithCourtOrdersFor(final String caseId, final Matcher<? super ReadContext>... matchers) {
         return pollForResponse("/prosecutioncases/" + caseId, "application/vnd.progression.query.prosecutioncase+json", matchers);
     }

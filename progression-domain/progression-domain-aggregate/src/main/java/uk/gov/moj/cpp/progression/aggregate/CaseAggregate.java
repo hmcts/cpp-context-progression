@@ -50,10 +50,12 @@ import static uk.gov.moj.cpp.progression.aggregate.rules.RetentionPolicyPriority
 import static uk.gov.moj.cpp.progression.aggregate.transformers.ProsecutionCaseTransformer.toUpdatedProsecutionCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.CourtApplicationHelper.isAddressMatches;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getAllDefendantsOffences;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getCivilOffence;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantEmail;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantJudicialResultsOfDefendantsAssociatedToTheCase;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getDefendantPostcode;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getExparteValueFromRefDataOffenceJsonObject;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getMasterDefendant;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedDefendantsForOnlinePlea;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.getUpdatedOffence;
@@ -61,9 +63,9 @@ import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.hearingCaseDefendantsProceedingsConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isConcluded;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.isProceedingConcludedEventTriggered;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestriction;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.offenceWithSexualOffenceReportingRestrictionAndExparteValue;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.sendEmailNotificationToDefendant;
-import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndex;
+import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updateOrderIndexAndExparteValue;
 import static uk.gov.moj.cpp.progression.domain.aggregate.utils.DefendantHelper.updatedDefendantsWithProceedingConcludedState;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.ACTIVE;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
@@ -100,7 +102,6 @@ import uk.gov.justice.core.courts.CaseNoteEditedV2;
 import uk.gov.justice.core.courts.CaseRetentionPolicyRecorded;
 import uk.gov.justice.core.courts.Cases;
 import uk.gov.justice.core.courts.CivilFees;
-import uk.gov.justice.core.courts.CivilFeesUpdated;
 import uk.gov.justice.core.courts.ContactNumber;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.CourtDocument;
@@ -966,7 +967,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     @SuppressWarnings("squid:S2589")
-    public Stream<Object> createProsecutionCase(final ProsecutionCase prosecutionCase) {
+    public Stream<Object> createProsecutionCase(final ProsecutionCase prosecutionCase, final List<CivilFees> effectiveCivilFeesForTheCase) {
         LOGGER.debug("Prosecution case is being referred To Court .");
         if (nonNull(this.prosecutionCase) && nonNull(this.prosecutionCase.getIsCivil())
                 && this.prosecutionCase.getIsCivil() && isNull(this.prosecutionCase.getGroupId())) {
@@ -981,7 +982,34 @@ public class CaseAggregate implements Aggregate {
             final List<uk.gov.justice.core.courts.Defendant> defendantList = prosecutionCase.getDefendants().stream().filter(x -> exactMatchedDefendants.containsKey(x.getId())).collect(toList());
             defendantList.stream().forEach(x -> DefendantHelper.getUpdatedDefendantWithMasterDefendantId(prosecutionCase, x, transformToExactMatchedDefendants(exactMatchedDefendants.get(x.getId()))));
         }
-        return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
+
+        if(nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil() && isNotEmpty(effectiveCivilFeesForTheCase)) {
+            return updateProsecutionCaseWithCivilFeesIdAndFeeTypeOnly(prosecutionCase, effectiveCivilFeesForTheCase);
+        } else {
+            return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(prosecutionCase).build()));
+        }
+
+    }
+
+    private Stream<Object> updateProsecutionCaseWithCivilFeesIdAndFeeTypeOnly(final ProsecutionCase prosecutionCase, final List<CivilFees> effectiveCivilFeesForTheCase) {
+        final List<CivilFees> civilFeesWithFeeIdAndFeeType = new ArrayList<>();
+
+        civilFeesWithFeeIdAndFeeType.addAll(buildCivilFeesFromFeeIds(effectiveCivilFeesForTheCase));
+
+        final ProsecutionCase updatedProsecutionCase = ProsecutionCase.prosecutionCase()
+                .withValuesFrom(prosecutionCase)
+                .withCivilFees(civilFeesWithFeeIdAndFeeType)
+                .build();
+        return apply(Stream.of(ProsecutionCaseCreated.prosecutionCaseCreated().withProsecutionCase(updatedProsecutionCase).build()));
+    }
+
+    private List<CivilFees> buildCivilFeesFromFeeIds(final List<CivilFees> effectiveFeesForTheCase) {
+        return effectiveFeesForTheCase.stream()
+                .map(fee -> CivilFees.civilFees()
+                        .withFeeId(fee.getFeeId())
+                        .withFeeType(fee.getFeeType())
+                        .build())
+                .toList();
     }
 
     public Stream<Object> defendantsAddedToCourtProceedings(final List<uk.gov.justice.core.courts.Defendant> addedDefendants,
@@ -1126,7 +1154,7 @@ public class CaseAggregate implements Aggregate {
         }
         builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                 .withDefendant(newDefendant)
-                .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(hearingIds) : emptyList())
+                .withHearingIds(isNotEmpty(hearingIds) ? new ArrayList<>(hearingIds) : emptyList())
                 .build());
 
         if (shouldUpdateCustodialEstablishment(newDefendant.getId(), newDefendant.getPersonDefendant(), defendantsMap)) {
@@ -1296,7 +1324,7 @@ public class CaseAggregate implements Aggregate {
                 LOGGER.info("Prosecution case defendant updated for defendant {} with caseId {} ", newDefendantUpdate.getId(), newDefendantUpdate.getProsecutionCaseId());
                 builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                         .withDefendant(newDefendantUpdate)
-                        .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
+                        .withHearingIds(isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
                         .build());
             }
         }
@@ -1348,7 +1376,7 @@ public class CaseAggregate implements Aggregate {
 
             builder.add(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                     .withDefendant(buildDefendantUpdateFromDefendant(newDefendant))
-                    .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
+                    .withHearingIds(isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
                     .build());
 
         }
@@ -1370,7 +1398,7 @@ public class CaseAggregate implements Aggregate {
 
         return apply(Stream.of(ProsecutionCaseDefendantUpdated.prosecutionCaseDefendantUpdated()
                         .withDefendant(newDefendant)
-                        .withHearingIds(CollectionUtils.isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
+                        .withHearingIds(isNotEmpty(hearingIds) ? new ArrayList<>(this.hearingIds) : emptyList())
                         .build(),
                 CaseDefendantUpdatedWithDriverNumber.caseDefendantUpdatedWithDriverNumber()
                         .withDefendantId(defendantId)
@@ -1690,16 +1718,19 @@ public class CaseAggregate implements Aggregate {
                 .max()
                 .orElse(0));
         final List<uk.gov.justice.core.courts.Offence> newOffences = new ArrayList<>();
+        final boolean isCivil = nonNull(this.prosecutionCase.getIsCivil()) && this.prosecutionCase.getIsCivil();
 
         final List<uk.gov.justice.core.courts.Offence> allOffences = offences.stream().map(commandOffence -> {
             uk.gov.justice.core.courts.Offence offence;
             Optional<uk.gov.justice.core.courts.Offence> existingOffence = this.defendantCaseOffences.get(defendantId).stream().filter(o -> o.getId().equals(commandOffence.getId())).findFirst();
             if (existingOffence.isPresent()) {
-                offence = updateOrderIndex(commandOffence, existingOffence.get().getOrderIndex(), referenceDataOffences);
+                offence = updateOrderIndexAndExparteValue(commandOffence, existingOffence.get().getOrderIndex(), referenceDataOffences, isCivil);
             } else {
                 offence = updateLaaApplicationReference(defendantId,
-                        offenceWithSexualOffenceReportingRestriction(
-                                updateOrderIndex(commandOffence, maxOrderIndex.addAndGet(1), referenceDataOffences), referenceDataOffences));
+                        offenceWithSexualOffenceReportingRestrictionAndExparteValue(
+                                updateOrderIndexAndExparteValue(commandOffence, maxOrderIndex.addAndGet(1), referenceDataOffences, isCivil),
+                                referenceDataOffences, isCivil)
+                );
                 newOffences.add(offence);
             }
             return offence;
@@ -1731,7 +1762,7 @@ public class CaseAggregate implements Aggregate {
         }
 
         if (this.defendantCaseOffences.containsKey(defendantId)) {
-            final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantChanged(allOffences, this.defendantCaseOffences.get(defendantId), prosecutionCaseId, defendantId, referenceDataOffences);
+            final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper.getOffencesForDefendantChanged(allOffences, this.defendantCaseOffences.get(defendantId), prosecutionCaseId, defendantId, referenceDataOffences, isCivil);
             offencesForDefendantChanged.ifPresent(streamBuilder::add);
         }
         return apply(streamBuilder.build());
@@ -1752,8 +1783,9 @@ public class CaseAggregate implements Aggregate {
         streamBuilder.add(ProsecutionCaseOffencesUpdated.prosecutionCaseOffencesUpdated()
                 .withDefendantCaseOffences(newDefendantCaseOffences).build());
         if (this.defendantCaseOffences.containsKey(defendantId)) {
+            final boolean isCivil = nonNull(this.prosecutionCase.getIsCivil()) && this.prosecutionCase.getIsCivil();
             final Optional<OffencesForDefendantChanged> offencesForDefendantChanged = DefendantHelper
-                    .getOffencesForDefendantChanged(updatedOffences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences);
+                    .getOffencesForDefendantChanged(updatedOffences, existingOffences, prosecutionCaseId, defendantId, referenceDataOffences, isCivil);
             offencesForDefendantChanged.ifPresent(streamBuilder::add);
         }
         LOGGER.info("Offences courtCentre update being applied.");
@@ -3789,7 +3821,18 @@ public class CaseAggregate implements Aggregate {
             builder.withReportingRestrictions(dedupReportingRestrictions(reportingRestrictions));
         }
 
+        populateCivilOffenceDetails(referenceDataOffencesJsonObjectOptional, offenceKey, offence, builder);
+
         offencesWithReportingRestriction.add(builder.build());
+    }
+
+    private void populateCivilOffenceDetails(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Function<JsonObject, String> offenceKey, final Offence offence, final Offence.Builder builder) {
+        final boolean isCivil = nonNull(this.prosecutionCase.getIsCivil()) && this.prosecutionCase.getIsCivil();
+        if (isCivil && isNull(offence.getCivilOffence()) && referenceDataOffencesJsonObjectOptional.isPresent()) {
+            final Map<String, JsonObject> offenceCodeMap = referenceDataOffencesJsonObjectOptional.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
+            final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
+            builder.withCivilOffence(getCivilOffence(getExparteValueFromRefDataOffenceJsonObject(Optional.of(referenceDataOffenceInfo))));
+        }
     }
 
     private void populateSexualReportingRestriction(final Optional<List<JsonObject>> referenceDataOffencesJsonObjectOptional, final Function<JsonObject, String> offenceKey, final uk.gov.justice.core.courts.Offence offence, final List<ReportingRestriction> reportingRestrictions, final uk.gov.justice.core.courts.Offence.Builder builder) {
@@ -3818,14 +3861,6 @@ public class CaseAggregate implements Aggregate {
                     .withOrderedDate(LocalDate.now())
                     .withLabel(YOUTH_RESTRICTION).build());
         }
-    }
-
-    public Stream<Object> updateCivilFees(final UUID caseId, final List<CivilFees> civilFees) {
-        return apply(Stream.of(CivilFeesUpdated
-                .civilFeesUpdated()
-                .withCaseId(caseId)
-                .withCivilFees(civilFees)
-                .build()));
     }
 
     public Stream<Object> updateCaseGroupInfo(final Boolean isGroupMaster, final Boolean isGroupMember) {

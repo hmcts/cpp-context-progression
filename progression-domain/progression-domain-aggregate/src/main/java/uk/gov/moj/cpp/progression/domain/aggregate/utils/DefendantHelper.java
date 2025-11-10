@@ -2,6 +2,8 @@ package uk.gov.moj.cpp.progression.domain.aggregate.utils;
 
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.Boolean.valueOf;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparing;
@@ -19,6 +21,7 @@ import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
+import uk.gov.justice.core.courts.CivilOffence;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -402,26 +405,31 @@ public class DefendantHelper {
         );
     }
 
-    public static Offence updateOrderIndex(final Offence offence,final int orderIndex, final Optional<List<JsonObject>> referenceDataOffences) {
+    public static Offence updateOrderIndexAndExparteValue(final Offence offence, final int orderIndex, final Optional<List<JsonObject>> referenceDataOffences, final boolean isCivil) {
         final List<JsonObject> matchingRefOffences = referenceDataOffences.orElse(new ArrayList<>());
         final Optional<JsonObject> matchedOffence = matchingRefOffences.stream().filter(jsonOffence -> getString(jsonOffence, "cjsOffenceCode").orElse("").equals(offence.getOffenceCode())).findFirst();
         final Offence.Builder offence1 = Offence.offence();
         offence1.withValuesFrom(offence);
-        matchedOffence.ifPresent(off -> offence1.withMaxPenalty(off.getString("maxPenalty", EMPTY)));
+        matchedOffence.ifPresent(off -> {
+            offence1.withMaxPenalty(off.getString("maxPenalty", EMPTY));
+            if (isCivil && isNull(offence.getCivilOffence())) {
+                offence1.withCivilOffence(getCivilOffence(getExparteValueFromRefDataOffenceJsonObject(matchedOffence)));
+            }
+        });
         return offence1
                 .withOrderIndex(orderIndex)
                 .build();
 
     }
 
-    public static Optional<OffencesForDefendantChanged> getOffencesForDefendantChanged(final List<Offence> offences, final List<Offence> existingOffences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences) {
+    public static Optional<OffencesForDefendantChanged> getOffencesForDefendantChanged(final List<Offence> offences, final List<Offence> existingOffences, final UUID prosecutionCaseId, final UUID defendantId, final Optional<List<JsonObject>> referenceDataOffences, final boolean isCivil) {
         final List<Offence> offencesAddedList = DefendantHelper.getAddedOffences(offences, existingOffences);
         final OffencesForDefendantChanged.Builder builder = OffencesForDefendantChanged.offencesForDefendantChanged();
         builder.withModifiedDate(LocalDate.now());
         boolean defendantOffencesChanged = false;
         if (!offencesAddedList.isEmpty()) {
-            final List<AddedOffences> addedOffences = Arrays.asList(AddedOffences.addedOffences().withProsecutionCaseId(prosecutionCaseId).withDefendantId(defendantId)
-                    .withOffences(processReportingRestrictionForAddedOffences(offencesAddedList, referenceDataOffences))
+            final List<AddedOffences> addedOffences = asList(AddedOffences.addedOffences().withProsecutionCaseId(prosecutionCaseId).withDefendantId(defendantId)
+                    .withOffences(processReportingRestrictionForAddedOffences(offencesAddedList, referenceDataOffences, isCivil))
                     .build());
             builder.withAddedOffences(addedOffences);
             defendantOffencesChanged = true;
@@ -429,7 +437,7 @@ public class DefendantHelper {
 
         final List<Offence> offencesModifiedList = DefendantHelper.getUpdatedOffences(offences, existingOffences);
         if (!offencesModifiedList.isEmpty()) {
-            final List<UpdatedOffences> updatedOffences = Arrays.asList(UpdatedOffences.updatedOffences().withDefendantId(defendantId).withProsecutionCaseId(prosecutionCaseId).withOffences(offencesModifiedList).build());
+            final List<UpdatedOffences> updatedOffences = asList(UpdatedOffences.updatedOffences().withDefendantId(defendantId).withProsecutionCaseId(prosecutionCaseId).withOffences(offencesModifiedList).build());
             builder.withUpdatedOffences(updatedOffences);
             defendantOffencesChanged = true;
         }
@@ -438,12 +446,12 @@ public class DefendantHelper {
         return defendantOffencesChanged ? of(builder.build()) : empty();
     }
 
-    private static List<Offence> processReportingRestrictionForAddedOffences(final List<Offence> offencesToBeProcessed, final Optional<List<JsonObject>> referenceDataOffences) {
+    private static List<Offence> processReportingRestrictionForAddedOffences(final List<Offence> offencesToBeProcessed, final Optional<List<JsonObject>> referenceDataOffences, final boolean isCivil) {
         final List<Offence> offenceDetailListAddWithReportingRestrictions = new ArrayList<>();
 
         if (referenceDataOffences.isPresent() && isNotEmpty(referenceDataOffences.get())) {
             offencesToBeProcessed.forEach(offence ->
-                    offenceDetailListAddWithReportingRestrictions.add(offenceWithSexualOffenceReportingRestriction(offence, referenceDataOffences))
+                    offenceDetailListAddWithReportingRestrictions.add(offenceWithSexualOffenceReportingRestrictionAndExparteValue(offence, referenceDataOffences, isCivil))
             );
 
             return offenceDetailListAddWithReportingRestrictions;
@@ -452,7 +460,7 @@ public class DefendantHelper {
         }
     }
 
-    public static Offence offenceWithSexualOffenceReportingRestriction(final Offence offence, final Optional<List<JsonObject>> referenceDataOffences) {
+    public static Offence offenceWithSexualOffenceReportingRestrictionAndExparteValue(final Offence offence, final Optional<List<JsonObject>> referenceDataOffences, final boolean isCivil) {
         final Function<JsonObject, String> offenceKey = offenceJsonObject -> offenceJsonObject.getString("cjsOffenceCode");
         final Map<String, JsonObject> offenceCodeMap = referenceDataOffences.get().stream().collect(Collectors.toMap(offenceKey, Function.identity()));
         final JsonObject referenceDataOffenceInfo = offenceCodeMap.get(offence.getOffenceCode());
@@ -473,6 +481,10 @@ public class DefendantHelper {
                         .build());
             }
             builder.withReportingRestrictions(dedupReportingRestrictions(reportingRestrictions));
+        }
+
+        if (isCivil && isNull(offence.getCivilOffence()) && nonNull(referenceDataOffenceInfo)) {
+            builder.withCivilOffence(getCivilOffence(getExparteValueFromRefDataOffenceJsonObject(Optional.of(referenceDataOffenceInfo))));
         }
 
         return builder.build();
@@ -600,6 +612,22 @@ public class DefendantHelper {
             return pleadOnline.getPersonalDetails().getAddress().getPostcode();
         }
         return null;
+    }
+
+    public static CivilOffence getCivilOffence(final Boolean isExParte) {
+        if(isExParte == null) {
+            return null;
+        }
+        return CivilOffence.civilOffence().withIsExParte(isExParte).build();
+    }
+
+    public static Boolean getExparteValueFromRefDataOffenceJsonObject(Optional<JsonObject> refDataOffence) {
+        Boolean exparteValue = null;
+        if (refDataOffence.isPresent()) {
+            JsonObject offence = refDataOffence.get();
+            exparteValue = offence.containsKey("exParte") ? valueOf(offence.getBoolean("exParte")) : null;
+        }
+        return exparteValue;
     }
 
 }

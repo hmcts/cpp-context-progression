@@ -16,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
 import static uk.gov.justice.core.courts.ApplicationStatus.LISTED;
 import static uk.gov.justice.core.courts.ApplicationStatus.UN_ALLOCATED;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationCase.courtApplicationCase;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
@@ -56,6 +57,7 @@ import uk.gov.justice.core.courts.CourtApplicationStatusUpdated;
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtCivilApplication;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.DefendantCase;
@@ -76,6 +78,7 @@ import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Organisation;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.SendNotificationForApplicationInitiated;
 import uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated;
@@ -243,16 +246,20 @@ public class ApplicationAggregateTest {
 
     @Test
     public void shouldReturnCourtApplicationCreatedForCourtProceedings() {
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withIsCivil(true).build();
         final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
-                        .initiateCourtApplicationProceedings()
-                        .withCourtApplication(courtApplication().withId(randomUUID()).build())
-                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
-                        .withSummonsApprovalRequired(false)
-                        .build(), false, false)
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(randomUUID()).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build(), false, false, prosecutionCase)
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
         assertThat(courtApplicationProceedingsInitiated.getClass(), is(equalTo(CourtApplicationProceedingsInitiated.class)));
+        final CourtCivilApplication courtCivilApplication = courtApplicationProceedingsInitiated.getCourtApplication().getCourtCivilApplication();
+        assertNotNull(courtCivilApplication);
+        assertThat(courtCivilApplication.getIsCivil(), is(true));
     }
 
     @Test
@@ -399,16 +406,19 @@ public class ApplicationAggregateTest {
     @Test
     public void shouldReturnCourtApplicationCreatedForCourtProceedingsWithSjpCase() {
         final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
-                        .initiateCourtApplicationProceedings()
-                        .withCourtApplication(courtApplication().withId(randomUUID())
-                                .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
-                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
-                        .withSummonsApprovalRequired(false)
-                        .build(), true, false)
+                .initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication().withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build(), true, false, ProsecutionCase.prosecutionCase().build())
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
         assertThat(courtApplicationProceedingsInitiated.getClass(), is(equalTo(CourtApplicationProceedingsInitiated.class)));
+        final CourtCivilApplication courtCivilApplication = courtApplicationProceedingsInitiated.getCourtApplication().getCourtCivilApplication();
+        assertNotNull(courtCivilApplication);
+        assertThat(courtCivilApplication.getIsCivil(), is(false));
     }
 
     @Test

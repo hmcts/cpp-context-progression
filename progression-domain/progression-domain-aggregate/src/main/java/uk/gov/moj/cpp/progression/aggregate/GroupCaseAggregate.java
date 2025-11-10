@@ -36,6 +36,7 @@ public class GroupCaseAggregate implements Aggregate {
     private final Set<UUID> groupCases = new HashSet<>();
     private final Set<UUID> memberCases = new HashSet<>();
     private UUID groupMaster;
+    private ProsecutionCase masterCase;
 
     @Override
     public Object apply(final Object event) {
@@ -48,6 +49,7 @@ public class GroupCaseAggregate implements Aggregate {
                                 this.memberCases.add(caseId);
                                 if (nonNull(pCase.getIsGroupMaster()) && pCase.getIsGroupMaster()) {
                                     this.groupMaster = caseId;
+                                    this.masterCase = pCase;
                                 }
                             }
                         })
@@ -56,6 +58,7 @@ public class GroupCaseAggregate implements Aggregate {
                     this.memberCases.remove(e.getRemovedCase().getId());
                     if (nonNull(e.getNewGroupMaster())) {
                         this.groupMaster = e.getNewGroupMaster().getId();
+                        this.masterCase = e.getNewGroupMaster();
                     }
                 }),
                 otherwiseDoNothing()
@@ -130,5 +133,9 @@ public class GroupCaseAggregate implements Aggregate {
 
     public UUID getGroupMaster() {
         return groupMaster;
+    }
+
+    public ProsecutionCase getMasterCase() {
+        return masterCase;
     }
 }

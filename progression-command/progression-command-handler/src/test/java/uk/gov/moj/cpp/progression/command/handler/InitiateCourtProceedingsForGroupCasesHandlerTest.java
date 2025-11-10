@@ -12,9 +12,13 @@ import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 
+import uk.gov.justice.core.courts.CivilFees;
+import uk.gov.justice.core.courts.CivilFeesAdded;
 import uk.gov.justice.core.courts.CourtProceedingsInitiated;
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.FeeStatus;
+import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.InitiateCourtProceedingsForGroupCases;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCaseCreated;
@@ -31,6 +35,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
 import uk.gov.moj.cpp.progression.events.CivilCaseExists;
 import uk.gov.moj.cpp.progression.handler.InitiateCourtProceedingsForGroupCasesHandler;
@@ -76,7 +81,8 @@ public class InitiateCourtProceedingsForGroupCasesHandlerTest {
     private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(objectMapper);
 
     @Spy
-    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CourtProceedingsInitiated.class, ProsecutionCaseCreated.class, CivilCaseExists.class);
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CourtProceedingsInitiated.class, ProsecutionCaseCreated.class, CivilCaseExists.class,
+            CivilFeesAdded.class);
 
     @InjectMocks
     private InitiateCourtProceedingsForGroupCasesHandler initiateCourtProceedingsForGroupCasesHandler;
@@ -84,6 +90,7 @@ public class InitiateCourtProceedingsForGroupCasesHandlerTest {
     private GroupCaseAggregate aggregate;
 
     private CaseAggregate caseAggregate;
+    private FeeAggregate feeAggregate;
 
     private static final UUID CASE_ID = UUID.fromString("5002d600-af66-11e8-b568-0800200c9a66");
 
@@ -103,6 +110,7 @@ public class InitiateCourtProceedingsForGroupCasesHandlerTest {
     public void setup() {
         aggregate = new GroupCaseAggregate();
         caseAggregate = new CaseAggregate();
+        feeAggregate = new FeeAggregate();
     }
 
     @Test
@@ -118,16 +126,23 @@ public class InitiateCourtProceedingsForGroupCasesHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(aggregate);
+        when(aggregateService.get(eventStream, FeeAggregate.class)).thenReturn(feeAggregate);
         initiateCourtProceedingsForGroupCasesHandler.handle(envelope);
 
         final ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
-        Mockito.verify(eventStream, times(2)).append(argumentCaptor.capture());
-        final JsonEnvelope prosecutionCaseCreatedEnvelope = (JsonEnvelope) argumentCaptor.getAllValues().get(0).findFirst().orElse(null);
+        Mockito.verify(eventStream, times(3)).append(argumentCaptor.capture());
+
+        final JsonEnvelope civilFeesAddedEnvelope = (JsonEnvelope) argumentCaptor.getAllValues().get(0).findFirst().orElse(null);
+        CivilFeesAdded civilFeesAdded = jsonObjectToObjectConverter.convert(civilFeesAddedEnvelope.payloadAsJsonObject(), CivilFeesAdded.class);
+        assertThat("progression.event.civil-fees-added", is(civilFeesAddedEnvelope.metadata().name()));
+        assertThat(civilFeesAdded.getFeeId(), notNullValue());
+
+        final JsonEnvelope prosecutionCaseCreatedEnvelope = (JsonEnvelope) argumentCaptor.getAllValues().get(1).findFirst().orElse(null);
         ProsecutionCaseCreated prosecutionCaseCreated = jsonObjectToObjectConverter.convert(prosecutionCaseCreatedEnvelope.payloadAsJsonObject(), ProsecutionCaseCreated.class);
         assertThat("progression.event.prosecution-case-created", is(prosecutionCaseCreatedEnvelope.metadata().name()));
         assertThat(prosecutionCaseCreated.getProsecutionCase(), notNullValue());
 
-        final JsonEnvelope courtProceedingsInitiatedEnvelope = (JsonEnvelope) argumentCaptor.getAllValues().get(1).findFirst().orElse(null);
+        final JsonEnvelope courtProceedingsInitiatedEnvelope = (JsonEnvelope) argumentCaptor.getAllValues().get(2).findFirst().orElse(null);
         CourtProceedingsInitiated courtProceedingsInitiated = jsonObjectToObjectConverter.convert(courtProceedingsInitiatedEnvelope.payloadAsJsonObject(), CourtProceedingsInitiated.class);
         assertThat("progression.event.court-proceedings-initiated", is(courtProceedingsInitiatedEnvelope.metadata().name()));
         assertThat(courtProceedingsInitiated.getCourtReferral(), notNullValue());
@@ -166,6 +181,12 @@ public class InitiateCourtProceedingsForGroupCasesHandlerTest {
         return Collections.singletonList(
                 ProsecutionCase.prosecutionCase()
                         .withId(CASE_ID)
+                        .withCivilFees(List.of(CivilFees.civilFees()
+                                .withFeeId(UUID.randomUUID())
+                                .withFeeStatus(FeeStatus.OUTSTANDING)
+                                .withFeeType(FeeType.INITIAL)
+                                .withPaymentReference("PaymentRef01")
+                                .build()))
                         .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
                                 .withCaseURN("TFL43434")
                                 .build())

@@ -828,4 +828,13 @@ rule "Query - Access control for  progression.query.judicial-child-results-v2"
     $outcome.setSuccess(true);
 end
 
+rule "Query - Civil fee details for progression.query.civil-fee-details"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.query.civil-fee-details");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"))
+  then
+    $outcome.setSuccess(true);
+end
+
 

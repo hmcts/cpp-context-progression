@@ -12,7 +12,8 @@
           {
             "feeId" : "RANDOM_FEES_ID",
             "feeType" : "INITIAL",
-            "paymentReference" : "paymentReferenceOne"
+            "paymentReference" : "paymentReferenceOne",
+            "feeStatus" : "SATISFIED"
           }
         ],
         "caseMarkers": [
@@ -30,7 +31,7 @@
         },
         "originatingOrganisation": "G01FT01AB",
         "cpsOrganisation": "A01",
-        "initiationCode": "J",
+        "initiationCode": "O",
         "statementOfFacts": "You did it",
         "statementOfFactsWelsh": "You did it in Welsh",
         "defendants": [

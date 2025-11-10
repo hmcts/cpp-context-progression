@@ -36,6 +36,7 @@ import uk.gov.justice.core.courts.BoxHearingRequest;
 import uk.gov.justice.core.courts.BreachApplicationCreationRequested;
 import uk.gov.justice.core.courts.BreachType;
 import uk.gov.justice.core.courts.BreachedApplications;
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationCreated;
@@ -50,6 +51,7 @@ import uk.gov.justice.core.courts.CreateHearingApplicationRequest;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantUpdate;
+import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.HearingListingNeeds;
 import uk.gov.justice.core.courts.HearingListingStatus;
@@ -913,6 +915,28 @@ public class CourtApplicationProcessor {
                 .map(this::updatedDefendant)
                 .filter(defendant -> isNotEmpty(defendant.getOffences()))
                 .collect(toList());
+        if(courtApplication != null && (courtApplication.getCourtCivilApplication() !=null && courtApplication.getCourtCivilApplication().getIsCivil())) {
+            final CivilFees initialFees = CivilFees.civilFees()
+                    .withFeeType(FeeType.INITIAL)
+                    .withFeeId(randomUUID())
+                    .withFeeStatus(courtApplication.getCourtApplicationPayment().getFeeStatus())
+                    .withPaymentReference(courtApplication.getCourtApplicationPayment().getPaymentReference())
+                    .build();
+
+            final CivilFees contestedFees = CivilFees.civilFees()
+                    .withFeeType(FeeType.CONTESTED)
+                    .withFeeId(randomUUID())
+                    .withFeeStatus(courtApplication.getCourtApplicationPayment().getContestedFeeStatus())
+                    .withPaymentReference(courtApplication.getCourtApplicationPayment().getContestedPaymentReference())
+                    .build();
+            return prosecutionCase().withValuesFrom(prosecutionCase)
+                    .withIsCivil(true)
+                    .withGroupId(null)
+                    .withIsGroupMaster(false)
+                    .withIsGroupMember(false)
+                    .withCivilFees(List.of(initialFees, contestedFees))
+                    .withDefendants(defendantList).build();
+        }
         return prosecutionCase().withValuesFrom(prosecutionCase).withDefendants(defendantList).build();
     }
 

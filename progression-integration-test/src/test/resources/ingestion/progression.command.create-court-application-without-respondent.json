@@ -109,9 +109,7 @@
       "notificationRequired": true
     },
     "courtApplicationPayment": {
-      "isFeePaid": true,
-      "isFeeUndertakingAttached": true,
-      "isFeeExempt": true,
+      "feeStatus":"OUTSTANDING",
       "paymentReference": "a"
     },
     "subject": {

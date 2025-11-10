@@ -9,7 +9,8 @@ public enum SummonsCode {
     MCA("M", "MCA"),
     EITHER_WAY("E", "EW"),
     WITNESS("W", "WS"),
-    APPLICATION("A", "A");
+    APPLICATION("A", "A"),
+    BREACH_OFFENCES("B", "B");
 
     private String code;
     private String subType;
@@ -20,7 +21,7 @@ public enum SummonsCode {
     }
 
     public static boolean generateSummons(final String code) {
-        return newArrayList(MCA, EITHER_WAY, WITNESS).stream().anyMatch(sc -> sc.code.equalsIgnoreCase(code));
+        return newArrayList(MCA, EITHER_WAY, WITNESS, APPLICATION, BREACH_OFFENCES).stream().anyMatch(sc -> sc.code.equalsIgnoreCase(code));
     }
 
     public static SummonsCode getSummonsCode(final String code) {

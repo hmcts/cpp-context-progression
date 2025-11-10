@@ -1,8 +1,12 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Collections.emptyList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.CreateProsecutionCase;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -16,6 +20,7 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.events.RemoveDefendantCustodialEstablishmentFromCase;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
@@ -30,7 +35,6 @@ import java.util.stream.Stream;
 @SuppressWarnings("squid:S2629")
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class CreateProsecutionCaseHandler {
-
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(CreateProsecutionCaseHandler.class.getName());
@@ -49,8 +53,18 @@ public class CreateProsecutionCaseHandler {
         final ProsecutionCase prosecutionCase = createProsecutionCaseEnvelope.payload().getProsecutionCase();
         final EventStream eventStream = eventSource.getStreamById(prosecutionCase.getId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final Stream<Object> events = caseAggregate.createProsecutionCase(prosecutionCase);
+        final List<CivilFees> civilFees = prosecutionCase.getCivilFees();
+        final Stream<Object> events = caseAggregate.createProsecutionCase(prosecutionCase, civilFees);
         appendEventsToStream(createProsecutionCaseEnvelope, eventStream, events);
+        if(isNotEmpty(civilFees)) {
+            for (CivilFees civilFee : civilFees) {
+                final EventStream feeEventStream = eventSource.getStreamById(civilFee.getFeeId());
+                final FeeAggregate feeAggregate = aggregateService.get(feeEventStream, FeeAggregate.class);
+                final Stream<Object> feeEvents = feeAggregate.addCivilFee(civilFee);
+                appendEventsToStream(createProsecutionCaseEnvelope, feeEventStream, feeEvents);
+            }
+        }
+
     }
 
     @Handles("progression.command.remove-defendant-custodial-establishment-from-case")
