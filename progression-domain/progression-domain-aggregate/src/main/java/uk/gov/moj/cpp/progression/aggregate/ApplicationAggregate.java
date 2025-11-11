@@ -79,6 +79,7 @@ import uk.gov.justice.core.courts.CourtApplicationSubjectCustodialInformationUpd
 import uk.gov.justice.core.courts.CourtApplicationSummonsRejected;
 import uk.gov.justice.core.courts.CourtApplicationUpdated;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtCivilApplication;
 import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;
 import uk.gov.justice.core.courts.CourtHearingRequest;
 import uk.gov.justice.core.courts.CourtOrderOffence;
@@ -558,6 +559,8 @@ public class ApplicationAggregate implements Aggregate {
             }
             if (nonNull(courtApplicationCase)) {
                 updatedCourtApplication = enrichApplicationIfAddressUpdatedFromApplication(updatedCourtApplication, courtApplicationCase);
+                boolean isCivil = nonNull(courtApplicationCase.getIsCivil()) && courtApplicationCase.getIsCivil();
+                updatedCourtApplication = updateCourtApplicatonWithFeeType(updatedCourtApplication, isCivil);
             }
             return apply(
                     Stream.of(CourtApplicationProceedingsInitiated.courtApplicationProceedingsInitiated()
@@ -576,6 +579,13 @@ public class ApplicationAggregate implements Aggregate {
             LOGGER.debug("Initiated Court Application Event not raised as it is a duplicate request");
             return ignoreApplicationProceedings(initiateCourtApplicationProceedings);
         }
+    }
+
+    private CourtApplication updateCourtApplicatonWithFeeType(final CourtApplication courtApplication, final Boolean isCivil) {
+
+        return CourtApplication.courtApplication().withValuesFrom(courtApplication)
+                .withCourtCivilApplication(CourtCivilApplication.courtCivilApplication().withIsCivil(isCivil).build())
+                .build();
     }
 
     private CourtApplication enrichApplicationIfAddressUpdatedFromApplication(final CourtApplication updatedCourtApplication, final ProsecutionCase courtApplicationCase) {

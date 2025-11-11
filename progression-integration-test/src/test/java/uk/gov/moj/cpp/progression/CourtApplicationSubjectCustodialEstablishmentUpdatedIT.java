@@ -1,6 +1,10 @@
 package uk.gov.moj.cpp.progression;
 
 import static com.google.common.io.Resources.getResource;
+import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
+
+import java.util.UUID;
+
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withoutJsonPath;
 import static java.util.Collections.emptyList;
@@ -10,6 +14,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import org.hamcrest.Matcher;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

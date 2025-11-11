@@ -115,6 +115,30 @@ public class ReferProsecutionCaseToCrownCourtHelper {
 
     }
 
+    public static Matcher<? super ReadContext>[] getCivilProsecutionCaseMatchers(final String caseId, final String defendantId, List<Matcher<? super ReadContext>> additionalMatchers) {
+        List<Matcher<? super ReadContext>> matchers = newArrayList(
+                withJsonPath("$.prosecutionCase.id", is(caseId)),
+                withJsonPath("$.prosecutionCase.originatingOrganisation", is("G01FT01AB")),
+                withJsonPath("$.prosecutionCase.initiationCode", is("O")),
+                withJsonPath("$.prosecutionCase.statementOfFacts", is("You did it")),
+                withJsonPath("$.prosecutionCase.statementOfFactsWelsh", is("You did it in Welsh"))
+        );
+
+        matchers.addAll(getDefendantMatchers(caseId, defendantId));
+        matchers.addAll(getDefendantOffenceMatchers());
+        matchers.addAll(getOffenceFactMatchers());
+        matchers.addAll(getNotifyPleatMatchers());
+        matchers.addAll(getPersonMatchers());
+        matchers.addAll(getPersonAddressMatchers());
+        matchers.addAll(getPersonContactDetailsMatchers());
+        matchers.addAll(getPersonDefendantMatchers());
+
+        matchers.addAll(additionalMatchers);
+
+        return matchers.toArray(new Matcher[0]);
+
+    }
+
     public static Matcher<? super ReadContext>[] getProsecutionCaseMatchersForLegalEntity(final String caseId, final String defendantId, List<Matcher<? super ReadContext>> additionalMatchers) {
         List<Matcher<? super ReadContext>> matchers = newArrayList(
                 withJsonPath("$.prosecutionCase.id", is(caseId)),

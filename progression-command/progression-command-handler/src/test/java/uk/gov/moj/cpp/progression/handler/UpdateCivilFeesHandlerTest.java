@@ -28,7 +28,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
-import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.command.UpdateCivilFees;
 
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class UpdateCivilFeesHandlerTest {
 
-    private static final UUID CASE_ID = UUID.randomUUID();
+    private static final UUID FEE_ID = UUID.randomUUID();
 
     private static final String PROGRESSION_COMMAND_EVENT_CIVIL_FEE = "progression.event.civil-fees-updated";
 
@@ -67,7 +67,7 @@ public class UpdateCivilFeesHandlerTest {
     private EventStream eventStream;
 
     @Mock
-    private CaseAggregate caseAggregate;
+    private FeeAggregate feeAggregate;
 
     @Mock
     private AggregateService aggregateService;
@@ -88,9 +88,9 @@ public class UpdateCivilFeesHandlerTest {
 
     @Test
     public void shouldProcessAddCivilFees() throws Exception {
-        caseAggregate = new CaseAggregate();
+        feeAggregate = new FeeAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(eventStream, FeeAggregate.class)).thenReturn(feeAggregate);
 
         List<CivilFees> civilFeesList = new ArrayList<CivilFees>();
         civilFeesList.add(CivilFees.civilFees()
@@ -101,8 +101,11 @@ public class UpdateCivilFeesHandlerTest {
                 .build());
 
         UpdateCivilFees updateCivilFees = UpdateCivilFees.updateCivilFees()
-                .withCaseId(CASE_ID)
-                .withCivilFees(civilFeesList)
+                .withCivilFees(List.of(CivilFees.civilFees()
+                        .withFeeId(FEE_ID)
+                        .withFeeStatus(FeeStatus.OUTSTANDING)
+                        .withFeeType(FeeType.INITIAL)
+                        .build()))
                 .build();
 
         updateCivilFeeHandler.handleCivilFee(Envelope.envelopeFrom(
@@ -119,7 +122,7 @@ public class UpdateCivilFeesHandlerTest {
                         metadata()
                                 .withName(PROGRESSION_COMMAND_EVENT_CIVIL_FEE),
                         JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.caseId", is(CASE_ID.toString()))
+                                withJsonPath("$.feeId", is(FEE_ID.toString()))
                                 )
                         ))
 

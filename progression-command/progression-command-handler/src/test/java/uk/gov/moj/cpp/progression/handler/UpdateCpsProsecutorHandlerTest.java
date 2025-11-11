@@ -1,6 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -34,7 +35,6 @@ import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
-import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -99,6 +99,7 @@ public class UpdateCpsProsecutorHandlerTest {
 
     @BeforeEach
     public void setup() {
+
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         this.caseAggregate.createProsecutionCase(ProsecutionCase.prosecutionCase()
@@ -107,8 +108,8 @@ public class UpdateCpsProsecutorHandlerTest {
                         .withProsecutionAuthorityCode("SL00Q")
                         .withProsecutionAuthorityName("TFL")
                         .build())
-                .withDefendants(Collections.emptyList())
-                .build());
+                .withDefendants(emptyList())
+                .build(), emptyList());
 
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.objectToJsonObjectConverter, "mapper", new ObjectMapperProducer().objectMapper());

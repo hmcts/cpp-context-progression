@@ -110,11 +110,16 @@ public class DataPreparedEventProcessorTestHelper {
     }
 
     public static ProsecutionCase generateProsecutionCase(String caseId, String defendantId, final String summonsCode, final boolean isYouth) {
-        final JsonObject prosecutionCaseJson = generateProsecutionCaseJson(caseId, defendantId, summonsCode, isYouth);
+        final JsonObject prosecutionCaseJson = generateProsecutionCaseJson(caseId, defendantId, summonsCode, isYouth, false);
         return JSON_OBJECT_TO_OBJECT_CONVERTER.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
     }
 
-    public static JsonObject generateProsecutionCaseJson(String caseId, String defendantId, final String summonsCode, final boolean isYouth) {
+    public static ProsecutionCase generateCivilProsecutionCase(String caseId, String defendantId, final String summonsCode, final boolean isYouth) {
+        final JsonObject prosecutionCaseJson = generateProsecutionCaseJson(caseId, defendantId, summonsCode, isYouth, true);
+        return JSON_OBJECT_TO_OBJECT_CONVERTER.convert(prosecutionCaseJson.getJsonObject("prosecutionCase"), ProsecutionCase.class);
+    }
+
+    public static JsonObject generateProsecutionCaseJson(String caseId, String defendantId, final String summonsCode, final boolean isYouth, final boolean isCivil) {
         return createObjectBuilder()
                 .add("prosecutionCase",
                         createObjectBuilder()
@@ -125,6 +130,7 @@ public class DataPreparedEventProcessorTestHelper {
                                 .add("initiationCode", "S")
                                 .add("statementOfFacts", "dummy statement of facts")
                                 .add("statementOfFactsWelsh", "dummy statement of facts in welsh")
+                                .add("isCivil", isCivil)
 
                 )
                 .build();

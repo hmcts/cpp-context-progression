@@ -31,6 +31,8 @@ import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.courts.progression.query.AagResultPrompts;
 import uk.gov.justice.courts.progression.query.AagResults;
 import uk.gov.justice.courts.progression.query.ApplicationDetails;
+import uk.gov.justice.courts.progression.query.ContestedFeeStatus;
+import uk.gov.justice.courts.progression.query.FeeStatus;
 import uk.gov.justice.courts.progression.query.ThirdParties;
 import uk.gov.justice.courts.progression.query.ThirdPartyRepresentatives;
 import uk.gov.justice.progression.courts.ApplicantDetails;
@@ -88,6 +90,10 @@ public class ApplicationAtAGlanceHelper {
         final CourtApplicationPayment courtApplicationPayment = courtApplication.getCourtApplicationPayment();
         if (nonNull(courtApplicationPayment)) {
             applicationBuilder.withPaymentReference(courtApplicationPayment.getPaymentReference());
+            applicationBuilder.withContestedPaymentReference(courtApplicationPayment.getContestedPaymentReference());
+
+            applicationBuilder.withFeeStatus(nonNull(courtApplicationPayment.getFeeStatus()) ? FeeStatus.valueOf(courtApplicationPayment.getFeeStatus().name()) : null);
+            applicationBuilder.withContestedFeeStatus(nonNull(courtApplicationPayment.getContestedFeeStatus()) ? ContestedFeeStatus.valueOf(courtApplicationPayment.getContestedFeeStatus().name()) : null);
         }
 
         final CourtCivilApplication courtCivilApplication = courtApplication.getCourtCivilApplication();
@@ -179,29 +185,33 @@ public class ApplicationAtAGlanceHelper {
 
             final UUID subjectMasterDefendantId = courtApplication.getSubject().getMasterDefendant().getMasterDefendantId();
 
-            if (courtApplication.getCourtApplicationCases() != null) {
-                for (final CourtApplicationCase courtApplicationCase : courtApplication.getCourtApplicationCases()) {
-                    final ProsecutionCase prosecutionCase = getProsecutionCase(courtApplicationCase.getProsecutionCaseId());
-                    final Optional<UUID> optionalMatchingDefendantId = prosecutionCase.getDefendants()
-                            .stream()
-                            .filter(defendant -> defendant.getMasterDefendantId().equals(subjectMasterDefendantId))
-                            .map(Defendant::getId)
-                            .findFirst();
-
-                if (optionalMatchingDefendantId.isPresent()) {
-                    final JsonObject associatedCaseDefendants = organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(envelope,
-                            courtApplicationCase.getProsecutionCaseId().toString());
-                    final JsonArray associatedDefendants = associatedCaseDefendants.getJsonArray(DEFENDANTS);
-
-                    final Optional<JsonObject> matchingCaseDefendant = associatedDefendants.stream().map(x -> (JsonObject) x)
-                            .filter(cd -> optionalMatchingDefendantId.get().toString().equals(cd.getString(DEFENDANT_ID))).findFirst();
-
-                    if (matchingCaseDefendant.isPresent() && nonNull(matchingCaseDefendant.get().getJsonObject(ORGANISATION_ADDRESS))) {
-                        applicantDetailsBuilder.withRepresentation(createOrganisation(matchingCaseDefendant.get()));
-                        break;
-                    }
-                }
+            if (courtApplication.getCourtApplicationCases() != null){
+                addRepresentationFromCourtApplicatioCase(courtApplication, envelope, applicantDetailsBuilder, subjectMasterDefendantId);
             }
+        }
+    }
+
+    private void addRepresentationFromCourtApplicatioCase(final CourtApplication courtApplication, final JsonEnvelope envelope, final ApplicantDetails.Builder applicantDetailsBuilder, final UUID subjectMasterDefendantId) {
+        for(final CourtApplicationCase courtApplicationCase : courtApplication.getCourtApplicationCases()) {
+            final ProsecutionCase prosecutionCase = getProsecutionCase(courtApplicationCase.getProsecutionCaseId());
+            final Optional<UUID> optionalMatchingDefendantId = prosecutionCase.getDefendants()
+                    .stream()
+                    .filter(defendant -> defendant.getMasterDefendantId().equals(subjectMasterDefendantId))
+                    .map(Defendant::getId)
+                    .findFirst();
+
+            if (optionalMatchingDefendantId.isPresent()) {
+                final JsonObject associatedCaseDefendants = organisationService.getAssociatedCaseDefendantsWithOrganisationAddress(envelope,
+                        courtApplicationCase.getProsecutionCaseId().toString());
+                final JsonArray associatedDefendants = associatedCaseDefendants.getJsonArray(DEFENDANTS);
+
+                final Optional<JsonObject> matchingCaseDefendant = associatedDefendants.stream().map(x -> (JsonObject) x)
+                        .filter(cd -> optionalMatchingDefendantId.get().toString().equals(cd.getString(DEFENDANT_ID))).findFirst();
+
+                if (matchingCaseDefendant.isPresent() && nonNull(matchingCaseDefendant.get().getJsonObject(ORGANISATION_ADDRESS))) {
+                    applicantDetailsBuilder.withRepresentation(createOrganisation(matchingCaseDefendant.get()));
+                    break;
+                }
             }
         }
     }

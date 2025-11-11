@@ -3,9 +3,7 @@
     "id": "RANDOM_APPLICATION_ID",
     "applicationStatus": "DRAFT",
     "courtApplicationPayment": {
-      "isFeePaid": true,
-      "isFeeUndertakingAttached": true,
-      "isFeeExempt": true,
+      "feeStatus":"OUTSTANDING",
       "paymentReference": "someRef"
     },
     "commissionerOfOath": false,

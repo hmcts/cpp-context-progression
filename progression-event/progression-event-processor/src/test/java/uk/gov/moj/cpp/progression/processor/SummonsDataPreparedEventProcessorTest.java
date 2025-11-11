@@ -41,6 +41,7 @@ import static uk.gov.justice.core.courts.notification.EmailChannel.emailChannel;
 import static uk.gov.justice.core.courts.summons.SummonsDocumentContent.summonsDocumentContent;
 import static uk.gov.justice.core.courts.summons.SummonsProsecutor.summonsProsecutor;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
+import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.BREACH_OFFENCES;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.EITHER_WAY;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.MCA;
 import static uk.gov.moj.cpp.progression.processor.summons.SummonsCode.WITNESS;
@@ -171,7 +172,9 @@ public class SummonsDataPreparedEventProcessorTest {
         return Stream.of(
                 Arguments.of(MCA, false, 1),
                 Arguments.of(WITNESS, false, 1),
-                Arguments.of(EITHER_WAY, false, 1)
+                Arguments.of(EITHER_WAY, false, 1),
+                Arguments.of(SummonsCode.APPLICATION, false, 1),
+                Arguments.of(BREACH_OFFENCES, false, 1)
         );
     }
 
@@ -179,7 +182,9 @@ public class SummonsDataPreparedEventProcessorTest {
         return Stream.of(
                 Arguments.of(MCA, true, 2),
                 Arguments.of(WITNESS, true, 2),
-                Arguments.of(EITHER_WAY, true, 2)
+                Arguments.of(EITHER_WAY, true, 2),
+                Arguments.of(SummonsCode.APPLICATION, true, 2),
+                Arguments.of(BREACH_OFFENCES, true, 2)
         );
     }
 

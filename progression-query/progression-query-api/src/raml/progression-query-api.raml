@@ -685,7 +685,7 @@ protocols: [ HTTP, HTTPS ]
        (mapping):
           responseType: application/vnd.progression.query.application-hearing-case-details+json
           name: progression.query.application-hearing-case-details
-      
+
       ...
     responses:
       200:
@@ -1523,3 +1523,25 @@ protocols: [ HTTP, HTTPS ]
           application/vnd.progression.query.judicial-child-results-v2+json:
             example: !include json/progression.query.judicial-child-results-v2.json
             schema: !include json/schema/progression.query.judicial-child-results-v2.json
+
+/civilfees:
+  get:
+    description: |
+      Return the civil fee details for the prosecution case fee id.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.civil-fee-details+json
+          name: progression.query.civil-fee-details
+      ...
+    queryParameters:
+      feeIds:
+        description: comma separated prosecution case civil fees IDs
+        type: string
+        example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+        required: true
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.civil-fee-details+json:
+            example: !include json/progression.query.civil-fee-details.json
+            schema: !include json/schema/progression.query.civil-fee-details.json

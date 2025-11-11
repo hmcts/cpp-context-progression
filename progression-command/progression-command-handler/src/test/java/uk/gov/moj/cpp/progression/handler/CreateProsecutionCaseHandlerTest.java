@@ -9,11 +9,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
-import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
@@ -21,8 +21,12 @@ import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetad
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.moj.cpp.progression.events.RemoveDefendantCustodialEstablishmentFromCase.removeDefendantCustodialEstablishmentFromCase;
 
+import uk.gov.justice.core.courts.CivilFees;
+import uk.gov.justice.core.courts.CivilFeesAdded;
 import uk.gov.justice.core.courts.CreateProsecutionCase;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.FeeStatus;
+import uk.gov.justice.core.courts.FeeType;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.PersonDefendant;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -38,6 +42,7 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.events.RemoveDefendantCustodialEstablishmentFromCase;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 
@@ -52,6 +57,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -72,7 +78,7 @@ public class CreateProsecutionCaseHandlerTest {
 
     @Spy
     private Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            ProsecutionCaseCreated.class);
+            ProsecutionCaseCreated.class, CivilFeesAdded.class);
 
     @InjectMocks
     private CreateProsecutionCaseHandler createProsecutionCaseHandler;
@@ -110,12 +116,20 @@ public class CreateProsecutionCaseHandlerTest {
                                 .withProsecutionAuthorityReference("reference")
                                 .build())
                         .withClassOfCase("Class 1")
+                        .withCivilFees(List.of(CivilFees.civilFees()
+                                        .withFeeId(UUID.randomUUID())
+                                        .withFeeType(FeeType.INITIAL)
+                                        .withFeeStatus(FeeStatus.OUTSTANDING)
+                                        .withPaymentReference("payref01")
+                                .build()))
                         .build())
                 .build();
 
         final CaseAggregate caseAggregate = new CaseAggregate();
+        final FeeAggregate feeAggregate = new FeeAggregate();
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
+        when(aggregateService.get(eventStream, FeeAggregate.class)).thenReturn(feeAggregate);
 
         caseAggregate.apply(createProsecutionCase.getProsecutionCase());
 
@@ -130,9 +144,12 @@ public class CreateProsecutionCaseHandlerTest {
 
         createProsecutionCaseHandler.handle(envelope);
 
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+        ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
+        ((EventStream) Mockito.verify(eventStream, times(2))).append((Stream)argumentCaptor.capture());
 
-        assertThat(envelopeStream, streamContaining(
+        final Stream<JsonEnvelope> prosecutionCaseEnvelopeStream = (Stream)argumentCaptor.getAllValues().get(0);
+
+      assertThat(prosecutionCaseEnvelopeStream, streamContaining(
                         jsonEnvelope(
                                 metadata()
                                         .withName("progression.event.prosecution-case-created"),
@@ -141,6 +158,20 @@ public class CreateProsecutionCaseHandlerTest {
                                         withJsonPath("$.prosecutionCase.classOfCase", is("Class 1")))
                                 ))
            )
+        );
+
+        final Stream<JsonEnvelope> feeEnvelopeStream = (Stream)argumentCaptor.getAllValues().get(1);
+        assertThat(feeEnvelopeStream, streamContaining(
+                        jsonEnvelope(
+                                metadata()
+                                        .withName("progression.event.civil-fees-added"),
+                                JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                        withJsonPath("$.feeId", notNullValue()),
+                                        withJsonPath("$.feeStatus", is(FeeStatus.OUTSTANDING.name())),
+                                        withJsonPath("$.feeType", is(FeeType.INITIAL.name())),
+                                        withJsonPath("$.paymentReference", is("payref01")))
+                                ))
+                )
         );
     }
 

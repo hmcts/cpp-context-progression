@@ -3,6 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
+import static uk.gov.justice.core.courts.FeeStatus.OUTSTANDING;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.withMetadataEnvelopedFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -57,14 +58,16 @@ public class CivilFeesUpdatedProcessorTest {
     }
 
     @Test
-    public void processCaseNotesAdded() {
-        List<CivilFees> feeList = new ArrayList<CivilFees>();
+    void processCaseNotesAddedForUpdateCivilFees() {
+        List<CivilFees> feeList = new ArrayList<>();
         CivilFees civilFees = new CivilFees(UUID.randomUUID(), FeeStatus.OUTSTANDING, FeeType.INITIAL,"Ref001");
         feeList.add(civilFees);
 
         final CivilFeesUpdated civilFeesUpdated = CivilFeesUpdated.civilFeesUpdated()
-                .withCaseId(UUID.randomUUID())
-                .withCivilFees(feeList)
+                .withFeeId(UUID.randomUUID())
+                .withFeeStatus(OUTSTANDING)
+                .withFeeType(uk.gov.moj.cpp.progression.domain.constant.FeeType.INITIAL.name())
+                .withPaymentReference("Ref001")
                 .build();
 
         final JsonObject caseNoteAddedPayload = objectToJsonObjectConverter.convert(civilFeesUpdated);
@@ -73,7 +76,36 @@ public class CivilFeesUpdatedProcessorTest {
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.civil-fees-updated"),
                 caseNoteAddedPayload);
 
-        processor.processCivilFees(requestMessage);
+        processor.processCivilFeesUpdated(requestMessage);
+
+        verify(sender).send(envelopeCaptor.capture());
+
+        final Envelope<JsonObject> publicEvent = envelopeCaptor.getValue();
+        assertThat(publicEvent.metadata(),
+                withMetadataEnvelopedFrom(requestMessage).withName("public.progression.civil-fees-response"));
+        JsonObject actualPayload = publicEvent.payload();
+        assertThat(actualPayload.getString("civilFeeResults"), equalTo("SUCCESS"));
+    }
+    @Test
+    void processCaseNotesAddedForAddCivilFees() {
+        List<CivilFees> feeList = new ArrayList<>();
+        CivilFees civilFees = new CivilFees(UUID.randomUUID(), FeeStatus.OUTSTANDING, FeeType.INITIAL,"Ref001");
+        feeList.add(civilFees);
+
+        final CivilFeesUpdated civilFeesUpdated = CivilFeesUpdated.civilFeesUpdated()
+                .withFeeId(UUID.randomUUID())
+                .withFeeStatus(OUTSTANDING)
+                .withFeeType(uk.gov.moj.cpp.progression.domain.constant.FeeType.INITIAL.name())
+                .withPaymentReference("Ref001")
+                .build();
+
+        final JsonObject caseNoteAddedPayload = objectToJsonObjectConverter.convert(civilFeesUpdated);
+
+        final JsonEnvelope requestMessage = envelopeFrom(
+                MetadataBuilderFactory.metadataWithRandomUUID("progression.event.civil-fees-added"),
+                caseNoteAddedPayload);
+
+        processor.processCivilFeesAdded(requestMessage);
 
         verify(sender).send(envelopeCaptor.capture());
 

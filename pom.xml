@@ -71,7 +71,7 @@
         <usersgroups.version>17.0.37</usersgroups.version>
         <defence.version>17.0.61</defence.version>
         <referencedata.offence.version>17.0.32</referencedata.offence.version>
-        <coredomain.version>17.102.11</coredomain.version>
+        <coredomain.version>17.102.12</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
         <results.version>17.0.58</results.version>
@@ -81,7 +81,7 @@
         <applicationscourtorders.version>17.0.60</applicationscourtorders.version>
         <sjp.version>17.0.84</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
-        <stagingpubhub.version>17.0.2</stagingpubhub.version>
+        <stagingpubhub.version>17.0.23</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
         <correspondence.version>17.0.11</correspondence.version>
         <stream-transformation.version>7.0.0</stream-transformation.version>

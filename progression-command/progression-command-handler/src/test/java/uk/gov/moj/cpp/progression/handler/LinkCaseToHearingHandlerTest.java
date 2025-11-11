@@ -38,6 +38,7 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
+
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -95,8 +96,7 @@ public class LinkCaseToHearingHandlerTest {
     public void shouldProcessCommandWithCaseAndHearingId() throws Exception {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
-
-        caseAggregate.createProsecutionCase(createProsecutionCase());
+        caseAggregate.createProsecutionCase(createProsecutionCase(), emptyList());
 
         LinkCaseToHearing linkCaseToHearing = LinkCaseToHearing.linkCaseToHearing().withCaseId(CASE_ID).withHearingId(HEARING_ID).build();
         final Metadata metadata = Envelope
@@ -132,7 +132,7 @@ public class LinkCaseToHearingHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
         when(aggregateService.get(eventStream, GroupCaseAggregate.class)).thenReturn(groupCaseAggregate);
-        caseAggregate.createProsecutionCase(createProsecutionCaseForGroupCases());
+        caseAggregate.createProsecutionCase(createProsecutionCaseForGroupCases(), emptyList());
         groupCaseAggregate.initiateCourtProceedings(createCourtReferral());
         LinkCaseToHearing linkCaseToHearing = LinkCaseToHearing.linkCaseToHearing().withCaseId(CASE_ID).withHearingId(HEARING_ID).build();
         final Metadata metadata = Envelope

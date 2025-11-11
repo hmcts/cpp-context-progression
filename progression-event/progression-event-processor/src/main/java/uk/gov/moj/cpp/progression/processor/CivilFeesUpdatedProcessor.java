@@ -26,7 +26,20 @@ public class CivilFeesUpdatedProcessor {
     private Sender sender;
 
     @Handles("progression.event.civil-fees-updated")
-    public void processCivilFees(final JsonEnvelope envelope) {
+    public void processCivilFeesUpdated(final JsonEnvelope envelope) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Civil Fees payload - {}", envelope.payloadAsJsonObject());
+        }
+
+        final Envelope<JsonObject> responseEventPayload = Enveloper.envelop(createResponsePayload(CivilFeeResults.SUCCESS))
+                .withName("public.progression.civil-fees-response")
+                .withMetadataFrom(envelope);
+        sender.send(responseEventPayload);
+        LOGGER.info("Civil Fees response event payload - {}", responseEventPayload.payload());
+    }
+
+    @Handles("progression.event.civil-fees-added")
+    public void processCivilFeesAdded(final JsonEnvelope envelope) {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Civil Fees payload - {}", envelope.payloadAsJsonObject());
         }

@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Collections.emptyList;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -253,7 +254,7 @@ public class ReceiveRepresentationOrderHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        caseAggregate.createProsecutionCase(prosecutionCase);
+        caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
         final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null, null, DEFENDANT_ID);
 
         final JsonObject prosecutionCaseJson = objectToJsonObjectConverter.convert(prosecutionCase);
@@ -279,7 +280,7 @@ public class ReceiveRepresentationOrderHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        caseAggregate.createProsecutionCase(prosecutionCase);
+        caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(organisationId, OFFENCE_ID, DEFENDANT_ID);
         final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
@@ -307,7 +308,7 @@ public class ReceiveRepresentationOrderHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        caseAggregate.createProsecutionCase(prosecutionCase);
+        caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(organisationId, OFFENCE_ID, DEFENDANT_ID);
         final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
@@ -335,7 +336,7 @@ public class ReceiveRepresentationOrderHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        caseAggregate.createProsecutionCase(prosecutionCase);
+        caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(organisationId, OFFENCE_ID, DEFENDANT_ID);
         final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
@@ -363,7 +364,7 @@ public class ReceiveRepresentationOrderHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        caseAggregate.createProsecutionCase(prosecutionCase);
+        caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
         final UUID organisationId = randomUUID();
         final ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(organisationId, OFFENCE_ID, DEFENDANT_ID);
         final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
@@ -389,7 +390,7 @@ public class ReceiveRepresentationOrderHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        caseAggregate.createProsecutionCase(prosecutionCase);
+        caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
         ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null, SAME_DEFENDANT_OFFENCE_ID_1, MULTI_OFFENCE_DEFENDANT_ID);
 
         final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);
@@ -421,7 +422,7 @@ public class ReceiveRepresentationOrderHandlerTest {
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CaseAggregate.class)).thenReturn(caseAggregate);
 
-        caseAggregate.createProsecutionCase(prosecutionCase);
+        caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
         ReceiveRepresentationOrderForDefendant receiveRepresentationOrderForDefendant = payloadForReceiveRepresentationOrder(null, SAME_DEFENDANT_OFFENCE_ID_1, MULTI_OFFENCE_DEFENDANT_ID);
 
         final Envelope<ReceiveRepresentationOrderForDefendant> envelope = Envelope.envelopeFrom(getProgressionCommandHandlerReceiveRepresentationOrderForDefendant(), receiveRepresentationOrderForDefendant);

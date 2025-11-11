@@ -25,7 +25,7 @@ import javax.json.JsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"squid:S2629", "squid:CallToDeprecatedMethod"})
+@SuppressWarnings({"squid:S2629", "squid:CallToDeprecatedMethod", "squid:java:S2789"})
 public class ReferenceDataOffenceService {
     public static final String REFERENCEDATAOFFENCE_GET_OFFENCE = "referencedataoffences.query.offence";
     public static final String REFERENCEDATAOFFENCE_QUERY_OFFENCES = "referencedataoffences.query.offences-list";
@@ -110,14 +110,14 @@ public class ReferenceDataOffenceService {
         return getMultipleOffencesByOffenceCodeList(cjsOffenceCodes, envelope, requester, null);
     }
 
-    public Optional<List<JsonObject>> getMultipleOffencesByOffenceCodeList(final List<String> cjsOffenceCodes, final JsonEnvelope envelope, final Requester requester, final String sowRef) {
+    public Optional<List<JsonObject>> getMultipleOffencesByOffenceCodeList(final List<String> cjsOffenceCodes, final JsonEnvelope envelope, final Requester requester, final Optional<String> sowRef) {
 
         final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder()
                 .add("cjsoffencecode", cjsOffenceCodes.stream()
                         .collect(Collectors.joining(",")));
 
         if (sowRef != null) {
-            jsonObjectBuilder.add("sowRef", sowRef);
+            jsonObjectBuilder.add("sowRef", String.valueOf(sowRef));
         }
 
         final JsonObject requestParameter = jsonObjectBuilder.build();

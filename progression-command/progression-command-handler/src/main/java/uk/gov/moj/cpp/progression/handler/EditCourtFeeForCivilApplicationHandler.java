@@ -54,6 +54,9 @@ public class EditCourtFeeForCivilApplicationHandler {
     private CourtApplicationPayment getCourtApplicationPayment(uk.gov.moj.cpp.progression.command.CourtApplicationPayment courtApplicationPayment){
         final CourtApplicationPayment.Builder builder = CourtApplicationPayment.courtApplicationPayment();
         builder.withPaymentReference(courtApplicationPayment.getPaymentReference());
+        builder.withFeeStatus(courtApplicationPayment.getFeeStatus());
+        builder.withContestedFeeStatus(courtApplicationPayment.getContestedFeeStatus());
+        builder.withContestedPaymentReference(courtApplicationPayment.getContestedPaymentReference());
         return builder.build();
     }
 

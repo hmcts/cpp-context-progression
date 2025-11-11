@@ -38,7 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ReferenceDataOffenceServiceTest {
+class ReferenceDataOffenceServiceTest {
 
     @InjectMocks
     private ReferenceDataOffenceService referenceDataOffenceService;
@@ -50,7 +50,7 @@ public class ReferenceDataOffenceServiceTest {
     private ArgumentCaptor<DefaultEnvelope> envelopeArgumentCaptor;
 
     @Test
-    public void shouldGetMultipleOffencesByOffenceCodeList() throws IOException {
+    void shouldGetMultipleOffencesByOffenceCodeList() throws IOException {
         final String offenceCode1 = randomAlphanumeric(8);
         final String offenceCode2 = randomAlphanumeric(8);
 
@@ -64,7 +64,7 @@ public class ReferenceDataOffenceServiceTest {
 
         when(requester.request(any())).thenReturn(responseEnvelope);
 
-        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester);
+        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester, Optional.of("MoJ"));
 
         verify(requester).request(envelopeArgumentCaptor.capture());
 
@@ -88,7 +88,7 @@ public class ReferenceDataOffenceServiceTest {
     }
 
     @Test
-    public void shouldGetMultipleOffencesByOffenceCodeListWhenLanguageIsWelsh() throws IOException {
+    void shouldGetMultipleOffencesByOffenceCodeListWhenLanguageIsWelsh() throws IOException {
         final String offenceCode1 = randomAlphanumeric(8);
         final String offenceCode2 = randomAlphanumeric(8);
 
@@ -102,7 +102,7 @@ public class ReferenceDataOffenceServiceTest {
 
         when(requester.request(any())).thenReturn(responseEnvelope);
 
-        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester);
+        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester, Optional.of("MoJ"));
 
         verify(requester).request(envelopeArgumentCaptor.capture());
 
@@ -127,7 +127,7 @@ public class ReferenceDataOffenceServiceTest {
     }
 
     @Test
-    public void shouldGetMultipleOffencesByOffenceCodeListWhichOneOfThemWithoutRR() throws IOException {
+    void shouldGetMultipleOffencesByOffenceCodeListWhichOneOfThemWithoutRR() throws IOException {
         // RR : Reporting Restriction
         final String offenceCode1 = randomAlphanumeric(8);
         final String offenceCode2 = randomAlphanumeric(8);
@@ -142,7 +142,7 @@ public class ReferenceDataOffenceServiceTest {
 
         when(requester.request(any())).thenReturn(responseEnvelope);
 
-        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester);
+        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester, Optional.of("MoJ"));
 
         verify(requester).request(envelopeArgumentCaptor.capture());
 
@@ -166,7 +166,7 @@ public class ReferenceDataOffenceServiceTest {
     }
 
     @Test
-    public void shouldReturnEmptyJsonObjectWhenOffencesResponsePayloadIsEmpty() {
+    void shouldReturnEmptyJsonObjectWhenOffencesResponsePayloadIsEmpty() {
         final String offenceCode1 = randomAlphanumeric(8);
         final String offenceCode2 = randomAlphanumeric(8);
 
@@ -184,7 +184,7 @@ public class ReferenceDataOffenceServiceTest {
 
         when(requester.request(any())).thenReturn(responseEnvelope);
 
-        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester);
+        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester, Optional.of("MoJ"));
 
         verify(requester).request(envelopeArgumentCaptor.capture());
 
@@ -196,7 +196,7 @@ public class ReferenceDataOffenceServiceTest {
     }
 
     @Test
-    public void shouldReturnEmptyJsonObjectWhenOffencesResponsePayloadIsNull() {
+    void shouldReturnEmptyJsonObjectWhenOffencesResponsePayloadIsNull() {
         final String offenceCode1 = randomAlphanumeric(8);
         final String offenceCode2 = randomAlphanumeric(8);
 
@@ -210,7 +210,7 @@ public class ReferenceDataOffenceServiceTest {
 
         when(requester.request(any())).thenReturn(responseEnvelope);
 
-        final Optional<List<JsonObject>> offencesJsonObject = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester);
+        referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelope, requester, Optional.of("MoJ"));
 
         verify(requester).request(envelopeArgumentCaptor.capture());
 
@@ -219,7 +219,7 @@ public class ReferenceDataOffenceServiceTest {
     }
 
     @Test
-    public void shouldReturnTitleAndLegislationWhenDocumentIsNotPresent() throws IOException {
+    void shouldReturnTitleAndLegislationWhenDocumentIsNotPresent() throws IOException {
 
         final String offenceCode = randomAlphanumeric(8);
 

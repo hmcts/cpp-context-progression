@@ -9,6 +9,18 @@
           "markerTypeCode": "WP",
           "markerTypeDescription": "Prohibited Weapons"
         }],
+        "civilFees": [
+          {
+            "feeId": "3034e172-99d3-4970-bc5e-fd95dd62c9d6",
+            "feeType": "INITIAL",
+            "feeStatus": "OUTSTANDING"
+          },
+          {
+            "feeId": "3034e172-99d3-4970-bc5e-fd95dd62c9d7",
+            "feeType": "CONTESTED",
+            "feeStatus": "OUTSTANDING"
+          }
+        ],
         "prosecutionCaseIdentifier": {
           "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
           "prosecutionAuthorityCode": "TFL",

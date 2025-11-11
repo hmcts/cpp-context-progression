@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -7,6 +8,7 @@ import uk.gov.justice.core.courts.AddConvictingCourt;
 import uk.gov.justice.core.courts.AddConvictingInformation;
 import uk.gov.justice.core.courts.CourtCentre;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
@@ -48,6 +50,8 @@ public class AddConvictingCourtCommandHandler extends AbstractCommandHandler {
     @Inject
     private ReferenceDataOffenceService referenceDataOffenceService;
 
+    private static final String SOW_REF_VALUE = "MoJ";
+
     @Handles("progression.command.add-convicting-court")
     public void handle(final Envelope<AddConvictingCourt> addConvictionCourtEnv) throws EventStreamException {
 
@@ -55,14 +59,16 @@ public class AddConvictingCourtCommandHandler extends AbstractCommandHandler {
 
         final EventStream eventStream = eventSource.getStreamById(addConvictionCourtEnv.payload().getCaseId());
         final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-        final UUID defendantId = caseAggregate.getProsecutionCase().getDefendants().get(0).getId(); //TODO::
-        final UUID prosecutionCaseId = caseAggregate.getProsecutionCase().getId();
+        final ProsecutionCase prosecutionCase = caseAggregate.getProsecutionCase();
+        final UUID defendantId = prosecutionCase.getDefendants().get(0).getId(); //TODO::
+        final UUID prosecutionCaseId = prosecutionCase.getId();
         final List<AddConvictingInformation> addConvictingInfoList = addConvictionCourtEnv.payload().getAddConvictingInformation();
         final List<uk.gov.justice.core.courts.Offence> existingOffences = caseAggregate.getDefendantCaseOffences().get(defendantId);
         final List<String> offenceCodes = existingOffences.stream().map(Offence::getOffenceCode).collect(Collectors.toList());
         LOGGER.info("offenceCodes {}", offenceCodes);
+        final Optional<String> sowRef = getSowRef(prosecutionCase);
         final Optional<List<JsonObject>> referenceDataOffences = referenceDataOffenceService
-                .getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(addConvictionCourtEnv.metadata(), JsonValue.NULL), requester);
+                .getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(addConvictionCourtEnv.metadata(), JsonValue.NULL), requester, sowRef);
         LOGGER.info("referenceDataOffences {}", referenceDataOffences);
         final List<uk.gov.justice.core.courts.Offence> updatedOffences = existingOffences.stream().map(existingOffence -> {
            final uk.gov.justice.core.courts.Offence updatedOffence;
@@ -81,5 +87,10 @@ public class AddConvictingCourtCommandHandler extends AbstractCommandHandler {
     private Optional <CourtCentre> getCourtCentreByOffenceId(List<AddConvictingInformation> addConvictingInfoList, UUID offenceId ){
         return addConvictingInfoList.stream().filter(item-> item.getOffenceId().equals(offenceId))
                 .map(AddConvictingInformation::getConvictingCourt).findFirst();
+    }
+
+    private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {
+        boolean isCivil = nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
+        return isCivil ? Optional.of(SOW_REF_VALUE) : Optional.empty();
     }
 }

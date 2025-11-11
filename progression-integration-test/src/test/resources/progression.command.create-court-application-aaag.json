@@ -304,9 +304,7 @@
       }
     ],
     "courtApplicationPayment": {
-      "isFeePaid": true,
-      "isFeeUndertakingAttached": true,
-      "isFeeExempt": true,
+      "feeStatus":"OUTSTANDING",
       "paymentReference": "RANDOM_PAYMENT_REFERENCE"
     },
     "applicationStatus": "DRAFT",

@@ -57,7 +57,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
 
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final List<JSONObject> jsonObjects = SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(Matchers.hasSize(1), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
+        final List<JSONObject> jsonObjects = SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(Matchers.hasSize(1), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
         final JSONObject jsonObject = jsonObjects.get(0);
         final UUID payloadFileServiceId = fromString(jsonObject.getString("payloadFileServiceId"));
         final UUID documentFileServiceId = randomUUID();
@@ -71,7 +71,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
                 body);
         assertThat(writeResponse.getStatusCode(), equalTo(HttpStatus.SC_ACCEPTED));
 
-        final List<JSONObject> jsonObjectsList = SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(Matchers.hasSize(2), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
+        final List<JSONObject> jsonObjectsList = SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(Matchers.hasSize(2), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
         final JSONObject jsonObject1 = jsonObjectsList.stream().filter(request -> !request.toString().contains(documentFileServiceId.toString())).findFirst().get();
         final UUID payloadFileServiceId1 = fromString(jsonObject1.getString("payloadFileServiceId"));
         final UUID documentFileServiceId1 = randomUUID();
@@ -122,7 +122,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
 
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterRequestsExists(UUID.fromString(courtCentreId.toString()), hearingId);
 
-        final List<JSONObject> jsonObjects = SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(Matchers.hasSize(1), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
+        final List<JSONObject> jsonObjects = SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(Matchers.hasSize(1), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
         final JSONObject jsonObject = jsonObjects.get(0);
         final UUID payloadFileServiceId = fromString(jsonObject.getString("payloadFileServiceId"));
         final UUID documentFileServiceId = randomUUID();
@@ -153,7 +153,7 @@ public class PrisonCourtRegisterDocumentRequestIT extends AbstractIT {
 
         prisonCourtRegisterDocumentRequestHelper.verifyPrisonCourtRegisterRequestsExists(courtCentreId);
 
-        final List<JSONObject> jsonObjects = SysDocGeneratorStub.pollSysDocGenerationRequestsForPrisonCourtRegisterWithSourceCorrelationId(Matchers.hasSize(1), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
+        final List<JSONObject> jsonObjects = SysDocGeneratorStub.pollSysDocGenerationRequestsWithOriginatingSourceAndSourceCorrelationId(Matchers.hasSize(1), "PRISON_COURT_REGISTER", prisonCourtRegisterStreamId.toString());
         final JSONObject jsonObject = jsonObjects.get(0);
         final UUID payloadFileServiceId = fromString(jsonObject.getString("payloadFileServiceId"));
         final JSONArray additionalInformationArray = jsonObject.getJSONArray("additionalInformation");

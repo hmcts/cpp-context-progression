@@ -85,14 +85,17 @@ public class CourtFeeForCivilApplicationUpdatedEventListener {
         courtApplicationPaymentObj.forEach((k, v) -> {
             if (appPayment.containsKey(k)) {
                 appPaymentBuilder.add(k, courtApplicationPaymentObj.get(k));
-            } else {
-                appPaymentBuilder.add(k, appPayment.getJsonObject(k));
+            } else if (!appPayment.containsKey(k) && courtApplicationPaymentObj.containsKey(k)) {
+                appPaymentBuilder.add(k, courtApplicationPaymentObj.get(k));
+            }
+            else {
+                appPaymentBuilder.add(k, appPayment.get(k));
             }
         });
 
         appPayment.forEach((k, v) -> {
             if (!courtApplicationPaymentObj.containsKey(k)) {
-                appPaymentBuilder.add(k, appPayment.getJsonObject(k));
+                appPaymentBuilder.add(k, appPayment.get(k));
             }
         });
 

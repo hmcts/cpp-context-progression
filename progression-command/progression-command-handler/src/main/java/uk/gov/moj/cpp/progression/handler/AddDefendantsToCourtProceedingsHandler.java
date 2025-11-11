@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -53,6 +54,8 @@ public class AddDefendantsToCourtProceedingsHandler {
     @ServiceComponent(COMMAND_HANDLER)
     private Requester requester;
 
+    private static final String SOW_REF_VALUE = "MoJ";
+
     @Handles("progression.command.add-defendants-to-court-proceedings")
     public void handle(final Envelope<AddDefendantsToCourtProceedings> addDefendantEnvelope) throws EventStreamException {
         LOGGER.debug("progression.command.add-defendants-to-court-proceedings {}", addDefendantEnvelope.payload());
@@ -72,13 +75,19 @@ public class AddDefendantsToCourtProceedingsHandler {
                 .map(Offence::getOffenceCode)
                 .distinct()
                 .collect(Collectors.toList());
-        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(addDefendantEnvelope.metadata(), JsonValue.NULL), requester);
+        final Optional<String> sowRef = getSowRef(prosecutionCase);
+        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(addDefendantEnvelope.metadata(), JsonValue.NULL), requester, sowRef);
 
         final Stream<Object> events = caseAggregate.defendantsAddedToCourtProceedings(
                 addDefendantsToCourtProceedings.getDefendants(),
                 addDefendantsToCourtProceedings.getListHearingRequests(), offencesJsonObjectOptional);
 
         appendEventsToStream(addDefendantEnvelope, eventStream, events);
+    }
+
+    private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {
+        boolean isCivil = nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
+        return isCivil ? Optional.of(SOW_REF_VALUE) : Optional.empty();
     }
 
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {

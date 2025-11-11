@@ -1993,15 +1993,21 @@ public class ProgressionService {
                             .withFeeType(CONTESTED)
                             .build()).collect(toList());
 
-            final CivilFeesUpdated civilFeesUpdated = CivilFeesUpdated.civilFeesUpdated()
-                    .withCaseId(prosecutionCase.getId())
-                    .withCivilFees(updatedCivilFeeList)
-                    .build();
-            final JsonObject payload = objectToJsonObjectConverter.convert(civilFeesUpdated);
+            updatedCivilFeeList.forEach(civilFees -> {
+                final CivilFeesUpdated civilFeesUpdated = CivilFeesUpdated.civilFeesUpdated()
+                        .withFeeId(civilFees.getFeeId())
+                        .withFeeType(civilFees.getFeeType().name())
+                        .withFeeStatus(civilFees.getFeeStatus())
+                        .withPaymentReference(civilFees.getPaymentReference())
+                        .build();
+                final JsonObject payload = objectToJsonObjectConverter.convert(civilFeesUpdated);
 
-            final Metadata commandMetadata = metadataFrom(envelope.metadata())
-                    .withName(PROGRESSION_COMMAND_UPDATE_CIVIL_FEES).build();
-            sender.send(envelopeFrom(commandMetadata, payload));
+                final Metadata commandMetadata = metadataFrom(envelope.metadata())
+                        .withName(PROGRESSION_COMMAND_UPDATE_CIVIL_FEES).build();
+                sender.send(envelopeFrom(commandMetadata, payload));
+            });
+
+
         }
     }
 

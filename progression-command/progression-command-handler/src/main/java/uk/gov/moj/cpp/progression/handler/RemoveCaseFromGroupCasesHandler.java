@@ -1,7 +1,10 @@
 package uk.gov.moj.cpp.progression.handler;
 
 import static java.util.Objects.nonNull;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.annotation.Component;
@@ -14,10 +17,14 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
 import uk.gov.moj.cpp.progression.command.RemoveCaseFromGroupCases;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -56,6 +63,29 @@ public class RemoveCaseFromGroupCasesHandler {
             appendEventsToStream(envelope, removedCaseEventStream, removedCaseEvents);
             final ProsecutionCase removedCase = removedCaseAggregate.getProsecutionCase();
 
+            List<CivilFees> updatedCivilFeesForRemovedCase = new ArrayList<>();
+            for (CivilFees civilFee : groupAggregate.getMasterCase().getCivilFees()) {
+
+                final EventStream feeEventStream = eventSource.getStreamById(civilFee.getFeeId());
+                final FeeAggregate feeAggregate = aggregateService.get(feeEventStream, FeeAggregate.class);
+
+                final CivilFees newCivilFee = CivilFees.civilFees()
+                        .withValuesFrom(feeAggregate.getCivilFees())
+                        .withFeeId(randomUUID())
+                        .build();
+                updatedCivilFeesForRemovedCase.add(newCivilFee);
+
+                final Stream<Object> feeEvents = feeAggregate.addCivilFee(newCivilFee);
+                appendEventsToStream(envelope, feeEventStream, feeEvents);
+            }
+            final ProsecutionCase removedProsecutionCaseWithNewFeeId = ProsecutionCase.prosecutionCase()
+                    .withValuesFrom(removedCase).withCivilFees(updatedCivilFeesForRemovedCase).build();
+            final EventStream eventStream = eventSource.getStreamById(removedProsecutionCaseWithNewFeeId.getId());
+            final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
+
+            final Stream<Object> events = caseAggregate.createProsecutionCase(removedProsecutionCaseWithNewFeeId, updatedCivilFeesForRemovedCase);
+            appendEventsToStream(envelope, eventStream, events);
+
             final UUID newGroupMasterId = groupAggregate.getNewGroupMaster(removedCaseId);
             ProsecutionCase newGroupMaster = null;
             if (nonNull(newGroupMasterId)) {
@@ -66,7 +96,7 @@ public class RemoveCaseFromGroupCasesHandler {
                 newGroupMaster = newMasterCaseAggregate.getProsecutionCase();
             }
 
-            final Stream<Object> groupEvents = groupAggregate.removeCaseFromGroupCases(groupId, removedCase, newGroupMaster);
+            final Stream<Object> groupEvents = groupAggregate.removeCaseFromGroupCases(groupId, removedProsecutionCaseWithNewFeeId, newGroupMaster);
             appendEventsToStream(envelope, groupEventStream, groupEvents);
         } else {
             LOGGER.info("Last case cannot be removed from group cases. groupId: {}, caseId: {}", groupId, removedCaseId);

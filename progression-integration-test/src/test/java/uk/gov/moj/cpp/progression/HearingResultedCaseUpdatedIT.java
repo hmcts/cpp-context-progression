@@ -117,7 +117,7 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
         verifyInMessagingQueueForHearingResulted();
     }
 
-    
+
     private Matcher[] getDefendantUpdatedMatchers() {
         return new Matcher[]{
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),

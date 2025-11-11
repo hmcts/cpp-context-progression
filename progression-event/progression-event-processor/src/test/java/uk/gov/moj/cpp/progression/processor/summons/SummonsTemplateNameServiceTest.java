@@ -30,6 +30,10 @@ public class SummonsTemplateNameServiceTest {
                 Arguments.of(FIRST_HEARING, SummonsCode.MCA, "MCA", "B", true),
                 Arguments.of(FIRST_HEARING, SummonsCode.WITNESS, "MCA", "B", true),
                 Arguments.of(FIRST_HEARING, SummonsCode.EITHER_WAY, "EitherWay", "B", true),
+                Arguments.of(FIRST_HEARING, SummonsCode.APPLICATION, "Application", "B", true),
+                Arguments.of(FIRST_HEARING, SummonsCode.BREACH_OFFENCES, "Breach", "B", true),
+                Arguments.of(FIRST_HEARING, SummonsCode.APPLICATION, "Application", "E", false),
+                Arguments.of(FIRST_HEARING, SummonsCode.BREACH_OFFENCES, "Breach", "E", false),
                 Arguments.of(SJP_REFERRAL, null, "SjpReferral", "E", false),
                 Arguments.of(SJP_REFERRAL, null, "SjpReferral", "B", true)
         );
@@ -78,7 +82,5 @@ public class SummonsTemplateNameServiceTest {
     public void getBilingualBreachSummonsParentTemplateName() {
         assertThat(service.getBreachSummonsParentTemplateName(true), is("SPB_BreachParent"));
     }
-
-
 
 }

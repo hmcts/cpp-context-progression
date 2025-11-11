@@ -1,8 +1,10 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.toEnvelopeWithMetadataFrom;
 
+import uk.gov.justice.core.courts.CivilFees;
 import uk.gov.justice.core.courts.CourtReferral;
 import uk.gov.justice.core.courts.InitiateCourtProceedingsForGroupCases;
 import uk.gov.justice.core.courts.ProsecutionCase;
@@ -15,8 +17,10 @@ import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamEx
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.aggregate.CaseAggregate;
+import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
 import uk.gov.moj.cpp.progression.aggregate.GroupCaseAggregate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +29,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.json.JsonValue;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,10 +66,23 @@ public class InitiateCourtProceedingsForGroupCasesHandler {
     }
 
     private void raiseCaseCreationEvent(final List<ProsecutionCase> prosecutionCases, final Envelope<InitiateCourtProceedingsForGroupCases> envelope) throws EventStreamException {
-        for(final ProsecutionCase prosecutionCase: prosecutionCases){
+
+        final List<CivilFees> commonCivilFeesForGroup = prosecutionCases.get(0).getCivilFees();
+        //for group cases all fee data should be same for each group member case. Ref: DD-35774 -> AC-4
+        if(isNotEmpty(commonCivilFeesForGroup)) {
+            for (CivilFees civilFee : commonCivilFeesForGroup) {
+                final EventStream feeEventStream = eventSource.getStreamById(civilFee.getFeeId());
+                final FeeAggregate feeAggregate = aggregateService.get(feeEventStream, FeeAggregate.class);
+                final Stream<Object> feeEvents = feeAggregate.addCivilFee(civilFee);
+                appendEventsToStream(envelope, feeEventStream, feeEvents);
+            }
+        }
+
+        for(final ProsecutionCase prosecutionCase: prosecutionCases) {
             final EventStream eventStream = eventSource.getStreamById(prosecutionCase.getId());
             final CaseAggregate caseAggregate = aggregateService.get(eventStream, CaseAggregate.class);
-            final Stream<Object> events = caseAggregate.createProsecutionCase(prosecutionCase);
+
+            final Stream<Object> events = caseAggregate.createProsecutionCase(prosecutionCase, commonCivilFeesForGroup);
             appendEventsToStream(envelope, eventStream, events);
         }
     }

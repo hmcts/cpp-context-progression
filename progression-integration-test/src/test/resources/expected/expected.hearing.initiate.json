@@ -91,7 +91,10 @@
             "isSJP": false,
             "caseStatus": "ACTIVE"
           }
-        ]
+        ],
+        "courtCivilApplication": {
+          "isCivil": false
+        }
       }
     ],
     "type": {

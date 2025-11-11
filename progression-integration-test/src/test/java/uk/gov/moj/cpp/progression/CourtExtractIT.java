@@ -38,22 +38,6 @@ import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.getCrownCourtExtractDocumentRequestByDefendant;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
-import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.json.JsonObject;
-
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 @SuppressWarnings("squid:S1607")
 public class CourtExtractIT extends AbstractIT {
     private static final String PUBLIC_HEARING_RESULTED_V2 = "public.events.hearing.hearing-resulted";

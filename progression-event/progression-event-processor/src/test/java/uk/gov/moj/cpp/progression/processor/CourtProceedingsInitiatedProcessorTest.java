@@ -182,7 +182,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
@@ -269,7 +269,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
         when(listCourtHearingTransformer.transform(any(), any(), anyList(), any())).thenReturn(ListCourtHearing.listCourtHearing().withHearings(hearingsList).build());
@@ -302,7 +302,7 @@ public class CourtProceedingsInitiatedProcessorTest {
     }
 
     @Test
-    public void shouldIncludeYouthRRIfReferenceDataQueryReturnsNoRRButDefendantIsYouth() throws IOException {
+    public void shouldIncludeYouthRRIfReferenceDataQueryReturnsNoRRButDefendantIsYouth() {
         //Given
         final UUID caseId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
@@ -322,7 +322,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester))).thenReturn(Optional.of(emptyList()));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(emptyList()));
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
         hearingsList.add(HearingListingNeeds.hearingListingNeeds()
@@ -402,7 +402,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final List<HearingListingNeeds> hearingsList = new ArrayList<>();
         hearingsList.add(HearingListingNeeds.hearingListingNeeds()
@@ -462,7 +462,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester))).thenReturn(Optional.of(emptyList()));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester),any())).thenReturn(Optional.of(emptyList()));
         when(azureFunctionService.relayCaseOnCPP(anyString())).thenReturn(1);
 
 
@@ -551,7 +551,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(singletonList(listHearingRequest));
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester))).thenReturn(Optional.of(emptyList()));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any())).thenReturn(Optional.of(emptyList()));
 
 
         doReturn(Optional.of(searchResult)).when(progressionService).caseExistsByCaseUrn(requestMessage, PCF_CASE_URN);
@@ -639,7 +639,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(listHearingRequestList);
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester)))
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any()))
                 .thenReturn(Optional.of(referenceDataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 
@@ -737,7 +737,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(listHearingRequestList);
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester)))
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any()))
                 .thenReturn(Optional.of(referenceDataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 
@@ -847,7 +847,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(listHearingRequestList);
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester)))
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any()))
                 .thenReturn(Optional.of(referenceDataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 
@@ -947,7 +947,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(listHearingRequestList);
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester)))
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any()))
                 .thenReturn(Optional.of(referenceDataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 
@@ -1044,7 +1044,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(listHearingRequestList);
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester)))
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any()))
                 .thenReturn(Optional.of(referenceDataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 
@@ -1135,7 +1135,7 @@ public class CourtProceedingsInitiatedProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
         when(courtReferral.getProsecutionCases()).thenReturn(singletonList(prosecutionCase));
         when(courtReferral.getListHearingRequests()).thenReturn(null);
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester)))
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), eq(requestMessage), eq(requester), any()))
                 .thenReturn(Optional.of(referenceDataOffencesJsonObject));
         when(jsonObjectToObjectConverter.convert(courtReferralJson, CourtReferral.class)).thenReturn(courtReferral);
 

@@ -157,7 +157,7 @@ public class UpdateOffencesHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -185,7 +185,7 @@ public class UpdateOffencesHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -260,7 +260,7 @@ public class UpdateOffencesHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -295,7 +295,7 @@ public class UpdateOffencesHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -330,7 +330,7 @@ public class UpdateOffencesHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()
@@ -355,7 +355,7 @@ public class UpdateOffencesHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
         UpdateOffencesForProsecutionCase updateOffencesForProsecutionCase = prepareDatabByOffences(caseId, defendantId, offences);
 
         aggregate = getEventStreamWithOffenceandMutlipleRR(caseId, defendantId, offenceId);
@@ -392,7 +392,7 @@ public class UpdateOffencesHandlerTest {
                 SEXUAL_OFFENCE_RR_DESCRIPTION,
                 "json/referencedataoffences.offences-list.json");
 
-        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester))).thenReturn(Optional.of(referencedataOffencesJsonObject));
+        when(referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(anyList(), any(), eq(requester), any())).thenReturn(Optional.of(referencedataOffencesJsonObject));
 
         final Metadata metadata = Envelope
                 .metadataBuilder()

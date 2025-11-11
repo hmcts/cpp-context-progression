@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.handler;
 
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.nonNull;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAllReportingRestrictions;
@@ -7,6 +9,7 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupRe
 
 import uk.gov.justice.core.courts.DefendantsOffences;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.core.courts.UpdateDefendantOffences;
 import uk.gov.justice.core.courts.UpdateHearingOffenceVerdict;
@@ -51,6 +54,8 @@ public class UpdateOffencesHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateOffencesHandler.class.getName());
     private static final String YOUTH_RESTRICTION = "Section 49 of the Children and Young Persons Act 1933 applies";
 
+    private static final String SOW_REF_VALUE = "MoJ";
+
     @Inject
     private EventSource eventSource;
 
@@ -77,10 +82,11 @@ public class UpdateOffencesHandler {
         final UUID prosecutionCaseId = updateDefendantCaseOffences.getDefendantCaseOffences().getProsecutionCaseId();
         final UUID defendantId = updateDefendantCaseOffences.getDefendantCaseOffences().getDefendantId();
         final List<Offence> offenceList = updateDefendantCaseOffences.getDefendantCaseOffences().getOffences();
-        final List<Offence> offences = Boolean.TRUE.equals(updateDefendantCaseOffences.getSwitchedToYouth()) ? offenceList.stream().map(this::addYouthRestrictions).collect(Collectors.toList()) : offenceList;
+        final List<Offence> offences = TRUE.equals(updateDefendantCaseOffences.getSwitchedToYouth()) ? offenceList.stream().map(this::addYouthRestrictions).collect(Collectors.toList()) : offenceList;
 
         final List<String> offenceCodes = offences.stream().map(Offence::getOffenceCode).collect(Collectors.toList());
-        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefedantEnvelope.metadata(), JsonValue.NULL), requester);
+        final Optional<String> sowRef = getSowRef(caseAggregate.getProsecutionCase());
+        final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefedantEnvelope.metadata(), JsonValue.NULL), requester, sowRef);
 
         final Stream<Object> events = caseAggregate.updateOffences(dedupAllReportingRestrictions(offences),prosecutionCaseId,defendantId,offencesJsonObjectOptional);
 
@@ -100,10 +106,11 @@ public class UpdateOffencesHandler {
             final UUID prosecutionCaseId = updateDefendantOffence.getDefendantCaseOffences().getProsecutionCaseId();
             final UUID defendantId = updateDefendantOffence.getDefendantCaseOffences().getDefendantId();
             final List<Offence> offenceList = updateDefendantOffence.getDefendantCaseOffences().getOffences();
-            final List<Offence> offences = Boolean.TRUE.equals(updateDefendantOffence.getSwitchedToYouth()) ? offenceList.stream().map(this::addYouthRestrictions).collect(Collectors.toList()) : offenceList;
+            final List<Offence> offences = TRUE.equals(updateDefendantOffence.getSwitchedToYouth()) ? offenceList.stream().map(this::addYouthRestrictions).collect(Collectors.toList()) : offenceList;
 
             final List<String> offenceCodes = offences.stream().map(Offence::getOffenceCode).collect(Collectors.toList());
-            final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefendantOffenceEnvelope.metadata(), JsonValue.NULL), requester);
+            final Optional<String> sowRef = getSowRef(caseAggregate.getProsecutionCase());
+            final Optional<List<JsonObject>> offencesJsonObjectOptional = referenceDataOffenceService.getMultipleOffencesByOffenceCodeList(offenceCodes, envelopeFrom(updateDefendantOffenceEnvelope.metadata(), JsonValue.NULL), requester, sowRef);
 
             final Stream<Object> events = caseAggregate.updateOffences(dedupAllReportingRestrictions(offences), prosecutionCaseId, defendantId, offencesJsonObjectOptional);
 
@@ -173,5 +180,10 @@ public class UpdateOffencesHandler {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(
                 events.map(enveloper.withMetadataFrom(jsonEnvelope)));
+    }
+
+    private static Optional<String> getSowRef(final ProsecutionCase prosecutionCase) {
+        boolean isCivil = nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil();
+        return isCivil ? Optional.of(SOW_REF_VALUE) : Optional.empty();
     }
 }

@@ -8,7 +8,8 @@
       "cjsOffenceCode": "OFFENCE_CODE",
       "offenceId": "OFFENCE_ID",
       "modeOfTrial": "Either Way",
-      "reportRestrictResultCode": "YES"
+      "reportRestrictResultCode": "YES",
+      "exParte": true
     }
   ]
 }

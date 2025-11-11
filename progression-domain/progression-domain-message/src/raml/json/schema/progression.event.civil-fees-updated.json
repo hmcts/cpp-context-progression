@@ -3,18 +3,23 @@
   "id": "http://justice.gov.uk/core/courts/civil-fees-updated.json",
   "type": "object",
   "properties": {
-    "caseId": {
+
+    "feeId": {
       "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
     },
-    "civilFees": {
-      "type": "array",
-      "items": {
-        "$ref": "http://justice.gov.uk/core/courts/civilFees.json"
-      }
+    "feeType": {
+      "description": "Indicates if a fee is initial or contested type",
+      "type": "string"
+    },
+    "feeStatus": {
+      "description": "Indicates status of the fee according to fix list",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/civilFeeStatus"
+    },
+    "paymentReference": {
+      "description": "Prosecutor reference for the fee payment",
+      "type": "string"
     }
-  },
-  "required": [
-    "caseId",
-    "civilFees"
-  ]
+    }
+
+
 }

@@ -46,6 +46,12 @@ public class ApplicationHelper {
                 payload);
     }
 
+    public static Response editCivilFeeForCivilCourtApplication(final String payload) {
+        return postCommand(getWriteUrl("/edit-application-fee"),
+                "application/vnd.progression.edit-court-fee-for-civil-application+json",
+                payload);
+    }
+
     public static Response initiateCourtProceedingsForCourtApplication(final String applicationId, final String caseId_1, final String caseId_2, final String fileName, final String hearingId) throws IOException {
         return postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json",

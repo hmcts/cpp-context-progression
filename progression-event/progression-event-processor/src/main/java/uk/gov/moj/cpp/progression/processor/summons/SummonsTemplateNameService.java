@@ -35,7 +35,9 @@ public class SummonsTemplateNameService {
     private static final Map<SummonsCode, String> FIRST_HEARING_TEMPLATE_NAME_MAP = ImmutableMap.of(
             MCA, TEMPLATE_FIRST_HEARING_MCA,
             EITHER_WAY, TEMPLATE_FIRST_HEARING_EITHER_WAY,
-            WITNESS, TEMPLATE_FIRST_HEARING_MCA
+            WITNESS, TEMPLATE_FIRST_HEARING_MCA,
+            SummonsCode.APPLICATION, TEMPLATE_GENERIC_APPLICATION,
+            SummonsCode.BREACH_OFFENCES, TEMPLATE_BREACH
     );
 
     public String getCaseSummonsParentTemplateName(final boolean isWelsh) {
