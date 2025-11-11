@@ -79,7 +79,7 @@
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.60</applicationscourtorders.version>
-        <sjp.version>17.0.84</sjp.version>
+        <sjp.version>17.0.129</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.23</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
