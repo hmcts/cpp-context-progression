@@ -26,13 +26,14 @@ import static uk.gov.moj.cpp.progression.test.CoreTestTemplates.defaultArguments
 
 import uk.gov.justice.core.courts.*;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
+import uk.gov.justice.listing.courts.ListNextHearingsV3;
 import uk.gov.justice.progression.courts.ApplicationsResulted;
 import uk.gov.justice.progression.courts.CaseAddedToHearingBdf;
 import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
+import uk.gov.justice.progression.courts.HearingConfirmedReplayed;
 import uk.gov.justice.progression.courts.HearingDeleted;
-import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
@@ -40,6 +41,7 @@ import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
+import uk.gov.justice.progression.courts.ReplayHearingConfirmed;
 import uk.gov.justice.progression.courts.UpdateRelatedHearingCommand;
 import uk.gov.justice.progression.courts.VejDeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.VejHearingPopulatedToProbationCaseworker;
@@ -6456,6 +6458,116 @@ public class HearingAggregateTest {
                 (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
         assertThat(listingStatusEvent.getNotifyNCES(), is(true));
     }
+
+    @Test
+    void shouldRaiseReplayHearingConfirmedEventIfHearingWasCreated(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+        hearingAggregate.apply(ProsecutionCaseDefendantListingStatusChangedV3.prosecutionCaseDefendantListingStatusChangedV3()
+                .withHearing(CoreTestTemplates.hearing(defaultArguments()
+                                .setJurisdictionType(JurisdictionType.CROWN)
+                                .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1, offenceId2, offenceId3))))
+                                .setConvicted(false))
+                        .build())
+                .build());
+
+        final ReplayHearingConfirmed replayHearingConfirmed =  ReplayHearingConfirmed.replayHearingConfirmed()
+                .withConfirmedHearing(ConfirmedHearing.confirmedHearing()
+                        .withId(randomUUID())
+                        .build())
+                .build();
+
+        List<Object> events =  hearingAggregate.replayHearingConfirmed(replayHearingConfirmed).toList();
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass().getName(), is("uk.gov.justice.progression.courts.HearingConfirmedReplayed"));
+
+
+    }
+
+    @Test
+    void shouldMarkReplayHearingConfirmedEventUntilHearingIsCreatedV3(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final ReplayHearingConfirmed replayHearingConfirmed =  ReplayHearingConfirmed.replayHearingConfirmed()
+                .withConfirmedHearing(ConfirmedHearing.confirmedHearing()
+                        .withId(randomUUID())
+                        .build())
+                .build();
+
+        List<Object> events =  hearingAggregate.replayHearingConfirmed(replayHearingConfirmed).toList();
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass().getName(), is("uk.gov.justice.progression.courts.MarkedHearingConfirmedForReplay"));
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1, offenceId2, offenceId3))))
+                        .setConvicted(false))
+                .build();
+
+        List<Object> events2 =  hearingAggregate.updateDefendantListingStatusV3(hearing, HearingListingStatus.HEARING_INITIALISED, false,  ListNextHearingsV3.listNextHearingsV3().build()).toList();
+        assertThat(events2.size(), is(4));
+        assertThat(events2.stream().anyMatch(e -> e.getClass().getName().equals("uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV3")), is(true));
+        assertThat(events2.stream().anyMatch(e -> e.getClass().getName().equals("uk.gov.justice.progression.courts.HearingConfirmedReplayed")), is(true));
+        HearingConfirmedReplayed hearingConfirmedReplayed = events2.stream()
+                .filter(e -> e.getClass().getName().equals("uk.gov.justice.progression.courts.HearingConfirmedReplayed"))
+                .map(HearingConfirmedReplayed.class::cast)
+                .findAny().orElseThrow();
+
+        assertThat(hearingConfirmedReplayed.getConfirmedHearing(), notNullValue());
+        assertThat(hearingConfirmedReplayed.getHearingInProgression(), notNullValue());
+
+    }
+
+    @Test
+    void shouldMarkReplayHearingConfirmedEventUntilHearingIsCreatedV2(){
+        final UUID case1 = randomUUID();
+        final UUID defendant1 = randomUUID();
+        final UUID offenceId1 = randomUUID();
+
+        final UUID offenceId2 = randomUUID();
+        final UUID offenceId3 = randomUUID();
+
+        final ReplayHearingConfirmed replayHearingConfirmed =  ReplayHearingConfirmed.replayHearingConfirmed()
+                .withConfirmedHearing(ConfirmedHearing.confirmedHearing()
+                        .withId(randomUUID())
+                        .build())
+                .build();
+
+        List<Object> events =  hearingAggregate.replayHearingConfirmed(replayHearingConfirmed).toList();
+
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0).getClass().getName(), is("uk.gov.justice.progression.courts.MarkedHearingConfirmedForReplay"));
+
+        final Hearing hearing = CoreTestTemplates.hearing(defaultArguments()
+                        .setJurisdictionType(JurisdictionType.CROWN)
+                        .setStructure(Map.of(case1, Map.of(defendant1, asList(offenceId1, offenceId2, offenceId3))))
+                        .setConvicted(false))
+                .build();
+
+        List<Object> events2 =  hearingAggregate.updateDefendantListingStatus(hearing, HearingListingStatus.HEARING_INITIALISED, false,  new ArrayList<>()).toList();
+        assertThat(events2.size(), is(4));
+        assertThat(events2.stream().anyMatch(e -> e.getClass().getName().equals("uk.gov.justice.core.courts.ProsecutionCaseDefendantListingStatusChangedV2")), is(true));
+        assertThat(events2.stream().anyMatch(e -> e.getClass().getName().equals("uk.gov.justice.progression.courts.HearingConfirmedReplayed")), is(true));
+        HearingConfirmedReplayed hearingConfirmedReplayed = events2.stream()
+                .filter(e -> e.getClass().getName().equals("uk.gov.justice.progression.courts.HearingConfirmedReplayed"))
+                .map(HearingConfirmedReplayed.class::cast)
+                .findAny().orElseThrow();
+
+        assertThat(hearingConfirmedReplayed.getConfirmedHearing(), notNullValue());
+        assertThat(hearingConfirmedReplayed.getHearingInProgression(), notNullValue());
+    }
+
 
 
 }
