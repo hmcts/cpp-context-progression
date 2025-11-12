@@ -62,24 +62,24 @@
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
-        <material.version>17.0.57</material.version>
+        <material.version>17.0.72</material.version>
         <json-transformer.version>1.0.6</json-transformer.version>
         <access.control.version>6.4.1</access.control.version>
-        <referencedata.version>17.0.113</referencedata.version>
+        <referencedata.version>17.0.118</referencedata.version>
         <listing.version>17.0.125</listing.version>
-        <hearing.version>17.0.127</hearing.version>
+        <hearing.version>17.0.128</hearing.version>
         <usersgroups.version>17.0.37</usersgroups.version>
-        <defence.version>17.0.61</defence.version>
+        <defence.version>17.0.85</defence.version>
         <referencedata.offence.version>17.0.38</referencedata.offence.version>
         <coredomain.version>17.102.12</coredomain.version>
         <directionsmanagement.version>8.0.30</directionsmanagement.version>
         <elasticsearch-maven-plugin.version>6.13</elasticsearch-maven-plugin.version>
-        <results.version>17.0.58</results.version>
+        <results.version>17.0.87</results.version>
         <notification.notify.version>17.0.24</notification.notify.version>
         <unifiedsearch.version>17.0.26</unifiedsearch.version>
         <systemdocgenerator.version>17.0.64</systemdocgenerator.version>
         <applicationscourtorders.version>17.0.60</applicationscourtorders.version>
-        <sjp.version>17.0.129</sjp.version>
+        <sjp.version>17.0.130</sjp.version>
         <httpmime.version>4.5.1</httpmime.version>
         <stagingpubhub.version>17.0.23</stagingpubhub.version>
         <pdfbox.version>2.0.11</pdfbox.version>
