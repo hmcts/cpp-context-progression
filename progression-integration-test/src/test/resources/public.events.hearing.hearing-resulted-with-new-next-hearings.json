@@ -116,7 +116,7 @@
                   },
                   "offenceId": "00000000-0000-0000-0000-000000000000",
                   "pleaDate": "2018-01-01",
-                  "pleaValue": "GUILTY"
+                  "pleaValue": "NOT_GUILTY"
                 },
                 "verdict": {
                   "originatingHearingId": "00000000-0000-0000-0000-000000000000",
@@ -152,6 +152,7 @@
                     "orderedHearingId": "00000000-0000-0000-0000-000000000000",
                     "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
                     "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                    "isDeleted": false,
                     "label": "a",
                     "welshLabel": "a",
                     "isAdjournmentResult": true,

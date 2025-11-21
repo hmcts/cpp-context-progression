@@ -7836,6 +7836,50 @@ class CaseAggregateTest {
         assertThat(event.get().getProsecutionCase().equals(newPayload), is(true));
     }
 
+    @Test
+    public void shouldNotRaiseHearingResultedCaseUpdatedEvenIfCaseIsEjected(){
+
+        final Defendant defendant = defendant()
+                .withId(randomUUID())
+                .withProceedingsConcluded(true)
+                .withProsecutionCaseId(UUID.fromString(CASE_ID))
+                .withPersonDefendant(personDefendant()
+                        .build())
+                .withOffences(
+                        singletonList(offence()
+                                .withId(UUID.randomUUID())
+                                .withProceedingsConcluded(true)
+                                .withJudicialResults(
+                                        singletonList(JudicialResult.judicialResult()
+                                                .withCategory(FINAL)
+                                                .build())).build()))
+                .build();
+
+        final ProsecutionCase prosecutionCase = prosecutionCase()
+                .withId(UUID.fromString(CASE_ID))
+                .withDefendants(singletonList(defendant))
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(URN).build())
+                .build();
+
+        final CourtCentre courtCentre = courtCentre()
+                .withId(randomUUID())
+                .withCode("code")
+                .build();
+
+        this.caseAggregate.createProsecutionCase(prosecutionCase, emptyList());
+        CaseEjected caseEjected = CaseEjected.caseEjected().withProsecutionCaseId(UUID.fromString(CASE_ID)).withRemovalReason("Test").build();
+        this.caseAggregate.apply(caseEjected);
+
+        final List<DefendantJudicialResult> defendantJudicialResults = new ArrayList<>();
+
+        final ProsecutionCase prosecutionCaseWithInactiveCaseStatus = prosecutionCase()
+                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(CASE_URN).build())
+                .withId(UUID.fromString(CASE_ID)).build();
+
+        final Stream<Object> eventStream = this.caseAggregate.updateCase(prosecutionCaseWithInactiveCaseStatus, defendantJudicialResults, courtCentre, hearingId, hearingType, CROWN, Boolean.FALSE, emptyList());
+        assertThat(eventStream.toList().size(), is(0));
+    }
+
     private Defendant getDefendant(final UUID defendantId1) {
         return Defendant.defendant()
                 .withOffences(asList(uk.gov.justice.core.courts.Offence.offence().build()))

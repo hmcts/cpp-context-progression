@@ -20,22 +20,7 @@ import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.stubProbat
 import static uk.gov.moj.cpp.progression.stub.ProbationCaseworkerStub.stubProbationHearingDeleted;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceById;
 import static uk.gov.moj.cpp.progression.stub.ReferenceDataOffenceStub.stubReferenceDataOffencesGetOffenceByOffenceCode;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubEnforcementArea;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubPleaTypes;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryAllResultDefinitions;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtOURoom;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryCourtsCodeData;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryDocumentTypeData;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryEthinicityData;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryHearingTypeData;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryJudiciaries;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryLocalJusticeArea;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryNationalityData;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisation;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryOrganisationUnitsData;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryPrisonSuites;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryProsecutorData;
-import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.stubQueryReferralReasons;
+import static uk.gov.moj.cpp.progression.stub.ReferenceDataStub.*;
 import static uk.gov.moj.cpp.progression.stub.SysDocGeneratorStub.stubAsyncDocumentGeneratorEndPoint;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryExactMatchWithEmptyResults;
 import static uk.gov.moj.cpp.progression.stub.UnifiedSearchStub.stubUnifiedSearchQueryPartialMatch;
@@ -153,5 +138,6 @@ public class AbstractIT {
         stubPostCallsNotificationNotify();
         stubPostLaaAPI();
         stubMaterialMetadata();
+        stubReferenceDataResultDefinitionWithCategory();
     }
 }

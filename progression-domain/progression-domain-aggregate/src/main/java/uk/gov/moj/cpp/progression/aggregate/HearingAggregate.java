@@ -44,6 +44,8 @@ import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupAl
 import static uk.gov.moj.cpp.progression.util.ReportingRestrictionHelper.dedupReportingRestrictions;
 
 import uk.gov.justice.core.courts.*;
+import uk.gov.justice.core.courts.HearingExtended;
+import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreated;
 import uk.gov.justice.core.progression.courts.HearingForApplicationCreatedV2;
 import uk.gov.justice.cpp.progression.events.NewDefendantAddedToHearing;
@@ -95,17 +97,7 @@ import uk.gov.moj.cpp.progression.util.HearingUnallocatedCourtRoomRemovedHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -150,6 +142,15 @@ public class HearingAggregate implements Aggregate {
     // we need to know if offence was added hearing because the offence was added to case of the hearing.
     // The offence was not resulted from another hearing or not extended from another hearing.
     private final Set<UUID> newOffences = new HashSet<>();
+
+    private static final String GUILTY = "GUILTY";
+    private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
+
+    private static final UUID WITHDRAWN_RESULT_ID = UUID.fromString("eb2e4c4f-b738-4a4d-9cce-0572cecb7cb8");
+    private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
+    private static final String[] onBailStatusValues = new String[]{ "Conditional Bail", "Unconditional Bail"};
+    private static final String[] onBailStatusCodes = new String[]{ "B", "U"};
+    private static final UUID DEFENDANT_FOUND_UNDER_A_DISABILITY = UUID.fromString("d3d94468-02a4-3259-b55d-38e6d163e820");
 
     @VisibleForTesting
     public Hearing getHearing() {
@@ -1769,7 +1770,7 @@ public class HearingAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> processHearingResults(final Hearing hearing, final ZonedDateTime sharedTime, final List<UUID> shadowListedOffences, final LocalDate hearingDay) {
+    public Stream<Object> processHearingResults(final Hearing hearing, final ZonedDateTime sharedTime, final List<UUID> shadowListedOffences, final LocalDate hearingDay, final List<UUID> resultIdList) {
 
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         final List<ProsecutionCase> updatedProsecutionCasesForOriginalHearing = ofNullable(hearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
@@ -1780,9 +1781,26 @@ public class HearingAggregate implements Aggregate {
                 .map(this::updateApplicationWithAdjourn)
                 .map(ApplicationProceedingsHelper::determineApplicationProceedingsConcluded)
                 .collect(collectingAndThen(Collectors.toList(), getListOrNull()));
-        final Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
+        Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
                 .withCourtApplications(updatedCourtApplications)
                 .withProsecutionCases(updatedProsecutionCasesForOriginalHearing).build();
+        final Set<UUID> CTLExpiredOffenceIds = stopCTLExpiryForV2(hearing, resultIdList);
+        if(isNotEmpty(CTLExpiredOffenceIds)) {
+            updatedHearing = Hearing.hearing().withValuesFrom(updatedHearing)
+                    .withProsecutionCases(ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
+                            .map(prosecutionCase -> ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
+                                    .withDefendants(ofNullable(prosecutionCase.getDefendants()).map(Collection::stream).orElseGet(Stream::empty)
+                                            .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
+                                                    .withOffences(ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
+                                                            .map(offence -> Offence.offence().withValuesFrom(offence)
+                                                                    .withCustodyTimeLimit(CTLExpiredOffenceIds.contains(offence.getId()) ? null : offence.getCustodyTimeLimit())
+                                                                    .build())
+                                                            .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                                                    .build())
+                                            .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
+                                    .build())
+                            .collect(collectingAndThen(Collectors.toList(), getListOrNull()))).build();
+        }
 
         streamBuilder.add(createListingStatusResultedEvent(updatedHearing));
         streamBuilder.add(createHearingResultedEvent(updatedHearing, sharedTime, hearingDay));
@@ -1818,6 +1836,8 @@ public class HearingAggregate implements Aggregate {
             nextHearingEvents.forEach(streamBuilder::add);
         }
 
+
+
         if (isNotEmpty(hearing.getCourtApplications())) {
             streamBuilder.add(applicationsResulted()
                     .withHearing(updatedHearing)
@@ -1825,6 +1845,7 @@ public class HearingAggregate implements Aggregate {
                     .withCommittingCourt(this.committingCourt)
                     .build());
         }
+
 
         addExtendCustodyTimeLimitResulted(hearing, streamBuilder);
 
@@ -2820,7 +2841,7 @@ public class HearingAggregate implements Aggregate {
 
     /**
      * This method is to raise ExtendCustodyTimeLimitResulted event per offence which has extended
-     * flag in the custody time limit. It finds caseId associated with offence id. 
+     * flag in the custody time limit. It finds caseId associated with offence id.
      *
      * @param hearing
      * @param streamBuilder
@@ -3401,4 +3422,94 @@ public class HearingAggregate implements Aggregate {
                 .withAssociatedDefenceOrganisation(associatedDefenceOrganisation)
                 .build()));
     }
+
+    private static Set<UUID> stopCTLExpiryForV2(final Hearing hearing, final List<UUID> resultIdList) {
+        final Set<UUID> offenceIds = new HashSet<>();
+        if (isNotEmpty(hearing.getProsecutionCases())) {
+            offenceIds.addAll(hearing.getProsecutionCases().stream()
+                    .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                    .flatMap(defendant -> defendant.getOffences().stream())
+                    .filter(offence -> isGuiltyAndHasCTLExpiry(offence) || hasFinalResultAndHasCTLExpiryForV2(offence, resultIdList) ||
+                            isOnBailAndHasCTLExpiryForV2(offence))
+                    .map(Offence::getId)
+                    .collect(Collectors.toSet()));
+
+            hearing.getProsecutionCases().stream()
+                    .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                    .filter(HearingAggregate::isAnyDefendantsOffencesVerdictIsDefendantFoundUnderADisability)
+                    .flatMap(defendant -> defendant.getOffences().stream())
+                    .forEach(offence -> {
+                        if (isCTLExpiryExists(offence)) {
+                            offenceIds.add(offence.getId());
+                        }
+                    });
+
+            hearing.getProsecutionCases().stream()
+                    .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
+                    .filter(HearingAggregate::isDefendantOnBail)
+                    .flatMap(defendant -> defendant.getOffences().stream())
+                    .forEach(offence -> {
+                        if (isCTLExpiryExists(offence)) {
+                            offenceIds.add(offence.getId());
+                        }
+                    });
+        }
+        return offenceIds;
+    }
+
+    private static boolean isGuiltyAndHasCTLExpiry(final Offence offence) {
+        return isGuilty(offence) &&
+                isCTLExpiryExists(offence);
+    }
+
+    private static boolean isGuilty(final Offence offence) {
+        return (nonNull(offence.getPlea()) && GUILTY.equalsIgnoreCase(offence.getPlea().getPleaValue())) ||
+                (nonNull(offence.getVerdict()) && isGuiltyVerdict(offence.getVerdict().getVerdictType())) ;
+    }
+
+    private static boolean isCTLExpiryExists(final Offence offence) {
+        return nonNull(offence.getCustodyTimeLimit()) && nonNull(offence.getCustodyTimeLimit().getTimeLimit());
+    }
+
+    private static boolean isGuiltyVerdict(final VerdictType verdictType) {
+        return nonNull(verdictType) && nonNull(verdictType.getCategoryType()) && verdictType.getCategoryType().startsWith(GUILTY_VERDICT_STARTS_WITH);
+    }
+
+
+    private static boolean isPromptOnBail(final JudicialResultPrompt prompt) {
+        return REMAND_STATUS_PROMPT_ID.equals(prompt.getJudicialResultPromptTypeId()) &&
+                Arrays.stream(onBailStatusValues).anyMatch(prompt.getValue()::equalsIgnoreCase);
+    }
+
+    private static boolean isOnBailAndHasCTLExpiryForV2(final Offence offence) {
+        return isCTLExpiryExists(offence) && nonNull(offence.getJudicialResults()) &&
+                offence.getJudicialResults().stream().filter(Objects::nonNull)
+                        .filter(result -> isResultNotDeleted( result))
+                        .anyMatch(result -> ofNullable(result.getJudicialResultPrompts()).map(Collection::stream).orElseGet(Stream::empty)
+                                .anyMatch(HearingAggregate::isPromptOnBail)
+                        );
+    }
+
+    private static boolean isResultNotDeleted(final JudicialResult result) {
+        return !result.getIsDeleted() ;
+    }
+
+    private static boolean isDefendantOnBail(final Defendant defendant) {
+        return nonNull(defendant.getPersonDefendant()) && nonNull(defendant.getPersonDefendant().getBailStatus())
+                && Arrays.stream(onBailStatusCodes).anyMatch(defendant.getPersonDefendant().getBailStatus().getCode()::equals);
+    }
+
+    private static boolean hasFinalResultAndHasCTLExpiryForV2(final Offence offence,
+                                                              final List<UUID> resultIdList) {
+        return isCTLExpiryExists(offence) && nonNull(offence.getJudicialResults()) && offence.getJudicialResults().stream().filter(Objects::nonNull)
+                .filter(result -> isResultNotDeleted(result))
+                .anyMatch(result -> resultIdList != null && resultIdList.contains(result.getJudicialResultTypeId()));
+    }
+
+    private static boolean isAnyDefendantsOffencesVerdictIsDefendantFoundUnderADisability(final Defendant defendant) {
+        return defendant.getOffences().stream()
+                .anyMatch(offence -> nonNull(offence.getVerdict()) && nonNull(offence.getVerdict().getVerdictType()) &&
+                        offence.getVerdict().getVerdictType().getId().equals(DEFENDANT_FOUND_UNDER_A_DISABILITY));
+    }
+
 }
