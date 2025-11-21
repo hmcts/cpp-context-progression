@@ -31,9 +31,11 @@ import uk.gov.justice.progression.courts.DeleteNextHearingsRequested;
 import uk.gov.justice.progression.courts.DeletedHearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.ExtendCustodyTimeLimitResulted;
 import uk.gov.justice.progression.courts.HearingDeleted;
+import uk.gov.justice.progression.courts.HearingMarkedAsDuplicate;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
+import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
 import uk.gov.justice.progression.courts.RelatedHearingUpdated;
@@ -5576,5 +5578,218 @@ public class HearingAggregateTest {
         final String content = readFileToString(new File(this.getClass().getClassLoader().getResource(url).getFile())).replace("HEARING_ID", hearingId);
         return OBJECT_MAPPER.readValue(content, clazz);
     }
+
+    @Test
+    public void shouldUnallocateHearingWhenCourtroomIsRemoved() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Integer estimatedMinutes = 30;
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withCourtCentre(CourtCentre.courtCentre().build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.unallocateHearingWhenCourtroomIsRemoved(hearingId, estimatedMinutes);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(2));
+        assertThat(events.get(0), instanceOf(HearingUnallocatedCourtroomRemoved.class));
+        assertThat(events.get(1), instanceOf(ProsecutionCaseDefendantListingStatusChangedV2.class));
+
+        final HearingUnallocatedCourtroomRemoved unallocatedEvent = (HearingUnallocatedCourtroomRemoved) events.get(0);
+        assertThat(unallocatedEvent.getHearingId(), is(hearingId));
+        assertThat(unallocatedEvent.getEstimatedMinutes(), is(estimatedMinutes));
+    }
+
+    @Test
+    public void shouldReturnEmptyStreamWhenHearingIsDeleted() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Integer estimatedMinutes = 30;
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+        hearingAggregate.apply(HearingDeleted.hearingDeleted()
+                .withHearingId(hearingId)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.unallocateHearingWhenCourtroomIsRemoved(hearingId, estimatedMinutes);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(0));
+    }
+
+
+    @Test
+    public void shouldReturnEmptyStreamWhenHearingIsResulted() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Integer estimatedMinutes = 30;
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+        hearingAggregate.apply(HearingResulted.hearingResulted()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.unallocateHearingWhenCourtroomIsRemoved(hearingId, estimatedMinutes);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(0));
+    }
+
+    @Test
+    public void shouldNotGenerateProsecutionCaseDefendantListingStatusChangedV2EventWhenUnallocatingHearingForMags() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Integer estimatedMinutes = 45;
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.unallocateHearingWhenCourtroomIsRemoved(hearingId, estimatedMinutes);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(0));
+    }
+
+    @Test
+    public void shouldUpdateHearingListingStatusToSentForListingWhenUnallocatingHearing() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Integer estimatedMinutes = 60;
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withCourtCentre(CourtCentre.courtCentre().build())
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.unallocateHearingWhenCourtroomIsRemoved(hearingId, estimatedMinutes);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(2));
+
+    }
+
+    @Test
+    public void shouldUpdateSearchIndexAndViewStoreV2WithCorrectValues() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+        final Boolean notifyNCES = true;
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.updateSearchIndexAndViewStoreV2(hearing, hearingListingStatus, notifyNCES);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(1));
+        assertThat(events.get(0), instanceOf(ProsecutionCaseDefendantListingStatusChangedV2.class));
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent = 
+                (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
+        assertThat(listingStatusEvent.getHearing(), is(hearing));
+        assertThat(listingStatusEvent.getHearingListingStatus(), is(hearingListingStatus));
+        assertThat(listingStatusEvent.getNotifyNCES(), is(notifyNCES));
+    }
+
+    @Test
+    public void shouldUpdateSearchIndexAndViewStoreV2WithSentForListingStatus() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                .build();
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.SENT_FOR_LISTING;
+        final Boolean notifyNCES = false;
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.updateSearchIndexAndViewStoreV2(hearing, hearingListingStatus, notifyNCES);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(1));
+        
+        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent = 
+                (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
+        assertThat(listingStatusEvent.getHearingListingStatus(), is(HearingListingStatus.SENT_FOR_LISTING));
+        assertThat(listingStatusEvent.getNotifyNCES(), is(false));
+    }
+
+
+    @Test
+    public void shouldUpdateSearchIndexAndViewStoreV2WithNotifyNCESAsTrue() {
+        // Given
+        final UUID hearingId = randomUUID();
+        final Hearing hearing = Hearing.hearing()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .build();
+        final HearingListingStatus hearingListingStatus = HearingListingStatus.HEARING_INITIALISED;
+        final Boolean notifyNCES = true;
+
+        hearingAggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched()
+                .withHearing(hearing)
+                .build());
+
+        // When
+        final Stream<Object> eventStream = hearingAggregate.updateSearchIndexAndViewStoreV2(hearing, hearingListingStatus, notifyNCES);
+
+        // Then
+        final List<Object> events = eventStream.collect(toList());
+        assertThat(events.size(), is(1));
+        
+        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent = 
+                (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
+        assertThat(listingStatusEvent.getNotifyNCES(), is(true));
+    }
+
 
 }

@@ -669,6 +669,9 @@ subscriptions_descriptor:
         - name: progression.events.offences-removed-from-hearing
           schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json
 
+        - name: progression.event.hearing-moved-to-unallocated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
+
 
           # Deprecated API  - End
       event_source_name: progression
@@ -693,6 +696,10 @@ subscriptions_descriptor:
 
         - name: public.listing.offences-moved-to-next-hearing
           schema_uri: http://justice.gov.uk/listing/events/public.listing.offences-moved-to-next-hearing.json
+
+        - name: public.listing.hearing-unallocated-courtroom-removed
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.hearing-unallocated-courtroom-removed.json
+
 
         # Hearing start
         - name: public.hearing.adjourned

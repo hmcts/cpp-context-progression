@@ -62,6 +62,7 @@ import uk.gov.justice.progression.courts.HearingMovedToUnallocated;
 import uk.gov.justice.progression.courts.HearingPopulatedToProbationCaseworker;
 import uk.gov.justice.progression.courts.HearingResulted;
 import uk.gov.justice.progression.courts.HearingTrialVacated;
+import uk.gov.justice.progression.courts.HearingUnallocatedCourtroomRemoved;
 import uk.gov.justice.progression.courts.OffenceInHearingDeleted;
 import uk.gov.justice.progression.courts.OffencesRemovedFromHearing;
 import uk.gov.justice.progression.courts.RelatedHearingRequested;
@@ -90,6 +91,7 @@ import uk.gov.moj.cpp.progression.domain.aggregate.utils.NextHearingDetails;
 import uk.gov.moj.cpp.progression.domain.aggregate.utils.OpaNoticeHelper;
 import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.plea.json.schemas.OpaNoticeDocument;
+import uk.gov.moj.cpp.progression.util.HearingUnallocatedCourtRoomRemovedHelper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -276,6 +278,7 @@ public class HearingAggregate implements Aggregate {
                 when(ListingNumberUpdated.class).apply(this::updateListingNumbers),
                 when(HearingListingNumberUpdated.class).apply(this::updateListingNumbers),
                 when(HearingMovedToUnallocated.class).apply(this::handleHearingMovedToUnallocated),
+                when(HearingUnallocatedCourtroomRemoved.class).apply(this::handleHearingUnallocatedCourtroomRemoved),
                 when(OpaPublicListNoticeDeactivated.class).apply(this::deactivatePublicListNotice),
                 when(OpaPressListNoticeDeactivated.class).apply(this::deactivatePressListNotice),
                 when(OpaResultListNoticeDeactivated.class).apply(this::deactivateResultListNotice),
@@ -329,6 +332,11 @@ public class HearingAggregate implements Aggregate {
     private void handleHearingMovedToUnallocated(final HearingMovedToUnallocated hearingMovedToUnallocated) {
         setHearing(hearingMovedToUnallocated.getHearing());
         this.hearingListingStatus = HearingListingStatus.SENT_FOR_LISTING;
+    }
+
+    private void handleHearingUnallocatedCourtroomRemoved(final HearingUnallocatedCourtroomRemoved hearingUnallocatedCourtroomRemoved) {
+        this.hearingListingStatus = HearingListingStatus.SENT_FOR_LISTING;
+        this.hearing = HearingUnallocatedCourtRoomRemovedHelper.updateHearingOnCourtroomRemoval(this.hearing, hearingUnallocatedCourtroomRemoved.getEstimatedMinutes());
     }
 
     private void handleInitiateApplicationForCaseRequested(final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested) {
@@ -1237,6 +1245,24 @@ public class HearingAggregate implements Aggregate {
 
         return populateHearingObjectStream(hearingId);
     }
+
+    public Stream<Object> unallocateHearingWhenCourtroomIsRemoved(final UUID hearingId, final Integer estimatedMinutes) {
+
+        if (this.deleted  || this.duplicate || (HearingListingStatus.HEARING_RESULTED.equals(hearingListingStatus)))  {
+            return empty();
+        }
+
+        if (hearing == null || JurisdictionType.MAGISTRATES.equals(hearing.getJurisdictionType()) || hearing.getCourtCentre() ==null)  {
+            return empty();
+        }
+
+        final Stream<Object> unallocationEvents = apply(Stream.of(HearingUnallocatedCourtroomRemoved.hearingUnallocatedCourtroomRemoved().withHearingId(hearingId).withEstimatedMinutes(estimatedMinutes).build()));
+
+        final Stream<Object> indexUpdateEvents = updateSearchIndexAndViewStoreV2(this.hearing, this.hearingListingStatus, false);
+
+        return Stream.concat(unallocationEvents, indexUpdateEvents);
+    }
+
     public Stream<Object> resultHearingByBdf(final UUID hearingId) {
         return apply(Stream.of(HearingResultedBdf.hearingResultedBdf()
                 .withHearingId(hearingId)
@@ -2349,6 +2375,17 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> updateIndex(final Hearing newHearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
         streamBuilder.add(ProsecutionCaseDefendantListingStatusChanged.prosecutionCaseDefendantListingStatusChanged()
+                .withHearingListingStatus(hearingListingStatus)
+                .withNotifyNCES(notifyNCES)
+                .withHearing(newHearing)
+                .build());
+
+        return apply(streamBuilder.build());
+    }
+
+    public Stream<Object> updateSearchIndexAndViewStoreV2(final Hearing newHearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES) {
+        final Stream.Builder<Object> streamBuilder = Stream.builder();
+        streamBuilder.add(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
                 .withHearingListingStatus(hearingListingStatus)
                 .withNotifyNCES(notifyNCES)
                 .withHearing(newHearing)

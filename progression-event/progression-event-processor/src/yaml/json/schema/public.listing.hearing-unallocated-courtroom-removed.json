@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/listing/courts/public.listing.hearing-unallocated-courtroom-removed.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "estimatedMinutes": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/positiveInteger"
+    }
+  },
+  "required": [
+    "hearingId",
+    "estimatedMinutes"
+  ],
+  "additionalProperties": false
+}
