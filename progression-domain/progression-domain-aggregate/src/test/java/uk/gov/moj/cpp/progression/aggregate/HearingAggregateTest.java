@@ -6394,7 +6394,7 @@ public class HearingAggregateTest {
         assertThat(events.size(), is(1));
         assertThat(events.get(0), instanceOf(ProsecutionCaseDefendantListingStatusChangedV2.class));
 
-        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent = 
+        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent =
                 (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
         assertThat(listingStatusEvent.getHearing(), is(hearing));
         assertThat(listingStatusEvent.getHearingListingStatus(), is(hearingListingStatus));
@@ -6422,8 +6422,8 @@ public class HearingAggregateTest {
         // Then
         final List<Object> events = eventStream.collect(toList());
         assertThat(events.size(), is(1));
-        
-        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent = 
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent =
                 (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
         assertThat(listingStatusEvent.getHearingListingStatus(), is(HearingListingStatus.SENT_FOR_LISTING));
         assertThat(listingStatusEvent.getNotifyNCES(), is(false));
@@ -6451,8 +6451,8 @@ public class HearingAggregateTest {
         // Then
         final List<Object> events = eventStream.collect(toList());
         assertThat(events.size(), is(1));
-        
-        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent = 
+
+        final ProsecutionCaseDefendantListingStatusChangedV2 listingStatusEvent =
                 (ProsecutionCaseDefendantListingStatusChangedV2) events.get(0);
         assertThat(listingStatusEvent.getNotifyNCES(), is(true));
     }

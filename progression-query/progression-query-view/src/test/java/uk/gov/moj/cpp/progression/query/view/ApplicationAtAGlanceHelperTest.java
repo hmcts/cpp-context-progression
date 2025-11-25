@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -27,10 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 
 import uk.gov.justice.core.courts.Address;
+import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.JudicialResult;
@@ -485,7 +488,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetResondantDetails() {
+    public void shouldGetRespondentDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -533,6 +536,400 @@ public class ApplicationAtAGlanceHelperTest {
         final RespondentRepresentatives respondentRepresentatives = details.getRespondentRepresentatives().get(0);
         assertThat(respondentRepresentatives.getRepresentativeName(), is(firstName + " " + lastName));
         assertThat(respondentRepresentatives.getRepresentativePosition(), is(role));
+    }
+
+    @Test
+    public void shouldGetApplicantDetailsWhenApplicantIsSubjectAndMasterDefendantIsEmpty() {
+
+        final Address address = mock(Address.class);
+
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .build();
+
+        final Person person = person()
+                .withFirstName(STRING_GENERATOR.next())
+                .withLastName(STRING_GENERATOR.next())
+                .withAddress(address)
+                .withDateOfBirth(now().minusYears(18L))
+                .withNationalityDescription(STRING_GENERATOR.next())
+                .build();
+
+        final Organisation representationOrganisation = organisation()
+                .withName(STRING_GENERATOR.next())
+                .build();
+
+        final CourtApplicationParty applicant = courtApplicationParty()
+                .withId(randomUUID())
+                .withRepresentationOrganisation(representationOrganisation)
+                .build();
+
+        final CourtApplicationParty subject = courtApplicationParty()
+                .withId(applicant.getId())
+                .withOrganisation(representationOrganisation)
+                .withMasterDefendant(masterDefendant)
+                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                                .withOrganisation(organisation()
+                                        .withName("Alan & Co LLP")
+                                        .withAddress(Address.address()
+                                                .withAddress1("Legal House")
+                                                .withAddress2("55 Sewell Street")
+                                                .withAddress3("Archway")
+                                                .withAddress4("London")
+                                                .withPostcode("SE14 2AB")
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final CourtApplication courtApplication = courtApplication()
+                .withApplicant(applicant)
+                .withSubject(subject)
+                .withType(courtApplicationType().build())
+                .build();
+
+        final JsonObject payload = Json.createObjectBuilder()
+                .add("caseId", randomUUID().toString())
+                .build();
+
+        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
+                .withName("progression.query.application.aaag"), payload);
+
+        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
+
+        assertThat(applicantDetails.getIsSubject(), is(true));
+        assertThat(applicantDetails.getRepresentation(), is("Alan & Co LLP,Legal House,55 Sewell Street,Archway,London,SE14 2AB"));
+    }
+
+    @Test
+    public void shouldGetRespondentDetailsWhenRespondentIsSubject() {
+        final String organisationName = STRING_GENERATOR.next();
+        final Address address = mock(Address.class);
+
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .build();
+
+        final Organisation organisation = organisation()
+                .withName(organisationName)
+                .withAddress(address)
+                .withIsProbationBreach(true)
+                .build();
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .build();
+
+        final String role = STRING_GENERATOR.next();
+
+        final AssociatedPerson associatedPerson = associatedPerson()
+                .withPerson(person)
+                .withRole(role)
+                .build();
+
+        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
+
+        final CourtApplicationParty respondent = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .build();
+
+        final CourtApplicationParty subject = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                                .withOrganisation(organisation()
+                                        .withName("Alan & Co LLP")
+                                        .withAddress(Address.address()
+                                                .withAddress1("Legal House")
+                                                .withAddress2("55 Sewell Street")
+                                                .withAddress3("Archway")
+                                                .withAddress4("London")
+                                                .withPostcode("SE14 2AB")
+                                                .build())
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .withSubject(subject)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getName(), is(organisationName));
+        assertThat(details.getAddress(), is(address));
+        assertTrue(details.getIsProbationBreach());
+        assertThat(details.getRespondentRepresentatives().size(), is(1));
+        assertThat(details.getIsSubject(), is(true));
+        assertThat(details.getRepresentation(), is("Alan & Co LLP,Legal House,55 Sewell Street,Archway,London,SE14 2AB"));
+        final RespondentRepresentatives respondentRepresentatives = details.getRespondentRepresentatives().get(0);
+        assertThat(respondentRepresentatives.getRepresentativeName(), is(firstName + " " + lastName));
+        assertThat(respondentRepresentatives.getRepresentativePosition(), is(role));
+
+    }
+
+    @Test
+    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoDefenceOrganisation() {
+        final String organisationName = STRING_GENERATOR.next();
+        final Address address = mock(Address.class);
+
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .build();
+
+        final Organisation organisation = organisation()
+                .withName(organisationName)
+                .withAddress(address)
+                .withIsProbationBreach(true)
+                .build();
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .build();
+
+        final String role = STRING_GENERATOR.next();
+
+        final AssociatedPerson associatedPerson = associatedPerson()
+                .withPerson(person)
+                .withRole(role)
+                .build();
+
+        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
+
+        final CourtApplicationParty respondent = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .build();
+
+        final CourtApplicationParty subject = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                        .build())
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .withSubject(subject)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getIsSubject(), is(true));
+        assertThat(details.getRepresentation(), nullValue());
+
+    }
+
+    @Test
+    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoAssociatedDefenceOrganisation() {
+        final String organisationName = STRING_GENERATOR.next();
+        final Address address = mock(Address.class);
+
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .build();
+
+        final Organisation organisation = organisation()
+                .withName(organisationName)
+                .withAddress(address)
+                .withIsProbationBreach(true)
+                .build();
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .build();
+
+        final String role = STRING_GENERATOR.next();
+
+        final AssociatedPerson associatedPerson = associatedPerson()
+                .withPerson(person)
+                .withRole(role)
+                .build();
+
+        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
+
+        final CourtApplicationParty respondent = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .build();
+
+        final CourtApplicationParty subject = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .withSubject(subject)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getIsSubject(), is(true));
+        assertThat(details.getRepresentation(), nullValue());
+
+    }
+
+    @Test
+    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoOrganisation() {
+        final String organisationName = STRING_GENERATOR.next();
+        final Address address = mock(Address.class);
+
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .build();
+
+        final Organisation organisation = organisation()
+                .withName(organisationName)
+                .withAddress(address)
+                .withIsProbationBreach(true)
+                .build();
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .build();
+
+        final String role = STRING_GENERATOR.next();
+
+        final AssociatedPerson associatedPerson = associatedPerson()
+                .withPerson(person)
+                .withRole(role)
+                .build();
+
+        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
+
+        final CourtApplicationParty respondent = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .build();
+
+        final CourtApplicationParty subject = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                                .build())
+                        .build())
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .withSubject(subject)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getIsSubject(), is(true));
+        assertThat(details.getRepresentation(), nullValue());
+
+    }
+
+    @Test
+    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoAddress() {
+        final String organisationName = STRING_GENERATOR.next();
+        final Address address = mock(Address.class);
+
+        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
+                .withMasterDefendantId(randomUUID())
+                .build();
+
+        final Organisation organisation = organisation()
+                .withName(organisationName)
+                .withAddress(address)
+                .withIsProbationBreach(true)
+                .build();
+
+        final String firstName = STRING_GENERATOR.next();
+        final String lastName = STRING_GENERATOR.next();
+
+        final Person person = person()
+                .withFirstName(firstName)
+                .withLastName(lastName)
+                .build();
+
+        final String role = STRING_GENERATOR.next();
+
+        final AssociatedPerson associatedPerson = associatedPerson()
+                .withPerson(person)
+                .withRole(role)
+                .build();
+
+        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
+
+        final CourtApplicationParty respondent = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .build();
+
+        final CourtApplicationParty subject = courtApplicationParty()
+                .withOrganisation(organisation)
+                .withMasterDefendant(masterDefendant)
+                .withOrganisationPersons(organisationPersons)
+                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
+                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
+                                .withOrganisation(organisation()
+                                        .withName("Alan & Co LLP")
+                                        .build())
+                                .build())
+                        .build())
+                .build();
+
+        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
+
+        final CourtApplication courtApplication = courtApplication()
+                .withRespondents(courtApplicationRespondents)
+                .withSubject(subject)
+                .build();
+
+        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
+        assertThat(respondentDetails.size(), is(1));
+        final RespondentDetails details = respondentDetails.get(0);
+        assertThat(details.getIsSubject(), is(true));
+        assertThat(details.getRepresentation(), is("Alan & Co LLP"));
+
     }
 
     @Test

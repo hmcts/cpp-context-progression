@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.application.event.listener;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
@@ -18,6 +19,7 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.MasterDefendant;
@@ -30,6 +32,7 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
+import uk.gov.moj.cpp.progression.event.ApplicationRepOrderUpdatedForApplication;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
@@ -185,6 +188,89 @@ class ApplicationRepOrderOffencesUpdatedEventListenerTest {
         assertThat(courtApplication1.getCourtApplicationCases().get(0).getOffences().get(0).getId(), is(offenceId));
         assertThat(courtApplication1.getCourtApplicationCases().get(0).getOffences().get(0).getLaaApplnReference(), is(laaReference));
         assertThat(courtApplication1.getCourtApplicationCases().get(1).getOffences().get(0).getLaaApplnReference().getStatusCode(), is("404"));
+
+        verify(objectToJsonObjectConverter, times(1)).convert(prosecutionCaseArgumentCaptor.capture());
+        final ProsecutionCase prosecutionCase = prosecutionCaseArgumentCaptor.getAllValues().get(0);
+
+        assertThat(prosecutionCase.getDefendants(), hasSize(1));
+        assertThat(prosecutionCase.getDefendants().get(0).getLegalAidStatus(), is("Granted"));
+        assertThat(prosecutionCase.getDefendants().get(0).getOffences(), hasSize(1));
+        assertThat(prosecutionCase.getDefendants().get(0).getOffences().get(0).getLaaApplnReference(), is(laaReference));
+    }
+
+
+    @Test
+    void shouldHandleApplicationRepOrderUpdatedForApplication() {
+        UUID caseId = randomUUID();
+        UUID applicationId = randomUUID();
+        UUID offenceId = randomUUID();
+        UUID subjectId = randomUUID();
+        UUID masterDefendantId = randomUUID();
+        LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
+                .withOffenceLevelStatus("Granted")
+                .withStatusCode("statusCode").withStatusDescription("description").build();
+
+        final ApplicationRepOrderUpdatedForApplication applicationRepOrderUpdatedForApplication = ApplicationRepOrderUpdatedForApplication.applicationRepOrderUpdatedForApplication()
+                .withApplicationId(applicationId)
+                .withSubjectId(subjectId)
+                .withLaaReference(laaReference)
+                .build();
+        InitiateCourtApplicationEntity initiateCourtApplicationEntity = new InitiateCourtApplicationEntity();
+        initiateCourtApplicationEntity.setApplicationId(applicationId);
+        initiateCourtApplicationEntity.setPayload(payload.toString());
+
+        ProsecutionCaseEntity caseEntity = new ProsecutionCaseEntity();
+        caseEntity.setCaseId(caseId);
+        caseEntity.setPayload(payload.toString());
+
+        final CourtApplicationEntity applicationEntity = new CourtApplicationEntity();
+        applicationEntity.setApplicationId(applicationId);
+        applicationEntity.setPayload(payload.toString());
+        when(jsonObjectToObjectConverter.convert(payload, ApplicationRepOrderUpdatedForApplication.class)).thenReturn(applicationRepOrderUpdatedForApplication);
+        when(objectToJsonObjectConverter.convert(any(CourtApplication.class))).thenReturn(jsonObject);
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(applicationEntity);
+        when(initiateCourtApplicationRepository.findBy(applicationId)).thenReturn(initiateCourtApplicationEntity);
+        when(prosecutionCaseRepository.findByCaseId(caseId)).thenReturn(caseEntity);
+
+        final JsonObject applicationJson = createObjectBuilder().build();
+        when(stringToJsonObjectConverter.convert(applicationEntity.getPayload())).thenReturn(applicationJson);
+        CourtApplication persistedApplication = CourtApplication.courtApplication()
+                .withSubject(CourtApplicationParty.courtApplicationParty().withId(subjectId)
+                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                .withDefendantCase(singletonList(DefendantCase.defendantCase().withCaseId(caseId).build()))
+                                .withMasterDefendantId(masterDefendantId).build())
+                        .build())
+                .build();
+        when(jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class)).thenReturn(persistedApplication);
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
+                InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                        .withCourtApplication(persistedApplication)
+                        .build();
+
+        final JsonObject entityPayload = createObjectBuilder().build();
+        when(stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload())).thenReturn(entityPayload);
+        when(jsonObjectToObjectConverter.convert(entityPayload, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
+        when(stringToJsonObjectConverter.convert(caseEntity.getPayload())).thenReturn(entityPayload);
+        when(jsonObjectToObjectConverter.convert(entityPayload, ProsecutionCase.class)).thenReturn(buildProsecutionCase(caseId, masterDefendantId, offenceId));
+        when(objectToJsonObjectConverter.convert(any(InitiateCourtApplicationProceedings.class))).thenReturn(createObjectBuilder().build());
+        when(objectToJsonObjectConverter.convert(any(ProsecutionCase.class))).thenReturn(createObjectBuilder().build());
+
+        listener.processApplicationRepOrderUpdatedForApplication(envelope);
+        verify(objectToJsonObjectConverter, times(1)).convert(courtApplicationArgumentCaptor.capture());
+        final CourtApplication courtApplication = courtApplicationArgumentCaptor.getAllValues().get(0);
+        assertThat(courtApplication.getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(courtApplication.getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
+
+        verify(initiateCourtApplicationRepository).save(initiateCourtApplicationEntityArgumentCaptor.capture());
+        final InitiateCourtApplicationEntity entity = initiateCourtApplicationEntityArgumentCaptor.getValue();
+        assertThat(entity.getApplicationId(), is(applicationId));
+
+        verify(objectToJsonObjectConverter, times(1)).convert(initiateCourtApplicationProceedingsArgumentCaptor.capture());
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings1 = initiateCourtApplicationProceedingsArgumentCaptor.getAllValues().get(0);
+        final CourtApplication courtApplication1 = initiateCourtApplicationProceedings1.getCourtApplication();
+        assertThat(courtApplication1.getLaaApplnReference().getApplicationReference(), is(laaReference.getApplicationReference()));
+        assertThat(courtApplication1.getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
 
         verify(objectToJsonObjectConverter, times(1)).convert(prosecutionCaseArgumentCaptor.capture());
         final ProsecutionCase prosecutionCase = prosecutionCaseArgumentCaptor.getAllValues().get(0);

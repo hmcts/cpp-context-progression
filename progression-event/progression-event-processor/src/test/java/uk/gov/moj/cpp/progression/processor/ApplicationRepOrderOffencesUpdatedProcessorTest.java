@@ -1,12 +1,12 @@
 package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,10 +18,12 @@ import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
 import uk.gov.justice.core.courts.CourtApplicationParty;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
 import uk.gov.justice.progression.query.laa.HearingSummary;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
@@ -35,18 +37,19 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.application.ApplicationCaseDefendantOrganisation;
+import uk.gov.moj.cpp.progression.event.ApplicationRepOrderUpdatedForApplication;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
+import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -127,7 +130,7 @@ public class ApplicationRepOrderOffencesUpdatedProcessorTest {
     }
 
     @Test
-    public void shouldHandleApplicationOffencesUpdatedEventMessage(){
+    public void shouldHandleApplicationOffencesUpdatedEventMessage() {
         final UUID applicationId = randomUUID();
         final UUID offenceId = randomUUID();
         final UUID subjectId = randomUUID();
@@ -135,7 +138,6 @@ public class ApplicationRepOrderOffencesUpdatedProcessorTest {
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID organisationId = randomUUID();
-        final JsonArrayBuilder jsonArray = createArrayBuilder().add(hearingId.toString());
         final LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").build();
 
@@ -214,7 +216,113 @@ public class ApplicationRepOrderOffencesUpdatedProcessorTest {
     }
 
     @Test
-    public void shouldHandleApplicationOffencesUpdatedEventMessageForMultipleProsecutionCases(){
+    public void shouldHandleApplicationRepOrderUpdatedForApplicationEventMessage() {
+        final UUID applicationId = randomUUID();
+        final UUID offenceId = randomUUID();
+        final UUID subjectId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID organisationId = randomUUID();
+        final LaaReference laaReference = LaaReference.laaReference()
+                .withApplicationReference("applicationReference")
+                .withStatusCode("statusCode")
+                .withStatusDescription("description")
+                .build();
+
+        final ApplicationCaseDefendantOrganisation applicationCaseDefendantOrganisation = ApplicationCaseDefendantOrganisation.applicationCaseDefendantOrganisation()
+                .withCaseId(caseId)
+                .withDefendantId(defendantId)
+                .withOrganisationId(organisationId)
+                .build();
+
+        final List<ApplicationCaseDefendantOrganisation> applicationCaseDefendantOrganisationList = new ArrayList<>();
+        applicationCaseDefendantOrganisationList.add(applicationCaseDefendantOrganisation);
+
+        final ApplicationRepOrderUpdatedForApplication applicationRepOrderUpdatedForApplication = ApplicationRepOrderUpdatedForApplication.applicationRepOrderUpdatedForApplication()
+                .withApplicationId(applicationId)
+                .withSubjectId(subjectId)
+                .withLaaReference(laaReference)
+                .withApplicationCaseDefendantOrganisations(applicationCaseDefendantOrganisationList)
+                .build();
+
+        final JsonObject payload = objectToJsonConverter.convert(applicationRepOrderUpdatedForApplication);
+
+        final CourtApplicationEntity applicationEntity = new CourtApplicationEntity();
+        applicationEntity.setApplicationId(applicationId);
+        applicationEntity.setPayload(payload.toString());
+
+        when(envelope.payloadAsJsonObject()).thenReturn(payload);
+        when(envelope.metadata()).thenReturn(metadataBuilder()
+                .withId(randomUUID())
+                .withName("progression.event.application-rep-order-updated-for-application").build());
+        when(jsonObjectToObjectConverter.convert(payload, ApplicationRepOrderUpdatedForApplication.class)).thenReturn(applicationRepOrderUpdatedForApplication);
+        when(courtApplicationRepository.findByApplicationId(applicationId)).thenReturn(applicationEntity);
+        final JsonObject applicationJson = createObjectBuilder().build();
+        when(stringToJsonObjectConverter.convert(applicationEntity.getPayload())).thenReturn(applicationJson);
+        final DefendantCase defendantCase = DefendantCase.defendantCase()
+                .withDefendantId(defendantId)
+                .withCaseId(caseId)
+                .build();
+        List<DefendantCase> defendantCases = new ArrayList<>();
+        defendantCases.add(defendantCase);
+        final CourtApplication persistedApplication = CourtApplication.courtApplication()
+                .withSubject(CourtApplicationParty.courtApplicationParty()
+                        .withId(subjectId)
+                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                .withDefendantCase(defendantCases)
+                                .build())
+                        .build())
+                .build();
+        when(jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class)).thenReturn(persistedApplication);
+        HearingSummary hearingSummary = HearingSummary.hearingSummary()
+                .withHearingId(hearingId)
+                .build();
+        List<HearingSummary> hearingSummaryList = new ArrayList<>();
+        hearingSummaryList.add(hearingSummary);
+        when(progressionService.getHearingsForApplication(applicationId)).thenReturn(Optional.of(hearingSummaryList));
+        final JsonObject offencesForDefendantChangedJson = createObjectBuilder().build();
+        when(objectToJsonObjectConverter.convert(any(OffencesForDefendantChanged.class))).thenReturn(offencesForDefendantChangedJson);
+
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase()
+                .withId(caseId)
+                .withDefendants(List.of(Defendant.defendant()
+                        .withId(defendantId)
+                        .withOffences(Arrays.asList(
+                                Offence.offence()
+                                        .withId(offenceId)
+                                        .build(),
+                                Offence.offence()
+                                        .withId(randomUUID())
+                                        .build()
+                        ))
+                        .build()))
+                .build();
+
+        when(progressionService.getProsecutionCaseById(any(JsonEnvelope.class), eq(defendantCase.getCaseId().toString()))).thenReturn(Json.createObjectBuilder().add("prosecutionCase", objectToJsonConverter.convert(prosecutionCase)).build());
+        when(jsonObjectToObjectConverter.convert(any(JsonObject.class), eq(ProsecutionCase.class))).thenReturn(prosecutionCase);
+
+        eventProcessor.handleApplicationRepOrderUpdatedForApplicationEvent(envelope);
+        verify(sender, times(3)).send(envelopeCaptor.capture());
+        final List<Envelope<JsonObject>> publicEvent = envelopeCaptor.getAllValues();
+
+        assertThat(publicEvent.get(0).metadata().name(), is("public.progression.application-laa-reference-updated-for-application"));
+        assertThat(publicEvent.get(0).payload().getJsonObject("applicationCaseDefendantOrganisations"), nullValue());
+        assertThat(publicEvent.get(0).payload().getString("applicationId"), is(applicationId.toString()));
+        assertThat(publicEvent.get(0).payload().getString("subjectId"), is(subjectId.toString()));
+        assertThat(publicEvent.get(0).payload().getJsonObject("offenceId"), nullValue());
+        assertThat(publicEvent.get(0).payload().getJsonObject("laaReference"), is(objectToJsonConverter.convert(laaReference)));
+        assertThat(publicEvent.get(1).metadata().name(), is("progression.command.update-application-laa-reference-for-hearing"));
+        assertThat(publicEvent.get(1).payload().getString("applicationId"), is(applicationId.toString()));
+        assertThat(publicEvent.get(1).payload().getString("subjectId"), is(subjectId.toString()));
+        assertThat(publicEvent.get(1).payload().getJsonObject("offenceId"), nullValue());
+        assertThat(publicEvent.get(1).payload().getString("hearingId"), is(hearingId.toString()));
+        assertThat(publicEvent.get(1).payload().getJsonObject("laaReference"), is(objectToJsonConverter.convert(laaReference)));
+        assertThat(publicEvent.get(2).metadata().name(), is("public.progression.defendant-offences-changed"));
+    }
+
+    @Test
+    public void shouldHandleApplicationOffencesUpdatedEventMessageForMultipleProsecutionCases() {
         final UUID applicationId = randomUUID();
         final UUID offenceId = randomUUID();
         final UUID subjectId = randomUUID();
@@ -286,11 +394,11 @@ public class ApplicationRepOrderOffencesUpdatedProcessorTest {
         assertThat(publicEvent.get(1).metadata().name(), is("progression.command.update-application-laa-reference-for-hearing"));
     }
 
-    private List<CourtApplicationCase> buildCourtApplicationCases(UUID offenceId, UUID caseId){
+    private List<CourtApplicationCase> buildCourtApplicationCases(UUID offenceId, UUID caseId) {
         Offence offence1 = Offence.offence().withId(offenceId).withLaaApplnReference(LaaReference.laaReference().withStatusCode("G2").build()).build();
         Offence offence2 = Offence.offence().withId(randomUUID()).withLaaApplnReference(LaaReference.laaReference().withStatusCode("G2").build()).build();
 
-        CourtApplicationCase courtApplicationCase1 =CourtApplicationCase.courtApplicationCase()
+        CourtApplicationCase courtApplicationCase1 = CourtApplicationCase.courtApplicationCase()
                 .withProsecutionCaseId(caseId)
                 .withOffences(List.of(offence1, offence2)).build();
         return List.of(courtApplicationCase1);

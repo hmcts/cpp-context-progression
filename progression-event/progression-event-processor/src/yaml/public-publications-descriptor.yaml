@@ -38,6 +38,9 @@ subscriptions_descriptor:
         - name: public.progression.application-offences-updated
           schema_uri: http://justice.gov.uk/progression/courts/application-offences-updated.json
 
+        - name: public.progression.application-laa-reference-updated-for-application
+          schema_uri: http://justice.gov.uk/progression/courts/public.progression.application-laa-reference-updated-for-application.json
+
         - name: public.progression.application-organisation-changed
           schema_uri: http://justice.gov.uk/progression/courts/application-organisation-changed.json
 
