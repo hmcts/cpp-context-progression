@@ -341,11 +341,6 @@ public class HearingAggregate implements Aggregate {
         this.hearing = HearingUnallocatedCourtRoomRemovedHelper.updateHearingOnCourtroomRemoval(this.hearing, hearingUnallocatedCourtroomRemoved.getEstimatedMinutes());
     }
 
-    private void handleHearingUnallocatedCourtroomRemoved(final HearingUnallocatedCourtroomRemoved hearingUnallocatedCourtroomRemoved) {
-        this.hearingListingStatus = HearingListingStatus.SENT_FOR_LISTING;
-        this.hearing = HearingUnallocatedCourtRoomRemovedHelper.updateHearingOnCourtroomRemoval(this.hearing, hearingUnallocatedCourtroomRemoved.getEstimatedMinutes());
-    }
-
     private void handleInitiateApplicationForCaseRequested(final InitiateApplicationForCaseRequested initiateApplicationForCaseRequested) {
         this.initiatedApplicationIdsForResultIds.put(initiateApplicationForCaseRequested.getApplicationId(), initiateApplicationForCaseRequested.getResultId());
         if (!initiatedApplicationsIssueDateForResultIds.containsKey(initiateApplicationForCaseRequested.getResultId())) {
@@ -2449,17 +2444,6 @@ public class HearingAggregate implements Aggregate {
         return apply(streamBuilder.build());
     }
 
-    public Stream<Object> updateSearchIndexAndViewStoreV2(final Hearing newHearing, final HearingListingStatus hearingListingStatus, final Boolean notifyNCES) {
-        final Stream.Builder<Object> streamBuilder = Stream.builder();
-        streamBuilder.add(ProsecutionCaseDefendantListingStatusChangedV2.prosecutionCaseDefendantListingStatusChangedV2()
-                .withHearingListingStatus(hearingListingStatus)
-                .withNotifyNCES(notifyNCES)
-                .withHearing(newHearing)
-                .build());
-
-        return apply(streamBuilder.build());
-    }
-
     public Stream<Object> updateHearingDetailsInUnifiedSearch(final UUID hearingId) {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
@@ -3368,9 +3352,9 @@ public class HearingAggregate implements Aggregate {
         }
 
         final List<ProsecutionCase> seededCases = prosecutionCases.stream()
-                    .filter(pc -> pc.getDefendants().stream().flatMap(def -> def.getOffences().stream())
+                .filter(pc -> pc.getDefendants().stream().flatMap(def -> def.getOffences().stream())
                         .filter(offence -> nonNull(offence.getSeedingHearing()))
-                            .anyMatch(offence -> offence.getSeedingHearing().getSeedingHearingId().equals(moveOffencesFromOldNextHearing.getSeedingHearingId())))
+                        .anyMatch(offence -> offence.getSeedingHearing().getSeedingHearingId().equals(moveOffencesFromOldNextHearing.getSeedingHearingId())))
                 .toList();
 
         return apply(Stream.of(OffencesMovedToNewNextHearing.offencesMovedToNewNextHearing()
@@ -3388,7 +3372,7 @@ public class HearingAggregate implements Aggregate {
                                                 .build())
                                         .collect(collectingAndThen(toList(), l -> l.isEmpty() ? null : l)))
                                 .build())
-                                .filter(seededCase -> nonNull(seededCase.getSeededDefendants()))
+                        .filter(seededCase -> nonNull(seededCase.getSeededDefendants()))
                         .collect(toList()))
                 .build()).filter(event -> ! event.getSeededCase().isEmpty()).map(o -> o));
     }
@@ -3398,7 +3382,7 @@ public class HearingAggregate implements Aggregate {
         final Stream.Builder<Object> streamBuilder = Stream.builder();
 
         moveOffencesToNewNextHearing.getSeededCase().forEach(seededCase ->
-                        ofNullable(seededCase.getSeededDefendants()).stream().flatMap(Collection::stream).filter(def->  this.hearing.getProsecutionCases().stream()
+                ofNullable(seededCase.getSeededDefendants()).stream().flatMap(Collection::stream).filter(def->  this.hearing.getProsecutionCases().stream()
                                 .filter(pcase -> pcase.getId().equals(seededCase.getId()))
                                 .flatMap(pcase -> pcase.getDefendants().stream())
                                 .filter(pdef -> pdef.getId().equals(def.getId()))
