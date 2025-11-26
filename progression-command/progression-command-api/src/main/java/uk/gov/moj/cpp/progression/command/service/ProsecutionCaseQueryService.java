@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.command.service;
 
 import static javax.json.Json.createObjectBuilder;
-import static uk.gov.justice.services.core.annotation.Component.*;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
