@@ -188,6 +188,10 @@ public class ApplicationQueryApi {
     public JsonEnvelope getApplicationHearings(final JsonEnvelope query) {
         return applicationQueryView.getApplicationHearings(query);
     }
+    @Handles("progression.query.linked-application-hearings-for-court-extract")
+    public JsonEnvelope getLinkedApplicationHearingsForCourtExtract(final JsonEnvelope query) {
+        return applicationQueryView.getApplicationHearingsForCourtExtract(query);
+    }
 
     @Handles("progression.query.court-proceedings-for-application")
     public JsonEnvelope getCourtProceedingsForApplication(final JsonEnvelope query) {
@@ -205,4 +209,8 @@ public class ApplicationQueryApi {
 
     }
 
+    @Handles("progression.query.linked-application-extract")
+    public JsonEnvelope getLinkedApplicationExtract(final JsonEnvelope query) {
+        return query;
+    }
 }

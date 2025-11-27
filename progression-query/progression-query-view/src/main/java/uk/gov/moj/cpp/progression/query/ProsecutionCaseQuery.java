@@ -10,9 +10,13 @@ import static javax.json.Json.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.domain.helper.JsonHelper.addProperty;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelper.getApplicationHearingsJson;
+import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.CASE_HEARINGS;
+import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.LINKED_APPLICATION_HEARINGS;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseDefendantHearingsResponse;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingTypesResponse;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.buildCaseHearingsResponse;
+import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.getCaseHearingsJson;
 import static uk.gov.moj.cpp.progression.query.utils.SearchQueryUtils.prepareSearch;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
@@ -497,6 +501,25 @@ public class ProsecutionCaseQuery {
         final Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), CASE_ID);
         final List<Hearings> hearings = hearingAtAGlanceService.getCaseHearings(caseId.get());
         final JsonObject responsePayload = buildCaseHearingsResponse(hearings);
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
+    }
+
+    @Handles("progression.query.case-hearings-for-court-extract")
+    public JsonEnvelope getCaseHearingsForCourtExtract(final JsonEnvelope envelope) {
+        final Optional<UUID> caseId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), CASE_ID);
+        final Optional<UUID> defendantIdOpt = JsonObjects.getUUID(envelope.payloadAsJsonObject(), DEFENDANT_ID);
+
+        final List<Hearings> hearings = hearingAtAGlanceService.getCaseHearingsForCourtExtract(caseId.get());
+        final JsonArray caseHearingsJsonArray = getCaseHearingsJson(hearings);
+
+        final Map<CourtApplication, List<Hearings>> applicationHearings = hearingAtAGlanceService.getApplicationHearingsForCourtExtract(caseId.get(), defendantIdOpt.get());
+        final JsonArray applicationsHearingsJsonArray = getApplicationHearingsJson(applicationHearings);
+
+        final JsonObject responsePayload = createObjectBuilder()
+                .add(CASE_HEARINGS, caseHearingsJsonArray)
+                .add(LINKED_APPLICATION_HEARINGS, applicationsHearingsJsonArray)
+                .build();
+
         return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 

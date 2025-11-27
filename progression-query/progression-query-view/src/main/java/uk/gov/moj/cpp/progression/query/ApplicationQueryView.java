@@ -12,6 +12,8 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelper.buildApplicationHearingResponse;
+import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelper.linkedApplicationHearingsResponse;
+import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.LINKED_APPLICATION_HEARINGS;
 
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -78,6 +80,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.persistence.NoResultException;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +89,8 @@ import org.slf4j.LoggerFactory;
 public class ApplicationQueryView {
 
     public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
+
+    static final String DEFENDANT_ID_PARAM = "defendantId";
     public static final String CASEID_SEARCH_PARAM = "caseId";
     private static final String APPLICATION_ID_NOT_FOUND = "### applicationId not found";
     private static final String NO_APPLICATION_FOUND_WITH_APPLICATION_ID = "### No application found with applicationId='{}'";
@@ -104,6 +109,10 @@ public class ApplicationQueryView {
     private static final String STATUS_CODE = "statusCode";
     private static final String UPDATED = "updated";
     private static final String TARGET_TYPE_APPLICATION = "APPLICATION_ID_LAA";
+    private static final String SUBJECT = "subject";
+    private static final String MASTER_DEFENDANT = "masterDefendant";
+    private static final String DEFENDANT_CASE = "defendantCase";
+    private static final String COURT_APPLICATIONS = "courtApplications";
 
     @Inject
     private CourtApplicationRepository courtApplicationRepository;
@@ -372,7 +381,7 @@ public class ApplicationQueryView {
                 courtApplications.forEach(courtApplicationEntity ->
                         buildApplicationSummary(courtApplicationEntity, jsonApplicationBuilder));
 
-                jsonObjectBuilder.add("courtApplications", jsonApplicationBuilder.build());
+                jsonObjectBuilder.add(COURT_APPLICATIONS, jsonApplicationBuilder.build());
             }
 
 
@@ -407,6 +416,20 @@ public class ApplicationQueryView {
                 .map(hearingApplicationEntity -> stringToJsonObjectConverter.convert(hearingApplicationEntity.getHearing().getPayload()))
                 .collect(toList());
         final JsonObject responsePayload = buildApplicationHearingResponse(hearingPayloads);
+        return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
+    }
+
+    @Handles("progression.query.linked-application-hearings-for-court-extract")
+    public JsonEnvelope getApplicationHearingsForCourtExtract(final JsonEnvelope envelope) {
+        final Optional<UUID> applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
+        final Optional<UUID> defendantIdOpt = JsonObjects.getUUID(envelope.payloadAsJsonObject(), DEFENDANT_ID_PARAM);
+
+        final Pair<CourtApplication, List<JsonObject>> linkedApplicationHearings = applicationAtAGlanceHelper.getLinkedApplicationHearingsForCourtExtract(applicationId.get(), defendantIdOpt.get());
+
+        final JsonObject responsePayload = createObjectBuilder()
+                .add(LINKED_APPLICATION_HEARINGS, linkedApplicationHearingsResponse(linkedApplicationHearings.getLeft(), linkedApplicationHearings.getRight()))
+                .build();
+
         return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 
@@ -612,5 +635,20 @@ public class ApplicationQueryView {
                     .withMimeType(courtDocument.getMimeType())
                     .build()));
         }
+    }
+
+    private boolean isApplicationSubjectDefendant(final JsonArray courtApplications, final UUID defendantId) {
+        if (nonNull(courtApplications)) {
+            return courtApplications.stream()
+                    .map(jsonValue -> (JsonObject) jsonValue)
+                    .anyMatch(applicationJson -> applicationJson.containsKey(SUBJECT)
+                            && applicationJson.getJsonObject(SUBJECT).containsKey(MASTER_DEFENDANT)
+                            && applicationJson.getJsonObject(SUBJECT).getJsonObject(MASTER_DEFENDANT).containsKey(DEFENDANT_CASE)
+                            && !applicationJson.getJsonObject(SUBJECT).getJsonObject(MASTER_DEFENDANT).getJsonArray(DEFENDANT_CASE).isEmpty()
+                            && applicationJson.getJsonObject(SUBJECT).getJsonObject(MASTER_DEFENDANT).getJsonArray(DEFENDANT_CASE).stream()
+                            .map(JsonValue::asJsonObject).anyMatch(dcJson -> defendantId.toString().equals(dcJson.getString(DEFENDANT_ID_PARAM))));
+        }
+
+        return false;
     }
 }

@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.query;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,13 +17,17 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.moj.cpp.progression.query.view.utils.SchemaValidator.validateObjectAgainstSchema;
+import static uk.gov.moj.cpp.progression.query.view.utils.FileUtil.getJsonPayload;
 
 import uk.gov.justice.core.courts.ApplicationStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -31,7 +36,9 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.Defendant;
+import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.InitiationCode;
+import uk.gov.justice.core.courts.JurisdictionType;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
 import uk.gov.justice.core.courts.Offence;
@@ -94,6 +101,7 @@ import javax.json.JsonObject;
 import javax.persistence.NoResultException;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -103,6 +111,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapperClient;
+import uk.gov.moj.cpp.systemidmapper.client.SystemIdMapping;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -455,6 +465,8 @@ public class ApplicationQueryViewTest {
                 .build());
 
         final CourtApplicationCase courtApplicationCase = CourtApplicationCase.courtApplicationCase()
+                .withCaseStatus("INACTIVE")
+                .withIsSJP(true)
                 .withProsecutionCaseId(prosecutionCaseId)
                 .withOffences(offences)
                 .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().build())
@@ -476,13 +488,17 @@ public class ApplicationQueryViewTest {
         when(childCourtApplication.getApplicant()).thenReturn(getCourtApplicant());
         when(courtApplicationRepository.findByApplicationId(parentApplicationId)).thenReturn(courtApplicationEntity);
 
-        when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(mock(ApplicationDetails.class));
+        final ApplicationDetails applicationDetailsMock = mock(ApplicationDetails.class);
+        when(applicationAtAGlanceHelper.getApplicationDetails(any(CourtApplication.class))).thenReturn(applicationDetailsMock);
         final JsonObject mockApplicationDetailsJson = mock(JsonObject.class);
 
         when(applicationAtAGlanceHelper.getApplicantDetails(any(CourtApplication.class), any(JsonEnvelope.class))).thenReturn(mock(ApplicantDetails.class));
         final JsonObject mockApplicantDetailsJson = mock(JsonObject.class);
 
         when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
+
+        final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
+        when(applicationAtAGlanceHelper.getProsecutionCase(eq(prosecutionCaseId))).thenReturn(prosecutionCaseMock);
 
         final JsonEnvelope response = applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getString("applicationId"), is(applicationId.toString()));
@@ -491,7 +507,10 @@ public class ApplicationQueryViewTest {
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedApplications").size(), is(1));
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").size(), is(1));
         assertThat(response.payloadAsJsonObject().getJsonArray("linkedCases").getJsonObject(0), is(notNullValue()));
-        assertThat(response.payloadAsJsonObject().getJsonObject("parentApplication"), is(notNullValue()));
+        verify(prosecutionCaseMock, atMostOnce()).getCaseStatus();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(prosecutionCaseMock, atMostOnce()).getInitiationCode();
+        verify(applicationDetailsMock, atMostOnce()).getLinkType();
     }
 
     @Test
@@ -717,6 +736,7 @@ public class ApplicationQueryViewTest {
                 .filter(h -> hearingId1.toString().equals(h.getString("hearingId")))
                 .findFirst();
         assertThat(actualHearing1.isPresent(), is(true));
+        assertThat(actualHearing1.get().getString("jurisdictionType"), is(JurisdictionType.MAGISTRATES.name()));
         final String actualCourtCentre1 = actualHearing1.get().getJsonObject("courtCentre").getString("id");
         assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
 
@@ -729,9 +749,52 @@ public class ApplicationQueryViewTest {
         assertThat(actualCourtCentre2, is(courtCentreId2.toString()));
     }
 
+    @Test
+    public void shouldGetApplicationHearingsForCourtExtract() throws IOException {
+        final UUID applicationId = randomUUID();
+        final UUID hearingId1 = fromString("99db5ace-90c1-4169-bd4a-cda8e3e6fe84");
+        final UUID defendantId = fromString("cce521f9-78e1-43f3-976b-c51a29faa5e0");
+
+        final JsonObject hearing = getJsonPayload("hearing-application-defendant-subject.json");
+
+        when(applicationAtAGlanceHelper.getLinkedApplicationHearingsForCourtExtract(applicationId, defendantId))
+                .thenReturn(Pair.of(
+                        CourtApplication.courtApplication().withId(applicationId)
+                                .withType(CourtApplicationType.courtApplicationType().withType("Appeal").build())
+                                .withSubject(CourtApplicationParty.courtApplicationParty()
+                                        .withMasterDefendant(MasterDefendant.masterDefendant()
+                                                .withMasterDefendantId(defendantId)
+                                                .withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(defendantId).build()))
+                                                .build())
+                                        .build()).build(),
+                        List.of(hearing)
+                ));
+
+        final JsonObject jsonObject = createObjectBuilder()
+                .add(ApplicationQueryView.APPLICATION_ID_SEARCH_PARAM, applicationId.toString())
+                .add(ApplicationQueryView.DEFENDANT_ID_PARAM, defendantId.toString())
+                .build();
+
+        final JsonEnvelope envelope = envelopeFrom(
+                metadataBuilder().withId(randomUUID())
+                        .withName("progression.query.linked-application-hearings-for-court-extract.json").build(),
+                jsonObject);
+
+        final JsonEnvelope response = applicationQueryView.getApplicationHearingsForCourtExtract(envelope);
+
+        final JsonObject payload = response.payloadAsJsonObject();
+        final JsonArray linkedApplicationHearings = payload.getJsonArray("linkedApplicationHearings");
+        assertThat(linkedApplicationHearings.size(), is(1));
+        assertThat(linkedApplicationHearings.get(0).asJsonObject().getString("id"), is(applicationId.toString()));
+        assertThat(linkedApplicationHearings.get(0).asJsonObject().getString("title"), is("Appeal"));
+        assertThat(linkedApplicationHearings.get(0).asJsonObject().getString("hearingId"), is(hearingId1.toString()));
+        assertThat(linkedApplicationHearings.get(0).asJsonObject().getString("jurisdictionType"), is(JurisdictionType.CROWN.name()));
+    }
+
     private JsonObject createHearingPayload(final UUID hearingId, final UUID courtCentreId) {
         return createObjectBuilder()
                 .add("id", hearingId.toString())
+                .add("jurisdictionType", JurisdictionType.MAGISTRATES.name())
                 .add("courtCentre", createObjectBuilder()
                         .add("id", courtCentreId.toString())
                         .add("name", "name")
@@ -743,6 +806,7 @@ public class ApplicationQueryViewTest {
     private HearingApplicationEntity createHearingApplicationEntity(final JsonObject hearingPayload) {
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setPayload(hearingPayload.toString());
+        hearingEntity.setListingStatus(HEARING_RESULTED);
 
         final HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
         hearingApplicationEntity.setId(new HearingApplicationKey());

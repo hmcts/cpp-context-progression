@@ -1,0 +1,219 @@
+{
+  "allegationOrComplaintEndDate": "2024-01-11",
+  "allegationOrComplaintStartDate": "2024-01-11",
+  "applicant": {
+    "id": "7e9af17c-77d6-4cbc-868f-354f2a027930",
+    "notificationRequired": true,
+    "prosecutingAuthority": {
+      "address": {
+        "address1": "Criminal Justice Department",
+        "address2": "Derbyshire Constabulary",
+        "address3": "Butterley Hall",
+        "address4": "Ripley",
+        "address5": "Derby",
+        "postcode": "DE5 3RS"
+      },
+      "contact": {
+        "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+      },
+      "majorCreditorCode": "PO30",
+      "name": "Derbyshire Police",
+      "prosecutionAuthorityCode": "DERPF",
+      "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+      "prosecutionAuthorityOUCode": "0300000",
+      "welshName": "Heddlu Derbyshire"
+    },
+    "summonsRequired": false
+  },
+  "applicationReceivedDate": "2024-01-11",
+  "applicationReference": "50MR1811170",
+  "applicationStatus": "DRAFT",
+  "commissionerOfOath": false,
+  "convictionDate": "2024-01-11",
+  "courtApplicationCases": [
+    {
+      "caseStatus": "ACTIVE",
+      "isSJP": false,
+      "prosecutionCaseId": "9cefc73c-95ad-491f-bfe4-08e17d9879d5",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "Criminal Justice Department",
+          "address2": "Derbyshire Constabulary",
+          "address3": "Butterley Hall",
+          "address4": "Ripley",
+          "address5": "Derby",
+          "postcode": "DE5 3RS"
+        },
+        "contact": {
+          "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+        },
+        "majorCreditorCode": "PO30",
+        "prosecutionAuthorityCode": "DERPF",
+        "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+        "prosecutionAuthorityName": "Derbyshire Police",
+        "prosecutionAuthorityOUCode": "0300000",
+        "caseURN": "50MR1811170"
+      }
+    }
+  ],
+  "courtApplicationPayment": {
+    "isFeeExempt": true,
+    "isFeePaid": false,
+    "isFeeUndertakingAttached": true
+  },
+  "futureSummonsHearing": {
+    "courtCentre": {
+      "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+      "name": "Croydon Crown Court",
+      "roomId": "df4f5204-63d7-3111-a93a-a034ce5ad901",
+      "roomName": "Courtroom 02"
+    },
+    "earliestStartDateTime": "2024-01-11T10:00:00.000Z",
+    "estimatedMinutes": 240,
+    "jurisdictionType": "CROWN"
+  },
+  "hasSummonsSupplied": true,
+  "id": "APPLICATION_ID",
+  "outOfTimeReasons": "Enter reasons\nEnter reasons\nEnter reasons\n",
+  "respondents": [
+    {
+      "id": "a66117db-8257-4c84-b44c-f6f4bbd5ae57",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "9cefc73c-95ad-491f-bfe4-08e17d9879d5",
+            "caseReference": "50MR1811170",
+            "defendantId": "DEFENDANT_ID"
+          }
+        ],
+        "masterDefendantId": "93ae6065-a463-450c-b807-4b0615674972",
+        "personDefendant": {
+          "arrestSummonsNumber": "E28GC19102022001",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "driverNumber": "CRIME709136TC8GZ",
+          "personDetails": {
+            "address": {
+              "address1": "c",
+              "address2": "Hugh Parkway",
+              "address3": "Hermannside",
+              "address4": "Avon",
+              "postcode": "DA6 7ND"
+            },
+            "contact": {
+              "home": "873-655-0683"
+            },
+            "dateOfBirth": "1978-07-20",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Casper",
+            "gender": "FEMALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Daugherty",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": true
+    }
+  ],
+  "subject": {
+    "id": "a66117db-8257-4c84-b44c-f6f4bbd5ae57",
+    "masterDefendant": {
+      "defendantCase": [
+        {
+          "caseId": "9cefc73c-95ad-491f-bfe4-08e17d9879d5",
+          "caseReference": "50MR1811170",
+          "defendantId": "DEFENDANT_ID"
+        }
+      ],
+      "masterDefendantId": "93ae6065-a463-450c-b807-4b0615674972",
+      "personDefendant": {
+        "arrestSummonsNumber": "E28GC19102022001",
+        "bailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        },
+        "custodialEstablishment": {
+          "custody": "Prison",
+          "id": "d5c35bad-5e03-3df5-8944-07fe4a983da7",
+          "name": "HMP Ashfield"
+        },
+        "driverNumber": "CRIME709136TC8GZ",
+        "personDetails": {
+          "address": {
+            "address1": "c",
+            "address2": "Hugh Parkway",
+            "address3": "Hermannside",
+            "address4": "Avon",
+            "postcode": "DA6 7ND"
+          },
+          "contact": {
+            "home": "873-655-0683"
+          },
+          "dateOfBirth": "1978-07-20",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "1",
+            "observedEthnicityDescription": "White",
+            "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+            "selfDefinedEthnicityCode": "W1",
+            "selfDefinedEthnicityDescription": "British",
+            "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+          },
+          "firstName": "Casper",
+          "gender": "FEMALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Daugherty",
+          "title": "Mr"
+        }
+      }
+    },
+    "notificationRequired": true,
+    "summonsRequired": true
+  },
+  "type": {
+    "appealFlag": false,
+    "applicantAppellantFlag": false,
+    "boxworkNotifTemplate": "NOT_APPLICABLE",
+    "breachType": "GENERIC_BREACH",
+    "categoryCode": "CB",
+    "code": "CJ08507",
+    "commrOfOathFlag": false,
+    "courtExtractAvlFlag": true,
+    "courtOfAppealFlag": false,
+    "hearingCode": "BOO",
+    "id": "556815da-1a6f-330a-9bfa-7cd2c4e0bca2",
+    "jurisdiction": "EITHER",
+    "legislation": "In accordance with Part 2 of Schedule 2 to the Criminal Justice and Immigration Act 2008.",
+    "legislationWelsh": "Yn unol â Rhan 2 Atodlen 2 Deddf Cyfiawnder Troseddol a Mewnfudo 2008.",
+    "linkType": "LINKED",
+    "listingNotifTemplate": "NOT_APPLICABLE",
+    "offenceActiveOrder": "COURT_ORDER",
+    "pleaApplicableFlag": true,
+    "prefix": "Resentenced",
+    "prosecutorThirdPartyFlag": false,
+    "resentencingActivationCode": "CJ03522",
+    "spiOutApplicableFlag": true,
+    "summonsTemplateType": "BREACH",
+    "type": "Failing to comply with the requirements of a youth rehabilitation order",
+    "typeWelsh": "Methu â chydymffurfio â gofynion gorchymyn adsefydlu ieuenctid"
+  }
+}
