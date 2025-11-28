@@ -1,11 +1,15 @@
 package uk.gov.moj.cpp.progression.query.view;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
+import static java.util.Comparator.comparing;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.courts.progression.query.AagResultPrompts.aagResultPrompts;
 import static uk.gov.justice.courts.progression.query.ThirdParties.thirdParties;
 import static uk.gov.justice.progression.courts.ApplicantDetails.applicantDetails;
@@ -38,19 +42,29 @@ import uk.gov.justice.courts.progression.query.FeeStatus;
 import uk.gov.justice.courts.progression.query.ThirdParties;
 import uk.gov.justice.courts.progression.query.ThirdPartyRepresentatives;
 import uk.gov.justice.progression.courts.ApplicantDetails;
+import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.RespondentDetails;
 import uk.gov.justice.progression.courts.RespondentRepresentatives;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.query.view.service.HearingService;
 import uk.gov.moj.cpp.progression.query.view.service.OrganisationService;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
+import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -63,6 +77,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 @SuppressWarnings({"squid:CommentedOutCodeLine"})
 public class ApplicationAtAGlanceHelper {
@@ -77,7 +92,19 @@ public class ApplicationAtAGlanceHelper {
     private OrganisationService organisationService;
 
     @Inject
+    private HearingService hearingService;
+
+    @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
+
+    @Inject
+    private HearingApplicationRepository hearingApplicationRepository;
+
+    @Inject
+    private HearingRepository hearingRepository;
+
+    @Inject
+    private CourtApplicationRepository courtApplicationRepository;
 
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
@@ -192,9 +219,12 @@ public class ApplicationAtAGlanceHelper {
         }
     }
 
-    private void createRepresentationForSubjectDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
-                                                         final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
-        if (isSubject(courtApplication.getSubject(), applicant)) {
+    @SuppressWarnings("squid:S3776")
+    private void createPresentationForSubjectDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
+                                                       final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
+        if(courtApplication.getSubject() != null &&
+                courtApplication.getSubject().getMasterDefendant() != null &&
+                applicant.getId().equals(courtApplication.getSubject().getId())){
 
             final UUID subjectMasterDefendantId = courtApplication.getSubject().getMasterDefendant().getMasterDefendantId();
 
@@ -285,6 +315,33 @@ public class ApplicationAtAGlanceHelper {
                 .orElseGet(Stream::empty)
                 .map(respondent -> getRespondentDetails(respondent, courtApplication.getSubject()))
                 .collect(toList());
+    }
+
+    public Pair<CourtApplication, List<JsonObject>> getLinkedApplicationHearingsForCourtExtract(final UUID applicationId, final UUID defendantId) {
+
+        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
+        final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
+        final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(courtApplicationPayload, CourtApplication.class);
+
+        if (isApplicationSubjectDefendant(courtApplication, defendantId)){
+            final List<UUID> applicationHearingIds =  hearingService.getApplicationHearings(courtApplication.getId());
+            final List<HearingEntity> applicationHearingEntities = hearingRepository.findByHearingIds(applicationHearingIds);
+            final List<JsonObject> hearings = applicationHearingEntities.stream()
+                    .filter(hearing -> HEARING_RESULTED == hearing.getListingStatus()).distinct()
+                    .sorted(comparing(HearingEntity::getSharedTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .map(hearingEntity -> stringToJsonObjectConverter.convert(hearingEntity.getPayload()))
+                    .toList();
+            return Pair.of(courtApplication, hearings);
+        }
+        return Pair.of(courtApplication, emptyList());
+    }
+
+    private boolean isApplicationSubjectDefendant(final CourtApplication courtApplication, final UUID defendantId) {
+        return nonNull(courtApplication) && nonNull(courtApplication.getSubject())
+                && nonNull(courtApplication.getSubject().getMasterDefendant())
+                && isNotEmpty(courtApplication.getSubject().getMasterDefendant().getDefendantCase())
+                && courtApplication.getSubject().getMasterDefendant().getDefendantCase().stream().anyMatch(
+                dc -> defendantId.equals(dc.getDefendantId()));
     }
 
     @SuppressWarnings({"squid:MethodCyclomaticComplexity"})

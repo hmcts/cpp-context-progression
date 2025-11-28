@@ -840,6 +840,7 @@
               "defendantId": "DEFENDANT_ID"
             },
             "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
             "judicialResults": [],
             "name": "BobOdell Bot-Beier",
             "offences": [
@@ -1152,6 +1153,7 @@
               "defendantId": "30fa02eb-7d8f-4570-bb80-e77c9a361235"
             },
             "id": "30fa02eb-7d8f-4570-bb80-e77c9a361235",
+            "masterDefendantId": "30fa02eb-7d8f-4570-bb80-e77c9a361235",
             "judicialResults": [],
             "name": "RobGayle Droid-Moore",
             "offences": [

@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.core.courts.Defendant.defendant;
+import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.progression.courts.GetHearingsAtAGlance.getHearingsAtAGlance;
 import static uk.gov.justice.progression.courts.Hearings.hearings;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -126,9 +127,9 @@ import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;import org.mockito.Mock;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
@@ -145,6 +146,7 @@ public class ProsecutionCaseQueryViewTest {
     private static final String APPLICATION_PROSECUTOR_NAME = new StringGenerator().next();
     private static final String PROGRESSION_QUERY_PROSECUTIONCASE_CAAG = "progression.query.prosecutioncase.caag";
     private static final String PROGRESSION_QUERY_CASEHEARINGS = "progression.query.casehearings";
+    private static final String PROGRESSION_QUERY_CASEHEARINGS_FOR_COURT_EXTRACT = "progression.query.case-hearings-for-court-extract";
     private static final String PROGRESSION_QUERY_CASEDEFENDANTHEARINGS = "progression.query.case-defendant-hearings";
     private static final String PROGRESSION_QUERY_CASE_HEARING_TYPES = "progression.query.case.hearingtypes";
 
@@ -661,6 +663,175 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
+    public void shouldReturnCaseHearingsForCourtExtract() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID courtCentreId2 = randomUUID();
+        final ZonedDateTime sittingDay1 = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay2 = ZonedDateTimes.fromString("2020-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay3 = ZonedDateTimes.fromString("2021-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay4 = ZonedDateTimes.fromString("2020-05-30T18:32:04.238Z");
+
+        when(hearingAtAGlanceService.getCaseHearingsForCourtExtract(caseId)).thenReturn(asList(
+                createCaseHearing(hearingId1, courtCentreId1, sittingDay1, sittingDay2),
+                createCaseHearing(hearingId2, courtCentreId2, sittingDay3, sittingDay4)));
+
+        when(hearingAtAGlanceService.getApplicationHearingsForCourtExtract(caseId, defendantId)).thenReturn(Map.of(
+                        CourtApplication.courtApplication().withId(applicationId)
+                                .withType(CourtApplicationType.courtApplicationType().withType("Application title").build())
+                                .build(),
+                        asList(
+                                createCaseHearing(hearingId1, courtCentreId1, sittingDay1, sittingDay2),
+                                createCaseHearing(hearingId2, courtCentreId2, sittingDay3, sittingDay4))
+                )
+        );
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseIdAndDefendantId(PROGRESSION_QUERY_CASEHEARINGS_FOR_COURT_EXTRACT, caseId, defendantId);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getCaseHearingsForCourtExtract(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+
+        final JsonArray hearings = payload.getJsonArray("caseHearings");
+        assertThat(hearings.size(), is(2));
+
+        final JsonArray applicationHearings = payload.getJsonArray("linkedApplicationHearings");
+        assertThat(applicationHearings.size(), is(2));
+        assertThat(applicationHearings.get(0).asJsonObject().getString("id"), is(applicationId.toString()));
+        assertThat(applicationHearings.get(0).asJsonObject().getString("title"), is("Application title"));
+
+        final Optional<JsonObject> hearing1 = applicationHearings.stream()
+                .map(h -> (JsonObject) h)
+                .filter(h -> hearingId1.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(hearing1.isPresent(), is(true));
+        final String actualCourtCentre1 = hearing1.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
+
+        final Optional<JsonObject> hearing2 = applicationHearings.stream()
+                .map(h -> (JsonObject) h)
+                .filter(h -> hearingId2.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(hearing2.isPresent(), is(true));
+        final String actualCourtCentre2 = hearing2.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre2, is(courtCentreId2.toString()));
+    }
+
+    @Test
+    public void shouldSortCaseHearingsAndApplicationsHearingsForCourtExtract() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID applicationId2 = randomUUID();
+        final UUID applicationId3 = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID hearingId3 = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final ZonedDateTime sittingDay1 = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay2 = ZonedDateTimes.fromString("2020-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay3 = ZonedDateTimes.fromString("2021-05-30T18:32:04.238Z");
+
+        when(hearingAtAGlanceService.getCaseHearingsForCourtExtract(caseId)).thenReturn(asList(
+                createCaseHearing(hearingId1, courtCentreId1, sittingDay1, sittingDay2)));
+
+        when(hearingAtAGlanceService.getApplicationHearingsForCourtExtract(caseId, defendantId)).thenReturn(Map.of(
+                        CourtApplication.courtApplication().withId(applicationId2)
+                                .withType(CourtApplicationType.courtApplicationType().withType("Application title 2").build())
+                                .build(),
+                        asList(
+                                createCaseHearing(hearingId2, courtCentreId1, sittingDay2)),
+
+                        CourtApplication.courtApplication().withId(applicationId)
+                                .withType(CourtApplicationType.courtApplicationType().withType("Application title 1").build())
+                                .build(),
+                        asList(
+                                createCaseHearing(hearingId1, courtCentreId1, sittingDay1)),
+                    CourtApplication.courtApplication().withId(applicationId3)
+                            .withType(CourtApplicationType.courtApplicationType().withType("Application title 3").build())
+                            .build(),
+                    asList(
+                            createCaseHearing(hearingId3, courtCentreId1, sittingDay3))
+
+        ));
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseIdAndDefendantId(PROGRESSION_QUERY_CASEHEARINGS_FOR_COURT_EXTRACT, caseId, defendantId);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getCaseHearingsForCourtExtract(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+
+        final JsonArray hearings = payload.getJsonArray("caseHearings");
+        assertThat(hearings.size(), is(1));
+
+        final JsonArray applicationHearings = payload.getJsonArray("linkedApplicationHearings");
+        assertThat(applicationHearings.size(), is(3));
+        assertThat(applicationHearings.get(0).asJsonObject().getString("id"), is(applicationId.toString()));
+        assertThat(applicationHearings.get(0).asJsonObject().getString("title"), is("Application title 1"));
+        assertThat(applicationHearings.get(1).asJsonObject().getString("id"), is(applicationId2.toString()));
+        assertThat(applicationHearings.get(1).asJsonObject().getString("title"), is("Application title 2"));
+        assertThat(applicationHearings.get(2).asJsonObject().getString("id"), is(applicationId3.toString()));
+        assertThat(applicationHearings.get(2).asJsonObject().getString("title"), is("Application title 3"));
+
+    }
+
+    @Test
+    void shouldNotReturnBoxWorkHearingsForCourtExtract() {
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID applicationId = randomUUID();
+        final UUID hearingId1 = randomUUID();
+        final UUID courtCentreId1 = randomUUID();
+        final UUID hearingId2 = randomUUID();
+        final UUID courtCentreId2 = randomUUID();
+        final ZonedDateTime sittingDay1 = ZonedDateTimes.fromString("2019-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay2 = ZonedDateTimes.fromString("2020-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay3 = ZonedDateTimes.fromString("2021-05-30T18:32:04.238Z");
+        final ZonedDateTime sittingDay4 = ZonedDateTimes.fromString("2020-05-30T18:32:04.238Z");
+
+        when(hearingAtAGlanceService.getCaseHearingsForCourtExtract(caseId)).thenReturn(asList(
+                createCaseHearing(hearingId1, courtCentreId1, sittingDay1, sittingDay2),
+                createBoxWorkHearing(hearingId2, courtCentreId2, sittingDay3, sittingDay4),
+                createCaseHearing(hearingId2, courtCentreId2, sittingDay3, sittingDay4)));
+
+        when(hearingAtAGlanceService.getApplicationHearingsForCourtExtract(caseId, defendantId)).thenReturn(Map.of(
+                        CourtApplication.courtApplication().withId(applicationId)
+                                .withType(CourtApplicationType.courtApplicationType().withType("Application title").build())
+                                .build(),
+                        asList(
+                                createCaseHearing(hearingId1, courtCentreId1, sittingDay1, sittingDay2),
+                                createBoxWorkHearing(hearingId2, courtCentreId2, sittingDay3, sittingDay4))
+                )
+        );
+        final JsonEnvelope envelopeWithCaseId = buildEnvelopeWithCaseIdAndDefendantId(PROGRESSION_QUERY_CASEHEARINGS_FOR_COURT_EXTRACT, caseId, defendantId);
+
+        final JsonEnvelope response = prosecutionCaseQuery.getCaseHearingsForCourtExtract(envelopeWithCaseId);
+        final JsonObject payload = response.payloadAsJsonObject();
+
+        final JsonArray hearings = payload.getJsonArray("caseHearings");
+        assertThat(hearings.size(), is(2));
+
+        final JsonArray applicationHearings = payload.getJsonArray("linkedApplicationHearings");
+        assertThat(applicationHearings.size(), is(1));
+        assertThat(applicationHearings.get(0).asJsonObject().getString("id"), is(applicationId.toString()));
+        assertThat(applicationHearings.get(0).asJsonObject().getString("title"), is("Application title"));
+
+        final Optional<JsonObject> hearing1 = applicationHearings.stream()
+                .map(h -> (JsonObject) h)
+                .filter(h -> hearingId1.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(hearing1.isPresent(), is(true));
+        final String actualCourtCentre1 = hearing1.get().getJsonObject("courtCentre").getString("id");
+        assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
+
+        final Optional<JsonObject> hearing2 = applicationHearings.stream()
+                .map(h -> (JsonObject) h)
+                .filter(h -> hearingId2.toString().equals(h.getString("hearingId")))
+                .findFirst();
+        assertThat(hearing2.isPresent(), is(false));
+    }
+
+    @Test
     public void shouldReturnCaseDefendantHearings() {
         final DateTimeFormatter ZONE_DATETIME_FORMATTER = ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         final UUID caseId = randomUUID();
@@ -723,7 +894,7 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(trialHearings.size(), is(2));
 
         final Optional<JsonObject> hearing1 = trialHearings.stream()
-                .map(h -> (JsonObject)h)
+                .map(h -> (JsonObject) h)
                 .filter(h -> hearingId1.toString().equals(h.getString("id")))
                 .findFirst();
         assertThat(hearing1.isPresent(), is(true));
@@ -731,7 +902,7 @@ public class ProsecutionCaseQueryViewTest {
         assertThat(actualCourtCentre1, is(courtCentreId1.toString()));
 
         final Optional<JsonObject> hearing2 = trialHearings.stream()
-                .map(h -> (JsonObject)h)
+                .map(h -> (JsonObject) h)
                 .filter(h -> hearingId2.toString().equals(h.getString("id")))
                 .findFirst();
         assertThat(hearing2.isPresent(), is(true));
@@ -822,7 +993,7 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldReturnCotrFormForAProsecutionCase(){
+    public void shouldReturnCotrFormForAProsecutionCase() {
         final UUID prosecutionCaseId = randomUUID();
         final UUID cotrId = randomUUID();
         final UUID defendantId1 = randomUUID();
@@ -1369,11 +1540,12 @@ public class ProsecutionCaseQueryViewTest {
         final JsonObject jsonObject = getJsonPayload(CASE_ALL_HEARINGS_QUERY_VIEW_JSON);
         final GetHearingsAtAGlance getHearingsAtAGlance = jsonObjectToObjectConverter.convert(jsonObject, GetHearingsAtAGlance.class);
         when(hearingAtAGlanceService.getHearingAtAGlance(caseId)).thenReturn(getHearingsAtAGlance);
-        final JsonEnvelope response =  prosecutionCaseQuery.getAllCaseHearings(envelope);
+        final JsonEnvelope response = prosecutionCaseQuery.getAllCaseHearings(envelope);
         assertThat(response.payloadAsJsonObject().get("allCaseHearings"), is(notNullValue()));
     }
+
     @Test
-    public void shouldReturnEmptyEnvelopeWhenNoLinkedApplicationsOnCaseExists(){
+    public void shouldReturnEmptyEnvelopeWhenNoLinkedApplicationsOnCaseExists() {
         final UUID caseId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("prosecutionCaseId", caseId.toString()).build();
@@ -1386,7 +1558,7 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     @Test
-    public void shouldReturnOnlyActiveApplicationsOnCaseWhenExists(){
+    public void shouldReturnOnlyActiveApplicationsOnCaseWhenExists() {
         final UUID caseId = randomUUID();
         final JsonObject jsonObject = Json.createObjectBuilder()
                 .add("prosecutionCaseId", caseId.toString()).build();
@@ -1415,7 +1587,7 @@ public class ProsecutionCaseQueryViewTest {
 
         when(courtApplicationCaseRepository.findByCaseId(caseId)).thenReturn(Arrays.asList(activeCourtApplicationCaseEntity, inactiveCourtApplicationCaseEntity));
         final HearingApplicationEntity hearingApplicationEntity = new HearingApplicationEntity();
-        hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID,randomUUID()));
+        hearingApplicationEntity.setId(new HearingApplicationKey(APPLICATION_ID, randomUUID()));
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(randomUUID());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
@@ -1469,7 +1641,7 @@ public class ProsecutionCaseQueryViewTest {
         final JsonEnvelope response = prosecutionCaseQuery.getCaseAllHearingTypes(envelopeWithCaseId);
         final JsonObject payload = response.payloadAsJsonObject();
         final Map<String, String> hearingTypes = payload.getJsonArray(HEARING_TYPES).getValuesAs(JsonObject.class).stream()
-                .collect(Collectors.toMap(json->json.getString(HEARING_ID), json-> json.getString(TYPE)));
+                .collect(Collectors.toMap(json -> json.getString(HEARING_ID), json -> json.getString(TYPE)));
         assertThat(hearingTypes.size(), is(3));
     }
 
@@ -1498,10 +1670,11 @@ public class ProsecutionCaseQueryViewTest {
                 .build();
     }
 
-    private Hearings createCaseHearing(final UUID hearingId, final UUID courtCentreId, final ZonedDateTime sittingDay1, final ZonedDateTime sittingDay2){
+    private Hearings createCaseHearing(final UUID hearingId, final UUID courtCentreId, final ZonedDateTime sittingDay1, final ZonedDateTime sittingDay2) {
         return Hearings.hearings()
                 .withId(hearingId)
                 .withJurisdictionType(JurisdictionType.CROWN)
+                .withHearingListingStatus(HEARING_RESULTED)
                 .withCourtCentre(CourtCentre.courtCentre()
                         .withId(courtCentreId)
                         .withName("name")
@@ -1512,7 +1685,23 @@ public class ProsecutionCaseQueryViewTest {
                         asList(createHearingDay(sittingDay1), createHearingDay(sittingDay2))).build();
     }
 
-    private HearingDay createHearingDay(final ZonedDateTime sittingDay){
+    private Hearings createBoxWorkHearing(final UUID hearingId, final UUID courtCentreId, final ZonedDateTime sittingDay1, final ZonedDateTime sittingDay2) {
+        return Hearings.hearings()
+                .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
+                .withHearingListingStatus(HEARING_RESULTED)
+                .withIsBoxHearing(true)
+                .withCourtCentre(CourtCentre.courtCentre()
+                        .withId(courtCentreId)
+                        .withName("name")
+                        .withRoomId(randomUUID())
+                        .withRoomName("roomName")
+                        .build())
+                .withHearingDays(
+                        asList(createHearingDay(sittingDay1), createHearingDay(sittingDay2))).build();
+    }
+
+    private HearingDay createHearingDay(final ZonedDateTime sittingDay) {
         HearingDay hearingDay = HearingDay.hearingDay()
                 .withSittingDay(sittingDay).build();
         return hearingDay;
@@ -1537,7 +1726,7 @@ public class ProsecutionCaseQueryViewTest {
     }
 
     private JsonObject createCotrForm(final UUID defendantId, final String firstName, final String lastName, final LocalDate dateOfBirth, final ZonedDateTime hearingDay, final UUID prosecutionCaseId) {
-       return Json.createObjectBuilder()
+        return Json.createObjectBuilder()
                 .add("id", randomUUID().toString())
                 .add("caseId", prosecutionCaseId.toString())
                 .add("hearingId", randomUUID().toString())
@@ -1581,6 +1770,7 @@ public class ProsecutionCaseQueryViewTest {
         UUID roomId = randomUUID();
         return hearings()
                 .withId(hearingId)
+                .withJurisdictionType(JurisdictionType.CROWN)
                 .withCourtCentre(CourtCentre.courtCentre()
                         .withId(courtCentreId)
                         .withName("name")
@@ -1595,7 +1785,7 @@ public class ProsecutionCaseQueryViewTest {
     private List<Hearings> getHearingsList(final UUID masterDefendantId,final UUID defendantId) {
         return asList(
                 hearings()
-                        .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
+                        .withHearingListingStatus(HEARING_RESULTED)
                         .withDefendantJudicialResults(asList(
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()
@@ -1616,7 +1806,7 @@ public class ProsecutionCaseQueryViewTest {
                         ))
                         .build(),
                 hearings()
-                        .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
+                        .withHearingListingStatus(HEARING_RESULTED)
                         .withDefendantJudicialResults(asList(
                                 DefendantJudicialResult.defendantJudicialResult()
                                         .withJudicialResult(JudicialResult.judicialResult()

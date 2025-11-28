@@ -2325,7 +2325,7 @@
         ],
         "hearingListingStatus": "HEARING_RESULTED",
         "id": "83c588bc-f457-4812-9620-0184d6708386",
-        "isApplicationHearing": true,
+        "isApplicationHearing": false,
         "jurisdictionType": "MAGISTRATES",
         "type": {
           "description": "First hearing",
