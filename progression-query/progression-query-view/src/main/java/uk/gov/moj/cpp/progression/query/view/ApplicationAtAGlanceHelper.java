@@ -219,12 +219,9 @@ public class ApplicationAtAGlanceHelper {
         }
     }
 
-    @SuppressWarnings("squid:S3776")
-    private void createPresentationForSubjectDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
-                                                       final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
-        if(courtApplication.getSubject() != null &&
-                courtApplication.getSubject().getMasterDefendant() != null &&
-                applicant.getId().equals(courtApplication.getSubject().getId())){
+    private void createRepresentationForSubjectDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
+                                                         final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
+        if (isSubject(courtApplication.getSubject(), applicant)) {
 
             final UUID subjectMasterDefendantId = courtApplication.getSubject().getMasterDefendant().getMasterDefendantId();
 
