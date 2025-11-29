@@ -108,6 +108,9 @@
       },
       "additionalProperties": false
     },
+    "laaApplnReference": {
+      "$ref": "http://justice.gov.uk/progression/query/laa/laa-appln-reference.json"
+    },
     "respondentDetails": {
       "type": "array",
       "items": {
@@ -306,6 +309,10 @@
           "items": {
             "$ref": "#/definitions/respondentRepresentative"
           }
+        },
+        "representation": {
+          "description": "when the respondent is subject, this is filled with subject.associatedDefenceOrganisation",
+          "type": "string"
         },
         "isSubject": {
           "type": "boolean"

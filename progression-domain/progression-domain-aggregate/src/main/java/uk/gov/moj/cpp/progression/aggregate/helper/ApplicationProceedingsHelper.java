@@ -1,28 +1,32 @@
 package uk.gov.moj.cpp.progression.aggregate.helper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.List.of;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static uk.gov.justice.core.courts.JudicialResultCategory.ANCILLARY;
+import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
+
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationType;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.Offence;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.Set;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.Collections;
 import java.util.Objects;
-import static java.util.Objects.isNull;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-import java.util.Collection;
-
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.JudicialResultCategory.FINAL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class to determine if court application proceedings are concluded.
@@ -36,67 +40,75 @@ public class ApplicationProceedingsHelper {
     // Result Type Constants
 
 
-    // Result Type Sets for Appeal against Conviction
+    // Result Type Sets for Appeal against Conviction that does not require offence check
     public static final Set<UUID> APPEAL_CONVICTION_CONCLUDE_IMMEDIATELY = Set.of(
             ResultConstants.APA,
             ResultConstants.AW,
             ResultConstants.AACD,
             ResultConstants.AACA
     );
+    // Result Type Sets for Appeal against Conviction that require offence level result check
     public static final Set<UUID> APPEAL_CONVICTION_NO_CONCLUSION = Set.of(
             ResultConstants.ASV
     );
 
-    // Result Type Sets for Appeal against Sentence
+    // Result Type Sets for Appeal against Sentence that does not require offence check
     public static final Set<UUID> APPEAL_SENTENCE_CONCLUDE_IMMEDIATELY = Set.of(
             ResultConstants.APA,
             ResultConstants.AW,
             ResultConstants.AASD
     );
+    // Result Type Sets for Appeal against Sentence that require offence level result check
     public static final Set<UUID> APPEAL_SENTENCE_NO_CONCLUSION = Set.of(
             ResultConstants.AASA
     );
 
-    // Result Type Sets for Combined Appeals
+    // Result Type Sets for Combined Appeals that does not require offence check
     public static final Set<UUID> APPEAL_COMBINED_CONCLUDE_IMMEDIATELY = Set.of(
             ResultConstants.APA,
             ResultConstants.AW,
             ResultConstants.ACSD,
             ResultConstants.AACA
     );
+    // Result Type Sets for Combined Appeals that require offence level result check
     public static final Set<UUID> APPEAL_COMBINED_NO_CONCLUSION = Set.of(
             ResultConstants.ASV
     );
 
-    // Result Type Sets for Statutory Declaration
+    // Result Type Sets for Statutory Declaration that does not require offence check
     public static final Set<UUID> STATUTORY_DECLARATION_CONCLUDE_IMMEDIATELY = Set.of(
             ResultConstants.RFSD,
             ResultConstants.WDRN,
             ResultConstants.DISM
     );
+    // Result Type Sets for Statutory Declaration that require offence level result check
     public static final Set<UUID> STATUTORY_DECLARATION_NO_CONCLUSION = Set.of();
 
-    // Result Type Sets for Reopen Case
+    // Result Type Sets for Reopen Case that does not require offence check
     public static final Set<UUID> REOPEN_CASE_CONCLUDE_IMMEDIATELY = Set.of(
             ResultConstants.RFSD,
             ResultConstants.WDRN
     );
 
+    // Result Type Sets for Reopen Case that require offence level result check
     public static final Set<UUID> REOPEN_CASE_NO_CONCLUSION = Set.of();
 
-    // Result Type Sets for Breach Applications
+    // Result Type Sets for Breach Applications that does not require offence check
     public static final Set<UUID> BREACH_CONCLUDE_IMMEDIATELY = Set.of(
             ResultConstants.OREV,
             ResultConstants.OTC,
             ResultConstants.DISM,
             ResultConstants.WDRN
     );
+
+    //This is empty for Breach type applications. OREV + BRO combination is handled separately in @method: handleBreachType()
     public static final Set<UUID> BREACH_NO_CONCLUSION = Set.of();
 
-    // Result Type Sets for Confiscation Order
+    // Result Type Sets for Confiscation Order that does not require offence check
     public static final Set<UUID> CONFISCATION_CONCLUDE_IMMEDIATELY = Set.of(
             ResultConstants.RFSD, ResultConstants.WDRN
     );
+    //Result Type Sets for Confiscation Order that require offence level result check
     public static final Set<UUID> CONFISCATION_NO_CONCLUSION = Set.of();
 
     // Map to store UUID to Result Code mapping
@@ -155,9 +167,7 @@ public class ApplicationProceedingsHelper {
 
         final List<ApplicationResult> resultList = determineProceedingsConcluded(application);
 
-        boolean concluded = resultList.stream()
-                .map(ApplicationResult::concluded)
-                .reduce(true, (a, b) -> a && b);
+        final boolean concluded = resultList.stream().allMatch(ApplicationResult::concluded);
 
         final String resultCode = determineResultCode(application, resultList);
 
@@ -185,7 +195,7 @@ public class ApplicationProceedingsHelper {
     private static List<ApplicationResult> determineProceedingsConcluded(CourtApplication application) {
         if (isNull(application.getType())) {
             LOGGER.warn("Application type is null for application ID: {}", application.getId());
-            return List.of(new ApplicationResult(false, UNKNOWN_RESULT));
+            return of(new ApplicationResult(false, UNKNOWN_RESULT));
         }
 
         final List<UUID> resultTypeIds = getJudicialResultTypeIds(application);
@@ -199,12 +209,12 @@ public class ApplicationProceedingsHelper {
             handleResultingOffencesOnly(application, results);
         }
 
-        return results.isEmpty() ? List.of(new ApplicationResult(false, UNKNOWN_RESULT)) : results;
+        return results.isEmpty() ? of(new ApplicationResult(false, UNKNOWN_RESULT)) : results;
     }
 
     private static void handleResultingOffencesOnly(final CourtApplication application, final List<ApplicationResult> results) {
         results.add(new ApplicationResult(
-                hasAllOffencesFinalResults(application),
+                hasAllOffencesFinalResults(application) || hasAllCourtOrderOffencesFinalResults(application),
                 null
         ));
     }
@@ -242,12 +252,12 @@ public class ApplicationProceedingsHelper {
     }
 
     private static List<ApplicationResult> checkResults(
-            CourtApplication application,
-            List<UUID> resultTypeIds,
-            Set<UUID> resultsCheckForOffencesNotRequired,
-            Set<UUID> resultsCheckForOffencesRequired) {
+            final CourtApplication application,
+            final List<UUID> resultTypeIds,
+            final Set<UUID> resultsCheckForOffencesNotRequired,
+            final Set<UUID> resultsCheckForOffencesRequired) {
 
-        List<ApplicationResult> specialCaseResults = handleSpecialCases(application, resultTypeIds);
+        final List<ApplicationResult> specialCaseResults = handleSpecialCases(application, resultTypeIds);
         if (!specialCaseResults.isEmpty()) {
             return specialCaseResults;
         }
@@ -274,7 +284,7 @@ public class ApplicationProceedingsHelper {
         if (isConfiscationOrder(application)) {
             return handleConfiscationOrder(resultTypeIds);
         }
-        return List.of();
+        return of();
     }
 
     private static List<ApplicationResult> handleAppealAgainstSentence(
@@ -282,18 +292,18 @@ public class ApplicationProceedingsHelper {
             List<UUID> resultTypeIds) {
 
         if (!resultTypeIds.contains(ResultConstants.AASD)) {
-            return List.of();
+            return of();
         }
 
         boolean hasSentenceVaried = resultTypeIds.contains(ResultConstants.SV);
         if (hasSentenceVaried) {
-            return List.of(new ApplicationResult(
+            return of(new ApplicationResult(
                 hasAllOffencesFinalResults(application),
                     ResultCodeConstants.AASD_CODE + " & " + ResultCodeConstants.SV_CODE
             ));
         }
 
-        return List.of(new ApplicationResult(true, ResultCodeConstants.AASD_CODE));
+        return of(new ApplicationResult(true, ResultCodeConstants.AASD_CODE));
     }
 
     private static List<ApplicationResult> handleAppealAgainstConvictionAndSentence(
@@ -303,10 +313,10 @@ public class ApplicationProceedingsHelper {
                 resultTypeIds.contains(ResultConstants.AASA);
 
         if (!hasRequiredResults) {
-            return List.of();
+            return of();
         }
 
-        return List.of(new ApplicationResult(
+        return of(new ApplicationResult(
             hasAllOffencesFinalResults(application),
                 ResultCodeConstants.AACD_CODE + " & " + ResultCodeConstants.AASA_CODE
         ));
@@ -320,10 +330,10 @@ public class ApplicationProceedingsHelper {
                 resultTypeIds.contains(ResultConstants.STDEC);
 
         if (!hasRequiredResults) {
-            return List.of();
+            return of();
         }
 
-        return List.of(new ApplicationResult(
+        return of(new ApplicationResult(
             hasAllOffencesFinalResults(application),
                 ResultCodeConstants.G_CODE + " & " + ResultCodeConstants.STDEC_CODE
         ));
@@ -337,10 +347,10 @@ public class ApplicationProceedingsHelper {
                 resultTypeIds.contains(ResultConstants.ROPENED);
 
         if (!hasRequiredResults) {
-            return List.of();
+            return of();
         }
 
-        return List.of(new ApplicationResult(
+        return of(new ApplicationResult(
             hasAllOffencesFinalResults(application),
                 ResultCodeConstants.G_CODE + " & " + ResultCodeConstants.ROPENED_CODE
         ));
@@ -354,107 +364,116 @@ public class ApplicationProceedingsHelper {
         boolean hasConviction = resultTypeIds.contains(ResultConstants.G);
 
         if (hasConfaa && hasConviction) {
-            return List.of(new ApplicationResult(
+            return of(new ApplicationResult(
                     true,
                     ResultCodeConstants.CONFAA_CODE + " & " + ResultCodeConstants.G_CODE
             ));
-        } else return List.of();
+        } else return of();
 
     }
-    private static List<ApplicationResult> handleBreachType(
-            CourtApplication application,
-            List<UUID> resultTypeIds) {
+    private static List<ApplicationResult> handleBreachType(final CourtApplication application, final List<UUID> resultTypeIds) {
 
         // Check for special cases: if both OREV and BRO are present
         boolean hasOrev = resultTypeIds.contains(ResultConstants.OREV);
         boolean hasBro = resultTypeIds.contains(ResultConstants.BRO);
 
         if (hasOrev && hasBro) {
-            return List.of(new ApplicationResult(
-                    hasAllOffencesFinalResults(application),
+            return of(new ApplicationResult(
+                    hasAllOffencesFinalResults(application) || hasAllCourtOrderOffencesFinalResults(application),
                     ResultCodeConstants.OREV_CODE + " & " + ResultCodeConstants.BRO_CODE
             ));
-        } else return List.of();
+        } else return of();
 
     }
+
     private static List<ApplicationResult> handleRegularCases(
-            CourtApplication application,
-            List<UUID> resultTypeIds,
-            Set<UUID> resultsCheckForOffencesNotRequired,
-            Set<UUID> resultsCheckForOffencesRequired) {
+            final CourtApplication application,
+            final List<UUID> resultTypeIds,
+            final Set<UUID> resultsCheckForOffencesNotRequired,
+            final Set<UUID> resultsCheckForOffencesRequired) {
 
         List<ApplicationResult> results = resultTypeIds.stream()
-                .map(id -> createApplicationResult(id, application, resultsCheckForOffencesNotRequired, resultsCheckForOffencesRequired))
+                .map(resultTypeId -> createApplicationResult(resultTypeId, application, resultsCheckForOffencesNotRequired, resultsCheckForOffencesRequired))
                 .toList();
 
         if (results.isEmpty()) {
             LOGGER.info("No matching result type found for application ID: {}", application.getId());
-            return List.of(new ApplicationResult(false, UNKNOWN_RESULT));
+            return of(new ApplicationResult(false, UNKNOWN_RESULT));
         }
 
         return results;
     }
 
     private static ApplicationResult createApplicationResult(
-            UUID id,
-            CourtApplication application,
-            Set<UUID> resultsCheckForOffencesNotRequired,
-            Set<UUID> resultsCheckForOffencesRequired) {
+            final UUID resultTypeId,
+            final CourtApplication application,
+            final Set<UUID> resultsCheckForOffencesNotRequired,
+            final Set<UUID> resultsCheckForOffencesRequired) {
 
-        String resultCode = RESULT_CODE_MAP.getOrDefault(id, UNKNOWN_RESULT);
+        String resultCode = RESULT_CODE_MAP.getOrDefault(resultTypeId, UNKNOWN_RESULT);
         if (UNKNOWN_RESULT.equals(resultCode)) {
-            LOGGER.warn("Unknown result type ID found: {} for application ID: {}", id, application.getId());
+            LOGGER.warn("Unknown result type ID found: {} for application ID: {}", resultTypeId, application.getId());
         }
 
-        boolean concluded = resultsCheckForOffencesNotRequired.contains(id) ||
-                (resultsCheckForOffencesRequired.contains(id) && hasAllOffencesFinalResults(application));
+        boolean concluded = resultsCheckForOffencesNotRequired.contains(resultTypeId) ||
+                (resultsCheckForOffencesRequired.contains(resultTypeId) && (hasAllOffencesFinalResults(application) || hasAllCourtOrderOffencesFinalResults(application)));
 
         return new ApplicationResult(concluded, resultCode);
     }
 
-    private static boolean isAppealType(final CourtApplication application, final String expectedTypeCode) {
-        return Optional.ofNullable(application)
+    private static boolean isAppealType(final CourtApplication application, final List<String> expectedTypeCodes) {
+        return ofNullable(application)
                 .map(CourtApplication::getType)
                 .map(CourtApplicationType::getCode)
-                .map(code -> code.equals(expectedTypeCode))
+                .map(expectedTypeCodes::contains)
                 .orElse(false);
     }
 
-    private static boolean isAppealAgainstConviction(CourtApplication application) {
-        return isAppealType(application, ApplicationTypeConstants.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID);
+    private static boolean isAppealAgainstConviction(final CourtApplication application) {
+        return isAppealType(application, of(ApplicationTypeConstants.APP_TYPE_APPEAL_AGAINST_CONVICTION_ID));
     }
 
-    private static boolean isAppealAgainstSentence(CourtApplication application) {
-        return isAppealType(application, ApplicationTypeConstants.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID);
+    private static boolean isAppealAgainstSentence(final CourtApplication application) {
+        return isAppealType(application, of(ApplicationTypeConstants.APP_TYPE_APPEAL_AGAINST_SENTENCE_ID));
     }
 
-    private static boolean isAppealAgainstConvictionAndSentence(CourtApplication application) {
-        return isAppealType(application, ApplicationTypeConstants.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID);
+    private static boolean isAppealAgainstConvictionAndSentence(final CourtApplication application) {
+        return isAppealType(application, of(ApplicationTypeConstants.APP_TYPE_APPEAL_AGAINST_CONVICTION_AND_SENTENCE_ID));
     }
 
-    private static boolean isStatutoryDeclaration(CourtApplication application) {
-        return isAppealType(application, ApplicationTypeConstants.APP_TYPE_STATUTORY_DECLARATION_ID);
+    private static boolean isStatutoryDeclaration(final CourtApplication application) {
+        return isAppealType(application, of(ApplicationTypeConstants.APP_TYPE_STATUTORY_DECLARATION_ID));
     }
 
-    private static boolean isReopenCase(CourtApplication application) {
-        return isAppealType(application, ApplicationTypeConstants.APP_TYPE_REOPEN_CASE_ID);
+    private static boolean isReopenCase(final CourtApplication application) {
+        return isAppealType(application, of(ApplicationTypeConstants.APP_TYPE_REOPEN_CASE_ID));
     }
 
-    private static boolean isBreachApplication(CourtApplication application) {
-        final String code = application.getType().getCode();
-        return code.equals(ApplicationTypeConstants.APP_TYPE_BREACH_COMMUNITY_ORDER_ID) ||
-               code.equals(ApplicationTypeConstants.APP_TYPE_BREACH_ENGAGEMENT_SUPPORT_ORDER_ID) ||
-               code.equals(ApplicationTypeConstants.APP_TYPE_BREACH_YRO_INTENSIVE_ID) ||
-               code.equals(ApplicationTypeConstants.APP_TYPE_BREACH_YRO_ID) ||
-               code.equals(ApplicationTypeConstants.APP_TYPE_BREACH_REPARATION_ORDER_ID);
+    private static boolean isBreachApplication(final CourtApplication application) {
+        return isAppealType(application, of(
+                ApplicationTypeConstants.APP_TYPE_BREACH_COMMUNITY_ORDER_ID,
+                ApplicationTypeConstants.APP_TYPE_BREACH_COMMUNITY_ORDER_ID_2,
+                ApplicationTypeConstants.APP_TYPE_BREACH_ENGAGEMENT_SUPPORT_ORDER_ID,
+                ApplicationTypeConstants.APP_TYPE_BREACH_YRO_INTENSIVE_ID,
+                ApplicationTypeConstants.APP_TYPE_BREACH_YRO_ID,
+                ApplicationTypeConstants.APP_TYPE_BREACH_YRO_ID_2,
+                ApplicationTypeConstants.APP_TYPE_BREACH_REPARATION_ORDER_ID,
+                ApplicationTypeConstants.FAIL_TO_COMPLY_WITH_SUPERVISION_REQUIREMENTS,
+                ApplicationTypeConstants.FAIL_TO_COMPLY_WITH_SUPERVISION_REQUIREMENTS_2,
+                ApplicationTypeConstants.FAIL_TO_COMPLY_WITH_YOUTH_REHABILITATION_REQUIREMENTS,
+                ApplicationTypeConstants.FAIL_TO_COMPLY_WITH_YOUTH_REHABILITATION_REQUIREMENTS_2,
+                ApplicationTypeConstants.FAIL_TO_COMPLY_WITH_POST_CUSTODIAL_SUPERVISION_REQUIREMENTS,
+                ApplicationTypeConstants.FAIL_TO_COMPLY_WITH_COMMUNITY_REQUIREMENTS,
+                ApplicationTypeConstants.FAIL_TO_COMPLY_WITH_COMMUNITY_REQUIREMENTS_2
+        ));
     }
 
-    private static boolean isConfiscationOrder(CourtApplication application) {
-        return isAppealType(application, ApplicationTypeConstants.APP_TYPE_CONFISCATION_ORDER_ID);
+    private static boolean isConfiscationOrder(final CourtApplication application) {
+        return isAppealType(application, of(ApplicationTypeConstants.APP_TYPE_CONFISCATION_ORDER_ID));
     }
 
     private static List<UUID> getJudicialResultTypeIds(CourtApplication application) {
-        return Optional.ofNullable(application.getJudicialResults())
+        return ofNullable(application.getJudicialResults())
                 .map(results -> results.stream()
                         .filter(ApplicationProceedingsHelper::isRootJudicialResult)
                         .map(JudicialResult::getJudicialResultTypeId)
@@ -468,11 +487,20 @@ public class ApplicationProceedingsHelper {
     }
 
     private static boolean hasAllOffencesFinalResults(CourtApplication application) {
-        return Optional.ofNullable(application.getCourtApplicationCases())
+        return ofNullable(application.getCourtApplicationCases())
                 .map(cases -> cases.stream()
-                        .flatMap(cac -> Optional.ofNullable(cac.getOffences()).stream().flatMap(Collection::stream))
+                        .flatMap(cac -> ofNullable(cac.getOffences()).stream().flatMap(Collection::stream))
                         .allMatch(ApplicationProceedingsHelper::offenceHasFinalResults))
                 .orElse(false);
+    }
+
+    private static boolean hasAllCourtOrderOffencesFinalResults(final CourtApplication application) {
+        return ofNullable(application.getCourtOrder())
+                .map(courtOrder -> courtOrder.getCourtOrderOffences())
+                .filter(offences -> !offences.isEmpty())
+                .map(offences -> offences.stream()
+                        .allMatch(ApplicationProceedingsHelper::offenceHasFinalResults))
+                .orElse(false); // If no court order, no offences, or an empty list of offences, return false.
     }
 
 
@@ -484,13 +512,25 @@ public class ApplicationProceedingsHelper {
                         .allMatch(ApplicationProceedingsHelper::isFinalResult);
     }
 
+    private static boolean offenceHasFinalResults(CourtOrderOffence offence) {
+        return nonNull(offence) && nonNull(offence.getOffence()) && isNotEmpty(offence.getOffence().getJudicialResults()) &&
+                offence.getOffence().getJudicialResults()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .allMatch(judicialResult -> isFinalResult(judicialResult) || isAncillaryResult(judicialResult));
+    }
+
     private static boolean isFinalResult(JudicialResult result) {
         return FINAL.equals(result.getCategory());
     }
 
+    private static boolean isAncillaryResult(JudicialResult result) {
+        return ANCILLARY.equals(result.getCategory());
+    }
+
     private record ApplicationResult(boolean concluded, String resultCode) {
         public String getResultCode() {
-            return resultCode != null ? resultCode : UNKNOWN_RESULT;
+            return ofNullable(resultCode).orElse(UNKNOWN_RESULT);
         }
     }
 }

@@ -6839,6 +6839,7 @@ class CaseAggregateTest {
         assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(0).getLaaApplnReference().getApplicationReference(), is(applicationReference));
         assertThat(this.caseAggregate.getProsecutionCase().getDefendants().get(0).getOffences().get(1).getLaaApplnReference().getApplicationReference(), is(applicationReference));
     }
+
     @Test
     public void shouldNotAddNewOffenceWithLaaApplicationReferenceIfExistingOffenceHasLaaApplicationReferenceAndNewOffenceWithoutCount() {
         final UUID caseId = randomUUID();
