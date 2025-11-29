@@ -508,7 +508,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetResondantDetails() {
+    void shouldGetResondantDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -559,7 +559,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyDetails() {
+    void shouldGetThirdPartyDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -608,7 +608,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
+    void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
         final Address address = mock(Address.class);
 
         final String name = STRING_GENERATOR.next();
@@ -635,7 +635,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -675,7 +675,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentForMasterDefendant() {
+    void shouldGetRespondentForMasterDefendant() {
 
         final Address address = mock(Address.class);
 
@@ -708,7 +708,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentForSubject() {
+    void shouldGetRespondentForSubject() {
 
         final Address address = mock(Address.class);
 
@@ -750,7 +750,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentWhichIsNotSubject() {
+    void shouldGetRespondentWhichIsNotSubject() {
 
         final Address address = mock(Address.class);
 
@@ -793,7 +793,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -832,14 +832,14 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
+    void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
         final CourtApplication courtApplication = courtApplication().build();
         final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
         assertThat(respondentDetails, empty());
     }
 
     @Test
-    public void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
+    void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
         final UUID subjectId = randomUUID();
         final UUID applicantId = randomUUID();
 
@@ -873,7 +873,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldReturnLinkedApplicationHearingsWhenMatchedWithDefendantId() {
+    void shouldReturnLinkedApplicationHearingsWhenMatchedWithDefendantId() {
         final UUID applicationId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID hearingId = randomUUID();

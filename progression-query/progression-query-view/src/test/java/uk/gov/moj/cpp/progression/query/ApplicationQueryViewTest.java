@@ -429,7 +429,7 @@ public class ApplicationQueryViewTest {
         when(objectToJsonObjectConverter.convert(any())).thenReturn(mockApplicationDetailsJson).thenReturn(mockApplicantDetailsJson);
 
         final ProsecutionCase prosecutionCaseMock = mock(ProsecutionCase.class);
-        when(applicationAtAGlanceHelper.getProsecutionCase(eq(prosecutionCaseId))).thenReturn(prosecutionCaseMock);
+        when(applicationAtAGlanceHelper.getProsecutionCase(prosecutionCaseId)).thenReturn(prosecutionCaseMock);
 
         final JsonEnvelope response = applicationQueryView.getCourtApplicationForApplicationAtAGlance(jsonEnvelope);
         assertThat(response.payloadAsJsonObject().getString("applicationId"), is(applicationId.toString()));
@@ -750,7 +750,7 @@ public class ApplicationQueryViewTest {
     }
 
     @Test
-    public void shouldGetApplicationHearingsForCourtExtract() throws IOException {
+    void shouldGetApplicationHearingsForCourtExtract() throws IOException {
         final UUID applicationId = randomUUID();
         final UUID hearingId1 = fromString("99db5ace-90c1-4169-bd4a-cda8e3e6fe84");
         final UUID defendantId = fromString("cce521f9-78e1-43f3-976b-c51a29faa5e0");

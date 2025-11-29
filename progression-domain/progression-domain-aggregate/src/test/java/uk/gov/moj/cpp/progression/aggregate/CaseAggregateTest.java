@@ -7837,7 +7837,7 @@ class CaseAggregateTest {
     }
 
     @Test
-    public void shouldNotRaiseHearingResultedCaseUpdatedEvenIfCaseIsEjected(){
+    void shouldNotRaiseHearingResultedCaseUpdatedEvenIfCaseIsEjected(){
 
         final Defendant defendant = defendant()
                 .withId(randomUUID())
