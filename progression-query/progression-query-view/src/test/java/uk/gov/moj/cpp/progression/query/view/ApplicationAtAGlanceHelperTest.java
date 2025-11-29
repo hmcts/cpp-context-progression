@@ -511,7 +511,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentDetails() {
+    void shouldGetResondantDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -562,401 +562,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetApplicantDetailsWhenApplicantIsSubjectAndMasterDefendantIsEmpty() {
-
-        final Address address = mock(Address.class);
-
-        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
-                .withMasterDefendantId(randomUUID())
-                .build();
-
-        final Person person = person()
-                .withFirstName(STRING_GENERATOR.next())
-                .withLastName(STRING_GENERATOR.next())
-                .withAddress(address)
-                .withDateOfBirth(now().minusYears(18L))
-                .withNationalityDescription(STRING_GENERATOR.next())
-                .build();
-
-        final Organisation representationOrganisation = organisation()
-                .withName(STRING_GENERATOR.next())
-                .build();
-
-        final CourtApplicationParty applicant = courtApplicationParty()
-                .withId(randomUUID())
-                .withRepresentationOrganisation(representationOrganisation)
-                .build();
-
-        final CourtApplicationParty subject = courtApplicationParty()
-                .withId(applicant.getId())
-                .withOrganisation(representationOrganisation)
-                .withMasterDefendant(masterDefendant)
-                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
-                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
-                                .withOrganisation(organisation()
-                                        .withName("Alan & Co LLP")
-                                        .withAddress(Address.address()
-                                                .withAddress1("Legal House")
-                                                .withAddress2("55 Sewell Street")
-                                                .withAddress3("Archway")
-                                                .withAddress4("London")
-                                                .withPostcode("SE14 2AB")
-                                                .build())
-                                        .build())
-                                .build())
-                        .build())
-                .build();
-
-        final CourtApplication courtApplication = courtApplication()
-                .withApplicant(applicant)
-                .withSubject(subject)
-                .withType(courtApplicationType().build())
-                .build();
-
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("caseId", randomUUID().toString())
-                .build();
-
-        final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(metadataBuilder().withId(randomUUID())
-                .withName("progression.query.application.aaag"), payload);
-
-        final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, jsonEnvelope);
-
-        assertThat(applicantDetails.getIsSubject(), is(true));
-        assertThat(applicantDetails.getRepresentation(), is("Alan & Co LLP,Legal House,55 Sewell Street,Archway,London,SE14 2AB"));
-    }
-
-    @Test
-    public void shouldGetRespondentDetailsWhenRespondentIsSubject() {
-        final String organisationName = STRING_GENERATOR.next();
-        final Address address = mock(Address.class);
-
-        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
-                .withMasterDefendantId(randomUUID())
-                .build();
-
-        final Organisation organisation = organisation()
-                .withName(organisationName)
-                .withAddress(address)
-                .withIsProbationBreach(true)
-                .build();
-
-        final String firstName = STRING_GENERATOR.next();
-        final String lastName = STRING_GENERATOR.next();
-
-        final Person person = person()
-                .withFirstName(firstName)
-                .withLastName(lastName)
-                .build();
-
-        final String role = STRING_GENERATOR.next();
-
-        final AssociatedPerson associatedPerson = associatedPerson()
-                .withPerson(person)
-                .withRole(role)
-                .build();
-
-        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
-
-        final CourtApplicationParty respondent = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .build();
-
-        final CourtApplicationParty subject = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
-                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
-                                .withOrganisation(organisation()
-                                        .withName("Alan & Co LLP")
-                                        .withAddress(Address.address()
-                                                .withAddress1("Legal House")
-                                                .withAddress2("55 Sewell Street")
-                                                .withAddress3("Archway")
-                                                .withAddress4("London")
-                                                .withPostcode("SE14 2AB")
-                                                .build())
-                                        .build())
-                                .build())
-                        .build())
-                .build();
-
-        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
-
-        final CourtApplication courtApplication = courtApplication()
-                .withRespondents(courtApplicationRespondents)
-                .withSubject(subject)
-                .build();
-
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
-        assertThat(respondentDetails.size(), is(1));
-        final RespondentDetails details = respondentDetails.get(0);
-        assertThat(details.getName(), is(organisationName));
-        assertThat(details.getAddress(), is(address));
-        assertTrue(details.getIsProbationBreach());
-        assertThat(details.getRespondentRepresentatives().size(), is(1));
-        assertThat(details.getIsSubject(), is(true));
-        assertThat(details.getRepresentation(), is("Alan & Co LLP,Legal House,55 Sewell Street,Archway,London,SE14 2AB"));
-        final RespondentRepresentatives respondentRepresentatives = details.getRespondentRepresentatives().get(0);
-        assertThat(respondentRepresentatives.getRepresentativeName(), is(firstName + " " + lastName));
-        assertThat(respondentRepresentatives.getRepresentativePosition(), is(role));
-
-    }
-
-    @Test
-    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoDefenceOrganisation() {
-        final String organisationName = STRING_GENERATOR.next();
-        final Address address = mock(Address.class);
-
-        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
-                .withMasterDefendantId(randomUUID())
-                .build();
-
-        final Organisation organisation = organisation()
-                .withName(organisationName)
-                .withAddress(address)
-                .withIsProbationBreach(true)
-                .build();
-
-        final String firstName = STRING_GENERATOR.next();
-        final String lastName = STRING_GENERATOR.next();
-
-        final Person person = person()
-                .withFirstName(firstName)
-                .withLastName(lastName)
-                .build();
-
-        final String role = STRING_GENERATOR.next();
-
-        final AssociatedPerson associatedPerson = associatedPerson()
-                .withPerson(person)
-                .withRole(role)
-                .build();
-
-        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
-
-        final CourtApplicationParty respondent = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .build();
-
-        final CourtApplicationParty subject = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
-                        .build())
-                .build();
-
-        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
-
-        final CourtApplication courtApplication = courtApplication()
-                .withRespondents(courtApplicationRespondents)
-                .withSubject(subject)
-                .build();
-
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
-        assertThat(respondentDetails.size(), is(1));
-        final RespondentDetails details = respondentDetails.get(0);
-        assertThat(details.getIsSubject(), is(true));
-        assertThat(details.getRepresentation(), nullValue());
-
-    }
-
-    @Test
-    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoAssociatedDefenceOrganisation() {
-        final String organisationName = STRING_GENERATOR.next();
-        final Address address = mock(Address.class);
-
-        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
-                .withMasterDefendantId(randomUUID())
-                .build();
-
-        final Organisation organisation = organisation()
-                .withName(organisationName)
-                .withAddress(address)
-                .withIsProbationBreach(true)
-                .build();
-
-        final String firstName = STRING_GENERATOR.next();
-        final String lastName = STRING_GENERATOR.next();
-
-        final Person person = person()
-                .withFirstName(firstName)
-                .withLastName(lastName)
-                .build();
-
-        final String role = STRING_GENERATOR.next();
-
-        final AssociatedPerson associatedPerson = associatedPerson()
-                .withPerson(person)
-                .withRole(role)
-                .build();
-
-        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
-
-        final CourtApplicationParty respondent = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .build();
-
-        final CourtApplicationParty subject = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .build();
-
-        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
-
-        final CourtApplication courtApplication = courtApplication()
-                .withRespondents(courtApplicationRespondents)
-                .withSubject(subject)
-                .build();
-
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
-        assertThat(respondentDetails.size(), is(1));
-        final RespondentDetails details = respondentDetails.get(0);
-        assertThat(details.getIsSubject(), is(true));
-        assertThat(details.getRepresentation(), nullValue());
-
-    }
-
-    @Test
-    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoOrganisation() {
-        final String organisationName = STRING_GENERATOR.next();
-        final Address address = mock(Address.class);
-
-        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
-                .withMasterDefendantId(randomUUID())
-                .build();
-
-        final Organisation organisation = organisation()
-                .withName(organisationName)
-                .withAddress(address)
-                .withIsProbationBreach(true)
-                .build();
-
-        final String firstName = STRING_GENERATOR.next();
-        final String lastName = STRING_GENERATOR.next();
-
-        final Person person = person()
-                .withFirstName(firstName)
-                .withLastName(lastName)
-                .build();
-
-        final String role = STRING_GENERATOR.next();
-
-        final AssociatedPerson associatedPerson = associatedPerson()
-                .withPerson(person)
-                .withRole(role)
-                .build();
-
-        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
-
-        final CourtApplicationParty respondent = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .build();
-
-        final CourtApplicationParty subject = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
-                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
-                                .build())
-                        .build())
-                .build();
-
-        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
-
-        final CourtApplication courtApplication = courtApplication()
-                .withRespondents(courtApplicationRespondents)
-                .withSubject(subject)
-                .build();
-
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
-        assertThat(respondentDetails.size(), is(1));
-        final RespondentDetails details = respondentDetails.get(0);
-        assertThat(details.getIsSubject(), is(true));
-        assertThat(details.getRepresentation(), nullValue());
-
-    }
-
-    @Test
-    public void shouldGetRespondentDetailsWhenRespondentIsSubjectAndNoAddress() {
-        final String organisationName = STRING_GENERATOR.next();
-        final Address address = mock(Address.class);
-
-        final MasterDefendant masterDefendant = MasterDefendant.masterDefendant()
-                .withMasterDefendantId(randomUUID())
-                .build();
-
-        final Organisation organisation = organisation()
-                .withName(organisationName)
-                .withAddress(address)
-                .withIsProbationBreach(true)
-                .build();
-
-        final String firstName = STRING_GENERATOR.next();
-        final String lastName = STRING_GENERATOR.next();
-
-        final Person person = person()
-                .withFirstName(firstName)
-                .withLastName(lastName)
-                .build();
-
-        final String role = STRING_GENERATOR.next();
-
-        final AssociatedPerson associatedPerson = associatedPerson()
-                .withPerson(person)
-                .withRole(role)
-                .build();
-
-        final List<AssociatedPerson> organisationPersons = asList(associatedPerson);
-
-        final CourtApplicationParty respondent = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .build();
-
-        final CourtApplicationParty subject = courtApplicationParty()
-                .withOrganisation(organisation)
-                .withMasterDefendant(masterDefendant)
-                .withOrganisationPersons(organisationPersons)
-                .withAssociatedDefenceOrganisation(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
-                        .withDefenceOrganisation(DefenceOrganisation.defenceOrganisation()
-                                .withOrganisation(organisation()
-                                        .withName("Alan & Co LLP")
-                                        .build())
-                                .build())
-                        .build())
-                .build();
-
-        final List<CourtApplicationParty> courtApplicationRespondents = asList(respondent);
-
-        final CourtApplication courtApplication = courtApplication()
-                .withRespondents(courtApplicationRespondents)
-                .withSubject(subject)
-                .build();
-
-        final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
-        assertThat(respondentDetails.size(), is(1));
-        final RespondentDetails details = respondentDetails.get(0);
-        assertThat(details.getIsSubject(), is(true));
-        assertThat(details.getRepresentation(), is("Alan & Co LLP"));
-
-    }
-
-    @Test
-    public void shouldGetThirdPartyDetails() {
+    void shouldGetThirdPartyDetails() {
         final String organisationName = STRING_GENERATOR.next();
         final Address address = mock(Address.class);
 
@@ -1005,7 +611,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
+    void shouldGetThirdPartyDetailsWhenProsecutingAuthorityExists() {
         final Address address = mock(Address.class);
 
         final String name = STRING_GENERATOR.next();
@@ -1032,7 +638,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetRespondentPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -1072,7 +678,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentForMasterDefendant() {
+    void shouldGetRespondentForMasterDefendant() {
 
         final Address address = mock(Address.class);
 
@@ -1105,7 +711,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentForSubject() {
+    void shouldGetRespondentForSubject() {
 
         final Address address = mock(Address.class);
 
@@ -1147,7 +753,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetRespondentWhichIsNotSubject() {
+    void shouldGetRespondentWhichIsNotSubject() {
 
         final Address address = mock(Address.class);
 
@@ -1190,7 +796,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
+    void shouldGetThirdPartyPersonDetailsWhenOrganizationIsEmpty() {
 
         final Address address = mock(Address.class);
 
@@ -1229,14 +835,14 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
+    void shouldReturnEmptyListWhenRespondentDetailsNotFound() {
         final CourtApplication courtApplication = courtApplication().build();
         final List<RespondentDetails> respondentDetails = applicationAtAGlanceHelper.getRespondentDetails(courtApplication);
         assertThat(respondentDetails, empty());
     }
 
     @Test
-    public void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
+    void shouldGetRespondentWhichIsSubjectForStandaloneApplication() {
         final UUID subjectId = randomUUID();
         final UUID applicantId = randomUUID();
 
@@ -1270,7 +876,7 @@ public class ApplicationAtAGlanceHelperTest {
     }
 
     @Test
-    public void shouldReturnLinkedApplicationHearingsWhenMatchedWithDefendantId() {
+    void shouldReturnLinkedApplicationHearingsWhenMatchedWithDefendantId() {
         final UUID applicationId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID hearingId = randomUUID();

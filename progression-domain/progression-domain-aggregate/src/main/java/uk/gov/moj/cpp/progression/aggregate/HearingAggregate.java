@@ -147,7 +147,6 @@ public class HearingAggregate implements Aggregate {
     private static final String GUILTY = "GUILTY";
     private static final String GUILTY_VERDICT_STARTS_WITH = "GUILTY";
 
-    private static final UUID WITHDRAWN_RESULT_ID = UUID.fromString("eb2e4c4f-b738-4a4d-9cce-0572cecb7cb8");
     private static final UUID REMAND_STATUS_PROMPT_ID = UUID.fromString("9403f0d7-90b5-4377-84b4-f06a77811362");
     private static final String[] onBailStatusValues = new String[]{ "Conditional Bail", "Unconditional Bail"};
     private static final String[] onBailStatusCodes = new String[]{ "B", "U"};
@@ -1810,8 +1809,8 @@ public class HearingAggregate implements Aggregate {
         Hearing updatedHearing = Hearing.hearing().withValuesFrom(hearing)
                 .withCourtApplications(updatedCourtApplications)
                 .withProsecutionCases(updatedProsecutionCasesForOriginalHearing).build();
-        final Set<UUID> CTLExpiredOffenceIds = stopCTLExpiryForV2(hearing, resultIdList);
-        if(isNotEmpty(CTLExpiredOffenceIds)) {
+        final Set<UUID> ctlExpiredOffenceIds = stopCTLExpiryForV2(hearing, resultIdList);
+        if(isNotEmpty(ctlExpiredOffenceIds)) {
             updatedHearing = Hearing.hearing().withValuesFrom(updatedHearing)
                     .withProsecutionCases(ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty)
                             .map(prosecutionCase -> ProsecutionCase.prosecutionCase().withValuesFrom(prosecutionCase)
@@ -1819,7 +1818,7 @@ public class HearingAggregate implements Aggregate {
                                             .map(defendant -> Defendant.defendant().withValuesFrom(defendant)
                                                     .withOffences(ofNullable(defendant.getOffences()).map(Collection::stream).orElseGet(Stream::empty)
                                                             .map(offence -> Offence.offence().withValuesFrom(offence)
-                                                                    .withCustodyTimeLimit(CTLExpiredOffenceIds.contains(offence.getId()) ? null : offence.getCustodyTimeLimit())
+                                                                    .withCustodyTimeLimit(ctlExpiredOffenceIds.contains(offence.getId()) ? null : offence.getCustodyTimeLimit())
                                                                     .build())
                                                             .collect(collectingAndThen(Collectors.toList(), getListOrNull())))
                                                     .build())
@@ -3512,7 +3511,7 @@ public class HearingAggregate implements Aggregate {
     private static boolean isOnBailAndHasCTLExpiryForV2(final Offence offence) {
         return isCTLExpiryExists(offence) && nonNull(offence.getJudicialResults()) &&
                 offence.getJudicialResults().stream().filter(Objects::nonNull)
-                        .filter(result -> isResultNotDeleted( result))
+                        .filter(HearingAggregate::isResultNotDeleted)
                         .anyMatch(result -> ofNullable(result.getJudicialResultPrompts()).map(Collection::stream).orElseGet(Stream::empty)
                                 .anyMatch(HearingAggregate::isPromptOnBail)
                         );
@@ -3530,7 +3529,7 @@ public class HearingAggregate implements Aggregate {
     private static boolean hasFinalResultAndHasCTLExpiryForV2(final Offence offence,
                                                               final List<UUID> resultIdList) {
         return isCTLExpiryExists(offence) && nonNull(offence.getJudicialResults()) && offence.getJudicialResults().stream().filter(Objects::nonNull)
-                .filter(result -> isResultNotDeleted(result))
+                .filter(HearingAggregate::isResultNotDeleted)
                 .anyMatch(result -> resultIdList != null && resultIdList.contains(result.getJudicialResultTypeId()));
     }
 

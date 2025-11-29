@@ -664,19 +664,4 @@ public class ApplicationQueryView {
                     .build()));
         }
     }
-
-    private boolean isApplicationSubjectDefendant(final JsonArray courtApplications, final UUID defendantId) {
-        if (nonNull(courtApplications)) {
-            return courtApplications.stream()
-                    .map(jsonValue -> (JsonObject) jsonValue)
-                    .anyMatch(applicationJson -> applicationJson.containsKey(SUBJECT)
-                            && applicationJson.getJsonObject(SUBJECT).containsKey(MASTER_DEFENDANT)
-                            && applicationJson.getJsonObject(SUBJECT).getJsonObject(MASTER_DEFENDANT).containsKey(DEFENDANT_CASE)
-                            && !applicationJson.getJsonObject(SUBJECT).getJsonObject(MASTER_DEFENDANT).getJsonArray(DEFENDANT_CASE).isEmpty()
-                            && applicationJson.getJsonObject(SUBJECT).getJsonObject(MASTER_DEFENDANT).getJsonArray(DEFENDANT_CASE).stream()
-                            .map(JsonValue::asJsonObject).anyMatch(dcJson -> defendantId.toString().equals(dcJson.getString(DEFENDANT_ID_PARAM))));
-        }
-
-        return false;
-    }
 }
