@@ -21,7 +21,7 @@ resources:
       type: github
       name: hmcts/cpp-azure-devops-templates
       endpoint: 'hmcts'
-      ref: 'dtspo-28548-move-common-config-to-root-of-group-vars'
+      ref: 'main'
 
 pool:
   name: "MDV-ADO-AGENT-AKS-01"

@@ -1,5 +1,5 @@
 # CPP progression context
-# Wildfly 10 configurations 
+# Wildfly 10 configuration 
 
 * Use `standalone-progression.xml`:
 
