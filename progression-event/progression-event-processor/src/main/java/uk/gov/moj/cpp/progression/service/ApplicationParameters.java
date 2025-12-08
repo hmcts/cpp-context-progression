@@ -163,6 +163,14 @@ public class ApplicationParameters {
     @Value(key = "laa.azure.apim.invocation.retryInterval", defaultValue = "1000")
     public String retryInterval;
 
+    @Inject
+    @Value(key = "addDefendantRetryIntervals", defaultValue = "1-5-10-30-60-90-120")
+    public String addDefendantRetryIntervals;
+
+    public String getAddDefendantRetryIntervals() {
+        return addDefendantRetryIntervals;
+    }
+
     public String getOnlineGuiltyPleaCourtHearingEnglishTemplateId() {
         return onlineGuiltyPleaCourtHearingEnglishTemplateId;
     }
