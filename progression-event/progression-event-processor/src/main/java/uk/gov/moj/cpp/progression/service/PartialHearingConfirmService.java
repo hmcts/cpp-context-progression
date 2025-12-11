@@ -112,7 +112,6 @@ public class PartialHearingConfirmService {
                         .withEarliestStartDateTime(CollectionUtils.isNotEmpty(hearingInProgression.getHearingDays()) ?
                                 hearingInProgression.getHearingDays().get(0).getSittingDay() : null)
                         .build()))
-                .withHearingId(seedingHearing.getSeedingHearingId())
                 .withSeedingHearing(seedingHearing)
                 .build();
     }

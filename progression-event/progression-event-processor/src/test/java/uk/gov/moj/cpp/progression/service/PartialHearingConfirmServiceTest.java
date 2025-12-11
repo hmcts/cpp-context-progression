@@ -300,6 +300,7 @@ public class PartialHearingConfirmServiceTest {
 
     }
 
+
     @Test
     public void shouldTransformToListNextCourtHearing() {
         final UUID courtApplicationId = randomUUID();
@@ -350,8 +351,9 @@ public class PartialHearingConfirmServiceTest {
         assertThat(prosecutionCases.size(), equalTo(1));
         assertThat(prosecutionCases.get(0).getId(), equalTo(CASE1_ID));
 
-        assertThat(listNextHearings.getHearingId(), is(SEEDING_HEARING_ID));
+        assertThat(listNextHearings.getHearingId(), is(nullValue()));
     }
+
 
     @Test
     public void shouldTransformToListNextCourtHearingWhenHearingDaysNull() {
@@ -402,7 +404,7 @@ public class PartialHearingConfirmServiceTest {
         assertThat(prosecutionCases.size(), equalTo(1));
         assertThat(prosecutionCases.get(0).getId(), equalTo(CASE1_ID));
 
-        assertThat(listNextHearings.getHearingId(), is(SEEDING_HEARING_ID));
+        assertThat(listNextHearings.getHearingId(), is(nullValue()));
 
 
     }
