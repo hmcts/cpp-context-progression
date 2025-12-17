@@ -1,0 +1,69 @@
+---
+resource_descriptor:
+  spec_version: '1.0.0'
+  version: '${project.version}'
+
+  resources:
+    - name: java:/app/progression-service/DS.eventstore
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: event-repository-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: aggregate-snapshot-repository-liquibase
+            type: jar
+            version: '${project.version}'
+
+    - name: java:/app/progression-event-processor/DS.progression.eventprocessorstore
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.moj.cpp.progression
+            artifactId: progression-eventprocessorstore-liquibase
+            type: jar
+            version: '${project.version}'
+
+    - name: java:/DS.progression
+      type: xa-datasource
+      setup:
+        - type: liquibase
+          maven:
+            groupId: uk.gov.justice.services
+            artifactId: event-buffer-liquibase
+            type: jar
+            version: '${cpp.framework.version}'
+        - type: liquibase
+          maven:
+            groupId: uk.gov.moj.cpp.progression
+            artifactId: progression-viewstore-liquibase
+            type: jar
+            version: '${project.version}'
+
+    - name: progression.handler.command
+      type: queue
+    - name: progression.event
+      type: topic
+    - name: public.event
+      type: topic
+
+  services:
+    # progression provides these service mappings
+    - name: 'progression-service'
+      id: 'progression_service'
+      target: '/progression-service'
+      map:
+        - '/progression-command-api'
+        - '/progression-command-handler'
+        - '/progression-event-listener'
+        - '/progression-event-indexer'
+        - '/progression-event-processor'
+        - '/progression-query-api'
+        - '/progression-query-view'
+      matcher: '/progression-[^/]+'

@@ -1,0 +1,747 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "QEII Law Courts",
+        "address2": "Derby Square",
+        "address3": "Liverpool",
+        "address4": "",
+        "address5": "",
+        "postcode": "L2 1XA"
+      },
+      "code": "C05LV00",
+      "courtLocationCode": "0433",
+      "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+      "lja": {
+        "ljaCode": "1810",
+        "ljaName": "Merseyside Magistrates' Court"
+      },
+      "name": "Liverpool Crown Court",
+      "roomId": "a5e56fa9-c4a6-300a-98e3-2596895f0305",
+      "roomName": "Crown Court 3-2"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2021-08-03"
+          }
+        ],
+        "defendantId": "ae12dc63-e330-4a3d-816e-246b1b0a3f72"
+      }
+    ],
+    "defendantJudicialResults": [
+      {
+        "judicialResult": {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Robert",
+            "lastName": "Barnes",
+            "userId": "62d79942-ae44-4d6d-b066-47ec71662d19"
+          },
+          "d20": false,
+          "durationElement": {
+            "secondaryDurationUnit": "M",
+            "secondaryDurationValue": 20
+          },
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": true,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "c4b633db-401c-46b8-a659-8c2e492710ad",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+              "label": "Total custodial period",
+              "promptReference": "totalCustodialPeriod",
+              "promptSequence": 100,
+              "type": "INT",
+              "usergroups": [],
+              "value": "24 Months",
+              "welshValue": "24 Months"
+            },
+            {
+              "courtExtract": "Y",
+              "durationSequence": 2,
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "95618691-0742-417e-82b9-c4d4bff94585",
+              "label": "Suspended period",
+              "promptReference": "suspendedPeriod",
+              "promptSequence": 200,
+              "type": "INT",
+              "usergroups": [],
+              "value": "20 Months",
+              "welshLabel": "Cyfnod Gohiriedig",
+              "welshValue": "20 Months"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified organisation name",
+              "promptReference": "probationteamtobenotifiedOrganisationName",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "London Division NPS",
+              "welshValue": "London Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified email address 1",
+              "promptReference": "probationteamtobenotifiedEmailAddress1",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "londonnps.court@justice.gov.uk",
+              "welshValue": "londonnps.court@justice.gov.uk"
+            }
+          ],
+          "judicialResultTypeId": "b65fb5f1-b11d-4a95-a198-3b81333c7cf9",
+          "label": "Total suspended custodial period",
+          "lastSharedDateTime": "2021-12-02",
+          "level": "D",
+          "lifeDuration": false,
+          "offenceId": "ff95a8b9-aaf4-4cc7-b794-5a9244d3473a",
+          "orderedDate": "2021-08-05",
+          "orderedHearingId": "8b2a3099-6847-420d-9bad-169d401036b4",
+          "parentJudicialResultId": "e0bee2af-8fdf-40ac-bcb9-f1d87cb0ac2d",
+          "parentJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": false,
+          "publishedForNows": true,
+          "rank": 22200,
+          "resultText": "Total suspended custodial period\nTotal custodial period 24 Months\nSuspended period 20 Months\nProbation team to be notified organisation name London Division NPS\nProbation team to be notified email address 1 londonnps.court@justice.gov.uk",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "e0bee2af-8fdf-40ac-bcb9-f1d87cb0ac2d",
+          "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Cyfanswm y cyfnod gohiriedig yn y ddalfa"
+        },
+        "masterDefendantId": "ae12dc63-e330-4a3d-816e-246b1b0a3f72"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+        "courtRoomId": "a5e56fa9-c4a6-300a-98e3-2596895f0305",
+        "isCancelled": false,
+        "listedDurationMinutes": 1080,
+        "listingSequence": 0,
+        "sittingDay": "2021-08-01T09:30:00.000Z"
+      },
+      {
+        "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+        "courtRoomId": "a5e56fa9-c4a6-300a-98e3-2596895f0305",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-08-02T09:30:00.000Z"
+      },
+      {
+        "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+        "courtRoomId": "a5e56fa9-c4a6-300a-98e3-2596895f0305",
+        "isCancelled": false,
+        "listedDurationMinutes": 90,
+        "listingSequence": 0,
+        "sittingDay": "2021-08-03T09:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "8b2a3099-6847-420d-9bad-169d401036b4",
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2021-08-03T10:14:40.833Z",
+            "id": "ae12dc63-e330-4a3d-816e-246b1b0a3f72",
+            "isYouth": true,
+            "masterDefendantId": "ae12dc63-e330-4a3d-816e-246b1b0a3f72",
+            "offences": [
+              {
+                "arrestDate": "2021-08-01",
+                "chargeDate": "2021-08-02",
+                "convictingCourt": {
+                  "code": "C05LV00",
+                  "courtLocationCode": "0433",
+                  "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                  "name": "Liverpool Crown Court",
+                  "roomId": "a5e56fa9-c4a6-300a-98e3-2596895f0305"
+                },
+                "convictionDate": "2021-08-03",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "ff95a8b9-aaf4-4cc7-b794-5a9244d3473a",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": true,
+                    "category": "ANCILLARY",
+                    "cjsCode": "3109",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "62d79942-ae44-4d6d-b066-47ec71662d19"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "5f7aa202-162a-47f0-8cbf-ec2b4dfecbbd",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f092fe58-2297-4d10-818a-8b303692ac39",
+                        "label": "Under direction of",
+                        "promptReference": "underDirectionOf",
+                        "promptSequence": 100,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Court",
+                        "welshLabel": "Dan arweiniad",
+                        "welshValue": "Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "0b74fb53-acb7-42db-b9b6-976ce74b59b5",
+                        "label": "Treatment place",
+                        "promptReference": "treatmentPlace",
+                        "promptSequence": 200,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "London",
+                        "welshLabel": "Lleoliad y driniaeth",
+                        "welshValue": "London"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "10028ef8-efc7-4a40-9703-1e121a6fbc84",
+                        "label": "Period to provide samples",
+                        "promptReference": "periodToProvideSamples",
+                        "promptSequence": 300,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "5 Months",
+                        "welshLabel": "Cyfnod i ddarparu samplau",
+                        "welshValue": "5 Months"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "dcb90a68-c834-4ec3-a311-125c6400b487",
+                        "label": "Review frequency",
+                        "promptReference": "reviewFrequency",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Monthly",
+                        "welshLabel": "Amlder yr adolygiadau",
+                        "welshValue": "Monthly"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "bc256fd1-dedd-43ab-8882-f9fbb448a62d",
+                        "label": "First review date",
+                        "promptReference": "firstReviewDate",
+                        "promptSequence": 700,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "12/01/2022",
+                        "welshLabel": "Dyddiad yr adolygiad cyntaf",
+                        "welshValue": "12/01/2022"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f622f008-f8e7-4f34-a7df-df85a7ed4d47",
+                        "label": "First review time",
+                        "promptReference": "firstReviewTime",
+                        "promptSequence": 800,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "14:30",
+                        "welshLabel": "Amser yr adolygiad cyntaf",
+                        "welshValue": "14:30"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e498ec52-0adf-41cf-89e2-40955a418393",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "courthousenameOrganisationName",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Lavender Hill Magistrates' Court",
+                        "welshValue": "Lavender Hill Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e498ec52-0adf-41cf-89e2-40955a418393",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "courthousenameAddress1",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "176A Lavender Hill",
+                        "welshValue": "176A Lavender Hill"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e498ec52-0adf-41cf-89e2-40955a418393",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "courthousenameAddress2",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London",
+                        "welshValue": "London"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e498ec52-0adf-41cf-89e2-40955a418393",
+                        "label": "Courthouse post code",
+                        "promptReference": "courthousenamePostCode",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "SW11 1JU",
+                        "welshValue": "SW11 1JU"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e498ec52-0adf-41cf-89e2-40955a418393",
+                        "label": "Courthouse email address 1",
+                        "promptReference": "courthousenameEmailAddress1",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London.magistrates@cps.gov.uk",
+                        "welshValue": "London.magistrates@cps.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e498ec52-0adf-41cf-89e2-40955a418393",
+                        "label": "Courthouse email address 2",
+                        "promptReference": "courthousenameEmailAddress2",
+                        "promptSequence": 900,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "periodicwarrants@geoamey.co.uk",
+                        "welshValue": "periodicwarrants@geoamey.co.uk"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "005585e7-1442-4114-a542-272c55cd7668",
+                        "label": "Attendance",
+                        "promptReference": "attendance",
+                        "promptSequence": 1100,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "must attend",
+                        "welshLabel": "Presenoldeb",
+                        "welshValue": "Rhaid bod yn bresennol"
+                      }
+                    ],
+                    "judicialResultTypeId": "cc2cbb94-b75a-4a8c-9840-31c5f8007724",
+                    "label": "Drug rehabilitation non-residential with review",
+                    "lastSharedDateTime": "2021-12-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2021-08-05",
+                    "orderedHearingId": "8b2a3099-6847-420d-9bad-169d401036b4",
+                    "parentJudicialResultId": "918bead3-7c11-4d35-9bf7-f225a2d366df",
+                    "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "BS",
+                    "rank": 15300,
+                    "resultDefinitionGroup": "Community Requirement",
+                    "resultText": "Drug rehabilitation non-residential with review\nUnder direction of Court\nTreatment place London\nPeriod to provide samples 5 Months\nReview frequency Monthly\nFirst review date 12/01/2022\nFirst review time 14:30\nCourthouse organisation name Lavender Hill Magistrates' Court\nCourthouse address line 1 176A Lavender Hill\nCourthouse address line 2 London\nCourthouse post code SW11 1JU\nCourthouse email address 1 London.magistrates@cps.gov.uk\nCourthouse email address 2 periodicwarrants@geoamey.co.uk\nAttendance must attend",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "e0bee2af-8fdf-40ac-bcb9-f1d87cb0ac2d",
+                    "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Adsefydlu defnyddiwr cyffuriau - dibreswyl gydag adolygiad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": true,
+                    "category": "FINAL",
+                    "cjsCode": "1115",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "62d79942-ae44-4d6d-b066-47ec71662d19"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "M",
+                      "primaryDurationValue": 24,
+                      "secondaryDurationUnit": "M",
+                      "secondaryDurationValue": 20
+                    },
+                    "dvlaCode": "C",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "e0bee2af-8fdf-40ac-bcb9-f1d87cb0ac2d",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                        "label": "Imprisonment Period",
+                        "promptReference": "imprisonmentPeriod",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "24 Months",
+                        "welshLabel": "Cyfnod Carcharu",
+                        "welshValue": "24 Months"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                        "label": "Bail remand days to count (tagged days)",
+                        "promptReference": "bailRemandDaysToCountTaggedDays",
+                        "promptSequence": 700,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "4",
+                        "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                        "welshValue": "4"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "judicialResultPromptTypeId": "dada120c-160a-49a9-b040-e8b6b7128d67",
+                        "label": "Notification of electronic monitoring order (requirement)",
+                        "promptReference": "49aec8f8-329e-4212-822e-5de4920ac3d1",
+                        "promptSequence": 800,
+                        "usergroups": [],
+                        "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk.cjsm.net\nContinuation of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
+                        "welshLabel": "Hysbysiad o orchymyn monitro electronig (gofyniad)"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                        "label": "Total custodial period",
+                        "promptReference": "totalCustodialPeriod",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "24 Months",
+                        "welshValue": "24 Months"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 2,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "95618691-0742-417e-82b9-c4d4bff94585",
+                        "label": "Suspended period",
+                        "promptReference": "suspendedPeriod",
+                        "promptSequence": 200,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "20 Months",
+                        "welshLabel": "Cyfnod Gohiriedig",
+                        "welshValue": "20 Months"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London Division NPS",
+                        "welshValue": "London Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "londonnps.court@justice.gov.uk",
+                        "welshValue": "londonnps.court@justice.gov.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "label": "Suspended sentence order - imprisonment",
+                    "lastSharedDateTime": "2021-12-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2021-08-05",
+                    "orderedHearingId": "8b2a3099-6847-420d-9bad-169d401036b4",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 19700,
+                    "resultText": "Suspended sentence order - imprisonment\nImprisonment Period 24 Months\nBail remand days to count (tagged days) 4\nNotification of electronic monitoring order (requirement) Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk.cjsm.net\nContinuation of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nWas an interpreter used?:No\nDoes the offender have any special needs?:No\nTotal custodial period 24 Months\nSuspended period 20 Months\nProbation team to be notified organisation name London Division NPS\nProbation team to be notified email address 1 londonnps.court@justice.gov.uk",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "e0bee2af-8fdf-40ac-bcb9-f1d87cb0ac2d",
+                    "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gorchymyn dedfryd ohiriedig - carcharu"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "62d79942-ae44-4d6d-b066-47ec71662d19"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": false,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "49aec8f8-329e-4212-822e-5de4920ac3d1",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "92566757-ef79-4804-bced-c63ebb0937e7",
+                        "label": "Electronic monitoring contractor organisation name",
+                        "promptReference": "electronicmonitoringcontractorOrganisationName",
+                        "promptSequence": 100,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Electronic Monitoring Contractor",
+                        "welshValue": "Electronic Monitoring Contractor"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "92566757-ef79-4804-bced-c63ebb0937e7",
+                        "label": "Electronic monitoring contractor email address 1",
+                        "promptReference": "electronicmonitoringcontractorEmailAddress1",
+                        "promptSequence": 100,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "LPadmin@ems.co.uk.cjsm.net",
+                        "welshValue": "LPadmin@ems.co.uk.cjsm.net"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "a7cc84b3-0c62-440d-b2d3-f4b40ef13c99",
+                        "label": "Continuation of electronic monitoring",
+                        "promptReference": "continuationOfElectronicMonitoring",
+                        "promptSequence": 500,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Parhau gyda monitro electronig",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f6ca6307-bdab-42d3-968b-44485824b535",
+                        "label": "Are there any additional requirements as well?",
+                        "promptReference": "areThereAnyAdditionalRequirementsAsWell",
+                        "promptSequence": 600,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "false",
+                        "welshLabel": "A oes unrhyw ofynion ychwanegol hefyd?",
+                        "welshValue": "false"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "cdc4f47c-612d-4f81-b321-a2b5861d6e19",
+                        "label": "Was an interpreter used?",
+                        "promptReference": "wasAnInterpreterUsed",
+                        "promptSequence": 800,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "false",
+                        "welshLabel": "A oedd cyfieithydd yn bresennol?",
+                        "welshValue": "false"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "5a386999-b2d9-45f4-9b68-57000ba2d6ef",
+                        "label": "Does the offender have any special needs?",
+                        "promptReference": "doesTheOffenderHaveAnySpecialNeeds",
+                        "promptSequence": 1000,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "false",
+                        "welshLabel": "A oes gan y troseddwr unrhyw anghenion arbennig?",
+                        "welshValue": "false"
+                      }
+                    ],
+                    "judicialResultTypeId": "dada120c-160a-49a9-b040-e8b6b7128d67",
+                    "label": "Notification of electronic monitoring order (requirement)",
+                    "lastSharedDateTime": "2021-12-02",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2021-08-05",
+                    "orderedHearingId": "8b2a3099-6847-420d-9bad-169d401036b4",
+                    "parentJudicialResultId": "cfb71bb0-bde4-43dd-964a-1b8fb9a0c80f",
+                    "parentJudicialResultTypeId": "d38d9766-c141-4d6b-bb4a-249a9bb88636",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 600,
+                    "resultDefinitionGroup": "Community requirements",
+                    "resultText": "Notification of electronic monitoring order (requirement)\nElectronic monitoring contractor organisation name Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1 LPadmin@ems.co.uk.cjsm.net\nContinuation of electronic monitoring Yes\nAre there any additional requirements as well? No\nWas an interpreter used? No\nDoes the offender have any special needs? No",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "e0bee2af-8fdf-40ac-bcb9-f1d87cb0ac2d",
+                    "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Hysbysiad o orchymyn monitro electronig (gofyniad)"
+                  }
+                ],
+                "lastAdjournDate": "2021-08-03",
+                "lastAdjournedHearingType": "",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "COML022",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "204639be-6a4c-461e-aafb-fff8a6fe5c8b",
+                "offenceLegislation": "Contrary to Common Law.",
+                "offenceTitle": "Manslaughter",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "ff95a8b9-aaf4-4cc7-b794-5a9244d3473a",
+                  "originatingHearingId": "8b2a3099-6847-420d-9bad-169d401036b4",
+                  "pleaDate": "2021-08-03",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": false,
+                "reportingRestrictions": [
+                  {
+                    "id": "ff7bfce1-2221-4d2d-82ee-8440403d17ab",
+                    "label": "Section 49 of the Children and Young Persons Act 1933 applies",
+                    "orderedDate": "2021-08-03"
+                  }
+                ],
+                "startDate": "2021-08-01",
+                "wording": "On or in 1 August 2021 at Liverpool unlawfully killed John Doe"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "ASN01",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "No fixed abode"
+                },
+                "dateOfBirth": "2007-08-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "John",
+                "gender": "NOT_SPECIFIED",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Arnold",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": true,
+            "prosecutionCaseId": "aa8b9819-12b1-4f7d-98fa-2b475aa1ee09"
+          }
+        ],
+        "id": "aa8b9819-12b1-4f7d-98fa-2b475aa1ee09",
+        "initiationCode": "C",
+        "originatingOrganisation": "0050000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Merseyside police HQ",
+            "address2": "Canning place",
+            "address3": "Liverpool",
+            "address4": "Merseyside",
+            "postcode": "L69 1JD"
+          },
+          "contact": {
+            "primaryEmail": "Crown.Court.Results@merseyside.police.uk"
+          },
+          "majorCreditorCode": "PO05",
+          "prosecutionAuthorityCode": "MERSPF",
+          "prosecutionAuthorityId": "a98164fc-fd80-3307-9fd1-e8dca4ea7969",
+          "prosecutionAuthorityName": "Merseyside Police",
+          "prosecutionAuthorityOUCode": "0050000",
+          "caseURN": "SRW_2021_08_03_02"
+        }
+      }
+    ],
+    "shadowListedOffences": [],
+    "type": {
+      "description": "Plea and Trial Preparation",
+      "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+    }
+  },
+  "hearingListingStatus": "HEARING_RESULTED",
+  "notifyNCES": false
+}

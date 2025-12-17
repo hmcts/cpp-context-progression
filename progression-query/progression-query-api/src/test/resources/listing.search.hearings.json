@@ -1,0 +1,194 @@
+{
+  "hearings": [
+    {
+      "id": "82b243f8-c4d3-4790-92ef-6192db00539c",
+      "allocated": true,
+      "type": {
+        "id": "2f8b624a-9912-49e5-a229-ad301893c694",
+        "description": "Trial"
+      },
+      "sequence": 1,
+      "jurisdictionType": "CROWN",
+      "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f",
+      "courtRoomId": "9d324f4f-6c3b-451f-ac1e-f459db781153",
+      "judiciary": [{
+        "judicialId": "d1a22d9e-088b-4af4-acb5-bc6e78aaf5ea",
+        "judicialRoleType": {
+          "judiciaryType": "CIRCUIT_JUDGE"
+        },
+        "isDeputy": false,
+        "isBenchChairman": false
+      }],
+      "reportingRestrictionReason": "aReason",
+      "hearingLanguage": "WELSH",
+      "estimatedMinutes": 100,
+      "prosecutorDatesToAvoid": "Prosecutor on holiday 2018-11-01",
+      "listingDirections": "Child care difficulty on Tuesdays",
+      "listedCases": [
+        {
+          "id": "31bf5d91-f90e-4117-a018-d1290e107692",
+          "caseIdentifier": {
+            "authorityId": "31fd0edf-9692-46fa-a6be-4b78bf88fec6",
+            "authorityCode": "POLICE",
+            "caseReference": "87GD9945217"
+          },
+          "defendants": [
+            {
+              "id": "0baecac5-222b-402d-9047-84803679edac",
+              "masterDefendantId": "0baecac5-222b-402d-9047-84803679edac",
+              "courtProceedingsInitiated": "2019-01-01T00:00:00.000Z",
+              "datesToAvoid": "Hospital appointment 2018-11-07",
+              "hearingLanguageNeeds": "WELSH",
+              "specificRequirements": "wheelchair access required",
+              "personId": "0baecac5-222b-402d-9047-84803679edad",
+              "firstName": "David",
+              "lastName": "Lloyd",
+              "dateOfBirth": "1995-03-23",
+              "bailStatus": {
+                "id":"34443c87-fa6f-34c0-897f-0cce45773df5",
+                "code":"P",
+                "description":"Conditional Bail with Pre-Release conditions"
+              },
+              "custodyTimeLimit": "2018-01-30",
+              "defenceOrganisation": "Flynch and Fleece Solicitors",
+              "offences": [
+                {
+                  "id": "0baecac5-222b-402d-9047-84803679edad",
+                  "offenceCode": "OF61131",
+                  "startDate": "2016-06-21",
+                  "endDate": "2017-08-01",
+                  "statementOfOffence": {
+                    "title": "Wounding with intent",
+                    "welshTitle": "Colli â bwriad",
+                    "legislation": "Offences against the Person Act 1861",
+                    "welshLegislation": "Deddf Troseddau yn erbyn y Person 1861"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "startDate": "2018-11-01",
+      "endDate": "2018-11-10",
+      "calendarDays": [
+        {
+          "startTime": "2018-09-01T10:00+00:00",
+          "endTime": "2018-09-01T12:00+00:00",
+          "durationMinutes": 120,
+          "sequence": 1
+        },
+        {
+          "startTime": "2018-09-02T11:00+00:00",
+          "endTime": "2018-09-02T14:00+00:00",
+          "durationMinutes": 180,
+          "sequence": 2
+        }
+      ],
+      "nonDefaultDays": [
+        {
+          "startTime" : "2018-06-01T11:00:00.000Z"
+        },
+        {
+          "startTime" : "2018-06-04T11:30:00.000Z"
+        }
+      ],
+      "nonSittingDays": ["2018-01-21","2018-01-22"]
+    },
+    {
+      "id": "111d2f19-89a7-4f4f-8d14-a90fd3977be4",
+      "allocated": true,
+      "type": {
+        "id": "2f8b624a-9912-49e5-a229-ad301893c694",
+        "description": "Trial"
+      },
+      "sequence": 1,
+      "jurisdictionType": "CROWN",
+      "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f",
+      "courtRoomId": "9d324f4f-6c3b-451f-ac1e-f459db781153",
+      "judiciary": [{
+        "judicialId": "d1a22d9e-088b-4af4-acb5-bc6e78aaf5ea",
+        "judicialRoleType": {
+          "judiciaryType": "CIRCUIT_JUDGE"
+        },
+        "isDeputy": false,
+        "isBenchChairman": false
+      }],
+      "reportingRestrictionReason": "aReason",
+      "hearingLanguage": "WELSH",
+      "estimatedMinutes": 100,
+      "prosecutorDatesToAvoid": "Prosecutor on holiday 2018-11-01",
+      "listingDirections": "Child care difficulty on Tuesdays",
+      "listedCases": [
+        {
+          "id": "31bf5d91-f90e-4117-a018-d1290e107692",
+          "caseIdentifier": {
+            "authorityId": "31fd0edf-9692-46fa-a6be-4b78bf88fec6",
+            "authorityCode": "POLICE",
+            "caseReference": "87GD9945217"
+          },
+          "defendants": [
+            {
+              "id": "0baecac5-222b-402d-9047-84803679edac",
+              "masterDefendantId": "0baecac5-222b-402d-9047-84803679edac",
+              "courtProceedingsInitiated": "2019-01-01T00:00:00.000Z",
+              "datesToAvoid": "Hospital appointment 2018-11-07",
+              "hearingLanguageNeeds": "WELSH",
+              "specificRequirements": "wheelchair access required",
+              "personId": "0baecac5-222b-402d-9047-84803679edad",
+              "firstName": "David",
+              "lastName": "Lloyd",
+              "dateOfBirth": "1995-03-23",
+              "bailStatus": {
+                "id":"34443c87-fa6f-34c0-897f-0cce45773df5",
+                "code":"P",
+                "description":"Conditional Bail with Pre-Release conditions"
+              },
+              "custodyTimeLimit": "2018-01-30",
+              "defenceOrganisation": "Flynch and Fleece Solicitors",
+              "offences": [
+                {
+                  "id": "0baecac5-222b-402d-9047-84803679edad",
+                  "offenceCode": "OF61131",
+                  "startDate": "2016-06-21",
+                  "endDate": "2017-08-01",
+                  "statementOfOffence": {
+                    "title": "Wounding with intent",
+                    "welshTitle": "Colli â bwriad",
+                    "legislation": "Offences against the Person Act 1861",
+                    "welshLegislation": "Deddf Troseddau yn erbyn y Person 1861"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "startDate": "2018-11-01",
+      "endDate": "2018-11-10",
+      "calendarDays": [
+        {
+          "startTime": "2018-09-01T10:00+00:00",
+          "endTime": "2018-09-01T12:00+00:00",
+          "durationMinutes": 120,
+          "sequence": 1
+        },
+        {
+          "startTime": "2018-09-02T11:00+00:00",
+          "endTime": "2018-09-02T14:00+00:00",
+          "durationMinutes": 180,
+          "sequence": 2
+        }
+      ],
+      "nonDefaultDays": [
+        {
+          "startTime" : "2018-06-01T11:00:00.000Z"
+        },
+        {
+          "startTime" : "2018-06-04T11:30:00.000Z"
+        }
+      ],
+      "nonSittingDays": ["2018-01-21","2018-01-22"]
+    }
+  ]
+}

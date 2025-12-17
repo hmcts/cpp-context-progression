@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterDocumentRequest.json",
+  "description": "The details required to generate a prison court register document",
+  "type": "object",
+  "properties": {
+    "courtCentreId": {
+      "description": "The court centre reference data identifier",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hearingId": {
+      "description": "The hearing id of the hearing shared",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingVenue": {
+      "description": "The venue of the court register",
+      "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterHearingVenue.json"
+    },
+    "recipients": {
+      "description": "The recipients of the court register",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterRecipient.json"
+      }
+    },
+    "defendant": {
+      "description": "The defendant that is the subject of the court register",
+      "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterDefendant.json"
+    },
+    "custodyLocation": {
+      "description": "The custody location rendered in a Prison Court Register document",
+      "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterCustodyLocation.json"
+    }
+  },
+  "required": [
+    "courtCentreId",
+    "hearingDate",
+    "hearingId",
+    "defendant"
+  ],
+  "additionalProperties": false
+}

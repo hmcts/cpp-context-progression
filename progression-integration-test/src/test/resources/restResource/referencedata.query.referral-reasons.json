@@ -1,0 +1,11 @@
+{
+  "id": "8e2f843e-d639-40b3-8611-8015f3a18958",
+  "seqId": 2,
+  "reason": "Critical",
+  "welshReason": "Ple amhendant",
+  "subReason": "Defendant has to attend",
+  "welshSubReason": "Diffynnydd i fynychu i gadarnhau ple",
+  "hearingCode": "CTL",
+  "validFrom": "2017-08-01",
+  "validTo": "2017-08-01"
+}

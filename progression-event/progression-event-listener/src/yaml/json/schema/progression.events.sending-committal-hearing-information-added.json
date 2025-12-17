@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/sending-committal-hearing-information-added.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "fromCourtCentre": {
+      "type": "string"
+    },
+    "sendingCommittalDate": {
+      "type": "string"
+    },
+    "courtCenterID": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "caseId",
+    "fromCourtCentre",
+    "sendingCommittalDate"
+  ]
+}

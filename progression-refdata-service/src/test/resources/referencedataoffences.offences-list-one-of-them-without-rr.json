@@ -1,0 +1,355 @@
+{
+  "offences": [
+    {
+      "offenceId": "04c099cc-eba2-4c80-9eed-7c1ef21d706a",
+      "cjsOffenceCode": "OFFENCE_CODE_1",
+      "modeOfTrial": "SNONIMP",
+      "validFrom": "2017-10-10",
+      "validTo": "2017-12-10",
+      "offenceStartDate": "2019-01-19",
+      "offenceEndDate": "2019-01-25",
+      "cppDateOfLastUpdate": "2017-12-10",
+      "pnldDateOfLastUpdate": "2017-06-10",
+      "drugsOrAlcoholRelated": "Y",
+      "locationRequired": "N",
+      "prosecutionTimeLimit": "6 months",
+      "sentencing": "Yes",
+      "penaltyType": "Excise penalty",
+      "modeOfTrialDerived": "Either Way",
+      "backDuty": true,
+      "endorsableFlag": true,
+      "reportRestrictResultCode": "YES",
+      "details": {
+        "document": {
+          "type": "H",
+          "codes": {
+            "fptgraduated": 0.0,
+            "mojstatscode": "108/16",
+            "mopinoteslink": "D19586",
+            "cjsoffencecode": "AA06004",
+            "mopireviewgroup": {
+              "code": "C",
+              "description": "Group 3"
+            },
+            "notifiabletomoj": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "seatbeltoffence": {
+              "code": "N",
+              "description": "No"
+            },
+            "fptgraduatedhigh": 0.0,
+            "roadsidedeposits": {
+              "code": "N",
+              "description": "No"
+            },
+            "maxPenalty": "Max Penalty",
+            "fptissuedbypolice": 0.0,
+            "pndissuedbyothers": 0.0,
+            "pndissuedbypolice": 0.0,
+            "pncacpooffencecode": "12.1.12.1",
+            "disqualificationclass": {
+              "code": "N",
+              "description": "discretionary disqualification not endorsable"
+            },
+            "recordableonpncindicator": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "pndissuedbylocalauthorities": 0.0
+          },
+          "libra": {
+            "miscode": {
+              "code": "SNM",
+              "description": "Summary Non-Motoring"
+            },
+            "fineindicator": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "libracategory": {
+              "code": "CS",
+              "description": "Summary Non-motoring"
+            },
+            "maxfinetypemagct": {
+              "code": "5",
+              "description": "fine not exceeding level five on the legislative standard scale"
+            },
+            "custodialindicator": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "maxcustodialsentenceunitmagct": {
+              "code": "Months",
+              "description": "Months"
+            },
+            "maxcustodialsentencelengthmagct": 3
+          },
+          "other": {
+            "penalty": "Summary: Three months imprisonment and / or a fine not exceeding level five on the standard scale. <br /><br />Time Limit on Prosecutions<br />6 months",
+            "modeoftrial": {
+              "code": "SIMP",
+              "description": "SUMMARY IMPRISONABLE"
+            },
+            "powersofarrest": "Arrest without warrant",
+            "geographicregion": {
+              "code": "E",
+              "description": "England"
+            },
+            "timelimitforprosecutions": "6 months"
+          },
+          "english": {
+            "notes": "This CJS Code and Outline Offence Wording document is now OBSOLETE. Revoked by S.I. 2011 / 1197 as from 25/05/11.",
+            "title": "Obstruct person acting in the execution of these Regulations",
+            "legislation": "Contrary to section 32 of the Sexual Offences Act 2003.",
+            "pointstoprove": "date and location<br />obstruct person acting in the execution of these Regulations",
+            "additionalkeywords": {
+              "additionalkeyword": [
+                "Animals",
+                "Animal Products Import",
+                "Export England Regulations 2006"
+              ]
+            },
+            "investigatoractions": {
+              "investigatoraction": [
+                {
+                  "code": "IA27",
+                  "description": "Confirm proposed charge is appropriately authorised (Police or CPS)"
+                },
+                {
+                  "code": "IA28",
+                  "description": "Ensure compliance with investigator's obligations re disclosure"
+                },
+                {
+                  "code": "IA29",
+                  "description": "Consider if case suitable for referral to Financial Investigation Unit and CPS for asset recovery eg confiscation order"
+                },
+                {
+                  "code": "IA2",
+                  "description": "DNA Samples: If crime scene stain present - take evidential sample If no crime scene stain & DNA not confirmed on PNC - take Criminal Justice sample. If DNA confirmed on PNC - CJ sample not required"
+                },
+                {
+                  "code": "IA1",
+                  "description": "Fingerprint & photograph"
+                },
+                {
+                  "code": "IA4",
+                  "description": "PNC recordable"
+                },
+                {
+                  "code": "IA3",
+                  "description": "Tape record interview unless exempt"
+                }
+              ]
+            },
+            "standardoffencewording": "On **(..SPECIFY DATE..) at **(..SPECIFY TOWNSHIP..), **(..SPECIFY DETAILS OF THE OFFENCE..)",
+            "policeandcpschargingresponsibilities": "D27968"
+          },
+          "pnldref": "H13001",
+          "ancillary": {
+            "groups": {
+              "code": "GV07",
+              "description": "Animal Byproducts"
+            },
+            "lastupdate": "300911 For the information of Gloucestershire Police ONLY - \"Offence Wording Group\" field completed",
+            "datecreated": "2010-07-29",
+            "offenceenddate": "2011-05-24",
+            "legislationcode": {
+              "link": "S1212"
+            },
+            "dateoflastupdate": "2011-09-30",
+            "offencestartdate": "2006-06-29",
+            "auditofamendments": "301110 New Offence Code and outline Standard Offence Wording document<br />060711 CJS Code and Outline Offence Wording document is now OBSOLETE. Revoked by S.I. 2011 / 1197 as from 25/05/11.",
+            "offencewordinggroup": "V07"
+          },
+          "indictment": {
+            "indictmentindicator": {
+              "code": "N",
+              "description": "NO"
+            },
+            "structuredindictmentindicator": {
+              "code": "N",
+              "description": "NO"
+            }
+          }
+        }
+      }
+    },
+    {
+      "offenceId": "070dd86b-4ab4-4245-9170-007c44952575",
+      "cjsOffenceCode": "OFFENCE_CODE_2",
+      "modeOfTrial": "SNONIMP",
+      "validFrom": "2017-10-10",
+      "validTo": "2017-12-10",
+      "offenceStartDate": "2019-01-19",
+      "offenceEndDate": "2019-01-25",
+      "cppDateOfLastUpdate": "2017-12-10",
+      "pnldDateOfLastUpdate": "2017-06-10",
+      "drugsOrAlcoholRelated": "Y",
+      "locationRequired": "N",
+      "prosecutionTimeLimit": "6 months",
+      "sentencing": "Yes",
+      "penaltyType": "Excise penalty",
+      "modeOfTrialDerived": "Either Way",
+      "backDuty": true,
+      "endorsableFlag": true,
+      "details": {
+        "document": {
+          "type": "H",
+          "codes": {
+            "fptgraduated": 0.0,
+            "mojstatscode": "108/16",
+            "mopinoteslink": "D19586",
+            "cjsoffencecode": "AA06004",
+            "mopireviewgroup": {
+              "code": "C",
+              "description": "Group 3"
+            },
+            "notifiabletomoj": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "seatbeltoffence": {
+              "code": "N",
+              "description": "No"
+            },
+            "fptgraduatedhigh": 0.0,
+            "roadsidedeposits": {
+              "code": "N",
+              "description": "No"
+            },
+            "maxPenalty": "Max Penalty",
+            "fptissuedbypolice": 0.0,
+            "pndissuedbyothers": 0.0,
+            "pndissuedbypolice": 0.0,
+            "pncacpooffencecode": "12.1.12.1",
+            "disqualificationclass": {
+              "code": "N",
+              "description": "discretionary disqualification not endorsable"
+            },
+            "recordableonpncindicator": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "pndissuedbylocalauthorities": 0.0
+          },
+          "libra": {
+            "miscode": {
+              "code": "SNM",
+              "description": "Summary Non-Motoring"
+            },
+            "fineindicator": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "libracategory": {
+              "code": "CS",
+              "description": "Summary Non-motoring"
+            },
+            "maxfinetypemagct": {
+              "code": "5",
+              "description": "fine not exceeding level five on the legislative standard scale"
+            },
+            "custodialindicator": {
+              "code": "Y",
+              "description": "YES"
+            },
+            "maxcustodialsentenceunitmagct": {
+              "code": "Months",
+              "description": "Months"
+            },
+            "maxcustodialsentencelengthmagct": 3
+          },
+          "other": {
+            "penalty": "Summary: Three months imprisonment and / or a fine not exceeding level five on the standard scale. <br /><br />Time Limit on Prosecutions<br />6 months",
+            "modeoftrial": {
+              "code": "SIMP",
+              "description": "SUMMARY IMPRISONABLE"
+            },
+            "powersofarrest": "Arrest without warrant",
+            "geographicregion": {
+              "code": "E",
+              "description": "England"
+            },
+            "timelimitforprosecutions": "6 months"
+          },
+          "english": {
+            "notes": "This CJS Code and Outline Offence Wording document is now OBSOLETE. Revoked by S.I. 2011 / 1197 as from 25/05/11.",
+            "title": "Obstruct person acting in the execution of these Regulations",
+            "legislation": "Parent of child of compulsory school age registered at a school who failed to attend regularly",
+            "pointstoprove": "date and location<br />obstruct person acting in the execution of these Regulations",
+            "additionalkeywords": {
+              "additionalkeyword": [
+                "Animals",
+                "Animal Products Import",
+                "Export England Regulations 2006"
+              ]
+            },
+            "investigatoractions": {
+              "investigatoraction": [
+                {
+                  "code": "IA27",
+                  "description": "Confirm proposed charge is appropriately authorised (Police or CPS)"
+                },
+                {
+                  "code": "IA28",
+                  "description": "Ensure compliance with investigator's obligations re disclosure"
+                },
+                {
+                  "code": "IA29",
+                  "description": "Consider if case suitable for referral to Financial Investigation Unit and CPS for asset recovery eg confiscation order"
+                },
+                {
+                  "code": "IA2",
+                  "description": "DNA Samples: If crime scene stain present - take evidential sample If no crime scene stain & DNA not confirmed on PNC - take Criminal Justice sample. If DNA confirmed on PNC - CJ sample not required"
+                },
+                {
+                  "code": "IA1",
+                  "description": "Fingerprint & photograph"
+                },
+                {
+                  "code": "IA4",
+                  "description": "PNC recordable"
+                },
+                {
+                  "code": "IA3",
+                  "description": "Tape record interview unless exempt"
+                }
+              ]
+            },
+            "standardoffencewording": "On **(..SPECIFY DATE..) at **(..SPECIFY TOWNSHIP..), **(..SPECIFY DETAILS OF THE OFFENCE..)",
+            "policeandcpschargingresponsibilities": "D27968"
+          },
+          "pnldref": "H13001",
+          "ancillary": {
+            "groups": {
+              "code": "GV07",
+              "description": "Animal Byproducts"
+            },
+            "lastupdate": "300911 For the information of Gloucestershire Police ONLY - \"Offence Wording Group\" field completed",
+            "datecreated": "2010-07-29",
+            "offenceenddate": "2011-05-24",
+            "legislationcode": {
+              "link": "S1212"
+            },
+            "dateoflastupdate": "2011-09-30",
+            "offencestartdate": "2006-06-29",
+            "auditofamendments": "301110 New Offence Code and outline Standard Offence Wording document<br />060711 CJS Code and Outline Offence Wording document is now OBSOLETE. Revoked by S.I. 2011 / 1197 as from 25/05/11.",
+            "offencewordinggroup": "V07"
+          },
+          "indictment": {
+            "indictmentindicator": {
+              "code": "N",
+              "description": "NO"
+            },
+            "structuredindictmentindicator": {
+              "code": "N",
+              "description": "NO"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

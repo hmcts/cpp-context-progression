@@ -1,0 +1,17 @@
+{
+  "_metadata": {
+    "name": "progression.event.application-offences-updated"
+  },
+  "subjectId": "e1d32d9d-29ec-4934-a932-22a50f223966",
+  "applicationId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+  "laaReference": {
+    "laaApplicationReference": "LAA REF OFF 1",
+    "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+    "statusCode": "LAA STATUS CODE OFF 1",
+    "statusDescription": "LAA STATUS DESC OFF 1",
+    "effectiveFromDate": "2019-08-12",
+    "effectiveToDate": "2019-10-12",
+    "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+  },
+  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+}

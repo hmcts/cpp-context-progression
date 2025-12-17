@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.prosecution-case-update-defendants-with-matched-requested-v2.json",
+  "type": "object",
+  "properties": {
+    "defendantUpdate": {
+      "$ref": "http://justice.gov.uk/core/courts/defendant-update.json#"
+    },
+    "defendant": {
+      "$ref": "http://justice.gov.uk/core/courts/defendant.json#"
+    },
+    "matchedDefendants": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/defendant.json#"
+      }
+    }
+  }
+}

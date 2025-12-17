@@ -1,0 +1,98 @@
+{
+  "application": {
+    "applicant": {
+      "id": "1a59ad99-3738-4e89-91ca-4bf81825e9a9",
+      "notificationRequired": true,
+      "personDetails": {
+        "address": {
+          "address1": "Flat 2 9 Russell Street",
+          "postcode": "RG1 7XD"
+        },
+        "firstName": "Test",
+        "gender": "NOT_SPECIFIED",
+        "lastName": "Test"
+      },
+      "summonsRequired": false
+    },
+    "applicationReceivedDate": "2025-07-17",
+    "applicationReference": "GX8UAHX2AP",
+    "applicationStatus": "LISTED",
+    "commissionerOfOath": false,
+    "id": "ed08f44d-ba9d-43ad-a039-f2216f2d6bb0",
+    "subject": {
+      "id": "1a59ad99-3738-4e89-91ca-4bf81825e9a9",
+      "notificationRequired": true,
+      "personDetails": {
+        "address": {
+          "address1": "Flat 2 9 Russell Street",
+          "postcode": "RG1 7XD"
+        },
+        "firstName": "Test",
+        "gender": "NOT_SPECIFIED",
+        "lastName": "Test"
+      },
+      "summonsRequired": false
+    },
+    "type": {
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "applicationWording": "Initial application to extend the applicable bail period beyond the current bail end date of {1}",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "CR",
+      "changeDate": "2022-05-26T16:26:54.000Z",
+      "code": "PL84504",
+      "commrOfOathFlag": false,
+      "contestedFeeApplicable": false,
+      "courtExtractAvlFlag": true,
+      "courtOfAppealFlag": false,
+      "exParte": false,
+      "hearingCode": "APL",
+      "id": "7e1b06e3-f71e-4e90-b0b8-6a356f33fa4a",
+      "initialFeeApplicable": false,
+      "jurisdiction": "MAGISTRATES",
+      "lastModified": "2022-05-26T16:26:54.000Z",
+      "legislation": "In accordance with section 47ZF of the Police and Criminal Evidence Act 1984.",
+      "linkType": "STANDALONE",
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "offenceActiveOrder": "NOT_APPLICABLE",
+      "pleaApplicableFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "pssId": 601923,
+      "sowRef": "APPS",
+      "spiOutApplicableFlag": true,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Application for an initial extension of pre-charge bail period",
+      "typeWelsh": "Cais cychwynnol i ymestyn cyfnod mechniaeth cyn cyhuddo",
+      "validFrom": "2017-04-04T00:00:00.000Z"
+    }
+  },
+  "courtHearing": {
+    "bookedSlots": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": 2330,
+        "courtScheduleId": "e4bd9a49-a3ca-4a62-950c-98db113c0bdf",
+        "duration": 1,
+        "oucode": "B01LY00",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "session": "AM",
+        "startTime": "2025-07-21T09:00:00.000Z"
+      }
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "earliestStartDateTime": "2025-07-21T09:00:00.000Z",
+    "estimatedMinutes": 10,
+    "hearingType": {
+      "description": "Pre-Charge Bail",
+      "id": "3a2d160f-363b-4360-96e1-0007a400a64c"
+    },
+    "id": "365e20f3-6cb4-42af-8977-e814c534ab39",
+    "jurisdictionType": "MAGISTRATES"
+  }
+}

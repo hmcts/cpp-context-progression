@@ -1,0 +1,17 @@
+title = "Custom rules"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "internal-urls"
+description = "Identify internal urls"
+regex = '''${GITLEAKS_REGEX_INTERNAL_URL}'''
+tags = ["internal-urls"]
+
+[[rules]]
+id = "banned-ids"
+description = "Identify banned IDs"
+regex = '''${GITLEAKS_REGEX_BANNED_IDS}'''
+tags = ["banned-ids"]
+

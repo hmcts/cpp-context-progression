@@ -1,0 +1,1552 @@
+{
+  "resultDefinitions": [
+    {
+      "id": "c3a39c2f-b056-442f-8dfc-604b5434f956",
+      "version": "2022-07-07T11:40:11.925Z",
+      "startDate": "2022-07-08",
+      "label": "0: None or unknown",
+      "shortCode": "NONE",
+      "level": "O",
+      "rank": 33900,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "none",
+            "unkown"
+          ]
+        }
+      ],
+      "userGroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "Prosecuting Authorities",
+        "YOTs"
+      ],
+      "welshLabel": "0: Dim neu’n anhysbys",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": true,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "isAvailableForCourtExtract": false,
+      "isBooleanResult": false
+    },
+    {
+      "id": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+      "version": "2023-02-01T12:13:19.901Z",
+      "startDate": "2023-02-02",
+      "label": "Granted",
+      "shortCode": "G",
+      "level": "O",
+      "rank": 98500,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "G",
+            "granted"
+          ]
+        }
+      ],
+      "userGroups": [],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "F",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+      "version": "2023-03-29T14:09:36.977Z",
+      "startDate": "2023-03-30",
+      "label": "Unexpected circumstances meant that the case could not be heard",
+      "shortCode": "UNF",
+      "level": "O",
+      "rank": 55500,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "UNF"
+          ]
+        },
+        {
+          "wordGroup": [
+            "adjourned",
+            "circumstances",
+            "unexpected",
+            "unforseen"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "cecebc7e-d1e8-45f3-b042-1aae41b8cfbf",
+          "label": "Additional information",
+          "welshLabel": "Gwybodaeth ychwanegol",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 100,
+          "financial": "N",
+          "reference": "additionalInformation",
+          "userGroups": [],
+          "min": "1",
+          "max": "500",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "welshLabel": "Am fod amgylchiadau annisgwyl yn golygu nad oedd modd gwrando'r achos",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "resultDefinitionGroup": "Adjournment reasons",
+      "qualifier": "KU",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": true,
+      "publishedAsAPrompt": true,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultWording": "",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "resultTextTemplate": "%ResultLabel%[ - Additional information: {additionalInformation}]",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "c36fed37-b635-4303-b514-2273e9e2594d",
+      "version": "2024-03-14T15:05:42.779Z",
+      "startDate": "2024-03-15",
+      "label": "Entered in error",
+      "shortCode": "ERR",
+      "level": "O",
+      "rank": 121300,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "ERR",
+            "entered",
+            "error"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "af38d17b-46de-4dbb-a5c7-14ac36905c89",
+          "label": "Reason",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 100,
+          "financial": "N",
+          "reference": "reason",
+          "userGroups": [],
+          "min": "1",
+          "max": "250",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "policeSubjectLineTitle": "Final Sentence",
+      "category": "F",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "cjsCode": "4583",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "libraCode": "ERR",
+      "lCode": "ERR",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "preserveActiveOrder": true,
+      "resultTextTemplate": "[Reason: {reason}]",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "1c70f1e0-7674-4acb-8710-1c5233e984c0",
+      "version": "2024-03-14T15:06:16.175Z",
+      "startDate": "2024-03-15",
+      "label": "No adjudication - dealt with for original offence",
+      "shortCode": "BRO",
+      "level": "O",
+      "rank": 36100,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "dealt",
+            "with",
+            "BRO"
+          ]
+        }
+      ],
+      "userGroups": [],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "F",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "cjsCode": "3501",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "libraCode": "BRO",
+      "lCode": "BRO",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "preserveActiveOrder": true,
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+      "version": "2024-04-09T14:34:04.117Z",
+      "startDate": "2024-04-10",
+      "label": "Next hearing in Crown Court",
+      "shortCode": "NHCCS",
+      "level": "O",
+      "rank": 29600,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "NHCCS"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "46257d78-1cbf-42b0-a24b-206826fecfb9",
+          "label": "Date and time to be fixed",
+          "welshLabel": "Dyddiad ac amser i’w bennu",
+          "resultPromptRule": "oneOf",
+          "type": "BOOLEAN",
+          "sequence": 100,
+          "financial": "N",
+          "reference": "dateToBeFixed",
+          "wordGroup": [
+            "Date to be fixed"
+          ],
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "bbc84e23-2543-4211-858f-59ae97800f5a",
+          "label": "Reserved Judiciary",
+          "welshLabel": "Y Farnwriaeth wrth gefn",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 1000,
+          "financial": "N",
+          "reference": "reservedJudiciary",
+          "wordGroup": [
+            "Reserved"
+          ],
+          "userGroups": [],
+          "min": "1",
+          "max": "250",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "3e7ae7bd-f736-4729-ab06-82bf966bc72f",
+          "label": "Week Commencing",
+          "welshLabel": "Wythnos yn dechrau",
+          "resultPromptRule": "oneOf",
+          "type": "DATE",
+          "sequence": 300,
+          "financial": "N",
+          "reference": "weekCommencing",
+          "wordGroup": [
+            "week commencing"
+          ],
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "C",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+          "label": "Estimated duration",
+          "welshLabel": "Amcangyfrif amser",
+          "resultPromptRule": "mandatory",
+          "type": "INT",
+          "sequence": 800,
+          "duration": "Weeks",
+          "financial": "N",
+          "reference": "HEST",
+          "userGroups": [],
+          "min": "1",
+          "max": "9999",
+          "welshDuration": "Wythnos",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+          "label": "Estimated duration",
+          "welshLabel": "Amcangyfrif amser",
+          "resultPromptRule": "mandatory",
+          "type": "INT",
+          "sequence": 800,
+          "duration": "Days",
+          "financial": "N",
+          "reference": "HEST",
+          "userGroups": [],
+          "min": "1",
+          "max": "9999",
+          "welshDuration": "Niwrnod",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+          "label": "Estimated duration",
+          "welshLabel": "Amcangyfrif amser",
+          "resultPromptRule": "mandatory",
+          "type": "INT",
+          "sequence": 800,
+          "duration": "Hours",
+          "financial": "N",
+          "reference": "HEST",
+          "userGroups": [],
+          "min": "1",
+          "max": "9999",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+          "label": "Estimated duration",
+          "welshLabel": "Amcangyfrif amser",
+          "resultPromptRule": "mandatory",
+          "type": "INT",
+          "sequence": 800,
+          "duration": "Minutes",
+          "financial": "N",
+          "reference": "HEST",
+          "userGroups": [],
+          "min": "1",
+          "max": "9999",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse organisation name",
+          "resultPromptRule": "mandatory",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEOrganisationName",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "OrganisationName",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse address line 1",
+          "resultPromptRule": "mandatory",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEAddress1",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "AddressLine1",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse address line 2",
+          "resultPromptRule": "optional",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEAddress2",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "AddressLine2",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse address line 3",
+          "resultPromptRule": "optional",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEAddress3",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "AddressLine3",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse address line 4",
+          "resultPromptRule": "optional",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEAddress4",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "AddressLine4",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse address line 5",
+          "resultPromptRule": "optional",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEAddress5",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "AddressLine5",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse post code",
+          "resultPromptRule": "optional",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEPostCode",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "PostCode",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse email address 1",
+          "resultPromptRule": "optional",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEEmailAddress1",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": true,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "EmailAddress1",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "66868c04-72c4-46d9-a4fc-860a82107475",
+          "label": "Courthouse email address 2",
+          "resultPromptRule": "optional",
+          "type": "NAMEADDRESS",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "hCHOUSEEmailAddress2",
+          "userGroups": [],
+          "min": "",
+          "max": "",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": true,
+          "nameAddressType": "Organisation",
+          "componentLabel": "Courthouse",
+          "fixListLabel": "Select Courthouse",
+          "referenceDataKey": "hCHOUSE",
+          "partName": "EmailAddress2",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+          "label": "Fixed Date",
+          "welshLabel": "Dyddiad Penodol",
+          "resultPromptRule": "oneOf",
+          "type": "DATE",
+          "sequence": 200,
+          "financial": "N",
+          "reference": "fixedDate",
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "C",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "c1116d12-dd35-4171-807a-2cb845357d22",
+          "label": "Hearing type",
+          "welshLabel": "Math o wrandawiad",
+          "resultPromptRule": "mandatory",
+          "type": "TXT",
+          "sequence": 700,
+          "financial": "N",
+          "reference": "HTYPE",
+          "userGroups": [],
+          "min": "1",
+          "max": "100",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+          "label": "Courtroom",
+          "welshLabel": "Ystafell Llys",
+          "resultPromptRule": "optional",
+          "type": "INT",
+          "sequence": 600,
+          "financial": "N",
+          "reference": "HCROOM",
+          "userGroups": [],
+          "min": "1",
+          "max": "99",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "referenceDataKey": "HCROOM",
+          "nameEmail": false,
+          "associatedWithReferenceData": true
+        },
+        {
+          "id": "a0ec3e68-5210-422f-9959-73c1c7ce495a",
+          "label": "Existing Hearing Id",
+          "welshLabel": "ID Gwrandawiad Presennol",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 900,
+          "financial": "N",
+          "reference": "existingHearingId",
+          "userGroups": [],
+          "min": "1",
+          "max": "100",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": true,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+          "label": "Time of hearing",
+          "welshLabel": "Amser y gwrandawiad",
+          "resultPromptRule": "optional",
+          "type": "TIME",
+          "sequence": 400,
+          "financial": "N",
+          "reference": "timeOfHearing",
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "6fac63f7-60f0-4453-910e-e27700722d31",
+          "label": "Booking Type",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 1300,
+          "financial": "N",
+          "reference": "bookingType",
+          "userGroups": [],
+          "min": "1",
+          "max": "100",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "b861ca8e-04fa-41f2-8f05-1b5b0c1df286",
+          "label": "Booking Priority",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 1200,
+          "financial": "N",
+          "reference": "bookingPriority",
+          "userGroups": [],
+          "min": "1",
+          "max": "50",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "c81aba5d-282a-4ef6-93d0-3c5e7dd810fd",
+          "label": "Slot booking reference",
+          "welshLabel": "",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 1100,
+          "financial": "N",
+          "reference": "hmiSlots",
+          "userGroups": [],
+          "min": "1",
+          "max": "6000",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": true,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "aecf6dd0-82fa-4520-bbb3-af0f8ea91ca7",
+          "label": "Special Requirements",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 1400,
+          "financial": "N",
+          "reference": "specialRequirements",
+          "userGroups": [],
+          "min": "1",
+          "max": "100",
+          "courtExtract": "N",
+          "jurisdiction": "C",
+          "hidden": true,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "resultDefinitionGroup": "Next hearing",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": true,
+      "publishedAsAPrompt": true,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultWording": "",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "preserveActiveOrder": true,
+      "resultTextTemplate": "hearing[ on a {dateToBeFixed}][ on {fixedDate}][ week commencing {weekCommencing}][ at {timeOfHearing}][ in {HCROOM}], {HCHOUSE~Name}",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "eb2e4c4f-b738-4a4d-9cce-0572cecb7cb8",
+      "version": "2024-04-09T14:34:20.782Z",
+      "startDate": "2024-04-10",
+      "label": "Withdrawn",
+      "shortCode": "WDRN",
+      "level": "O",
+      "rank": 171900,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "WDRN"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "318c9eb2-cf3c-4592-a353-1b2166c15f81",
+          "label": "Reasons",
+          "welshLabel": "Rhesymau",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 100,
+          "financial": "N",
+          "reference": "reasons",
+          "userGroups": [],
+          "min": "1",
+          "max": "4000",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "6f305506-9919-4e7b-bd57-c4c352ec3e3e",
+          "label": "Details",
+          "resultPromptRule": "mandatory",
+          "type": "FIXL",
+          "sequence": 200,
+          "financial": "N",
+          "reference": "details",
+          "fixedListId": "b1e43db2-50a8-4ec0-8a3f-57c27d6b4baa",
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "welshLabel": "Tynnwyd yn ôl",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "policeSubjectLineTitle": "Final Sentence",
+      "category": "F",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "resultDefinitionGroup": "WOAEXTEND",
+      "cjsCode": "2063",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": true,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "M",
+      "libraCode": "WDRN",
+      "lCode": "WDRN",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "preserveActiveOrder": true,
+      "resultTextTemplate": "{details}.[ Reasons: {reasons}]",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "d076bd4a-17d5-4720-899a-1c6f96e3b35f",
+      "version": "2024-04-09T14:34:49.331Z",
+      "startDate": "2024-04-10",
+      "label": "Remand unconditional bail",
+      "shortCode": "REMUB",
+      "level": "O",
+      "rank": 147400,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "REMUB",
+            "bail",
+            "remand",
+            "unconditional"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+          "label": "Defendant to attend the next hearing",
+          "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+          "resultPromptRule": "oneOf",
+          "type": "BOOLEAN",
+          "sequence": 100,
+          "financial": "N",
+          "reference": "defendantToAttendTheNextHearing",
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "150a22a8-05d0-4be1-ada7-a0d512a63b5d",
+          "label": "Defendant excused attendance at next hearing",
+          "welshLabel": "Nid oes rhaid i'r diffynnydd fod yn bresennol yn y gwrandawiad nesaf",
+          "resultPromptRule": "oneOf",
+          "type": "BOOLEAN",
+          "sequence": 200,
+          "financial": "N",
+          "reference": "defendantExcusedAttendanceAtNextHearing",
+          "userGroups": [],
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "78f6bbd5-794d-48dc-abaa-7b8e24fcb6f1",
+          "label": "Bail granted unconditionally pending appeal to the Crown Court",
+          "resultPromptRule": "optional",
+          "type": "BOOLEAN",
+          "sequence": 300,
+          "financial": "N",
+          "reference": "bailGrantedUnconditionallyPendingAppealToTheCrownCourt",
+          "userGroups": [],
+          "qual": "KZ",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "welshLabel": "Wedi'i remandio ar fechnïaeth ddiamod",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "policeSubjectLineTitle": "Bail without conditions",
+      "category": "I",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "cjsCode": "4047",
+      "postHearingCustodyStatus": "U",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": true,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+          "ruleType": "mandatory"
+        },
+        {
+          "childResultDefinitionId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+          "ruleType": "optional"
+        }
+      ],
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "resultTextTemplate": "Remanded on unconditional bail until %NEXH%.[ Adjournment reason: %ADJR%.][ {bailGrantedUnconditionallyPendingAppealToTheCrownCourt}.] {defendantToAttendTheNextHearing}{defendantExcusedAttendanceAtNextHearing}",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+      "version": "2024-04-09T14:34:47.483Z",
+      "startDate": "2024-04-10",
+      "label": "Adjournment reasons",
+      "shortCode": "ADJR",
+      "level": "O",
+      "rank": 4800,
+      "userGroups": [],
+      "welshLabel": "Rheswm dros ohirio:",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": false,
+      "publishedAsAPrompt": true,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultWording": "",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "1d55fdeb-7dbc-46ec-b3ff-7b15fe08a476",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "9c1dcdfa-ec44-4167-bbd4-d29c3a63a7fc",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "dbf9f59c-eee5-4285-8a1c-4fefe4508581",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "4feef108-d1f9-4662-a065-39c77d677fff",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "c93c5a18-838a-41d3-a017-c203b37f5655",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "a1f2e6d7-7a21-41f8-9a9a-854b25a606d4",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "78a3e236-6ba2-48df-894e-2eef3eccbde1",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "e15c9dc1-5d7a-4f7a-8d61-b443f99b2724",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "4a8fa9dd-de9b-4d20-86aa-6476848bba7f",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "a8d221a6-b993-4b27-afcb-7fe041eeaf47",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "f3e818b5-2e38-4cd9-8f68-6e2d9fab5304",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "dd0798ff-c7e9-4c56-814a-4c7786ddc29c",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "a491b93c-6d96-4431-93ee-180d87d6e94f",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "7fa3becd-7468-4c20-9153-927e8ea8db48",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "c514dcec-804c-11e8-adc0-fa7ae01bbebc",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "c2eca548-4511-4023-bbe6-50fe0b679b4a",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "7341864c-ac5d-4bbf-8417-ba68171d6bf9",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "43e65862-4260-4669-ba9d-df7a70864f62",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "754648e5-7770-4486-97d0-84572cc6e956",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "02fe0408-5fc2-4c4a-b9b6-fd0d1b1500d6",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "6469173f-3f20-4434-9da0-99b6d207dc04",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "9fd6a4ef-1055-4e54-b035-f1130a524388",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "80b4aa18-cc49-48b8-a489-704fc0f5aa8f",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "029d370b-90f5-4650-b985-a61e9ec8db99",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "baeb58d5-727a-4cf1-80fc-1ce2ac26f57f",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "746af2ca-6116-4653-8780-48e8daf20164",
+          "ruleType": "atleastOneOf"
+        },
+        {
+          "childResultDefinitionId": "4958de15-8a0a-4d2b-9f7e-56e037cf03da",
+          "ruleType": "atleastOneOf"
+        }
+      ],
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "resultTextTemplate": "%AllChildText%",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+      "version": "2024-04-09T14:34:48.953Z",
+      "startDate": "2024-04-10",
+      "label": "Next hearing",
+      "shortCode": "NEXH",
+      "level": "O",
+      "rank": 1800,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "NEXH",
+            "next,hearing,NEXH"
+          ]
+        }
+      ],
+      "userGroups": [],
+      "welshLabel": "Gwrandawiad nesaf",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "resultDefinitionGroup": "Next Hearing",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultWording": "",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+          "ruleType": "oneOf"
+        }
+      ],
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "preserveActiveOrder": true,
+      "resultTextTemplate": "%AllChildText%",
+      "isAvailableForCourtExtract": false,
+      "isBooleanResult": false
+    },
+    {
+      "id": "d3902789-4cc8-4753-a15f-7e26dd39f6ae",
+      "version": "2024-04-09T14:35:22.390Z",
+      "startDate": "2024-04-10",
+      "label": "Application refused",
+      "shortCode": "RFSD",
+      "level": "O",
+      "rank": 212300,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "RFSD",
+            "application",
+            "refused"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "318c9eb2-cf3c-4592-a353-1b2166c15f81",
+          "label": "Reasons",
+          "welshLabel": "Rhesymau",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 100,
+          "financial": "N",
+          "reference": "reasons",
+          "userGroups": [],
+          "min": "1",
+          "max": "4000",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "welshLabel": "Gwrthodwyd y cais",
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "F",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "libraCode": "RFSD",
+      "resultWording": "",
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "resultTextTemplate": "[Reasons: {reasons}.]",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "ea1ee5a4-be13-48dc-8411-78f22e01c236",
+      "version": "2024-05-03T22:33:33.500Z",
+      "startDate": "2024-05-04",
+      "label": "Licence produced in court",
+      "shortCode": "LPC",
+      "level": "O",
+      "rank": 10800,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "LPC"
+          ]
+        },
+        {
+          "wordGroup": [
+            "court",
+            "Licence",
+            "produced"
+          ]
+        }
+      ],
+      "userGroups": [
+        "CPS",
+        "Defence",
+        "Judiciary",
+        "NCES",
+        "Probation",
+        "Prosecuting Authorities",
+        "YOTs"
+      ],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": true,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "c3a39c2f-b056-442f-8dfc-604b5434f956",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "4b850aa9-984c-4a15-a1ae-b2f861cfcbe8",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "c83def9d-9a92-4ea0-8923-87fdd7601077",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "b3c7a167-72fa-46d2-b59c-8cda04fc9729",
+          "ruleType": "oneOf"
+        },
+        {
+          "childResultDefinitionId": "5c5a693f-c26c-4352-bbb3-ac72dd141e88",
+          "ruleType": "oneOf"
+        }
+      ],
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "isAvailableForCourtExtract": false,
+      "isBooleanResult": false
+    },
+    {
+      "id": "b2d06bbc-e90e-4df8-8851-6e4a70894828",
+      "version": "2025-03-04T11:42:29.610Z",
+      "startDate": "2025-03-05",
+      "label": "Obligatory disqualification",
+      "shortCode": "DDO",
+      "level": "O",
+      "rank": 140100,
+      "wordGroups": [
+        {
+          "wordGroup": [
+            "DDO",
+            "disqualification",
+            "obligatory"
+          ]
+        },
+        {
+          "wordGroup": [
+            "DDO"
+          ]
+        }
+      ],
+      "prompts": [
+        {
+          "id": "2bf54447-328c-4c1b-a123-341adbd52172",
+          "label": "Disqualification period",
+          "welshLabel": "Cyfnod gwahardd",
+          "resultPromptRule": "mandatory",
+          "type": "INTM",
+          "sequence": 100,
+          "duration": "Years",
+          "financial": "N",
+          "reference": "disqualificationPeriod",
+          "wordGroup": [
+            "Years"
+          ],
+          "userGroups": [],
+          "min": "1",
+          "max": "999",
+          "durationSequence": 1,
+          "welshDuration": "Flynedd",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "2bf54447-328c-4c1b-a123-341adbd52172",
+          "label": "Disqualification period",
+          "welshLabel": "Cyfnod gwahardd",
+          "resultPromptRule": "mandatory",
+          "type": "INTM",
+          "sequence": 100,
+          "duration": "Months",
+          "financial": "N",
+          "reference": "disqualificationPeriod",
+          "wordGroup": [
+            "months"
+          ],
+          "userGroups": [],
+          "min": "1",
+          "max": "999",
+          "durationSequence": 1,
+          "welshDuration": "Mis",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "2bf54447-328c-4c1b-a123-341adbd52172",
+          "label": "Disqualification period",
+          "welshLabel": "Cyfnod gwahardd",
+          "resultPromptRule": "mandatory",
+          "type": "INTM",
+          "sequence": 100,
+          "duration": "Days",
+          "financial": "N",
+          "reference": "disqualificationPeriod",
+          "userGroups": [],
+          "min": "1",
+          "max": "999",
+          "durationSequence": 1,
+          "welshDuration": "Niwrnod",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "0143f821-7cab-4e53-a00b-2fd1c3dc8204",
+          "label": "Extension period section 35B (effect of custodial sentence noted)",
+          "welshLabel": "Cyfnod estyniad adran 35B (effaith dedfryd o garchar wedi’i nodi)",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 400,
+          "financial": "N",
+          "reference": "extensionPeriodSection35BEffectOfCustodialSentenceNoted",
+          "userGroups": [],
+          "min": "1",
+          "max": "100",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "a593ae4a-9d69-45b9-9585-c11aeed28404",
+          "label": "Defendant driving licence number",
+          "welshLabel": "Rhif trwydded yrru'r Diffynnydd",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 500,
+          "financial": "N",
+          "reference": "defendantDrivingLicenceNumber",
+          "userGroups": [
+            "CPS",
+            "Defence",
+            "NCES",
+            "Probation",
+            "Judiciary",
+            "Prosecuting Authorities",
+            "YOTs"
+          ],
+          "min": "1",
+          "max": "16",
+          "courtExtract": "N",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "cacheable": 2,
+          "cacheDataPath": "personDefendant.driverNumber",
+          "associatedWithReferenceData": false
+        },
+        {
+          "id": "81638260-3cd1-41e7-9725-c8e91e23bda1",
+          "label": "Extension period section 35A (immediate custodial sentence)",
+          "welshLabel": "Cyfnod estyniad adran 35A (dedfryd o garchar ar unwaith)",
+          "resultPromptRule": "optional",
+          "type": "TXT",
+          "sequence": 300,
+          "financial": "N",
+          "reference": "extensionPeriodSection35AImmediateCustodialSentence",
+          "userGroups": [],
+          "min": "1",
+          "max": "100",
+          "courtExtract": "Y",
+          "jurisdiction": "B",
+          "hidden": false,
+          "nameEmail": false,
+          "associatedWithReferenceData": false
+        }
+      ],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": true,
+      "convicted": "Y",
+      "d20": true,
+      "cjsCode": "3070",
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": true,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": false,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "libraCode": "DDO",
+      "lCode": "DDO",
+      "resultWording": "Disqualified for holding or obtaining a driving licence. Disqualification obligatory for the offence. Driving record endorsed. Section 34(1) Road Traffic Offenders Act 1988",
+      "welshResultWording": "Gwahardd rhag dal neu gael trwydded yrru. Gwaharddiad yn orfodol ar gyfer y trosedd. Cofnod gyrru wedi’i ardystio. Adran 34(1) Deddf Troseddwyr Traffig Ffyrdd 1988",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "429fb553-4fb3-45eb-a700-7e5e69d1ca29",
+          "ruleType": "mandatory"
+        },
+        {
+          "childResultDefinitionId": "ea1ee5a4-be13-48dc-8411-78f22e01c236",
+          "ruleType": "optional"
+        }
+      ],
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "resultTextTemplate": "Disqualified for holding or obtaining a driving licence for {disqualificationPeriod}.[ %INTD%] Disqualification obligatory for the offence. Driving record endorsed. Section 34(1) Road Traffic Offenders Act 1988.[ This includes an extension period of {extensionPeriodSection35AImmediateCustodialSentence} in accordance with section 35A (immediate custodial sentence).][ This includes an extension period of {extensionPeriodSection35BEffectOfCustodialSentenceNoted} in accordance with section 35B (effect of custodial sentence noted).]",
+      "isAvailableForCourtExtract": true,
+      "isBooleanResult": false
+    },
+    {
+      "id": "429fb553-4fb3-45eb-a700-7e5e69d1ca29",
+      "version": "2025-03-04T11:42:31.367Z",
+      "startDate": "2025-03-05",
+      "label": "Has an interim disqualification been imposed 6 months or less before the sentence date?",
+      "shortCode": "INTD",
+      "level": "O",
+      "rank": 12400,
+      "userGroups": [],
+      "financial": "N",
+      "unscheduled": false,
+      "adjournment": "N",
+      "category": "A",
+      "urgent": false,
+      "convicted": "N",
+      "d20": false,
+      "postHearingCustodyStatus": "A",
+      "terminatesOffenceProceedings": false,
+      "lifeDuration": false,
+      "rollUpPrompts": false,
+      "publishedForNows": false,
+      "publishedAsAPrompt": false,
+      "excludedFromResults": true,
+      "alwaysPublished": false,
+      "jurisdiction": "B",
+      "resultDefinitionRules": [
+        {
+          "childResultDefinitionId": "7fd83833-178c-48db-866b-33fc9e69a0d1",
+          "ruleType": "mandatory"
+        }
+      ],
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "resultTextTemplate": "%DOID%",
+      "isAvailableForCourtExtract": false,
+      "isBooleanResult": true
+    }
+  ]
+}

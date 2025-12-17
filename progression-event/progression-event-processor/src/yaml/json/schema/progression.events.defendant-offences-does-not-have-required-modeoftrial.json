@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/defendant-offences-does-not-have-required-modeoftrial.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId"
+  ]
+}
+

@@ -1,0 +1,1169 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "courtHearingLocation": "B01LY01",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2024-08-16"
+          }
+        ],
+        "defendantId": "c36437b7-2aab-4f05-a36d-8ee97ef1348d"
+      },
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2024-08-16"
+          }
+        ],
+        "defendantId": "2b22047e-22e8-45ee-8bf2-930dd75dd2e7"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2024-08-16T09:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "HEARING_ID",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2024-08-16T12:31:09.753Z",
+            "id": "c36437b7-2aab-4f05-a36d-8ee97ef1348d",
+            "isYouth": false,
+            "masterDefendantId": "c36437b7-2aab-4f05-a36d-8ee97ef1348d",
+            "offences": [
+              {
+                "arrestDate": "2024-08-01",
+                "chargeDate": "2024-08-06",
+                "count": 0,
+                "custodyTimeLimit": {
+                  "isCtlExtended": false,
+                  "timeLimit": "2024-10-31"
+                },
+                "dateHeldInCustodySince": "2024-08-16",
+                "endorsableFlag": false,
+                "id": "0d40a8d4-e07b-4ee2-a1f1-d8e4b8bebf5d",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-16",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "db134f2c-43b9-4ad4-844a-fecda70489d3",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "5348fd0e-0670-4811-997f-1baa78b06d62",
+                        "label": "Custody time limit expires",
+                        "promptReference": "CTLDATE",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "31/10/2024",
+                        "welshLabel": "Mae terfyn amser y ddalfa yn dod i ben",
+                        "welshValue": "31/10/2024"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "42cccded-0078-4f87-929a-b1fd2cac618b",
+                        "label": "CTL has been agreed with the prosecutor",
+                        "promptReference": "cTLHasBeenAgreedWithTheProsecutor",
+                        "promptSequence": 200,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshValue": "true"
+                      }
+                    ],
+                    "judicialResultTypeId": "311c8e5c-6f22-44a7-8c97-f72324cb05c4",
+                    "label": "Custody time limit",
+                    "lastSharedDateTime": "2024-08-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-16",
+                    "orderedHearingId": "d3b3be8c-91e1-4d0a-9168-0f32c4cda441",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 38800,
+                    "resultText": "CTL - Custody time limit\nCustody time limit expires on 31/10/2024. CTL has been agreed with the prosecutor",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "db134f2c-43b9-4ad4-844a-fecda70489d3",
+                    "rootJudicialResultTypeId": "311c8e5c-6f22-44a7-8c97-f72324cb05c4",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-16",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c83c1f7c-62ab-4d7a-98bb-5badedcd54cf",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                        "label": "Fixed Date",
+                        "promptReference": "fixedDate",
+                        "promptSequence": 200,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "29/10/2024",
+                        "welshLabel": "Dyddiad Penodol",
+                        "welshValue": "29/10/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 400,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Southwark Crown Court",
+                        "welshValue": "Southwark Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "1 English Grounds",
+                        "welshValue": "1 English Grounds"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "(Off Battlebridge Lane)",
+                        "welshValue": "(Off Battlebridge Lane)"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Southwark",
+                        "welshValue": "Southwark"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 4",
+                        "promptReference": "hCHOUSEAddress4",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London",
+                        "welshValue": "London"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "SE1 2HU",
+                        "welshValue": "SE1 2HU"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Plea and Trial Preparation",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea and Trial Preparation"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 800,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "2 MINUTES",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "2 MINUTES"
+                      }
+                    ],
+                    "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "lastSharedDateTime": "2024-08-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "1 English Grounds",
+                          "address2": "(Off Battlebridge Lane)",
+                          "address3": "Southwark",
+                          "address4": "London",
+                          "postcode": "SE1 2HU"
+                        },
+                        "code": "C01SW00",
+                        "courtHearingLocation": "C01SW00",
+                        "id": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+                        "name": "Southwark Crown Court",
+                        "psaCode": 2576,
+                        "roomId": "4492eac0-4978-3775-987b-534adb056ad5",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Y Goron Southwark"
+                      },
+                      "estimatedDuration": "2 MINUTES",
+                      "estimatedMinutes": 2,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2024-10-29T10:00:00.000Z",
+                      "type": {
+                        "description": "Plea and Trial Preparation",
+                        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+                      }
+                    },
+                    "orderedDate": "2024-08-16",
+                    "orderedHearingId": "d3b3be8c-91e1-4d0a-9168-0f32c4cda441",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": false,
+                    "rank": 29600,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "NHCCS - Next hearing in Crown Court\nhearing on 29/10/2024 at 10:00 in Courtroom 01, Southwark Crown Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "c83c1f7c-62ab-4d7a-98bb-5badedcd54cf",
+                    "rootJudicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-16",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "db9a412f-c17c-4fae-934b-8ac32f4bab99",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "3e7ae7bd-f736-4729-ab06-82bf966bc72f",
+                        "label": "Week Commencing",
+                        "promptReference": "weekCommencing",
+                        "promptSequence": 300,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "26/08/2024",
+                        "welshLabel": "Wythnos yn dechrau",
+                        "welshValue": "26/08/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 400,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Croydon Crown Court",
+                        "welshValue": "Croydon Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Altyre Road",
+                        "welshValue": "Altyre Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "CR9 5AB",
+                        "welshValue": "CR9 5AB"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Plea",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 800,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "5 HOURS",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "5 HOURS"
+                      }
+                    ],
+                    "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "lastSharedDateTime": "2024-08-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "The Law Courts",
+                          "address2": "Altyre Road",
+                          "address3": "Croydon",
+                          "postcode": "CR9 5AB"
+                        },
+                        "code": "C01CY00",
+                        "courtHearingLocation": "C01CY00",
+                        "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+                        "name": "Croydon Crown Court",
+                        "psaCode": 2576,
+                        "roomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Y Goron Croydon"
+                      },
+                      "estimatedDuration": "5 HOURS",
+                      "estimatedMinutes": 300,
+                      "jurisdictionType": "CROWN",
+                      "type": {
+                        "description": "Plea",
+                        "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+                      },
+                      "weekCommencingDate": "2024-08-26"
+                    },
+                    "orderedDate": "2024-08-16",
+                    "orderedHearingId": "d3b3be8c-91e1-4d0a-9168-0f32c4cda441",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": false,
+                    "rank": 29600,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "NHCCS - Next hearing in Crown Court\nhearing week commencing 26/08/2024 at 10:00 in Courtroom 01, Croydon Crown Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "db9a412f-c17c-4fae-934b-8ac32f4bab99",
+                    "rootJudicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  }
+                ],
+                "lastAdjournDate": "2024-08-16",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 1,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt robbery",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "orderIndex": 1,
+                "proceedingsConcluded": false,
+                "startDate": "2024-05-18",
+                "wording": "Attempt robbery"
+              },
+              {
+                "arrestDate": "2024-08-01",
+                "chargeDate": "2024-08-06",
+                "count": 0,
+                "custodyTimeLimit": {
+                  "isCtlExtended": false,
+                  "timeLimit": "2024-10-31"
+                },
+                "dateHeldInCustodySince": "2024-08-16",
+                "dvlaOffenceCode": "CU10",
+                "endorsableFlag": true,
+                "id": "c0952d3c-9547-4f65-b0ab-a495c0cdea5b",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-16",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "fa0dd6e1-454c-4b15-bb9a-e7ee884fa32a",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "5348fd0e-0670-4811-997f-1baa78b06d62",
+                        "label": "Custody time limit expires",
+                        "promptReference": "CTLDATE",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "31/10/2024",
+                        "welshLabel": "Mae terfyn amser y ddalfa yn dod i ben",
+                        "welshValue": "31/10/2024"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "42cccded-0078-4f87-929a-b1fd2cac618b",
+                        "label": "CTL has been agreed with the prosecutor",
+                        "promptReference": "cTLHasBeenAgreedWithTheProsecutor",
+                        "promptSequence": 200,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshValue": "true"
+                      }
+                    ],
+                    "judicialResultTypeId": "311c8e5c-6f22-44a7-8c97-f72324cb05c4",
+                    "label": "Custody time limit",
+                    "lastSharedDateTime": "2024-08-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-16",
+                    "orderedHearingId": "d3b3be8c-91e1-4d0a-9168-0f32c4cda441",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 38800,
+                    "resultText": "CTL - Custody time limit\nCustody time limit expires on 31/10/2024. CTL has been agreed with the prosecutor",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "fa0dd6e1-454c-4b15-bb9a-e7ee884fa32a",
+                    "rootJudicialResultTypeId": "311c8e5c-6f22-44a7-8c97-f72324cb05c4",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-16",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "07cf459c-8ae0-4ac1-9295-d8be2263e1ac",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                        "label": "Fixed Date",
+                        "promptReference": "fixedDate",
+                        "promptSequence": 200,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "29/10/2024",
+                        "welshLabel": "Dyddiad Penodol",
+                        "welshValue": "29/10/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 400,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Southwark Crown Court",
+                        "welshValue": "Southwark Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "1 English Grounds",
+                        "welshValue": "1 English Grounds"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "(Off Battlebridge Lane)",
+                        "welshValue": "(Off Battlebridge Lane)"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Southwark",
+                        "welshValue": "Southwark"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 4",
+                        "promptReference": "hCHOUSEAddress4",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London",
+                        "welshValue": "London"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "SE1 2HU",
+                        "welshValue": "SE1 2HU"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Plea and Trial Preparation",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea and Trial Preparation"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 800,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "2 MINUTES",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "2 MINUTES"
+                      }
+                    ],
+                    "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "lastSharedDateTime": "2024-08-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "1 English Grounds",
+                          "address2": "(Off Battlebridge Lane)",
+                          "address3": "Southwark",
+                          "address4": "London",
+                          "postcode": "SE1 2HU"
+                        },
+                        "code": "C01SW00",
+                        "courtHearingLocation": "C01SW00",
+                        "id": "63c1045a-7e41-3b6f-b2ae-df49086ac34e",
+                        "name": "Southwark Crown Court",
+                        "psaCode": 2576,
+                        "roomId": "4492eac0-4978-3775-987b-534adb056ad5",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Y Goron Southwark"
+                      },
+                      "estimatedDuration": "2 MINUTES",
+                      "estimatedMinutes": 2,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2024-10-29T10:00:00.000Z",
+                      "type": {
+                        "description": "Plea and Trial Preparation",
+                        "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+                      }
+                    },
+                    "orderedDate": "2024-08-16",
+                    "orderedHearingId": "d3b3be8c-91e1-4d0a-9168-0f32c4cda441",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": false,
+                    "rank": 29600,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "NHCCS - Next hearing in Crown Court\nhearing on 29/10/2024 at 10:00 in Courtroom 01, Southwark Crown Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "07cf459c-8ae0-4ac1-9295-d8be2263e1ac",
+                    "rootJudicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-16",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "323d8f6a-6d6d-493f-8e9c-abdab9979198",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "3e7ae7bd-f736-4729-ab06-82bf966bc72f",
+                        "label": "Week Commencing",
+                        "promptReference": "weekCommencing",
+                        "promptSequence": 300,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "26/08/2024",
+                        "welshLabel": "Wythnos yn dechrau",
+                        "welshValue": "26/08/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 400,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Croydon Crown Court",
+                        "welshValue": "Croydon Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Altyre Road",
+                        "welshValue": "Altyre Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "CR9 5AB",
+                        "welshValue": "CR9 5AB"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Plea",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 800,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "5 HOURS",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "5 HOURS"
+                      }
+                    ],
+                    "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "lastSharedDateTime": "2024-08-16",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "The Law Courts",
+                          "address2": "Altyre Road",
+                          "address3": "Croydon",
+                          "postcode": "CR9 5AB"
+                        },
+                        "code": "C01CY00",
+                        "courtHearingLocation": "C01CY00",
+                        "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+                        "name": "Croydon Crown Court",
+                        "psaCode": 2576,
+                        "roomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Y Goron Croydon"
+                      },
+                      "estimatedDuration": "5 HOURS",
+                      "estimatedMinutes": 300,
+                      "jurisdictionType": "CROWN",
+                      "type": {
+                        "description": "Plea",
+                        "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+                      },
+                      "weekCommencingDate": "2024-08-26"
+                    },
+                    "orderedDate": "2024-08-16",
+                    "orderedHearingId": "d3b3be8c-91e1-4d0a-9168-0f32c4cda441",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": false,
+                    "rank": 29600,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "NHCCS - Next hearing in Crown Court\nhearing week commencing 26/08/2024 at 10:00 in Courtroom 01, Croydon Crown Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "323d8f6a-6d6d-493f-8e9c-abdab9979198",
+                    "rootJudicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  }
+                ],
+                "lastAdjournDate": "2024-08-16",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 1,
+                "maxPenalty": "S:3pp",
+                "modeOfTrial": "Summary",
+                "offenceCode": "RC86851",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "a9223eee-f3de-3b8a-b6bb-f0feb6f7f737",
+                "offenceLegislation": "Contrary to regulation 18(1) of the Road Vehicles    (Construction and Use) Regulations 1986, section 41A of the Road    Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Vehicle defect - permit use of a motor vehicle / trailer with defective brakes",
+                "orderIndex": 2,
+                "proceedingsConcluded": false,
+                "startDate": "2024-05-18",
+                "wording": "Vehicle defect - permit use of a motor vehicle / trailer with defective brakes"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX000083813675",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "25 Park Avenue",
+                  "address2": "Park Avenue",
+                  "address3": "Birmingham",
+                  "address4": "West Midlands",
+                  "postcode": "B1 1AA"
+                },
+                "contact": {
+                  "home": "0918221062",
+                  "mobile": "07565406889",
+                  "primaryEmail": "madonna.pacocha@gmail.com"
+                },
+                "dateOfBirth": "1961-08-16",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "BobLashunda",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "TestBotGlover",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": false,
+            "prosecutionAuthorityReference": "2391NX000083813675",
+            "prosecutionCaseId": "b9264bab-295f-4a17-a465-5a9f08519a9c"
+          }
+        ],
+        "id": "b9264bab-295f-4a17-a465-5a9f08519a9c",
+        "initiationCode": "C",
+        "originatingOrganisation": "0480000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityName": "City of London Police",
+          "prosecutionAuthorityOUCode": "0480000",
+          "caseURN": "RQ8270458"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2024-08-16",
+  "sharedTime": "2024-08-16T13:36:13.080Z"
+}

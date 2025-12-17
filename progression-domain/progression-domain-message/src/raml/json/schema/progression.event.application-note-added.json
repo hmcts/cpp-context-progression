@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/application-note-added.json",
+  "type": "object",
+  "properties": {
+    "applicationNoteId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "note": {
+      "type": "string"
+    },
+    "isPinned": {
+      "type": "boolean"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "applicationNoteId",
+    "applicationId",
+    "note",
+    "firstName",
+    "lastName",
+    "createdDateTime"
+  ]
+}

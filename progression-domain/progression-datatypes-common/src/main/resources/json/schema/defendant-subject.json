@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/defendant-subject.json",
+  "type": "object",
+  "properties": {
+    "prosecutorDefendantId": {
+      "description": "A unique reference to a defendant within a prosecution. Provided by the prosecuting authority e.g. DWP",
+      "type": "string",
+      "maxLength": 36
+    },
+    "cpsDefendantId": {
+      "description": "A unique reference to a defendant within a prosecution. Provided by cps when CPS are prosecuting the case",
+      "type": "string",
+      "maxLength": 36
+    },
+    "asn": {
+      "description": "A unique reference to a defendant within a prosecution. Provided by the police force and requested from the police by a non police prosecutor e.g. DWP requests from the police",
+      "type": "string",
+      "maxLength": 21
+    },
+    "prosecutorPersonDefendantDetails": {
+      "description": "The defendant person details for material relating to a defendant required to be matched with a defendant id provided by the prosecuting authority",
+      "$ref": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/prosecutor-person-defendant-details.json"
+    },
+    "cPSPersonDefendantDetails": {
+      "description": "The defendant person details for material relating to a defendant required to be matched with a defendant id provided by cps",
+      "$ref": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/cps-person-defendant-details.json"
+    },
+    "prosecutorOrganisationDefendantDetails": {
+      "description": "The defendant organisation details for material relating to a defendant required to be matched with a defendant id provided by the prosecuting authority",
+      "$ref": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/prosecutor-organisation-defendant-details.json"
+    },
+    "cpsOrganisationDefendantDetails": {
+      "description": "The defendant organisation details for material relating to a defendant required to be matched with a defendant id provided by cps",
+      "$ref": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/cps-organisation-defendant-details.json"
+    }
+  },
+  "dependencies": {
+    "prosecutorDefendantId": {
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "cpsDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "asn"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorOrganisationDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsOrganisationDefendantDetails"
+            ]
+          }
+        ]
+      }
+    },
+    "cpsDefendantId": {
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "prosecutorDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "asn"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorOrganisationDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsOrganisationDefendantDetails"
+            ]
+          }
+        ]
+      }
+    },
+    "asn": {
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "prosecutorDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "cpsDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorOrganisationDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsOrganisationDefendantDetails"
+            ]
+          }
+        ]
+      }
+    },
+    "prosecutorPersonDefendantDetails": {
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "prosecutorDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "cpsDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "asn"
+            ]
+          },
+          {
+            "required": [
+              "cpsPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorOrganisationDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsOrganisationDefendantDetails"
+            ]
+          }
+        ]
+      }
+    },
+    "cpsPersonDefendantDetails": {
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "prosecutorDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "cpsDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "asn"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorOrganisationDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsOrganisationDefendantDetails"
+            ]
+          }
+        ]
+      }
+    },
+    "prosecutorOrganisationDefendantDetails": {
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "prosecutorDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "cpsDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "asn"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsOrganisationDefendantDetails"
+            ]
+          }
+        ]
+      }
+    },
+    "cpsOrganisationDefendantDetails": {
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "prosecutorDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "cpsDefendantId"
+            ]
+          },
+          {
+            "required": [
+              "asn"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "cpsPersonDefendantDetails"
+            ]
+          },
+          {
+            "required": [
+              "prosecutorOrganisationDefendantDetails"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "prosecutorDefendantId"
+      ]
+    },
+    {
+      "required": [
+        "cpsDefendantId"
+      ]
+    },
+    {
+      "required": [
+        "asn"
+      ]
+    },
+    {
+      "required": [ "prosecutorPersonDefendantDetails" ]
+    },
+    {
+      "required": [ "cpsPersonDefendantDetails" ]
+    },
+    {
+      "required": [ "prosecutorOrganisationDefendantDetails" ]
+    },
+    {
+      "required": [ "cpsOrganisationDefendantDetails" ]
+    }
+  ],
+  "additionalProperties": false
+}

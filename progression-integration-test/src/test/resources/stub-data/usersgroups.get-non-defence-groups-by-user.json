@@ -1,0 +1,39 @@
+{
+  "id": "7e2f143e-d619-40b3-8611-8015f3a18957",
+  "firstName": "testy",
+  "lastName": "testx",
+  "groups": [
+    {
+      "groupId": "7e2f143e-d619-40b3-8611-8015f3a18957",
+      "groupName": "Listing Officers"
+    },
+    {
+      "groupId": "8c5327b6-354e-4574-9558-b13fce8c055a",
+      "groupName": "Crown Court Admin"
+    },
+    {
+      "groupId": "c529dac4-1ba8-414e-962d-84af6a4d9ae2",
+      "groupName": "Judiciary"
+    },
+    {
+      "groupId": "c529dac4-1ba8-414e-962d-84af6a4d9ae3",
+      "groupName": "System Users"
+    },
+    {
+      "groupId": "5f4543e6-7212-11e7-8cf7-a6006ad3dba0",
+      "groupName": "CMS"
+    },
+    {
+      "groupId": "5f4543e6-7212-11e7-8cf7-a6006ad3dba1",
+      "groupName": "Legal Advisers"
+    },
+    {
+      "groupId": "dd8dcdcf-58d1-4e45-8450-40b0f569a6a9",
+      "groupName": "Eject Case Group"
+    },
+    {
+      "groupId": "5f4543e6-7212-11e7-8cf7-a6006ad3dba1",
+      "groupName": "Defence Users"
+    }
+  ]
+}

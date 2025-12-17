@@ -1,0 +1,23 @@
+{
+  "caseUrn": "%1$s",
+  "orderingCourt": {
+    "ljaCode": "1080",
+    "ljaName": "Bedfordshire Magistrates' Court",
+    "courtCentreName": "South Western (Lavender Hill)"
+  },
+  "orderAddressee": {
+    "name": "DR Harry Kane Junior",
+    "address": {
+      "line1": "22",
+      "line2": "Acacia Avenue",
+      "line3": "Acacia Town",
+      "line4": "Acacia City",
+      "line5": "Acacia Country",
+      "postCode": "%2$s"
+    }
+  },
+  "defendant": {
+    "name": "DR Harry Kane Junior",
+    "dateOfBirth": "2010-01-01"
+  }
+}

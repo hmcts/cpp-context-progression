@@ -1,0 +1,33 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="add-form-case-defendant-offence" author="Yashpal Negi">
+        <createTable tableName="form_case_defendant_offence">
+            <column name="case_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="defendant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="offence_id" type="UUID">
+            </column>
+            <column name="id" type="UUID">
+                <constraints nullable="false" />
+            </column>
+            <column name="court_form_id" type="UUID">
+                <constraints nullable="false" />
+            </column>
+            <column name="form_type" type="TEXT">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="form_case_defendant_offence" columnNames="id" constraintName="pk_form_case_defendant_offence"/>
+        <!--create Index on columns case_id-->
+        <createIndex tableName="form_case_defendant_offence" indexName="form_case_defendant_offence_case_id_idx">
+            <column name="case_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

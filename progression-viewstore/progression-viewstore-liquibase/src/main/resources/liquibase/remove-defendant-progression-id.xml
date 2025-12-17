@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+	<changeSet id="remove-defendant-progression-id" author="rtodd">
+
+        <!-- rewire dependancy on defendant.id (defendant_progression_id) as it is to be deleted-->
+		<dropForeignKeyConstraint baseTableName="offence" constraintName="fk_offence_defendant_id"/>
+
+		<sql>update offence as off set defendant_id =
+			(select def.defendant_id from defendant as def where def.id = off.defendant_id )
+		</sql>
+
+		<addForeignKeyConstraint baseColumnNames="defendant_id"
+								 baseTableName="offence"
+								 constraintName="fk_offence_defendant_id"
+								 referencedColumnNames="defendant_id"
+								 referencedTableName="defendant"
+								 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+		/>
+
+		<dropForeignKeyConstraint baseTableName="defendant_bail_document" constraintName="fk_defendant_bail_document_defendant_id"/>
+
+		<sql>update defendant_bail_document as dbd set defendant_id =
+			(select def.defendant_id from defendant as def where def.id = dbd.defendant_id )
+		</sql>
+
+		<addForeignKeyConstraint baseColumnNames="defendant_id"
+								 baseTableName="defendant_bail_document"
+								 constraintName="fk_defendant_bail_document_defendant_id"
+								 referencedColumnNames="defendant_id"
+								 referencedTableName="defendant"
+								 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+		/>
+
+
+		<!-- change defendant primary key to be defendant_id-->
+		<dropPrimaryKey tableName="defendant" constraintName="defendant_pkey"/>
+
+		<addPrimaryKey columnNames="defendant_id" constraintName="defendant_pkey"
+					   tableName="defendant" />
+
+		<dropColumn columnName="id" tableName="defendant" />
+
+
+	</changeSet>
+</databaseChangeLog>

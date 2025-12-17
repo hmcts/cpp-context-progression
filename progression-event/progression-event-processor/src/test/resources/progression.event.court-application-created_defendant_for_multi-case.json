@@ -1,0 +1,260 @@
+{
+  "courtApplication": {
+    "applicant": {
+      "id": "dc58330f-347e-40d1-b40d-8ca38a3b8bf4",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "2a90f833-052e-4242-92ad-e4cbb75dff83",
+            "caseReference": "36NR0526447",
+            "defendantId": "187ce156-1566-4df2-bd4c-b63b9f060326"
+          }
+        ],
+        "isYouth": false,
+        "masterDefendantId": "187ce156-1566-4df2-bd4c-b63b9f060326",
+        "personDefendant": {
+          "arrestSummonsNumber": "2316NR0000000010009Y",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PI",
+          "personDetails": {
+            "address": {
+              "address1": "9999G9999QQQC",
+              "address2": "WplfoqqM",
+              "address3": "addressline 4",
+              "address4": "Btfgston",
+              "address5": "Elfo"
+            },
+            "contact": {
+              "home": "02012345679",
+              "mobile": "07771234568",
+              "primaryEmail": "test02@gmail.com"
+            },
+            "dateOfBirth": "1982-06-10",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Victor",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Akselsen",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "applicationReceivedDate": "2024-06-19",
+    "applicationReference": "36NR0526447,36NR0527448",
+    "applicationStatus": "DRAFT",
+    "commissionerOfOath": false,
+    "courtApplicationCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "isSJP": false,
+        "offences": [
+          {
+            "arrestDate": "2024-02-06",
+            "chargeDate": "2024-02-07",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "f61e870e-fcee-4de3-bdb2-fc0536022f36",
+            "isDisposed": true,
+            "listingNumber": 1,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Use a television set without a licence",
+            "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+            "orderIndex": 1,
+            "proceedingsConcluded": true,
+            "startDate": "2024-02-01",
+            "wording": "Use / install a television set without a licence."
+          }
+        ],
+        "prosecutionCaseId": "2a90f833-052e-4242-92ad-e4cbb75dff83",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Surrey Police",
+            "address2": "Mount Browne",
+            "address3": "Sandy Lane",
+            "address4": "Guildford",
+            "postcode": "GU3 1HG"
+          },
+          "contact": {
+            "primaryEmail": "mail_data_bureau_res@surrey.pnn.police.uk"
+          },
+          "majorCreditorCode": "PO45",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityName": "Surrey Police",
+          "prosecutionAuthorityOUCode": "0450000",
+          "caseURN": "36NR0526447"
+        }
+      },
+      {
+        "caseStatus": "INACTIVE",
+        "isSJP": false,
+        "offences": [
+          {
+            "arrestDate": "2024-02-06",
+            "chargeDate": "2024-02-07",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "22de5d15-0933-4c28-9689-1d51da40adde",
+            "isDisposed": true,
+            "listingNumber": 1,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Use a television set without a licence",
+            "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+            "orderIndex": 1,
+            "proceedingsConcluded": true,
+            "startDate": "2024-02-01",
+            "wording": "Use / install a television set without a licence."
+          }
+        ],
+        "prosecutionCaseId": "9a011446-2096-4c34-8a84-0fe484da9f0a",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "caseURN": "36NR0527448"
+        }
+      }
+    ],
+    "id": "bd08f607-9132-4e63-9e26-dc3ff874f0ee",
+    "respondents": [
+      {
+        "id": "d5e69dfb-8bf9-4999-a7c5-615242f78d3d",
+        "notificationRequired": true,
+        "prosecutingAuthority": {
+          "address": {
+            "address1": "Surrey Police",
+            "address2": "Mount Browne",
+            "address3": "Sandy Lane",
+            "address4": "Guildford",
+            "postcode": "GU3 1HG"
+          },
+          "contact": {
+            "primaryEmail": "mail_data_bureau_res@surrey.pnn.police.uk"
+          },
+          "majorCreditorCode": "PO45",
+          "name": "Surrey Police",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityOUCode": "0450000",
+          "welshName": "Heddlu Surrey"
+        },
+        "summonsRequired": false
+      }
+    ],
+    "subject": {
+      "id": "dc58330f-347e-40d1-b40d-8ca38a3b8bf4",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "2a90f833-052e-4242-92ad-e4cbb75dff83",
+            "caseReference": "36NR0526447",
+            "defendantId": "187ce156-1566-4df2-bd4c-b63b9f060326"
+          }
+        ],
+        "isYouth": false,
+        "masterDefendantId": "187ce156-1566-4df2-bd4c-b63b9f060326",
+        "personDefendant": {
+          "arrestSummonsNumber": "2316NR0000000010009Y",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PI",
+          "personDetails": {
+            "address": {
+              "address1": "9999G9999QQQC",
+              "address2": "WplfoqqM",
+              "address3": "addressline 4",
+              "address4": "Btfgston",
+              "address5": "Elfo"
+            },
+            "contact": {
+              "home": "02012345679",
+              "mobile": "07771234568",
+              "primaryEmail": "test02@gmail.com"
+            },
+            "dateOfBirth": "1982-06-10",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Victor",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Akselsen",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "type": {
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "CO",
+      "code": "MC80524",
+      "commrOfOathFlag": false,
+      "courtExtractAvlFlag": true,
+      "courtOfAppealFlag": false,
+      "hearingCode": "APN",
+      "id": "44c238d9-3bc2-3cf3-a2eb-a7d1437b8383",
+      "jurisdiction": "MAGISTRATES",
+      "legislation": "In accordance with section 142 of the Magistrates' Courts Act 1980.",
+      "legislationWelsh": "Yn unol ag adran 142 Deddf Llysoedd Ynadon 1980.",
+      "linkType": "SJP",
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "offenceActiveOrder": "OFFENCE",
+      "pleaApplicableFlag": false,
+      "prosecutorThirdPartyFlag": true,
+      "spiOutApplicableFlag": true,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Application to reopen case",
+      "typeWelsh": "Cais i ailagor achos"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="alter-table-pet-case-defendant-offence-drop-offence" author="Sudhindra Seetharama">
+        <dropPrimaryKey constraintName="pk_pet_case_defendant_offence"
+                        tableName="pet_case_defendant_offence"/>
+        <dropColumn tableName="pet_case_defendant_offence">
+            <column name="offence_id" />
+        </dropColumn>
+        <addColumn tableName="pet_case_defendant_offence">
+            <column name="id" type="UUID"/>
+        </addColumn>
+        <addPrimaryKey columnNames="id" constraintName="pk_pet_case_defendant_pet"
+                       tableName="pet_case_defendant_offence"/>
+    </changeSet>
+</databaseChangeLog>

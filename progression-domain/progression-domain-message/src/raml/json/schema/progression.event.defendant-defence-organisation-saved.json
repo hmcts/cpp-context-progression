@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-saved.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "organisationName": {
+      "type": "string"
+    },
+    "addressLine1": {
+      "type": "string"
+    },
+    "addressLine2": {
+      "type": "string"
+    },
+    "addressLine3": {
+      "type": "string"
+    },
+    "addressLine4": {
+      "type": "string"
+    },
+    "postCode": {
+      "type": "string"
+    },
+    "phoneNumber": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "laaContractNumber": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "defendantId",
+    "prosecutionCaseId",
+    "organisationName",
+    "addressLine1",
+    "addressLine2",
+    "addressLine3",
+    "addressLine4",
+    "postCode",
+    "phoneNumber",
+    "email"
+  ]
+}

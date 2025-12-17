@@ -1,0 +1,38 @@
+{
+  "directionId": "b69988fa-72a0-49b4-adc9-8282147e6285",
+  "text": "$intermediaryReport",
+  "dueDate": "2020-09-01",
+  "assigneeOrganisationText": "Prosecutor",
+  "subDirection": true,
+  "prompts": [
+    {
+      "id": "602ff24c-eb1b-4a60-9d10-225ae3b82d62",
+      "type": "checklist",
+      "required": false,
+      "promptOrder": 1,
+      "name": "intermediaryReport",
+      "children": [
+        {
+          "id": "602ff24c-eb1b-4a60-9d10-225ae3b82d63",
+          "label": "Intermediary's report CrimPR rule 18.32",
+          "text": "\tIntermediary’s report CrimPR rule 18.32<br>a. Intermediary’s report to be delivered to the court by: $date1 <br>b. The court will determine the application for an intermediary by: $date2",
+          "type": "label",
+          "required": false,
+          "promptOrder": 100,
+          "duplicate": "add another",
+          "children": [
+            {
+              "id": "2062d38f-9801-4a91-8664-c48a5fd44006",
+              "label": "Case Participant",
+              "type": "fixl",
+              "required": true,
+              "promptOrder": 1000,
+              "caseParticipant": "Witness,Defendants",
+              "name": "caseParticipant"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

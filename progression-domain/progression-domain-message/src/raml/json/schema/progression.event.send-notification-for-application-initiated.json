@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/send-notification-for-application-initiated.json",
+  "type": "object",
+  "properties": {
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    },
+    "boxHearing": {
+      "description": "The details of the required box hearing including agreed appointment details where necessary",
+      "$ref": "http://justice.gov.uk/core/courts/boxHearingRequest.json#"
+    },
+    "courtHearing": {
+      "description": "The details of a new court hearing that are required to be listed",
+      "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json#"
+    },
+    "summonsApprovalRequired": {
+      "description": "Indicates that the summons approval process is required to be initiated",
+      "type": "boolean"
+    },
+    "applicationReferredToNewHearing": {
+      "type": "boolean"
+    },
+    "isWelshTranslationRequired": {
+      "type": "boolean"
+    },
+    "isBoxWorkRequest": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "courtApplication",
+    "isBoxWorkRequest",
+    "isWelshTranslationRequired"
+  ],
+  "additionalProperties": false
+}

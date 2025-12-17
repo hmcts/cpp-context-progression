@@ -1,0 +1,122 @@
+{
+  "trialSummary": {
+    "hearingType": {
+      "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
+      "description": "Sentence"
+    },
+    "hearingDay": {
+      "listedDurationMinutes": 20,
+      "sittingDay": "2022-05-03T15:00:00.000Z"
+    }
+  }
+  "idpcAndCaseHistories": [
+    {
+      "defendantFirstName": "John",
+      "defendantLastName": "Turner",
+      "idpcServiceDate": "2021-08-01",,
+      "plea": {
+        "originatingHearingId": "c158cbb3-296a-4d77-81e2-9ca233b3d5af",
+        "delegatedPowers": {
+          "userId": "c158cbb3-296a-4d77-81e2-9ca233b3d5af",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "offenceId": "c158cbb3-296a-4d77-81e2-9ca233b3d5af",
+        "pleaDate": "0000-01-01",
+        "pleaValue": "GUILTY"
+      },
+      "bailStatus": {
+        "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+        "code": "B",
+        "description": "Conditional Bail"
+      }
+    }
+  ],
+  "petDetails": [
+    {
+      "status": "XYZ",
+      "lastChangeDate": "2020-04-14",
+      "nextHearingDate": "2020-04-14",
+      "courtCentre": {
+        "id": "0946d5d3-f5e3-4206-a0b1-7d0938fe8bbe"
+      },
+      "defendantFirstName": "John",
+      "defendantLastName": "Turner"
+    }
+  ],
+  "ptphDetails": [
+    {
+      "lastChangeDate": "2020-04-14",
+      "defendantFirstName": "John",
+      "defendantLastName": "Turner"
+    }
+  ],
+  "defendantCotrDetails": [
+    {
+      "dueDate": "2020-04-14",
+      "isProsecutionServed": true,
+      "isDefenceServed": true,
+      "defendantFirstName": "John",
+      "defendantLastName": "Turner",
+      "cotrStatus": "XYZ"
+    }
+  ],
+  "courtApplications": [
+    {
+      "id": "a7a7b64f-5b46-47ec-a451-54b9c41381ed",
+      "type": {
+        "id": "318f574c-1ac4-44e4-ab2d-d03252e697dc",
+        "code": "code",
+        "type": "type",
+        "legislation": "legislation",
+        "categoryCode": "ABC",
+        "linkType": "STANDALONE",
+        "jurisdiction": "MAGISTRATES",
+        "appealFlag": false,
+        "summonsTemplateType": "GENERIC_APPLICATION",
+        "validFrom": "2020-04-14",,
+        "validTo": "2020-04-14",,
+        "applicantAppellantFlag": true,
+        "pleaApplicableFlag": false,
+        "offenceActiveOrder": "OFFENCE",
+        "commrOfOathFlag": false,
+        "breachType": "GENERIC_BREACH",
+        "courtOfAppealFlag": true,
+        "courtExtractAvlFlag": true,
+        "listingNotifTemplate": "xyz",
+        "boxworkNotifTemplate": "xyz",
+        "prosecutorThirdPartyFlag": false,
+        "spiOutApplicableFlag": true,
+        "initialFeeApplicable": true,
+        "contestedFeeApplicable": false,
+        "exParte": false
+      }
+    }
+  ],
+  "caseDirections": [
+    {
+      "assignee": "Prosecutor",
+      "caseId": "8ff2893b-4d89-457c-942e-c598632b2363",
+      "defaultDirection": false,
+      "directionTypeId": "0a18eadf-0970-42ff-b980-b7f383391391",
+      "displayText": "The Prosecutor must serve any further evidence by 1 Aug 2021",
+      "dueDate": "2021-08-01",
+      "hearingType": "Second hearing",
+      "id": "f52b05c5-772d-4b4f-92f7-24efb591fd10",
+      "orderDate": "2022-03-20",
+      "status": "PENDING"
+    },
+    {
+      "assignee": "Prosecutor",
+      "caseId": "8ff2893b-4d89-457c-942e-c598632b2363",
+      "defaultDirection": false,
+      "directionTypeId": "29be8453-b3c6-4f5c-815f-7f6b41ac1ac1",
+      "displayText": "If the initial duty of disclosure has not been compiled with, the prosecutor must comply by 10 Aug 2021",
+      "dueDate": "2021-08-10",
+      "hearingType": "Second hearing",
+      "id": "d49ea9f8-ede6-4189-9213-15ea09c8046a",
+      "orderDate": "2022-03-20",
+      "status": "PENDING"
+    }
+  ]
+}

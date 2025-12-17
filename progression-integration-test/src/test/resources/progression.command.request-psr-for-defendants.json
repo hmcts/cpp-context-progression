@@ -1,0 +1,12 @@
+{
+  "defendants":[
+      {  
+         "defendantId":"DEF_ID_1",
+         "psrIsRequested": false
+      },
+       {  
+         "defendantId":"DEF_ID_2",
+         "psrIsRequested": true
+      }
+  ]
+}

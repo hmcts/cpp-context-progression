@@ -1,0 +1,12 @@
+{
+  "materialId": "45b0c3fe-afe6-4652-882f-7882d79eadd9",
+  "receivedDateTime": "2020-01-20T13:50:00Z",
+  "documentId": "45b0c3fe-afe6-4652-882f-7882d79eadd9",
+  "source": "OTHER",
+  "urn": "abcd123",
+  "prosecutingAuthority": "abc",
+  "documentType": "Applications",
+  "code": [
+    "uploaded-review-required"
+  ]
+}

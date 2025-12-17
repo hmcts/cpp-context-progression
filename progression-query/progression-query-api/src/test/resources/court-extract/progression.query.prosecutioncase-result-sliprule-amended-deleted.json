@@ -1,0 +1,401 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-02-28T14:40:24.648Z",
+        "id": "DEFENDANT_ID",
+        "masterDefendantId": "DEFENDANT_ID",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-02-28",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "91cd5599-f904-456a-80e5-39c65203e2f1",
+              "originatingHearingId": "HEARING_ID",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2025-02-28",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "91cd5599-f904-456a-80e5-39c65203e2f1",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": true,
+                "canBeSubjectOfVariation": false,
+                "category": "FINAL",
+                "cjsCode": "1018",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "durationElement": {
+                  "primaryDurationUnit": "M",
+                  "primaryDurationValue": 20
+                },
+                "dvlaCode": "E",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": false,
+                "isUnscheduled": false,
+                "judicialResultId": "59a70b3c-66c9-4709-a1b5-fef03df88ffa",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "durationSequence": 1,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                    "label": "Period of conditional discharge",
+                    "promptReference": "periodofConditionalDischarge",
+                    "promptSequence": 100,
+                    "type": "INT",
+                    "usergroups": [],
+                    "value": "20 Months",
+                    "welshLabel": "Cyfnod o ryddhad amodol",
+                    "welshValue": "20 Months"
+                  }
+                ],
+                "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "label": "Conditional discharge",
+                "lastSharedDateTime": "2025-02-28",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-02-28",
+                "orderedHearingId": "HEARING_ID",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 73800,
+                "resultText": "CD - Conditional discharge\nDischarged conditionally for 20 Months.",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "59a70b3c-66c9-4709-a1b5-fef03df88ffa",
+                "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad Amodol"
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "S:L3",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03012",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+            "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+            "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "91cd5599-f904-456a-80e5-39c65203e2f1",
+              "originatingHearingId": "HEARING_ID",
+              "pleaDate": "2025-02-28",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "Juanita Botsford have set up a TV cable without a valid license."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF017861923",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "contact": {
+              "home": "015325443756"
+            },
+            "dateOfBirth": "2001-02-18",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Juanita",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Botsford",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailConditions": "Proin tincidunt tincidunt ligula, non egestas ante iaculis vitae. Suspendisse at diam vestibulum velit rutrum euismod. Pellentesque nec auctor orci. Duis ut dui euismod, elementum elit vitae, dictum mauris. Mauris efficitur erat eros, vel blandit lectus sodales at. Aliquam erat volutpat. Fusce non convallis enim. Curabitur sed lectus elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur urna ligula, tristique interdum facilisis laoreet, varius id sem. Donec nec vehicula sapien, vestibulum tempor eros. Vestibulum et consequat augue. Praesent accumsan odio nisl, efficitur ultricies neque porttitor eu. Donec mollis sodales orci a tincidunt. Suspendisse congue ipsum sit amet quam elementum, quis aliquet nisl viverra.Mauris efficitur at lectus eget varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam non dapibus erat. Integer ipsum purus, semper vel elit accumsan, laoreet accumsan dolor. Fusce sed erat ut nunc auctor sagittis a non dui. Donec dolor ante, mattis in rhoncus non, dapibus vitae dui. Integer ac bibendum nunc. Phasellus nulla massa, laoreet et velit id, iaculis efficitur massa. Maecenas posuere sollicitudin laoreet. Proin eleifend volutpat elementum. Suspendisse et mi nec neque euismod viverra ac placerat ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed vitae laoreet enim. Maecenas accumsan neque vel facilisis ullamcorper. Vestibulum quis dictum ante. Cras dapibus arcu ut purus scelerisque sollicitudin.Nunc tincidunt eros eget convallis aliquet. Aenean egestas posuere aliquet. Proin massa urna, fringilla non interdum quis, interdum eget mi. Sed posuere ac sapien hendrerit venenatis. Cras dapibus diam a consequat ullamcorper. Nunc nec nisl ac odio eleifend sagittis. Donec sed massa enim. Vivamus aliquam venenatis rhoncus. Etiam feugiat tellus sapien, convallis efficitur urna ultricies sit amet. Nulla dapibus tincidunt purus, at eleifend felis aliquet sed. Etiam at dolor eu nisl volutpat blandit.Nunc diam urna, viverra nec commodo non, convallis at risus. Vivamus rhoncus vehicula arcu nec mattis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Phasellus fe END",
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF017861923",
+        "prosecutionCaseId": "b900dceb-082a-4b7d-a23f-acb0f60c2250"
+      }
+    ],
+    "id": "b900dceb-082a-4b7d-a23f-acb0f60c2250",
+    "initiationCode": "C",
+    "originatingOrganisation": "GAEAA01",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI7861923"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "DEFENDANT_ID",
+        "defendantName": "Juanita Botsford",
+        "hearingIds": [
+          "HEARING_ID"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "BY_VIDEO",
+                "day": "2025-02-28"
+              }
+            ],
+            "defendantId": "DEFENDANT_ID"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London",
+              "postcode": "SW11 3TQ"
+            },
+            "age": "24",
+            "courtApplications": [],
+            "dateOfBirth": "2001-02-18",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "DEFENDANT_ID"
+            },
+            "id": "DEFENDANT_ID",
+            "judicialResults": [],
+            "name": "Juanita Botsford",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-02-28",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "91cd5599-f904-456a-80e5-39c65203e2f1",
+                  "originatingHearingId": "HEARING_ID",
+                  "sequenceNumber": 90
+                },
+                "convictionDate": "2025-02-28",
+                "count": 0,
+                "id": "91cd5599-f904-456a-80e5-39c65203e2f1",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": false,
+                    "category": "FINAL",
+                    "cjsCode": "1018",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "M",
+                      "primaryDurationValue": 20
+                    },
+                    "dvlaCode": "E",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "59a70b3c-66c9-4709-a1b5-fef03df88ffa",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                        "label": "Period of conditional discharge",
+                        "promptReference": "periodofConditionalDischarge",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "20 Months",
+                        "welshLabel": "Cyfnod o ryddhad amodol",
+                        "welshValue": "20 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "label": "Conditional discharge",
+                    "lastSharedDateTime": "2025-02-28",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-02-28",
+                    "orderedHearingId": "HEARING_ID",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 73800,
+                    "resultText": "CD - Conditional discharge\nDischarged conditionally for 20 Months.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "59a70b3c-66c9-4709-a1b5-fef03df88ffa",
+                    "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad Amodol"
+                  }
+                ],
+                "offenceCode": "CA03012",
+                "offenceDefinitionId": "6588ffee-89ec-36a2-ab90-a54177cbda97",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+                "offenceLegislationWelsh": "Yn groes i adran 363(3)(b) a (4) Deddf Cyfathrebu 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "offenceTitleWelsh": "Meddu ar/mewn rheolaeth set deledu gan fwriadu i unigolyn arall ei ddefnyddio/osod heb drwydded",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "91cd5599-f904-456a-80e5-39c65203e2f1",
+                    "originatingHearingId": "HEARING_ID",
+                    "pleaDate": "2025-02-28",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Juanita Botsford have set up a TV cable without a valid license."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-02-28T22:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "HEARING_ID",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      }
+    ],
+    "id": "b900dceb-082a-4b7d-a23f-acb0f60c2250",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Barton House",
+        "address2": "Bond Street",
+        "address3": "Bristol",
+        "postcode": "BS98 1TL"
+      },
+      "contact": {
+        "primaryEmail": "court.results@tvl.cjsm.net"
+      },
+      "majorCreditorCode": "TVL3",
+      "prosecutionAuthorityCode": "TVL",
+      "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+      "prosecutionAuthorityName": "TV Licensing",
+      "prosecutionAuthorityOUCode": "GAEAA01",
+      "caseURN": "28DI7861923"
+    }
+  }
+}

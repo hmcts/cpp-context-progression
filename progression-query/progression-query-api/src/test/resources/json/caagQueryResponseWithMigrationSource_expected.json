@@ -1,0 +1,83 @@
+{
+  "caseId": "756660d1-c506-42cd-a8ff-1662f355ca36",
+  "caseDetails": {
+    "caseStatus": "EJECTED",
+    "removalReason": "Cannot handle case in CPP",
+    "caseMarkers": [
+      "Prohibited Weapons"
+    ],
+    "migrationSourceSystem" :{
+      "migrationSourceSystemName" : "LIBRA",
+      "migrationSourceSystemCaseIdentifier" : "LIBRA-987"
+    }
+  },
+  "prosecutorDetails": {
+    "prosecutionAuthorityCode": "TFL",
+    "prosecutionAuthorityReference": "a3772daa",
+    "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+    "address": {
+      "address1": "6th Floor Windsor House",
+      "address2": "42-50 Victoria Street",
+      "address3": "London",
+      "postcode": "SW1H 0TL"
+    }
+  },
+  "defendants": [
+    {
+      "address": {
+        "address1": "22",
+        "address2": "Acacia Avenue",
+        "address3": "Acacia Town",
+        "address4": "Acacia City",
+        "address5": "Acacia Country",
+        "postcode": "CR7 0AA"
+      },
+      "age": 15,
+      "dateOfBirth": "2005-02-07",
+      "firstName": "Harry",
+      "id": "8a33d852-4f12-4146-8f1a-33ee38c80cff",
+      "interpreterLanguageNeeds": "Welsh",
+      "lastName": "Kane Junior",
+      "remandStatus": "Remanded into Custody",
+      "caagDefendantOffences": [
+        {
+          "count": 0,
+          "endDate": "2018-01-01",
+          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "offenceCode": "TTH105HY",
+          "offenceTitle": "ROBBERY",
+          "startDate": "2018-01-01",
+          "wording": "No Travel Card",
+          "wordingWelsh": "No Travel Card In Welsh",
+          "caagResults": [
+            {
+              "amendedBy": "a a",
+              "amendmentDate": "2000-01-01",
+              "amendmentReason": "a",
+              "resultText": "Summons Result",
+              "caagResultPrompts": [
+                {
+                  "label": "a",
+                  "value": "a"
+                }
+              ],
+              "label": "a",
+              "lastSharedDateTime": "a",
+              "orderedDate": "2000-01-01"
+            }
+          ]
+        }
+      ],
+      "representation" : {
+        "name": "Harry & Co LLP",
+          "address": {
+            "addressLine1": "Legal House",
+            "addressLine2": "15 Sewell Street",
+            "addressLine3": "Hammersmith",
+            "addressLine4": "London",
+            "addressPostcode": "SE14 2AB"
+          }
+      }
+    }
+  ]
+}

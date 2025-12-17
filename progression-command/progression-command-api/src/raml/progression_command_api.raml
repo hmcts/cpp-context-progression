@@ -1,0 +1,1768 @@
+  #%RAML 0.8
+title: Progression Command API
+version: 1.0
+baseUri:  http://localhost:8080/progression-command-api/command/api/rest/progression
+
+/courtdocument/{courtDocumentId}/material/{materialId}:
+  uriParameters:
+    courtDocumentId:
+      description: CourtDocumentId of the document of which a meterial being removed
+      type: string
+    materialId:
+      description: materialId of material being removed
+      type: string
+  post:
+      description: |
+        Court document is being removed.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.remove-court-document+json
+            name: progression.remove-court-document
+        ...
+      body:
+        application/vnd.progression.remove-court-document+json:
+            example:
+             !include json/progression.remove-court-document.json
+            schema:
+             !include json/schema/progression.remove-court-document.json
+
+      responses:
+            202:
+                description: OK
+
+
+
+/courtdocument/{courtDocumentId}:
+  uriParameters:
+    courtDocumentId:
+      description: CourtDocumentId of the document link being removed by BDF
+      type: string
+  post:
+      description: |
+        Court document soft link is being removed by BDF.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.remove-court-document-bdf+json
+            name: progression.remove-court-document-bdf
+        ...
+      body:
+        application/vnd.progression.remove-court-document-bdf+json:
+            example:
+             !include json/progression.remove-court-document-bdf.json
+            schema:
+             !include json/schema/progression.remove-court-document-bdf.json
+
+      responses:
+            202:
+                description: OK
+
+
+
+/courtdocument/{materialId}:
+  uriParameters:
+    materialId:
+      description: The ID of the material for the document
+      type: string
+  post:
+    description: |
+      Upload a case document for a case
+      ...
+      (mapping):
+          requestType: multipart/form-data
+          name: progression.upload-court-document
+      (mapping):
+          requestType: application/vnd.progression.upload-court-document+json
+          name: progression.upload-court-document
+      (mapping):
+          requestType: application/vnd.progression.add-court-document+json
+          name: progression.add-court-document
+      (mapping):
+          requestType: application/vnd.progression.add-court-document-for-prosecutor+json
+          name: progression.add-court-document-for-prosecutor
+      (mapping):
+          requestType: application/vnd.progression.add-court-document-v2+json
+          name: progression.add-court-document-v2
+      ...
+    body:
+      application/vnd.progression.upload-court-document+json:
+        example:
+          !include json/progression.upload-court-document.json
+        schema:
+          !include json/schema/progression.upload-court-document.json
+      application/vnd.progression.add-court-document+json:
+        example:
+          !include json/progression.add-court-document.json
+        schema:
+          !include json/schema/progression.add-court-document.json
+      application/vnd.progression.add-court-document-v2+json:
+        example:
+          !include json/progression.add-court-document-v2.json
+        schema:
+          !include json/schema/progression.add-court-document-v2.json
+      application/vnd.progression.add-court-document-for-prosecutor+json:
+          example:
+            !include json/progression.add-court-document.json
+          schema:
+            !include json/schema/progression.add-court-document.json
+      multipart/form-data:
+        formParameters:
+          fileServiceId:
+            description: fileServiceId for the document to be uploaded
+            type: file
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/defendant/{defendantId}/courtdocument/{materialId}:
+  uriParameters:
+    defendantId:
+        description: The ID of the Defendant
+        required: true
+        type: string
+    materialId:
+      description: The ID of the material for the document
+      required: true
+      type: string
+  post:
+    description: |
+      Upload a case document for a case
+      ...
+      (mapping):
+          requestType: multipart/form-data
+          name: progression.upload-court-document-for-defence
+      (mapping):
+          requestType: application/vnd.progression.upload-court-document-for-defence+json
+          name: progression.upload-court-document-for-defence
+      (mapping):
+          requestType: application/vnd.progression.add-court-document-for-defence+json
+          name: progression.add-court-document-for-defence
+      ...
+    body:
+      application/vnd.progression.upload-court-document-for-defence+json:
+        example:
+          !include json/progression.upload-court-document.json
+        schema:
+          !include json/schema/progression.upload-court-document.json
+      application/vnd.progression.add-court-document-for-defence+json:
+        example:
+          !include json/progression.add-court-document.json
+        schema:
+          !include json/schema/progression.add-court-document.json
+      multipart/form-data:
+        formParameters:
+          fileServiceId:
+            description: fileServiceId for the document to be uploaded
+            type: file
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/courtdocument :
+  post:
+    description: |
+      Update a court document for a case or create court documents
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-court-document+json
+          name: progression.update-court-document
+      (mapping):
+          requestType: application/vnd.progression.create-court-documents+json
+           name: progression.create-court-documents
+      ...
+    body:
+      application/vnd.progression.update-court-document+json:
+        example:
+          !include json/progression.command.update-court-document.json
+        schema:
+          !include json/schema/progression.command.update-court-document.json
+      application/vnd.progression.create-court-documents+json:
+              schema:
+                !include json/schema/progression.create-court-documents.json
+
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/refertocourt :
+  post:
+      description: |
+        Case is sent to a Court for Hearing.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.refer-cases-to-court+json
+            name: progression.refer-cases-to-court
+        ...
+      body:
+        application/vnd.progression.refer-cases-to-court+json:
+            example:
+             !include json/progression.refer-cases-to-court.json
+            schema:
+             !include json/schema/progression.refer-cases-to-court.json
+      responses:
+            202:
+                description: OK
+
+/adddefendantstocourtproceedings :
+  post:
+      description: |
+        Defendants added to court proceedings.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.add-defendants-to-court-proceedings+json
+            name: progression.add-defendants-to-court-proceedings
+        ...
+      body:
+        application/vnd.progression.add-defendants-to-court-proceedings+json:
+            example:
+             !include json/progression.add-defendants-to-court-proceedings.json
+            schema:
+             !include json/schema/progression.add-defendants-to-court-proceedings.json
+      responses:
+            202:
+                description: OK
+
+/defendants/{defendantId}/defenceaccess :
+  uriParameters:
+      defendantId:
+        description: The id of the defendant
+        type: string
+  post:
+      description: |
+        This id would operate on a defendant's case access
+        ...
+        (mapping):
+             requestType: application/vnd.progression.grant-defence-access+json
+             name: progression.grant-defence-access
+        (mapping):
+            requestType: application/vnd.progression.progression.remove-defence-access+json
+            name: progression.progression.remove-defence-access
+        ...
+      body:
+        application/vnd.progression.grant-defence-access+json:
+           example:
+             !include json/progression.grant-defence-access.json
+           schema:
+              !include json/schema/progression.grant-defence-access.json
+        application/vnd.progression.progression.remove-defence-access+json:
+           example:
+             !include json/progression.remove-defence-access.json
+           schema:
+              !include json/schema/progression.remove-defence-access.json
+
+/initiatecourtproceedings :
+  post:
+      description: |
+        Case is sent to a Court to initiate proceedings.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.initiate-court-proceedings+json
+            name: progression.initiate-court-proceedings
+        (mapping):
+            requestType: application/vnd.progression.initiate-court-proceedings-for-group-cases+json
+            name: progression.initiate-court-proceedings-for-group-cases
+        ...
+      body:
+        application/vnd.progression.initiate-court-proceedings+json:
+            example:
+              !include json/progression.initiate-court-proceedings.json
+            schema:
+              !include json/schema/progression.initiate-court-proceedings.json
+        application/vnd.progression.initiate-court-proceedings-for-group-cases+json:
+            example:
+              !include json/progression.initiate-court-proceedings-for-group-cases.json
+            schema:
+              !include json/schema/progression.initiate-court-proceedings-for-group-cases.json
+      responses:
+            202:
+                description: OK
+
+/send-notification-for-application :
+  post:
+      description: |
+        Case is sent to a Court to initiate proceedings.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.send-notification-for-application+json
+            name: progression.send-notification-for-application
+        ...
+      body:
+        application/vnd.progression.send-notification-for-application+json:
+            example:
+             !include json/progression.send-notification-for-application.json
+            schema:
+             !include json/schema/progression.send-notification-for-application.json
+      responses:
+            202:
+                description: OK
+
+/listnewhearing :
+  post:
+    description: |
+      Create new Hearing creation .
+      ...
+      (mapping):
+          requestType: application/vnd.progression.list-new-hearing+json
+          name: progression.list-new-hearing
+      ...
+    body:
+      application/vnd.progression.list-new-hearing+json:
+        example:
+          !include json/progression.list-new-hearing.json
+        schema:
+          !include json/schema/progression.list-new-hearing.json
+    responses:
+      202:
+        description: OK
+
+/prosecutioncases/{prosecutionCaseId}/defendants/{id}:
+  uriParameters:
+    prosecutionCaseId:
+      description: The ID of the case
+      type: string
+    id:
+      description: The ID of the defendant to modify
+      type: string
+  post:
+    description: |
+      Update defendant details.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-defendant-for-prosecution-case+json
+          name: progression.update-defendant-for-prosecution-case
+      (mapping):
+          requestType: application/vnd.progression.update-offences-for-prosecution-case+json
+          name: progression.update-offences-for-prosecution-case
+      (mapping):
+          requestType: application/vnd.progression.update-master-defendant+json
+          name: progression.update-master-defendant
+      ...
+    body:
+      application/vnd.progression.update-defendant-for-prosecution-case+json:
+        example:
+          !include json/progression.update-defendant-for-prosecution-case.json
+        schema:
+          !include json/schema/progression.update-defendant-for-prosecution-case.json
+      application/vnd.progression.update-offences-for-prosecution-case+json:
+        example:
+          !include json/progression.update-offences-for-prosecution-case.json
+        schema:
+          !include json/schema/progression.update-offences-for-prosecution-case.json
+      application/vnd.progression.update-master-defendant+json:
+        example:
+          !include json/progression.update-master-defendant.json
+        schema:
+          !include json/schema/progression.update-master-defendant.json
+    responses:
+          202:
+              description: OK
+
+
+/prosecutioncases/{prosecutionCaseId}/defendants:
+  uriParameters:
+    prosecutionCaseId:
+      description: The ID of the case
+      type: string
+  post:
+    description: |
+      Update defendant details.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-defendant-offences+json
+          name: progression.update-defendant-offences
+
+      ...
+    body:
+      application/vnd.progression.update-defendant-offences+json:
+        example:
+          !include json/progression.update-defendant-offences.json
+        schema:
+          !include json/schema/progression.update-defendant-offences.json
+
+    responses:
+          202:
+              description: OK
+
+/prosecutioncases/{prosecutionCaseId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: The ID of the case
+      type: string
+  post:
+    description: |
+      Update Case Markers.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-case-markers+json
+          name: progression.update-case-markers
+      (mapping):
+          requestType: application/vnd.progression.update-cps-prosecutor-details+json
+          name: progression.update-cps-prosecutor-details
+      (mapping):
+          requestType: application/vnd.progression.remove-case-from-group-cases+json
+          name: progression.remove-case-from-group-cases
+      (mapping):
+          requestType: application/vnd.progression.add-related-reference+json
+          name: progression.add-related-reference
+      (mapping):
+          requestType: application/vnd.progression.delete-related-reference+json
+          name: progression.delete-related-reference
+      (mapping):
+          requestType: application/vnd.progression.insert-case-bdf+json
+          name: progression.insert-case-bdf
+      ...
+    body:
+      application/vnd.progression.update-case-markers+json:
+        example:
+          !include json/progression.update-case-markers.json
+        schema:
+          !include json/schema/progression.update-case-markers.json
+      application/vnd.progression.update-cps-prosecutor-details+json:
+        example: !include json/progression.update-cps-prosecutor-details.json
+        schema:  !include json/schema/progression.update-cps-prosecutor-details.json
+      application/vnd.progression.remove-case-from-group-cases+json:
+        example: !include json/progression.remove-case-from-group-cases.json
+        schema:  !include json/schema/progression.remove-case-from-group-cases.json
+      application/vnd.progression.add-related-reference+json:
+        example: !include json/progression.add-related-reference.json
+        schema:  !include json/schema/progression.add-related-reference.json
+      application/vnd.progression.delete-related-reference+json:
+        example: !include json/progression.delete-related-reference.json
+        schema:  !include json/schema/progression.delete-related-reference.json
+      application/vnd.progression.insert-case-bdf+json:
+        example: !include json/progression.insert-case-bdf.json
+        schema:  !include json/schema/progression.insert-case-bdf.json
+
+    responses:
+          202:
+              description: OK
+
+/initiate-application:
+  post:
+      description: |
+        Intitiate court application.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.initiate-court-proceedings-for-application+json
+            name: progression.initiate-court-proceedings-for-application
+        (mapping):
+            requestType: application/vnd.progression.edit-court-proceedings-for-application+json
+            name: progression.edit-court-proceedings-for-application
+        ...
+      body:
+        application/vnd.progression.initiate-court-proceedings-for-application+json:
+            example: !include json/progression.initiate-court-proceedings-for-application.json
+            schema: !include json/schema/progression.initiate-court-proceedings-for-application.json
+        application/vnd.progression.edit-court-proceedings-for-application+json:
+            example: !include json/progression.edit-court-proceedings-for-application.json
+            schema: !include json/schema/progression.edit-court-proceedings-for-application.json
+      responses:
+            202:
+                description: OK
+
+
+/add-breach-application:
+  post:
+      description: |
+        Add breach application.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.add-breach-application+json
+            name: progression.add-breach-application
+        ...
+      body:
+        application/vnd.progression.add-breach-application+json:
+            example: !include json/progression.add-breach-application.json
+            schema: !include json/schema/progression.add-breach-application.json
+      responses:
+            202:
+                description: OK
+
+/eject:
+  post:
+      description: |
+        Eject Case or application.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.eject-case-or-application+json
+            name: progression.eject-case-or-application
+        (mapping):
+            requestType: application/vnd.progression.eject-case-via-bdf+json
+            name: progression.eject-case-via-bdf
+        ...
+      body:
+        application/vnd.progression.eject-case-or-application+json:
+            example:
+             !include json/progression.eject-case-or-application.json
+            schema:
+             !include json/schema/progression.eject-case-or-application.json
+        application/vnd.progression.eject-case-via-bdf+json:
+            example:
+              !include json/progression.eject-case-via-bdf.json
+            schema:
+              !include json/schema/progression.eject-case-via-bdf.json
+      responses:
+            202:
+                description: OK
+
+/cases/{caseId}/defendants/{defendantId}/financial-means:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+      description:  |
+        Delete defendants financial means information
+        ...
+        (mapping):
+            requestType: application/vnd.progression.delete-financial-means+json
+            name: progression.delete-financial-means
+        ...
+      body:
+        application/vnd.progression.delete-financial-means+json:
+          example:
+            !include json/progression.delete-financial-means.json
+          schema:
+            !include json/schema/progression.delete-financial-means.json
+      responses:
+            202:
+                description: OK
+            500:
+                description: Internal Server Error
+
+/cases/{caseId}/notes:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+  post:
+      description:  |
+        Add a note to a case
+        ...
+        (mapping):
+            requestType: application/vnd.progression.add-case-note+json
+            name: progression.add-case-note
+        ...
+      body:
+        application/vnd.progression.add-case-note+json:
+          example:
+            !include json/progression.add-case-note.json
+          schema:
+            !include json/schema/progression.add-case-note.json
+      responses:
+            202:
+                description: OK
+            500:
+                description: Internal Server Error
+
+/cases/{caseId}/notes/{caseNoteId}:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+    caseNoteId:
+      description: The ID of the case note
+      type: string
+  post:
+      description:  |
+        update a note to a case
+        ...
+        (mapping):
+            requestType: application/vnd.progression.edit-case-note+json
+            name: progression.edit-case-note
+        ...
+      body:
+        application/vnd.progression.edit-case-note+json:
+          example:
+            !include json/progression.edit-case-note.json
+          schema:
+            !include json/schema/progression.edit-case-note.json
+      responses:
+            202:
+                description: OK
+            500:
+                description: Internal Server Error
+
+/applications/{applicationId}/notes:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+  post:
+    description:  |
+      Add a note to an application
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.add-application-note+json
+          name: progression.command.add-application-note
+      ...
+    body:
+      application/vnd.progression.command.add-application-note+json:
+        example:
+          !include json/progression.command.add-application-note.json
+        schema:
+          !include json/schema/progression.command.add-application-note.json
+    responses:
+      202:
+        description: OK
+      500:
+        description: Internal Server Error
+
+/applications/{applicationId}/notes/{applicationNoteId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+    applicationNoteId:
+      description: The ID of the application note
+      type: string
+  post:
+    description:  |
+      update a note to an application
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.edit-application-note+json
+          name: progression.command.edit-application-note
+      ...
+    body:
+      application/vnd.progression.command.edit-application-note+json:
+        example:
+          !include json/progression.command.edit-application-note.json
+        schema:
+          !include json/schema/progression.command.edit-application-note.json
+    responses:
+      202:
+        description: OK
+      500:
+        description: Internal Server Error
+
+/applications/patch:
+  post:
+    description:  |
+      patch for applications
+      ...
+      (mapping):
+          requestType: application/vnd.progression.patch-update-applications-status+json
+          name: progression.patch-update-applications-status
+      ...
+
+    body:
+      application/vnd.progression.patch-update-applications-status+json:
+        example:
+          !include json/progression.patch-update-applications-status.json
+        schema:
+          !include json/schema/progression.patch-update-applications-status.json
+    responses:
+      202:
+        description: OK
+      500:
+        description: Internal Server Error
+
+/laaReference/cases/{caseId}/defendants/{defendantId}/offences/{offenceId}:
+  uriParameters:
+    caseId:
+      description: The ID of the case
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+    offenceId:
+          description: The ID of the offence
+          type: string
+  post:
+      description:  |
+        updating offence wit LAA reference
+        ...
+        (mapping):
+            requestType: application/vnd.progression.command.record-laareference-for-offence+json
+            name: progression.command.record-laareference-for-offence
+        ...
+      body:
+        application/vnd.progression.command.record-laareference-for-offence+json:
+          example:
+            !include json/progression.command.record-laareference-for-offence.json
+          schema:
+            !include json/schema/progression.command.record-laareference-for-offence.json
+      responses:
+            202:
+                description: OK
+
+/laaReference/applications/{applicationId}/subject/{subjectId}/offences/{offenceId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+    subjectId:
+      description: The ID of the defendant
+      type: string
+    offenceId:
+      description: The ID of the offence
+      type: string
+  post:
+    description:  |
+      updating application with LAA reference
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.record-laareference-for-application+json
+          name: progression.command.record-laareference-for-application
+      ...
+    body:
+      application/vnd.progression.command.record-laareference-for-application+json:
+        example:
+          !include json/progression.command.record-laareference-for-application.json
+        schema:
+          !include json/schema/progression.command.record-laareference-for-application.json
+    responses:
+      202:
+        description: OK
+
+/laa/caseOutcome:
+  post:
+    description:  |
+      Resend outcome conluded update to LAA for existing progression.event.laa-defendant-proceeding-concluded-changed event
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.resend-laa-outcome-concluded+json
+          name: progression.command.resend-laa-outcome-concluded
+      (mapping):
+          requestType: application/vnd.progression.command.patch-and-resend-laa-outcome-concluded+json
+          name: progression.command.patch-and-resend-laa-outcome-concluded
+      ...
+    body:
+      application/vnd.progression.command.resend-laa-outcome-concluded+json:
+        example:
+          !include json/progression.command.resend-laa-outcome-concluded.json
+        schema:
+          !include json/schema/progression.command.resend-laa-outcome-concluded.json
+      application/vnd.progression.command.patch-and-resend-laa-outcome-concluded+json:
+        example:
+          !include json/progression.command.patch-and-resend-laa-outcome-concluded.json
+        schema:
+          !include json/schema/progression.command.patch-and-resend-laa-outcome-concluded.json
+    responses:
+      202:
+        description: OK
+
+/laaReference/applications/{applicationId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+  post:
+    description:  |
+      updating application with LAA reference on application
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.record-laareference-for-application-on-application+json
+          name: progression.command.record-laareference-for-application-on-application
+      ...
+    body:
+      application/vnd.progression.command.record-laareference-for-application-on-application+json:
+        example:
+          !include json/progression.command.record-laareference-for-application-on-application.json
+        schema:
+          !include json/schema/progression.command.record-laareference-for-application-on-application.json
+    responses:
+      202:
+        description: OK
+
+/unifiedSearch:
+  post:
+    description:  |
+      Republish hearing details in unified search
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.update-hearing-details-in-unified-search+json
+          name: progression.command.update-hearing-details-in-unified-search
+      ...
+    body:
+      application/vnd.progression.command.update-hearing-details-in-unified-search+json:
+        example:
+          !include json/progression.command.update-hearing-details-in-unified-search.json
+        schema:
+          !include json/schema/progression.command.update-hearing-details-in-unified-search.json
+    responses:
+      202:
+        description: OK
+
+/representationOrder/cases/{prosecutionCaseId}/defendants/{defendantId}/offences/{offenceId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: The ID of the case
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+    offenceId:
+      description: The ID of the offence
+      type: string
+
+  post:
+      description:  |
+        Receive representation order for defendant
+        ...
+        (mapping):
+            requestType: application/vnd.progression.command.receive-representationorder-for-defendant+json
+            name: progression.command.receive-representationorder-for-defendant
+        ...
+      body:
+        application/vnd.progression.command.receive-representationorder-for-defendant+json:
+          example:
+            !include json/progression.command.receive-representationorder-for-defendant.json
+          schema:
+            !include json/schema/progression.command.receive-representationorder-for-defendant.json
+      responses:
+            202:
+                description: OK
+
+/representationOrder/applications/{applicationId}/subject/{subjectId}/offences/{offenceId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+    subjectId:
+      description: The ID of the subject
+      type: string
+    offenceId:
+      description: The ID of the offence
+      type: string
+
+  post:
+      description:  |
+        Receive representation order for application
+        ...
+        (mapping):
+            requestType: application/vnd.progression.command.receive-representationorder-for-application+json
+            name: progression.command.receive-representationorder-for-application
+        ...
+      body:
+        application/vnd.progression.command.receive-representationorder-for-application+json:
+          example:
+            !include json/progression.command.receive-representationorder-for-application.json
+          schema:
+            !include json/schema/progression.command.receive-representationorder-for-application.json
+      responses:
+            202:
+                description: OK
+
+/representationOrder/applications/{applicationId}:
+  uriParameters:
+    applicationId:
+      description: The ID of the application
+      type: string
+
+  post:
+    description: |
+      Receive representation order for application on application
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.receive-representationorder-for-application-on-application+json
+          name: progression.command.receive-representationorder-for-application-on-application
+      ...
+    body:
+      application/vnd.progression.command.receive-representationorder-for-application-on-application+json:
+        example:
+          !include json/progression.command.receive-representationorder-for-application-on-application.json
+        schema:
+          !include json/schema/progression.command.receive-representationorder-for-application-on-application.json
+    responses:
+      202:
+        description: OK
+
+/sharecourtdocument:
+  post:
+      description: |
+        Makes a court document for a given hearing accessible for a given user group
+        ...
+        (mapping):
+            requestType: application/vnd.progression.share-court-document+json
+            name: progression.share-court-document
+        ...
+      body:
+        application/vnd.progression.share-court-document+json:
+            example:
+             !include json/progression.share-court-document.json
+            schema:
+             !include json/schema/progression.share-court-document.json
+      responses:
+            202:
+                description: OK
+
+/shareallcourtdocuments:
+  post:
+    description: |
+      Makes all court documents for a given hearing accessible for a given user group
+      ...
+      (mapping):
+          requestType: application/vnd.progression.share-all-court-documents+json
+          name: progression.share-all-court-documents
+      ...
+    body:
+      application/vnd.progression.share-all-court-documents+json:
+        example:
+          !include json/progression.share-all-court-documents.json
+        schema:
+          !include json/schema/progression.share-all-court-documents.json
+    responses:
+      202:
+        description: OK
+
+/prosecutioncases/{prosecutionCaseId}/defendants/{defendantId}/match:
+  uriParameters:
+      defendantId:
+        description: The id of the defendant to be matched/unmatched in the prosecution case
+        type: string
+  post:
+      description: |
+        Associate partial match defendants to master defendant
+        Unmatch the defendant that is already matched.
+        ...
+        (mapping):
+                    requestType: application/vnd.progression.match-defendant+json
+                    name: progression.match-defendant
+        (mapping):
+                    requestType: application/vnd.progression.unmatch-defendant+json
+                    name: progression.unmatch-defendant
+        ...
+      body:
+        application/vnd.progression.match-defendant+json:
+          example:
+            !include json/progression.match-defendant.json
+          schema:
+            !include json/schema/progression.match-defendant.json
+
+        application/vnd.progression.unmatch-defendant+json:
+          example:
+            !include json/progression.unmatch-defendant.json
+          schema:
+            !include json/schema/progression.unmatch-defendant.json
+
+/prosecutioncases/{prosecutionCaseId}/link:
+  uriParameters:
+      prosecutionCaseId:
+        description: The id of the case to be linked, unlinked, splitted or merged
+        type: string
+  post:
+      description: |
+        Link selected cases
+        ...
+        (mapping):
+            requestType: application/vnd.progression.link-cases+json
+            name: progression.link-cases
+        (mapping):
+            requestType: application/vnd.progression.unlink-cases+json
+            name: progression.unlink-cases
+        ...
+      body:
+        application/vnd.progression.link-cases+json:
+          example:
+            !include json/progression.link-cases.json
+          schema:
+            !include json/schema/progression.link-cases.json
+
+        application/vnd.progression.unlink-cases+json:
+          example:
+            !include json/progression.unlink-cases.json
+          schema:
+            !include json/schema/progression.unlink-cases.json
+
+/nows:
+  post:
+      description: |
+        Request to generate a now document
+        ...
+          (mapping):
+              requestType: application/vnd.progression.add-now-document-request+json
+              name: progression.add-now-document-request
+        ...
+      body:
+        application/vnd.progression.add-now-document-request+json:
+            example:
+             !include json/progression.add-now-document-request.json
+            schema:
+             !include json/schema/progression.add-now-document-request.json
+      responses:
+            202:
+                description: OK
+
+/court-register:
+  post:
+      description: |
+        add court register
+        ...
+        (mapping):
+            requestType: application/vnd.progression.add-court-register+json
+            name: progression.add-court-register
+        ...
+      body:
+        application/vnd.progression.add-court-register+json:
+            example:
+              !include json/progression.add-court-register.json
+            schema:
+              !include json/schema/progression.add-court-register.json
+      responses:
+        202:
+          description: OK
+
+/prison-court-register:
+  post:
+    description: |
+      add prison court register
+      ...
+      (mapping):
+          requestType: application/vnd.progression.add-prison-court-register+json
+          name: progression.add-prison-court-register
+      ...
+    body:
+      application/vnd.progression.add-prison-court-register+json:
+        example:
+          !include json/progression.add-prison-court-register.json
+        schema:
+          !include json/schema/progression.add-prison-court-register.json
+    responses:
+      202:
+        description: Accepted
+      500:
+        description: Internal Server Error
+
+/court-register/generate:
+  post:
+      description: |
+        Request for generation of court register per court center
+        ...
+        (mapping):
+            requestType: application/vnd.progression.generate-court-register+json
+            name: progression.generate-court-register
+        (mapping):
+            requestType: application/vnd.progression.generate-court-register-by-date+json
+            name: progression.generate-court-register-by-date
+        ...
+      body:
+        application/vnd.progression.generate-court-register+json: !!null
+        application/vnd.progression.generate-court-register-by-date+json:
+          example:
+            !include json/progression.generate-court-register-by-date.json
+          schema:
+            !include json/schema/progression.generate-court-register-by-date.json
+      responses:
+            202:
+                description: OK
+
+/prosecutioncases/{caseId}/form:
+  uriParameters:
+    caseId:
+      description: case id
+      type: string
+  post:
+    description: |
+      Create form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.create-form+json
+        name: progression.create-form
+      ...
+    body:
+      application/vnd.progression.create-form+json:
+        example: !include json/progression.create-form.json
+        schema: !include json/schema/progression.create-form.json
+    responses:
+      202:
+        description: OK
+
+
+/prosecutioncases/{caseId}/form/{courtFormId}:
+  uriParameters:
+    caseId:
+      description: case id
+      type: string
+    courtFormId:
+      description:  court form id
+      type: string
+  post:
+    description: |
+      Update and finalise form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.update-form+json
+        name: progression.update-form
+      (mapping):
+        requestType: application/vnd.progression.finalise-form+json
+        name: progression.finalise-form
+      (mapping):
+        requestType: application/vnd.progression.update-form-defendants+json
+        name: progression.update-form-defendants
+
+      (mapping):
+        requestType: application/vnd.progression.request-edit-form+json
+        name: progression.request-edit-form
+      ...
+    body:
+      application/vnd.progression.update-form+json:
+        example: !include json/progression.update-form.json
+        schema: !include json/schema/progression.update-form.json
+      application/vnd.progression.finalise-form+json:
+        example: !include json/progression.finalise-form.json
+        schema: !include json/schema/progression.finalise-form.json
+      application/vnd.progression.update-form-defendants+json:
+        example: !include json/progression.update-form-defendants.json
+        schema: !include json/schema/progression.update-form-defendants.json
+      application/vnd.progression.request-edit-form+json:
+        example: !include json/progression.request-edit-form.json
+        schema: !include json/schema/progression.request-edit-form.json
+    responses:
+      202:
+        description: OK
+
+/cotr:
+  post:
+    description: |
+      Create COTR for defendants of an hearing:
+      ...
+      (mapping):
+        requestType: application/vnd.progression.create-cotr+json
+        name: progression.create-cotr
+      ...
+    body:
+      application/vnd.progression.create-cotr+json:
+        schema: !include json/schema/progression.create-cotr.json
+        example: !include json/progression.create-cotr.json
+
+    responses:
+      202:
+        description: Request accepted
+
+/cotr/{cotrId}:
+  uriParameters:
+    cotrId:
+      description: The ID of the COTR
+      type: string
+  post:
+    description: |
+      Update COTR details:
+      ...
+      (mapping):
+        requestType: application/vnd.progression.serve-prosecution-cotr+json
+        name: progression.serve-prosecution-cotr
+      (mapping):
+        requestType: application/vnd.progression.archive-cotr+json
+        name: progression.archive-cotr
+      (mapping):
+        requestType: application/vnd.progression.serve-defendant-cotr+json
+        name: progression.serve-defendant-cotr
+      (mapping):
+        requestType: application/vnd.progression.change-defendants-cotr+json
+        name: progression.change-defendants-cotr
+      (mapping):
+        requestType: application/vnd.progression.add-further-info-prosecution-cotr+json
+        name: progression.add-further-info-prosecution-cotr
+      (mapping):
+        requestType: application/vnd.progression.add-further-info-defence-cotr+json
+        name: progression.add-further-info-defence-cotr
+      (mapping):
+        requestType: application/vnd.progression.update-review-notes+json
+        name: progression.update-review-notes
+      ...
+    body:
+      application/vnd.progression.serve-prosecution-cotr+json:
+        schema: !include json/schema/progression.serve-prosecution-cotr.json
+        example: !include json/progression.serve-prosecution-cotr.json
+
+      application/vnd.progression.archive-cotr+json: !!null
+
+      application/vnd.progression.serve-defendant-cotr+json:
+        schema: !include json/schema/progression.serve-defendant-cotr.json
+        example: !include json/progression.serve-defendant-cotr.json
+
+      application/vnd.progression.change-defendants-cotr+json:
+        schema: !include json/schema/progression.change-defendants-cotr.json
+        example: !include json/progression.change-defendants-cotr.json
+
+      application/vnd.progression.add-further-info-prosecution-cotr+json:
+        schema: !include json/schema/progression.add-further-info-prosecution-cotr.json
+        example: !include json/progression.add-further-info-prosecution-cotr.json
+
+      application/vnd.progression.add-further-info-defence-cotr+json:
+        schema: !include json/schema/progression.add-further-info-defence-cotr.json
+        example: !include json/progression.add-further-info-defence-cotr.json
+
+      application/vnd.progression.update-review-notes+json:
+        schema: !include json/schema/progression.update-review-notes.json
+        example: !include json/progression.update-review-notes.json
+
+    responses:
+      202:
+        description: Request accepted
+
+/midata/reportingRestrictions:
+  post:
+    description:  |
+      Reapply media reporting restrictions
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.reapply-media-reporting-restrictions+json
+          name: progression.command.reapply-media-reporting-restrictions
+      ...
+    body:
+      application/vnd.progression.command.reapply-media-reporting-restrictions+json:
+        example:
+          !include json/progression.command.reapply-media-reporting-restrictions.json
+        schema:
+          !include json/schema/progression.command.reapply-media-reporting-restrictions.json
+    responses:
+      202:
+        description: OK
+
+/courtdocuments/{courtDocumentId}/materials/{materialId}/audit:
+  uriParameters:
+    courtDocumentId:
+      description: CourtDocumentId of the document of which a meterial being audit
+      type: string
+    materialId:
+      description: materialId of material being audit
+      type: string
+  post:
+      description: |
+        Court document is being audit.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.audit-court-document+json
+            name: progression.audit-court-document
+        ...
+      body:
+        application/vnd.progression.audit-court-document+json:
+            example:
+             !include json/progression.audit-court-document.json
+            schema:
+             !include json/schema/progression.audit-court-document.json
+      responses:
+            202:
+                description: OK
+
+/hearing/{hearingId}:
+  uriParameters:
+    hearingId:
+      description: The hearing ID
+      type: string
+  post:
+      description:  |
+        Request Update Defendant Listing Status
+        ...
+        (mapping):
+            requestType: application/vnd.progression.update-defendant-listing-status+json
+            name: progression.update-defendant-listing-status
+        (mapping):
+            requestType: application/vnd.progression.update-listing-number+json
+            name: progression.update-listing-number
+        (mapping):
+            requestType: application/vnd.progression.update-index-for-bdf+json
+            name: progression.update-index-for-bdf
+        (mapping):
+            requestType: application/vnd.progression.command.remove-deleted-hearing-child-entries-bdf+json
+            name: progression.command.remove-deleted-hearing-child-entries-bdf
+        (mapping):
+            requestType: application/vnd.progression.add-case-to-hearing-bdf+json
+            name: progression.add-case-to-hearing-bdf
+        ...
+      body:
+        application/vnd.progression.update-defendant-listing-status+json:
+            example:
+             !include json/progression.update-defendant-listing-status.json
+            schema:
+             !include json/schema/progression.update-defendant-listing-status.json
+        application/vnd.progression.update-listing-number+json:
+            example:
+             !include json/progression.update-listing-number.json
+            schema:
+             !include json/schema/progression.update-listing-number.json
+        application/vnd.progression.update-index-for-bdf+json:
+            example:
+             !include json/progression.update-index-for-bdf.json
+            schema:
+             !include json/schema/progression.update-index-for-bdf.json
+        application/vnd.progression.command.remove-deleted-hearing-child-entries-bdf+json:
+            example:
+             !include json/progression.command.remove-deleted-hearing-child-entries-bdf.json
+            schema:
+             !include json/schema/progression.command.remove-deleted-hearing-child-entries-bdf.json
+        application/vnd.progression.add-case-to-hearing-bdf+json:
+            example:
+             !include json/progression.add-case-to-hearing-bdf.json
+            schema:
+             !include json/schema/progression.add-case-to-hearing-bdf.json
+      responses:
+            202:
+                description: OK
+
+/hearing/{hearingId}/defence-counsel:
+  uriParameters:
+    hearingId:
+      description: The hearing ID
+      type: string
+  post:
+      description:  |
+        Add Remove or Update Defence Counsel
+        ...
+        (mapping):
+            requestType: application/vnd.progression.add-hearing-defence-counsel+json
+            name: progression.add-hearing-defence-counsel
+        (mapping):
+            requestType: application/vnd.progression.update-hearing-defence-counsel+json
+            name: progression.update-hearing-defence-counsel
+        (mapping):
+            requestType: application/vnd.progression.remove-hearing-defence-counsel+json
+            name: progression.remove-hearing-defence-counsel
+        ...
+      body:
+        application/vnd.progression.add-hearing-defence-counsel+json:
+            example:
+             !include json/progression.add-hearing-defence-counsel.json
+            schema:
+             !include json/schema/progression.add-hearing-defence-counsel.json
+        application/vnd.progression.update-hearing-defence-counsel+json:
+            example:
+             !include json/progression.update-hearing-defence-counsel.json
+            schema:
+             !include json/schema/progression.update-hearing-defence-counsel.json
+        application/vnd.progression.remove-hearing-defence-counsel+json:
+            example:
+             !include json/progression.remove-hearing-defence-counsel.json
+            schema:
+             !include json/schema/progression.remove-hearing-defence-counsel.json
+      responses:
+            202:
+                description: OK
+
+/hearing/{hearingId}/plea:
+  uriParameters:
+    hearingId:
+      description: The hearing ID
+      type: string
+  post:
+      description:  |
+        Update Plea
+        ...
+        (mapping):
+            requestType: application/vnd.progression.update-hearing-offence-plea+json
+            name: progression.update-hearing-offence-plea
+        ...
+      body:
+        application/vnd.progression.update-hearing-offence-plea+json:
+            example:
+             !include json/progression.update-hearing-offence-plea.json
+            schema:
+             !include json/schema/progression.update-hearing-offence-plea.json
+      responses:
+            202:
+                description: OK
+
+/hearing/{hearingId}/verdict:
+  uriParameters:
+    hearingId:
+      description: The hearing ID
+      type: string
+  post:
+      description:  |
+        Update Verdict
+        ...
+        (mapping):
+            requestType: application/vnd.progression.update-hearing-offence-verdict+json
+            name: progression.update-hearing-offence-verdict
+        ...
+      body:
+        application/vnd.progression.update-hearing-offence-verdict+json:
+            example:
+             !include json/progression.update-hearing-offence-verdict.json
+            schema:
+             !include json/schema/progression.update-hearing-offence-verdict.json
+      responses:
+            202:
+                description: OK
+
+/correct-hearing-days-without-court-centre:
+   post:
+      description: |
+        Update HearingDays without CourtCentre
+        ...
+        (mapping):
+          requestType: application/vnd.progression.correct-hearing-days-without-court-centre+json
+          name: progression.correct-hearing-days-without-court-centre
+        ...
+      body:
+        application/vnd.progression.correct-hearing-days-without-court-centre+json:
+            schema: !include json/schema/progression.correct-hearing-days-without-court-centre.json
+            example: !include json/progression.correct-hearing-days-without-court-centre.json
+
+      responses:
+        202:
+          description: Request accepted
+
+/pet:
+  post:
+    description: |
+      Create Pet form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.create-pet-form+json
+        name: progression.create-pet-form
+      ...
+    body:
+      application/vnd.progression.create-pet-form+json:
+        example:
+          !include json/progression.create-pet-form.json
+        schema:
+          !include json/schema/progression.create-pet-form.json
+    responses:
+      202:
+        description: OK
+
+/pet/{petId}:
+  post:
+    description: |
+      Update Pet form
+      ...
+      (mapping):
+        requestType: application/vnd.progression.update-pet-form+json
+        name: progression.update-pet-form
+      (mapping):
+        requestType: application/vnd.progression.finalise-pet-form+json
+        name: progression.finalise-pet-form
+      (mapping):
+        requestType: application/vnd.progression.update-pet-detail+json
+        name: progression.update-pet-detail
+      (mapping):
+        requestType: application/vnd.progression.release-pet-form+json
+        name: progression.release-pet-form
+      ...
+    body:
+      application/vnd.progression.update-pet-form+json:
+        example:
+          !include json/progression.update-pet-form.json
+        schema:
+          !include json/schema/progression.update-pet-form.json
+      application/vnd.progression.finalise-pet-form+json:
+        example:
+          !include json/progression.finalise-pet-form.json
+        schema:
+          !include json/schema/progression.finalise-pet-form.json
+      application/vnd.progression.update-pet-detail+json:
+        example:
+          !include json/progression.update-pet-detail.json
+        schema:
+          !include json/schema/progression.update-pet-detail.json
+      application/vnd.progression.release-pet-form+json:
+         example:
+           !include json/progression.release-pet-form.json
+         schema:
+           !include json/schema/progression.release-pet-form.json
+
+    responses:
+      202:
+        description: OK
+
+/defendant/{defendantId}/update-pet-form:
+  post:
+    description: |
+      Update Pet form for defendant
+      ...
+      (mapping):
+        requestType: application/vnd.progression.update-pet-form-for-defendant+json
+        name: progression.update-pet-form-for-defendant
+      ...
+    body:
+      application/vnd.progression.update-pet-form-for-defendant+json:
+        example:
+          !include json/progression.update-pet-form-for-defendant.json
+        schema:
+          !include json/schema/progression.update-pet-form-for-defendant.json
+    responses:
+      202:
+        description: OK
+
+/cases/{caseId}/defendants/{defendantId}/plead-online:
+  uriParameters:
+    caseId:
+      description: The ID of the case update
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Receive an online plea
+      ...
+      (mapping):
+          requestType: application/vnd.progression.plead-online+json
+          name: progression.plead-online
+      ...
+    body:
+      application/vnd.progression.plead-online+json:
+        example:
+          !include json/progression.online-plea-request.json
+        schema:
+          !include json/schema/progression.online-plea-request.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/{caseId}/defendants/{defendantId}/plead-online-pcq-visited:
+  uriParameters:
+    caseId:
+      description: The ID of the case update
+      type: string
+    defendantId:
+      description: The ID of the defendant
+      type: string
+  post:
+    description: |
+      Receive an online plea for pcq visited
+      ...
+      (mapping):
+          requestType: application/vnd.progression.plead-online-pcq-visited+json
+          name: progression.plead-online-pcq-visited
+      ...
+    body:
+      application/vnd.progression.plead-online-pcq-visited+json:
+        schema:
+          !include json/schema/progression.online-plea-request-pcq-visited.json
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/cases/update-civil-fees:
+  post:
+    description: |
+      Add/Update Civil fee.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-civil-fees+json
+          name: progression.update-civil-fees
+      ...
+    body:
+      application/vnd.progression.update-civil-fees+json:
+        example:
+          !include json/progression.update-civil-fees.json
+        schema:
+          !include json/schema/progression.update-civil-fees.json
+
+/edit-application-fee:
+  post:
+      description: |
+        Edit court fee for civil application.
+        ...
+        (mapping):
+            requestType: application/vnd.progression.edit-court-fee-for-civil-application+json
+            name: progression.edit-court-fee-for-civil-application
+        ...
+      body:
+        application/vnd.progression.edit-court-fee-for-civil-application+json:
+            example: !include json/progression.edit-court-fee-for-civil-application.json
+            schema: !include json/schema/progression.edit-court-fee-for-civil-application.json
+      responses:
+            202:
+                description: OK
+
+/hearingeventlog/{caseId}:
+  uriParameters:
+    caseId:
+      description: Case ID of the hearing event log
+      type: string
+  post:
+    description: |
+      Generate hearing event log
+      ...
+      (mapping):
+          requestType: application/vnd.progression.create-hearing-event-log-document+json
+          name: progression.create-hearing-event-log-document
+      ...
+    body:
+     application/vnd.progression.create-hearing-event-log-document+json:
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/hearingeventlog/case/{caseId}/application/{applicationId}:
+  uriParameters:
+    caseId:
+      description: Application ID of the hearing event log
+      type: string
+  post:
+    description: |
+      Generate hearing event log
+      ...
+      (mapping):
+          requestType: application/vnd.progression.create-aaag-hearing-event-log-document+json
+          name: progression.create-aaag-hearing-event-log-document
+      ...
+    body:
+     application/vnd.progression.create-aaag-hearing-event-log-document+json:
+    responses:
+      500:
+        description: Internal Server Error
+      202:
+        description: Accepted
+
+/opa-notice/request:
+  post:
+    description: |
+      Online Pleas Allocation notice request from job scheduler
+      ...
+      (mapping):
+          requestType: application/vnd.progression.request-opa-public-list-notice+json
+          name: progression.request-opa-public-list-notice
+      (mapping):
+          requestType: application/vnd.progression.request-opa-press-list-notice+json
+          name: progression.request-opa-press-list-notice
+      (mapping):
+          requestType: application/vnd.progression.request-opa-result-list-notice+json
+          name: progression.request-opa-result-list-notice
+      ...
+    body:
+      application/vnd.progression.request-opa-public-list-notice+json:
+        example: !include json/progression.request-opa-public-list-notice.json
+        schema: !include json/schema/progression.request-opa-public-list-notice.json
+      application/vnd.progression.request-opa-press-list-notice+json:
+        example: !include json/progression.request-opa-press-list-notice.json
+        schema: !include json/schema/progression.request-opa-press-list-notice.json
+      application/vnd.progression.request-opa-result-list-notice+json:
+        example: !include json/progression.request-opa-result-list-notice.json
+        schema: !include json/schema/progression.request-opa-result-list-notice.json
+    responses:
+      202:
+        description: Accepted
+/hearings/{hearingId}/result-bdf:
+  post:
+    description:  |
+      Republish hearing details in unified search
+      ...
+      (mapping):
+          requestType: application/vnd.progression.result-hearing-bdf+json
+          name: progression.result-hearing-bdf
+      ...
+    body:
+      application/vnd.progression.result-hearing-bdf+json:
+        example:
+          !include json/progression.result-hearing-bdf.json
+        schema:
+          !include json/schema/progression.result-hearing-bdf.json
+    responses:
+      202:
+        description: OK
+
+/hearings/{hearingId}/update-hearing-bdf:
+  post:
+    description:  |
+      Update resulted hearing BDF
+      ...
+      (mapping):
+          requestType: application/vnd.progression.command.api-update-hearing-bdf+json
+          name: progression.command.api-update-hearing-bdf
+      ...
+    body:
+      application/vnd.progression.command.api-update-hearing-bdf+json:
+        schema:
+          !include json/schema/progression.command.api-update-hearing-bdf.json
+    responses:
+      202:
+        description: OK
+
+/delete-notification-info:
+  post:
+      description:  |
+        Delete notification info records based on retention period
+        ...
+        (mapping):
+            requestType: application/vnd.progression.delete-notification-info+json
+            name: progression.delete-notification-info
+        ...
+      body:
+        application/vnd.progression.delete-notification-info+json:
+          example:
+            !include json/progression.delete-notification-info.json
+          schema:
+            !include json/schema/progression.delete-notification-info.json
+      responses:
+            202:
+                description: OK
+            500:
+                description: Internal Server Error
+
+/inactive-case-bdf:
+  post:
+    description: |
+      Inactive Case.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.inactive-case-bdf+json
+          name: progression.inactive-case-bdf
+      ...
+    body:
+      application/vnd.progression.inactive-case-bdf+json:
+        example:
+          !include json/progression.inactive-case-bdf.json
+        schema:
+          !include json/schema/progression.inactive-case-bdf.json
+    responses:
+      202:
+        description: OK
+
+/update-case-status-bdf:
+  post:
+    description: |
+      Update Case Status.
+      ...
+      (mapping):
+          requestType: application/vnd.progression.update-case-status-bdf+json
+          name: progression.update-case-status-bdf
+      ...
+    body:
+      application/vnd.progression.update-case-status-bdf+json:
+        example:
+          !include json/progression.update-case-status-bdf.json
+        schema:
+          !include json/schema/progression.update-case-status-bdf.json
+    responses:
+      202:
+        description: OK
+
+/notification:
+  post:
+    description:  |
+      Send notification
+      ...
+      (mapping):
+          requestType: application/vnd.progression.send.email+json
+          name: progression.send.email
+      (mapping):
+          requestType: application/vnd.progression.send.print+json
+          name: progression.send.print
+      (mapping):
+          requestType: application/vnd.progression.update-send-to-cps-flag+json
+          name: progression.update-send-to-cps-flag
+      ...
+    body:
+      application/vnd.progression.send.email+json:
+        schema:
+          !include json/schema/progression.send.email.json
+      application/vnd.progression.send.print+json:
+        schema:
+          !include json/schema/progression.send.print.json
+      application/vnd.progression.update-send-to-cps-flag+json:
+        schema:
+          !include json/schema/progression.update-send-to-cps-flag.json
+    responses:
+      202:
+        description: OK

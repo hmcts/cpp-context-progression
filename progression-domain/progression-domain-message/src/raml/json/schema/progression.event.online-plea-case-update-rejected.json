@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.online-plea-case-update-rejected.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "WITHDRAWAL_PENDING",
+        "CASE_ASSIGNED",
+        "CASE_COMPLETED",
+        "CASE_REFERRED_FOR_COURT_HEARING",
+        "OFFENCE_HAS_CONVICTION",
+        "PLEA_ALREADY_SUBMITTED",
+        "PLEA_REJECTED_AS_FINAL_DECISION_TAKEN_FOR_OFFENCE"
+      ]
+    }
+  },
+  "required": [
+    "caseId",
+    "reason"
+  ],
+  "additionalProperties": false
+}

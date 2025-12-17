@@ -1,0 +1,661 @@
+{
+  "listType": "ushers_crown",
+  "courtCentreName": "Lavender Hill Magistrates' Court",
+  "courtCentreAddress1": "176A Lavender Hill London",
+  "courtCentreAddress2": "   SW11 1JU",
+  "welshCourtCentreName": "Llys Ynadon Lavender Hill",
+  "welshCourtCentreAddress1": " ",
+  "welshCourtCentreAddress2": "   SW11 1JU",
+  "hearingDates": [
+    {
+      "hearingDate": "2022-04-07",
+      "hearingDateWelsh": "7 Ebrill 2022",
+      "courtRooms": [
+        {
+          "courtRoomName": "Courtroom 01",
+          "welshCourtRoomName": "Courtroom 01",
+          "judiciaryNames": "Miss Atkins JP, Mrs Colman, District Judge (MC) Daber, Mr Hartopp JP, Mrs Maule-Farrell JP, Mr Rahman JP",
+          "welshJudiciaryNames": "  Atkins, Mrs  Colman,   Daber, Mr  Hartopp YH, Mrs  Maule-Farrell YH, Mr  Rahman YH",
+          "timeslots": [
+            {
+              "hearings": [
+                {
+                  "id": "1a0f21ad-d9dc-4e42-9fb3-da2c5de0d7c2",
+                  "sequence": 1,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "38GD1087222",
+                  "caseId": "f0ea8a39-a9b7-4298-9d45-3cd2f64fcddc",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "firstName": "",
+                      "surname": "Clark",
+                      "age": 81,
+                      "dateOfBirth": "30 Jan 1920",
+                      "reportingRestrictions": [
+                        {
+                          "label": "Order made under Section 11 of the Contempt of Court Act 1981"
+                        },
+                        {
+                          "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992"
+                        }
+                      ],
+                      "offences": [
+                        {
+                          "offenceTitle": "Breach a criminal behaviour order",
+                          "welshOffenceTitle": "Gyrru cerbyd modur pan oedd y lefel alcohol yn uwch na'r terfyn",
+                          "offenceWording": "On Saturday 26 June 2018 at London Borough of Hendon had in your possession a quantity of cannabis. A controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+                        }
+                      ],
+                      "prosecutionCounsels": [
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        }
+                      ],
+                      "defenceCounsels": [
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        }
+                      ]
+                    },
+                    {
+                      "firstName": "Michal",
+                      "surname": "Clark",
+                      "age": 81,
+                      "dateOfBirth": "30 Jan 1920",
+                      "offences": [
+                        {
+                          "offenceTitle": "Breach a criminal behaviour order",
+                          "welshOffenceTitle": "Gyrru cerbyd modur pan oedd y lefel alcohol yn uwch na'r terfyn",
+                          "offenceWording": "On Saturday 26 June 2018 at London Borough of Hendon had in your possession a quantity of cannabis. A controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+                        },
+                        {
+                          "offenceTitle": "Breach a criminal behaviour order for a legal entity",
+                          "welshOffenceTitle": "Gyrru cerbyd modur pan oedd y lefel alcohol yn uwch na'r terfyn",
+                          "offenceWording": "On Saturday 26 June 2018 at London Borough of Hendon had in your possession a quantity of cannabis. A controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+                        }
+                      ],
+                      "prosecutionCounsels": [
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        }
+                      ],
+                      "defenceCounsels": [
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        }
+                      ]
+                    },
+                    {
+                      "firstName": "Michal",
+                      "surname": "Clark",
+                      "age": 81,
+                      "dateOfBirth": "30 Jan 1920",
+                      "offences": [
+                        {
+                          "offenceTitle": "Breach a criminal behaviour order",
+                          "welshOffenceTitle": "Gyrru cerbyd modur pan oedd y lefel alcohol yn uwch na'r terfyn",
+                          "offenceWording": "On Saturday 26 June 2018 at London Borough of Hendon had in your possession a quantity of cannabis. A controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+                        },
+                        {
+                          "offenceTitle": "Breach a criminal behaviour order for a legal entity",
+                          "welshOffenceTitle": "Gyrru cerbyd modur pan oedd y lefel alcohol yn uwch na'r terfyn",
+                          "offenceWording": "On Saturday 26 June 2018 at London Borough of Hendon had in your possession a quantity of cannabis. A controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971."
+                        }
+                      ],
+                      "prosecutionCounsels": [
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        }
+                      ],
+                      "defenceCounsels": [
+                        {
+                          "firstName": "Tony",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Chris",
+                          "middleName": "Robert",
+                          "lastName": "Wall",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith",
+                          "title": "MR"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        },
+                        {
+                          "firstName": "John",
+                          "middleName": "Robert",
+                          "lastName": "Smith"
+                        },
+                        {
+                          "firstName": "Bob",
+                          "middleName": "Robert",
+                          "lastName": "Marlis"
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                },
+                {
+                  "id": "26018ad1-dbb1-47ee-a3cb-425fd2d5b7ee",
+                  "sequence": 2,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "63GD6903522",
+                  "caseId": "a848c547-9993-46f8-bd99-6b8690cde6d9",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "id": "707f81d2-d519-48d1-a94f-8f0acd72112b",
+                      "organisationName": "",
+                      "firstName": "Yessenia",
+                      "surname": "Marks",
+                      "dateOfBirth": "27 Aug 1989",
+                      "age": "32",
+                      "nationality": "",
+                      "address": {
+                        "address1": "Address line 1",
+                        "address2": "Address line 2",
+                        "address3": "Address line 3",
+                        "address4": "Address line 4",
+                        "address5": "Darrenbury",
+                        "postcode": "TW14 9XD"
+                      },
+                      "reportingRestrictions": [],
+                      "offences": [
+                        {
+                          "id": "c524ac7b-d923-4502-a644-ca6220601c77",
+                          "offenceTitle": "Use / install a television set without a licence",
+                          "welshOffenceTitle": "Defnyddio / gosod set deledu heb drwydded",
+                          "offenceWording": "From 8 March 2022, used a television receiver without a licence."
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                },
+                {
+                  "id": "30867f25-0db7-41c6-a2ca-742cd8e9e45b",
+                  "sequence": 3,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "61GD5629322",
+                  "caseId": "2eb4f476-89b0-4975-b862-c2b4dab01195",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "id": "78e0ffc9-7e79-4779-a5da-5478c6525b26",
+                      "organisationName": "",
+                      "firstName": "Jaida",
+                      "surname": "Mayert",
+                      "dateOfBirth": "2 Sep 1987",
+                      "age": "34",
+                      "nationality": "",
+                      "address": {
+                        "address1": "Address line 1",
+                        "address2": "Address line 2",
+                        "address3": "Address line 3",
+                        "address4": "Address line 4",
+                        "address5": "Ricefort",
+                        "postcode": "TW14 9XD"
+                      },
+                      "reportingRestrictions": [],
+                      "offences": [
+                        {
+                          "id": "ba5f2585-f380-4942-b874-f4fdbb141754",
+                          "offenceTitle": "Use / install a television set without a licence",
+                          "welshOffenceTitle": "Defnyddio / gosod set deledu heb drwydded",
+                          "offenceWording": "From 8 March 2022, used a television receiver without a licence."
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                },
+                {
+                  "id": "34625464-e1ad-4509-9fcd-ad05727311fd",
+                  "sequence": 4,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "18GD9615022",
+                  "caseId": "ebe4444c-a2f4-42d1-ae02-78c1d96c1482",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "firstName": "Dave",
+                      "surname": "Smith",
+                      "age": 36,
+                      "dateOfBirth": "1 Mar 1981",
+                      "nationality" : "British",
+                      "address": {
+                        "address1": "22",
+                        "address2": "Acacia Avenue",
+                        "address3": "Acacia Town",
+                        "address4": "Acacia City",
+                        "address5": "Acacia Country",
+                        "postcode": "GIR 0AA"
+                      },
+                      "reportingRestrictions": [
+                        {
+                          "label": "Order made under Section 11 of the Contempt of Court Act 1981"
+                        },
+                        {
+                          "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992"
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                },
+                {
+                  "id": "49176e0b-67ef-4737-a058-9370169129bc",
+                  "sequence": 5,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "45GD4127122",
+                  "caseId": "65582c64-fbd9-4e04-96cd-8c9c549cebde",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "firstName": "Dave",
+                      "surname": "Smith",
+                      "age": 36,
+                      "dateOfBirth": "1 Mar 1981",
+                      "nationality" : "British",
+                      "address": {
+                        "address1": "22",
+                        "address2": "Acacia Avenue",
+                        "address3": "Acacia Town",
+                        "address4": "Acacia City",
+                        "address5": "Acacia Country",
+                        "postcode": "GIR 0AA"
+                      },
+                      "reportingRestrictions": [
+                        {
+                          "label": "Order made under Section 11 of the Contempt of Court Act 1981"
+                        },
+                        {
+                          "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992"
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                },
+                {
+                  "id": "883d26be-8845-4a53-bb71-696bb3541293",
+                  "sequence": 6,
+                  "reportingRestrictionReason": "",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "10:00",
+                  "hearingType": "First hearing",
+                  "welshHearingType": "Gwrandawiad Cyntaf",
+                  "caseNumber": "40GD7724022",
+                  "caseId": "8240771c-fdc1-4ad0-b99b-aa30614c9a71",
+                  "prosecutorType": "CITYPF",
+                  "defendants": [
+                    {
+                      "firstName": "Dave",
+                      "surname": "Smith",
+                      "age": 36,
+                      "dateOfBirth": "1 Mar 1981",
+                      "nationality" : "British",
+                      "address": {
+                        "address1": "22",
+                        "address2": "Acacia Avenue",
+                        "address3": "Acacia Town",
+                        "address4": "Acacia City",
+                        "address5": "Acacia Country",
+                        "postcode": "GIR 0AA"
+                      },
+                      "reportingRestrictions": [
+                        {
+                          "label": "Order made under Section 11 of the Contempt of Court Act 1981"
+                        },
+                        {
+                          "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992"
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "",
+                  "panel": "ADULT"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "templateName": "UshersCrownList"
+}

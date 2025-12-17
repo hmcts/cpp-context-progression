@@ -1,0 +1,19 @@
+{
+  "summonsData": {
+    "hearingDateTime": "2016-06-01T10:00:00Z",
+    "courtCentre": {
+      "id": "89b10041-b44d-43c8-9b1e-d1b9fee15c93",
+      "name": "00ObpXuu51",
+      "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+      "roomName": "JK2Y7hu0Tc",
+      "welshName": "3IpJDfdfhS",
+      "welshRoomName": "hm60SAXokc"
+    },
+    "confirmedProsecutionCaseId": {
+      "id": "5992fc5a-e351-4276-aab5-c8c7836db9b5",
+      "confirmedDefendantIds": [
+        "10e7e66a-73e2-4ce6-aadf-e84da9971377"
+      ]
+    }
+  }
+}

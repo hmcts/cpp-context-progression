@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/initiate-court-proceedings-for-group-cases.json",
+  "type": "object",
+  "properties": {
+    "groupId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtReferral": {
+      "$ref": "http://justice.gov.uk/core/courts/courtReferral.json#"
+    }
+  },
+  "required": [
+    "groupId",
+    "courtReferral"
+  ],
+  "additionalProperties": false
+}

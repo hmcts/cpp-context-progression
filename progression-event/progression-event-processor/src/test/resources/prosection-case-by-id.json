@@ -1,0 +1,372 @@
+{
+  "prosecutionCase": {
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2024-08-21T16:10:34.013Z",
+        "id": "e2d8868f-48c7-4dc8-8b6e-3a909d770fc6",
+        "initiationCode": "C",
+        "masterDefendantId": "e2d8868f-48c7-4dc8-8b6e-3a909d770fc6",
+        "offences": [
+          {
+            "arrestDate": "2023-12-06",
+            "chargeDate": "2023-12-06",
+            "count": 0,
+            "dvlaOffenceCode": "SP30",
+            "endorsableFlag": true,
+            "id": "3faf4cca-f391-458a-aae3-cd214745ca08",
+            "listingNumber": 1,
+            "maxPenalty": "S:L3 LE 3-6pp",
+            "modeOfTrial": "Summary",
+            "offenceCode": "RR84223",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "64202e97-e7c1-3be2-9c8b-d8bc5d2e876b",
+            "offenceLegislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+            "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+            "offenceTitle": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+            "offenceTitleWelsh": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+            "orderIndex": 1,
+            "startDate": "2023-12-06",
+            "wording": "Shoplifting at xyz"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "3113NX1000000111232A",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "12",
+              "address2": "Woburn Road",
+              "address3": "Bedford",
+              "address4": "Bedfordshire",
+              "postcode": "MK40 1EG"
+            },
+            "contact": {
+              "home": "02012345678",
+              "mobile": "07771234567",
+              "primaryEmail": "test01@gmail.com"
+            },
+            "dateOfBirth": "1994-02-01",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Test2 second Defdnant",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Test2lm",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "prosecutionAuthorityReference": "3113NX1000000111232A",
+        "prosecutionCaseId": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b"
+      },
+      {
+        "courtProceedingsInitiated": "2024-08-21T16:12:44.989Z",
+        "id": "d7b46ba0-1979-4b8e-a9d5-016956d0acd3",
+        "initiationCode": "C",
+        "isYouth": false,
+        "masterDefendantId": "d7b46ba0-1979-4b8e-a9d5-016956d0acd3",
+        "offences": [
+          {
+            "arrestDate": "2023-12-06",
+            "chargeDate": "2023-12-06",
+            "count": 0,
+            "dvlaOffenceCode": "SP30",
+            "endorsableFlag": true,
+            "id": "c3345922-47ba-4fab-99fb-43674cba0e4a",
+            "listingNumber": 1,
+            "maxPenalty": "S:L3 LE 3-6pp",
+            "modeOfTrial": "Summary",
+            "offenceCode": "RR84223",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "64202e97-e7c1-3be2-9c8b-d8bc5d2e876b",
+            "offenceLegislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+            "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+            "offenceTitle": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+            "offenceTitleWelsh": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+            "orderIndex": 1,
+            "startDate": "2023-12-06",
+            "wording": "Shoplifting at xyz"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "3113NX1000000111242A",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "12",
+              "address2": "Woburn Road",
+              "address3": "Bedford",
+              "address4": "Bedfordshire",
+              "postcode": "MK40 1EG"
+            },
+            "contact": {
+              "home": "02012345678",
+              "mobile": "07771234567",
+              "primaryEmail": "test01@gmail.com"
+            },
+            "dateOfBirth": "1996-02-01",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Test2 1st Defdnant",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Test2lm",
+            "title": "Mr"
+          }
+        },
+        "prosecutionAuthorityReference": "3113NX1000000111242A",
+        "prosecutionCaseId": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b"
+      }
+    ],
+    "id": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b",
+    "initiationCode": "C",
+    "originatingOrganisation": "130SU01",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Criminal Justice Department",
+        "address2": "Derbyshire Constabulary",
+        "address3": "Butterley Hall",
+        "address4": "Ripley",
+        "address5": "Derby",
+        "postcode": "DE5 3RS"
+      },
+      "contact": {
+        "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+      },
+      "majorCreditorCode": "PO30",
+      "prosecutionAuthorityCode": "DERPF",
+      "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+      "prosecutionAuthorityName": "Derbyshire Police",
+      "prosecutionAuthorityOUCode": "0300000",
+      "caseURN": "AAC21170817"
+    },
+    "caseStatus": "ACTIVE"
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "e2d8868f-48c7-4dc8-8b6e-3a909d770fc6",
+        "defendantName": "Test2 second Defdnant Test2lm",
+        "hearingIds": [
+          "034c36e7-a7be-44e3-9783-e827ae10d72b"
+        ]
+      },
+      {
+        "defendantId": "d7b46ba0-1979-4b8e-a9d5-016956d0acd3",
+        "defendantName": "Test2 1st Defdnant Test2lm",
+        "hearingIds": [
+          "3afdad9f-f687-4e01-9f42-8264d62dbe08"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "12",
+              "address2": "Woburn Road",
+              "address3": "Bedford",
+              "address4": "Bedfordshire",
+              "postcode": "MK40 1EG"
+            },
+            "age": "28",
+            "courtApplications": [],
+            "dateOfBirth": "1996-02-01",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "d7b46ba0-1979-4b8e-a9d5-016956d0acd3"
+            },
+            "id": "d7b46ba0-1979-4b8e-a9d5-016956d0acd3",
+            "judicialResults": [],
+            "name": "Test2 1st Defdnant Test2lm",
+            "offences": [
+              {
+                "count": 0,
+                "id": "c3345922-47ba-4fab-99fb-43674cba0e4a",
+                "judicialResults": [],
+                "offenceCode": "RR84223",
+                "offenceDefinitionId": "64202e97-e7c1-3be2-9c8b-d8bc5d2e876b",
+                "offenceLegislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+                "offenceTitle": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+                "offenceTitleWelsh": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+                "pleas": [],
+                "startDate": "2023-12-06",
+                "verdicts": [],
+                "wording": "Shoplifting at xyz"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2024-08-23T09:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_INITIALISED",
+        "id": "3afdad9f-f687-4e01-9f42-8264d62dbe08",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "12",
+              "address2": "Woburn Road",
+              "address3": "Bedford",
+              "address4": "Bedfordshire",
+              "postcode": "MK40 1EG"
+            },
+            "age": "30",
+            "courtApplications": [],
+            "dateOfBirth": "1994-02-01",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "e2d8868f-48c7-4dc8-8b6e-3a909d770fc6"
+            },
+            "id": "e2d8868f-48c7-4dc8-8b6e-3a909d770fc6",
+            "judicialResults": [],
+            "name": "Test2 second Defdnant Test2lm",
+            "offences": [
+              {
+                "count": 0,
+                "id": "3faf4cca-f391-458a-aae3-cd214745ca08",
+                "judicialResults": [],
+                "offenceCode": "RR84223",
+                "offenceDefinitionId": "64202e97-e7c1-3be2-9c8b-d8bc5d2e876b",
+                "offenceLegislation": "Contrary to the above local traffic order and sections 84 and 89(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod, ac adrannau 84 ac 89 (1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+                "offenceTitle": "Exceed a 50 mph speed limit in contravention of a Local Traffic Order - automatic camera device",
+                "offenceTitleWelsh": "Gyrru'n gyflymach na'r terfyn cyflymder o 50 milltir yr awr yn groes i Orchymyn Traffig Lleol - dyfais camera awtomatig",
+                "pleas": [],
+                "startDate": "2023-12-06",
+                "verdicts": [],
+                "wording": "Shoplifting at xyz"
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2024-08-22T09:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_INITIALISED",
+        "id": "034c36e7-a7be-44e3-9783-e827ae10d72b",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      }
+    ],
+    "id": "9234c0ef-f000-4b41-bd90-28c8c3fe4b9b",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Criminal Justice Department",
+        "address2": "Derbyshire Constabulary",
+        "address3": "Butterley Hall",
+        "address4": "Ripley",
+        "address5": "Derby",
+        "postcode": "DE5 3RS"
+      },
+      "contact": {
+        "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+      },
+      "majorCreditorCode": "PO30",
+      "prosecutionAuthorityCode": "DERPF",
+      "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+      "prosecutionAuthorityName": "Derbyshire Police",
+      "prosecutionAuthorityOUCode": "0300000",
+      "caseURN": "AAC21170817"
+    }
+  }
+}

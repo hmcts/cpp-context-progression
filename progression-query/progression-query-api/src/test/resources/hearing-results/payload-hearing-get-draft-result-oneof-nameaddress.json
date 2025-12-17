@@ -1,0 +1,597 @@
+{
+    "version": 14,
+    "hearingId": "c3491cae-fb66-40e3-a3b2-ce34b30d5b5f",
+    "relations": [
+        {
+            "ruleType": "standalone",
+            "resultLineId": "80ecc8ff-99ad-43b3-b53b-5de7b3901d91",
+            "childResultLineIds": [
+                "c00e2494-59e6-490b-ba27-6b25823d808b",
+                "cf8e1df9-5a19-4c99-bbd0-9f4834f2565f",
+                "175d27a7-bc42-48af-89f2-39d66140be78",
+                "3a0329e4-2b72-4d25-a45e-5850f3a6a42c"
+            ]
+        },
+        {
+            "ruleType": "mandatory",
+            "resultLineId": "c00e2494-59e6-490b-ba27-6b25823d808b",
+            "childResultLineIds": [
+                "9dbe2adb-9abb-4625-9101-afcefa4a5b7f"
+            ]
+        },
+        {
+            "ruleType": "mandatory",
+            "resultLineId": "9dbe2adb-9abb-4625-9101-afcefa4a5b7f",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "mandatory",
+            "resultLineId": "cf8e1df9-5a19-4c99-bbd0-9f4834f2565f",
+            "childResultLineIds": [
+                "4f0553e9-6361-4b69-b492-d4dfdf0a2db6"
+            ]
+        },
+        {
+            "ruleType": "oneOf",
+            "resultLineId": "4f0553e9-6361-4b69-b492-d4dfdf0a2db6",
+            "childResultLineIds": [
+                "184ff512-9b7c-4c0b-b87e-73250a3e2b85"
+            ]
+        },
+        {
+            "ruleType": "oneOf",
+            "resultLineId": "184ff512-9b7c-4c0b-b87e-73250a3e2b85",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "optional",
+            "resultLineId": "175d27a7-bc42-48af-89f2-39d66140be78",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "optional",
+            "resultLineId": "3a0329e4-2b72-4d25-a45e-5850f3a6a42c",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "8e9e707f-060f-4b41-80f9-8febb840c5fd",
+            "childResultLineIds": []
+        }
+    ],
+    "hearingDay": "2025-02-27",
+    "resultLines": {
+        "175d27a7-bc42-48af-89f2-39d66140be78": {
+            "label": "No collection order reason",
+            "valid": false,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "F",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "nocollo",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "D",
+            "unscheduled": false,
+            "originalText": "nocollo",
+            "resultLineId": "175d27a7-bc42-48af-89f2-39d66140be78",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    },
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:46:46.186Z",
+                        "validationDate": "2025-02-27T11:47:30.808Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "615313b5-0647-4d61-b7b8-6b36265d8929",
+            "nonStandaloneAncillaryResult": false
+        },
+        "184ff512-9b7c-4c0b-b87e-73250a3e2b85": {
+            "label": "Pay by date",
+            "valid": true,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "F",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "pdate",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "D",
+            "originalText": "pdate",
+            "resultLineId": "184ff512-9b7c-4c0b-b87e-73250a3e2b85",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [
+                {
+                    "type": "DATE",
+                    "label": "Date to pay in full by",
+                    "value": "2025-12-12",
+                    "promptId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                    "promptRef": "PBD"
+                }
+            ],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+            "nonStandaloneAncillaryResult": false
+        },
+        "3a0329e4-2b72-4d25-a45e-5850f3a6a42c": {
+            "label": "Account Consolidated",
+            "valid": false,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "F",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "acon",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "D",
+            "unscheduled": false,
+            "originalText": "acon",
+            "resultLineId": "3a0329e4-2b72-4d25-a45e-5850f3a6a42c",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    },
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:46:46.186Z",
+                        "validationDate": "2025-02-27T11:47:30.808Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "923f8b82-d4b5-4c9b-8b54-6d1ec8e16dd6",
+            "resultDefinitionGroup": "Enforcement",
+            "nonStandaloneAncillaryResult": false
+        },
+        "4f0553e9-6361-4b69-b492-d4dfdf0a2db6": {
+            "label": "Payment terms",
+            "valid": true,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "A",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "payt",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "D",
+            "originalText": "payt",
+            "resultLineId": "4f0553e9-6361-4b69-b492-d4dfdf0a2db6",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+            "nonStandaloneAncillaryResult": false
+        },
+        "80ecc8ff-99ad-43b3-b53b-5de7b3901d91": {
+            "label": "Compensation",
+            "valid": true,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "F",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "fcomp",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "O",
+            "originalText": "fcomp",
+            "resultLineId": "80ecc8ff-99ad-43b3-b53b-5de7b3901d91",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    },
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:46:46.186Z",
+                        "validationDate": "2025-02-27T11:47:30.808Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": [
+                            {
+                                "type": "CURR",
+                                "label": "Amount of compensation",
+                                "value": "200.00",
+                                "promptId": "26985e5b-fe1f-4d7d-a21a-57207c5966e7",
+                                "promptRef": "AOCOM"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "resultPrompts": [
+                {
+                    "type": "CURR",
+                    "label": "Amount of compensation",
+                    "value": 3000,
+                    "promptId": "26985e5b-fe1f-4d7d-a21a-57207c5966e7",
+                    "promptRef": "AOCOM"
+                },
+                {
+                    "type": "ONEOF",
+                    "label": "Major creditor organisation name",
+                    "value": {
+                        "type": "NAMEADDRESS",
+                        "label": "Major creditor",
+                        "value": [
+                            {
+                                "type": "TXT",
+                                "label": "Major creditor organisation name",
+                                "value": "Asda Stores",
+                                "promptId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+                                "promptRef": "cREDNAMEOrganisationName"
+                            },
+                            {
+                                "type": "TXT",
+                                "label": "Major creditor address line 1",
+                                "value": "Treasury Dept. Asda House",
+                                "promptId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+                                "promptRef": "cREDNAMEAddress1"
+                            },
+                            {
+                                "type": "TXT",
+                                "label": "Major creditor address line 2",
+                                "value": "Great Wilson St",
+                                "promptId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+                                "promptRef": "cREDNAMEAddress2"
+                            },
+                            {
+                                "type": "TXT",
+                                "label": "Major creditor address line 3",
+                                "value": "Leeds",
+                                "promptId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+                                "promptRef": "cREDNAMEAddress3"
+                            },
+                            {
+                                "type": "TXT",
+                                "label": "Major creditor post code",
+                                "value": "LS11 5AD",
+                                "promptId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+                                "promptRef": "cREDNAMEPostCode"
+                            }
+                        ],
+                        "promptRef": "cREDNAME"
+                    },
+                    "promptId": "af921cf4-06e7-4f6b-a4ea-dcb58aab0dbe",
+                    "promptRef": "cREDNAMEOrganisationName"
+                }
+            ],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "ae89b99c-e0e3-47b5-b218-24d4fca3ca53",
+            "nonStandaloneAncillaryResult": false
+        },
+        "8e9e707f-060f-4b41-80f9-8febb840c5fd": {
+            "label": "Absolute discharge",
+            "valid": true,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "category": "F",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "ad",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "O",
+            "unscheduled": false,
+            "originalText": "AD",
+            "resultLineId": "8e9e707f-060f-4b41-80f9-8febb840c5fd",
+            "amendmentDate": "2025-02-27T11:50:57.390Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Emma Cleaner",
+                        "validatedBy": "Erica Wilson",
+                        "amendmentDate": "2025-02-27T11:50:57.390Z",
+                        "validationDate": "2025-02-27T11:52:03.318Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+            "nonStandaloneAncillaryResult": false
+        },
+        "9dbe2adb-9abb-4625-9101-afcefa4a5b7f": {
+            "label": "Collection order",
+            "valid": true,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "A",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "collo",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "D",
+            "originalText": "collo",
+            "resultLineId": "9dbe2adb-9abb-4625-9101-afcefa4a5b7f",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [
+                {
+                    "type": "FIXL",
+                    "label": "Collection order type",
+                    "value": "Make payments as ordered",
+                    "promptId": "6b36e5ff-e116-4dc3-b438-8c02d493959e",
+                    "promptRef": "collectionOrderType"
+                }
+            ],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "9ea0d845-5096-44f6-9ce0-8ae801141eac",
+            "nonStandaloneAncillaryResult": false
+        },
+        "c00e2494-59e6-490b-ba27-6b25823d808b": {
+            "label": "Has a collection order been made?",
+            "valid": true,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "A",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "collom",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "D",
+            "originalText": "collom",
+            "resultLineId": "c00e2494-59e6-490b-ba27-6b25823d808b",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "cfa66730-f81c-4768-a36e-581791cb0270",
+            "nonStandaloneAncillaryResult": false
+        },
+        "cf8e1df9-5a19-4c99-bbd0-9f4834f2565f": {
+            "label": "Payment Method",
+            "valid": true,
+            "caseId": "e7854d79-c148-4869-a468-54f3a086e187",
+            "deleted": true,
+            "category": "A",
+            "offenceId": "94bc9f93-1d0a-4ad3-aab2-be49257e0b13",
+            "shortCode": "pm",
+            "sharedDate": "2025-02-27T11:48:58.927Z",
+            "defendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "orderedDate": "2025-02-27",
+            "resultLevel": "D",
+            "originalText": "pm",
+            "resultLineId": "cf8e1df9-5a19-4c99-bbd0-9f4834f2565f",
+            "amendmentDate": "2025-02-27T11:48:19.800Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-27T11:48:19.800Z",
+                        "validationDate": "2025-02-27T11:48:55.103Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "14680c55-2dd5-41d9-b3cb-31fab8a16acc",
+            "resultDefinitionId": "3d742a7e-37a6-453c-bb6f-5e023bb19453",
+            "nonStandaloneAncillaryResult": false
+        }
+    },
+    "__metadata__": {
+        "version": 1,
+        "lastSharedTime": "2025-02-27T11:52:05.551Z"
+    },
+    "delegatedPowers": false,
+    "shadowListedOffenceIds": []
+}

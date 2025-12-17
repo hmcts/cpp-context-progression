@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.defendant-matched.json",
+  "type": "object",
+  "properties": {
+    "hasDefendantAlreadyBeenDeleted": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "hasDefendantAlreadyBeenDeleted"
+  ]
+}

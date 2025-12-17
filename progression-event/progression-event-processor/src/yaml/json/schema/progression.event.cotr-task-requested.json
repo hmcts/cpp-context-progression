@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/progression.event.cotr-task-requested.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDate": {
+      "type": "string"
+    },
+    "courtCode": {
+      "type": "string"
+    },
+    "organisationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "taskName": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "string"
+    },
+    "comments": {
+      "type": "string"
+    },
+    "numberOfDays": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "cotrId",
+    "organisationId",
+    "taskName",
+    "roles",
+    "numberOfDays"
+  ],
+  "additionalProperties": false
+}

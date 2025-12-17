@@ -1,0 +1,283 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/plead-online.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "personalDetails": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/personal-details.json",
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json"
+        },
+        "contactDetails": {
+          "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/contact-details.json",
+          "required": [
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        "dateOfBirth": {
+          "type": "string"
+        },
+        "nationalInsuranceNumber": {
+          "type": "string"
+        },
+        "driverNumber": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/dvlaDriverLicence"
+        },
+        "driverLicenceDetails": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName",
+        "address",
+        "contactDetails",
+        "dateOfBirth"
+      ],
+      "additionalProperties": false
+    },
+    "legalEntityDefendant": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/legal-entity-defendant.json",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json"
+        },
+        "contactDetails": {
+          "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/contact-details.json",
+          "required": [
+            "email"
+          ]
+        },
+        "incorporationNumber": {
+          "type": "string"
+        },
+        "position": {
+          "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/position.json",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "contactDetails"
+      ],
+      "additionalProperties": false
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/offence.json",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "plea": {
+            "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/plea-type.json",
+            "type": "string",
+            "enum": [
+              "NOT_GUILTY",
+              "GUILTY"
+            ]
+          },
+          "mitigation": {
+            "type": "string"
+          },
+          "notGuiltyBecause": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "plea"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "comeToCourt": {
+      "type": "boolean"
+    },
+    "witnessDispute": {
+      "type": "string"
+    },
+    "witnessDetails": {
+      "type": "string"
+    },
+    "outstandingFines": {
+      "type": "boolean"
+    },
+    "interpreterLanguage": {
+      "type": "string"
+    },
+    "speakWelsh": {
+      "type": "boolean"
+    },
+    "unavailability": {
+      "type": "string"
+    },
+    "financialMeans": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/financial-means.json",
+      "type": "object",
+      "properties": {
+        "defendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "income": {
+          "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/income.json",
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number"
+            },
+            "frequency": {
+              "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/frequency.json",
+              "type": "string",
+              "enum": [
+                "WEEKLY",
+                "FORTNIGHTLY",
+                "MONTHLY",
+                "YEARLY"
+              ]
+            }
+          },
+          "required": [
+            "amount",
+            "frequency"
+          ],
+          "additionalProperties": false
+        },
+        "benefits": {
+          "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/benefits.json",
+          "type": "object",
+          "properties": {
+            "claimed": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string"
+            },
+            "deductPenaltyPreference": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "claimed"
+          ],
+          "additionalProperties": false
+        },
+        "employmentStatus": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "legalEntityFinancialMeans": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/legal-entity-financial-means.json",
+      "type": "object",
+      "properties": {
+        "outstandingFines": {
+          "type": "boolean"
+        },
+        "tradingMoreThan12Months": {
+          "type": "boolean"
+        },
+        "numberOfEmployees": {
+          "type": "integer"
+        },
+        "grossTurnover": {
+          "type": "number"
+        },
+        "netTurnover": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "employer": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/employer.json",
+      "type": "object",
+      "properties": {
+        "employeeReference": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "outgoings": {
+      "type": "array",
+      "items": {
+        "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/outgoing.json",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "disabilityNeeds": {
+      "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/disability-needs.json"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "caseId",
+        "defendantId",
+        "personalDetails",
+        "offences"
+      ]
+    },
+    {
+      "required": [
+        "caseId",
+        "defendantId",
+        "legalEntityDefendant",
+        "offences"
+      ]
+    }
+  ],
+  "additionalProperties": false
+}

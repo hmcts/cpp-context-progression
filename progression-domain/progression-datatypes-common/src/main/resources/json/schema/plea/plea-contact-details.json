@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/contact-details.json",
+  "type": "object",
+  "properties": {
+    "home": {
+      "type": "string"
+    },
+    "mobile": {
+      "type": "string"
+    },
+    "work": {
+      "type": "string"
+    },
+    "business": {
+      "type": "string"
+    },
+    "email": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
+    },
+    "email2": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/email"
+    }
+  },
+  "additionalProperties": false
+}

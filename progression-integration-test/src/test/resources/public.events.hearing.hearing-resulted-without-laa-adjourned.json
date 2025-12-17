@@ -1,0 +1,785 @@
+{
+  "hearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "id": "01234567-1234-1234-1234-123456789123",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "a",
+    "hearingLanguage": "ENGLISH",
+    "hearingDays": [
+      {
+        "sittingDay": "2021-03-29T05:27:17.210Z",
+        "listingSequence": 0,
+        "listedDurationMinutes": 0
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME",
+      "welshName": "a",
+      "roomId": "00000000-0000-0000-0000-000000000000",
+      "roomName": "a",
+      "welshRoomName": "a"
+    },
+    "judiciary": [
+      {
+        "judicialId": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType": "RECORDER"
+        },
+        "isDeputy": true,
+        "isBenchChairman": true
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "id": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "00000000-0000-0000-0000-000000000000",
+          "prosecutionAuthorityCode": "a",
+          "caseURN": "a"
+        },
+        "originatingOrganisation": "a",
+        "initiationCode": "J",
+        "caseStatus": "a",
+        "statementOfFacts": "a",
+        "statementOfFactsWelsh": "a",
+        "defendants": [
+          {
+            "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
+            "prosecutionCaseId": "CASE_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+            "numberOfPreviousConvictionsCited": 0,
+            "prosecutionAuthorityReference": "a",
+            "witnessStatement": "a",
+            "witnessStatementWelsh": "a",
+            "mitigation": "a",
+            "mitigationWelsh": "a",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                "offenceCode": "a",
+                "offenceTitle": "a",
+                "offenceTitleWelsh": "a",
+                "offenceLegislation": "a",
+                "offenceLegislationWelsh": "a",
+                "modeOfTrial": "a",
+                "wording": "a",
+                "wordingWelsh": "a",
+                "startDate": "2018-01-01",
+                "endDate": "2018-01-01",
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "dateOfInformation": "2018-01-01",
+                "orderIndex": 0,
+                "count": 0,
+                "convictionDate": "2018-01-01",
+                "notifiedPlea": {
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "notifiedPleaDate": "2018-01-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY"
+                },
+                "custodyTimeLimit": {
+                  "timeLimit": "2018-09-14",
+                  "daysSpent": 55
+                },
+                "indicatedPlea": {
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "indicatedPleaDate": "2018-01-01",
+                  "indicatedPleaValue": "INDICATED_GUILTY",
+                  "source": "ONLINE"
+                },
+                "allocationDecision": {
+                  "allocationDecisionDate": "2019-10-08",
+                  "motReasonCode": "4",
+                  "motReasonDescription": "Defendant chooses trial by jury",
+                  "motReasonId": "f8eb278a-8bce-373e-b365-b45e939da38a",
+                  "offenceId": "0500e8f7-d1a4-439f-accf-7e4fd3eefe42",
+                  "originatingHearingId": "25ab493c-92b9-4735-ae9a-d04ef946ef5e",
+                  "sequenceNumber": 40
+                },
+                "plea": {
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "delegatedPowers": {
+                    "userId": "00000000-0000-0000-0000-000000000000",
+                    "firstName": "a",
+                    "lastName": "a"
+                  },
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "pleaDate": "2018-01-01",
+                  "pleaValue": "GUILTY"
+                },
+                "verdict": {
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "verdictDate": "2018-01-01",
+                  "verdictType": {
+                    "id": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+                    "sequence": 0,
+                    "description": "a",
+                    "category": "a",
+                    "categoryType": "a"
+                  },
+                  "jurors": {
+                    "numberOfJurors": 1,
+                    "numberOfSplitJurors": 1,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                    "offenceCode": "a",
+                    "offenceTitle": "a",
+                    "offenceTitleWelsh": "a",
+                    "offenceLegislation": "a",
+                    "offenceLegislationWelsh": "a"
+                  }
+                },
+                "offenceFacts": {
+                  "vehicleRegistration": "a",
+                  "alcoholReadingAmount": 123
+                },
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2021-11-24",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "3f734101-d830-48bc-a0d0-761aec476221",
+                        "promptSequence": 0,
+                        "usergroups": [
+
+                        ],
+                        "value": "Date of hearing:06/12/2021\nTime of hearing:10:00\nCourthouse organisation name:Wimbledon Magistrates' Court\nCourthouse address line 1:The Law Courts\nCourthouse address line 2:Alexandra Road\nCourthouse address line 3:Wimbledon\nCourthouse post code:SW19 7JP\nCourtroom:Courtroom 05\nHearing type:Trial - no witnesses\nEstimated duration:20 MINUTES\nBooking reference:ab705b57-4c51-4be0-8b4c-4f1692e50b1e",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+
+                        ],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "61089120-2ec8-4f84-abd7-3a858a58d8f4",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "d1deafdc-265a-4499-a184-82c5a4c88856",
+                        "promptSequence": 300,
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "bookingReference": "ab705b57-4c51-4be0-8b4c-4f1692e50b1e",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "The Law Courts",
+                          "address2": "Alexandra Road",
+                          "address3": "Wimbledon",
+                          "postcode": "SW19 7JP"
+                        },
+                        "courtHearingLocation": "B01OK05",
+                        "id": "d9bff7d8-6168-4163-ad77-3b98d61de174",
+                        "name": "Wimbledon Magistrates' Court",
+                        "psaCode": 2577,
+                        "roomId": "1414ea28-8b0e-3ba7-8f97-f2bb6d5dd38c",
+                        "roomName": "Courtroom 05",
+                        "welshName": "Llys Ynadon Wimbeldon"
+                      },
+                      "estimatedMinutes": 20,
+                      "jurisdictionType": "MAGISTRATES",
+                      "listedStartDateTime": "2021-12-06T10:00:00.000Z",
+                      "type": {
+                        "description": "Trial - no witnesses",
+                        "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                      }
+                    },
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "bbe5b785-1552-4ce7-9b6a-d1fc71a82f0a",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 76400,
+                    "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:06/12/2021\nTime of hearing:10:00\nCourthouse organisation name:Wimbledon Magistrates' Court\nCourthouse address line 1:The Law Courts\nCourthouse address line 2:Alexandra Road\nCourthouse address line 3:Wimbledon\nCourthouse post code:SW19 7JP\nCourtroom:Courtroom 05\nHearing type:Trial - no witnesses\nEstimated duration:20 MINUTES\nBooking reference:ab705b57-4c51-4be0-8b4c-4f1692e50b1e\nDefendant to attend the next hearing true\nTo attend or a warrant to issue \nAdjournment reasons ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Gohiriad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2021-11-24",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "3f734101-d830-48bc-a0d0-761aec476221",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                        "label": "Date of hearing",
+                        "promptReference": "HDATE",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "06/12/2021",
+                        "welshLabel": "Dyddiad y gwrandawiad",
+                        "welshValue": "06/12/2021"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 200,
+                        "type": "TIME",
+                        "usergroups": [
+
+                        ],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Wimbledon Magistrates' Court",
+                        "welshValue": "Wimbledon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Alexandra Road",
+                        "welshValue": "Alexandra Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Wimbledon",
+                        "welshValue": "Wimbledon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "SW19 7JP",
+                        "welshValue": "SW19 7JP"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Courtroom 05",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 05"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Trial - no witnesses",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Trial - no witnesses"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "20 MINUTES",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "20 MINUTES"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                        "label": "Booking reference",
+                        "promptReference": "bookingReference",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "ab705b57-4c51-4be0-8b4c-4f1692e50b1e",
+                        "welshLabel": "Cyfeirnod archebu",
+                        "welshValue": "ab705b57-4c51-4be0-8b4c-4f1692e50b1e"
+                      }
+                    ],
+                    "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                    "label": "Next hearing in magistrates' court",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "bbe5b785-1552-4ce7-9b6a-d1fc71a82f0a",
+                    "parentJudicialResultId": "c1558107-92a6-44f4-b38f-f2178c54a475",
+                    "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 1000,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-12-06\nTime of hearing 10:00\nCourthouse organisation name Wimbledon Magistrates' Court\nCourthouse address line 1 The Law Courts\nCourthouse address line 2 Alexandra Road\nCourthouse address line 3 Wimbledon\nCourthouse post code SW19 7JP\nCourtroom Courtroom 05\nHearing type Trial - no witnesses\nEstimated duration 20 MINUTES",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2021-11-24",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "61089120-2ec8-4f84-abd7-3a858a58d8f4",
+                    "judicialResultTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "bbe5b785-1552-4ce7-9b6a-d1fc71a82f0a",
+                    "parentJudicialResultId": "d1deafdc-265a-4499-a184-82c5a4c88856",
+                    "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 11500,
+                    "resultDefinitionGroup": "Adjournment reasons",
+                    "resultText": "To attend or a warrant to issue\n",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  }
+                ],
+                "reportingRestrictions": [
+                  {
+                    "id": "REPORTING_RESTRICTION_ID",
+                    "judicialResultId": "0f5b8757-e588-4b7f-806a-44dc0eb0e75e",
+                    "label": "Reporting Restriction Label",
+                    "orderedDate": "2020-10-20"
+                  }
+                ]
+              }
+            ],
+            "associatedPersons": [
+              {
+                "person": {
+                  "title": "DR",
+                  "firstName": "a",
+                  "middleName": "a",
+                  "lastName": "a",
+                  "dateOfBirth": "2018-01-01",
+                  "nationalityId": "00000000-0000-0000-0000-000000000000",
+                  "nationalityCode": "a",
+                  "nationalityDescription": "a",
+                  "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                  "additionalNationalityCode": "a",
+                  "additionalNationalityDescription": "a",
+                  "disabilityStatus": "a",
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "a",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "nationalInsuranceNumber": "NH182858B",
+                  "occupation": "a",
+                  "occupationCode": "a",
+                  "specificRequirements": "a",
+                  "address": {
+                    "address1": "a",
+                    "address2": "a",
+                    "address3": "a",
+                    "address4": "a",
+                    "address5": "a",
+                    "postcode": "GIR0AA"
+                  },
+                  "contact": {
+                    "home": " ",
+                    "work": "a",
+                    "mobile": " ",
+                    "primaryEmail": "!.!@00.00",
+                    "secondaryEmail": "!.!@00.00",
+                    "fax": "a"
+                  }
+                },
+                "role": "a"
+              }
+            ],
+            "defenceOrganisation": {
+              "name": "a",
+              "incorporationNumber": "a",
+              "registeredCharityNumber": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
+            },
+            "personDefendant": {
+              "personDetails": {
+                "title": "DR",
+                "firstName": "a",
+                "middleName": "a",
+                "lastName": "a",
+                "dateOfBirth": "2018-01-01",
+                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH171717B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              },
+              "bailStatus": {
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+                "code": "B",
+                "description": "Conditional Bail",
+                "custodyTimeLimit": {
+                  "timeLimit": "2018-09-10",
+                  "daysSpent": 44
+                }
+              },
+              "custodyTimeLimit": "2018-01-01",
+              "perceivedBirthYear": 0,
+              "driverNumber": "a",
+              "arrestSummonsNumber": "a",
+              "employerOrganisation": {
+                "name": "a",
+                "incorporationNumber": "a",
+                "registeredCharityNumber": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              },
+              "employerPayrollReference": "a"
+            },
+            "legalEntityDefendant": {
+              "organisation": {
+                "name": "a",
+                "incorporationNumber": "a",
+                "registeredCharityNumber": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "hasSharedResults": true,
+    "defendantReferralReasons": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "description": "a",
+        "defendantId": "00000000-0000-0000-0000-000000000000"
+      }
+    ],
+    "prosecutionCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defenceCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "defendants": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defendantAttendance": [
+      {
+        "defendantId": "00000000-0000-0000-0000-000000000000",
+        "attendanceDays": [
+          {
+            "day": "2018-01-01",
+            "attendanceType": "IN_PERSON"
+          }
+        ]
+      }
+    ],
+    "hearingCaseNotes": [
+      {
+        "id": "a4cd3c1d-be10-410d-a50d-e260cdaf6d19",
+        "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+        "courtClerk": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "noteDateTime": "2016-06-01T10:00:00Z",
+        "noteType": "HMCTS",
+        "note": "a"
+      }
+    ],
+    "youthCourtDefendantIds" : [
+      "DEFENDANT_ID"
+    ],
+    "youthCourt" : {
+      "name" :"Derby Youth Court",
+      "courtCode" :5647,
+      "youthCourtId" :"a4cd3c1d-be10-410d-a50d-e260cdbf6d19"
+    }
+  },
+  "sharedTime": "2021-03-29T10:00:00Z",
+  "isReshare": false,
+  "hearingDay": "ORDERED_DATE"
+}

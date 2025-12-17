@@ -1,0 +1,39 @@
+{
+  "modifiedDate": "2018-03-01",
+  "updatedOffences": [
+    {
+      "defendantId": "b913ee61-d716-486d-a287-2311a5e1c4d4",
+      "offences": [
+        {
+          "count": 1,
+          "endDate": "2019-06-29",
+          "id": "95e72a0b-c1c2-4e2a-93a5-45ceda834bda",
+          "offenceCode": "OF61016A",
+          "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+          "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+          "offenceTitle": "Section 18 - attempt    wounding with intent",
+          "startDate": "2018-12-29",
+          "wording": "Wound / inflict grievous bodily harm without intent",
+          "proceedingsConcluded": false,
+          "dateOfInformation": "2019-09-02",
+          "wordingWelsh": "No Travel Card In Welsh",
+          "statementOfFacts": "You did it",
+          "statementOfFactsWelsh": "You did it in Welsh",
+          "arrestDate": "2018-01-01",
+          "chargeDate": "2018-01-01",
+          "modeOfTrial": "CROWN",
+          "orderIndex": 1,
+          "laaApplnReference": {
+            "applicationReference": "LAA REF OFF 1",
+            "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+            "statusCode": "LAA STATUS CODE OFF 1",
+            "statusDescription": "LAA STATUS DESC OFF 1",
+            "effectiveStartDate": "2019-08-12",
+            "effectiveEndDate": "2019-10-12"
+          }
+        }
+      ],
+      "prosecutionCaseId": "6945f603-2f6d-4094-a9a9-f6f6b3b2f50b"
+    }
+  ]
+}

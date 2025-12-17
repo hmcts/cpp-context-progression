@@ -1,0 +1,197 @@
+{
+  "prosecutionCase": {
+    "id": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+      "prosecutionAuthorityCode": "TFL",
+      "caseURN": "05PP1000915"
+    },
+    "originatingOrganisation": "G01FT01AB",
+    "initiationCode": "Z",
+    "defendants": [
+      {
+        "id": "e1d32d9d-29ec-4934-a932-22a50f223966",
+        "masterDefendantId": "e1d32d9d-29ec-4934-a932-22a50f223966",
+        "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+        "numberOfPreviousConvictionsCited": 5,
+        "prosecutionAuthorityReference": "TFL12345-ABC",
+        "offences": [
+          {
+            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "offenceCode": "AAA",
+            "wording": "No Travel Card",
+            "section": "XDASgfE",
+            "startDate": "2018-01-01",
+            "endDate": "2018-01-01",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "orderIndex": 1,
+            "count": 0,
+            "convictionDate": "2018-02-01",
+            "offenceFacts": {
+              "vehicleRegistration": "AA12345",
+              "prosecutionFacts": "He did it",
+              "witnessStatement": "I did not do it",
+              "mitigation": "I was not there",
+              "alcoholReadingAmount": "111",
+              "alcoholReadingMethodCode": "2222",
+              "basisOfDefence": "prejudice"
+            }
+          }
+        ],
+        "associatedPersons": [
+          {
+            "person": {
+              "title": "Mr",
+              "firstName": "Harry",
+              "lastName": "Kane",
+              "dateOfBirth": "1995-01-01",
+              "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+              "nationalityCode": "GBR",
+              "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+              "additionalNationalityCode": "USA",
+              "disabilityStatus": "a",
+              "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "ethnicityCode": "IC1",
+              "gender": "Male",
+              "interpreterLanguageNeeds": "Welsh",
+              "hearingLanguageNeeds": "Welsh",
+              "documentationLanguageNeeds": "Welsh",
+              "nationalInsuranceNumber": "NH222222B",
+              "occupation": "Footballer",
+              "occupationCode": "F",
+              "specialNeeds": "Screen",
+              "address": {
+                "address1": "22",
+                "address2": "Acacia Avenue",
+                "address3": "Acacia Town",
+                "address4": "Acacia City",
+                "postcode": "GIR 0AA"
+              },
+              "contact": {
+                "home": "123456",
+                "work": "7891011",
+                "mobile": "45678910",
+                "primaryEmailAddress": "harry.kane@spurs.co.uk",
+                "secondaryEmailAddress": "harry.kane@hotmail.com",
+                "fax": "3425678"
+              }
+            },
+            "role": "parent"
+          }
+        ],
+        "defenceOrganisation": {
+          "id": "d5735cc8-cc97-44f2-9f41-2b44ad3788aa",
+          "name": "Franklin & Birketts LLP",
+          "address": {
+            "address1": "53 New London Road",
+            "address2": "Brierly Place",
+            "address3": "Guildford",
+            "address4": "Surrey",
+            "postcode": "GL1 5FD"
+          },
+          "contact": {
+            "work": "01652 654789",
+            "primaryEmailAddress": "info@franklinbirketts.com"
+          }
+        },
+        "discriminator": "personDefendant",
+        "personDetails": {
+          "title": "Mr",
+          "firstName": "Harry",
+          "lastName": "Kane Junior",
+          "dateOfBirth": "2010-01-01",
+          "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+          "nationalityCode": "GBR",
+          "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+          "additionalNationalityCode": "USA",
+          "disabilityStatus": "a",
+          "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+          "ethnicityCode": "IC1",
+          "gender": "Male",
+          "interpreterLanguageNeeds": "Welsh",
+          "hearingLanguageNeeds": "Welsh",
+          "documentationLanguageNeeds": "Welsh",
+          "nationalInsuranceNumber": "NH323232B",
+          "occupation": "Kid",
+          "occupationCode": "F",
+          "specialNeeds": "Screen",
+          "address": {
+            "address1": "22",
+            "address2": "Acacia Avenue",
+            "address3": "Acacia Town",
+            "address4": "Acacia City",
+            "postcode": "GU1 8YU"
+          },
+          "contact": {
+            "home": "123456",
+            "work": "7891011",
+            "mobile": "45678910",
+            "primaryEmailAddress": "harry.kanejunior@spurs.co.uk",
+            "secondaryEmailAddress": "harry.kanejunior@hotmail.com",
+            "fax": "3425678"
+          }
+        },
+        "bailStatus": "IN_CUSTODY",
+        "custodyTimeLimit": "2018-01-01",
+        "perceivedBirthYear": 2015,
+        "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+        "observedEthnicityCode": "IC1",
+        "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+        "selfDefinedEthnicityCode": "IC1",
+        "driverLicenseNumber": "AACC12345",
+        "pncId": "1234567",
+        "arrestSummonsNumber": "arrest123",
+        "aliases": [
+          "johnny robber",
+          "jack the knife"
+        ],
+        "employerOrganisation": {
+          "id": "8625b50c-afc4-4d63-add2-68b9bf01b1fd",
+          "name": "Disneyland Paris",
+          "incorporationNumber": "Mickeymouse1",
+          "address": {
+            "address1": "Disney Road",
+            "address2": "Disney Town",
+            "address3": "Disney District",
+            "address4": "Paris",
+            "postcode": "DI5 9EY"
+          },
+          "contact": {
+            "work": "4444",
+            "primaryEmailAddress": "afffff",
+            "secondaryEmailAddress": "ahhhhhhhhhhhhhhhhh",
+            "fax": "agggggg"
+          }
+        }
+      }
+    ],
+    "caseMarkers": [
+      {
+        "id": "d889cf58-04ee-4c13-afa8-90b9c2185eff",
+        "markerTypeid": "b59dc89b-7bb7-4803-94f9-96051e61e618",
+        "sequenceNumber": "25",
+        "markerTypeCode": "VI",
+        "markerTypeName": "VulnerableIntimidatedVictim",
+        "markerTypeLabel": "Vulnerable or intimidated victim"
+      },
+      {
+        "id": "c63172f6-3e68-4543-aae6-fd8aeee29311",
+        "markerTypeid": "2de0fd95-eb10-4a34-96ea-0ac5807424e8",
+        "sequenceNumber": "9",
+        "markerTypeCode": "RA",
+        "markerTypeName": "HateCrime-Racist",
+        "markerTypeLabel": "Hate crime - racist"
+      },
+      {
+        "id": "10a2e6e9-b697-4c3d-afe9-e641a6ea42c2",
+        "markerTypeid": "80885866-649b-4612-8479-5ee49120bd6a",
+        "sequenceNumber": "10",
+        "markerTypeCode": "RE",
+        "markerTypeName": "HateCrime-Relegious",
+        "markerTypeLabel": "Hate crime - religious"
+      }
+    ]
+  }
+
+}

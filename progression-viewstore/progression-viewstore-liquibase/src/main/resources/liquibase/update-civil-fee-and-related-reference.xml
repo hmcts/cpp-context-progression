@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="update-civil-fee-and-related-reference" author="cpp.context.progression">
+
+        <dropTable tableName="civil_fee"/>
+        
+        <createTable tableName="civil_fee">
+            <column name="fee_id" type="UUID"/>
+            <column name="offence_id" type="UUID"/>
+            <column name="prosecutor_id" type="UUID"/>
+            <column name="fee_type" type="VARCHAR(50)"/>
+            <column name="fee_status" type="VARCHAR(50)"/>
+            <column name="payment_reference" type="VARCHAR(500)"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="fee_id" constraintName="civil_fee_primary_key"
+                       tableName="civil_fee"/>
+        
+        <dropColumn tableName="related_reference" columnName="reference"/>
+
+        <addColumn tableName="related_reference">
+            <column name="reference" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <rollback>
+            <dropTable tableName="civil_fee"/>
+            <createTable tableName="civil_fee">
+                <column name="fee_id" type="UUID"/>
+                <column name="offence_id" type="UUID"/>
+                <column name="prosecutor_id" type="UUID"/>
+                <column name="fee_type" type="TEXT"/>
+                <column name="fee_status" type="TEXT"/>
+                <column name="payment_reference" type="TEXT"/>
+            </createTable>
+
+            <dropColumn tableName="related_reference" columnName="reference"/>
+
+            <addColumn tableName="related_reference">
+                <column name="reference" type="TEXT">
+                    <constraints nullable="false"/>
+                </column>
+            </addColumn>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "id": "http://justice.gov.uk/core/courts/courtdocuments-with-pagination.json",
+  "properties": {
+    "paginationData": {
+      "$ref": "http://moj.gov.uk/cpp/progression/pagination-data.json"
+    },
+    "courtDocuments": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/court-document-summary.json"
+      }
+    }
+  },
+  "required": [
+    "courtDocuments"
+  ],
+  "additionalProperties": false
+}

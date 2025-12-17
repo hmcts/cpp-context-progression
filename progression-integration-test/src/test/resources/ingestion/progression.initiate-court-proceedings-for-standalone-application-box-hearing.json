@@ -1,0 +1,97 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "type": {
+      "id": "e857c8ea-cd95-47d1-842f-2d618e77a9b5",
+      "code": "AS14518",
+      "type": "Application for an order of reimbursement in relation to a closure order",
+      "legislation": "In accordance with section 16E of the Magistrates' Courts Act 1980.",
+      "categoryCode": "VP",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "NOT_APPLICABLE"
+    },
+    "applicationReceivedDate": "2020-01-01",
+    "applicationReference": "AB746921",
+    "applicant": {
+      "id": "9ce6e439-d5da-4202-a446-ef4ca7072540",
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "subject": {
+      "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
+    "outOfTimeReasons": "Out of times reasons for standalone test",
+    "thirdParties": [
+      {
+        "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+        "summonsRequired": false,
+        "notificationRequired": false,
+        "masterDefendant": {
+          "masterDefendantId": "f879a45c-156e-41a3-86fb-0c6a3db6a305",
+          "personDefendant": {
+            "personDetails": {
+              "firstName": "David",
+              "lastName": "lloyd",
+              "gender": "MALE",
+              "address": {
+                "address1": "44, Wilson Patten Street"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityCode": "TFL",
+          "caseURN": "TFL4359536"
+        },
+        "isSJP": false,
+        "caseStatus": "ACTIVE"
+      }
+    ]
+  },
+  "boxHearing": {
+    "jurisdictionType": "MAGISTRATES",
+    "applicationDueDate": "2020-01-12",
+    "virtualAppointmentTime": "2020-01-12T05:27:17.210Z",
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    }
+  },
+  "summonsApprovalRequired": false
+}

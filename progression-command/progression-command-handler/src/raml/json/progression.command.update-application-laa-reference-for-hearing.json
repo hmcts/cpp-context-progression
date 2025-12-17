@@ -1,0 +1,13 @@
+{
+  "hearingId": "4013a2f7-5b39-4e02-b4b5-835f8bdff361",
+
+  "laaReference": {
+    "laaApplicationReference": "LAA REF OFF 1",
+    "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+    "statusCode": "LAA STATUS CODE OFF 1",
+    "statusDescription": "LAA STATUS DESC OFF 1",
+    "effectiveFromDate": "2019-08-12",
+    "effectiveToDate": "2019-10-12",
+    "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+  }
+}

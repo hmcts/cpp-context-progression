@@ -1,0 +1,316 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-22T10:00:00.000Z"
+      },
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-23T10:00:00.000Z"
+      },
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-24T10:00:00.000Z"
+      },
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-25T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "HEARING_ID",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "associatedDefenceOrganisation": {
+              "applicationReference": "LAA-APP-REF",
+              "associationStartDate": "2019-09-12",
+              "defenceOrganisation": {
+                "laaContractNumber": "99998888",
+                "organisation": {
+                  "address": {
+                    "address1": "Legal House",
+                    "address2": "15 Sewell Street",
+                    "address3": "Hammersmith",
+                    "address4": "London City",
+                    "address5": "London",
+                    "postcode": "SE14 2AB"
+                  },
+                  "contact": {
+                    "fax": " ",
+                    "home": " ",
+                    "mobile": " ",
+                    "primaryEmail": "foo@bar.com",
+                    "secondaryEmail": "foo@bar.com",
+                    "work": "080012345678"
+                  },
+                  "incorporationNumber": "1111",
+                  "name": "Sonja & Co LLP",
+                  "registeredCharityNumber": "2222"
+                }
+              },
+              "fundingType": "REPRESENTATION_ORDER",
+              "isAssociatedByLAA": true
+            },
+            "courtProceedingsInitiated": "2021-11-17T09:15:23.514Z",
+            "id": "DEFENDANT_ID",
+            "isYouth": false,
+            "legalAidStatus": "Granted",
+            "masterDefendantId": "DEFENDANT_ID",
+            "prosecutionCaseId": "CASE_ID",
+            "offences": [
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": false,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              },
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2021-11-22",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "82078809-8720-43fa-9027-a824fdd585c7",
+                  "originatingHearingId": "a390e5cc-e9ff-4c1e-959c-5b8ec0b6cda2",
+                  "sequenceNumber": 100
+                },
+                "convictionDate": "2021-11-22",
+                "count": 0,
+                "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": true,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Granted",
+                  "statusCode": "GR",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Granted (One Advocate)",
+                  "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+                },
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68025",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6abe3e81-1de0-4c42-b0d2-2dc38f5c44c8",
+                "offenceLegislation": "Contrary to section 8(2) of the Theft Act 1968.",
+                "offenceTitle": "Assault with intent to commit robbery",
+                "orderIndex": 502,
+                "plea": {
+                  "offenceId": "82078809-8720-43fa-9027-a824fdd585c7",
+                  "originatingHearingId": "a390e5cc-e9ff-4c1e-959c-5b8ec0b6cda2",
+                  "pleaDate": "2021-11-22",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2021-11-02",
+                "wording": "svfdg"
+              },
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "5789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": false,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              },
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "6789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "b1b35fcc-c035-4105-8e2e-4fd92230ea90",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2021-11-17",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2021-11-22",
+                    "orderedHearingId": "a390e5cc-e9ff-4c1e-959c-5b8ec0b6cda2",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 23500,
+                    "resultText": "Absolute discharge\n",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "b1b35fcc-c035-4105-8e2e-4fd92230ea90",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "071",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1943-03-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Robert",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Ormsby",
+                "title": "Ormsby"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": false,
+            "prosecutionAuthorityReference": "TFL"
+          }
+        ],
+        "id": "CASE_ID",
+        "initiationCode": "C",
+        "originatingOrganisation": "0450000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Surrey Police",
+            "address2": "Mount Browne",
+            "address3": "Sandy Lane",
+            "address4": "Guildford",
+            "postcode": "GU3 1HG"
+          },
+          "contact": {
+            "primaryEmail": "mail_data_bureau_res@surrey.pnn.police.uk"
+          },
+          "majorCreditorCode": "PO45",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityName": "Surrey Police",
+          "prosecutionAuthorityOUCode": "0450000",
+          "caseURN": "23GD9188221"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2021-11-22",
+  "sharedTime": "2021-11-17T09:20:51.596Z",
+  "isReshare": false
+}

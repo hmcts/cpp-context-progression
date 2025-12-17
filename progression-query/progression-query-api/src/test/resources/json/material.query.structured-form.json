@@ -1,0 +1,31 @@
+{
+  "id": "PET_ID",
+  "formId": "FORM_ID",
+  "caseId": "CASE_ID",
+  "defendants": [
+    {
+      "defendantId": "DEFENDANT_ID_1",
+      "offences": [
+        "OFFENCE_ID1",
+        "OFFENCE_ID2"
+      ]
+    },
+    {
+      "defendantId": "DEFENDANT_ID_2",
+      "offences": [
+        "OFFENCE_ID1",
+        "OFFENCE_ID2"
+      ]
+    },
+    {
+      "defendantId": "DEFENDANT_ID_3",
+      "offences": [
+        "OFFENCE_ID1",
+        "OFFENCE_ID2"
+      ]
+    }
+  ],
+  "data": "{ \"data\": {\n \"prosecution\": {\n\"witnesses\": [\n  {\n \"id\": \"qwe\",\n \"name\": \"Bill ROGERS\",\n \"age\": \"01/01/1950\",\n \"InterpreterRequired\": true,\n \"defenceDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"crossExam\": \"Yes\"\n}\n },\n \"prosecutionDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"specialMeasures\": \"Yes\",\n  \"specialMeasuresYesGroup\": {\n \"specialMeasuresDetail\": \"A chair\"\n  }\n}\n }\n  },\n  {\n \"id\": \"123\",\n \"caseWitnessId\": \"hgf\",\n \"defenceDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"crossExam\": \"Yes\"\n}\n },\n \"prosecutionDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"specialMeasures\": \"Yes\",\n  \"specialMeasuresYesGroup\": {\n \"specialMeasuresDetail\": \"A chair\"\n  }\n}\n }\n  },\n  {\n \"id\": \"321\",\n \"caseWitnessId\": \"tds\",\n \"defenceDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"crossExam\": \"Yes\"\n}\n },\n \"prosecutionDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"specialMeasures\": \"Yes\",\n  \"specialMeasuresYesGroup\": {\n \"specialMeasuresDetail\": \"A chair\"\n  }\n}\n }\n  }\n],\n\"dynamicFormAnswers\": {\n  \"prosecutorGroup\": {\n \"prosecutorServeEvidence\": \"Yes\",\n \"prosecutorServeEvidenceYesGroup\": {\n\"prosecutorServeEvidenceDetails\": \"Serve more evidence info\"\n },\n \"prosecutionCompliance\": \"Yes\",\n \"prosecutionComplianceYesGroup\": {\n\"prosecutionComplianceDetailsYes\": \"Undisclosed info\"\n },\n \"prosecutionComplianceNoGroup\": {\n\"prosecutionComplianceDetailsNo\": \"\"\n },\n \"pendingLinesOfEnquiry\": \"Yes\",\n \"pendingLinesOfEnquiryYesGroup\": {\n\"pendingLinesOfEnquiryYesGroup\": \"Pending info\"\n },\n \"slaveryOrExploitation\": \"Yes\",\n \"slaveryOrExploitationYesGroup\": {\n\"slaveryOrExploitationDetails\": \"Victim info\"\n },\n \"relyOn\": [\n\"admissions\",\n\"cctv\"\n ],\n \"relyOnAdmissionsGroup\": {\n\"admissionsDetails\": \"admission info\"\n },\n \"relyOnFailureGroup\": {\n\"failureDetails\": \"\"\n },\n \"displayEquipment\": \"Yes\",\n \"displayEquipmentYesGroup\": {\n\"displayEquipmentDetails\": \"Display equipment info\"\n },\n \"pointOfLaw\": \"Yes\",\n \"pointOfLawYesGroup\": {\n\"pointOfLawDetails\": \"Complex info\"\n }\n  },\n  \"applicationsForDirectionsGroup\": {\n \"prosecutorWitnessAssistance\": \"Yes\",\n \"prosecutorWitnessAssistanceYesGroup\": {\n\"witnessRequiresDetails\": \"\"\n },\n \"groundRulesQuestioning\": \"Yes\",\n \"variationStandardDirections\": \"Yes\",\n \"variationStandardDirectionsYesGroup\": {\n\"variationStandardDirectionsYesGroupDetails\": \"Standard trial info\"\n }\n  }\n}\n },\n \"defence\": {\n\"defendants\": [\n  {\n \"id\": \"DEFENDANT_ID\",\n \"defenceDynamicFormAnswers\": {\n\"adviceOnPleaAndAbsenceGroup\": {\n  \"creditForGuilty\": \"\",\n  \"defendantUnderstand\": \"\"\n},\n\"PresenceGroup\": {\n  \"defendantPresent\": \"Yes\",\n  \"defendantPresentYesGroup\": {\n \"defendantPresentDetail\": \"Dispute info\"\n  },\n  \"defendantInvolvement\": \"Yes\",\n  \"defendantInvolvementYesGroup\": {\n \"defendantInvolvementYesGroupDetail\": \"Involvement info\"\n  },\n  \"anticipatedDefence\": [\n \"irrelevant\"\n  ],\n  \"slaveryOrExploitationGroup\": {\n \"slaveryOrExploitationGroupText\": \"\"\n  }\n},\n\"directionsGroup\": {\n  \"prosecutionWitnessRequires\": \"Yes\",\n  \"prosecutionWitnessRequiresesGroup1\": {\n \"prosecutionWitnessRequiresesGroup1Details\": \"\"\n  },\n  \"whatAreTheIssues\": \"\",\n  \"whatAreTheIssuesGroup\": {\n \"explainDispute\": \"Issues a info\",\n \"explainLaw\": \"Issues b info\"\n  }\n}\n }\n  },\n  {\n \"id\": \"abc\",\n \"dynamicFormData\": {\n\"adviceOnPleaAndAbsenceGroup\": {\n  \"creditForGuilty\": \"\",\n  \"defendantUnderstand\": \"\"\n},\n\"PresenceGroup\": {\n  \"defendantPresent\": \"Yes\",\n  \"defendantPresentYesGroup\": {\n \"defendantPresentDetail\": \"Dispute info\"\n  },\n  \"defendantInvolvement\": \"Yes\",\n  \"defendantInvolvementYesGroup\": {\n \"defendantInvolvementYesGroupDetail\": \"Involvement info\"\n  },\n  \"anticipatedDefence\": [\n \"irrelevant\"\n  ],\n  \"slaveryOrExploitationGroup\": {\n \"slaveryOrExploitationGroupText\": \"\"\n  }\n},\n\"directionsGroup\": {\n  \"prosecutionWitnessRequires\": \"Yes\",\n  \"prosecutionWitnessRequiresesGroup1\": {\n \"prosecutionWitnessRequiresesGroup1Details\": \"\"\n  },\n  \"whatAreTheIssues\": \"\",\n  \"whatAreTheIssuesGroup\": {\n \"explainDispute\": \"Issues a info\",\n \"explainLaw\": \"Issues b info\"\n  }\n}\n }\n  }\n],\n\"witnesses\": [\n  {\n \"caseWitnessId\": \"UUID\",\n \"PetProsecutionWitnessId\": \"UUID\",\n \"isDefendant\": true,\n \"name\": \"John SMITH\",\n \"age\": \"01/01/1980\",\n \"InterpreterRequired\": true,\n \"prosecutionDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"crossExam\": \"Yes\"\n}\n },\n \"defenceDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"specialMeasures\": \"Yes\",\n  \"specialMeasuresYesGroup\": {\n \"specialMeasuresDetail\": \"A chair\"\n  }\n}\n }\n  },\n  {\n \"caseWitnessId\": null,\n \"PetProsecutionWitnessId\": \"UUID\",\n \"isDefendant\": true,\n \"name\": \"James SAUNDERS\",\n \"age\": \"01/01/1970\",\n \"InterpreterRequired\": true,\n \"prosecutionDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"crossExam\": \"Yes\"\n}\n },\n \"defenceDynamicFormAnswers\": {\n\"witnessGroup\": {\n  \"specialMeasures\": \"Yes\",\n  \"specialMeasuresYesGroup\": {\n \"specialMeasuresDetail\": \"A chair\"\n  }\n}\n }\n  }\n]\n }\n  }}",
+  "lastUpdated": "2021-01-13T00:00Z[UTC]"
+
+}

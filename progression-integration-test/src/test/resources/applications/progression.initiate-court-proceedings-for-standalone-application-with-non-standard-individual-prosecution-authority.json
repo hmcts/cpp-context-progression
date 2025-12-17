@@ -1,0 +1,86 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "applicationReceivedDate": "2020-11-01",
+    "type": {
+      "id": "e857c8ea-cd95-47d1-842f-2d618e77a9b5",
+      "code": "AS14518",
+      "type": "Application for an order of reimbursement in relation to a closure order",
+      "legislation": "In accordance with section 16E of the Magistrates' Courts Act 1980.",
+      "categoryCode": "VP",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType" : "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag" : false,
+      "pleaApplicableFlag" : false,
+      "commrOfOathFlag" : false,
+      "courtOfAppealFlag" : false,
+      "courtExtractAvlFlag" : false,
+      "prosecutorThirdPartyFlag" : false,
+      "spiOutApplicableFlag" : false,
+      "offenceActiveOrder" : "NOT_APPLICABLE"
+    },
+    "applicationStatus": "DRAFT",
+    "outOfTimeReasons": "Out of times reasons for standalone test",
+    "courtApplicationPayment": {
+      "feeStatus":"OUTSTANDING",
+      "paymentReference": "Some reference provided"
+    },
+    "applicant": {
+      "id": "87d8611b-50ee-4ae5-852f-52b0300ff83f",
+      "prosecutingAuthority": {
+        "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40f",
+        "prosecutionAuthorityCode": "DERPG",
+        "prosecutionAuthorityOUCode": "DERPF",
+        "majorCreditorCode": "MCC",
+        "firstName": "Firstname",
+        "middleName": "Middlename",
+        "lastName": "Lastname",
+        "accountCode": "ACC001",
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "contact": {
+          "home": "00999900990",
+          "work": "00999900990",
+          "mobile": "00999900990",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      },
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "subject": {
+      "id": "87d8611b-50ee-4ae5-852f-52b0300ff83f",
+      "personDetails": {
+        "firstName": "Test First Name",
+        "lastName": "Surname",
+        "gender": "NOT_SPECIFIED"
+      },
+      "summonsRequired": false,
+      "notificationRequired": false
+    }
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "3449743b-95d6-4836-8941-57f588b52068",
+      "description": "Application"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court"
+    },
+    "estimatedMinutes": 20,
+    "earliestStartDateTime": "2020-12-01T10:30:00Z"
+  }
+}

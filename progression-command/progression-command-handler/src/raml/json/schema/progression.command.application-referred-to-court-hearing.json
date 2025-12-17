@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Command schema to load the application and provisional court hearing details to proceed further",
+  "id": "http://justice.gov.uk/progression/courts/command.application-referred-to-court-hearing.json",
+  "type": "object",
+  "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "applicationId"
+  ]
+}

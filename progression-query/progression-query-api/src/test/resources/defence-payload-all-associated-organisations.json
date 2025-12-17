@@ -1,0 +1,37 @@
+{
+  "associations": [
+    {
+      "organisationId": "1135f11c-78d6-43bf-aae3-6f64f451cb24",
+      "organisationName": "William & Co LLP",
+      "address": {
+        "address1": "2 Legal House",
+        "address2": "91 Sewell Street",
+        "address3": "Harrow",
+        "address4": "London",
+        "addressPostcode": "SE14 2AB"
+      },
+      "status": "",
+      "startDate": "2025-01-06T17:28:30.838Z",
+      "representationType": "REPRESENTATION_ORDER_APPLIED_FOR",
+      "phoneNumber": "80012300000",
+      "email": "james.smith@example.com",
+      "endDate": "2025-01-06T17:31:22.635Z"
+    },
+    {
+      "organisationId": "2fc69990-bf59-4c4a-9489-d766b9abde9a",
+      "organisationName": "Harry & Co LLP",
+      "address": {
+        "address1": "Legal House",
+        "address2": "15 Sewell Street",
+        "address3": "Hammersmith",
+        "address4": "London",
+        "addressPostcode": "SE14 2AB"
+      },
+      "status": "Active Barrister/Solicitor of record",
+      "startDate": "2025-01-06T17:46:49.955Z",
+      "representationType": "REPRESENTATION_ORDER_APPLIED_FOR",
+      "phoneNumber": "80012345678",
+      "email": "joe@example.com"
+    }
+  ]
+}

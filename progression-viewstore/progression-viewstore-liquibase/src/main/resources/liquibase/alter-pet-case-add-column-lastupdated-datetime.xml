@@ -1,0 +1,12 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="alter-pet-case-add-lastupdated-date" author="cpp.context.progression">
+        <addColumn tableName="pet_case_defendant_offence">
+            <column name="last_updated" type="datetime" />
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

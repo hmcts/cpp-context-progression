@@ -1,0 +1,419 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "203df538-62f1-4b72-a1f7-78f532c66de0",
+          "notificationRequired": true,
+          "organisation": {
+            "address": {
+              "address1": "Merton"
+            },
+            "name": "Probation London"
+          },
+          "summonsRequired": false
+        },
+        "applicationParticulars": "testging",
+        "applicationReceivedDate": "2021-03-04",
+        "applicationDecisionSoughtByDate": "2021-03-05",
+        "applicationReference": "90GDAPPS304",
+        "applicationStatus": "IN_PROGRESS",
+        "applicationExternalCreatorType": "PROSECUTOR",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "ACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "a1fc4f5e-3a2e-489e-9a65-9edb64fd335a",
+            "prosecutionCaseIdentifier": {
+              "prosecutionAuthorityCode": "DYPPF",
+              "prosecutionAuthorityId": "7d66ae5a-aa71-35a6-89e6-978ebc605b50",
+              "caseURN": "90GDAPPS304"
+            }
+          }
+        ],
+        "id": "7f78e925-0332-4326-ba23-55b6bf90e634",
+        "respondents": [
+          {
+            "id": "07b9728c-5ede-40b3-b054-10b1d17d21df",
+            "notificationRequired": true,
+            "personDetails": {
+              "address": {
+                "address1": "Flat 99"
+              },
+              "firstName": "David",
+              "gender": "NOT_SPECIFIED",
+              "lastName": "Williams"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "07b9728c-5ede-40b3-b054-10b1d17d21df",
+          "notificationRequired": true,
+          "personDetails": {
+            "address": {
+              "address1": "Flat 99"
+            },
+            "firstName": "David",
+            "gender": "NOT_SPECIFIED",
+            "lastName": "Williams"
+          },
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CO",
+          "code": "BA76504",
+          "commrOfOathFlag": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "hearingCode": "BVA",
+          "id": "26c7e337-5697-3448-9b9b-f71a6a6e6b1f",
+          "jurisdiction": "EITHER",
+          "legislation": "In accordance with section 3(8) of the Bail Act 1976.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application to vary conditions of bail"
+        }
+      }
+    ],
+    "courtCentre": {
+      "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+      "code": "court centre code",
+      "name": "Croydon Crown Court",
+      "roomId": "07e45c88-9e5d-3e44-b664-d5345bb13be3",
+      "roomName": "Room 1",
+      "welshName": "Welsh name",
+      "welshRoomName": "Welsh room name"
+    },
+    "hearingDays": [
+      {
+        "listingSequence": 1,
+        "listedDurationMinutes": 10,
+        "sittingDay": "2021-03-04T14:45:00.000Z",
+        "courtCentreId": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+        "courtRoomId": "07e45c88-9e5d-3e44-b664-d5345bb13be3"
+      }
+    ],
+    "id": "98ea80b0-f769-4fb8-8848-f9cc98946453",
+    "isBoxHearing": true,
+    "isVirtualBoxHearing": true,
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2021-03-04T09:17:32.669Z",
+            "id": "60a67aa6-dfb8-4b3f-87f7-9e45776fbca1",
+            "isYouth": false,
+            "masterDefendantId": "60a67aa6-dfb8-4b3f-87f7-9e45776fbca1",
+            "offences": [
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "baa0552e-82b0-479b-bf4e-3314b163933c",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Use / install a television set without a licence",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                "verdict" : {
+                  "offenceId" : "baa0552e-82b0-479b-bf4e-3314b163933c",
+                  "verdictDate" : "2019-01-01",
+                  "verdictType" : {
+                    "id" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+                    "category" : "category",
+                    "categoryType" : "categoryType"
+                  }
+                }
+              },
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "b263f970-04eb-4c09-ace3-4b647648d463",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03011",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "a2804f0e-ecb1-3855-947d-01ea5bb2a70b",
+                "offenceLegislation": "Contrary to section 363(3)(a) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess a television set with intent to install / use without a licence",
+                "orderIndex": 2,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "1234",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1990-01-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Marcellus",
+                "gender": "MALE",
+                "lastName": "STEHR",
+                "title": "Mr"
+              }
+            },
+            "pncId": "1010109999",
+            "prosecutionAuthorityReference": "TFL",
+            "prosecutionCaseId": "a1fc4f5e-3a2e-489e-9a65-9edb64fd335a"
+          },
+          {
+            "courtProceedingsInitiated": "2021-03-04T09:17:32.670Z",
+            "id": "9d3517ae-b42f-4f6c-a48d-d55d3d20fa61",
+            "isYouth": false,
+            "masterDefendantId": "9d3517ae-b42f-4f6c-a48d-d55d3d20fa61",
+            "offences": [
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "d81f5b28-e6d0-4855-a33e-014201875552",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "3722ce0f-660c-32ba-8088-e23f2f86057f",
+                "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              },
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "60e468c7-0107-45e8-9ee5-8a4f28ee3d44",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03013",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ef",
+                "offenceLegislation": "Contrary to section 366(8)(a) and (9) of the Communications Act 2003.",
+                "offenceTitle": "Obstruct person executing search warrant for TV receiver",
+                "orderIndex": 2,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL3",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "1234",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1990-01-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Milo",
+                "gender": "MALE",
+                "lastName": "HilllReilly",
+                "title": "Mr"
+              }
+            },
+            "prosecutionAuthorityReference": "TFL3",
+            "prosecutionCaseId": "a1fc4f5e-3a2e-489e-9a65-9edb64fd335a"
+          },
+          {
+            "courtProceedingsInitiated": "2021-03-04T09:17:32.670Z",
+            "id": "faf5dffe-364c-4b1d-880e-a79768e9093a",
+            "isYouth": false,
+            "masterDefendantId": "faf5dffe-364c-4b1d-880e-a79768e9093a",
+            "offences": [
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "585b781e-0a47-40c0-96a9-e4a1e634071e",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Use / install a television set without a licence",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              },
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "27c28a80-bc0d-4769-be57-7d264593ba9e",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03011",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "a2804f0e-ecb1-3855-947d-01ea5bb2a70b",
+                "offenceLegislation": "Contrary to section 363(3)(a) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess a television set with intent to install / use without a licence",
+                "orderIndex": 2,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL1",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "1234",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1990-01-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Crystel",
+                "gender": "MALE",
+                "lastName": "Flatley",
+                "title": "Mr"
+              }
+            },
+            "prosecutionAuthorityReference": "TFL1",
+            "prosecutionCaseId": "a1fc4f5e-3a2e-489e-9a65-9edb64fd335a"
+          },
+          {
+            "courtProceedingsInitiated": "2021-03-04T09:17:32.670Z",
+            "id": "21ee320d-a66c-4c13-9b0e-749ccae0fbdd",
+            "isYouth": false,
+            "masterDefendantId": "21ee320d-a66c-4c13-9b0e-749ccae0fbdd",
+            "offences": [
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "2f4926ad-e814-4b66-8f00-bb751e0d2fce",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Use / install a television set without a licence",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              },
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "e6264e26-ea35-4c9d-ab50-b36372026ef6",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03011",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "a2804f0e-ecb1-3855-947d-01ea5bb2a70b",
+                "offenceLegislation": "Contrary to section 363(3)(a) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Possess a television set with intent to install / use without a licence",
+                "orderIndex": 2,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL2",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "1234",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1990-01-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Taurean",
+                "gender": "MALE",
+                "lastName": "Jacobi",
+                "title": "Mr"
+              }
+            },
+            "prosecutionAuthorityReference": "TFL2",
+            "prosecutionCaseId": "a1fc4f5e-3a2e-489e-9a65-9edb64fd335a"
+          }
+        ],
+        "id": "a1fc4f5e-3a2e-489e-9a65-9edb64fd335a",
+        "initiationCode": "C",
+        "originatingOrganisation": "0300000",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "DYPPF",
+          "prosecutionAuthorityId": "7d66ae5a-aa71-35a6-89e6-978ebc605b50",
+          "caseURN": "90GDAPPS304"
+        }
+      }
+    ],
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "judiciary": [
+      {
+        "judicialId": "66e93f60-5a48-40d5-b406-37a53ed6d5c2",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder1"
+        }
+      },
+      {
+        "judicialId": "79a91058-2235-42ec-a339-860d8f46ab58",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder"
+        }
+      }
+    ],
+    "defenceCounsels" : [
+      {
+        "attendanceDays": [
+          "2020-01-02"
+        ],
+        "defendants": [
+          "9c52f847-4125-4438-b855-9c264695ad33"
+        ],
+        "firstName": "acsc",
+        "id": "dba138e9-4ba9-4ff5-82e8-c646e8916d44",
+        "lastName": "CZCXz",
+        "middleName": "",
+        "status": "zczc",
+        "title": ""
+      }
+    ]
+  },
+  "hearingListingStatus": "HEARING_INITIALISED"
+}

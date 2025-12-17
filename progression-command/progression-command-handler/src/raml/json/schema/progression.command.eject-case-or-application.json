@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/eject-case-or-application.json",
+  "type": "object",
+  "description": "update case or application status as ejected ",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "removalReason": {
+      "type": "string"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "prosecutionCaseId",
+        "removalReason"
+      ]
+    },
+    {
+      "required": [
+        "applicationId",
+        "removalReason"
+      ]
+    }
+  ],
+  "additionalProperties": false
+}

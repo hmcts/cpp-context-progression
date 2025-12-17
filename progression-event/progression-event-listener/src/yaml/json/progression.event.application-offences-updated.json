@@ -1,0 +1,14 @@
+{
+  "subjectId": "b5398293-b562-4837-ab47-812f0e4492e5",
+  "applicationId": "11648f68-4f0c-47ee-9728-d38b52539088",
+  "offenceId": "21648f68-4f0c-47ee-9728-d38b52539088",
+  "laaReference": {
+    "laaApplicationReference": "LAA REF OFF 1",
+    "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+    "statusCode": "LAA STATUS CODE OFF 1",
+    "statusDescription": "LAA STATUS DESC OFF 1",
+    "effectiveFromDate": "2019-08-12",
+    "effectiveToDate": "2019-10-12",
+    "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+  }
+}

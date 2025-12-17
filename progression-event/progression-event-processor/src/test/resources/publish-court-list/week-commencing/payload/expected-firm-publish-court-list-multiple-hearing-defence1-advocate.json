@@ -1,0 +1,96 @@
+{
+  "publishCourtListType": "FIRM",
+  "issueDate": "2023-02-15",
+  "weekCommencing": true,
+  "ljaCode": "MERS",
+  "ljaName": "Merseyside LJA",
+  "courtName": "Croydon Crown Court",
+  "courtAddress": {
+    "line1": "The Law Courts",
+    "line2": "Altyre Road",
+    "line3": "Croydon",
+    "postCode": "CR9 5AB",
+    "isWelsh": false
+  },
+  "weekCommencingStartDate": "2023-02-20",
+  "weekCommencingEndDate": "2023-02-24",
+  "addressee": {
+    "name": "contactPersonName",
+    "address": {
+      "line1": "address1",
+      "line2": "address2",
+      "postCode": "postcode"
+    }
+  },
+  "hearingByDates": [
+    {
+      "hearingDate": "2023-02-20",
+      "hearingByCourtrooms": [
+        {
+          "courtroomName": "Courtroom 01",
+          "hearingByTimes": [
+            {
+              "hearingTime": "9:00 am",
+              "hearings": [
+                {
+                  "caseReference": "CTZH5HVZIF",
+                  "hearingType": "First hearing",
+                  "defendants": [
+                    {
+                      "defendantName": "Yousuf Aguirre",
+                      "defendantLastName": "Aguirre",
+                      "defendantDateOfBirth": "1979-05-02"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "hearingTime": "10:00 am",
+              "hearings": [
+                {
+                  "caseReference": "91GD6403223",
+                  "hearingType": "First hearing",
+                  "defendants": [
+                    {
+                      "defendantName": "Loui Beltran",
+                      "defendantLastName": "Beltran",
+                      "defendantDateOfBirth": "1985-08-01"
+                    },
+                    {
+                      "defendantName": "Sweet And Jones Associates"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "hearingByWeekCommencingDateNoCourtroom": {
+    "weekCommencingStartDate": "2023-02-20",
+    "weekCommencingEndDate": "2023-02-24",
+    "hearingByCourtrooms": [
+      {
+        "hearings": [
+          {
+            "caseReference": "92GD4165920",
+            "hearingType": "Sentence",
+            "defendants": [
+              {
+                "defendantName": "Bethany Cole",
+                "defendantLastName": "Cole",
+                "defendantDateOfBirth": "1981-02-03"
+              },
+              {
+                "defendantName": "Sam And Jones Associates"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

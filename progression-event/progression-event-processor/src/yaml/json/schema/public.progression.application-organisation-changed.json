@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/application-organisation-changed",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subjectId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "associatedDefenceOrganisation": {
+      "description": "The associated defence representation details",
+      "$ref": "http://justice.gov.uk/core/courts/associatedDefenceOrganisation.json"
+    }
+  },
+  "required": [
+    "subjectId",
+    "applicationId"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.case-markers-updated-in-hearing.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseMarkers": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/marker.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

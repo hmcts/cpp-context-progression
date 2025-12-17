@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/add-court-document-v2.json",
+  "type": "object",
+  "properties": {
+    "materialId":{
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    },
+    "isUnbundledDocument": {
+      "type": "boolean",
+      "default": false
+    },
+    "materialSubmittedV2": {
+      "$ref": "http://justice.gov.uk/core/courts/addMaterialV2.json#"
+    },
+    "cpsFlag": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "materialSubmittedV2"
+  ],
+  "additionalProperties": false
+}
+

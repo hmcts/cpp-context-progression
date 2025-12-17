@@ -1,0 +1,25 @@
+{
+    "id": "a98164fc-fd80-3307-9fd1-e8dca4ea7969",
+    "sequenceNumber": 60,
+    "majorCreditorCode": "PO05",
+    "shortName": "MERSPF",
+    "fullName": "Merseyside Police",
+    "address": {
+        "address1": "Merseyside police HQ",
+        "postcode": "L69 1JD",
+        "address2": "Canning place",
+        "address3": "Liverpool",
+        "address4": "Merseyside"
+    },
+    "oucode": "0050000",
+    "nameWelsh": "Heddlu Glannau Mersis",
+    "spiOutFlag": true,
+    "stackType": "Regional",
+    "contactEmailAddress": "Crown.Court.Result@merseyside.police.uk",
+    "sjpFlag": true,
+    "policeFlag": true,
+    "cpsFlag": true,
+    "majorCreditorFlag": true,
+    "aocpApproved": false,
+    "standard": true
+}

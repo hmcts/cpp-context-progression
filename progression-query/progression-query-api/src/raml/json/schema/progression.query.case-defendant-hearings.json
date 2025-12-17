@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "hearings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hearingId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "hearingListingStatus": {
+            "type": "string"
+          },
+          "courtCentre": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "roomId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "roomName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "roomId",
+                "roomName"
+              ]
+            }
+          },
+          "hearingDays": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "courtCentreId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "roomId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "sittingDay": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sittingDay"
+              ]
+            }
+          }
+        },
+        "required": [
+          "hearingId",
+          "courtCentre"
+        ]
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "hearings"
+  ]
+}

@@ -1,0 +1,457 @@
+{
+  "prosecutionCase": {
+    "id": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+      "prosecutionAuthorityCode": "TFL",
+      "oldProsecutionAuthorityCode": "DVLA",
+      "prosecutionAuthorityReference": "TFL12345"
+    },
+    "originatingOrganisation": "G01FT01AB",
+    "prosecutorCosts": "300",
+    "initiationCode": "Z",
+    "hasReportingRestrictions": true,
+    "caseStatus": "SJP Referral"
+  },
+  "defendants": [
+    {
+      "id": "e1d32d9d-29ec-4934-a932-22a50f223966",
+      "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+      "numberOfPreviousConvictionsCited": 5,
+      "prosecutionAuthorityReference": "TFL12345-ABC",
+      "offences": [
+        {
+          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+          "offenceCode": "AAA",
+          "wording": "No Travel Card",
+          "section": "XDASgfE",
+          "startDate": "2018-01-01",
+          "endDate": "2018-01-01",
+          "arrestDate": "2018-01-01",
+          "chargeDate": "2018-01-01",
+          "orderIndex": 1,
+          "count": 0,
+          "convictionDate": "2018-02-01",
+          "offenceFacts": {
+            "vehicleRegistration": "AA12345",
+            "prosecutionFacts": "He did it",
+            "witnessStatement": "I did not do it",
+            "mitigation": "I was not there",
+            "alcoholReadingAmount": "111",
+            "alcoholReadingMethodCode": "2222",
+            "basisOfDefence": "prejudice"
+          }
+        }
+      ],
+      "associatedPersons": [
+        {
+          "person": {
+            "title": "Mr",
+            "firstName": "Harry",
+            "lastName": "Kane",
+            "dateOfBirth": "1995-01-01",
+            "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+            "nationalityCode": "GBR",
+            "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+            "additionalNationalityCode": "USA",
+            "disabilityStatus": "a",
+            "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+            "ethnicityCode": "IC1",
+            "gender": "Male",
+            "interpreterLanguageNeeds": "Welsh",
+            "hearingLanguageNeeds": "Welsh",
+            "documentationLanguageNeeds": "Welsh",
+            "nationalInsuranceNumber": "NH222222B",
+            "occupation": "Footballer",
+            "occupationCode": "F",
+            "specialNeeds": "Screen",
+            "address": {
+              "address1": "22",
+              "address2": "Acacia Avenue",
+              "address3": "Acacia Town",
+              "address4": "Acacia City",
+              "postcode": "GIR 0AA"
+            },
+            "contact": {
+              "home": "123456",
+              "work": "7891011",
+              "mobile": "45678910",
+              "primaryEmailAddress": "harry.kane@spurs.co.uk",
+              "secondaryEmailAddress": "harry.kane@hotmail.com",
+              "fax": "3425678"
+            }
+          },
+          "role": "parent"
+        }
+      ],
+      "defenceOrganisation": {
+        "id": "d5735cc8-cc97-44f2-9f41-2b44ad3788aa",
+        "name": "Franklin & Birketts LLP",
+        "address": {
+          "address1": "53 New London Road",
+          "address2": "Brierly Place",
+          "address3": "Guildford",
+          "address4": "Surrey",
+          "postcode": "GL1 5FD"
+        },
+        "contact": {
+          "work": "01652 654789",
+          "primaryEmailAddress": "info@franklinbirketts.com"
+        }
+      },
+      "discriminator": "personDefendant",
+      "personDetails": {
+        "title": "Mr",
+        "firstName": "Harry",
+        "lastName": "Kane Junior",
+        "dateOfBirth": "2010-01-01",
+        "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+        "nationalityCode": "GBR",
+        "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+        "additionalNationalityCode": "USA",
+        "disabilityStatus": "a",
+        "ethnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+        "ethnicityCode": "IC1",
+        "gender": "Male",
+        "interpreterLanguageNeeds": "Welsh",
+        "hearingLanguageNeeds": "Welsh",
+        "documentationLanguageNeeds": "Welsh",
+        "nationalInsuranceNumber": "NH323232B",
+        "occupation": "Kid",
+        "occupationCode": "F",
+        "specialNeeds": "Screen",
+        "address": {
+          "address1": "22",
+          "address2": "Acacia Avenue",
+          "address3": "Acacia Town",
+          "address4": "Acacia City",
+          "postcode": "GU1 8YU"
+        },
+        "contact": {
+          "home": "123456",
+          "work": "7891011",
+          "mobile": "45678910",
+          "primaryEmailAddress": "harry.kanejunior@spurs.co.uk",
+          "secondaryEmailAddress": "harry.kanejunior@hotmail.com",
+          "fax": "3425678"
+        }
+      },
+      "bailStatus": "IN_CUSTODY",
+      "custodyTimeLimit": "2018-01-01",
+      "perceivedBirthYear": 2015,
+      "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+      "observedEthnicityCode": "IC1",
+      "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+      "selfDefinedEthnicityCode": "IC1",
+      "driverLicenseNumber": "AACC12345",
+      "pncId": "1234567",
+      "arrestSummonsNumber": "arrest123",
+      "aliases": [
+        "johnny robber",
+        "jack the knife"
+      ],
+      "employerOrganisation": {
+        "id": "8625b50c-afc4-4d63-add2-68b9bf01b1fd",
+        "name": "Disneyland Paris",
+        "incorporationNumber": "Mickeymouse1",
+        "address": {
+          "address1": "Disney Road",
+          "address2": "Disney Town",
+          "address3": "Disney District",
+          "address4": "Paris",
+          "postcode": "DI5 9EY"
+        },
+        "contact": {
+          "work": "4444",
+          "primaryEmailAddress": "afffff",
+          "secondaryEmailAddress": "ahhhhhhhhhhhhhhhhh",
+          "fax": "agggggg"
+        }
+      }
+    }
+  ],
+  "courtDocuments": [
+    {
+      "courtDocumentId": "3aa6d35d-70c3-45fb-a05e-bfedbce16412",
+      "businessIdentifier": {
+        "defendantCaseId": {
+          "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+          "defendantId": "e1d32d9d-29ec-4934-a932-22a50f223966"
+        }
+      },
+      "name": "SJP Notice",
+      "documentTypeId": "0bb7b276-9dc0-4af2-83b9-f4acef0c7898",
+      "documentTypeDescription": "SJP Notice",
+      "materials": [
+        {
+          "id": "5e1cc18c-76dc-47dd-99c1-d6f87385edf1",
+          "fileSize": "240mb",
+          "noPages": 10,
+          "mimeType": "pdf",
+          "isRemoved": false,
+          "userGroups": [
+            "defence",
+            "prosecution",
+            "courtClerk"
+          ]
+        }
+      ]
+    }
+  ],
+  "hearingsAtAGlance": {
+    "defendantHearings": [
+      {
+        "defendantId": "47e35e53-c520-4062-a72a-de5c80802d53",
+        "defendantName": "Harry JackKane Junior",
+        "hearingIds": [
+          "279807b2-0427-4157-9974-06ef0c1cc255",
+          "ff431c9c-2a44-4c8d-9621-d8265337541c"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "id": "0cc8b59f-7067-4acb-9fd7-5e422c2c4140",
+          "name": "South Western (Lavender Hill)"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "22",
+              "address2": "Acacia Avenue",
+              "address3": "Acacia Town",
+              "address4": "Acacia City",
+              "address5": "Acacia Country",
+              "postcode": "CR7 0AA"
+            },
+            "age": "8",
+            "dateOfBirth": "2010-01-01",
+            "defenceOrganisation": {
+              "defenceCounsels": [
+              ],
+              "defendantId": "47e35e53-c520-4062-a72a-de5c80802d53"
+            },
+            "id": "47e35e53-c520-4062-a72a-de5c80802d53",
+            "name": "Harry JackKane Junior",
+            "offences": [
+              {
+                "count": 0,
+                "endDate": "2018-01-01",
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2018-04-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+                },
+                "offenceCode": "TTH105HY",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "offenceLegislation": "ABCDE",
+                "offenceLegislationWelsh": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+                "offenceTitle": "ABCDE",
+                "offenceTitleWelsh": "ABCDEFGHIJKLMNOP",
+                "pleas": [
+                ],
+                "results": [
+                ],
+                "startDate": "2018-01-01",
+                "verdicts": [
+                ],
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh"
+              }
+            ],
+            "custodialEstablishment": {
+              "id": "a8254db1-1483-483e-cfb3-b87fde5a0a47",
+              "name": "HMP Belmarsh",
+              "custody": "Prison"
+            },
+            "results": [
+            ]
+          }
+        ],
+        "hearingDays": [
+          {
+            "listedDurationMinutes": 0,
+            "sittingDay": "2018-09-28T12:13:00.000Z"
+          },
+          {
+            "listedDurationMinutes": 0,
+            "sittingDay": "2018-09-30T09:30:00.000Z"
+          }
+        ],
+        "id": "279807b2-0427-4157-9974-06ef0c1cc255",
+        "judiciary": [
+          {
+            "isBenchChairman": false,
+            "isDeputy": false,
+            "judicialId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+            "judicialRoleType": "MAGISTRATE"
+          }
+        ],
+        "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+        "type": "Sentence",
+        "companyRepresentatives": [
+          {
+            "id": "231947a3-c50c-4dbb-accf-b2758b1d2d6d",
+            "title": "Mr",
+            "firstName": "Rob",
+            "lastName": "Billworth",
+            "position": "DIRECTOR",
+            "defendants": [
+              "0305de0e-eb0e-478f-8ae4-f2c7966961e3",
+              "d06f6539-2a7c-4bc8-bca3-A1e5a225471a"
+            ],
+            "attendanceDays": [
+              "2018-07-17",
+              "2018-07-18",
+              "2018-07-19",
+              "2018-07-21",
+              "2018-07-22"
+            ]
+          }
+        ]
+      },
+      {
+        "courtCentre": {
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "name": "South Western (Lavender Hill)",
+          "welshName": "welshName_Test"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "22",
+              "address2": "Acacia Avenue",
+              "address3": "Acacia Town",
+              "address4": "Acacia City",
+              "address5": "Acacia Country",
+              "postcode": "CR7 0AA"
+            },
+            "age": "8",
+            "dateOfBirth": "2010-01-01",
+            "defenceOrganisation": {
+              "defenceCounsels": [
+              ],
+              "defendantId": "47e35e53-c520-4062-a72a-de5c80802d53"
+            },
+            "id": "47e35e53-c520-4062-a72a-de5c80802d53",
+            "name": "Harry JackKane Junior",
+            "offences": [
+              {
+                "count": 0,
+                "endDate": "2018-01-01",
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2018-04-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+                },
+                "offenceCode": "TTH105HY",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "offenceLegislation": "ABCDE",
+                "offenceLegislationWelsh": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+                "offenceTitle": "ABCDE",
+                "offenceTitleWelsh": "ABCDEFGHIJKLMNOP",
+                "pleas": [
+                ],
+                "results": [
+                ],
+                "startDate": "2018-01-01",
+                "verdicts": [
+                ],
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh"
+              }
+            ],
+            "results": [
+            ]
+          }
+        ],
+        "hearingDays": [
+          {
+            "listedDurationMinutes": 20,
+            "sittingDay": "2018-03-01T00:00:00.000Z"
+          }
+        ],
+        "id": "ff431c9c-2a44-4c8d-9621-d8265337541c",
+        "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+        "type": "Further Plea & Trial Preparation",
+        "companyRepresentatives": [
+          {
+            "id": "231947a3-c50c-4dbb-accf-b2758b1d2d6d",
+            "title": "Mr",
+            "firstName": "Rob",
+            "lastName": "Billworth",
+            "position": "DIRECTOR",
+            "defendants": [
+              "0305de0e-eb0e-478f-8ae4-f2c7966961e3",
+              "d06f6539-2a7c-4bc8-bca3-A1e5a225471a"
+            ],
+            "attendanceDays": [
+              "2018-07-17",
+              "2018-07-18",
+              "2018-07-19",
+              "2018-07-21",
+              "2018-07-22"
+            ]
+          }
+        ]
+      }
+    ],
+    "id": "368b9b20-e357-41b5-9452-6b2092c80ad0",
+    "latestHearingJurisdictionType" : "CROWN",
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityCode": "TFL",
+      "oldProsecutionAuthorityCode": "DVLA",
+      "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+      "prosecutionAuthorityReference": "0fcca896"
+    }
+  },
+  "relatedCases": [
+    {
+      "masterDefendantId": "96ec1814-cfcd-4ef4-ba18-315a6c48659f",
+      "cases": [
+        {
+          "caseId": "5a5c49f5-a5a8-440d-8912-fb83ed6c95f6",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityCode": "CPS-EM",
+            "prosecutionAuthorityId": "42880989-5d09-332e-a711-8797af06ecea",
+            "caseURN": "10GD7635820"
+          },
+          "caseStatus": "ACTIVE",
+          "offences": [
+            {
+              "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+              "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+              "offenceCode": "AAA",
+              "offenceTitle": "a title",
+              "offenceTitleWelsh": "a title in Welsh",
+              "offenceLegislation": "legislation",
+              "offenceLegislationWelsh": "legislation in Welsh",
+              "wording": "No Travel Card",
+              "wordingWelsh": "No Travel Card In Welsh",
+              "startDate": "2018-01-01",
+              "endDate": "2018-01-01",
+              "arrestDate": "2018-01-01",
+              "chargeDate": "2018-01-01",
+              "orderIndex": 1,
+              "count": 0,
+              "notifiedPlea": {
+                "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "notifiedPleaDate": "2018-04-01",
+                "notifiedPleaValue": "NOTIFIED_GUILTY"
+              },
+              "offenceFacts": {
+                "vehicleRegistration": "AA12345",
+                "alcoholReadingAmount": "111",
+                "alcoholReadingMethodCode": "2222"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

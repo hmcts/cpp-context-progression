@@ -1,0 +1,289 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/summons-requested.json",
+  "type": "object",
+  "properties": {
+    "summonsType": {
+      "description": "The type of summons required",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/summonsType"
+    },
+    "summonsCourtDate": {
+      "description": "The court date that the summons is for",
+      "type": "string",
+      "format": "date"
+    },
+    "summonsCourtTime": {
+      "description": "The court time that the summons is for",
+      "type": "string",
+      "format": "string"
+    },
+    "summonsIssueDate": {
+      "description": "The court date and time that the summons is for",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "adminOffice": {
+      "description": "The administrative office for the court that is publishing the summons.  Also known as LJA",
+      "$ref": "#/definitions/adminOffice"
+    },
+    "summonsToCourt": {
+      "description": "The court where the matter will be heard",
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json#"
+    },
+    "caseReference": {
+      "description": "The reference to the individual case that is the subject of the extract (caseURN or PRN)",
+      "type": "string"
+    },
+    "informant": {
+      "description": "The prosecuting authority for the case in question",
+      "$ref": "#/definitions/prosecutingAuthority"
+    },
+    "defendant": {
+      "description": "The defendant that is answering to the matter",
+      "$ref": "http://justice.gov.uk/core/courts/defendant.json"
+    },
+    "referral": {
+      "description": "When the summons is for a referral from SJS, the summary of the reasons for referral",
+      "$ref": "#/definitions/referral"
+    },
+    "applicationOrComplaint": {
+      "description": "When the summons is for an application or complaint, the applicant or complainants name",
+      "$ref": "#/definitions/applicationOrComplaint"
+    }
+  },
+  "required": [
+    "summonsToCourt",
+    "summonsType",
+    "summonsCourtDateTime",
+    "summonsIssueDate"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "courtCentre": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "welshName": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "applicationOrComplaint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "applicantOrComplainantName": {
+          "type": "string"
+        },
+        "applicantOrComplainantAddress": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        },
+        "informationLaid": {
+          "description": "The details of the application or complaint that is being laid before court for consideration at a hearing",
+          "type": "string"
+        },
+        "informationLaidWelsh": {
+          "type": "string"
+        },
+        "informationLayDate": {
+          "description": "The date that the matter is laid to court attention for consideration and for proceeding",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        }
+      },
+      "required": [
+        "id",
+        "applicantOrComplainantName",
+        "applicantOrComplainantAddress",
+        "informationLaid",
+        "informationLayDate"
+      ],
+      "additionalProperties": false
+    },
+    "referral": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The reference data identifier for the referral reason",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "referralReason": {
+          "type": "string"
+        },
+        "referralReasonWelsh": {
+          "type": "string"
+        },
+        "referralText": {
+          "type": "string"
+        },
+        "referralTextWelsh": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "referralReason",
+        "referralReasonWelsh",
+        "referralText",
+        "referralTextWelsh"
+      ],
+      "additionalProperties": false
+    },
+    "adminOffice": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "welshName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "description": "The full defendant name concatenated from frstname , middlename, lastname",
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json"
+        },
+        "offences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#definitions/offence"
+          }
+        },
+        "parentOrGuardian": {
+          "$ref": "#definitions/parentOrGuardian"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address",
+        "offences"
+      ],
+      "additionalProperties": false
+    },
+    "parentOrGuardian": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The full name concatenated from frstname , middlename, lastname",
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "prosecutingAuthority": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json"
+        }
+      },
+      "required": [
+        "name", "address"
+      ],
+      "additionalProperties": false
+    },
+    "offence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceDefinitionId": {
+          "description": "The identifier of the offence from reference data",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceCode": {
+          "type": "string"
+        },
+        "offenceTitle": {
+          "type": "string"
+        },
+        "offenceTitleWelsh": {
+          "type": "string"
+        },
+        "offenceLegislation": {
+          "type": "string"
+        },
+        "offenceLegislationWelsh": {
+          "type": "string"
+        },
+        "wording": {
+          "type": "string"
+        },
+        "wordingWelsh": {
+          "type": "string"
+        },
+        "startDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "endDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "orderIndex": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
+        },
+        "count": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
+        },
+        "convictionDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        }
+      },
+      "required": [
+        "id",
+        "offenceDefinitionId",
+        "offenceCode",
+        "wording",
+        "startDate",
+        "orderIndex"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

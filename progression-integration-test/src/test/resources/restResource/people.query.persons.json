@@ -1,0 +1,28 @@
+{
+  "personViews": [
+    {
+      "id": "23f9906b-bf19-4f96-81cf-a4d8270041e9",
+      "title": "Dr",
+      "firstName": "David",
+      "lastName": "LLOYD",
+      "dateOfBirth": "1980-07-15",
+      "nationality": "England",
+      "disability": "Any thing",
+      "ethnicityCode": "white and Black Caribbean",
+      "gender": "Male",
+      "rank": "PC",
+      "homeTelephone": "02012345678",
+      "workTelephone": "02012345679",
+      "mobile": "07777777777",
+      "fax": "02011111111",
+      "email": "email@email.com",
+      "address": {
+        "address1": "14 Tottenham Court Road",
+        "address2": "London",
+        "address3": "England",
+        "address4": "UK",
+        "postCode": "W1T 1JY"
+      }
+    }
+  ]
+}

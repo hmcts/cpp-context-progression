@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.command.add-online-plea-allocation.json",
+  "type": "object",
+  "properties": {
+    "pleasAllocation": {
+      "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/pleas-allocation-details.json"
+    }
+  },
+  "required": [
+    "pleasAllocation"
+  ]
+}

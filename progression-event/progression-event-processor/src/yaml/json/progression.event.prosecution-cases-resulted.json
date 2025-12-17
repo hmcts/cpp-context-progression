@@ -1,0 +1,81 @@
+{
+  "hearing": {
+    "courtCentreName": "Warwick Justice Centre",
+    "courtCentreId": "1234",
+    "type": "MAGS Sending Hearing",
+    "sendingCommittalDate": "2017-05-19",
+    "caseId": "0baecac5-222b-402d-9047-84803679edae",
+    "caseUrn": "87GD9945217",
+    "defendants": [
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edac",
+        "personId": "0baecac5-222b-402d-9047-84803679edad",
+        "firstName": "David",
+        "lastName": "Lloyd",
+        "nationality": "British",
+        "gender": "Male",
+        "address": {
+          "address1": "222 Furze Road",
+          "address2": "Exeter",
+          "address3": "England",
+          "address4": "UK",
+          "postCode": "W1T 1JY"
+        },
+        "dateOfBirth": "1995-03-23",
+        "bailStatus": "bailed",
+        "custodyTimeLimitDate": "2018-01-30",
+        "defenceOrganisation": "Solicitor XYZ",
+        "interpreter": {
+          "needed": false,
+          "language": "English"
+        },
+        "offences": [
+          {
+            "id": "0baecac5-222b-402d-9047-84803679edad",
+            "offenceCode": "OF61131",
+            "convictionDate": "2017-08-01",
+            "plea":
+            {
+              "id": "0baecac5-222b-402d-9047-84803679edae",
+              "value" : "GUILTY",
+              "pleaDate" : "2017-02-02"
+            },
+            "section": "Section 51",
+            "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+            "reason": "xyz reason",
+            "description": "description",
+            "category": "category",
+            "startDate": "2016-06-21",
+            "endDate": "2017-08-01",
+            "title": "Public service vehicle - passenger use altered / defaced ticket",
+            "legislation": "legislation",
+            "orderIndex":1
+          },{
+            "id": "0baecac5-222b-402d-9047-84803679edad",
+            "offenceCode": "OF61131",
+            "indicatedPlea":
+            {
+              "id": "0baecac5-222b-402d-9047-84803679edaf",
+              "value" : "INDICATED_GUILTY",
+              "allocationDecision" : "ELECT_TRIAL"
+            },
+            "section": "Section 51",
+            "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+            "reason": "xyz reason",
+            "description": "description",
+            "category": "category",
+            "startDate": "2016-06-21",
+            "endDate": "2017-08-01",
+            "title": "Public service vehicle - passenger use altered / defaced ticket",
+            "legislation": "legislation",
+            "orderIndex":2
+          }
+        ]
+      }
+    ]
+  },
+  "shadowListedOffences": [
+    "2ee17e85-442a-435d-9921-4a50b6dcb357",
+    "70ddbc81-3a33-4092-b06f-3f55aa0f7e8f"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/update-cps-defendant-id.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "cpsDefendantId": {
+      "description": "A unique reference to a defendant within a prosecution. Provided by cps when CPS are prosecuting the case",
+      "type": "string",
+      "maxLength": 36
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "cpsDefendantId"
+  ],
+  "additionalProperties": false
+}

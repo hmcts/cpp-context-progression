@@ -1,0 +1,30 @@
+{
+  "pleasAllocation": {
+    "acknowledgement": true,
+    "additionalInformation": "Add new information",
+    "allocationId": "bc6d232b-815f-498a-8048-f439854126b9",
+    "caseId": "2c6d232b-815f-498a-8048-f439854126ba",
+    "caseUrn": "62GD4556323",
+    "crownCourtObjection": "Y",
+    "defendantDetails": {
+      "dob": "1995-02-01",
+      "firstName": "Nona",
+      "surname": "Hackett retyt"
+    },
+    "defendantId": "42df56f7-d80b-4070-9228-8b0e00c46fbd",
+    "defendantNameDobConfirmation": false,
+    "offencePleas": [
+      {
+        "indicatedPlea": "GUILTY",
+        "offenceId": "7e5e24dc-8f8a-4b76-a9a8-d7b8a9d56e9d",
+        "pleaDate": "2023-11-09"
+      },
+      {
+        "indicatedPlea": "GUILTY",
+        "offenceId": "8636bdeb-143d-47f6-aa3d-842ccfe6fc0a",
+        "pleaDate": "2023-11-09"
+      }
+    ],
+    "offenceType": "adultEitherWay"
+  }
+}

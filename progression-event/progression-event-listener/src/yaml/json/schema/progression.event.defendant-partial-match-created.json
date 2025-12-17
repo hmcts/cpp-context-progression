@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/defendant-partial-match-created.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantName": {
+      "type": "string"
+    },
+    "caseReference": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "string"
+    },
+    "caseReceivedDatetime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

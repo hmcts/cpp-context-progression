@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Event schema for generating court register document request",
+  "id": "http://justice.gov.uk/progression/courts/court-register-generated.json",
+  "type": "object",
+  "properties": {
+    "courtRegisterDocumentRequests": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtRegisterDocument/courtRegisterDocumentRequest.json"
+      }
+    },
+    "systemGenerated": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

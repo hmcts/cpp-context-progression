@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cps/prosecutioncasefile/domain/event/public.prosecutioncasefile.cps-update-cotr-submitted.json",
+  "properties": {
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "formDefendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "required": [
+          "defendantId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "defendantSubject": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/defendant"
+      },
+      "minItems": 1
+    },
+    "tag": {
+      "type": "string"
+    },
+    "trialDate": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date",
+      "description": "The date of the trial"
+    },
+
+    "certificationDate": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date",
+      "description": "The certification date"
+    },
+    "certifyThatTheProsecutionIsTrialReady": {
+      "type": "string"
+    },
+    "formCompletedOnBehalfOfProsecutionBy": {
+      "type": "string"
+    },
+    "furtherProsecutionInformationProvidedAfterCertification": {
+      "type": "string"
+    },
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "definitions": {
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "prosecutorDefendantId": {
+          "description": "A unique reference to a defendant within a prosecution. Provided by the prosecuting authority e.g. DWP",
+          "type": "string",
+          "maxLength": 36
+        },
+        "cpsDefendantId": {
+          "description": "A unique reference to a defendant within a prosecution. Provided by cps when CPS are prosecuting the case",
+          "type": "string",
+          "maxLength": 36
+        },
+        "asn": {
+          "description": "A unique reference to a defendant within a prosecution. Provided by the police force and requested from the police by a non police prosecutor e.g. DWP requests from the police",
+          "type": "string",
+          "maxLength": 21
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

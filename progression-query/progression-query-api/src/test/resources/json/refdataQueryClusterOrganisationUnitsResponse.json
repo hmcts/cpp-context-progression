@@ -1,0 +1,18 @@
+{
+  "clusterId": "e49a1fd8-fb01-3e59-a714-80da8d385116",
+  "clusterName": "Avon and Somerset",
+  "organisationUnits": [
+    {
+      "ouId": "003245ab-10cf-3145-8364-e30e72892d95",
+      "oucodeL3Name": "Bristol"
+    },
+    {
+      "ouId": "003245ab-10cf-3145-8364-e30e72892d96",
+      "oucodeL3Name": "North-East"
+    },
+    {
+      "ouId": "003245ab-10cf-3145-8364-e30e72892d97",
+      "oucodeL3Name": "Somerset"
+    }
+  ]
+}

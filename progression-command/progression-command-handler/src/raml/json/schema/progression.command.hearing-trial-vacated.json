@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/hearing/courts/progression-hearing-trial-vacated.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "vacatedTrialReasonId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hasInterpreter": {
+      "type": "boolean"
+    },
+    "caseDetails": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "#/definitions/hearingCaseDetail"
+      }
+    },
+    "applicationDetails": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "#/definitions/applicationDetail"
+      }
+    },
+    "jurisdictionType": {
+      "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
+    }
+  },
+  "required": [
+    "hearingId"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "hearingCaseDetail": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "caseURN": {
+          "type": "string"
+        },
+        "defendantDetails": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "defendantId": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            },
+            "defendantFirstName": {
+              "type": "string"
+            },
+            "defendantLastName": {
+              "type": "string"
+            },
+            "defendantRemandStatus": {
+              "type": "string"
+            },
+            "interpreterLanguageNeeds": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "applicationDetail": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "applicationReference": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "object",
+          "properties": {
+            "defendantId": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            },
+            "defendantFirstName": {
+              "type": "string"
+            },
+            "defendantLastName": {
+              "type": "string"
+            },
+            "defendantRemandStatus": {
+              "type": "string"
+            },
+            "interpreterLanguageNeeds": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

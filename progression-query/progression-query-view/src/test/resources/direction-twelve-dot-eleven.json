@@ -1,0 +1,33 @@
+{
+  "directionId": "eccb40a3-a13d-4228-8331-d6db9d398af3",
+  "text": "The court requires the defendant's parent / guardian ( $parentGuardian ) to attend the trial.",
+  "assigneeOrganisationText": "Prosecutor",
+  "prompts": [
+    {
+      "id": "9b1b362e-edc0-4e40-b6d9-31fe24d1047c",
+      "name": "parentGuardianLabel",
+      "label": "12.11 Parent / guardian to attend",
+      "subHeading": "The court requires the defendant's parent / guardian ([parentGuardian]) to attend the trial.",
+      "type": "label",
+      "promptOrder": 100,
+      "header": true
+    },
+    {
+      "id": "2062d38f-9801-4a91-8664-c48a5fd44006",
+      "label": "Defendant",
+      "type": "fixl",
+      "required": true,
+      "promptOrder": 101,
+      "caseParticipant": "Defendants",
+      "name": "caseParticipant"
+    },
+    {
+      "id": "602ff24c-eb1b-4a60-9d10-225ae3b82d63",
+      "name": "parentGuardian",
+      "label": "Parent / guardian",
+      "type": "txt",
+      "required": true,
+      "promptOrder": 102
+    }
+  ]
+}

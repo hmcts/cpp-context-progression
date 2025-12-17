@@ -1,0 +1,60 @@
+{
+  "data": {
+    "defendants": [
+      {
+        "id": "DEF_ID1",
+        "language": "en",
+        "legalAidStatus": "",
+        "creditOrGuiltyAdvice": "",
+        "otherLinkedCases": "",
+        "realIssues": "realIssue1",
+        "otherAreasBeforePtph": "",
+        "otherAreasAfterPtph": "",
+        "otherEvidencePriorPtph": "otherEvidencePriorPtph1",
+        "anyOther": "anyOther1",
+        "prosecutorOffences": [
+          {
+            "offenceId": "12345678",
+            "offenceCode": "XYZ",
+            "wording": "Some wording text",
+            "date": "2022-01-01"
+          }
+        ],
+        "formOffences": [
+          {
+            "plea": "Guilty",
+            "description": "Offence Title 1"
+          },
+          {
+            "plea": "",
+            "description": "Offence Title 2"
+          },
+          {
+            "plea": "Not Guilty",
+            "description": "Offence Title 3"
+          },
+          {
+            "plea": "If there is a lim",
+            "description": "Offence Title 4"
+          }
+        ]
+      },
+      {
+        "id": "DEF_ID2",
+        "language": "en",
+        "legalAidStatus": "",
+        "creditOrGuiltyAdvice": "",
+        "otherLinkedCases": "",
+        "realIssues": "realIssue2",
+        "otherAreasBeforePtph": "",
+        "otherAreasAfterPtph": "",
+        "otherEvidencePriorPtph": "otherEvidencePriorPtph2",
+        "anyOther": "anyOther2",
+        "prosecutorOffences": [
+        ],
+        "formOffences": [
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/unlink-cases.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseUrn": {
+      "type": "string"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseUrn": {
+            "type": "string"
+          },
+          "linkGroupId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "required": [
+          "caseId",
+          "caseUrn",
+          "linkGroupId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "prosecutionCaseUrn",
+    "cases"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,281 @@
+{
+  "courtApplication": {
+    "id": "RANDOM_APPLICATION_ID",
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "RANDOM_CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityReference": "RANDOM_REFERENCE"
+        },
+        "isSJP": false,
+        "caseStatus": "ACTIVE"
+      }
+    ],
+    "type": {
+      "id": "e857c8ea-cd95-47d1-842f-2d618e77a9b5",
+      "code": "AS14518",
+      "type": "Application for an order of reimbursement in relation to a closure order",
+      "legislation": "In accordance with section 16E of the Magistrates Courts Act 1980.",
+      "categoryCode": "VP",
+      "linkType": "LINKED",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType" : "GENERIC_BREACH",
+      "appealFlag": false,
+      "applicantAppellantFlag" : false,
+      "pleaApplicableFlag" : false,
+      "commrOfOathFlag" : false,
+      "courtOfAppealFlag" : false,
+      "courtExtractAvlFlag" : false,
+      "prosecutorThirdPartyFlag" : false,
+      "spiOutApplicableFlag" : false,
+      "offenceActiveOrder" : "NOT_APPLICABLE"
+    },
+    "applicationReceivedDate": "2019-01-01",
+    "applicationReference": "RANDOM_REFERENCE",
+    "applicationDecisionSoughtByDate": "2000-01-01",
+    "applicant": {
+      "id": "RANDOM_APPLICANT_ID",
+      "organisation": {
+        "name": "a",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "applicantorganisationaddress1",
+          "address2": "applicantorganisationaddress2",
+          "address3": "applicantorganisationaddress3",
+          "address4": "applicantorganisationaddress4",
+          "address5": "applicantorganisationaddress5",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "Rob@abc.com",
+          "secondaryEmail": "rob@abc.com",
+          "fax": "a"
+        }
+      },
+      "organisationPersons": [
+        {
+          "person": {
+            "title": "MR",
+            "firstName": "applicantA",
+            "middleName": "applicantmiddleNameA",
+            "lastName": "applicantLastNameA",
+            "dateOfBirth": "2000-01-21",
+            "nationalityId": "00000000-0000-0000-0000-000000000000",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "observedEthnicityCode": "a",
+              "observedEthnicityDescription": "a",
+              "selfDefinedEthnicityId": "00000000-0000-0000-0000-000000000000",
+              "selfDefinedEthnicityCode": "a",
+              "selfDefinedEthnicityDescription": "a"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH111111B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "applicanta1",
+              "address2": "applicanta2",
+              "address3": "applicanta3",
+              "address4": "applicanta4",
+              "address5": "applicanta5",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "00000000-0000-0000-0000-000000000000",
+                "markerTypeid": "00000000-0000-0000-0000-000000000000",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
+        },
+        "role": "a"
+        }
+      ],
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "respondents": [{
+      "id": "RANDOM_RESPONDANT_ID",
+      "synonym": "a",
+      "personDetails": {
+        "title": "MR",
+        "firstName": "respondantA",
+        "middleName": "respondantmiddleNameA",
+        "lastName": "respondantLastNameA",
+        "dateOfBirth": "2000-01-01",
+        "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "nationalityCode": "a",
+        "nationalityDescription": "a",
+        "additionalNationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "additionalNationalityCode": "a",
+        "additionalNationalityDescription": "a",
+        "disabilityStatus": "a",
+        "ethnicity": {
+          "observedEthnicityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "observedEthnicityCode": "a",
+          "observedEthnicityDescription": "a",
+          "selfDefinedEthnicityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "selfDefinedEthnicityCode": "a",
+          "selfDefinedEthnicityDescription": "a"
+        },
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "a",
+        "documentationLanguageNeeds": "ENGLISH",
+        "nationalInsuranceNumber": "NH111111B",
+        "occupation": "a",
+        "occupationCode": "a",
+        "specificRequirements": "a",
+        "address": {
+          "address1": "a1",
+          "address2": "a2",
+          "address3": "a3",
+          "address4": "a4",
+          "address5": "a5",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": "00999900990",
+          "work": "00999900990",
+          "mobile": "00999900990",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "fax"
+        },
+        "personMarkers": [
+          {
+            "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "markerTypeid": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "markerTypeCode": "a",
+            "markerTypeDescription": "a"
+          }
+        ]
+      },
+      "organisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a1",
+              "address2": "a2",
+              "address3": "a3",
+              "address4": "a4",
+              "address5": "a5",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": "00999900990",
+              "work": "00999900990",
+              "mobile": "00999900990",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            }
+          },
+      "summonsRequired": false,
+      "notificationRequired": true
+    }],
+    "subject": {
+      "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+      "summonsRequired": false,
+      "notificationRequired": true,
+      "personDetails":{
+        "firstName": "M",
+        "lastName": "G",
+        "gender": "NOT_SPECIFIED"
+      }
+    },
+    "courtApplicationPayment": {
+      "feeStatus":"OUTSTANDING",
+      "paymentReference": "a"
+    },
+    "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
+    "outOfTimeReasons": "a",
+    "judicialResults": [
+      {
+        "isAvailableForCourtExtract": true,
+        "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+        "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+        "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+        "label": "a",
+        "welshLabel": "a",
+        "isAdjournmentResult": true,
+        "isFinancialResult": true,
+        "isConvictedResult": true,
+        "amendmentDate": "2019-01-01",
+        "amendmentReason": "a",
+        "cjsCode": "a",
+        "rank": 0.1,
+        "orderedDate": "2019-01-01",
+        "lastSharedDateTime": "a",
+        "courtClerk": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "courtClerk a",
+          "lastName": "courtClerk a"
+        },
+        "delegatedPowers": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "delegatedPowers a",
+          "lastName": "delegatedPowers a"
+        },
+        "fourEyesApproval": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "fourEyesApproval a",
+          "lastName": "fourEyesApproval a"
+        },
+        "approvedDate": "2019-01-01",
+        "usergroups": [
+          "a"
+        ],
+        "category": "FINAL",
+        "terminatesOffenceProceedings": false,
+        "lifeDuration" : false,
+        "rollUpPrompts": false,
+        "publishedForNows" : false,
+        "publishedAsAPrompt" : false,
+        "excludedFromResults" : false,
+        "alwaysPublished" : false,
+        "urgent" : false,
+        "d20" : false,
+        "resultText" : "resultText",
+        "judicialResultPrompts": [
+          {
+            "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+            "label": "a",
+            "welshLabel": "a",
+            "value": "a",
+            "promptSequence": 0.1,
+            "promptReference": "a",
+            "courtExtract":"Y"
+          }
+        ]
+      }
+    ]
+  }
+}

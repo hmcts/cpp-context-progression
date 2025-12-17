@@ -1,0 +1,15 @@
+{
+  "caseId": "071e108d-8a70-4532-b7da-2168d0260d08",
+  "formData": "{\"defendants\":[{\"id\":\"2ee7407e-ed91-41fa-8409-db373ab486a0\",\"otherAreasBeforePtph\":\"evidencePrePTPH text\"}]}",
+  "formDefendants": [
+    {
+      "defendantId": "2ee7407e-ed91-41fa-8409-db373ab486a0",
+      "cpsDefendantId": "1a8fe782-a287-11eb-bcbc-0242ac130077"
+    },
+    {
+      "defendantId": "345d2c62-af1f-4674-863a-0891e67e320d"
+    }
+  ],
+  "submissionId": "e85d2c62-af1f-4674-863a-0891e67e325b",
+  "userName": "USER_NAME"
+}

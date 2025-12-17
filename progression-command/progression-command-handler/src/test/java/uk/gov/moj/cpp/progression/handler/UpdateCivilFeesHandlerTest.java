@@ -1,0 +1,132 @@
+package uk.gov.moj.cpp.progression.handler;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
+import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
+import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+
+import uk.gov.justice.core.courts.CivilFees;
+import uk.gov.justice.core.courts.CivilFeesUpdated;
+import uk.gov.justice.core.courts.FeeStatus;
+import uk.gov.justice.core.courts.FeeType;
+import uk.gov.justice.services.core.aggregate.AggregateService;
+import uk.gov.justice.services.core.enveloper.Enveloper;
+import uk.gov.justice.services.eventsourcing.source.core.EventSource;
+import uk.gov.justice.services.eventsourcing.source.core.EventStream;
+import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
+import uk.gov.justice.services.messaging.Envelope;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher;
+import uk.gov.moj.cpp.progression.aggregate.FeeAggregate;
+import uk.gov.moj.cpp.progression.command.UpdateCivilFees;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class UpdateCivilFeesHandlerTest {
+
+    private static final UUID FEE_ID = UUID.randomUUID();
+
+    private static final String PROGRESSION_COMMAND_EVENT_CIVIL_FEE = "progression.event.civil-fees-updated";
+
+    @Mock
+    private EventSource eventSource;
+
+    @Mock
+    protected Stream<Object> events;
+
+    @Mock
+    protected Stream<JsonEnvelope> jsonEvents;
+
+    @Mock
+    protected Function function;
+
+    @Mock
+    private EventStream eventStream;
+
+    @Mock
+    private FeeAggregate feeAggregate;
+
+    @Mock
+    private AggregateService aggregateService;
+
+    @InjectMocks
+    private UpdateCivilFeesHandler updateCivilFeeHandler;
+
+    @Spy
+    private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
+            CivilFeesUpdated.class);
+
+    @Test
+    public void shouldHandleCommand() {
+        assertThat(updateCivilFeeHandler, isHandler(COMMAND_HANDLER)
+                .with(method("handleCivilFee")
+                        .thatHandles("progression.command.update-civil-fees")));
+    }
+
+    @Test
+    public void shouldProcessAddCivilFees() throws Exception {
+        feeAggregate = new FeeAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, FeeAggregate.class)).thenReturn(feeAggregate);
+
+        List<CivilFees> civilFeesList = new ArrayList<CivilFees>();
+        civilFeesList.add(CivilFees.civilFees()
+                .withFeeId(UUID.randomUUID())
+                .withFeeType(FeeType.INITIAL)
+                .withFeeStatus(FeeStatus.OUTSTANDING)
+                .withPaymentReference("paymentRef001")
+                .build());
+
+        UpdateCivilFees updateCivilFees = UpdateCivilFees.updateCivilFees()
+                .withCivilFees(List.of(CivilFees.civilFees()
+                        .withFeeId(FEE_ID)
+                        .withFeeStatus(FeeStatus.OUTSTANDING)
+                        .withFeeType(FeeType.INITIAL)
+                        .build()))
+                .build();
+
+        updateCivilFeeHandler.handleCivilFee(Envelope.envelopeFrom(
+                metadataWithRandomUUID(PROGRESSION_COMMAND_EVENT_CIVIL_FEE),updateCivilFees));
+
+        verifyResults();
+    }
+
+    private void verifyResults() throws EventStreamException {
+        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata()
+                                .withName(PROGRESSION_COMMAND_EVENT_CIVIL_FEE),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.feeId", is(FEE_ID.toString()))
+                                )
+                        ))
+
+                )
+        );
+    }
+}

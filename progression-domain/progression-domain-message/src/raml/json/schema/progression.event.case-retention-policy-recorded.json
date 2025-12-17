@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/case-retention-policy-recorded.json",
+  "type": "object",
+  "properties": {
+    "caseURN": {
+      "type": "string"
+    },
+    "jurisdictionType": {
+      "type": "string"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingType": {
+      "type": "string"
+    },
+    "courtCentreId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtCentreName": {
+      "type": "string"
+    },
+    "courtRoomId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtRoomName": {
+      "type": "string"
+    },
+    "policyType": {
+      "type": "string"
+    },
+    "period": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "caseURN",
+    "jurisdictionType",
+    "hearingId",
+    "hearingType",
+    "courtCentreId",
+    "courtCentreName",
+    "courtRoomId",
+    "courtRoomName",
+    "policyType",
+    "period"
+  ]
+}

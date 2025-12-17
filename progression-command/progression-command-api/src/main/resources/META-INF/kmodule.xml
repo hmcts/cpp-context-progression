@@ -1,0 +1,5 @@
+<kmodule xmlns="http://www.drools.org/xsd/kmodule">
+    <kbase name="COMMAND_API" packages="uk.gov.moj.cpp.progression.command.api.accesscontrol" default="false">
+        <ksession name="COMMAND_API_SESSION" default="false" type="stateless"/>
+    </kbase>
+</kmodule>

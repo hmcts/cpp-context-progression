@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/case-ready-for-sentence-hearing.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "status": {
+      "type": "string"
+    },
+    "caseStatusUpdatedDateTime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "status",
+    "caseStatusUpdatedDateTime"
+  ]
+}

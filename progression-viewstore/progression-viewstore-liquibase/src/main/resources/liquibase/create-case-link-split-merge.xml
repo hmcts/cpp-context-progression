@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="case_link_split_merge" author="cpp.context.progression">
+        <createTable tableName="case_link_split_merge">
+            <column name="id" type="UUID"/>
+            <column name="case_id" type="UUID"/>
+            <column name="linked_case_id" type="UUID"/>
+            <column name="reference" type="TEXT"/>
+            <column name="type" type="TEXT"/>
+            <column name="link_group_id" type="UUID"/>
+            <column name="created_datetime" type="datetime" defaultValueComputed="NOW()"/>
+        </createTable>
+        <addPrimaryKey columnNames="id" constraintName="case_link_split_merge_primary_key"
+                       tableName="case_link_split_merge"/>
+        <createIndex tableName="case_link_split_merge" indexName="search_case_id_idx">
+            <column name="case_id"/>
+        </createIndex>
+        <createIndex tableName="case_link_split_merge" indexName="search_reference_idx">
+            <column name="reference"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

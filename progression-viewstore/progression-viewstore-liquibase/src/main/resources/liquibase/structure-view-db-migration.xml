@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet author="progression" id="1510409383089-1">
+        <addColumn tableName="caseprogressiondetail">
+            <column name="caseurn" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="progression" id="1510409383089-2">
+        <addColumn tableName="defendant">
+            <column name="allocation_decision" type="VARCHAR(255)"/>
+            <column name="bail_status" type="VARCHAR(255)"/>
+            <column name="custody_time_limit_date" type="date"/>
+            <column name="defence_solicitor_firm" type="VARCHAR(255)"/>
+            <column name="interpreter_language" type="VARCHAR(255)"/>
+            <column name="interpreter_needed" type="VARCHAR(255)"/>
+            <column name="num_previous_convictions" type="INT"/>
+            <column name="person_id" type="UUID"/>
+            <column name="police_defendant_id" type="VARCHAR(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="progression" id="1510409383089-5">
+        <createTable tableName="offence">
+            <column name="id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="arrest_date" type="date"/>
+            <column name="category" type="VARCHAR(255)"/>
+            <column name="charge_date" type="date"/>
+            <column name="code" type="VARCHAR(255)"/>
+            <column name="compensation" type="numeric(19, 2)"/>
+            <column name="count" type="INT"/>
+            <column name="cpr_defendant_offender_check_digit" type="VARCHAR(255)"/>
+            <column name="cpr_defendant_offender_number" type="VARCHAR(255)"/>
+            <column name="cpr_defendant_offender_organisation_unit" type="VARCHAR(255)"/>
+            <column name="cpr_defendant_offender_year" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="end_date" type="date"/>
+            <column name="indicated_plea" type="VARCHAR(255)"/>
+            <column name="libra_offence_date_code" type="INT"/>
+            <column name="order_index" type="INT"/>
+            <column name="pending_withdrawal" type="VARCHAR(255)"/>
+            <column name="plea" type="VARCHAR(255)"/>
+            <column name="police_offence_id" type="VARCHAR(255)"/>
+            <column name="prosecution_facts" type="VARCHAR(255)"/>
+            <column name="reason" type="VARCHAR(255)"/>
+            <column name="section" type="VARCHAR(255)"/>
+            <column name="seq_no" type="INT"/>
+            <column name="start_date" type="date"/>
+            <column name="witness_statement" type="VARCHAR(255)"/>
+            <column name="wording" type="VARCHAR(255)"/>
+            <column name="defendant_id" type="UUID"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="progression" id="1510409383089-8">
+        <createTable tableName="defendant_bail_document">
+            <column name="id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="VARCHAR(255)"/>
+            <column name="document_id" type="UUID"/>
+            <column name="defendant_id" type="UUID"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="progression" id="1510409383089-10">
+        <addPrimaryKey columnNames="id" constraintName="defendant_bail_document_pkey" tableName="defendant_bail_document"/>
+    </changeSet>
+    <changeSet author="progression" id="1510409383089-13">
+        <addPrimaryKey columnNames="id" constraintName="offence_pkey" tableName="offence"/>
+    </changeSet>
+    <changeSet author="progression" id="1510409383089-20">
+        <addForeignKeyConstraint baseColumnNames="defendant_id" baseTableName="defendant_bail_document" constraintName="fk_defendant_bail_document_defendant_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="defendant"/>
+    </changeSet>
+    <changeSet author="progression" id="1510409383089-21">
+        <addForeignKeyConstraint baseColumnNames="defendant_id" baseTableName="offence" constraintName="fk_offence_defendant_id" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="defendant"/>
+    </changeSet>
+</databaseChangeLog>

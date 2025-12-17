@@ -1,0 +1,9 @@
+{
+  "_metadata": {
+    "name": "progression.event.hearing-deleted"
+  },
+  "hearingId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+  "prosecutionCaseIds":[
+    "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+  ]
+}

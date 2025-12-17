@@ -1,0 +1,20 @@
+{
+  "caseDefendantOrganisation": {
+    "caseId": "${caseId}",
+    "urn": "ABCD09T56",
+    "defendants": [
+      {
+        "defendantId": "${defendantId1}",
+        "associatedOrganisation": "fcb1edc9-786a-462d-9400-318c95c7c700",
+        "defendantFirstName": "${defendant1FirstName}",
+        "defendantLastName": "${defendant1LastName}"
+      },
+      {
+        "defendantId": "${defendantId2}",
+        "associatedOrganisation": "fcb1edc9-786a-462d-9400-318c95c7b701",
+        "defendantFirstName": "${defendant2FirstName}",
+        "defendantLastName": "${defendant2LastName}"
+      }
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "updatedHearing": {
+    "jurisdictionType": "MAGISTRATES",
+    "courtCentre": {
+      "id": "300067e1-5309-4ba8-8d74-f96a113ceb1a"
+    },
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "4f22bda7-9db7-485e-9da6-9b40acd14609"
+          }
+        ],
+        "id": "22e8b728-9586-4078-bc80-5eec6de99c3b"
+      }
+    ],
+    "reportingRestrictionReason": "M0zkxWV06n",
+    "hearingLanguage": "WELSH",
+    "id": "f9ccf30a-fff1-42af-8594-209f4d28189c",
+    "type": {
+      "description": "Sentence",
+      "id": "68b54831-5134-415b-9679-1ec7e4b84254"
+    },
+    "judiciary": [
+      {
+        "isDeputy": true,
+        "judicialId": "8a0a3668-0ff7-455b-9ca3-466d4083e406",
+        "judicialRoleType": "MAGISTRATE",
+        "isBenchChairman": true
+      }
+    ],
+    "hearingDays": [
+      {
+        "sittingDay": "2018-09-28T12: 13:00.000Z",
+        "listedDurationMinutes": 0
+      },
+      {
+        "sittingDay": "2018-09-30T09: 30:00.000Z",
+        "listedDurationMinutes": 0
+      }
+    ]
+  }
+}

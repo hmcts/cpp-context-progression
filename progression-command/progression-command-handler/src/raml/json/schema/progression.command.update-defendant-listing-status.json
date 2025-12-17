@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/update-defendant-listing-status.json",
+  "type": "object",
+  "description": "update listing status for each defendant ",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    },
+    "hearingListingStatus": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
+    },
+    "isUnscheduled" : {
+      "description": "Indicates if a result cause Listing Unscheduled",
+      "type": "boolean"
+    },
+    "notifyNCES" : {
+      "description": "Indicates if a notification email will be sent",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "hearing",
+    "hearingListingStatus"
+  ],
+  "additionalProperties": false
+}

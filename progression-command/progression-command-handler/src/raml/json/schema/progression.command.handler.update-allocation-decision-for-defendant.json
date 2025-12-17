@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "allocationDecision": {
+      "enum": ["ELECT_TRIAL","COURT_DECLINED"]
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "allocationDecision"
+  ]
+}

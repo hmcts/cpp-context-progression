@@ -1,0 +1,56 @@
+package uk.gov.moj.cpp.progression;
+
+import static java.util.UUID.randomUUID;
+import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.listNewHearing;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupLoggedInUsersPermissionQueryStub;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.verifyPostListCourtHearingWithProsecutorInfo;
+import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
+
+import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
+import uk.gov.moj.cpp.progression.util.CaseProsecutorUpdateHelper;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class PostCaseProsecutorUpdateNextHearingPopulatesProsecutorDetailsIT extends AbstractIT {
+    private String caseId;
+    private String defendantId;
+
+    private CaseProsecutorUpdateHelper caseProsecutorUpdateHelper;
+
+    private final JmsMessageConsumerClient publicEventsCaseProsecutorUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.events.cps-prosecutor-updated").getMessageConsumerClient();
+
+    @BeforeEach
+    public void setUp() {
+        caseId = randomUUID().toString();
+        defendantId = randomUUID().toString();
+        caseProsecutorUpdateHelper = new CaseProsecutorUpdateHelper(caseId);
+        setupLoggedInUsersPermissionQueryStub();
+    }
+
+    @Test
+    public void shouldUpdateCaseProsecutorAndNextHearingHasUpdatedProsecutorDetails() throws Exception {
+        // Create Prosecution Case
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        // Update prosecutor details
+        caseProsecutorUpdateHelper.updateCaseProsecutor();
+
+        // verify updated prosecutor details
+        caseProsecutorUpdateHelper.verifyInMessagingQueueForProsecutorUpdated(1, publicEventsCaseProsecutorUpdated);
+
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
+
+        // Ad-hock hearing
+        listNewHearing(caseId, defendantId);
+
+        //Verify hearing with prosecutors details populated into it.
+        verifyPostListCourtHearingWithProsecutorInfo(caseId, defendantId, "8e837de0-743a-4a2c-9db3-b2e678c48729");
+    }
+
+}
+

@@ -1,0 +1,52 @@
+{
+  "courtDocument": {
+    "containsFinancialMeans": true,
+    "sendToCps" : true,
+    "courtDocumentId": "COURT-DOCUMENT-ID",
+    "documentCategory": {
+      "defendantDocument": {
+        "defendants": [
+          "DEFENDENT-ID"
+        ],
+        "prosecutionCaseId": "CASE-ID"
+      }
+    },
+    "documentTypeDescription": "SJP Notice",
+    "documentTypeId": "0bb7b276-9dc0-4af2-83b9-f4acef0c7898",
+    "documentTypeRBAC": {
+      "deleteUserGroups": [
+        "Crown Court"
+      ],
+      "downloadUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ],
+      "readUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ],
+      "uploadUserGroups": [
+        "Listing Officers",
+        "Legal advisors"
+      ]
+    },
+    "seqNum": 10,
+    "materials": [
+      {
+        "id": "MATERIAL_ID",
+        "name": "test",
+        "receivedDateTime": "2019-12-07T07:16:26.661Z",
+        "uploadDateTime": "2019-12-24T12:47:29.525Z",
+        "userGroups": [
+          "Listing Officers",
+          "Legal advisors",
+          "Magistrates"
+        ]
+      }
+    ],
+    "mimeType": "pdf",
+    "name": "SJP Notice"
+  }
+}

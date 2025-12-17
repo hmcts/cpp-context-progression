@@ -1,0 +1,35 @@
+{
+  "registerDate": "%CURRENT_DATE%",
+  "cases": [{
+    "name": "Rikki Rikki Rikki Smith",
+    "address1": "Flat 1, Armageddon House",
+    "address2": "",
+    "address3": "",
+    "address4": "",
+    "address5": "",
+    "postCode": "",
+    "jurisdiction": "-",
+    "hearingType": "-",
+    "defendantAppearanceDetails": "-",
+    "attendingSolicitorName": "-",
+    "defenceCounselName": "-",
+    "defenceCounselStatus": "-",
+    "defendantType": "Applicant",
+    "postHearingCustodyStatus": "-",
+    "officerInCase": "-",
+    "parentGuardianName": "-",
+    "parentGuardianAddress1": "-",
+    "dateOfBirth": "-",
+    "age": "-",
+    "gender": "-",
+    "nationality": "-",
+    "aliases": "-",
+    "caseReference": "TVL53615C8RQ3",
+    "dateOfHearing": "10/07/2020",
+    "prosecutorName": "-",
+    "arrestSummonsNumber": "-",
+    "prosecutionCounselName": "-",
+    "prosecutionCounselStatus": "-"
+  }
+  ]
+}

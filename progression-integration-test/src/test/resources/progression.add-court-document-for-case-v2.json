@@ -1,0 +1,45 @@
+{
+  "materialId": "5e1cc18c-76dc-47dd-99c1-d6f87385edf2",
+  "courtDocument": {
+    "courtDocumentId": "%RANDOM_DOCUMENT_ID%",
+    "documentCategory": {
+      "defendantDocument": {
+        "prosecutionCaseId": "%RANDOM_CASE_ID%",
+        "defendants": [
+          "%RANDOM_DEFENDANT_ID1%"
+        ]
+      }
+    },
+    "name": "SJP Notice",
+    "documentTypeId": "460f7ec0-c002-11e8-a355-529269fb1459",
+    "documentTypeDescription": "SJP Notice",
+    "mimeType": "pdf",
+    "materials": [
+      {
+        "id": "5e1cc18c-76dc-47dd-99c1-d6f87385edf1",
+        "receivedDateTime": "2019-12-07T07:16:26.661Z"
+      }
+    ],
+    "containsFinancialMeans": true,
+    "sendToCps": true
+  },
+  "cpsFlag" : true,
+  "materialSubmittedV2": {
+    "caseId": "%RANDOM_CASE_ID%",
+    "material": "5e1cc18c-76dc-47dd-99c1-d6f87385edf2",
+    "defendantId": "%RANDOM_DEFENDANT_ID1%",
+    "materialType" : "pdf",
+    "materialContentType" : "pdf",
+    "materialName" : "SJP Notice",
+    "fileName": "sample.pdf",
+    "isCpsCase": true,
+    "prosecutionCaseSubject": {
+      "caseUrn" : "CASETFL001",
+      "prosecutingAuthority":"00TFL1A",
+      "ouCode": "GAFTL00",
+      "defendantSubject":{
+        "cpsDefendantId": "%RANDOM_CPS_DEFENDANT_ID%"
+      }
+    }
+  }
+}

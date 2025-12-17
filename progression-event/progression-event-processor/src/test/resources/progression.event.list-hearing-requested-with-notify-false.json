@@ -1,0 +1,46 @@
+{
+  "hearingId": "850f892d-3b32-4130-8cc8-9d4078e05305",
+  "listNewHearing": {
+    "bookedSlots": [
+      {
+        "courtCentreId": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+        "courtRoomId": 121,
+        "courtScheduleId": "d885f8cc-8bde-30ea-b5d2-22455e40cfb1",
+        "duration": 180,
+        "oucode": "B01BH00",
+        "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+        "session": "am",
+        "startTime": "2023-02-27T10:00:00.000Z"
+      }
+    ],
+    "courtCentre": {
+      "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+      "name": "Bexley Magistrates' Court",
+      "roomId": "8e912353-3b5d-36c3-953e-ad3b94b19de3",
+      "roomName": "Courtroom 01"
+    },
+    "earliestStartDateTime": "2023-02-27T10:00:00.000Z",
+    "estimatedMinutes": 20,
+    "hearingType": {
+      "description": "Plea",
+      "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "listDefendantRequests": [
+      {
+        "defendantId": "%DEFENDANT_ID%",
+        "defendantOffences": [
+          "9c899e30-f71d-48a2-85a5-618225b82cfc"
+        ],
+        "prosecutionCaseId": "%CASE_ID%"
+      }
+    ],
+    "nonDefaultDays": [
+      {
+        "startTime": "2018-10-09T15:16:56Z",
+        "duration": null
+      }
+    ]
+  },
+  "sendNotificationToParties": false
+}

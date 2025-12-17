@@ -1,0 +1,372 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "courtCentreId": {
+      "type": "string"
+    },
+    "caseId": {
+      "type": "string"
+    },
+    "caseUrn": {
+      "type": "string"
+    },
+    "fromCourtCentre": {
+      "type": "string"
+    },
+    "sendingCommittalDate": {
+      "type": "string"
+    },
+    "sentenceHearingDate": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "defendants": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "defendantId": {
+              "type": "string"
+            },
+            "sentenceHearingReviewDecision": {
+              "type": "boolean"
+            },
+            "sentenceHearingReviewDecisionDateTime": {
+              "type": "string"
+            },
+            "additionalInformation": {
+              "type": "object",
+              "properties": {
+                "noMoreInformationRequired": {
+                  "type": "boolean"
+                },
+                "probation": {
+                  "type": "object",
+                  "properties": {
+                    "preSentenceReport": {
+                      "type": "object",
+                      "properties": {
+                        "psrIsRequested": {
+                          "type": "boolean"
+                        },
+                        "provideGuidance": {
+                          "type": "string"
+                        },
+                        "drugAssessment": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "psrIsRequested",
+                        "provideGuidance",
+                        "drugAssessment"
+                      ]
+                    },
+                    "dangerousnessAssessment": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "preSentenceReport",
+                    "dangerousnessAssessment"
+                  ]
+                },
+                "defence": {
+                  "type": "object",
+                  "properties": {
+                    "statementOfMeans": {
+                      "type": "object",
+                      "properties": {
+                        "isStatementOfMeans": {
+                          "type": "boolean"
+                        },
+                        "details": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "isStatementOfMeans",
+                        "details"
+                      ]
+                    },
+                    "medicalDocumentation": {
+                      "type": "object",
+                      "properties": {
+                        "isMedicalDocumentation": {
+                          "type": "boolean"
+                        },
+                        "details": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "isMedicalDocumentation",
+                        "details"
+                      ]
+                    },
+                    "otherDetails": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "statementOfMeans",
+                    "medicalDocumentation",
+                    "otherDetails"
+                  ]
+                },
+                "prosecution": {
+                  "type": "object",
+                  "properties": {
+                    "ancillaryOrders": {
+                      "type": "object",
+                      "properties": {
+                        "isAncillaryOrders": {
+                          "type": "boolean"
+                        },
+                        "details": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "isAncillaryOrders",
+                        "details"
+                      ]
+                    },
+                    "otherDetails": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ancillaryOrders",
+                    "otherDetails"
+                  ]
+                }
+              },
+              "required": [
+                "noMoreInformationRequired",
+                "probation",
+                "defence",
+                "prosecution"
+              ]
+            },
+            "caseId": {
+              "type": "string"
+            },
+            "personId": {
+              "type": "string"
+            },
+            "policeDefendantId": {
+              "type": "string"
+            },
+            "bailStatus": {
+              "type": "string"
+            },
+            "defendantBailDocuments": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "documentId": {
+                      "type": "string"
+                    },
+                    "active": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "documentId",
+                    "active"
+                  ]
+                }
+              ]
+            },
+            "custodyTimeLimitDate": {
+              "type": "string"
+            },
+            "defenceSolicitorFirm": {
+              "type": "string"
+            },
+            "interpreter": {
+              "type": "object",
+              "properties": {
+                "needed": {
+                  "type": "boolean"
+                },
+                "language": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "needed",
+                "language"
+              ]
+            },
+            "offences": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "offenceCode": {
+                      "type": "string"
+                    },
+                    "plea": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string",
+                          "enum": ["GUILTY"]
+                        },
+                        "pleaDate": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "value",
+                        "pleaDate"
+                      ]
+                    },
+                    "indicatedPlea": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string",
+                          "enum": ["NO_INDICATION", "INDICATED_GUILTY", "INDICATED_NOT_GUILTY"]
+                        },
+                        "allocationDecision": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "value"
+                      ]
+                    },
+                    "section": {
+                      "type": "string"
+                    },
+                    "offenceSequenceNumber": {
+                      "type": "integer"
+                    },
+                    "pleaMitigation": {
+                      "type": "string"
+                    },
+                    "wording": {
+                      "type": "string"
+                    },
+                    "policeOffenceId": {
+                      "type": "string"
+                    },
+                    "cprDefendantOffenderYear": {
+                      "type": "string"
+                    },
+                    "cprDefendantOffenderOrganisationUnit": {
+                      "type": "string"
+                    },
+                    "cprDefendantOffenderNumber": {
+                      "type": "string"
+                    },
+                    "cprDefendantOffenderCheckDigit": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "arrestDate": {
+                      "type": "string"
+                    },
+                    "startDate": {
+                      "type": "string"
+                    },
+                    "endDate": {
+                      "type": "string"
+                    },
+                    "chargeDate": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "offenceCode",
+                    "plea",
+                    "indicatedPlea",
+                    "section",
+                    "offenceSequenceNumber",
+                    "pleaMitigation",
+                    "wording",
+                    "policeOffenceId",
+                    "cprDefendantOffenderYear",
+                    "cprDefendantOffenderOrganisationUnit",
+                    "cprDefendantOffenderNumber",
+                    "cprDefendantOffenderCheckDigit",
+                    "reason",
+                    "description",
+                    "category",
+                    "arrestDate",
+                    "startDate",
+                    "endDate",
+                    "chargeDate",
+                    "count"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "defendantId",
+            "sentenceHearingReviewDecision",
+            "sentenceHearingReviewDecisionDateTime",
+            "additionalInformation",
+            "caseId",
+            "personId",
+            "policeDefendantId",
+            "bailStatus",
+            "defendantBailDocuments",
+            "custodyTimeLimitDate",
+            "defenceSolicitorFirm",
+            "interpreter",
+            "offences"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "courtCentreId",
+    "caseId",
+    "caseUrn",
+    "fromCourtCentre",
+    "sendingCommittalDate",
+    "sentenceHearingDate",
+    "status",
+    "defendants"
+  ]
+}

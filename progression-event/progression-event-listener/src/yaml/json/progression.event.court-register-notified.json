@@ -1,0 +1,9 @@
+{
+  "recipients": [{
+    "recipientName": "John Smith",
+    "emailAddress1": "john.smith@hmcts.net",
+    "emailTemplateName":"someEmailTemplateName"
+  }],
+  "systemDocGeneratorId": "5fdhjf232-a19f-485c-bb3c-a1125f8e9e67",
+  "courtCentreId": "5cbfc512-a19f-485c-bb3c-a1125f8e9e67"
+}

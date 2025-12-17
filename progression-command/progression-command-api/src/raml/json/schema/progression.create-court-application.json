@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/create-court-application.json",
+  "type": "object",
+  "properties": {
+    "application": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    }
+  },
+  "required": [
+    "application"
+  ],
+  "additionalProperties": false
+}

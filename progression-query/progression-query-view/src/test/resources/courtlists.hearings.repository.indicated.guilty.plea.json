@@ -1,0 +1,903 @@
+[
+  {
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court",
+        "welshLjaName": "East Hampshire Magistrates' Court"
+      }
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 10,
+        "sittingDay": "2021-02-24T12:00:00.000Z"
+      }
+    ],
+    "id": "82b243f8-c4d3-4790-92ef-6192db00539c",
+    "isBoxHearing": true,
+    "isVirtualBoxHearing": true,
+    "jurisdictionType": "MAGISTRATES",
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "prosecutionCases": [
+      {
+        "id": "4ac18add-5789-458a-9737-2fb48fd1f637",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityReference": "TFL_REFERENCE"
+        },
+        "originatingOrganisation": "G01FT01AB",
+        "initiationCode": "J",
+        "statementOfFacts": "You did it",
+        "statementOfFactsWelsh": "You did it in Welsh",
+        "defendants": [
+          {
+            "id": "df73207f-3ced-488a-82a0-3fba79c2ce86",
+            "prosecutionCaseId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+            "numberOfPreviousConvictionsCited": 5,
+            "prosecutionAuthorityReference": "TFL12345-ABC",
+            "witnessStatement": "he did not do it",
+            "witnessStatementWelsh": "he did not do it in Welsh",
+            "mitigation": "I was not there",
+            "mitigationWelsh": "I was not there in Welsh",
+            "aliases": [
+              {
+                "firstName": "johnny",
+                "lastName": "robber"
+              },
+              {
+                "firstName": "jack the",
+                "lastName": "knife"
+              }
+            ],
+            "pncId": "1234567",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh",
+                "startDate": "2018-01-01",
+                "endDate": "2018-01-01",
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "listingNumber" : 2,
+                "orderIndex": 1,
+                "offenceCode": "TTH105HY",
+                "offenceTitle": "ROBBERY",
+                "offenceTitleWelsh": "ROBBERY WELSH",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "count": 0,
+                "maxPenalty": "Max Penalty",
+                "indicatedPlea": {
+                  "indicatedPleaDate": "2020-01-01",
+                  "indicatedPleaValue": "INDICATED_GUILTY"
+                },
+                "convictionDate": "2020-05-01",
+                "lastAdjournDate": "2020-05-02",
+                "lastAdjournedHearingType": "Last Adjourned\n Hearing Type",
+                "offenceFacts": {
+                  "vehicleRegistration": "AA12345",
+                  "alcoholReadingAmount": "111",
+                  "alcoholReadingMethodCode": "2222",
+                  "alcoholReadingMethodDescription": "Breath"
+                },
+                "offenceDateCode": 4
+              }
+            ],
+            "associatedPersons": [
+              {
+                "person": {
+                  "title": "MR",
+                  "firstName": "Harry",
+                  "middleName": "Jack",
+                  "lastName": "Kane",
+                  "dateOfBirth": "1995-01-01",
+                  "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "disabilityStatus": "a",
+                  "ethnicity": {
+                    "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+                  },
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "Hindi",
+                  "documentationLanguageNeeds": "WELSH",
+                  "nationalInsuranceNumber": "NH222222B",
+                  "occupation": "Footballer",
+                  "occupationCode": "F",
+                  "address": {
+                    "address1": "22",
+                    "address2": "Acacia Avenue",
+                    "address3": "Acacia Town",
+                    "address4": "Acacia City",
+                    "address5": "Acacia Country",
+                    "postcode": "CR7 0AA"
+                  },
+                  "contact": {
+                    "home": "123456",
+                    "work": "7891011",
+                    "mobile": "45678910",
+                    "primaryEmail": "harry.kane@spurs.co.uk",
+                    "secondaryEmail": "harry.kane@hotmail.com",
+                    "fax": "3425678"
+                  }
+                },
+                "role": "parent"
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "title": "MR",
+                "firstName": "Harry",
+                "middleName": "Jack",
+                "lastName": "Kane Junior",
+                "dateOfBirth": "2010-01-01",
+                "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "disabilityStatus": "a",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "Welsh",
+                "documentationLanguageNeeds": "WELSH",
+                "nationalInsuranceNumber": "NH323232B",
+                "occupation": "Kid",
+                "occupationCode": "F",
+                "specificRequirements": "Screen",
+                "address": {
+                  "address1": "22",
+                  "address2": "Acacia Avenue",
+                  "address3": "Acacia Town",
+                  "address4": "Acacia City",
+                  "address5": "Acacia Country",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "home": "123456",
+                  "work": "7891011",
+                  "mobile": "45678910",
+                  "primaryEmail": "harry.kanejunior@spurs.co.uk",
+                  "secondaryEmail": "harry.kanejunior@hotmail.com",
+                  "fax": "3425678"
+                },
+                "ethnicity": {
+                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+                }
+              },
+              "custodyTimeLimit": "2018-01-01",
+              "perceivedBirthYear": 2015,
+              "driverNumber": "AACC12345",
+              "arrestSummonsNumber": "arrest123",
+              "employerOrganisation": {
+                "name": "Disneyland Paris",
+                "incorporationNumber": "Mickeymouse1",
+                "address": {
+                  "address1": "Disney Road",
+                  "address2": "Disney Town",
+                  "address3": "Disney District",
+                  "address4": "Paris",
+                  "address5": "France",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "work": "0207 654 3246 extn 1234",
+                  "primaryEmail": "person@hotmail.com",
+                  "secondaryEmail": "associate@hotmail.com",
+                  "fax": "a"
+                }
+              },
+              "employerPayrollReference": "payyou1234"
+            },
+            "associatedDefenceOrganisation": {
+              "defenceOrganisation": {
+                "organisation": {
+                  "name": "associated defence organisation name",
+                  "incorporationNumber": "a",
+                  "registeredCharityNumber": "a",
+                  "address": {
+                    "address1": "a",
+                    "address2": "a",
+                    "address3": "a",
+                    "address4": "a",
+                    "address5": "a",
+                    "postcode": "GIR0AA"
+                  },
+                  "contact": {
+                    "home": " ",
+                    "work": "a",
+                    "mobile": " ",
+                    "primaryEmail": "!.!@00.00",
+                    "secondaryEmail": "!.!@00.00",
+                    "fax": "a"
+                  }
+                }
+              },
+              "associationStartDate": "2019-09-12",
+              "associationEndDate": "2019-12-12",
+              "fundingType": "REPRESENTATION_ORDER",
+              "isAssociatedByLAA": true
+            }
+          }
+        ]
+      }
+    ],
+    "prosecutionCounsels": [
+      {
+        "firstName": "add",
+        "id": "3e6d84fc-abab-4a49-8406-f046df525356",
+        "lastName": "ZDA",
+        "middleName": "",
+        "prosecutionCases": [
+          "4ac18add-5789-458a-9737-2fb48fd1f637"
+        ]
+      }
+    ],
+    "defenceCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "defendants": [
+          "df73207f-3ced-488a-82a0-3fba79c2ce86"
+        ]
+      }
+    ]
+  },
+  {
+    "courtApplications": [
+      {
+        "allegationOrComplaintEndDate": "2020-07-26",
+        "allegationOrComplaintStartDate": "2020-07-26",
+        "applicant": {
+          "id": "e2791a56-d396-4561-8655-e2307402b6de",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityOUCode": "GB10056",
+            "majorCreditorCode": "TFL2",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "address": {
+              "address3": "London",
+              "address2": "42-50 Victoria Street",
+              "address1": "6th Floor Windsor House",
+              "postcode": "SW1H 0TL"
+            },
+            "contact": {
+              "primaryEmail": "test@test.com"
+            },
+            "name": "Transport for London",
+            "welshName": "Transport for London"
+          },
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2020-07-26",
+        "applicationReference": "12GD8000017",
+        "applicationStatus": "IN_PROGRESS",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "isSJP": false,
+            "offences": [
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "dvlaOffenceCode": "DR70",
+                "id": "072319bf-73c2-41b5-b309-c8c86c9b077b",
+                "modeOfTrial": "Summary",
+                "offenceCode": "RT88496",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "40c5694d-33bc-43ce-a993-be04087d5bb4",
+                "offenceLegislation": "Contrary to section 6(6) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Fail to co-operate with a preliminary test - motor vehicle offence",
+                "offenceTitleWelsh": "Bod â meddiant teledu gan fwriadu'i osod/ddefnyddio heb drwydded",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                "maxPenalty": "1 Year prison",
+                "convictionDate": "2020-03-09",
+                "lastAdjournDate": "2020-03-10",
+                "lastAdjournedHearingType": "Adjourned Hearing Type",
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "pleaDate": "2018-01-01",
+                  "pleaValue": "GUILTY"
+                },
+                "offenceFacts": {
+                  "vehicleRegistration": "AA12345",
+                  "alcoholReadingAmount": "111",
+                  "alcoholReadingMethodCode": "2222",
+                  "alcoholReadingMethodDescription": "Breath"
+                }
+              },
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "651fc68b-8b9f-4cf2-912a-0b55d536323c",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Use / install a television set without a licence",
+                "offenceTitleWelsh": "Use / install a television set without a licence in Welsh",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                "maxPenalty": "1 Year prison",
+                "convictionDate": "2020-02-09",
+                "lastAdjournDate": "2020-02-10",
+                "lastAdjournedHearingType": "Adjourned Hearing Type2",
+                "offenceFacts": {
+                  "vehicleRegistration": "AA12345",
+                  "alcoholReadingAmount": "111",
+                  "alcoholReadingMethodCode": "2222",
+                  "alcoholReadingMethodDescription": "Breath"
+                },
+                "plea": {
+                  "delegatedPowers": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "pleaDate": "2018-01-01",
+                  "pleaValue": "GUILTY"
+                }
+              }
+            ],
+            "prosecutionCaseId": "4ac18add-5789-458a-9737-2fb48fd1f637",
+            "prosecutionCaseIdentifier": {
+              "prosecutionAuthorityCode": "DERPF",
+              "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+              "caseURN": "12GD8000017"
+            },
+            "caseStatus": "INACTIVE"
+          }
+        ],
+        "hasSummonsSupplied": false,
+        "id": "528fe634-20f3-474b-a110-4c6141c58c99",
+        "respondents": [
+          {
+            "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+            "masterDefendant": {
+              "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+              "prosecutionAuthorityReference": "randomreference234",
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "1234",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1972-01-29",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Robert12",
+                  "gender": "MALE",
+                  "lastName": "Smith12",
+                  "title": "Mr"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": true
+          },
+          {
+            "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b8",
+            "masterDefendant": {
+              "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b8",
+              "prosecutionAuthorityReference": "randomreference345",
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "1234",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1972-01-29",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Robert13",
+                  "gender": "MALE",
+                  "lastName": "Smith13",
+                  "title": "Mr"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": true
+          }
+        ],
+        "subject": {
+          "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+          "masterDefendant": {
+            "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "1234",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1972-01-29",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Robert12",
+                "gender": "MALE",
+                "lastName": "Smith12",
+                "title": "Mr",
+                "nationalityDescription": "British"
+              }
+            },
+            "legalEntityDefendant": {
+              "organisation": {
+                "address": {
+                  "address1": "888",
+                  "address2": "382 Graham Drives",
+                  "address3": "New Genevieve",
+                  "address4": "CO",
+                  "address5": "Cyprus",
+                  "postcode": "SW11 1JU"
+                },
+                "contact": {
+                  "fax": "670-011-2708",
+                  "home": "696-318-7043",
+                  "mobile": "673-269-7203",
+                  "primaryEmail": "watson.doyle@yahoo.com",
+                  "secondaryEmail": "neha.hand@yahoo.com",
+                  "work": "699.244.3301"
+                },
+                "incorporationNumber": "qrdE2yTAM9",
+                "name": "ojIE26ztNj",
+                "registeredCharityNumber": "WTV7hUH2nz"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": true
+        },
+        "thirdParties": [
+          {
+            "id": "5c3921f3-757d-4710-8ee5-854739c96ce0",
+            "notificationRequired": true,
+            "personDetails": {
+              "address": {
+                "address1": "line1",
+                "postcode": "SL2 5FZ"
+              },
+              "firstName": "aasfsa",
+              "gender": "NOT_SPECIFIED",
+              "lastName": "gjg"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "type": {
+          "id": "cb05a560-48f9-415d-b230-55b78f8cb4a8",
+          "type": "Application for first hearing summons for criminal case",
+          "typeWelsh" : "Type In Welsh",
+          "categoryCode": "CO",
+          "jurisdiction": "EITHER",
+          "linkType": "FIRST_HEARING",
+          "code": "App Type Code 2",
+          "legislation": "App Legislation 2",
+          "appealFlag": false,
+          "summonsTemplateType": "FIRST_HEARING",
+          "hearingCode": "BOO",
+          "applicantAppellantFlag": false,
+          "pleaApplicableFlag": true,
+          "offenceActiveOrder": "OFFENCE",
+          "commrOfOathFlag": false,
+          "breachType": "NOT_APPLICABLE",
+          "courtOfAppealFlag": false,
+          "courtExtractAvlFlag": true,
+          "listingNotifTemplate": "NOT_APPLICABLE",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "resentencingActivationCode": "CJO3522",
+          "prefix": "Resentenced"
+        },
+        "applicationParticulars" : "Application Particulars",
+        "defendantASN": "Arrest456"
+      }
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court",
+        "welshLjaName": "East Hampshire Magistrates' Court"
+      }
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 10,
+        "sittingDay": "2021-02-24T12:00:00.000Z"
+      }
+    ],
+    "id": "93c243f8-c4d3-4790-92ef-6192db00539c",
+    "isBoxHearing": true,
+    "isVirtualBoxHearing": true,
+    "jurisdictionType": "MAGISTRATES",
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "prosecutionCounsels": [
+      {
+        "firstName": "add",
+        "id": "3e6d84fc-abab-4a49-8406-f046df525356",
+        "lastName": "ZDA",
+        "middleName": "",
+        "prosecutionCases": [
+          "4ac18add-5789-458a-9737-2fb48fd1f637"
+        ]
+      }
+    ],
+    "defenceCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "defendants": [
+          "2fd9592d-f01f-45f3-9b6e-83bc117c65b7"
+        ]
+      }
+    ]
+  },
+  {
+    "courtApplications": [
+      {
+        "allegationOrComplaintEndDate": "2020-07-26",
+        "allegationOrComplaintStartDate": "2020-07-26",
+        "applicant": {
+          "id": "e2791a56-d396-4561-8655-e2307402b6de",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityOUCode": "GB10056",
+            "majorCreditorCode": "TFL2",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "address": {
+              "address3": "London",
+              "address2": "42-50 Victoria Street",
+              "address1": "6th Floor Windsor House",
+              "postcode": "SW1H 0TL"
+            },
+            "contact": {
+              "primaryEmail": "test@test.com"
+            },
+            "name": "Transport for London",
+            "welshName": "Transport for London"
+          },
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2020-07-26",
+        "applicationReference": "12GD8000017",
+        "applicationStatus": "IN_PROGRESS",
+        "commissionerOfOath": false,
+        "hasSummonsSupplied": false,
+        "courtOrder": {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": true,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "10e888c9-6af3-42bd-8165-8687aceab6e1",
+                "isDisposed": true,
+                "modeOfTrial": "Summary",
+                "offenceCode": "CJO3522",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Use / install a television set without a licence",
+                "offenceTitleWelsh": "Use / install a television set without a licence in Welsh",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Resentenced Original code : CA03010, Original details: Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                "wordingWelsh": "Resentenced Original code : CA03010, Original details: null",
+                "maxPenalty": "1 Year prison",
+                "offenceFacts": {
+                  "vehicleRegistration": "AA12345",
+                  "alcoholReadingAmount": "111",
+                  "alcoholReadingMethodCode": "2222",
+                  "alcoholReadingMethodDescription": "Breath"
+                },
+                "plea": {
+                  "pleaDate": "2020-01-01",
+                  "pleaValue": "GUILTY"
+                },
+                "convictionDate": "2020-05-01",
+                "lastAdjournDate": "2020-05-02",
+                "lastAdjournedHearingType": "Last Adjourned Hearing Type"
+              },
+              "prosecutionCaseId": "59d26220-aa82-4cde-8cec-95e134a42fe0",
+              "prosecutionCaseIdentifier": {
+                "majorCreditorCode": "PF45",
+                "prosecutionAuthorityCode": "CPS-SE",
+                "prosecutionAuthorityId": "125baa4d-ffeb-448b-852c-5ab695fdfcc7",
+                "prosecutionAuthorityName": "Surrey Police test",
+                "prosecutionAuthorityOUCode": "A45AA00",
+                "caseURN": "90GD8989122"
+              }
+            }
+          ],
+          "defendantIds": [
+            "c46ca4a8-39ae-440d-9016-e12e936313e3"
+          ],
+          "endDate": "2028-01-22",
+          "id": "425e7b6c-5181-43c0-ae00-60f59307fb4c",
+          "isSJPOrder": false,
+          "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "label": "Community order England / Wales",
+          "masterDefendantId": "c46ca4a8-39ae-440d-9016-e12e936313e3",
+          "orderDate": "2021-01-22",
+          "orderingCourt": {
+            "address": {
+              "address1": "176A Lavender Hill",
+              "address2": "London",
+              "address3": "",
+              "address4": "",
+              "address5": "",
+              "postcode": "SW11 1JU"
+            },
+            "code": "B01LY00",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "b4562684-9209-3ec4-a544-7f80dabd94d8",
+            "roomName": "Courtroom 02"
+          },
+          "orderingHearingId": "318f574c-1ac4-44e4-ab2d-d03252e697dc",
+          "startDate": "2021-01-22"
+        },
+        "id": "417fe634-20f3-474b-a110-4c6141c58c99",
+        "respondents": [
+          {
+            "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+            "masterDefendant": {
+              "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+              "prosecutionAuthorityReference": "randomreference234",
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "1234",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1972-01-29",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Robert12",
+                  "gender": "MALE",
+                  "lastName": "Smith12",
+                  "title": "Mr"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": true
+          },
+          {
+            "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b8",
+            "masterDefendant": {
+              "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b8",
+              "prosecutionAuthorityReference": "randomreference345",
+              "personDefendant": {
+                "arrestSummonsNumber": "TFL",
+                "bailStatus": {
+                  "code": "C",
+                  "description": "Custody or remanded into custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                },
+                "personDetails": {
+                  "address": {
+                    "address1": "1234",
+                    "address2": "StreetDescription",
+                    "address3": "Locality2O"
+                  },
+                  "dateOfBirth": "1972-01-29",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "firstName": "Robert13",
+                  "gender": "MALE",
+                  "lastName": "Smith13",
+                  "title": "Mr"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": true
+          }
+        ],
+        "subject": {
+          "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+          "masterDefendant": {
+            "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody or remanded into custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "1234",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1972-01-29",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Robert12",
+                "gender": "MALE",
+                "lastName": "Smith12",
+                "title": "Mr",
+                "nationalityDescription": "British"
+              }
+            },
+            "legalEntityDefendant": {
+              "organisation": {
+                "address": {
+                  "address1": "888",
+                  "address2": "382 Graham Drives",
+                  "address3": "New Genevieve",
+                  "address4": "CO",
+                  "address5": "Cyprus",
+                  "postcode": "SW11 1JU"
+                },
+                "contact": {
+                  "fax": "670-011-2708",
+                  "home": "696-318-7043",
+                  "mobile": "673-269-7203",
+                  "primaryEmail": "watson.doyle@yahoo.com",
+                  "secondaryEmail": "neha.hand@yahoo.com",
+                  "work": "699.244.3301"
+                },
+                "incorporationNumber": "qrdE2yTAM9",
+                "name": "ojIE26ztNj",
+                "registeredCharityNumber": "WTV7hUH2nz"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": true
+        },
+        "thirdParties": [
+          {
+            "id": "5c3921f3-757d-4710-8ee5-854739c96ce0",
+            "notificationRequired": true,
+            "personDetails": {
+              "address": {
+                "address1": "line1",
+                "postcode": "SL2 5FZ"
+              },
+              "firstName": "aasfsa",
+              "gender": "NOT_SPECIFIED",
+              "lastName": "gjg"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "type": {
+          "id": "cb05a560-48f9-415d-b230-55b78f8cb4a8",
+          "type": "Application for first hearing summons for criminal case",
+          "typeWelsh" : "Type In Welsh",
+          "categoryCode": "CO",
+          "jurisdiction": "EITHER",
+          "linkType": "FIRST_HEARING",
+          "code": "App Type  Code",
+          "legislation": "App Legislation",
+          "appealFlag": false,
+          "summonsTemplateType": "FIRST_HEARING",
+          "hearingCode": "BOO",
+          "applicantAppellantFlag": false,
+          "pleaApplicableFlag": true,
+          "offenceActiveOrder": "OFFENCE",
+          "commrOfOathFlag": false,
+          "breachType": "NOT_APPLICABLE",
+          "courtOfAppealFlag": false,
+          "courtExtractAvlFlag": true,
+          "listingNotifTemplate": "NOT_APPLICABLE",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "resentencingActivationCode": "CJO3522",
+          "prefix": "Resentenced"
+        },
+        "applicationParticulars" : "Application Particulars",
+        "defendantASN": "Arrest456"
+      }
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court",
+        "welshLjaName": "East Hampshire Magistrates' Court"
+      }
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 10,
+        "sittingDay": "2021-02-24T12:00:00.000Z"
+      }
+    ],
+    "id": "50a243f8-c4d3-4790-92ef-6192db00539c",
+    "isBoxHearing": true,
+    "isVirtualBoxHearing": true,
+    "jurisdictionType": "MAGISTRATES",
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "prosecutionCounsels": [
+      {
+        "firstName": "add",
+        "id": "3e6d84fc-abab-4a49-8406-f046df525356",
+        "lastName": "ZDA",
+        "middleName": "",
+        "prosecutionCases": [
+          "59d26220-aa82-4cde-8cec-95e134a42fe0"
+        ]
+      }
+    ],
+    "defenceCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "defendants": [
+          "2fd9592d-f01f-45f3-9b6e-83bc117c65b7"
+        ]
+      }
+    ]
+  }
+]

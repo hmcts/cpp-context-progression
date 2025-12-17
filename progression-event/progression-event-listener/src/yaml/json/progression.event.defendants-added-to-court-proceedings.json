@@ -1,0 +1,70 @@
+{
+  "defendants": [
+    {
+      "offences": [
+        {
+          "offenceCode": "TFL123",
+          "offenceTitle": "TFL Ticket Dodger",
+          "count": 0,
+          "id": "fe261841-4f77-49a3-b916-ff403cc40a77",
+          "wording": "TFL ticket dodged",
+          "offenceDefinitionId": "bfd0a307-7c59-43f9-8713-d568fa4e4fff",
+          "startDate": "2019-05-01"
+        }
+      ],
+      "id": "a7fc1cf1-7729-4839-aa4b-ed76d2fabacc",
+      "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+    },
+    {
+      "offences": [
+        {
+          "offenceCode": "TFL123",
+          "offenceTitle": "TFL Ticket Dodger",
+          "count": 0,
+          "id": "fe261841-4f77-49a3-b916-ff403cc40a77",
+          "wording": "TFL ticket dodged",
+          "offenceDefinitionId": "bfd0a307-7c59-43f9-8713-d568fa4e4fff",
+          "startDate": "2019-05-01"
+        }
+      ],
+      "id": "ff9fb1f4-b8d3-4052-b02c-77521bc3b14c",
+      "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+    }
+  ],
+  "listHearingRequests": [
+    {
+      "hearingType": {
+        "description": "TO_JAIL",
+        "id": "6a7e9f2b-db71-4a78-b688-244f4d611b70"
+      },
+      "jurisdictionType": "MAGISTRATES",
+      "courtCentre": {
+        "id": "0946d5d3-f5e3-4206-a0b1-7d0938fe8bbe"
+      },
+      "listDefendantRequests": [
+        {
+          "referralReason": {
+            "description": "Dodged TFL tickets with passion",
+            "defendantId": "a7fc1cf1-7729-4839-aa4b-ed76d2fabacc",
+            "id": "19a294db-8de6-40f9-b742-5aecd6d1ce32"
+          },
+          "defendantOffences": [
+            "fe261841-4f77-49a3-b916-ff403cc40a77"
+          ],
+          "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+        },
+        {
+          "referralReason": {
+            "description": "Dodged TFL tickets with passion",
+            "defendantId": "ff9fb1f4-b8d3-4052-b02c-77521bc3b14c",
+            "id": "8f1bc27e-f98b-4ff4-81e8-18ee48bad1fa"
+          },
+          "defendantOffences": [
+            "fe261841-4f77-49a3-b916-ff403cc40a77"
+          ],
+          "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/progression.grant-defence-access.json",
+  "type": "object",
+  "properties": {
+    "granteeEmailId": {
+      "type": "string",
+      "format": "email"
+    },
+    "isAgent": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "granteeEmailId",
+    "isAgent"
+  ]
+}

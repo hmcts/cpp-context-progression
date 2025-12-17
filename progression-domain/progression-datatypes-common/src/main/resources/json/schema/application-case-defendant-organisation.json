@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/application/applicationCaseDefendantOrganisation.json",
+  "type": "object",
+  "description": "Application Case Defendant Organisation",
+  "properties": {
+    "caseId": {
+      "description": "case id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "description": "The case defendant",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "organisationId": {
+      "description": "The defence organisation id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "caseId", "defendantId"
+  ],
+  "additionalProperties": false
+}

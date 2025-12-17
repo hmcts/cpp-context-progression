@@ -1,0 +1,32 @@
+{
+  "switchedToYouth": true,
+  "defendantCaseOffences": {
+    "defendantId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f0",
+    "prosecutionCaseId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+    "offences": [
+      {
+        "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+        "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+        "wording": "No Travel Card",
+        "wordingWelsh": "No Travel Card In Welsh",
+        "startDate": "2018-01-01",
+        "endDate": "2018-01-01",
+        "arrestDate": "2018-01-01",
+        "chargeDate": "2018-01-01",
+        "orderIndex": 1,
+        "offenceCode":"TTH105HY",
+        "count": 0,
+        "notifiedPlea": {
+          "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "notifiedPleaDate": "2018-04-01",
+          "notifiedPleaValue": "NOTIFIED_GUILTY"
+        },
+        "offenceFacts": {
+          "vehicleRegistration": "AA12345",
+          "alcoholReadingAmount": "111",
+          "alcoholReadingMethod": "2222"
+        }
+      }
+    ]
+  }
+}

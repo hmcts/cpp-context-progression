@@ -1,0 +1,12 @@
+{
+  "prosecutionCaseId": "PROSECUTION_CASE_ID",
+  "casesToLink": [
+    {
+      "caseUrns": [
+        "CASE_URN2",
+        "CASE_URN3"
+      ],
+      "caseLinkType": "LINK"
+    }
+  ]
+}

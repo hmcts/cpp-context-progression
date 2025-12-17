@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-opa-notice" author="Shrikanth Shetty">
+        <createTable tableName="public_list_opa_notice">
+            <column name="case_id" type="UUID"/>
+            <column name="defendant_id" type="UUID"/>
+            <column name="hearing_id" type="UUID"/>
+        </createTable>
+        <createTable tableName="press_list_opa_notice">
+            <column name="case_id" type="UUID"/>
+            <column name="defendant_id" type="UUID"/>
+            <column name="hearing_id" type="UUID"/>
+        </createTable>
+        <createTable tableName="result_list_opa_notice">
+            <column name="case_id" type="UUID"/>
+            <column name="defendant_id" type="UUID"/>
+            <column name="hearing_id" type="UUID"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add-opa-notice-key-constraints" author="Shrikanth Shetty">
+        <addPrimaryKey columnNames="defendant_id" constraintName="public_list_opa_notice_primary_key"
+                       tableName="public_list_opa_notice"/>
+        <addPrimaryKey columnNames="defendant_id" constraintName="press_list_opa_notice_primary_key"
+                       tableName="press_list_opa_notice"/>
+        <addPrimaryKey columnNames="defendant_id" constraintName="result_list_opa_notice_primary_key"
+                       tableName="result_list_opa_notice"/>
+    </changeSet>
+</databaseChangeLog>

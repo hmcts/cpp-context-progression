@@ -1,0 +1,1875 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-05-14T08:51:04.045Z",
+        "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+        "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+        "offences": [
+          {
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2025-05-14",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": true,
+                "canBeSubjectOfVariation": true,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1116",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "durationElement": {
+                  "durationEndDate": "12/03/2025"
+                },
+                "dvlaCode": "M",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "4089d60e-173e-4efd-9a1e-ff6b664d1065",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isDurationEndDate": true,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                    "label": "End Date",
+                    "promptReference": "endDate",
+                    "promptSequence": 100,
+                    "type": "DATE",
+                    "usergroups": [],
+                    "value": "12/03/2025",
+                    "welshLabel": "Dyddiad terfyn",
+                    "welshValue": "12/03/2025"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                    "label": "Responsible officer",
+                    "promptReference": "responsibleOfficer",
+                    "promptSequence": 200,
+                    "type": "FIXL",
+                    "usergroups": [],
+                    "value": "a probation officer",
+                    "welshLabel": "Swyddog cyfrifol",
+                    "welshValue": "swyddog prawf"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                    "label": "Supervising Court",
+                    "promptReference": "supervisingCourt",
+                    "promptSequence": 300,
+                    "type": "FIXL",
+                    "usergroups": [],
+                    "value": "Aberdeen JP Court",
+                    "welshLabel": "Llys sy’n Goruchwylio",
+                    "welshValue": "Aberdeen JP Court"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                    "label": "Probation team to be notified organisation name",
+                    "promptReference": "probationteamtobenotifiedOrganisationName",
+                    "promptSequence": 700,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [],
+                    "value": "London Division NPS",
+                    "welshValue": "London Division NPS"
+                  },
+                  {
+                    "courtExtract": "N",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                    "label": "Probation team to be notified email address 1",
+                    "promptReference": "probationteamtobenotifiedEmailAddress1",
+                    "promptSequence": 700,
+                    "type": "NAMEADDRESS",
+                    "usergroups": [],
+                    "value": "londonnps.court@justice.gov.uk",
+                    "welshValue": "londonnps.court@justice.gov.uk"
+                  }
+                ],
+                "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                "label": "Community order England / Wales",
+                "lastSharedDateTime": "2025-05-14",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-05-14",
+                "orderedHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 64000,
+                "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 12/03/2025. ",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "4089d60e-173e-4efd-9a1e-ff6b664d1065",
+                "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": []
+              },
+              {
+                "alwaysPublished": true,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "ANCILLARY",
+                "cjsCode": "3101",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "bf36595c-734c-4961-b2c1-c440dd38461c",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                    "label": "Number of hours",
+                    "promptReference": "numberOfHours",
+                    "promptSequence": 100,
+                    "type": "INT",
+                    "usergroups": [],
+                    "value": "22 Hours",
+                    "welshLabel": "Nifer yr oriau",
+                    "welshValue": "22 Hours"
+                  }
+                ],
+                "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+                "label": "Unpaid work. Requirement to be completed within 12 months.",
+                "lastSharedDateTime": "2025-05-14",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-05-14",
+                "orderedHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                "parentJudicialResultId": "72939a33-c6f7-4815-a60c-a9a0995fced6",
+                "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 68500,
+                "resultDefinitionGroup": "Community Requirement",
+                "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 22 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+                "rollUpPrompts": false,
+                "rootJudicialResultId": "4089d60e-173e-4efd-9a1e-ff6b664d1065",
+                "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": []
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "EW:6M &/or Ultd Fine",
+            "modeOfTrial": "Either Way",
+            "offenceCode": "TH68010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+            "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+            "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+            "offenceTitle": "Theft from a shop",
+            "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+              "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+              "pleaDate": "2025-05-14",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "wording": "Theft from shop."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DEF014181281",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "driverNumber": "AFESL811111B99TX",
+          "personDetails": {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London"
+            },
+            "contact": {
+              "home": "015325443756"
+            },
+            "dateOfBirth": "1991-11-11",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "1",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Kayla",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Walter",
+            "occupation": "Accountant",
+            "occupationCode": "2201",
+            "title": "MR"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DEF014181281",
+        "prosecutionCaseId": "dbf8536c-537e-4229-b93d-d357056d3680"
+      }
+    ],
+    "id": "dbf8536c-537e-4229-b93d-d357056d3680",
+    "initiationCode": "C",
+    "originatingOrganisation": "0480000",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Bishopsgate police station",
+        "address2": "182, Bishopsgate",
+        "address5": "London",
+        "postcode": "EC2M 4NP"
+      },
+      "contact": {
+        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+      },
+      "majorCreditorCode": "COLP",
+      "prosecutionAuthorityCode": "CITYPF",
+      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+      "prosecutionAuthorityName": "City of London Police",
+      "prosecutionAuthorityOUCode": "0480000",
+      "caseURN": "28DI4181281"
+    }
+  },
+  "linkedApplicationsSummary": [
+    {
+      "applicationId": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
+      "applicationTitle": "Failing to comply with the requirements of a community order",
+      "applicationReference": "28DI4181281",
+      "applicationStatus": "FINALISED",
+      "applicantDisplayName": "CITYPF",
+      "respondentDisplayNames": [
+        "Kayla Walter"
+      ],
+      "respondentIds": [
+        "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+      ],
+      "subjectId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+      "isAppeal": false
+    }
+  ],
+  "hearingsAtAGlance": {
+    "courtApplications": [
+      {
+        "allegationOrComplaintEndDate": "2025-05-14",
+        "allegationOrComplaintStartDate": "2025-05-12",
+        "applicant": {
+          "id": "d2d66448-fc20-4329-be90-b64a91bed6c8",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Bishopsgate police station",
+              "address2": "182, Bishopsgate",
+              "address5": "London",
+              "postcode": "EC2M 4NP"
+            },
+            "contact": {
+              "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+            },
+            "majorCreditorCode": "COLP",
+            "name": "City of London Police",
+            "prosecutionAuthorityCode": "CITYPF",
+            "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+            "prosecutionAuthorityOUCode": "0480000",
+            "welshName": "Heddlu Dinas Llundain"
+          },
+          "summonsRequired": false
+        },
+        "applicationParticulars": "test",
+        "applicationReceivedDate": "2025-05-08",
+        "applicationReference": "28DI4181281",
+        "applicationStatus": "FINALISED",
+        "commissionerOfOath": false,
+        "convictionDate": "2025-05-21",
+        "courtOrder": {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": true,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "arrestDate": "2022-12-14",
+                "chargeDate": "2022-12-15",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-05-14",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                "isDisposed": false,
+                "listingNumber": 1,
+                "maxPenalty": "EW:6M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "CJ03522",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                  "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                  "pleaDate": "2025-05-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2022-12-12",
+                "wording": "Original CaseURN: 28DI4181281, Re-sentenced Original code : TH68010, Original details: Theft from shop."
+              },
+              "prosecutionCaseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+              "prosecutionCaseIdentifier": {
+                "address": {
+                  "address1": "Bishopsgate police station",
+                  "address2": "182, Bishopsgate",
+                  "address5": "London",
+                  "postcode": "EC2M 4NP"
+                },
+                "contact": {
+                  "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                },
+                "majorCreditorCode": "COLP",
+                "prosecutionAuthorityCode": "CITYPF",
+                "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                "prosecutionAuthorityName": "City of London Police",
+                "prosecutionAuthorityOUCode": "0480000",
+                "caseURN": "28DI4181281"
+              }
+            }
+          ],
+          "defendantIds": [
+            "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+          ],
+          "endDate": "2025-03-12",
+          "id": "41e8dc2f-d7f1-4507-a446-e4fd67718821",
+          "isSJPOrder": false,
+          "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "label": "Community order England / Wales",
+          "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+          "orderDate": "2025-05-14",
+          "orderingCourt": {
+            "address": {
+              "address1": "176A Lavender Hill",
+              "address2": "London",
+              "address3": "",
+              "address4": "",
+              "address5": "",
+              "postcode": "SW11 1JU"
+            },
+            "code": "B01LY00",
+            "courtHearingLocation": "B01LY01",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "roomName": "Courtroom 01"
+          },
+          "orderingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+          "startDate": "2025-05-14"
+        },
+        "hasSummonsSupplied": false,
+        "id": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": true,
+            "category": "FINAL",
+            "cjsCode": "1030",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "99a646a0-d4bd-4c60-95a5-0ca8fbad1e67",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "0eba630e-a486-439f-8d76-b49b1363067c",
+                "label": "Court that made the original order",
+                "promptReference": "courtThatMadeTheOriginalOrder",
+                "promptSequence": 100,
+                "type": "FIXL",
+                "usergroups": [],
+                "value": "Aberdeen JP Court",
+                "welshLabel": "Y llys a wnaeth y gorchymyn gwreiddiol",
+                "welshValue": "Aberdeen JP Court"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "39355876-d028-48fa-82d8-ccedbe4312f8",
+                "label": "Date original order made",
+                "promptReference": "dateOriginalOrderMade",
+                "promptSequence": 200,
+                "type": "DATE",
+                "usergroups": [],
+                "value": "12/02/2025",
+                "welshLabel": "Dyddiad y gwnaethpwyd y gorchymyn gwreiddiol",
+                "welshValue": "12/02/2025"
+              },
+              {
+                "activeOrderExtended": true,
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "361cee65-0550-4c9a-9fbd-3a234e9431f1",
+                "label": "The end date of the order has been changed and the requirements must be complied with by",
+                "promptReference": "theEndDateOfTheOrderHasBeenChangedAndTheRequirementsMustBeCompliedWithBy",
+                "promptSequence": 800,
+                "type": "DATE",
+                "usergroups": [],
+                "value": "12/03/2025",
+                "welshValue": "12/03/2025"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "27bf0204-a185-4e82-8c34-7317287513c8",
+                "label": "Responsible officer for the order",
+                "promptReference": "responsibleOfficerForTheOrder",
+                "promptSequence": 1000,
+                "type": "FIXL",
+                "usergroups": [],
+                "value": "a probation officer",
+                "welshValue": "swyddog prawf"
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                "label": "Supervising Court",
+                "promptReference": "supervisingCourt",
+                "promptSequence": 1020,
+                "type": "FIXL",
+                "usergroups": [],
+                "value": "Aberdeen JP Court",
+                "welshLabel": "Llys sy’n Goruchwylio",
+                "welshValue": "Aberdeen JP Court"
+              },
+              {
+                "courtExtract": "N",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                "label": "Probation team to be notified organisation name",
+                "promptReference": "probationteamtobenotifiedOrganisationName",
+                "promptSequence": 1200,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "London Division NPS",
+                "welshValue": "London Division NPS"
+              },
+              {
+                "courtExtract": "N",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                "label": "Probation team to be notified email address 1",
+                "promptReference": "probationteamtobenotifiedEmailAddress1",
+                "promptSequence": 1200,
+                "type": "NAMEADDRESS",
+                "usergroups": [],
+                "value": "londonnps.court@justice.gov.uk",
+                "welshValue": "londonnps.court@justice.gov.uk"
+              }
+            ],
+            "judicialResultTypeId": "4a026ff3-e1aa-407e-aafa-015723c1dbd0",
+            "label": "Community order varied",
+            "lastSharedDateTime": "2025-05-14",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2025-05-14",
+            "orderedHearingId": "2b889bca-738a-4902-bf6f-64dabf106d05",
+            "policeSubjectLineTitle": "Final Sentence",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 223000,
+            "resultText": "COV - Community order varied\nOrder made on 12/02/2025 by Aberdeen JP Court varied. The end date of the order has been changed and the requirements must be complied with by 12/03/2025. The new and amended requirements are shown below. The responsible officer nominated is a probation officer. The supervising court is Aberdeen JP Court. ",
+            "rollUpPrompts": true,
+            "rootJudicialResultId": "99a646a0-d4bd-4c60-95a5-0ca8fbad1e67",
+            "rootJudicialResultTypeId": "4a026ff3-e1aa-407e-aafa-015723c1dbd0",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          },
+          {
+            "alwaysPublished": true,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": false,
+            "category": "ANCILLARY",
+            "cjsCode": "3101",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "a65f12ff-0e57-439d-975e-f6d959f020f1",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                "label": "Number of hours",
+                "promptReference": "numberOfHours",
+                "promptSequence": 100,
+                "type": "INT",
+                "usergroups": [],
+                "value": "12 Hours",
+                "welshLabel": "Nifer yr oriau",
+                "welshValue": "12 Hours"
+              }
+            ],
+            "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+            "label": "Unpaid work. Requirement to be completed within 12 months.",
+            "lastSharedDateTime": "2025-05-14",
+            "level": "O",
+            "lifeDuration": false,
+            "orderedDate": "2025-05-14",
+            "orderedHearingId": "2b889bca-738a-4902-bf6f-64dabf106d05",
+            "parentJudicialResultId": "950de148-b91b-424d-9ea0-2c08ab2305e7",
+            "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 68500,
+            "resultDefinitionGroup": "Community Requirement",
+            "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 12 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+            "rollUpPrompts": false,
+            "rootJudicialResultId": "99a646a0-d4bd-4c60-95a5-0ca8fbad1e67",
+            "rootJudicialResultTypeId": "4a026ff3-e1aa-407e-aafa-015723c1dbd0",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ],
+        "plea": {
+          "applicationId": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
+          "offenceId": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
+          "originatingHearingId": "8b82f7cb-82bd-457d-a4b1-7d9831776dd7",
+          "pleaDate": "2025-05-14",
+          "pleaValue": "GUILTY"
+        },
+        "respondents": [
+          {
+            "id": "5cde8b6e-cacd-4fb7-88c5-9c947dfc1b7c",
+            "masterDefendant": {
+              "defendantCase": [
+                {
+                  "caseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+                  "caseReference": "28DI4181281",
+                  "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+                }
+              ],
+              "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+              "personDefendant": {
+                "arrestSummonsNumber": "DEF014181281",
+                "bailStatus": {
+                  "code": "A",
+                  "description": "Not applicable",
+                  "id": "86009c70-759d-3308-8de4-194886ff9a77"
+                },
+                "driverNumber": "AFESL811111B99TX",
+                "personDetails": {
+                  "address": {
+                    "address1": "21",
+                    "address2": "Furnburry Park Road",
+                    "address3": "London"
+                  },
+                  "contact": {
+                    "home": "015325443756"
+                  },
+                  "dateOfBirth": "1991-11-11",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "ethnicity": {
+                    "observedEthnicityCode": "1",
+                    "observedEthnicityDescription": "White",
+                    "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "selfDefinedEthnicityCode": "W1",
+                    "selfDefinedEthnicityDescription": "British",
+                    "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                  },
+                  "firstName": "Kayla",
+                  "gender": "MALE",
+                  "hearingLanguageNeeds": "ENGLISH",
+                  "lastName": "Walter",
+                  "occupation": "Accountant",
+                  "occupationCode": "2201",
+                  "title": "MR"
+                },
+                "policeBailStatus": {
+                  "code": "C",
+                  "description": "Custody",
+                  "id": "12e69486-4d01-3403-a50a-7419ca040635"
+                }
+              }
+            },
+            "notificationRequired": true,
+            "summonsRequired": true
+          }
+        ],
+        "subject": {
+          "id": "5cde8b6e-cacd-4fb7-88c5-9c947dfc1b7c",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+                "caseReference": "28DI4181281",
+                "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+              }
+            ],
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "personDefendant": {
+              "arrestSummonsNumber": "DEF014181281",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "AFESL811111B99TX",
+              "personDetails": {
+                "address": {
+                  "address1": "21",
+                  "address2": "Furnburry Park Road",
+                  "address3": "London"
+                },
+                "contact": {
+                  "home": "015325443756"
+                },
+                "dateOfBirth": "1991-11-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Kayla",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Walter",
+                "occupation": "Accountant",
+                "occupationCode": "2201",
+                "title": "MR"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": true
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "applicationWording": "Failed without reasonable excuse to comply with the requirements of a community order made by {1} on {2} by {3}",
+          "applicationWordingWelsh": "Heb esgus rhesymol, bu i chi fethu cydymffurfio â gofynion gorchymyn cymunedol a wnaed gan <Court name> ar <Date of Order> drwy <Details of failure>",
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "GENERIC_BREACH",
+          "categoryCode": "CB",
+          "changeDate": "2024-10-17T16:22:29",
+          "code": "CJ03510",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "BOO",
+          "id": "7e38f0b0-b2b5-4881-a5a6-04d9e47c0be3",
+          "initialFeeApplicable": false,
+          "jurisdiction": "EITHER",
+          "lastModified": "2025-02-24T18:18:56.622Z",
+          "legislation": "In accordance with Part 2 of Schedule 8 to the Criminal Justice Act 2003.",
+          "legislationWelsh": "Yn unol ag Adran 2 Atodlen 8 Deddf Cyfiawnder Troseddol 2003.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "NOT_APPLICABLE",
+          "offenceActiveOrder": "COURT_ORDER",
+          "pleaApplicableFlag": true,
+          "prefix": "Resentenced",
+          "prosecutorThirdPartyFlag": false,
+          "pssId": 627327,
+          "resentencingActivationCode": "CJ03522",
+          "sowRef": "APPS",
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "BREACH",
+          "type": "Failing to comply with the requirements of a community order",
+          "typeWelsh": "Methu â chydymffurfio â gofynion gorchymyn cymunedol",
+          "validFrom": "2009-05-04"
+        }
+      }
+    ],
+    "defendantHearings": [
+      {
+        "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+        "defendantName": "Kayla Walter",
+        "hearingIds": [
+          "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-05-14"
+              }
+            ],
+            "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London"
+            },
+            "age": "33",
+            "courtApplications": [],
+            "dateOfBirth": "1991-11-11",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+            },
+            "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "judicialResults": [],
+            "name": "Kayla Walter",
+            "offences": [
+              {
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-05-14",
+                "count": 0,
+                "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": true,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1116",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "durationEndDate": "12/03/2025"
+                    },
+                    "dvlaCode": "M",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "4089d60e-173e-4efd-9a1e-ff6b664d1065",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isDurationEndDate": true,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                        "label": "End Date",
+                        "promptReference": "endDate",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "12/03/2025",
+                        "welshLabel": "Dyddiad terfyn",
+                        "welshValue": "12/03/2025"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                        "label": "Responsible officer",
+                        "promptReference": "responsibleOfficer",
+                        "promptSequence": 200,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "a probation officer",
+                        "welshLabel": "Swyddog cyfrifol",
+                        "welshValue": "swyddog prawf"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                        "label": "Supervising Court",
+                        "promptReference": "supervisingCourt",
+                        "promptSequence": 300,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "Aberdeen JP Court",
+                        "welshLabel": "Llys sy’n Goruchwylio",
+                        "welshValue": "Aberdeen JP Court"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London Division NPS",
+                        "welshValue": "London Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "londonnps.court@justice.gov.uk",
+                        "welshValue": "londonnps.court@justice.gov.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "label": "Community order England / Wales",
+                    "lastSharedDateTime": "2025-05-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-14",
+                    "orderedHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 64000,
+                    "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 12/03/2025. ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "4089d60e-173e-4efd-9a1e-ff6b664d1065",
+                    "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  },
+                  {
+                    "alwaysPublished": true,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "ANCILLARY",
+                    "cjsCode": "3101",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "bf36595c-734c-4961-b2c1-c440dd38461c",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                        "label": "Number of hours",
+                        "promptReference": "numberOfHours",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "22 Hours",
+                        "welshLabel": "Nifer yr oriau",
+                        "welshValue": "22 Hours"
+                      }
+                    ],
+                    "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+                    "label": "Unpaid work. Requirement to be completed within 12 months.",
+                    "lastSharedDateTime": "2025-05-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-14",
+                    "orderedHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                    "parentJudicialResultId": "72939a33-c6f7-4815-a60c-a9a0995fced6",
+                    "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 68500,
+                    "resultDefinitionGroup": "Community Requirement",
+                    "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 22 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "4089d60e-173e-4efd-9a1e-ff6b664d1065",
+                    "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "offenceCode": "TH68010",
+                "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                    "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                    "pleaDate": "2025-05-14",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [],
+                "wording": "Theft from shop."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-14T22:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-05-14"
+              }
+            ],
+            "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London"
+            },
+            "age": "33",
+            "courtApplications": [
+              {
+                "applicant": "CITYPF",
+                "applicationId": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
+                "applicationReceivedDate": "2025-05-08",
+                "applicationType": "Failing to comply with the requirements of a community order",
+                "courtOrder": {
+                  "canBeSubjectOfBreachProceedings": true,
+                  "canBeSubjectOfVariationProceedings": true,
+                  "courtOrderOffences": [
+                    {
+                      "offences": {
+                        "arrestDate": "2022-12-14",
+                        "chargeDate": "2022-12-15",
+                        "convictingCourt": {
+                          "code": "B01LY00",
+                          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                          "lja": {
+                            "ljaCode": "2577",
+                            "ljaName": "South West London Magistrates' Court"
+                          },
+                          "name": "Lavender Hill Magistrates' Court",
+                          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                        },
+                        "convictionDate": "2025-05-14",
+                        "count": 0,
+                        "endorsableFlag": false,
+                        "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                        "isDisposed": false,
+                        "listingNumber": 1,
+                        "maxPenalty": "EW:6M &/or Ultd Fine",
+                        "modeOfTrial": "Either Way",
+                        "offenceCode": "CJ03522",
+                        "offenceDateCode": 1,
+                        "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                        "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                        "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                        "offenceTitle": "Theft from a shop",
+                        "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                        "orderIndex": 1,
+                        "plea": {
+                          "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                          "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                          "pleaDate": "2025-05-14",
+                          "pleaValue": "GUILTY"
+                        },
+                        "startDate": "2022-12-12",
+                        "wording": "Original CaseURN: 28DI4181281, Re-sentenced Original code : TH68010, Original details: Theft from shop."
+                      },
+                      "prosecutionCaseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+                      "prosecutionCaseIdentifier": {
+                        "address": {
+                          "address1": "Bishopsgate police station",
+                          "address2": "182, Bishopsgate",
+                          "address5": "London",
+                          "postcode": "EC2M 4NP"
+                        },
+                        "contact": {
+                          "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                        },
+                        "majorCreditorCode": "COLP",
+                        "prosecutionAuthorityCode": "CITYPF",
+                        "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                        "prosecutionAuthorityName": "City of London Police",
+                        "prosecutionAuthorityOUCode": "0480000",
+                        "caseURN": "28DI4181281"
+                      }
+                    }
+                  ],
+                  "defendantIds": [
+                    "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+                  ],
+                  "endDate": "2025-03-12",
+                  "id": "41e8dc2f-d7f1-4507-a446-e4fd67718821",
+                  "isSJPOrder": false,
+                  "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "label": "Community order England / Wales",
+                  "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+                  "orderDate": "2025-05-14",
+                  "orderingCourt": {
+                    "address": {
+                      "address1": "176A Lavender Hill",
+                      "address2": "London",
+                      "address3": "",
+                      "address4": "",
+                      "address5": "",
+                      "postcode": "SW11 1JU"
+                    },
+                    "code": "B01LY00",
+                    "courtHearingLocation": "B01LY01",
+                    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                    "lja": {
+                      "ljaCode": "2577",
+                      "ljaName": "South West London Magistrates' Court"
+                    },
+                    "name": "Lavender Hill Magistrates' Court",
+                    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                    "roomName": "Courtroom 01"
+                  },
+                  "orderingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                  "startDate": "2025-05-14"
+                },
+                "isAppeal": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": false,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "b568879f-a8e4-40c2-8f1c-441e8eef230d",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "428e2b37-88f9-4f9c-beda-450b96bac466",
+                        "label": "Prosecution costs",
+                        "promptReference": "prosecutionCosts",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [
+                          "CPS",
+                          "Defence",
+                          "Judiciary",
+                          "NCES",
+                          "Probation",
+                          "YOTs",
+                          "Prosecuting Authorities"
+                        ],
+                        "value": "£100.00",
+                        "welshValue": "£100.00"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "04d5d843-f530-43e4-927f-57942b310d5c",
+                        "label": "THIS SUMMONS IS FOR PERSONAL SERVICE",
+                        "promptReference": "tHISSUMMONSISFORPERSONALSERVICE",
+                        "promptSequence": 200,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+                          "CPS",
+                          "Defence",
+                          "Judiciary",
+                          "Probation",
+                          "NCES",
+                          "Prosecuting Authorities",
+                          "YOTs"
+                        ],
+                        "value": "false",
+                        "welshValue": "false"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "1d068bf5-5149-4bb2-b333-7c8b288ca119",
+                        "label": "This summons will be served by a Prosecutor",
+                        "promptReference": "thisSummonsWillBeServedByAProsecutor",
+                        "promptSequence": 300,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+                          "CPS",
+                          "Defence",
+                          "Judiciary",
+                          "NCES",
+                          "Probation",
+                          "Prosecuting Authorities",
+                          "YOTs"
+                        ],
+                        "value": "false",
+                        "welshValue": "false"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "7d881e55-50ee-4098-9d3a-9b9c8f9eb834",
+                        "label": "Prosecutor's email address (used summons notification)",
+                        "promptReference": "prosecutorsEmailAddressUsedSummonsNotification",
+                        "promptSequence": 400,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "casebuilderscpsmemos@cityoflondon.police.uk",
+                        "welshValue": "casebuilderscpsmemos@cityoflondon.police.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+                    "label": "Summons approved",
+                    "lastSharedDateTime": "2025-05-14",
+                    "level": "C",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-14",
+                    "orderedHearingId": "8b82f7cb-82bd-457d-a4b1-7d9831776dd7",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 54700,
+                    "resultText": "SA - Summons approved",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "b568879f-a8e4-40c2-8f1c-441e8eef230d",
+                    "rootJudicialResultTypeId": "0f44eeb9-2c81-430d-9a60-bbdaf8c4a093",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "respondents": [
+                  {
+                    "name": "Kayla Walter"
+                  }
+                ]
+              }
+            ],
+            "dateOfBirth": "1991-11-11",
+            "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "judicialResults": [],
+            "name": "Kayla Walter"
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "hasSharedResults": true,
+            "listedDurationMinutes": 10,
+            "sittingDay": "2025-05-14T00:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "8b82f7cb-82bd-457d-a4b1-7d9831776dd7",
+        "isBoxHearing": true,
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Application",
+          "id": "3449743b-95d6-4836-8941-57f588b52068"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-05-14"
+              }
+            ],
+            "defendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "21",
+              "address2": "Furnburry Park Road",
+              "address3": "London"
+            },
+            "age": "33",
+            "courtApplications": [
+              {
+                "applicant": "CITYPF",
+                "applicationId": "141ce33b-751c-4f45-803d-851dfdd7bf4f",
+                "applicationReceivedDate": "2025-05-08",
+                "applicationType": "Failing to comply with the requirements of a community order",
+                "courtOrder": {
+                  "canBeSubjectOfBreachProceedings": true,
+                  "canBeSubjectOfVariationProceedings": true,
+                  "courtOrderOffences": [
+                    {
+                      "offences": {
+                        "arrestDate": "2022-12-14",
+                        "chargeDate": "2022-12-15",
+                        "convictingCourt": {
+                          "code": "B01LY00",
+                          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                          "lja": {
+                            "ljaCode": "2577",
+                            "ljaName": "South West London Magistrates' Court"
+                          },
+                          "name": "Lavender Hill Magistrates' Court",
+                          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                        },
+                        "convictionDate": "2025-05-14",
+                        "count": 0,
+                        "endorsableFlag": false,
+                        "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                        "isDisposed": false,
+                        "listingNumber": 1,
+                        "maxPenalty": "EW:6M &/or Ultd Fine",
+                        "modeOfTrial": "Either Way",
+                        "offenceCode": "CJ03522",
+                        "offenceDateCode": 1,
+                        "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                        "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                        "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                        "offenceTitle": "Theft from a shop",
+                        "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                        "orderIndex": 1,
+                        "plea": {
+                          "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                          "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                          "pleaDate": "2025-05-14",
+                          "pleaValue": "GUILTY"
+                        },
+                        "startDate": "2022-12-12",
+                        "wording": "Original CaseURN: 28DI4181281, Re-sentenced Original code : TH68010, Original details: Theft from shop."
+                      },
+                      "prosecutionCaseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+                      "prosecutionCaseIdentifier": {
+                        "address": {
+                          "address1": "Bishopsgate police station",
+                          "address2": "182, Bishopsgate",
+                          "address5": "London",
+                          "postcode": "EC2M 4NP"
+                        },
+                        "contact": {
+                          "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                        },
+                        "majorCreditorCode": "COLP",
+                        "prosecutionAuthorityCode": "CITYPF",
+                        "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                        "prosecutionAuthorityName": "City of London Police",
+                        "prosecutionAuthorityOUCode": "0480000",
+                        "caseURN": "28DI4181281"
+                      }
+                    }
+                  ],
+                  "defendantIds": [
+                    "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+                  ],
+                  "endDate": "2025-03-12",
+                  "id": "41e8dc2f-d7f1-4507-a446-e4fd67718821",
+                  "isSJPOrder": false,
+                  "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                  "label": "Community order England / Wales",
+                  "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+                  "orderDate": "2025-05-14",
+                  "orderingCourt": {
+                    "address": {
+                      "address1": "176A Lavender Hill",
+                      "address2": "London",
+                      "address3": "",
+                      "address4": "",
+                      "address5": "",
+                      "postcode": "SW11 1JU"
+                    },
+                    "code": "B01LY00",
+                    "courtHearingLocation": "B01LY01",
+                    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                    "lja": {
+                      "ljaCode": "2577",
+                      "ljaName": "South West London Magistrates' Court"
+                    },
+                    "name": "Lavender Hill Magistrates' Court",
+                    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                    "roomName": "Courtroom 01"
+                  },
+                  "orderingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                  "startDate": "2025-05-14"
+                },
+                "isAppeal": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": true,
+                    "category": "FINAL",
+                    "cjsCode": "1030",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "99a646a0-d4bd-4c60-95a5-0ca8fbad1e67",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "0eba630e-a486-439f-8d76-b49b1363067c",
+                        "label": "Court that made the original order",
+                        "promptReference": "courtThatMadeTheOriginalOrder",
+                        "promptSequence": 100,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "Aberdeen JP Court",
+                        "welshLabel": "Y llys a wnaeth y gorchymyn gwreiddiol",
+                        "welshValue": "Aberdeen JP Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "39355876-d028-48fa-82d8-ccedbe4312f8",
+                        "label": "Date original order made",
+                        "promptReference": "dateOriginalOrderMade",
+                        "promptSequence": 200,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "12/02/2025",
+                        "welshLabel": "Dyddiad y gwnaethpwyd y gorchymyn gwreiddiol",
+                        "welshValue": "12/02/2025"
+                      },
+                      {
+                        "activeOrderExtended": true,
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "361cee65-0550-4c9a-9fbd-3a234e9431f1",
+                        "label": "The end date of the order has been changed and the requirements must be complied with by",
+                        "promptReference": "theEndDateOfTheOrderHasBeenChangedAndTheRequirementsMustBeCompliedWithBy",
+                        "promptSequence": 800,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "12/03/2025",
+                        "welshValue": "12/03/2025"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "27bf0204-a185-4e82-8c34-7317287513c8",
+                        "label": "Responsible officer for the order",
+                        "promptReference": "responsibleOfficerForTheOrder",
+                        "promptSequence": 1000,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "a probation officer",
+                        "welshValue": "swyddog prawf"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                        "label": "Supervising Court",
+                        "promptReference": "supervisingCourt",
+                        "promptSequence": 1020,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "Aberdeen JP Court",
+                        "welshLabel": "Llys sy’n Goruchwylio",
+                        "welshValue": "Aberdeen JP Court"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 1200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "London Division NPS",
+                        "welshValue": "London Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 1200,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "londonnps.court@justice.gov.uk",
+                        "welshValue": "londonnps.court@justice.gov.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "4a026ff3-e1aa-407e-aafa-015723c1dbd0",
+                    "label": "Community order varied",
+                    "lastSharedDateTime": "2025-05-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-14",
+                    "orderedHearingId": "2b889bca-738a-4902-bf6f-64dabf106d05",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 223000,
+                    "resultText": "COV - Community order varied\nOrder made on 12/02/2025 by Aberdeen JP Court varied. The end date of the order has been changed and the requirements must be complied with by 12/03/2025. The new and amended requirements are shown below. The responsible officer nominated is a probation officer. The supervising court is Aberdeen JP Court. ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "99a646a0-d4bd-4c60-95a5-0ca8fbad1e67",
+                    "rootJudicialResultTypeId": "4a026ff3-e1aa-407e-aafa-015723c1dbd0",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  },
+                  {
+                    "alwaysPublished": true,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "ANCILLARY",
+                    "cjsCode": "3101",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "a65f12ff-0e57-439d-975e-f6d959f020f1",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                        "label": "Number of hours",
+                        "promptReference": "numberOfHours",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "12 Hours",
+                        "welshLabel": "Nifer yr oriau",
+                        "welshValue": "12 Hours"
+                      }
+                    ],
+                    "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+                    "label": "Unpaid work. Requirement to be completed within 12 months.",
+                    "lastSharedDateTime": "2025-05-14",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-14",
+                    "orderedHearingId": "2b889bca-738a-4902-bf6f-64dabf106d05",
+                    "parentJudicialResultId": "950de148-b91b-424d-9ea0-2c08ab2305e7",
+                    "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 68500,
+                    "resultDefinitionGroup": "Community Requirement",
+                    "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 12 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "99a646a0-d4bd-4c60-95a5-0ca8fbad1e67",
+                    "rootJudicialResultTypeId": "4a026ff3-e1aa-407e-aafa-015723c1dbd0",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "respondents": [
+                  {
+                    "name": "Kayla Walter"
+                  }
+                ]
+              }
+            ],
+            "dateOfBirth": "1991-11-11",
+            "id": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+            "judicialResults": [],
+            "name": "Kayla Walter"
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 1,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-14T09:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "2b889bca-738a-4902-bf6f-64dabf106d05",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Breach of Order",
+          "id": "136dfc3a-a874-32ce-8493-e50849590b49"
+        }
+      }
+    ],
+    "id": "dbf8536c-537e-4229-b93d-d357056d3680",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Bishopsgate police station",
+        "address2": "182, Bishopsgate",
+        "address5": "London",
+        "postcode": "EC2M 4NP"
+      },
+      "contact": {
+        "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+      },
+      "majorCreditorCode": "COLP",
+      "prosecutionAuthorityCode": "CITYPF",
+      "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+      "prosecutionAuthorityName": "City of London Police",
+      "prosecutionAuthorityOUCode": "0480000",
+      "caseURN": "28DI4181281"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  },
+  "activeCourtOrders": [
+    {
+      "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+      "courtOrders": [
+        {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": true,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "arrestDate": "2022-12-14",
+                "chargeDate": "2022-12-15",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2025-05-14",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                "isDisposed": true,
+                "listingNumber": 1,
+                "maxPenalty": "EW:6M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "TH68010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "ac6d60cc-67e4-4582-9f63-a1ace527f372",
+                  "originatingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+                  "pleaDate": "2025-05-14",
+                  "pleaValue": "GUILTY"
+                },
+                "startDate": "2022-12-12",
+                "wording": "Theft from shop."
+              },
+              "prosecutionCaseId": "dbf8536c-537e-4229-b93d-d357056d3680",
+              "prosecutionCaseIdentifier": {
+                "address": {
+                  "address1": "Bishopsgate police station",
+                  "address2": "182, Bishopsgate",
+                  "address5": "London",
+                  "postcode": "EC2M 4NP"
+                },
+                "contact": {
+                  "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+                },
+                "majorCreditorCode": "COLP",
+                "prosecutionAuthorityCode": "CITYPF",
+                "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+                "prosecutionAuthorityName": "City of London Police",
+                "prosecutionAuthorityOUCode": "0480000",
+                "caseURN": "28DI4181281"
+              }
+            }
+          ],
+          "defendantIds": [
+            "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa"
+          ],
+          "endDate": "2025-03-12",
+          "id": "41e8dc2f-d7f1-4507-a446-e4fd67718821",
+          "isSJPOrder": false,
+          "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "label": "Community order England / Wales",
+          "masterDefendantId": "f1c3ec3c-2a6a-4a59-a2d7-d969616761aa",
+          "orderDate": "2025-05-14",
+          "orderingCourt": {
+            "address": {
+              "address1": "176A Lavender Hill",
+              "address2": "London",
+              "address3": "",
+              "address4": "",
+              "address5": "",
+              "postcode": "SW11 1JU"
+            },
+            "code": "B01LY00",
+            "courtHearingLocation": "B01LY01",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "roomName": "Courtroom 01"
+          },
+          "orderingHearingId": "ba8fcdc9-88ec-4670-a1fa-4d0442ed95be",
+          "startDate": "2025-05-14"
+        }
+      ]
+    }
+  ]
+}

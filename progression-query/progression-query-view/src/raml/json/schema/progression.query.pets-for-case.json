@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/pet.json",
+  "type": "object",
+  "properties": {
+    "pets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "petId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "isYouth": {
+            "description": "Is Youth",
+            "type": "boolean"
+          },
+          "defendants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "defendantId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "caseId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "offences": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                  }
+                }
+              },
+              "required": [
+                "defendantId",
+                "caseId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "lastUpdated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "petId",
+          "defendants"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "pets"
+  ],
+  "additionalProperties": false
+}

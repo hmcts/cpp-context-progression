@@ -1,0 +1,8 @@
+{
+  "permissions": [
+    {
+      "object": "COTR",
+      "action": "courts-access"
+    }
+  ]
+}

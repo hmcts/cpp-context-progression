@@ -1,0 +1,13 @@
+{
+  "courtCentre": {
+    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+    "name": "South Western (Lavender Hill)",
+    "welshName": "welshName_Test"
+  },
+  "id": "ccf7e281-06a5-4066-bc83-9a642785beab",
+  "jurisdictionType": "MAGISTRATES",
+  "type": {
+    "description": "DESCRIPTION",
+    "id": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+  }
+}

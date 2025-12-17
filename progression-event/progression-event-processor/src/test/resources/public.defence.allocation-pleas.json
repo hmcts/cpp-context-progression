@@ -1,0 +1,36 @@
+{
+  "pleasAllocation": {
+    "acknowledgement": true,
+    "additionalInformation": "We at the EE solicitors LLC require 24 hoursn notice prior to any information being sent to our client. We will engage and respond between 24 hours",
+    "allocationId": "c95d7d3d-b2ff-4df7-a7fb-2d8bc7df3b2f",
+    "caseId": "8de4868b-926c-4f47-9d29-54d74b45e639",
+    "caseUrn": "89GD6714623",
+    "consentToMagistratesCourtTrial": "Elects trial at the Crown Court",
+    "defendantDetails": {
+      "dob": "1995-04-06",
+      "firstName": "Odie",
+      "surname": "Connelly"
+    },
+    "defendantId": "0e80b626-7ed1-46dd-aec4-3a57a5b0b573",
+    "defendantNameDobConfirmation": false,
+    "electingCrownCourtTrial": false,
+    "electingCrownCourtTrialDetails": "We would prefer the court considers the allocation prior to the client electing the Crown court services.",
+    "hearingCourtCode": "B01IX00",
+    "offencePleas": [
+      {
+        "indicatedPlea": "NOTGUILTY",
+        "offenceId": "8232d7a5-f0af-4fce-b4fe-204a7896d16b",
+        "pleaDate": "2023-11-09"
+      },
+      {
+        "indicatedPlea": "GUILTY",
+        "offenceId": "48810b1c-d203-47a8-b315-71bde3e68490",
+        "pleaDate": "2023-11-09"
+      }
+    ],
+    "offenceType": "adultEitherWay",
+    "sentencingIndication": "Y",
+    "theftFromShop": "Y",
+    "theftFromShopDetails": "I agree these klow level shoplifting is too negligible to warrant a public hearing and as such should not be considered an issue in this case"
+  }
+}

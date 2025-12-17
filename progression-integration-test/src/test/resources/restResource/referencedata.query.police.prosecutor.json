@@ -1,0 +1,19 @@
+{
+  "id": "[PROSECUTION_AUTHORITY_ID]",
+  "sequenceNumber": 460,
+  "majorCreditorCode": "PO45",
+  "oucode": "[OU_CODE]",
+  "shortName": "SURRPF",
+  "fullName": "Surrey Police",
+  "nameWelsh": "Heddlu Surrey",
+  "cpsFlag": false,
+  "policeFlag": true,
+  "address": {
+    "address1": "Surrey Police",
+    "address2": "Mount Browne",
+    "address3": "Sandy Lane",
+    "postcode": "SM8 1DT"
+  },
+  "contactEmailAddress": "test@test.com",
+  "informantEmailAddress": "test@test.com"
+}

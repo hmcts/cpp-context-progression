@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+	<changeSet id="delete-from-caseprogressiondetail" author="Jayen Chondigara">
+        <dropColumn columnName="dateofsending" tableName="caseprogressiondetail" />
+        <dropColumn columnName="isallstatementsidentified" tableName="caseprogressiondetail" />
+        <dropColumn columnName="isallstatementsserved" tableName="caseprogressiondetail" />
+        <dropColumn columnName="defenceissue" tableName="caseprogressiondetail" />
+        <dropColumn columnName="sfrissue" tableName="caseprogressiondetail" />
+		<dropColumn columnName="trialestimatedefence" tableName="caseprogressiondetail" />
+        <dropColumn columnName="trialestimateprosecution" tableName="caseprogressiondetail" />
+        <dropColumn columnName="ptphearingvacateddate" tableName="caseprogressiondetail" />
+        <dropColumn columnName="ispsrordered" tableName="caseprogressiondetail" />	
+        <dropColumn columnName="version" tableName="caseprogressiondetail" />																		
+    </changeSet>
+</databaseChangeLog>

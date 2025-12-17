@@ -1,0 +1,23 @@
+{
+  "caseUrn": "caseUrn",
+  "orderingCourt": {
+    "ljaCode": "2578",
+    "courtCentreName": "courtCentreName",
+    "ljaName": "ljaName"
+  },
+  "defendant": {
+    "name": "firstname lastname",
+    "dateOfBirth": "1998-08-10"
+  },
+  "orderAddressee": {
+    "address": {
+      "line1": "one",
+      "line2": "two",
+      "line3": "three",
+      "line4": "four",
+      "line5": "five",
+      "postCode": "HP17 8SD"
+    },
+    "name": "firstname lastname"
+  }
+}

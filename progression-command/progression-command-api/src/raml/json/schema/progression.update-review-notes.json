@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.update-review-notes.json",
+  "type": "object",
+  "properties": {
+    "cotrNotes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/cotrNotes"
+      }
+    }
+  },
+  "required": [
+    "cotrNotes"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "cotrNotes": {
+      "type": "object",
+      "properties": {
+        "reviewNoteType": {
+          "type": "string",
+          "enum": [
+            "CASE_PROGRESSION",
+            "LISTING",
+            "JUDGE"
+          ]
+        },
+        "reviewNotes": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "#/definitions/reviewNote"
+          }
+        }
+      },
+      "required": [
+        "reviewNoteType",
+        "reviewNotes"
+      ],
+      "additionalProperties": false
+    },
+    "reviewNote": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "comment": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

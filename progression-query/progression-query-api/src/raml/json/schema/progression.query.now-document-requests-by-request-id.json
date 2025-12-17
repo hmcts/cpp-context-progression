@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/now-document-requests-by-request-id",
+  "type": "object",
+  "properties": {
+    "nowDocumentRequests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "materialId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "requestId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "hearingId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "payload": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "materialId",
+          "hearingId",
+          "payload"
+        ]
+      }
+    }
+  }
+}

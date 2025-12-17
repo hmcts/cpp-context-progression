@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json",
+  "type": "object",
+  "properties": {
+    "defendant": {
+      "$ref": "http://justice.gov.uk/core/courts/defendant-update.json#"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "defendant",
+    "hearingId"
+  ],
+  "additionalProperties": false
+}

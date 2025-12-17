@@ -1,0 +1,12 @@
+{
+  "courtDocumentId": "%RANDOM_DOCUMENT_ID%",
+  "applicationId" : "%RANDOM_APPLICATION_ID%",
+  "name": "Application Updated Notice",
+  "documentTypeId": "a4e50dad-9e21-4b2b-903f-94176a443fca",
+  "receivedDateTime": "2019-12-07T07:16:26.661Z",
+  "containsFinancialMeans": false,
+  "sendToCps": false,
+  "defendants": [
+    "%DEFENDENT-ID2%"
+  ]
+}

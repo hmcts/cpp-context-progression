@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/exact-matched-defendant-search-result-stored.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "minItems": 1,
+        "properties": {
+          "prosecutionCaseId": {
+            "type": "string"
+          },
+          "caseReference": {
+            "type": "string"
+          },
+          "defendants": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "defendantId": {
+                  "type": "string"
+                },
+                "masterDefendantId": {
+                  "type": "string"
+                },
+                "courtProceedingsInitiated": {
+                  "description": "Timestamp when case/defendant received. This is the defendant courtProceedingsInitiated field.",
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "firstName": {
+                  "type": "string"
+                },
+                "middleName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                },
+                "dateOfBirth": {
+                  "type": "string"
+                },
+                "pncId": {
+                  "type": "string"
+                },
+                "croNumber": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "object",
+                  "properties": {
+                    "addressLine1": {
+                      "type": "string"
+                    },
+                    "addressLine2": {
+                      "type": "string"
+                    },
+                    "addressLine3": {
+                      "type": "string"
+                    },
+                    "addressLine4": {
+                      "type": "string"
+                    },
+                    "addressLine5": {
+                      "type": "string"
+                    },
+                    "postcode": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "addressLine1"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "defendantId",
+                "caseReceivedDate",
+                "lastName"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "prosecutionCaseId",
+          "caseReference"
+        ]
+      }
+    }
+  }
+}

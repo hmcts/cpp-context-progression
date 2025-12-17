@@ -1,0 +1,37 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+global uk.gov.moj.cpp.accesscontrol.refdata.providers.RbacProvider rbacProvider;
+
+rule "Command - add court document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-court-document");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders", "Defence Lawyers", "Advocates","Police Admin","Non Police Prosecutors", "Non CPS Prosecutors", "NCES"))
+    and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - add court document for prosecutor"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-court-document-for-prosecutor");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Defence Lawyers", "Advocates", "Non CPS Prosecutors"))
+    and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - add court document-v2"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-court-document-v2");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Legal Advisers","Listing Officers" ,"Court Clerks", "Crown Court Admin", "Court Administrators", "System Users", "Defence Users", "District Judge", "Court Associate", "Probation Admin", "Second Line Support", "Deputies", "DJMC", "Youth Offending Service Admin", "Judge", "Recorders", "NCES"))
+    and eval(rbacProvider.isLoggedInUserAllowedToUploadDocument($action))
+  then
+    $outcome.setSuccess(true);
+end
+

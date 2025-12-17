@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-defence-counsel-added.json",
+  "type": "object",
+  "description": "update listing status for each defendant ",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "defenceCounsel": {
+      "$ref": "http://justice.gov.uk/core/courts/defenceCounsel.json"
+    }
+  },
+  "required": [
+    "hearingId",
+    "defenceCounsel"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.add-further-info-prosecution-cotr.json",
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string"
+    },
+    "isCertificationReady": {
+      "type": "boolean"
+    },
+    "addedBy": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "addedByName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "message",
+    "isCertificationReady",
+    "addedBy",
+    "addedByName"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,49 @@
+{
+  "listNewHearing": {
+    "hearingType": {
+      "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+      "description": "sentencing"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "estimatedMinutes": 20,
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "earliestStartDateTime": "2015-01-12T05:27:17.210Z",
+    "courtCentre": {
+      "code": "B01LY00",
+      "name": "Lavender Hill Magistrates' Court",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "listingDirections": "tricky defendant",
+    "listDefendantRequests": [
+      {
+        "prosecutionCaseId": "2daefec3-2f76-8109-82d9-2e60544a6c03",
+        "defendantId": "2daefec3-2f76-8109-82d9-2e60544a6c04",
+        "datesToAvoid": "thursdays",
+        "summonsRequired": "SJP_REFERRAL",
+        "hearingLanguageNeeds": "WELSH",
+        "defendantOffences": [
+          "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+        ]
+      }
+    ],
+    "bookedSlots": [
+      {
+        "duration": 180,
+        "session": "AM",
+        "courtRoomId": 793,
+        "oucode": "B01EF00",
+        "startTime": "2020-05-21T00:00:00.000Z",
+        "courtScheduleId": "8e837de0-743a-4a2c-9db3-b2e678c48729"
+      }
+    ],
+    "nonDefaultDays": [
+      {
+        "startTime": "2018-10-09T15:16:56Z",
+        "duration": null
+      }
+    ]
+  },
+  "sendNotificationToParties": false
+}

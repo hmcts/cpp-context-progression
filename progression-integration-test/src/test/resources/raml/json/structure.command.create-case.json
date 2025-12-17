@@ -1,0 +1,31 @@
+{
+  "id": "aa746921-d839-4867-bcf9-b41db8ebc852",
+  "urn": "22C22222222",
+  "prosecutingAuthority": "CPS",
+  "policeOfficerInCase": {
+    "personId": "aa746921-d839-4867-bcf9-b41db8ebc852",
+    "rank": "constable",
+    "narrative": "",
+    "badgeNumber": "223"
+  },
+  "policeSupervisor": {
+    "personId": "ab746921-d839-4867-bcf9-b41db8ebc852",
+    "rank": "sergeant",
+    "narrative":"",
+    "badgeNumber": "223"
+  },
+  "caseMarkers" : [
+    {
+      "caseMarker" : "ASBOAppliedFor"
+    },
+    {
+      "caseMarker" : "ASBOGranted"
+    },
+    {
+      "caseMarker" : "AnimalRightsExtremism"
+    },
+    {
+      "caseMarker" : "AssetRecovery"
+    }
+  ]
+}

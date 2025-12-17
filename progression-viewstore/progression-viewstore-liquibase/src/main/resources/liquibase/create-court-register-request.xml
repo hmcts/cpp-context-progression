@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-court-register-request" author="progression">
+        <createTable tableName="court_register_request">
+            <column name="court_register_request_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="court_centre_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="court_house" type="TEXT"/>
+            <column name="material_id" type="UUID"/>
+            <column name="request_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="TEXT"/>
+            <column name="processed_on" type="datetime"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

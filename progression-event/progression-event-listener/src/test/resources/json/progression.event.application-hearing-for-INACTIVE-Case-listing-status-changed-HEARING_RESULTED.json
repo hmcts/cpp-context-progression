@@ -1,0 +1,328 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "23e1c0ce-1bdc-4528-afe4-f1585e667f00",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "8a8ee29a-4c34-4324-80c4-174a586dfaeb",
+                "caseReference": "28DI8938351",
+                "defendantId": "e991df37-17fa-407d-93c7-20f5a1b861ec"
+              }
+            ],
+            "isYouth": true,
+            "masterDefendantId": "e991df37-17fa-407d-93c7-20f5a1b861ec",
+            "personDefendant": {
+              "arrestSummonsNumber": "D28GC01128938351",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999A9999AAAA",
+                  "address2": "Woodlane",
+                  "address3": "addressline 3",
+                  "address4": "Bristol",
+                  "address5": "Avon"
+                },
+                "contact": {
+                  "home": "0208938351",
+                  "mobile": "07778938351",
+                  "primaryEmail": "REDDY.TEST018938351@gmail.com"
+                },
+                "dateOfBirth": "2011-11-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Madelynn",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Rempel",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2024-12-03",
+        "applicationReference": "28DI8938351",
+        "applicationStatus": "UN_ALLOCATED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "INACTIVE",
+            "isSJP": false,
+            "offences": [
+              {
+                "arrestDate": "2021-01-01",
+                "chargeDate": "2020-12-28",
+                "convictingCourt": {
+                  "code": "B01LY00",
+                  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                  "lja": {
+                    "ljaCode": "2577",
+                    "ljaName": "South West London Magistrates' Court"
+                  },
+                  "name": "Lavender Hill Magistrates' Court",
+                  "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+                },
+                "convictionDate": "2024-12-27",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "2aa5c9e7-fc40-4a03-b051-3437fd33f314",
+                "indicatedPlea": {
+                  "indicatedPleaDate": "2024-12-27",
+                  "indicatedPleaValue": "INDICATED_NOT_GUILTY",
+                  "offenceId": "2aa5c9e7-fc40-4a03-b051-3437fd33f314",
+                  "originatingHearingId": "5fc0d6bc-befe-4281-9d8e-e02ceb9d801f",
+                  "source": "IN_COURT"
+                },
+                "isDisposed": false,
+                "lastAdjournDate": "2024-12-27",
+                "lastAdjournedHearingType": "",
+                "listingNumber": 1,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6795cbe7-3e0f-3f6a-b59d-29a87a9d6f8d",
+                "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 8(1) Deddf Dwyn 1968.",
+                "offenceTitle": "Robbery",
+                "offenceTitleWelsh": "Ysbeilio/Lladrad",
+                "orderIndex": 1,
+                "plea": {
+                  "offenceId": "2aa5c9e7-fc40-4a03-b051-3437fd33f314",
+                  "originatingHearingId": "5fc0d6bc-befe-4281-9d8e-e02ceb9d801f",
+                  "pleaDate": "2024-12-27",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "reportingRestrictions": [
+                  {
+                    "id": "4ee3836d-0381-408c-8b48-776ee109c482",
+                    "label": "Section 49 of the Children and Young Persons Act 1933 applies",
+                    "orderedDate": "2024-12-27"
+                  }
+                ],
+                "startDate": "2019-11-28",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "TH68023",
+                    "offenceDefinitionId": "6795cbe7-3e0f-3f6a-b59d-29a87a9d6f8d",
+                    "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+                    "offenceTitle": "Robbery"
+                  },
+                  "offenceId": "2aa5c9e7-fc40-4a03-b051-3437fd33f314",
+                  "originatingHearingId": "5fc0d6bc-befe-4281-9d8e-e02ceb9d801f",
+                  "verdictDate": "2024-12-27",
+                  "verdictType": {
+                    "category": "Guilty",
+                    "categoryType": "GUILTY",
+                    "cjsVerdictCode": "G",
+                    "description": "Found guilty",
+                    "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                    "sequence": 10,
+                    "verdictCode": "G"
+                  }
+                },
+                "wording": "Robbery"
+              }
+            ],
+            "prosecutionCaseId": "8a8ee29a-4c34-4324-80c4-174a586dfaeb",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Criminal Justice Department",
+                "address2": "Derbyshire Constabulary",
+                "address3": "Butterley Hall",
+                "address4": "Ripley",
+                "address5": "Derby",
+                "postcode": "DE5 3RS"
+              },
+              "contact": {
+                "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+              },
+              "majorCreditorCode": "PO30",
+              "prosecutionAuthorityCode": "DERPF",
+              "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+              "prosecutionAuthorityName": "Derbyshire Police",
+              "prosecutionAuthorityOUCode": "0300000",
+              "caseURN": "28DI8938351"
+            }
+          }
+        ],
+        "id": "APPLICATION_ID",
+        "respondents": [
+          {
+            "id": "b732f1aa-9b79-4963-aa85-e2e6a7f5cda5",
+            "notificationRequired": true,
+            "prosecutingAuthority": {
+              "address": {
+                "address1": "Criminal Justice Department",
+                "address2": "Derbyshire Constabulary",
+                "address3": "Butterley Hall",
+                "address4": "Ripley",
+                "address5": "Derby",
+                "postcode": "DE5 3RS"
+              },
+              "contact": {
+                "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+              },
+              "majorCreditorCode": "PO30",
+              "name": "Derbyshire Police",
+              "prosecutionAuthorityCode": "DERPF",
+              "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+              "prosecutionAuthorityOUCode": "0300000",
+              "welshName": "Heddlu Derbyshire"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "23e1c0ce-1bdc-4528-afe4-f1585e667f00",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "8a8ee29a-4c34-4324-80c4-174a586dfaeb",
+                "caseReference": "28DI8938351",
+                "defendantId": "e991df37-17fa-407d-93c7-20f5a1b861ec"
+              }
+            ],
+            "isYouth": true,
+            "masterDefendantId": "e991df37-17fa-407d-93c7-20f5a1b861ec",
+            "personDefendant": {
+              "arrestSummonsNumber": "D28GC01128938351",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "9999A9999AAAA",
+                  "address2": "Woodlane",
+                  "address3": "addressline 3",
+                  "address4": "Bristol",
+                  "address5": "Avon"
+                },
+                "contact": {
+                  "home": "0208938351",
+                  "mobile": "07778938351",
+                  "primaryEmail": "REDDY.TEST018938351@gmail.com"
+                },
+                "dateOfBirth": "2011-11-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Madelynn",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Rempel",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CO",
+          "code": "AP00501",
+          "commrOfOathFlag": false,
+          "contestedFeeApplicable": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "exParte": false,
+          "hearingCode": "APN",
+          "id": "4e281610-96aa-3711-aecf-59df86b6c6bb",
+          "initialFeeApplicable": false,
+          "jurisdiction": "EITHER",
+          "lastModified": "2022-03-15T15:16:54.768Z",
+          "legislation": "Refer to nature of application.",
+          "legislationWelsh": "Cyfeiriwch at natur y cais.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "OFFENCE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application within criminal proceedings",
+          "typeWelsh": "Cais o fewn achos troseddol"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "The Law Courts",
+        "address2": "Altyre Road",
+        "address3": "Croydon",
+        "postcode": "CR9 5AB"
+      },
+      "code": "C01CY00",
+      "courtHearingLocation": "C01CY00",
+      "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+      "name": "Croydon Crown Court",
+      "psaCode": 2576,
+      "welshName": "Llys Y Goron Croydon"
+    },
+    "hearingDays": [
+      {
+        "courtCentreId": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+        "courtRoomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 45,
+        "listingSequence": 0,
+        "sittingDay": "2024-12-27T11:00:00.000Z"
+      }
+    ],
+    "id": "HEARING_ID",
+    "jurisdictionType": "CROWN",
+    "type": {
+      "description": "Sentence",
+      "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+    }
+  },
+  "hearingListingStatus": "HEARING_RESULTED",
+  "notifyNCES": false
+}

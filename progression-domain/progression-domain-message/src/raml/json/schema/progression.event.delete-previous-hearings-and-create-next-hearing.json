@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.delete-previous-hearings-and-create-next-hearing.json",
+  "type": "object",
+  "properties": {
+    "createNextHearing": {
+      "type": "object",
+      "properties": {
+        "hearing": {
+          "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+        },
+        "shadowListedOffences": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "committingCourt": {
+          "description": "Sending court details",
+          "$ref": "http://justice.gov.uk/core/courts/committingCourt.json"
+        },
+        "seedingHearing": {
+          "$ref": "http://justice.gov.uk/core/courts/seedingHearing.json"
+        },
+        "previousBookingReferencesWithCourtScheduleIds": {
+          "type": "array",
+          "items": {
+            "$ref": "http://justice.gov.uk/progression/courts/booking-reference-court-schedule-ids.json"
+          }
+        }
+      },
+      "required": [
+        "hearing",
+        "seedingHearing"
+      ],
+      "additionalProperties": false
+    },
+    "deletePreviousHearings": {
+      "type": "object",
+      "properties": {
+        "hearingId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "seedingHearing": {
+          "$ref": "http://justice.gov.uk/core/courts/seedingHearing.json"
+        }
+      },
+        "required": [
+          "hearingId",
+          "seedingHearing"
+        ],
+        "additionalProperties": false
+      }
+    },
+
+  "required": [
+    "createNextHearing",
+    "deletePreviousHearings"
+  ],
+  "additionalProperties": false
+}
+

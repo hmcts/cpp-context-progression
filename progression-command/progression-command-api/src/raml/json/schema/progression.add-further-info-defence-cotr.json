@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/progression/courts/progression.add-further-info-defence-cotr.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "message": {
+      "type": "string"
+    },
+    "isCertificationReady": {
+      "type": "boolean"
+    },
+    "isWelshForm": {
+      "type": "boolean"
+    },
+    "addedBy": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "addedByName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "defendantId",
+    "message",
+    "isCertificationReady",
+    "addedBy",
+    "addedByName"
+  ],
+  "additionalProperties": false
+}

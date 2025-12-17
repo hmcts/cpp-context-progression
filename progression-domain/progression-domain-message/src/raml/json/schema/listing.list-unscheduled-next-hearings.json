@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id":  "http://justice.gov.uk/core/courts/listing.list-unscheduled-next-hearings.json",
+  "type": "object",
+  "properties": {
+    "hearings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/hearingUnscheduledListingNeeds.json"
+      }
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "seedingHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/seedingHearing.json"
+    }
+  },
+  "required": [
+    "hearings",
+    "hearingId",
+    "seedingHearing"
+  ],
+  "additionalProperties": false
+}

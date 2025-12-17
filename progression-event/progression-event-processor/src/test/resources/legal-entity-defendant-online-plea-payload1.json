@@ -1,0 +1,60 @@
+{
+  "id": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "caseId": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "defendantId": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "urn": "POSTAL234567",
+  "initiationCode": "Q",
+  "canContinue": true,
+  "cantContinueReason": "NONE",
+  "completed": false,
+  "assigned": false,
+  "status": "IN-PROGRESS",
+  "policeFlag": false,
+  "postConviction": false,
+  "comeToCourt": true,
+  "witnessDispute": "witness dispute details",
+  "witnessDetails": "witness details",
+  "outstandingFines": false,
+  "interpreterLanguage": "French",
+  "speakWelsh": false,
+  "unavailability": null,
+  "disabilityNeeds": {
+    "needed": true,
+    "disabilityNeeds": "some info for disabilityNeeds"
+  },
+  "legalEntityDefendant": {
+    "name": "CCP CORP",
+    "address": {
+      "address1": "66 Exeter Street",
+      "address2": "1o Oxford Road",
+      "address3": "Croydon",
+      "address4": "Surrey",
+      "address5": "London",
+      "postcode": "M60 1NW"
+    },
+    "contactDetails": {
+      "email": "test@gmail.com",
+      "home": "123456789",
+      "work": "123456789",
+      "mobile": "123456789"
+    },
+    "incorporationNumber": "ABC"
+  },
+  "legalEntityFinancialMeans": {
+    "outstandingFines": true
+  },
+  "offences": [
+    {
+      "id": "8fd81570-65d3-4424-b630-537006afeb62",
+      "title": "Public service vehicle - passenger use altered / defaced ticket",
+      "titleWelsh": "Cerbyd gwasanaeth cyhoeddus - defnydd tocyn wedi'i addasu / amharu ar ddefnyddwyr",
+      "legislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+      "legislationWelsh": "Yn groes i reoliad 7 (1) (a) o Reoliadau Cerbydau Gwasanaeth Cyhoeddus (Ymddygiad Gyrwyr, Arolygwyr, Ymddygiad a Theithwyr) 1990 ac adran 25 o Ddeddf Cerbydau Teithwyr Cyhoeddus 1981.",
+      "wording": "On 10/08/2016 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+      "wordingWelsh": "Welsh wording: On 10/08/2016 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+      "pendingWithdrawal": false,
+      "plea": null,
+      "hasPlea": false
+    }
+  ]
+}

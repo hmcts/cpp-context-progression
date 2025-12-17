@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/cases-referred-to-court.json",
+  "type": "object",
+  "properties": {
+    "courtReferral": {
+      "$ref": "http://justice.gov.uk/core/courts/sjpCourtReferral.json#"
+    }
+  },
+  "required": [
+    "courtReferral"
+  ],
+  "additionalProperties": false
+}

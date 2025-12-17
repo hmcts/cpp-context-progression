@@ -1,0 +1,14 @@
+{
+  "reviewNotes":[
+    {
+      "id":"05acfc09-f672-41b9-afa0-acc74e4b2b8a",
+      "reviewNoteType": "LISTING",
+      "reviewNoteDescription": "listing notes"
+    },
+    {
+      "id":"68eb471c-ff37-4564-b65f-422b97bcca64",
+      "reviewNoteType": "JUDGE",
+      "reviewNoteDescription": "judge notes"
+    }
+  ]
+}

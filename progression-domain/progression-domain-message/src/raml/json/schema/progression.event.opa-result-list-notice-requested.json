@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-requested.json",
+  "type": "object",
+  "properties": {
+    "triggerDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "triggerDate"
+  ],
+  "additionalProperties": false
+}

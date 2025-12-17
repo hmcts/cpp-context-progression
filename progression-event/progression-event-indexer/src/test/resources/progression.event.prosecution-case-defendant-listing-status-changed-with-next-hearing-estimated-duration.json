@@ -1,0 +1,222 @@
+{
+  "boxWorkTaskStatus": "COMPLETE",
+  "boxWorkAssignedUserId": "207f6f5e-7a47-4a78-83aa-871182501be6",
+  "hearing": {
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+    "jurisdictionType": "CROWN",
+    "hearingListingStatus": "SENT_FOR_LISTING",
+    "isBoxHearing": true,
+    "estimatedDuration": "20 Minutes",
+    "courtApplications": [
+      {
+        "id": "bc55f521-cafc-4ab3-8a73-a51f6c93f153",
+        "type": {
+          "id": "edbeaf31-2129-48e5-b372-3a592bbacc13",
+          "type": "THE APPLICATION TYPE",
+          "categoryCode": "THE APPLICATION TYPE CATEGORY",
+          "linkType": "LINKED",
+          "applicationJurisdictionType": "MAGISTRATES"
+        },
+        "applicationReceivedDate": "2019-06-23",
+        "dueDate": "2019-06-24",
+        "applicationDecisionSoughtByDate": "2019-06-25",
+        "applicant": {
+          "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
+        },
+        "applicationStatus": "LISTED",
+        "applicationReference": "REF 1"
+      },
+      {
+        "id": "864696dc-d5aa-4437-86a9-dd3eff3b3257",
+        "type": {
+          "id": "50c2e2c8-5c56-4d29-bb67-686511059a69",
+          "type": "THE APPLICATION TYPE",
+          "categoryCode": "THE APPLICATION TYPE CATEGORY",
+          "linkType": "LINKED",
+          "applicationJurisdictionType": "CROWN"
+        },
+        "applicationReceivedDate": "2019-06-28",
+        "applicant": {
+          "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45"
+        },
+        "applicationStatus": "LISTED",
+        "dueDate": "2019-06-25",
+        "applicationDecisionSoughtByDate": "2019-06-27",
+        "applicationReference": "REF 2"
+      }
+    ],
+    "courtCentre": {
+      "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+      "name": "00ObpXuu51",
+      "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+      "roomName": "JK2Y7hu0Tc",
+      "welshName": "3IpJDfdfhS",
+      "welshRoomName": "hm60SAXokc"
+    },
+    "judiciary": [
+      {
+        "judicialId": "66e93f60-5a48-40d5-b406-37a53ed6d5c2",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder1"
+        }
+      },
+      {
+        "judicialId": "79a91058-2235-42ec-a339-860d8f46ab58",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder"
+        }
+      }
+    ],
+    "hearingDays": [
+      {
+        "courtCentreId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "courtRoomId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "listedDurationMinutes": 1531791578,
+        "listingSequence": 810249414,
+        "sittingDay": "2015-01-12T05:27:17.210Z"
+      },
+      {
+        "courtCentreId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "courtRoomId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "listedDurationMinutes": 15317889,
+        "listingSequence": 810249419,
+        "sittingDay": "2015-02-23T08:27:17.210Z"
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "prosecutionCaseId": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
+            "offences": [
+              {
+                "arrestDate": "2020-02-09",
+                "chargeDate": "2020-02-09",
+                "count": 0,
+                "id": "baa0552e-82b0-479b-bf4e-3314b163933c",
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03010",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+                "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+                "offenceTitle": "Use / install a television set without a licence",
+                "orderIndex": 1,
+                "startDate": "2020-02-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+                "judicialResults": [
+                  {
+                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "label": "a",
+                    "welshLabel": "a",
+                    "isAdjournmentResult": true,
+                    "isFinancialResult": true,
+                    "isConvictedResult": true,
+                    "isAvailableForCourtExtract": true,
+                    "amendmentDate": "0000-01-01",
+                    "amendmentReason": "a",
+                    "cjsCode": "a",
+                    "rank": 0.1,
+                    "orderedDate": "0000-01-01",
+                    "lastSharedDateTime": "a",
+                    "courtClerk": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "delegatedPowers": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "fourEyesApproval": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "approvedDate": "0000-01-01",
+                    "usergroups": [
+                      "a"
+                    ],
+                    "category": "FINAL",
+                    "nextHearing": {
+                      "adjournmentReason": "adjournmentReason",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "fbe3ca1a-6be6-3bd5-86e8-fc879aa5e3e7",
+                        "roomName": "Crown Court 5-3",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedMinutes": 20,
+                      "estimatedDuration": "20 Minutes",
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2020-07-02T14:07:00.000Z",
+                      "type": {
+                        "description": "Sentence",
+                        "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+                      }
+                    },
+                    "judicialResultPrompts": [
+                      {
+                        "label": "a",
+                        "welshLabel": "a",
+                        "value": "a",
+                        "promptSequence": 0.1,
+                        "promptReference": "a"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 700,
+                        "type": "INT",
+                        "usergroups": [
+                          "Court Clerks",
+                          "Legal Advisers"
+                        ],
+                        "value": "20 Minutes",
+                        "welshLabel": ""
+                      }
+                    ]
+                  }
+                ],
+                "verdict": {
+                  "offenceId": "baa0552e-82b0-479b-bf4e-3314b163933c",
+                  "verdictType": {
+                    "id": "baa0552e-82b0-479b-bf4e-3314b163933d",
+                    "category": "category",
+                    "categoryType": "categoryType"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "id": "57ab0671-407c-4f9a-9e9f-1f5bd01778fb",
+        "initiationCode": "S",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "4ZKOPhuyh5",
+          "prosecutionAuthorityId": "e677b61a-3360-48b0-8eee-649911475106",
+          "caseURN": "caseURN"
+        }
+      }
+    ],
+    "type": {
+      "description": "qm1rJUZb0f",
+      "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "defendantId": "2cda77cb-40a3-44b6-afb0-31672856dd32",
+  "requesterUserId": "6ac98e9c-66b2-4363-8a78-641dbe66bbd2",
+  "requesterOrganisationId": "7e2f843e-d639-40b3-8611-8015f3a18958",
+  "granteeUserId": "a8a0c2e6-af55-40b8-960f-3b73ab73fef3",
+  "granteeOrganisationId": "ac0ba664-2d2f-42ca-8ef6-118267b16fc6",
+  "granteeEmailId": "email@hmcts.net",
+  "isAgent": true
+}

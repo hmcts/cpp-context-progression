@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/notification-sent-for-plea-document-failed.json",
+  "type": "object",
+  "properties": {
+    "errorMessage": {
+      "type": "string"
+    },
+    "systemDocGeneratorId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "pleaNotificationType": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/plea-notification-type.json",
+      "type": "string",
+      "enum": [
+        "CompanyOnlinePlea",
+        "CompanyFinanceData",
+        "IndividualOnlinePlea",
+        "IndividualFinanceData"
+      ]
+    }
+  },
+  "required": [
+    "systemDocGeneratorId",
+    "caseId",
+    "errorMessage",
+    "pleaNotificationType"
+  ],
+  "additionalProperties": false
+}

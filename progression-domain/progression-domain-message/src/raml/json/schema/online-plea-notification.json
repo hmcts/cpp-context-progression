@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/online-plea-notification.json",
+  "type": "object",
+  "properties": {
+    "defendantName": {
+      "type": "string"
+    },
+    "address": {
+      "$ref": "http://justice.gov.uk/core/courts/address.json"
+    },
+    "postingDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "hearingDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "caseReferenceNumber": {
+      "type": "string"
+    },
+    "offences": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string"
+      }
+    },
+    "onlinePleaValidUntil": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "courtCentreLocation": {
+      "type": "string"
+    },
+    "hearingTime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "defendantName",
+    "postingDate",
+    "hearingDate",
+    "caseReferenceNumber"
+  ],
+  "additionalProperties": false
+}

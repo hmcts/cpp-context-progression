@@ -1,0 +1,28 @@
+{
+  "ethnicities": [
+    {
+      "id": "ETHNICITYID",
+      "sequence": 1,
+      "code": "W1",
+      "description" : "British",
+      "validFrom": "2017-08-01",
+      "validTo": "2017-08-01"
+    },
+    {
+      "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+      "sequence": 2,
+      "code": "W2",
+      "description" : "Irish",
+      "validFrom": "2017-08-01",
+      "validTo": "2017-08-01"
+    },
+    {
+      "id": "3daefec3-2f76-8109-82d9-2e60544a6c03",
+      "sequence": 9,
+      "code": "A1",
+      "description" : "Indian",
+      "validFrom": "2017-08-01",
+      "validTo": "2017-08-01"
+    }
+  ]
+}

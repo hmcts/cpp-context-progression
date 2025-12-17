@@ -1,0 +1,31 @@
+{
+  "prisons-custody-suites": [
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a13444",
+      "name": "prisonsname",
+      "type": "Prison",
+      "emails": [
+        {
+          "emailType": "OMU",
+          "emailAddress": "Custody.peterborough@test.net"
+        },
+        {
+          "emailType": "Reception",
+          "emailAddress": "PBReceptionBookings@test.net,SPCOReception@test.net"
+        }
+      ]
+    },
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a13333",
+      "name": "croydon",
+      "type": "Police Station",
+      "emails": [
+        {
+          "emailType": "WARRANTS AND RESULTS",
+          "emailAddress": "RVirtualcourtHMCTS@test.net"
+        }
+      ]
+    }
+
+  ]
+}

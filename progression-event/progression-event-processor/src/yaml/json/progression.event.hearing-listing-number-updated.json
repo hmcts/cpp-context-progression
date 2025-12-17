@@ -1,0 +1,14 @@
+{
+  "hearingId": "1ae7905c-eb51-4d1d-b0c8-e29cbaf3107a",
+  "prosecutionCaseId": "1ae7905c-eb51-4d1d-b0c8-e29cbaf3107a",
+  "offenceListingNumbers": [
+    {
+      "offenceId": "8036cef8-3d2f-4b2f-9202-a0f8df8e05ae",
+      "listingNumber": 1
+    },
+    {
+      "offenceId": "136e3d72-2476-4764-99b0-cabbf3d00fb0",
+      "listingNumber": 1
+    }
+  ]
+}

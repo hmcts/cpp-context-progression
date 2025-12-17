@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/prepare-summons-data.json",
+  "type": "object",
+  "properties": {
+    "hearingId":{
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtCentre": {
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json#"
+    },
+    "hearingDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "confirmedProsecutionCaseIds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/confirmedProsecutionCaseId"
+      }
+    },
+    "confirmedApplicationIds": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    }
+
+  },
+  "required": [
+    "courtCentre",
+    "hearingDateTime"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "confirmedProsecutionCaseId": {
+      "id": "http://justice.gov.uk/core/courts/confirmedProsecutionCaseId.json",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "confirmedDefendantIds": {
+          "type": "array",
+          "items": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "confirmedDefendantIds"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

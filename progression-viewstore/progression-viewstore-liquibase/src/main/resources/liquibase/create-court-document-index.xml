@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-court-document-index" author="cpp.context.progression">
+
+       <createTable tableName="court_document_index">
+            <column name="id" type="UUID"/>
+            <column name="defendant_id" type="UUID"/>
+            <column name="prosecution_case_id" type="UUID"/>
+            <column name="application_id" type="UUID"/>
+           <column name="court_document_id" type="UUID"/>
+        </createTable>
+
+
+        <addPrimaryKey columnNames="id" constraintName="court_document_index_key"
+                       tableName="court_document_index"/>
+
+        <addForeignKeyConstraint baseColumnNames="court_document_id" baseTableName="court_document_index"
+                                 constraintName="fk_court_document_index_id" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="court_document"/>
+
+
+    </changeSet>
+
+</databaseChangeLog>

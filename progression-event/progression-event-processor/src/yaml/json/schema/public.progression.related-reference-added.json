@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.related-reference-added.json",
+  "type": "object",
+  "properties": {
+    "relatedReference": {
+      "type": "string"
+    },
+    "relatedReferenceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "relatedReference",
+    "relatedReferenceId",
+    "prosecutionCaseId"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nowdocument/now-document-request.json",
+  "description": "The details required to generate a now document",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "description": "The identifier of the hearing that ordered this NOW",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "masterDefendantId": {
+      "description": "The master identifier of the defendant that is the subject of this NOW",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "nowTypeId": {
+      "description": "The identifier within reference data of this type of order",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "cases": {
+      "description": "The identifiers of each prosecution case for which this NOW is associated",
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "applications": {
+      "description": "The identifiers of each prosecution case for which this NOW is associated",
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "notVisibleToUserGroups": {
+      "description": "The user groups that are not authorised to view the now document.  These groups must be mapped to Users & Groups and the specific document RBAC rules created in Progression view store",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "visibleToUserGroups": {
+      "description": "The user groups that are authorised to view the now document.  These groups must be mapped to Users & Groups and the specific document RBAC rules created in Progression view store.  When the collection is empty the document is considered to be publicly available to the standard set of section users according to the CDES RBAC",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nowDistribution": {
+      "description": "The details for distributing the Now",
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-distribution.json"
+    },
+    "storageRequired": {
+      "description": "Indicates if the generated document should be stored.  In combination with nowDistribution supports the need to store only or distribute only or store and distribute",
+      "type": "boolean"
+    },
+    "nowContent": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-document-content.json"
+    },
+    "templateName": {
+      "type": "string"
+    },
+    "bilingualTemplateName": {
+      "type": "string"
+    },
+    "subTemplateName": {
+      "type": "string"
+    },
+    "subscriberName": {
+      "type": "string"
+    },
+    "requestId": {
+      "description": "Identifies the correlation Id that will be used to correlate the GOB Account Number to this NOW",
+      "type": "string"
+    },
+    "welshTranslationRequired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "hearingId",
+    "materialId",
+    "nowTypeId",
+    "storageRequired",
+    "nowContent",
+    "templateName",
+    "subscriberName"
+  ],
+  "additionalProperties": false
+}

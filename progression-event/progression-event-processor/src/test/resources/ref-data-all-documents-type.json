@@ -1,0 +1,54 @@
+{
+  "documentsMetadata": [
+    {
+      "id": "460f6f7a-c002-11e8-a355-529269fb1459",
+      "documentCategory": "Defendant level",
+      "documentType": "Bail and Custody",
+      "documentAccess": [
+        "Legal advisors",
+        "Court Admin",
+        "Crown court clerk",
+        "Listing officer"
+      ],
+      "canReadUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ],
+      "canCreateUserGroups": [
+        "Listing Officers",
+        "Legal advisors"
+      ],
+      "canDownloadUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ]
+    },
+    {
+      "id": "460f6f7a-c002-11e8-a355-529269fb1459",
+      "documentCategory": "Defendant level",
+      "documentType": "Magistrate's Sending sheet",
+      "documentAccess": [
+        "Legal advisors",
+        "Court Admin",
+        "Crown court clerk",
+        "Listing officer"
+      ],
+      "canReadUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ],
+      "canCreateUserGroups": [
+        "Listing Officers",
+        "Legal advisors"
+      ],
+      "canDownloadUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ]
+    }
+  ]
+}

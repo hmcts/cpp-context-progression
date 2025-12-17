@@ -1,0 +1,22 @@
+{
+  "publicHolidays": [
+    {
+      "id": "329e5b84-00dd-3760-857d-1d79c5264ea0",
+      "division": "england-and-wales",
+      "title": "New Year’s Day",
+      "date": "2023-01-01"
+    },
+    {
+      "id": "8f655678-5aa1-384b-9f35-d13249bac844",
+      "division": "england-and-wales",
+      "title": "Good Friday",
+      "date": "2023-03-25"
+    },
+    {
+      "id": "4b82b706-51d7-3c49-8476-9fcba96234ed",
+      "division": "england-and-wales",
+      "title": "Easter Monday",
+      "date": "2023-03-28"
+    }
+  ]
+}

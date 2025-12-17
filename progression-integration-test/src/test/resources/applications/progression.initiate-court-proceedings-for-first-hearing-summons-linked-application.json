@@ -1,0 +1,234 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "applicationStatus": "DRAFT",
+    "commissionerOfOath": false,
+    "applicationReceivedDate": "2020-07-26",
+    "allegationOrComplaintStartDate": "2020-07-26",
+    "allegationOrComplaintEndDate": "2020-07-26",
+    "hasSummonsSupplied": false,
+    "type": {
+      "id": "cb05a560-48f9-415d-b230-55b78f8cb4a8",
+      "type": "Application for first hearing summons for criminal case",
+      "categoryCode": "CO",
+      "jurisdiction": "EITHER",
+      "linkType": "FIRST_HEARING",
+      "code": "",
+      "legislation": "",
+      "appealFlag": false,
+      "summonsTemplateType": "FIRST_HEARING",
+      "hearingCode": "BOO",
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": true,
+      "offenceActiveOrder": "OFFENCE",
+      "commrOfOathFlag": false,
+      "breachType": "NOT_APPLICABLE",
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": true,
+      "listingNotifTemplate": "NOT_APPLICABLE",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": true,
+      "resentencingActivationCode": "CJO3522",
+      "prefix": "Resentenced"
+    },
+    "applicant": {
+      "id": "e2791a56-d396-4561-8655-e2307402b6de",
+      "notificationRequired": true,
+      "summonsRequired": false,
+      "prosecutingAuthority": {
+        "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+        "prosecutionAuthorityCode": "DERPF"
+      }
+    },
+    "respondents": [
+      {
+        "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+        "masterDefendant": {
+          "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+          "prosecutionAuthorityReference": "randomreference234",
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody or remanded into custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1982-01-29",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Robert12",
+              "gender": "MALE",
+              "lastName": "Smith12",
+              "title": "Mr"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": true
+      },
+      {
+        "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b8",
+        "masterDefendant": {
+          "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b8",
+          "prosecutionAuthorityReference": "randomreference345",
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody or remanded into custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1982-01-29",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Robert13",
+              "gender": "MALE",
+              "lastName": "Smith13",
+              "title": "Mr"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": true
+      }
+    ],
+    "subject": {
+      "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+      "masterDefendant": {
+        "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+        "personDefendant": {
+          "arrestSummonsNumber": "TFL",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "1234",
+              "address2": "StreetDescription",
+              "address3": "Locality2O"
+            },
+            "dateOfBirth": "1982-01-29",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "Robert12",
+            "gender": "MALE",
+            "lastName": "Smith12",
+            "title": "Mr"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": true
+    },
+    "thirdParties": [
+      {
+        "id": "5c3921f3-757d-4710-8ee5-854739c96ce0",
+        "personDetails": {
+          "firstName": "aasfsa",
+          "lastName": "gjg",
+          "address": {
+            "address1": "line1",
+            "postcode": "SL2 5FZ"
+          },
+          "gender": "NOT_SPECIFIED"
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      }
+    ],
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "caseURN": "12GD8000017"
+        },
+        "isSJP": false,
+        "caseStatus": "INACTIVE",
+        "offences": [
+          {
+            "arrestDate": "2020-02-09",
+            "chargeDate": "2020-02-09",
+            "count": 0,
+            "dvlaOffenceCode": "DR70",
+            "id": "a7c66c96-795c-4cc0-a3d0-8d1b264f48d2",
+            "modeOfTrial": "Summary",
+            "offenceCode": "RT88496",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "40c5694d-33bc-43ce-a993-be04087d5bb4",
+            "offenceLegislation": "Contrary to section 6(6) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+            "offenceTitle": "Fail to co-operate with a preliminary test - motor vehicle offence",
+            "orderIndex": 1,
+            "startDate": "2020-02-09",
+            "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+          },
+          {
+            "arrestDate": "2020-02-09",
+            "chargeDate": "2020-02-09",
+            "count": 0,
+            "id": "651fc68b-8b9f-4cf2-912a-0b55d536323c",
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "4023c959-fad1-3e47-b678-ff7f0c0c1f48",
+            "offenceLegislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+            "offenceTitle": "Use / install a television set without a licence",
+            "orderIndex": 1,
+            "startDate": "2020-02-09",
+            "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+          }
+        ]
+      }
+    ]
+  },
+  "boxHearing": {
+    "jurisdictionType": "MAGISTRATES",
+    "applicationDueDate": "2021-02-24",
+    "sendAppointmentLetter": true,
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court"
+    },
+    "virtualAppointmentTime": "2021-02-24T12:00:00.000Z"
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "136dfc3a-a874-32ce-8493-e50849590b49",
+      "description": "Breach of Order"
+    },
+    "estimatedMinutes": 20,
+    "earliestStartDateTime": "2021-02-02T10:00:00.000Z",
+    "jurisdictionType": "MAGISTRATES",
+    "bookedSlots": [
+      {
+        "startTime": "2021-02-02T10:00:00.000Z",
+        "duration": 1,
+        "courtScheduleId": "86c58842-22c1-3cdb-9d22-964b81ffa02d",
+        "session": "AM",
+        "oucode": "B01LY00",
+        "courtRoomId": 2330,
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+      }
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    }
+  }
+}

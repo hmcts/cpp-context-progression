@@ -1,0 +1,119 @@
+package uk.gov.moj.cpp.progression.applications;
+
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
+import static org.skyscreamer.jsonassert.JSONCompareMode.STRICT;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.initiateCourtProceedingsForCourtApplication;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollCourtApplicationForLaa;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationStatus;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplication;
+import static uk.gov.moj.cpp.progression.stub.IdMapperStub.stubForApplicationShortId;
+import static uk.gov.moj.cpp.progression.stub.ListingStub.getPostListCourtHearing;
+
+import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
+import uk.gov.moj.cpp.progression.AbstractIT;
+
+import java.nio.charset.Charset;
+
+import javax.json.JsonObject;
+
+import com.google.common.io.Resources;
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
+
+public class CourtAppealApplicationIT extends AbstractIT {
+
+    @Test
+    public void shouldCreateLinkedApplicationForCourtAppeal() throws Exception {
+        final String applicationId = randomUUID().toString();
+        final String applicationShortId = randomUUID().toString().replace("-", "").substring(0, 8);
+        stubForApplicationShortId(applicationShortId, applicationId);
+        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-court-appeal-application.json");
+
+        final Matcher[] applicationMatchers = {
+                withJsonPath("$.courtApplication.id", is(applicationId)),
+                withJsonPath("$.courtApplication.type.code", is("AS14518")),
+                withJsonPath("$.courtApplication.type.linkType", is("LINKED")),
+                withJsonPath("$.courtApplication.type.appealFlag", is(true)),
+                withJsonPath("$.courtApplication.type.courtOfAppealFlag", is(true)),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
+                withJsonPath("$.courtApplication.subject.id", notNullValue()),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseId", notNullValue()),
+                withJsonPath("$.courtApplication.courtApplicationCases[0].prosecutionCaseIdentifier.caseURN", is("TFL4359536")),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of Time reason for Court appeal"))
+        };
+
+        final String applicationPayload = pollForCourtApplication(applicationId, applicationMatchers);
+        final String applicationReference = new StringToJsonObjectConverter().convert(applicationPayload).getJsonObject("courtApplication").getString("applicationReference");
+
+        String expectedListingRequest = Resources.toString(Resources.getResource("expected/expected.progression.application-referred-to-court-hearing.json"), Charset.defaultCharset());
+        String listingRequest = getPostListCourtHearing(applicationId);
+        assertEquals(expectedListingRequest, listingRequest, getCustomComparator(applicationId, applicationReference));
+
+        final Matcher[] applicationLaaMatchers = {
+                withJsonPath("$.applicationId", is(applicationId))
+        };
+
+        final String actualApplicationForLaaPayload = pollCourtApplicationForLaa(applicationId, applicationLaaMatchers);
+        final String expectedApplicationForLaaPayload = Resources.toString(Resources.getResource("expected/expected.progression.application-laa-query-response-payload.json"), Charset.defaultCharset());
+        assertEquals(expectedApplicationForLaaPayload, actualApplicationForLaaPayload, getCustomComparatorForLaaPayload());
+    }
+
+    @Test
+    public void shouldCreateStandAloneApplicationForCourtAppeal() throws Exception {
+        final String applicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-stand-alone-court-appeal-application.json");
+
+        final Matcher[] applicationMatchers = {
+                withJsonPath("$.courtApplication.id", is(applicationId)),
+                withJsonPath("$.courtApplication.type.code", is("AS14518")),
+                withJsonPath("$.courtApplication.type.linkType", is("STANDALONE")),
+                withJsonPath("$.courtApplication.type.appealFlag", is(true)),
+                withJsonPath("$.courtApplication.type.courtOfAppealFlag", is(true)),
+                withJsonPath("$.courtApplication.applicationStatus", is("UN_ALLOCATED")),
+                withJsonPath("$.courtApplication.applicant.id", notNullValue()),
+                withJsonPath("$.courtApplication.subject.id", notNullValue()),
+                withJsonPath("$.courtApplication.outOfTimeReasons", is("Out of Time reason for Court appeal"))
+        };
+
+        pollForCourtApplication(applicationId, applicationMatchers);
+    }
+
+    @Test
+    public void shouldGertApplicationStatusByApplicationIds() throws Exception {
+        final String applicationId = randomUUID().toString();
+        initiateCourtProceedingsForCourtApplication(applicationId, "applications/progression.initiate-court-proceedings-for-stand-alone-court-appeal-application.json");
+        pollForCourtApplication(applicationId, withJsonPath("$.courtApplication.id", is(applicationId)));
+
+        final String response = pollForApplicationStatus(applicationId);
+        final JsonObject applicationStatusResponse = new StringToJsonObjectConverter().convert(response);
+        assertThat(applicationStatusResponse.getJsonArray("applicationsWithStatus").size(), equalTo(1));
+        assertThat(applicationStatusResponse.getJsonArray("applicationsWithStatus").getJsonObject(0).getString("applicationId"), equalTo(applicationId));
+        assertThat(applicationStatusResponse.getJsonArray("applicationsWithStatus").getJsonObject(0).getString("applicationStatus"), equalTo("UN_ALLOCATED"));
+
+    }
+
+    private CustomComparator getCustomComparator(String applicationId, String applicationReference) {
+        return new CustomComparator(STRICT,
+                new Customization("hearings[0].id", (o1, o2) -> o1 != null && o2 != null),
+                new Customization("hearings[0].courtApplications[0].id", (o1, o2) -> applicationId.equals(o1)),
+                new Customization("hearings[0].courtApplications[0].applicationReference", (o1, o2) -> applicationReference.equals(o1))
+        );
+    }
+
+    private CustomComparator getCustomComparatorForLaaPayload() {
+        return new CustomComparator(STRICT,
+                new Customization("applicationId", (o1, o2) -> o1 != null && o2 != null),
+                new Customization("laaApplicationShortId", (o1, o2) -> o1 != null && o2 != null),
+                new Customization("hearingSummary[0].hearingId", (o1, o2) -> o1 != null && o2 != null)
+        );
+    }
+}

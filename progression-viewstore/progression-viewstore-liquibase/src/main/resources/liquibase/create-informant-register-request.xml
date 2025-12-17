@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-informant-register-request" author="cpp.context.progression">
+        <createTable tableName="informant_register">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="prosecution_authority_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="prosecution_authority_code" type="TEXT"/>
+            <column name="register_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="material_id" type="UUID"/>
+            <column name="payload" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="TEXT"/>
+            <column name="processed_on" type="datetime"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

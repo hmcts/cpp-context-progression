@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/notification-create-hearing-application-link-failed.json",
+  "type": "object",
+  "properties": {
+     "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingListingStatus": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
+    },
+    "applicationStatus": {
+      "description": "Indicates if the application is draft, listed or finalised",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/courtApplicationStatus"
+    },
+    "errorMessage": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicationStatus",
+    "errorMessage",
+    "hearingId"
+  ],
+  "additionalProperties": false
+}

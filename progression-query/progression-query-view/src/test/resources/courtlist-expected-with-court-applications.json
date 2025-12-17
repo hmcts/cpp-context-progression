@@ -1,0 +1,223 @@
+{
+  "listType": "bench",
+  "courtCentreName": "Port Talbot",
+  "courtCentreAddress1": "The Court House Cramic Way",
+  "courtCentreAddress2": "Port Talbot West Glam. address line 5 SA13 1RU",
+  "welshCourtCentreName": "Welsh Name",
+  "welshCourtCentreAddress1": "Llys Ynadon Adeilad y Llys",
+  "welshCourtCentreAddress2": "Adeilad y Llys Gorllewin Morgannwgc Caerdydd SA13 1RU",
+  "hearingDates": [
+    {
+      "hearingDate": "2021-06-03",
+      "hearingDateWelsh": "3 Mehefin 2021",
+      "courtRooms": [
+        {
+          "courtRoomName": "Courtroom 04",
+          "welshCourtRoomName": "Courtroom 04",
+          "judiciaryNames": "Recorder Ainsworth judge",
+          "welshJudiciaryNames": "Mr Recorder Ainsworth",
+          "timeslots": [
+            {
+              "hearings": [
+                {
+                  "id": "93c243f8-c4d3-4790-92ef-6192db00539c",
+                  "sequence": 0,
+                  "reportingRestrictionReason": "dW46EEpTJr",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "11:30",
+                  "hearingType": "Sentence",
+                  "welshHearingType": "Diffynnydd i fynychu i",
+                  "caseNumber": "zR9y6594006",
+                  "prosecutorType": "wNw0TDFwj7",
+                  "defendants": [
+                    {
+                      "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+                      "firstName": "Robert12",
+                      "surname": "Smith12",
+                      "gender": "MALE",
+                      "age": 53,
+                      "address": {
+                        "address1": "1234",
+                        "address2": "StreetDescription",
+                        "address3": "Locality2O"
+                      },
+                      "dateOfBirth": "29 Jan 1972",
+                      "nationality": "British",
+                      "defenceCounsels": [
+                        {
+                          "firstName": "a",
+                          "middleName": "a",
+                          "lastName": "a"
+                        }
+                      ],
+                      "asn": "Arrest456",
+                      "defenceOrganization": "-",
+                      "prosecutionCounsels": [
+                        {
+                          "firstName": "add",
+                          "middleName": "",
+                          "lastName": "ZDA"
+                        }
+                      ],
+                      "offences": [
+                        {
+                          "id": "072319bf-73c2-41b5-b309-c8c86c9b077b",
+                          "alcoholReadingAmount": 111,
+                          "alcoholReadingMethodDescription": "Breath",
+                          "plea": "GUILTY",
+                          "pleaDate": "2018-01-01",
+                          "maxPenalty": "1 Year prison",
+                          "convictedOn": "2020-03-09",
+                          "adjournedDate": "2020-03-10",
+                          "adjournedHearingType": "Adjourned Hearing Type",
+                          "offenceTitle": "Application for first hearing summons for criminal case",
+                          "offenceCode": "App Type Code 2",
+                          "welshOffenceTitle": "Type In Welsh",
+                          "offenceLegislation": "App Legislation 2",
+                          "offenceWording": "Application Particulars"
+                        },
+                        {
+                          "id": "651fc68b-8b9f-4cf2-912a-0b55d536323c",
+                          "alcoholReadingAmount": 111,
+                          "alcoholReadingMethodDescription": "Breath",
+                          "plea": "GUILTY",
+                          "pleaDate": "2018-01-01",
+                          "maxPenalty": "1 Year prison",
+                          "convictedOn": "2020-02-09",
+                          "adjournedDate": "2020-02-10",
+                          "adjournedHearingType": "Adjourned Hearing Type2",
+                          "offenceTitle": "Application for first hearing summons for criminal case",
+                          "offenceCode": "App Type Code 2",
+                          "welshOffenceTitle": "Type In Welsh",
+                          "offenceLegislation": "App Legislation 2",
+                          "offenceWording": "Application Particulars"
+                        }
+                      ]
+                    }
+                  ],
+                  "adjournedHearingDate": "2021-06-03",
+                  "panel": "ADULT",
+                  "courtApplicationId": "528fe634-20f3-474b-a110-4c6141c58c99",
+                  "applicationOffences": [
+                    {
+                      "id": "072319bf-73c2-41b5-b309-c8c86c9b077b",
+                      "listingNumber": 1
+                    },
+                    {
+                      "id": "651fc68b-8b9f-4cf2-912a-0b55d536323c",
+                      "listingNumber": 2
+                    }
+                  ],
+                  "courtApplication": {
+                    "applicant": {
+                      "name": "Transport for London"
+                    },
+                    "respondents": [
+                      {
+                        "name": "Robert12 Smith12",
+                        "dateOfBirth": "29 Jan 1972"
+                      },
+                      {
+                        "name": "Robert13 Smith13",
+                        "dateOfBirth": "29 Jan 1972"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "50a243f8-c4d3-4790-92ef-6192db00539c",
+                  "sequence": 0,
+                  "reportingRestrictionReason": "dW46EEpTJr",
+                  "welshReportingRestrictionReason": "",
+                  "startTime": "11:30",
+                  "hearingType": "Sentence",
+                  "welshHearingType": "Diffynnydd i fynychu i",
+                  "caseNumber": "zR9y6594006",
+                  "prosecutorType": "wNw0TDFwj7",
+                  "adjournedHearingDate": "2021-06-03",
+                  "panel": "ADULT",
+                  "courtApplicationId": "417fe634-20f3-474b-a110-4c6141c58c99",
+                  "applicationOffences": [
+                    {
+                      "id": "10e888c9-6af3-42bd-8165-8687aceab6e1",
+                      "listingNumber": 3
+                    }
+                  ],
+                  "courtApplication": {
+                    "applicant": {
+                      "name": "Transport for London"
+                    },
+                    "respondents": [
+                      {
+                        "name": "Robert12 Smith12",
+                        "dateOfBirth": "29 Jan 1972"
+                      },
+                      {
+                        "name": "Robert13 Smith13",
+                        "dateOfBirth": "29 Jan 1972"
+                      }
+                    ]
+                  },
+                  "defendants": [
+                    {
+                      "id": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+                      "firstName": "Robert12",
+                      "surname": "Smith12",
+                      "gender": "MALE",
+                      "age": 53,
+                      "address": {
+                        "address1": "1234",
+                        "address2": "StreetDescription",
+                        "address3": "Locality2O"
+                      },
+                      "dateOfBirth": "29 Jan 1972",
+                      "nationality": "British",
+                      "defenceCounsels": [
+                        {
+                          "firstName": "a",
+                          "middleName": "a",
+                          "lastName": "a"
+                        }
+                      ],
+                      "asn": "Arrest456",
+                      "defenceOrganization": "-",
+                      "prosecutionCounsels": [
+                        {
+                          "firstName": "add",
+                          "middleName": "",
+                          "lastName": "ZDA"
+                        }
+                      ],
+                      "offences": [
+                        {
+                          "id": "10e888c9-6af3-42bd-8165-8687aceab6e1",
+                          "alcoholReadingAmount": 111,
+                          "alcoholReadingMethodDescription": "Breath",
+                          "plea": "GUILTY",
+                          "pleaDate": "2020-01-01",
+                          "maxPenalty": "1 Year prison",
+                          "convictedOn": "2020-05-01",
+                          "adjournedDate": "2020-05-02",
+                          "adjournedHearingType": "Last Adjourned Hearing Type",
+                          "offenceTitle": "Application for first hearing summons for criminal case",
+                          "offenceCode": "App Type  Code",
+                          "welshOffenceTitle": "Type In Welsh",
+                          "offenceLegislation": "App Legislation",
+                          "offenceWording": "Application Particulars"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "templateName": "PublicStandardList",
+  "ljaCode": "2577",
+  "ljaName": "South West London Magistrates' Court",
+  "welshLjaName": "East Hampshire Magistrates' Court"
+}

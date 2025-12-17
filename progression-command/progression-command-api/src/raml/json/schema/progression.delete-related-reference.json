@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/api/delete-related-reference.json",
+  "type": "object",
+  "properties": {
+    "relatedReferenceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "relatedReferenceId"
+  ],
+  "additionalProperties": false
+}
+

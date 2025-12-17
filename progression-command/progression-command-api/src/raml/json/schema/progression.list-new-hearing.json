@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/list-new-hearing.json",
+  "type": "object",
+  "properties": {
+    "listNewHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json#"
+    },
+    "sendNotificationToParties": {
+      "type" : "boolean"
+    }
+  },
+  "required": [
+    "listNewHearing"
+  ],
+  "additionalProperties": false
+}

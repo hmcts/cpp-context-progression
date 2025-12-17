@@ -1,0 +1,20 @@
+{
+  "prosecutionCaseId": "1e2f843e-d639-40b3-8611-8015f3a18952",
+  "prosecutionAuthorityReference": "TFL12345-ABC",
+  "prosecutionAuthorityCode": "TFL",
+  "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+  "oldCpsProsecutor": "BL001",
+  "caseURN": "qriGUBZKR5",
+  "address": {
+    "address1": "22",
+    "address2": "Acacia Avenue",
+    "address3": "Acacia Town",
+    "address4": "Acacia City",
+    "address5": "Acacia Country",
+    "postcode": "GIR 0AA"
+  },
+  "prosecutionAuthorityName": "BL001",
+  "majorCreditorCode": "OUCode",
+  "prosecutionAuthorityOUCode": "B01EF01",
+  "contact": "ABC@abc.com"
+}

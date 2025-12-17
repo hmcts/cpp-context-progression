@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://www.activiti.org/test" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:yaoqiang="http://bpmn.sourceforge.net" exporter="Yaoqiang BPMN Editor" exporterVersion="5.3" expressionLanguage="http://www.w3.org/1999/XPath" id="_1530202918767" name="" targetNamespace="http://www.activiti.org/test" typeLanguage="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://bpmn.sourceforge.net/schemas/BPMN20.xsd">
+  <process id="nowsMaterialUpload" isClosed="false" isExecutable="true" name="nowsMaterialUpload" processType="None">
+    <extensionElements>
+      <yaoqiang:description/>
+      <yaoqiang:pageFormat height="841.8897637795276" imageableHeight="831.8897637795276" imageableWidth="588.1102362204724" imageableX="5.0" imageableY="5.0" orientation="0" width="598.1102362204724"/>
+      <yaoqiang:page background="#FFFFFF" horizontalCount="2" verticalCount="1"/>
+    </extensionElements>
+    <startEvent id="materialUploadStart" isInterrupting="true" name="Start" parallelMultiple="false">
+      <outgoing>uploadingMaterial</outgoing>
+      <outputSet/>
+    </startEvent>
+    <serviceTask activiti:delegateExpression="${materialUpload}" completionQuantity="1" id="uploadMaterial" implementation="##WebService" isForCompensation="false" name="Upload Material" startQuantity="1">
+      <documentation id="uploadMaterial_D_1" textFormat="text/plain"><![CDATA[Task to call Material upload command]]></documentation>
+      <incoming>uploadingMaterial</incoming>
+      <outgoing>awaitingMaterialuploadConfirmation</outgoing>
+    </serviceTask>
+    <receiveTask completionQuantity="1" id="receiveMaterialUploadedConfirmation" implementation="##WebService" instantiate="false" isForCompensation="false" name="Awaits Material Uploaded" startQuantity="1">
+      <documentation id="receiveMaterialUploadedConfirmation_D_1" textFormat="text/plain"><![CDATA[Waits for public message for Material Upload confirmation]]></documentation>
+      <incoming>awaitingMaterialuploadConfirmation</incoming>
+      <outgoing>flow1</outgoing>
+    </receiveTask>
+    <sequenceFlow id="uploadingMaterial" sourceRef="materialUploadStart" targetRef="uploadMaterial"/>
+    <sequenceFlow id="awaitingMaterialuploadConfirmation" sourceRef="uploadMaterial" targetRef="receiveMaterialUploadedConfirmation"/>
+    <serviceTask activiti:delegateExpression="${nowsMaterialStatusUpdateHearing}" completionQuantity="1" id="nowsMaterialStatusHearingUpdate" implementation="##WebService" isForCompensation="false" name="Nows Material Status Update in Hearing" startQuantity="1">
+      <incoming>flow2</incoming>
+      <outgoing>awaitingStatusUpdateHearingConfirmed</outgoing>
+    </serviceTask>
+    <receiveTask completionQuantity="1" id="receiveStatusUpdateConfirmationHearing" implementation="##WebService" instantiate="false" isForCompensation="false" name="Receive Material Status Update HearingConfirmation" startQuantity="1">
+      <incoming>awaitingStatusUpdateHearingConfirmed</incoming>
+      <outgoing>flow3</outgoing>
+    </receiveTask>
+    <serviceTask activiti:delegateExpression="${nowsMaterialStatusUpdateHmps}" completionQuantity="1" id="nowsMaterialStatusHmpsUpdate" implementation="##WebService" isForCompensation="false" name="Nows Material Status Update in Hmps" startQuantity="1">
+      <incoming>flow1</incoming>
+      <outgoing>awaitMaterialStatusUpdateHmps</outgoing>
+    </serviceTask>
+    <receiveTask completionQuantity="1" id="receiveStatusUpdateConfirmationHmps" implementation="##WebService" instantiate="false" isForCompensation="false" name="Receive Material Status Update Hmps Confirmation" startQuantity="1">
+      <incoming>awaitMaterialStatusUpdateHmps</incoming>
+      <outgoing>flow2</outgoing>
+    </receiveTask>
+    <sequenceFlow id="awaitMaterialStatusUpdateHmps" sourceRef="nowsMaterialStatusHmpsUpdate" targetRef="receiveStatusUpdateConfirmationHmps"/>
+    <endEvent id="materialUploadEnd" name="End">
+      <incoming>flow3</incoming>
+      <inputSet/>
+    </endEvent>
+    <sequenceFlow id="awaitingStatusUpdateHearingConfirmed" sourceRef="nowsMaterialStatusHearingUpdate" targetRef="receiveStatusUpdateConfirmationHearing"/>
+    <sequenceFlow id="flow1" sourceRef="receiveMaterialUploadedConfirmation" targetRef="nowsMaterialStatusHmpsUpdate"/>
+    <sequenceFlow id="flow2" sourceRef="receiveStatusUpdateConfirmationHmps" targetRef="nowsMaterialStatusHearingUpdate"/>
+    <sequenceFlow id="flow3" sourceRef="receiveStatusUpdateConfirmationHearing" targetRef="materialUploadEnd"/>
+  </process>
+  <bpmndi:BPMNDiagram id="Yaoqiang_Diagram-nowsMaterialUpload" name="Untitled Diagram" resolution="96.0">
+    <bpmndi:BPMNPlane bpmnElement="nowsMaterialUpload">
+      <bpmndi:BPMNShape bpmnElement="materialUploadStart" id="Yaoqiang-materialUploadStart">
+        <omgdc:Bounds height="32.0" width="32.0" x="42.0" y="333.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="31.0" x="42.5" y="373.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="uploadMaterial" id="Yaoqiang-uploadMaterial">
+        <omgdc:Bounds height="55.0" width="105.0" x="170.0" y="319.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="89.0" x="178.0" y="339.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="receiveMaterialUploadedConfirmation" id="Yaoqiang-receiveMaterialUploadedConfirmation">
+        <omgdc:Bounds height="85.0" width="111.0" x="362.0" y="299.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="86.0" x="374.5" y="327.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="nowsMaterialStatusHearingUpdate" id="Yaoqiang-nowsMaterialStatusHearingUpdate">
+        <omgdc:Bounds height="91.0" width="131.0" x="610.0" y="120.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="116.0" x="617.5" y="151.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="receiveStatusUpdateConfirmationHearing" id="Yaoqiang-receiveStatusUpdateConfirmationHearing">
+        <omgdc:Bounds height="84.0" width="125.0" x="846.0" y="35.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="60.96" width="112.0" x="852.5" y="48.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="nowsMaterialStatusHmpsUpdate" id="Yaoqiang-nowsMaterialStatusHmpsUpdate">
+        <omgdc:Bounds height="81.0" width="141.0" x="590.0" y="420.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="32.96" width="116.0" x="602.5" y="446.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="receiveStatusUpdateConfirmationHmps" id="Yaoqiang-receiveStatusUpdateConfirmationHmps">
+        <omgdc:Bounds height="88.0" width="105.0" x="870.0" y="420.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="60.96" width="91.0" x="877.0" y="435.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="materialUploadEnd" id="Yaoqiang-materialUploadEnd">
+        <omgdc:Bounds height="32.0" width="32.0" x="1300.0" y="330.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="26.0" x="1303.0" y="370.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="Yaoqiang-flow3">
+        <omgdi:waypoint x="971.0" y="77.0"/>
+        <omgdi:waypoint x="1300.0" y="346.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="1132.5" y="202.02"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="uploadingMaterial" id="Yaoqiang-uploadingMaterial">
+        <omgdi:waypoint x="74.0" y="349.0"/>
+        <omgdi:waypoint x="170.0" y="346.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="119.0" y="338.27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="awaitingStatusUpdateHearingConfirmed" id="Yaoqiang-awaitingStatusUpdateHearingConfirmed">
+        <omgdi:waypoint x="741.0" y="165.5"/>
+        <omgdi:waypoint x="846.0" y="77.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="790.5" y="111.77"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="Yaoqiang-flow2">
+        <omgdi:waypoint x="924.0" y="420.0"/>
+        <omgdi:waypoint x="924.0" y="320.0"/>
+        <omgdi:waypoint x="741.0" y="165.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="921.0" y="191.77"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="Yaoqiang-flow1">
+        <omgdi:waypoint x="473.0" y="341.5"/>
+        <omgdi:waypoint x="590.0" y="460.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="528.5" y="391.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="awaitMaterialStatusUpdateHmps" id="Yaoqiang-awaitMaterialStatusUpdateHmps">
+        <omgdi:waypoint x="731.0" y="460.5"/>
+        <omgdi:waypoint x="870.0" y="464.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="797.5" y="452.77"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="awaitingMaterialuploadConfirmation" id="Yaoqiang-awaitingMaterialuploadConfirmation">
+        <omgdi:waypoint x="275.0" y="346.5"/>
+        <omgdi:waypoint x="362.0" y="341.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.96" width="6.0" x="315.5" y="334.52"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

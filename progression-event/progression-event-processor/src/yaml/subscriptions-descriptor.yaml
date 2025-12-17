@@ -1,0 +1,880 @@
+subscriptions_descriptor:
+  spec_version: 1.0.0
+  service: progression
+  service_component: EVENT_PROCESSOR
+  subscriptions:
+    - name: event processor subscription
+      events:
+        - name: progression.event.offences-moved-to-new-next-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.offences-moved-to-new-next-hearing.json
+
+        - name: progression.event.added-offences-moved-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.added-offences-moved-to-hearing.json
+
+        - name: progression.event.prosecution-case-defendant-updated
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-defendant-updated.json
+
+        - name: progression.event.court-document-added
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-added.json
+
+        - name: progression.event.court-document-uploaded
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-uploaded.json
+
+        - name: progression.event.listing-number-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.listing-number-updated.json
+
+        - name: progression.event.hearing-listing-number-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-listing-number-updated.json
+
+        - name: progression.event.court-document-removed
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-removed.json
+
+        - name: progression.event.defendant-bail-document-created
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-bail-document-created
+
+        - name: progression.event.hearing-application-link-created
+          schema_uri: http://justice.gov.uk/core/courts/hearing-application-link-created.json
+
+        - name: progression.events.offences-for-defendant-changed
+          schema_uri: http://justice.gov.uk/progression/courts/offences-for-defendant-changed.json
+
+        - name: progression.event.application-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/application-offences-updated.json
+
+        - name: progression.event.print-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.print-requested.json
+
+        - name: progression.event.email-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.email-requested.json
+
+        - name: progression.event.summons-data-prepared
+          schema_uri: http://justice.gov.uk/core/courts/summons-data-prepared.json
+
+        - name: progression.event.nows-material-request-recorded
+          schema_uri: http://justice.gov.uk/core/courts/nows-material-request-recorded.json
+
+        - name: progression.event.nows-material-status-updated
+          schema_uri: http://justice.gov.uk/core/courts/nows-material-status-updated.json
+
+        - name: progression.hearing-initiate-enriched
+          schema_uri: http://justice.gov.uk/core/courts/progression.event-hearing-initiate-enriched.json
+
+        - name: progression.event.court-application-created
+          schema_uri: http://justice.gov.uk/core/courts/court-application-created.json
+
+        - name: progression.event.court-application-proceedings-initiated
+          schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-initiated.json
+
+        - name: progression.event.court-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-application-updated.json
+
+        - name: progression.event.court-application-rejected
+          schema_uri: http://justice.gov.uk/core/courts/court-application-rejected.json
+
+        - name: progression.event.court-proceedings-initiated
+          schema_uri: http://justice.gov.uk/core/courts/court-proceedings-initiated.json
+
+        - name: progression.event.listed-court-application-changed
+          schema_uri: http://justice.gov.uk/core/courts/listed-court-application-changed.json
+
+        - name: progression.event.application-referred-to-court
+          schema_uri: http://justice.gov.uk/core/courts/application-referred-to-court.json
+
+        - name: progression.event.hearing-extended
+          schema_uri: http://justice.gov.uk/core/courts/hearing-extended.json
+
+        - name: progression.event.hearing-extended-processed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-extended-processed.json
+
+        - name: progression.event.slots-booked-for-application
+          schema_uri: http://justice.gov.uk/core/courts/slots-booked-for-application.json
+
+        - name: progression.event.defendants-added-to-court-proceedings
+          schema_uri: http://justice.gov.uk/core/courts/defendants-added-to-court-proceedings.json
+
+        - name: progression.event.prosecution-case-created
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-created.json
+
+        - name: progression.event.case-ejected
+          schema_uri: http://justice.gov.uk/core/courts/case-ejected.json
+
+        - name: progression.event.case-ejected-via-bdf
+          schema_uri: http://justice.gov.uk/core/courts/case-ejected-via-bdf.json
+
+        - name: progression.events.hearing-days-without-court-centre-corrected
+          schema_uri: http://justice.gov.uk/progression/events/progression.events.hearing-days-without-court-centre-corrected.json
+
+        - name: progression.event.application-ejected
+          schema_uri: http://justice.gov.uk/core/courts/application-ejected.json
+
+        - name: progression.event.boxwork-application-referred
+          schema_uri: http://justice.gov.uk/core/courts/boxwork-application-referred.json
+
+        - name: progression.event.boxwork-assignment-changed
+          schema_uri: http://justice.gov.uk/core/courts/boxwork-assignment-changed.json
+
+        - name: progression.event.financial-means-deleted
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.financial-means-deleted.json
+
+        - name: progression.event.court-document-created
+          schema_uri: http://justice.gov.uk/core/courts/courts-document-created.json
+
+        - name: progression.event.case-markers-updated
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-updated.json
+
+        - name: progression.event.case-markers-shared-with-hearings
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-shared-with-hearings.json
+
+        - name: progression.event.case-markers-updated-in-hearing
+          schema_uri: http://justice.gov.uk/core/courts/case-markers-updated-in-hearing.json
+
+        - name: progression.event.case-note-added
+          schema_uri: http://justice.gov.uk/core/courts/case-note-added.json
+
+        - name: progression.event.case-note-added-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.case-note-added-v2.json
+
+        - name: progression.event.case-note-edited
+          schema_uri: http://justice.gov.uk/core/courts/case-note-edited.json
+
+        - name: progression.event.case-note-edited-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.case-note-edited-v2.json
+
+        - name: progression.event.application-note-added
+          schema_uri: http://justice.gov.uk/core/courts/application-note-added.json
+
+        - name: progression.event.application-note-edited
+          schema_uri: http://justice.gov.uk/core/courts/application-note-edited.json
+
+        - name: progression.event.court-document-send-to-cps
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.court-document-send-to-cps.json
+
+        - name: progression.event.validate-link-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.validate-link-cases.json
+
+        - name: progression.event.validate-merge-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.validate-merge-cases.json
+
+        - name: progression.event.validate-split-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.validate-split-cases.json
+
+        - name: progression.event.hearing-moved-to-unallocated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
+
+        - name: progression.event.application-defendant-update-requested
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.application-defendant-update-requested.json
+
+        - name: progression.event.application-hearing-defendant-updated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.application-hearing-defendant-updated.json
+
+        # Generate Court Register
+        - name: progression.event.court-register-generated
+          schema_uri: http://justice.gov.uk/progression/courts/court-register-generated.json
+
+        - name: progression.event.court-register-requested
+          schema_uri: http://justice.gov.uk/progression/courts/court-register-requested.json
+
+          # Generate Prison Court Register
+        - name: progression.event.prison-court-register-recorded
+          schema_uri: http://justice.gov.uk/progression/courts/prison-court-register-recorded.json
+
+        - name: progression.event.prison-court-register-generated
+          schema_uri: http://justice.gov.uk/progression/courts/prison-court-register-generated.json
+
+        - name: progression.event.now-document-requested
+          schema_uri: http://justice.gov.uk/core/courts/now-document-requested.json
+
+        - name: progression.event.nows-document-generated
+          schema_uri: http://justice.gov.uk/core/courts/nows-document-generated.json
+
+        - name: progression.event.court-register-notified
+          schema_uri: http://justice.gov.uk/progression/courts/court-register-notified.json
+
+        - name: progression.event.court-register-notified-v2
+          schema_uri: http://justice.gov.uk/progression/courts/court-register-notified-v2.json
+
+        - name: progression.event.hearing-resulted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-resulted.json
+
+          ############  Association Start ############
+        - name: progression.event.defence-organisation-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-associated.json
+
+        - name: progression.event.defence-organisation-disassociated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
+
+        - name: progression.event.defendant-defence-organisation-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-associated.json
+
+        - name: progression.event.defendant-defence-organisation-disassociated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-organisation-disassociated.json
+
+          ############  Association End ############
+
+        - name: progression.event.defendant-legalaid-status-updated-v2
+          schema_uri: http://justice.gov.uk/progression/courts/defendant-legalaid-status-updated-v2.json
+
+        - name: progression.event.hearing-resulted-case-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-case-updated.json
+
+        - name: progression.event.defendant-trial-record-sheet-requested
+          schema_uri: http://justice.gov.uk/core/courts/defendant-trial-record-sheet-requested.json
+
+        - name: progression.event.defendant-trial-record-sheet-requested-for-application
+          schema_uri: http://justice.gov.uk/core/courts/defendant-trial-record-sheet-requested-for-application.json
+
+        - name: progression.event.hearing-resulted-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-resulted-application-updated.json
+
+        - name: progression.event.defendant-defence-organisation-changed
+          schema_uri: http://justice.gov.uk/core/courts/defendant-defence-organisation-changed.json
+
+        - name: progression.event.application-defence-organisation-changed
+          schema_uri: http://justice.gov.uk/core/courts/application-defence-organisation-changed.json
+
+        - name: progression.event.application-reporder-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/application-reporder-offences-updated.json
+
+        - name: progression.event.application-rep-order-updated-for-application
+          schema_uri: http://moj.gov.uk/cpp/progression/event/progression.event.application-rep-order-updated-for-application.json
+
+        - name: progression.event.defendant-defence-association-locked
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
+
+        - name: progression.event.defendant-laa-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-laa-associated.json
+
+        - name: progression.event.application-laa-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/application-laa-associated.json
+
+        - name: progression.event.defendant-matched
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-matched.json
+
+        - name: progression.event.master-defendant-id-updated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated.json
+
+        - name: progression.event.master-defendant-id-updated-v2
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-v2.json
+
+        - name: progression.event.defendants-master-defendant-id-updated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendants-master-defendant-id-updated
+
+        - name: progression.event.defendant-unmatched
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.events.defendant-unmatched.json
+
+        - name: progression.event.defendant-unmatched-v2
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.events.defendant-unmatched-v2.json
+
+        - name: progression.event.prosecution-case-update-defendants-with-matched-requested-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-case-update-defendants-with-matched-requested-v2.json
+
+        - name: progression.event.cases-unlinked
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.cases-unlinked.json
+
+        - name: progression.event.extend-hearing-defendant-request-created
+          schema_uri: http://justice.gov.uk/core/courts/extend-hearing-defendant-request-created.json
+
+        - name: progression.event.extend-hearing-defendant-request-updated
+          schema_uri: http://justice.gov.uk/core/courts/extend-hearing-defendant-request-updated.json
+
+        - name: progression.event.defendant-request-from-current-hearing-to-extend-hearing-created
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.defendant-request-from-current-hearing-to-extend-hearing-created.json
+
+        - name: progression.event.unscheduled-hearing-listing-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.unscheduled-hearing-listing-requested.json
+
+        - name: progression.event.unscheduled-next-hearings-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.unscheduled-next-hearings-requested.json
+
+        - name: progression.event.hearing-marked-as-duplicate
+          schema_uri: http://justice.gov.uk/progression/courts/hearing-marked-as-duplicate.json
+
+        - name: progression.event.case-cps-prosecutor-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.case-cps-prosecutor-updated.json
+
+        - name: progression.event.prosecution-cases-resulted
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-cases-resulted.json
+
+        - name: progression.events.case-retention-length-calculated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.case-retention-length-calculated.json
+
+        - name: progression.event.hearing-event-logs-document-created
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-event-logs-document-created.json
+
+        - name: progression.event.applications-resulted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.applications-resulted.json
+
+        - name: progression.event.application-referred-to-boxwork
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.application-referred-to-boxwork.json
+
+        - name: progression.event.application-referred-to-court-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.application-referred-to-court-hearing.json
+
+        - name: progression.event.initiate-sjp-case
+          schema_uri: http://justice.gov.uk/progression/events/initiate-sjp-case.json
+
+        - name: progression.event.application-referral-to-existing-hearing
+          schema_uri: http://justice.gov.uk/core/courts/application-referred-to-existing-hearing.json
+
+        - name: progression.event.court-application-proceedings-edited
+          schema_uri: http://justice.gov.uk/core/courts/court-application-proceedings-edited.json
+
+        - name: progression.event.breach-application-creation-requested
+          schema_uri: http://justice.gov.uk/core/courts/breach-application-creation-requested.json
+
+        - name: progression.event.initiate-court-hearing-after-summons-approved
+          schema_uri: http://justice.gov.uk/progression/courts/initiate-court-hearing-after-summons-approved.json
+
+        - name: progression.event.court-application-summons-approved
+          schema_uri: http://justice.gov.uk/core/courts/court-application-summons-approved.json
+
+        - name: progression.event.court-application-summons-rejected
+          schema_uri: http://justice.gov.uk/core/courts/court-application-summons-rejected.json
+
+        - name: progression.event.unscheduled-hearing-allocation-notified
+          schema_uri: http://justice.gov.uk/progression/courts/unscheduled-hearing-allocation-notified.json
+
+        - name: progression.event.send-statdec-appointment-letter
+          schema_uri: http://justice.gov.uk/progression/courts/send-statdec-appointment-letter.json
+
+        - name: progression.event.pet-form-created
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-created.json
+
+        - name: progression.event.pet-form-updated
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-updated.json
+
+        - name: progression.event.pet-form-released
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-released.json
+
+        - name: progression.event.pet-detail-updated
+          schema_uri: http://justice.gov.uk/core/courts/pet-detail-updated.json
+
+        - name: progression.event.pet-operation-failed
+          schema_uri: http://justice.gov.uk/core/courts/pet-operation-failed.json
+
+        - name: progression.event.pet-form-defendant-updated
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-defendant-updated.json
+
+        - name: progression.event.pet-form-finalised
+          schema_uri: http://justice.gov.uk/core/courts/pet-form-finalised.json
+
+        - name: progression.event.prosecution-cases-resulted-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.prosecution-cases-resulted-v2.json
+
+        - name: progression.event.next-hearings-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.next-hearings-requested.json
+
+        - name: progression.event.related-hearing-requested
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-requested.json
+
+        - name: progression.event.related-hearing-requested-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-requested-for-adhoc-hearing.json
+
+        - name: progression.event.related-case-requested-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-case-requested-for-adhoc-hearing.json
+
+
+        - name: progression.event.related-hearing-updated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-updated.json
+
+        - name: progression.event.related-hearing-updated-for-adhoc-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.related-hearing-updated-for-adhoc-hearing.json
+
+        - name: progression.event.delete-next-hearings-requested
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.delete-next-hearings-requested.json
+
+        - name: progression.events.hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.hearing-populated-to-probation-caseworker.json
+
+        - name: progression.events.vej-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.vej-hearing-populated-to-probation-caseworker.json
+
+        - name: progression.events.deleted-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.deleted-hearing-populated-to-probation-caseworker.json
+
+        - name: progression.events.vej-deleted-hearing-populated-to-probation-caseworker
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.vej-deleted-hearing-populated-to-probation-caseworker.json
+
+        - name: progression.event.court-application-hearing-deleted
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.court-application-hearing-deleted.json
+
+        - name: progression.event.delete-application-for-case-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-application-for-case-requested.json
+
+        - name: progression.event.delete-court-application-hearing-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-court-application-hearing-requested.json
+
+        - name: progression.event.initiate-application-for-case-requested
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.initiate-application-for-case-requested.json
+
+        - name: progression.event.hearing-defendant-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-defendant-updated.json
+
+        - name: progression.event.all-hearing-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.all-hearing-offences-updated.json
+
+        - name: progression.event.all-hearing-offences-updated-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.all-hearing-offences-updated-v2.json
+
+        - name: progression.event.hearing-offences-updated
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-offences-updated.json
+
+        - name: progression.event.hearing-offences-updated-v2
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-offences-updated-v2.json
+
+        - name: progression.event.new-defendant-added-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.new-defendant-added-to-hearing.json
+
+        - name: progression.event.hearing-updated-for-partial-allocation
+          schema_uri: http://justice.gov.uk/core/courts/hearing-updated-for-partial-allocation.json
+
+        - name: progression.event.form-defendants-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-defendants-updated.json
+
+        - name: progression.event.master-defendant-id-updated-into-hearings
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.master-defendant-id-updated-into-hearings.json
+
+        - name: progression.event.prosecution-case-listing-number-increased
+          schema_uri: http://justice.gov.uk/core/courts/prosecution-case-listing-number-increased.json
+
+        - name: progression.event.list-hearing-requested
+          schema_uri: http://justice.gov.uk/core/courts/list-hearing-requested.json
+
+        - name: progression.event.hearing-for-application-created
+          schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created.json
+
+        - name: progression.event.online-plea-document-uploaded-as-case-material
+          schema_uri: http://moj.gov.uk/cpp/progression/events/online-plea-document-uploaded-as-case-material.json
+
+        - name: progression.event.notification-sent-for-plea-document
+          schema_uri: http://moj.gov.uk/cpp/progression/events/notification-sent-for-plea-document.json
+
+        - name: progression.event.notification-sent-for-defendant-document
+          schema_uri: http://moj.gov.uk/cpp/progression/events/notification-sent-for-defendant-document.json
+
+        - name: progression.event.plea-document-for-online-plea-submitted
+          schema_uri: http://moj.gov.uk/cpp/progression/events/plea-document-for-online-plea-submitted.json
+
+        - name: progression.event.finance-document-for-online-plea-submitted
+          schema_uri: http://moj.gov.uk/cpp/progression/events/finance-document-for-online-plea-submitted.json
+
+        - name: progression.event.hearing-for-application-created-v2
+          schema_uri: http://justice.gov.uk/core/progression/courts/progression.event.hearing-for-application-created-v2.json
+
+        - name: progression.event.cotr-created
+          schema_uri: http://justice.gov.uk/cpp/progression/event/progression.event.cotr-created.json
+
+        - name: progression.event.prosecution-cotr-served
+          schema_uri: http://moj.gov.uk/cpp/progression/event/prosecution-cotr-served.json
+
+        - name: progression.event.cotr-archived
+          schema_uri: http://justice.gov.uk/cpp/progression/event/progression.event.cotr-archived.json
+
+        - name: progression.event.defendant-cotr-served
+          schema_uri: http://justice.gov.uk/core/courts/defendant-cotr-served.json
+
+        - name: progression.event.defendant-added-to-cotr
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.defendant-added-to-cotr.json
+
+        - name: progression.event.defendant-removed-from-cotr
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.defendant-removed-from-cotr.json
+
+        - name: progression.event.further-info-for-prosecution-cotr-added
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.further-info-for-prosecution-cotr-added.json
+
+        - name: progression.event.further-info-for-defence-cotr-added
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.further-info-for-defence-cotr-added.json
+
+        - name: progression.event.review-notes-updated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.review-notes-updated.json
+
+        - name: progression.event.cotr-task-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.cotr-task-requested.json
+
+        - name: progression.event.prosecution-cotr-updated
+          schema_uri: http://justice.gov.uk/cpp/progression/event/prosecution-cotr-updated.json
+
+        - name: progression.event.civil-fees-updated
+          schema_uri: http://justice.gov.uk/core/courts/civil-fees-updated.json
+
+        - name: progression.event.civil-fees-added
+          schema_uri: http://justice.gov.uk/core/courts/civil-fees-added.json
+
+        - name: progression.event.civil-bulk-proceedings-initiated
+          schema_uri: http://justice.gov.uk/core/courts/civil-bulk-proceedings-initiated.json
+
+        - name: progression.event.court-fee-for-civil-application-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-fee-for-civil-application-updated.json
+
+        - name: progression.event.case-removed-from-group-cases
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.case-removed-from-group-cases.json
+
+        - name: progression.event.civil-case-exists
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.civil-case-exists.json
+
+        - name: progression.event.last-case-to-be-removed-from-group-cases-rejected
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.last-case-to-be-removed-from-group-cases-rejected.json
+
+        - name: progression.event.related-reference-added
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.related-reference-added.json
+
+        - name: progression.event.related-reference-deleted
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.related-reference-deleted.json
+
+        - name: progression.event.court-list-published
+          schema_uri: http://justice.gov.uk/cpp/progression/event/court-list-published.json
+
+        - name: progression.event.press-list-opa-notice-generated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.press-list-opa-notice-generated.json
+
+        - name: progression.event.public-list-opa-notice-generated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.public-list-opa-notice-generated.json
+
+        - name: progression.event.result-list-opa-notice-generated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.result-list-opa-notice-generated.json
+
+        - name: progression.event.opa-public-list-notice-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-public-list-notice-requested.json
+
+        - name: progression.event.opa-press-list-notice-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-press-list-notice-requested.json
+
+        - name: progression.event.opa-result-list-notice-requested
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-requested.json
+
+        - name: progression.event.opa-public-list-notice-generated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-public-list-notice-generated.json
+
+        - name: progression.event.opa-result-list-notice-generated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-press-list-notice-generated.json
+
+        - name: progression.event.opa-press-list-notice-generated
+          schema_uri: http://justice.gov.uk/progression/event/progression.event.opa-result-list-notice-generated.json
+
+        - name: progression.event.remove-defendant-custodial-establishment-requested
+          schema_uri: http://justice.gov.uk/core/courts/remove-defendant-custodial-establishment-requested.json
+
+        - name: progression.event.delete-previous-hearings-and-create-next-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.delete-previous-hearings-and-create-next-hearing.json
+
+        - name: progression.event.case-added-to-hearing-bdf
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.case-added-to-hearing-bdf.json
+
+
+          # ***** Deprecated API - Start ********
+          # ***** Do not add any new API in this section *****
+
+        - name: progression.event.cases-referred-to-court
+          schema_uri: http://justice.gov.uk/core/courts/cases-referred-to-court.json
+
+        - name: progression.event.cases-referred-to-court-v2
+          schema_uri: http://justice.gov.uk/core/courts/cases-referred-to-court-V2.json
+
+        - name: progression.event.document-review-required
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.document-review-required.json
+
+        - name: progression.event.court-document-updated
+          schema_uri: http://justice.gov.uk/core/courts/court-document-updated.json
+
+        - name: progression.event.court-document-shared
+          schema_uri: http://justice.gov.uk/core/courts/court-document-shared.json
+
+        - name: progression.event.court-document-shared-v2
+          schema_uri: http://justice.gov.uk/core/courts/court-document-shared-v2.json
+
+        - name: progression.event.duplicate-share-court-document-request-received
+          schema_uri: http://justice.gov.uk/core/courts/duplicate-share-court-document-request-received.json
+
+        - name: progression.event.all-court-documents-shared
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.all-court-documents-shared.json
+
+        - name: progression.event.duplicate-share-all-court-documents-request-received
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.duplicate-share-all-court-documents-request-received.json
+
+        - name: progression.event.notification-request-failed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.notification-request-failed.json
+
+        - name: progression.event.notification-request-succeeded
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.notification-request-succeeded.json
+
+        - name: progression.event.hearing-deleted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-deleted.json
+
+        - name: progression.event.offence-in-hearing-deleted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.offence-in-hearing-deleted.json
+
+        - name: progression.event.cases-added-for-updated-related-hearing
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.cases-added-for-updated-related-hearing.json
+
+        - name: progression.events.extend-custody-time-limit-resulted
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.extend-custody-time-limit-resulted.json
+
+        - name: progression.events.custody-time-limit-extended
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.custody-time-limit-extended.json
+
+        - name: progression.event.defendants-and-listing-hearing-requests-added
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.defendants-and-listing-hearing-requests-added.json
+
+        - name: progression.event.hearing-updated-processed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.hearing-updated-processed.json
+
+        - name: progression.event.list-hearing-requested
+          schema_uri: http://justice.gov.uk/core/courts/list-hearing-requested.json
+
+        - name: progression.event.hearing-trial-vacated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-trial-vacated.json
+
+        - name: progression.event.laa-defendant-proceeding-concluded-changed
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-changed.json
+
+        - name: progression.event.laa-defendant-proceeding-concluded-resent
+          schema_uri: http://justice.gov.uk/core/courts/progression.event.laa-defendant-proceeding-concluded-resent.json
+
+        - name: progression.event.form-created
+          schema_uri: http://justice.gov.uk/core/courts/form-created.json
+
+        - name: progression.event.form-operation-failed
+          schema_uri: http://justice.gov.uk/core/courts/form-operation-failed.json
+
+        - name: progression.event.form-finalised
+          schema_uri: http://justice.gov.uk/core/courts/form-finalised.json
+
+        - name: progression.event.form-updated
+          schema_uri: http://justice.gov.uk/core/courts/form-updated.json
+
+        - name: progression.event.edit-form-requested
+          schema_uri: http://justice.gov.uk/core/courts/edit-form-requested.json
+
+        - name: progression.event.now-document-notification-suppressed
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.now-document-notification-suppressed.json
+
+        - name: progression.event.prosecutionCase-defendant-listing-status-changed-v2
+          schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed-v2.json
+
+        - name: progression.event.prosecutionCase-defendant-listing-status-changed-v3
+          schema_uri: http://justice.gov.uk/core/courts/prosecutionCase-defendant-listing-status-changed-v3.json
+
+        - name: progression.event.send-notification-for-application-initiated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.send-notification-for-application-initiated.json
+
+        - name: progression.event.defendant-custodial-information-update-requested
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-custodial-information-update-requested.json
+
+        - name: progression.event.document-with-prosecution-case-id-added
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.document-with-prosecution-case-id.json-added.json
+
+        - name: progression.event.breach-applications-to-be-added-to-hearing
+          schema_uri: http://justice.gov.uk/core/courts/breach-applications-to-be-added-to-hearing.json
+
+        - name: progression.event.send-notification-for-auto-application-initiated
+          schema_uri: http://justice.gov.uk/core/courts/send-notification-for-auto-application-initiated.json
+
+        - name: progression.events.offences-removed-from-hearing
+          schema_uri: http://justice.gov.uk/progression/courts/progression.events.offences-removed-from-hearing.json
+
+        - name: progression.event.hearing-moved-to-unallocated
+          schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
+
+        - name: progression.event.hearing-application-laa-reference-update-received
+          schema_uri: http://moj.gov.uk/cpp/progression/events/hearing-application-laa-reference-update-received.json
+
+
+          # Deprecated API  - End
+      event_source_name: progression
+
+    - name: public event subscription
+      events:
+        - name: material.material-added
+          schema_uri: http://justice.gov.uk/json/schemas/domains/public/material/material-added
+
+        # Listing start
+        - name: public.listing.case-sent-for-listing
+          schema_uri: http://justice.gov.uk/json/schemas/domains/public/listing/case-sent-for-listing
+
+        - name: public.listing.hearing-confirmed
+          schema_uri: http://justice.gov.uk/core/courts/hearing-confirmed.json
+
+        - name: public.listing.hearing-updated
+          schema_uri: http://justice.gov.uk/core/courts/hearing-updated.json
+
+        - name: public.listing.new-defendant-added-for-court-proceedings
+          schema_uri: http://justice.gov.uk/listing/events/public-listing-new-defendant-added-for-court-proceedings.json
+
+        - name: public.listing.offences-moved-to-next-hearing
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.offences-moved-to-next-hearing.json
+
+        - name: public.listing.hearing-unallocated-courtroom-removed
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.hearing-unallocated-courtroom-removed.json
+
+
+        # Hearing start
+        - name: public.hearing.adjourned
+          schema_uri: http://justice.gov.uk/hearing/courts/hearing-adjourned.json
+
+        - name: public.hearing.offence-conviction-date-changed
+          schema_uri: http://justice.gov.uk/core/courts/conviction-date-added.json
+
+        - name: public.hearing.offence-conviction-date-removed
+          schema_uri: http://justice.gov.uk/core/courts/conviction-date-removed.json
+
+        - name: public.hearing.resulted
+          schema_uri: http://justice.gov.uk/hearing/courts/public.hearing-resulted.json
+
+        - name: public.events.hearing.hearing-resulted
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.hearing-resulted.json
+
+        - name: public.hearing.now-document-requested
+          schema_uri: http://justice.gov.uk/core/courts/nowdocument/now-document-requested.json
+
+        - name: public.hearing.event.nces-notification-requested
+          schema_uri: http://justice.gov.uk/core/courts/nces-notification-requested.json
+
+        - name: public.events.hearing.marked-as-duplicate
+          schema_uri: http://justice.gov.uk/hearing/courts/hearing.events.marked-as-duplicate.json
+
+        - name: public.hearing.trial-vacated
+          schema_uri: http://justice.gov.uk/hearing/courts/public.hearing.trial-vacated.json
+
+        - name: public.events.listing.offences-removed-from-allocated-hearing
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.listing.offences-removed-from-allocated-hearing.json
+
+        - name: public.hearing.defence-counsel-added
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-added.json
+
+        - name: public.hearing.defence-counsel-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-updated.json
+
+        - name: public.hearing.defence-counsel-removed
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/defence-counsel-removed.json
+
+        # Defence start
+        - name: public.defence.allocation-pleas-added
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/allocation-pleas-added.json
+
+        - name: public.defence.allocation-pleas-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/allocation-pleas-updated.json
+
+        - name: public.stagingpubhub.opa-public-list-notice-sent
+          schema_uri: http://justice.gov.uk/progression/courts/progression.command.opa-notice-sent.json
+
+        - name: public.stagingpubhub.opa-press-list-notice-sent
+          schema_uri: http://justice.gov.uk/progression/courts/progression.command.opa-notice-sent.json
+
+        - name: public.stagingpubhub.opa-result-list-notice-sent
+          schema_uri: http://justice.gov.uk/progression/courts/progression.command.opa-notice-sent.json
+
+        # Notification notify
+        - name: public.notificationnotify.events.notification-failed
+          schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-failed.json
+
+        - name: public.notificationnotify.events.notification-sent
+          schema_uri: http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-sent.json
+
+        # Notification for Instruction and Disassociated
+        - name: public.defence.event.record-instruction-details
+          schema_uri: http://moj.gov.uk/cpp/defence/event/processor/events/public.defence.event.record-instruction-details.json
+
+        - name: public.defence.defence-organisation-disassociated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defence-organisation-disassociated.json
+
+        - name: public.defence.defence-organisation-associated
+          schema_uri: http://moj.gov.uk/cpp/progression/events/public.event.defence-organisation-associated.json
+
+        # Staging enforcement acknowledgment
+        - name: public.stagingenforcement.enforce-financial-imposition-acknowledgement
+          schema_uri: http://cpp.moj.gov.uk/stagingenforcement/json/schema/event/public-enforce-financial-imposition-acknowledgement.json
+
+        #System doc generator
+        - name: public.systemdocgenerator.events.document-available
+          schema_uri: http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/document-available.json
+
+        - name: public.systemdocgenerator.events.generation-failed
+          schema_uri: http://moj.gov.uk/cpp/json/schemas/systemdocgenerator/events/public/generation-failed.json
+
+        # Allocated Hearing Deleted
+        - name: public.events.listing.allocated-hearing-deleted
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.allocated-hearing-deleted.json
+
+        # Unallocated Hearing Deleted
+        - name: public.events.listing.unallocated-hearing-deleted
+          schema_uri: http://justice.gov.uk/listingcourts/public.events.listing.unallocated-hearing-deleted.json
+
+        # Hearing Deleted
+        - name: public.events.listing.hearing-deleted
+          schema_uri: http://justice.gov.uk/listingcourts/public.events.listing.hearing-deleted.json
+
+        # Hearing Unallocated
+        - name: public.events.listing.hearing-unallocated
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.hearing-unallocated.json
+
+        # Offence removed from unallocated hearing
+        - name: public.events.listing.offences-removed-from-unallocated-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-unallocated-hearing.json
+
+        # Remove Offences from existing unallocated hearing
+        - name: public.events.listing.offences-removed-from-existing-unallocated-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-existing-unallocated-hearing.json
+
+        # Remove Offences from existing allocated hearing
+        - name: public.events.listing.offences-removed-from-existing-allocated-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.offences-removed-from-existing-allocated-hearing.json
+
+        - name: public.sjp.events.conviction-court-resolved
+          schema_uri: http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.conviction-court-resolved.json
+
+        - name: public.events.listing.cases-added-for-updated-related-hearing
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.cases-added-for-updated-related-hearing.json
+
+        - name: public.events.hearing.custody-time-limit-clock-stopped
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.events.hearing.custody-time-limit-clock-stopped.json
+
+        - name: public.events.hearing.prosecution-case-created-in-hearing
+          schema_uri: http://justice.gov.uk/hearing/courts/public.events.hearing.prosecution-case-created-in-hearing.json
+
+        - name: public.events.listing.hearing-days-without-court-centre-corrected
+          schema_uri: http://justice.gov.uk/listing/courts/public.events.listing.hearing-days-without-court-centre-corrected.json
+
+        - name: public.listing.vacated-trial-updated
+          schema_uri: http://justice.gov.uk/listing/courts/vacated-trial-updated.json
+
+        - name: public.prosecutioncasefile.cps-serve-pet-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-pet-submitted.json
+
+        - name: public.prosecutioncasefile.cps-serve-bcm-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-bcm-submitted.json
+
+        - name: public.prosecutioncasefile.cps-serve-ptph-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-ptph-submitted.json
+
+        - name: public.listing.cases-added-to-hearing
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.case-added-to-hearing.json
+
+        - name: public.listing.hearing-requested-for-listing
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.hearing-requested-for-listing.json
+
+        - name: public.listing.hearing-partially-updated
+          schema_uri: http://justice.gov.uk/listing/courts/public.hearing-partially-updated.json
+
+        - name: public.hearing.hearing-offence-verdict-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing.hearing-offence-verdict-updated.json
+
+        - name: public.hearing.hearing-offence-plea-updated
+          schema_uri: http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing-offence-plea-updated.json
+
+        - name: public.listing.court-list-published
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.court-list-published.json
+
+        - name: public.prosecutioncasefile.cps-serve-cotr-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-cotr-submitted.json
+
+        - name: public.prosecutioncasefile.cps-update-cotr-submitted
+          schema_uri: http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-update-cotr-submitted.json
+
+        # Hearingnows
+        - name: public.hearingnows.now-notification-generated
+          schema_uri: http://moj.gov.uk/cpp/hearing/nows/events/public.hearingnows.now-notification-generated.json
+
+        - name: public.listing.create-next-hearing-requested
+          schema_uri: http://justice.gov.uk/listing/events/public.listing.create-next-hearing-requested.json
+
+      event_source_name: public.event.source

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/pre-sentence-report-for-defendants-requested.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "psrIsRequested": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "defendantId",
+          "psrIsRequested"
+        ]
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "defendants"
+  ]
+}

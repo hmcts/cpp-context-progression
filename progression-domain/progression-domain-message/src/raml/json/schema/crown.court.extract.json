@@ -1,0 +1,1008 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/exract/court-extract-requested.json",
+  "type": "object",
+  "properties": {
+    "extractType": {
+      "description": "extract type",
+      "type": "string"
+    },
+    "defendant": {
+      "$ref": "#/definitions/defendant"
+    },
+    "caseReference": {
+      "description": "The reference to the individual case that is the subject of the extract (caseURN or PRN)",
+      "type": "string"
+    },
+    "isAppealPending": {
+      "description": "The flag to indicate if any appeal against any defendant is pending",
+      "type": "boolean"
+    },
+    "prosecutingAuthority": {
+      "description": "The prosecuting authority for the case in question",
+      "$ref": "#/definitions/prosecutingAuthority"
+    },
+    "referralReason": {
+      "type": "string"
+    },
+    "publishingCourt": {
+      "$ref": "#/definitions/courtCentre"
+    },
+    "companyRepresentatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/counsel"
+      }
+    },
+    "parentGuardian": {
+      "$ref": "#/definitions/parentGuardian"
+    }
+  },
+  "required": [
+    "publishingCourt",
+    "caseReference",
+    "prosecutingAuthority",
+    "defendant"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "attendanceDayAndType": {
+      "id": "http://justice.gov.uk/progression/courts/exract/court-extract-requested.json#/definitions/attendanceDayAndType",
+      "type": "object",
+      "properties": {
+        "attendanceType": {
+          "type": "string",
+          "description": "Defendant's attendance type"
+        },
+        "day": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        }
+      }
+    },
+    "sittingDay": {
+      "type": "object",
+      "properties": {
+        "day": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "time": {
+          "type": "string"
+        }
+      }
+    },
+    "counsel": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "attendanceDays": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/sittingDay"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "role",
+        "attendanceDays"
+      ],
+      "additionalProperties": false
+    },
+
+    "crownCourtDecision": {
+      "type": "object",
+      "properties": {
+        "judiciaryNamesByRole": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/judicialRoleNames"
+          }
+        },
+        "dates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/sittingDay"
+          }
+        }
+      },
+      "required": [
+        "judiciaryNamesByRole"
+      ],
+      "additionalProperties": false
+    },
+    "judicialRoleNames": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "description": "A transformation of the enumerated types to a simple string for rendering purposes e.g. MAGISTRATE -> Magistrate, CIRCUIT_JUDGE -> Circuit Judge",
+          "type": "string"
+        },
+        "names": {
+          "description": "List of Judiciary names from reference data",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "role",
+        "names"
+      ],
+      "additionalProperties": false
+    },
+
+    "courtCentre": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "welshName": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "dateOfBirth": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "age": {
+          "type": "string"
+        },
+        "ethnicity": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        },
+        "arrestSummonsNumber": {
+          "description": "defendant Arrest/Summons Number",
+          "type": "string"
+        },
+        "hearings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/hearing"
+          }
+        },
+        "attendanceDays": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/attendanceDayAndType"
+          }
+        },
+        "defenceOrganisations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/defendantDefenceOrganisation"
+          }
+        },
+        "associatedDefenceOrganisations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "description": "The organisation details of the defence representation",
+            "$ref": "http://justice.gov.uk/core/courts/associatedDefenceOrganisation.json#"
+          }
+        },
+        "results": {
+          "description": "defendant case level results",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+          }
+        },
+        "custodialEstablishment": {
+          "description": "The custodial establishment for Defendant",
+          "$ref": "http://justice.gov.uk/progression/courts/getHearingsAtAGlance.json#/definitions/custodyEstablishment"
+        },
+        "legalAidStatus": {
+          "type": "string"
+        },
+        "remandStatus": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "prosecutingAuthority": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "hearing": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "type": {
+          "type": "string"
+        },
+        "jurisdictionType": {
+          "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
+        },
+        "reportingRestrictionReason": {
+          "type": "string"
+        },
+        "allOffencesProceedingsConcluded": {
+          "type": "boolean"
+        },
+        "offences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/offence"
+          }
+        },
+        "hearingDays": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/sittingDay"
+          }
+        },
+        "courtCentre": {
+          "$ref": "#/definitions/courtCentre"
+        },
+        "courtApplications": {
+          "$ref": "#/definitions/courtApplications"
+        },
+        "prosecutionCounsels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/counsel"
+          }
+        },
+        "defenceCounsels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/counsel"
+          }
+        },
+        "crownCourtDecisions": {
+          "$ref": "#/definitions/crownCourtDecision"
+        },
+        "authorisedLegalAdvisors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/delegatedPowers.json"
+          }
+        },
+        "attendanceDays": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/attendanceDayAndType"
+          }
+        },
+        "defendantResults": {
+          "description": "defendant and case level results",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/resultAmendments"
+          }
+        },
+        "deletedDefendantResults": {
+          "description": "List of amendments for previously existing result(s) that are deleted due to SlipRule",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/amendment"
+          }
+        },
+        "companyRepresentatives": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/counsel"
+          }
+        },
+        "convictedOffencesDetails": {
+          "description": "The offences that were convicted for when its plead guilty or found guilty",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/convictedOffenceDetails"
+          }
+        },
+        "aquittedOffencesDetails": {
+          "description": "The offences that were convicted for when its plead guilty or found guilty",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/aquittedOffenceDetails"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "jurisdictionType",
+        "hearingDays",
+        "courtCentre",
+        "offences"
+      ],
+      "additionalProperties": false
+    },
+    "defendantDefenceOrganisation": {
+      "type": "object",
+      "properties": {
+        "defendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "defenceOrganisation": {
+          "description": "The organisation details of the defence representation",
+          "$ref": "http://justice.gov.uk/core/courts/organisation.json#"
+        }
+      }
+    },
+    "offence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceDefinitionId": {
+          "description": "The identifier of the offence from reference data",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceCode": {
+          "type": "string"
+        },
+        "offenceTitle": {
+          "type": "string"
+        },
+        "offenceTitleWelsh": {
+          "type": "string"
+        },
+        "offenceLegislation": {
+          "type": "string"
+        },
+        "offenceLegislationWelsh": {
+          "type": "string"
+        },
+        "wording": {
+          "type": "string"
+        },
+        "wordingWelsh": {
+          "type": "string"
+        },
+        "startDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "endDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "count": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/positiveInteger"
+        },
+        "convictionDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "convictingCourt": {
+          "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+        },
+        "aquittalDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "notifiedPlea": {
+          "$ref": "http://justice.gov.uk/core/courts/notifiedPlea.json"
+        },
+        "indicatedPlea": {
+          "$ref": "http://justice.gov.uk/core/courts/indicatedPlea.json"
+        },
+        "allocationDecision": {
+          "$ref": "http://justice.gov.uk/core/courts/allocationDecision.json"
+        },
+        "pleas": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/plea.json"
+          }
+        },
+        "verdicts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "http://justice.gov.uk/core/courts/verdict.json"
+          }
+        },
+        "results": {
+          "description": "offence level results with any amendments",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/resultAmendments"
+          }
+        },
+        "deletedResults": {
+          "description": "List of amendments for previously existing result(s) that are deleted due to SlipRule",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/amendment"
+          }
+        },
+        "orderIndex": {
+          "description": "The offence sequence provided by the Police",
+          "$ref": "http://justice.gov.uk/core/courts/external/apiCourtsDefinitions.json#/definitions/positiveInteger"
+        },
+        "indictmentParticular": {
+          "type": "string"
+        },
+        "committedForSentence": {
+          "$ref": "#/definitions/committedForSentence"
+        },
+        "proceedingsConcluded": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "offenceDefinitionId",
+        "offenceCode",
+        "wording",
+        "startDate"
+      ],
+      "additionalProperties": false
+    },
+    "resultAmendments": {
+      "type": "object",
+      "properties": {
+        "amendments": {
+          "description": "List of amendments made to the result due to SlipRule",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/amendment"
+          }
+        },
+        "result": {
+          "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+        }
+      },
+      "required": [
+        "result"
+      ]
+    },
+    "amendment": {
+      "type": "object",
+      "properties": {
+        "defendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "applicationId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "judicialResultId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "amendmentType": {
+          "type": "string"
+        },
+        "amendmentDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resultText": {
+          "type": "string"
+        },
+        "resultLevel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "defendantId",
+        "judicialResultId",
+        "resultLevel",
+        "amendmentType"
+      ]
+    },
+    "committedForSentence": {
+      "type": "object",
+      "properties": {
+        "resultTextList": {
+          "description": "List of all result texts from the results list",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "courtName": {
+          "type": "string"
+        },
+        "sittingDay": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "offenceTitle",
+        "courtName",
+        "hearingDate"
+      ]
+    },
+    "parentGuardian": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ]
+    },
+    "courtApplications": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+            },
+            "applicationType": {
+              "type": "string"
+            },
+            "applicationParticulars": {
+              "type": "string"
+            },
+            "applicationLegislation": {
+              "type": "string"
+            },
+            "applicationDate": {
+              "description": "The date that the application was received by HMCTS",
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+            },
+            "convictionDate": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+            },
+            "decision": {
+              "type": "string"
+            },
+            "decisionDate": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+            },
+            "response": {
+              "type": "string"
+            },
+            "responseDate": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+            },
+            "plea": {
+              "$ref": "http://justice.gov.uk/core/courts/plea.json"
+            },
+            "results": {
+              "type": "array",
+              "items": {
+                "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+              }
+            },
+            "applicationResults": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/resultAmendments"
+              }
+            },
+            "deletedApplicationResults": {
+              "description": "List of amendments for previously existing result(s) that are deleted due to SlipRule",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/amendment"
+              }
+            },
+            "courtApplicationCases": {
+              "description": "The cases that are linked to this application",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref":  "#/definitions/courtApplicationCases"
+              }
+            },
+            "representation": {
+              "type": "object",
+              "properties": {
+                "applicantRepresentation": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "synonym": {
+                      "type": "string"
+                    },
+                    "address": {
+                      "$ref": "http://justice.gov.uk/core/courts/address.json#"
+                    },
+                    "contact": {
+                      "$ref": "http://justice.gov.uk/core/courts/contactNumber.json"
+                    },
+                    "applicantCounsels": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "$ref": "http://justice.gov.uk/core/courts/applicantCounsel.json"
+                      }
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "synonym",
+                    "address",
+                    "applicantCounsels"
+                  ]
+                },
+                "respondentRepresentation": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "synonym": {
+                          "type": "string"
+                        },
+                        "address": {
+                          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+                        },
+                        "contact": {
+                          "$ref": "http://justice.gov.uk/core/courts/contactNumber.json"
+                        },
+                        "respondentCounsels": {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "$ref": "http://justice.gov.uk/core/courts/respondentCounsel.json"
+                          }
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "synonym",
+                        "address",
+                        "respondentCounsels"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "applicantRepresentation",
+                "respondentRepresentation"
+              ]
+            },
+            "courtOrders": {
+              "$ref": "#/definitions/courtOrders"
+            }
+          },
+          "required": [
+            "applicationType",
+            "decision",
+            "decisionDate",
+            "response",
+            "results",
+            "applicationResults",
+            "representation"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "courtApplicationCases": {
+      "type": "object",
+      "properties": {
+        "prosecutionCaseId": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "offences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/offence"
+          }
+        },
+        "isSJP": {
+          "type": "boolean"
+        },
+        "prosecutionCaseIdentifier": {
+          "$ref": "http://justice.gov.uk/core/courts/prosecutionCaseIdentifier.json#"
+        },
+        "caseStatus": {
+          "description": "case status",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "courtOrders": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The generated identifier of the order",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        },
+        "label": {
+          "description": "The label of the type of order made",
+          "type": "string"
+        },
+        "orderDate": {
+          "description": "The date that the order was made",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "startDate": {
+          "description": "The date that the order commenced, typically the date that the order was made",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "canBeSubjectOfBreachProceedings": {
+          "description": "Indicates if the order can be the subject of future breach proceedings",
+          "type": "boolean"
+        },
+        "courtOrderOffences": {
+          "description": "The offences that were matters heard when the court order was made",
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "#/definitions/courtOrderOffence"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "orderDate",
+        "startDate",
+        "canBeSubjectOfBreachProceedings",
+        "courtOrderOffences"
+      ],
+      "additionalProperties": false
+    },
+    "courtOrderOffence": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceDefinitionId": {
+          "description": "The identifier of the offence from reference data",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offenceCode": {
+          "type": "string"
+        },
+        "offenceTitle": {
+          "type": "string"
+        },
+        "offenceLegislation": {
+          "type": "string"
+        },
+        "offenceTitleWelsh": {
+          "type": "string"
+        },
+        "wording": {
+          "type": "string"
+        },
+        "wordingWelsh": {
+          "type": "string"
+        },
+        "startDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "endDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "convictionDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "resultTextList": {
+          "description": "List of all result texts from the results list",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "courtOrderOffencesOffenceLevelResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resultAmendments"
+          }
+        },
+        "deletedCourtOrderOffenceOffenceLevelResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/amendment"
+          }
+        },
+        "plea": {
+          "$ref": "http://justice.gov.uk/core/courts/plea.json"
+        },
+        "indicatedPlea": {
+          "$ref": "http://justice.gov.uk/core/courts/indicatedPlea.json"
+        }
+      },
+      "required": [
+        "id",
+        "offenceDefinitionId",
+        "offenceCode",
+        "wording",
+        "startDate"
+      ],
+      "additionalProperties": false
+    },
+    "convictedOffenceDetails": {
+      "type": "object",
+      "properties": {
+        "dataVariation": {
+          "type": "string"
+        },
+        "convictionDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "location": {
+          "type": "string"
+        },
+        "sentenceLocation": {
+          "type": "string"
+        },
+        "offences": {
+          "description": "The offences that were convicted",
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "#/definitions/offence"
+          }
+        },
+        "indictmentParticular": {
+          "type": "string"
+        },
+        "applicationType": {
+          "type": "string"
+        },
+        "applicationParticulars": {
+          "type": "string"
+        },
+        "applicationLegislation": {
+          "type": "string"
+        },
+        "applicationDate": {
+          "description": "The date that the application was received by HMCTS",
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "breachApplicationConvictionDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "applicationResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resultAmendments"
+          }
+        },
+        "courtOrderOffences": {
+          "description": "The offences that were matters heard when the court order was made",
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "#/definitions/courtOrderOffence"
+          }
+        }
+      },
+
+      "required": [
+        "id",
+        "offenceDefinitionId",
+        "offenceCode",
+        "wording",
+        "startDate"
+      ],
+      "additionalProperties": false
+    },
+    "aquittedOffenceDetails": {
+      "type": "object",
+      "properties": {
+        "dataVariation": {
+          "type": "string"
+        },
+        "aquittalDate": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "location": {
+          "type": "string"
+        },
+        "offences": {
+          "description": "The offences that were convicted",
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "$ref": "#/definitions/offence"
+          }
+        },
+        "indictmentParticular": {
+          "type": "string"
+        }
+      },
+
+      "required": [
+        "id",
+        "offenceDefinitionId",
+        "offenceCode",
+        "wording",
+        "startDate"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

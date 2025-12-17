@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/associate-orphaned-case.json",
+  "type": "object",
+  "properties": {
+   "organisationId": {
+     "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "organisationName": {
+      "type": "string"
+    },
+    "laaContractNumber": {
+      "type": "string"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "organisationId",
+    "organisationName",
+    "laaContractNumber",
+    "defendantId"
+  ]
+}

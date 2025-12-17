@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/hearing/json/schema/event/public.hearing-offence-plea-updated.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "pleaModel": {
+      "$ref": "http://justice.gov.uk/core/courts/pleaModel.json"
+    }
+  },
+  "required": [
+    "hearingId",
+    "pleaModel"
+  ]
+}

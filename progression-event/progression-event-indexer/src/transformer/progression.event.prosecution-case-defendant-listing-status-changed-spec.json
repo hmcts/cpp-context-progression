@@ -1,0 +1,7 @@
+{
+  "operations": [
+    {
+      "operation": "uk.gov.justice.services.DefendantsListingStatusChangedTransformer"
+    }
+  ]
+}

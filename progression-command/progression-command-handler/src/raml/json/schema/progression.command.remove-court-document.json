@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/remove-court-document.json",
+  "type": "object",
+  "properties": {
+    "courtDocumentId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isRemoved": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "courtDocumentId",
+    "materialId",
+    "isRemoved"
+  ],
+  "additionalProperties": false
+}

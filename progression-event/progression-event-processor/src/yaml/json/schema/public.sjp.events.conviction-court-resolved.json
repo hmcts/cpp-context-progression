@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/sjp/json/schema/event/public.sjp.events.conviction-court-resolved.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "resolvedConvictingInformation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "convictionDate": {
+            "$ref": "http://justice.gov.uk/json/schemas/domains/sjp/temporal.json#/definitions/date-time"
+          },
+          "convictingCourt": {
+            "$ref": "http://cpp.moj.gov.uk/core/sjp/decision/convictingCourt.json"
+          },
+          "offenceId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "sessionId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        },
+        "required": [
+          "convictionDate",
+          "offenceId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "resolvedConvictingInformation"
+  ],
+  "additionalProperties": false
+}

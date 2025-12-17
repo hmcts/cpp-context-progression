@@ -1,0 +1,119 @@
+{
+    "id": "f76779c6-676c-4c55-97cb-8dc946e70efd",
+    "jurisdictionType": "MAGISTRATES",
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    },
+    "hearingDays": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2022-12-05T09:01:01.001Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "prosecutionCases": [
+      {
+        "id": "dc5e44f7-9f39-4fb3-b998-d9e8b9393b02",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Barton House",
+            "address2": "Bond Street",
+            "address3": "Bristol",
+            "postcode": "BS98 1TL"
+          },
+          "contact": {
+            "primaryEmail": "court.results@tvl.cjsm.net"
+          },
+          "majorCreditorCode": "TVL3",
+          "prosecutionAuthorityCode": "TVL",
+          "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+          "prosecutionAuthorityName": "TV Licensing",
+          "prosecutionAuthorityOUCode": "GAEAA01",
+          "caseURN": "32GD295303"
+        },
+        "initiationCode": "C",
+        "defendants": [
+          {
+            "id": "360a195e-83c1-429a-a457-181fdc2af076",
+            "prosecutionCaseId": "dc5e44f7-9f39-4fb3-b998-d9e8b9393b02",
+            "offences": [
+              {
+                "id": "0f73d919-9377-4b73-9647-9769bd7793b7",
+                "offenceDefinitionId": "9abe3e81-1de0-4c42-b0d2-2dc38f5c44c0",
+                "offenceCode": "TH68023A",
+                "offenceTitle": "Attempt robbery",
+                "wording": "Before 10 October 2020 at croydon drove a mechanically propelled vehicle, namely moj2478 on a road, namely Croydon whilst unfit to drive through drugs",
+                "startDate": "2004-12-09",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "offenceLegislation": "Contrary to section 1(1) of the    Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "modeOfTrial": "Indictable",
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "orderIndex": 500,
+                "count": 0,
+                "listingNumber": 1
+              }
+            ],
+            "prosecutionAuthorityReference": "Peter",
+            "personDefendant": {
+              "arrestSummonsNumber": "Peter",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "799",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "2001-02-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Webster",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Ziemann",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "masterDefendantId": "360a195e-83c1-429a-a457-181fdc2af076",
+            "isYouth": false
+          }
+        ],
+        "caseStatus": "ACTIVE",
+        "originatingOrganisation": "GAEAA01"
+      }
+    ],
+    "hasSharedResults": false
+  }

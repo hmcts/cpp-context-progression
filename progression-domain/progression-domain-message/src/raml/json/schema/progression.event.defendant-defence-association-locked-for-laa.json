@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked-for-laa.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "lockedByRepOrder": {
+      "description": "Locked by flag set by Rep Order",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "prosecutionCaseId",
+    "defendantId",
+    "lockedByRepOrder"
+  ],
+  "additionalProperties": false
+}

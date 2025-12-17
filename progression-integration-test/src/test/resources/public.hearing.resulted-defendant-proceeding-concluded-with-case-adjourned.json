@@ -1,0 +1,653 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-22T10:00:00.000Z"
+      },
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-23T10:00:00.000Z"
+      },
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-24T10:00:00.000Z"
+      },
+      {
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2021-11-25T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "HEARING_ID",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "associatedDefenceOrganisation": {
+              "applicationReference": "LAA-APP-REF",
+              "associationStartDate": "2019-09-12",
+              "defenceOrganisation": {
+                "laaContractNumber": "99998888",
+                "organisation": {
+                  "address": {
+                    "address1": "Legal House",
+                    "address2": "15 Sewell Street",
+                    "address3": "Hammersmith",
+                    "address4": "London City",
+                    "address5": "London",
+                    "postcode": "SE14 2AB"
+                  },
+                  "contact": {
+                    "fax": " ",
+                    "home": " ",
+                    "mobile": " ",
+                    "primaryEmail": "foo@bar.com",
+                    "secondaryEmail": "foo@bar.com",
+                    "work": "080012345678"
+                  },
+                  "incorporationNumber": "1111",
+                  "name": "Sonja & Co LLP",
+                  "registeredCharityNumber": "2222"
+                }
+              },
+              "fundingType": "REPRESENTATION_ORDER",
+              "isAssociatedByLAA": true
+            },
+            "courtProceedingsInitiated": "2021-11-17T09:15:23.514Z",
+            "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
+            "prosecutionCaseId": "CASE_ID",
+            "isYouth": false,
+            "legalAidStatus": "Granted",
+            "offences": [
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": false,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              },
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2021-11-22",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "82078809-8720-43fa-9027-a824fdd585c7",
+                  "originatingHearingId": "a390e5cc-e9ff-4c1e-959c-5b8ec0b6cda2",
+                  "sequenceNumber": 100
+                },
+                "convictionDate": "2021-11-22",
+                "count": 0,
+                "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2021-11-24",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "3f734101-d830-48bc-a0d0-761aec476221",
+                        "promptSequence": 0,
+                        "usergroups": [
+
+                        ],
+                        "value": "Date of hearing:06/12/2021\nTime of hearing:10:00\nCourthouse organisation name:Wimbledon Magistrates' Court\nCourthouse address line 1:The Law Courts\nCourthouse address line 2:Alexandra Road\nCourthouse address line 3:Wimbledon\nCourthouse post code:SW19 7JP\nCourtroom:Courtroom 05\nHearing type:Trial - no witnesses\nEstimated duration:20 MINUTES\nBooking reference:ab705b57-4c51-4be0-8b4c-4f1692e50b1e",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+
+                        ],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "61089120-2ec8-4f84-abd7-3a858a58d8f4",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "d1deafdc-265a-4499-a184-82c5a4c88856",
+                        "promptSequence": 300,
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "bookingReference": "ab705b57-4c51-4be0-8b4c-4f1692e50b1e",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "The Law Courts",
+                          "address2": "Alexandra Road",
+                          "address3": "Wimbledon",
+                          "postcode": "SW19 7JP"
+                        },
+                        "courtHearingLocation": "B01OK05",
+                        "id": "d9bff7d8-6168-4163-ad77-3b98d61de174",
+                        "name": "Wimbledon Magistrates' Court",
+                        "psaCode": 2577,
+                        "roomId": "1414ea28-8b0e-3ba7-8f97-f2bb6d5dd38c",
+                        "roomName": "Courtroom 05",
+                        "welshName": "Llys Ynadon Wimbeldon"
+                      },
+                      "estimatedMinutes": 20,
+                      "jurisdictionType": "MAGISTRATES",
+                      "listedStartDateTime": "2021-12-06T10:00:00.000Z",
+                      "type": {
+                        "description": "Trial - no witnesses",
+                        "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                      }
+                    },
+                    "orderedDate": "ORDERED_DATE",
+                    "orderedHearingId": "bbe5b785-1552-4ce7-9b6a-d1fc71a82f0a",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 76400,
+                    "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:06/12/2021\nTime of hearing:10:00\nCourthouse organisation name:Wimbledon Magistrates' Court\nCourthouse address line 1:The Law Courts\nCourthouse address line 2:Alexandra Road\nCourthouse address line 3:Wimbledon\nCourthouse post code:SW19 7JP\nCourtroom:Courtroom 05\nHearing type:Trial - no witnesses\nEstimated duration:20 MINUTES\nBooking reference:ab705b57-4c51-4be0-8b4c-4f1692e50b1e\nDefendant to attend the next hearing true\nTo attend or a warrant to issue \nAdjournment reasons ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Gohiriad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2021-11-24",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "3f734101-d830-48bc-a0d0-761aec476221",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                        "label": "Date of hearing",
+                        "promptReference": "HDATE",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "06/12/2021",
+                        "welshLabel": "Dyddiad y gwrandawiad",
+                        "welshValue": "06/12/2021"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 200,
+                        "type": "TIME",
+                        "usergroups": [
+
+                        ],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Wimbledon Magistrates' Court",
+                        "welshValue": "Wimbledon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Alexandra Road",
+                        "welshValue": "Alexandra Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Wimbledon",
+                        "welshValue": "Wimbledon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "SW19 7JP",
+                        "welshValue": "SW19 7JP"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Courtroom 05",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 05"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Trial - no witnesses",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Trial - no witnesses"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "20 MINUTES",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "20 MINUTES"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                        "label": "Booking reference",
+                        "promptReference": "bookingReference",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "ab705b57-4c51-4be0-8b4c-4f1692e50b1e",
+                        "welshLabel": "Cyfeirnod archebu",
+                        "welshValue": "ab705b57-4c51-4be0-8b4c-4f1692e50b1e"
+                      }
+                    ],
+                    "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                    "label": "Next hearing in magistrates' court",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2021-11-28",
+                    "orderedHearingId": "bbe5b785-1552-4ce7-9b6a-d1fc71a82f0a",
+                    "parentJudicialResultId": "c1558107-92a6-44f4-b38f-f2178c54a475",
+                    "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 1000,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-12-06\nTime of hearing 10:00\nCourthouse organisation name Wimbledon Magistrates' Court\nCourthouse address line 1 The Law Courts\nCourthouse address line 2 Alexandra Road\nCourthouse address line 3 Wimbledon\nCourthouse post code SW19 7JP\nCourtroom Courtroom 05\nHearing type Trial - no witnesses\nEstimated duration 20 MINUTES",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2021-11-24",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "61089120-2ec8-4f84-abd7-3a858a58d8f4",
+                    "judicialResultTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2021-11-28",
+                    "orderedHearingId": "bbe5b785-1552-4ce7-9b6a-d1fc71a82f0a",
+                    "parentJudicialResultId": "d1deafdc-265a-4499-a184-82c5a4c88856",
+                    "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 11500,
+                    "resultDefinitionGroup": "Adjournment reasons",
+                    "resultText": "To attend or a warrant to issue\n",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "7149ec50-3864-4701-ab5e-95cebbda7da3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  }
+                ],
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68025",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "6abe3e81-1de0-4c42-b0d2-2dc38f5c44c8",
+                "offenceLegislation": "Contrary to section 8(2) of the Theft Act 1968.",
+                "offenceTitle": "Assault with intent to commit robbery",
+                "orderIndex": 502,
+                "plea": {
+                  "offenceId": "82078809-8720-43fa-9027-a824fdd585c7",
+                  "originatingHearingId": "a390e5cc-e9ff-4c1e-959c-5b8ec0b6cda2",
+                  "pleaDate": "2021-11-22",
+                  "pleaValue": "GUILTY"
+                },
+                "proceedingsConcluded": true,
+                "startDate": "2021-11-02",
+                "wording": "svfdg"
+              },
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "5789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": false,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              },
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "6789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "isDisposed": false,
+                "laaApplnReference": {
+                  "applicationReference": "LAA-APP-REF",
+                  "offenceLevelStatus": "Refused",
+                  "statusCode": "FM",
+                  "statusDate": "1980-07-16",
+                  "statusDescription": "Failed on Means",
+                  "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+                },
+                "modeOfTrial": "Summary",
+                "offenceCode": "TW01046",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+                "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+                "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+                "orderIndex": 500,
+                "proceedingsConcluded": false,
+                "startDate": "2004-12-09",
+                "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "TFL",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "071",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "1943-03-11",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Robert",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Ormsby",
+                "title": "Ormsby"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": false,
+            "prosecutionAuthorityReference": "TFL"
+          }
+        ],
+        "id": "CASE_ID",
+        "initiationCode": "C",
+        "originatingOrganisation": "0450000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Surrey Police",
+            "address2": "Mount Browne",
+            "address3": "Sandy Lane",
+            "address4": "Guildford",
+            "postcode": "GU3 1HG"
+          },
+          "contact": {
+            "primaryEmail": "mail_data_bureau_res@surrey.pnn.police.uk"
+          },
+          "majorCreditorCode": "PO45",
+          "prosecutionAuthorityCode": "SURRPF",
+          "prosecutionAuthorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+          "prosecutionAuthorityName": "Surrey Police",
+          "prosecutionAuthorityOUCode": "0450000",
+          "caseURN": "23GD9188221"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2021-11-22",
+  "sharedTime": "2021-11-17T09:20:51.596Z",
+  "isReshare": false
+}

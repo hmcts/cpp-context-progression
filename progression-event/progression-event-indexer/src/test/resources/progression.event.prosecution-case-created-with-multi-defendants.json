@@ -1,0 +1,542 @@
+{
+  "prosecutionCase": {
+    "defendants": [
+      {
+        "id": "52ab686b-7c45-46b0-bc6b-e81eaf4d7c67",
+        "pncId": "1234567",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+        "offences": [
+          {
+            "count": 1,
+            "endDate": "2019-06-29",
+            "id": "95e72a0b-c1c2-4e2a-93a5-45ceda834bda",
+            "offenceCode": "OF61016A",
+            "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Section 18 - attempt    wounding with intent",
+            "startDate": "2018-12-29",
+            "wording": "Wound / inflict grievous bodily harm without intent",
+            "proceedingsConcluded": false,
+            "dateOfInformation": "2019-09-02",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "statementOfFacts": "You did it",
+            "statementOfFactsWelsh": "You did it in Welsh",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "modeOfTrial": "CROWN",
+            "orderIndex": 1,
+            "laaReference": {
+              "laaApplicationReference": "LAA REF OFF 1",
+              "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+              "statusCode": "LAA STATUS CODE OFF 1",
+              "statusDescription": "LAA STATUS DESC OFF 1",
+              "effectiveFromDate": "2019-08-12",
+              "effectiveToDate": "2019-10-12",
+              "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+            }
+          },
+          {
+            "count": 1,
+            "endDate": "2019-06-29",
+            "id": "8053e614-08d7-4e8d-9f5d-a10201dc7ecf",
+            "offenceCode": "OF61016A",
+            "offenceDefinitionId": "2464e6ab-8731-3aa2-877a-009cb99659f7",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Section 18 - attempt    wounding with intent",
+            "startDate": "2018-12-29",
+            "wording": "Wound / inflict grievous bodily harm without intent",
+            "proceedingsConcluded": false,
+            "dateOfInformation": "2019-09-02",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "statementOfFacts": "You did it",
+            "statementOfFactsWelsh": "You did it in Welsh",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "modeOfTrial": "CROWN",
+            "orderIndex": 1,
+            "laaReference": {
+              "laaApplicationReference": "LAA REF OFF 1",
+              "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+              "statusCode": "LAA STATUS CODE OFF 1",
+              "statusDescription": "LAA STATUS DESC OFF 1",
+              "effectiveFromDate": "2019-08-12",
+              "effectiveToDate": "2019-10-12",
+              "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+            }
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "007",
+          "bailConditions": "REGULARLY NEED TO SIGN IN THE REGISTER AND NEAREST POLICE STATION",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
+          "custodyTimeLimit": "2019-10-01",
+          "driverLicenceCode": "FULL",
+          "driverLicenseIssue": "DVLA",
+          "driverNumber": "007",
+          "employerOrganisation": {
+            "address": {
+              "address1": "58",
+              "address2": "99999 Lowe Glens",
+              "address3": "Gleasonland",
+              "address4": "HK",
+              "address5": "Faroe Islands",
+              "postcode": "SW11 1JU"
+            },
+            "contact": {
+              "fax": "171.160.8351",
+              "home": "1-091-742-4316",
+              "mobile": "1-557-435-3633",
+              "primaryEmail": "giovanna.balistreri@yahoo.com",
+              "secondaryEmail": "geovanni.cremin@hotmail.com",
+              "work": "(565) 668-8450"
+            },
+            "incorporationNumber": "01051975",
+            "name": "EY",
+            "registeredCharityNumber": "AA"
+          },
+          "employerPayrollReference": "HZA904Ci9t",
+          "perceivedBirthYear": 1975,
+          "personDetails": {
+            "additionalNationalityCode": "GBP",
+            "additionalNationalityDescription": "GBP",
+            "additionalNationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "address": {
+              "address1": "58",
+              "address2": "11111 Lowe Glens",
+              "address3": "Gleasonland",
+              "address4": "HK",
+              "address5": "Faroe Islands",
+              "postcode": "AA11 1JU"
+            },
+            "contact": {
+              "fax": "171.160.8351",
+              "home": "1-091-742-4316",
+              "mobile": "1-557-435-3633",
+              "primaryEmail": "giovanna.balistreri@yahoo.com",
+              "secondaryEmail": "geovanni.cremin@hotmail.com",
+              "work": "(565) 668-8450"
+            },
+            "dateOfBirth": "1994-10-29",
+            "disabilityStatus": "i2veQXTYQ9",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "GBP",
+              "observedEthnicityDescription": "GBP",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "GBP",
+              "selfDefinedEthnicityDescription": "GBP",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Vergie",
+            "gender": "FEMALE",
+            "interpreterLanguageNeeds": "NA",
+            "lastName": "Wiza",
+            "middleName": "Danika",
+            "nationalInsuranceNumber": "RS672054A",
+            "nationalityCode": "GBP",
+            "nationalityDescription": "GBP",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Service",
+            "occupationCode": "SS",
+            "personMarkers": [
+              {
+                "id": "61e900f9-a467-487e-91cd-be2b8cf26f80",
+                "markerTypeCode": "GBP",
+                "markerTypeDescription": "GBP",
+                "markerTypeid": "969668a7-abf1-4898-bf56-3528c0d00d75"
+              }
+            ],
+            "specificRequirements": "NA",
+            "title": "MR"
+          },
+          "vehicleOperatorLicenceNumber": "BS007"
+        },
+        "prosecutionCaseId": "b99b7464-b0ee-40af-9647-6557c8fefdc8"
+      },
+      {
+        "id": "b745343a-0c38-4929-ace4-daebce3dbeb4",
+        "pncId": "1234567",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fd",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+        "offences": [
+          {
+            "count": 2,
+            "endDate": "2019-06-29",
+            "id": "29240265-e5b7-4520-aa86-da51b86f857c",
+            "offenceCode": "OF61016A",
+            "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Section 18 - attempt    wounding with intent",
+            "startDate": "2018-12-29",
+            "wording": "Wound / inflict grievous bodily harm without intent",
+            "proceedingsConcluded": false,
+            "dateOfInformation": "2019-09-02",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "statementOfFacts": "You did it",
+            "statementOfFactsWelsh": "You did it in Welsh",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "modeOfTrial": "CROWN",
+            "orderIndex": 1,
+            "laaReference": {
+              "laaApplicationReference": "LAA REF OFF 1",
+              "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+              "statusCode": "LAA STATUS CODE OFF 1",
+              "statusDescription": "LAA STATUS DESC OFF 1",
+              "effectiveFromDate": "2019-08-12",
+              "effectiveToDate": "2019-10-12",
+              "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+            }
+          },
+          {
+            "count": 2,
+            "endDate": "2019-06-29",
+            "id": "a777c56b-eba9-429d-885c-2503bdc23c4f",
+            "offenceCode": "OF61016A",
+            "offenceDefinitionId": "2464e6ab-8731-3aa2-877a-009cb99659f7",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Section 18 - attempt    wounding with intent",
+            "startDate": "2018-12-29",
+            "wording": "Wound / inflict grievous bodily harm without intent",
+            "proceedingsConcluded": false,
+            "dateOfInformation": "2019-09-02",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "statementOfFacts": "You did it",
+            "statementOfFactsWelsh": "You did it in Welsh",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "modeOfTrial": "CROWN",
+            "orderIndex": 1,
+            "laaReference": {
+              "laaApplicationReference": "LAA REF OFF 1",
+              "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+              "statusCode": "LAA STATUS CODE OFF 1",
+              "statusDescription": "LAA STATUS DESC OFF 1",
+              "effectiveFromDate": "2019-08-12",
+              "effectiveToDate": "2019-10-12",
+              "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+            }
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "007",
+          "bailConditions": "REGULARLY NEED TO SIGN IN THE REGISTER AND NEAREST POLICE STATION",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
+          "custodyTimeLimit": "2019-10-01",
+          "driverLicenceCode": "FULL",
+          "driverLicenseIssue": "DVLA",
+          "driverNumber": "007",
+          "employerOrganisation": {
+            "address": {
+              "address1": "58",
+              "address2": "54702 Lowe Glens",
+              "address3": "Gleasonland",
+              "address4": "HK",
+              "address5": "Faroe Islands",
+              "postcode": "BB22 1JU"
+            },
+            "contact": {
+              "fax": "171.160.8351",
+              "home": "1-091-742-4316",
+              "mobile": "1-557-435-3633",
+              "primaryEmail": "giovanna.balistreri@yahoo.com",
+              "secondaryEmail": "geovanni.cremin@hotmail.com",
+              "work": "(565) 668-8450"
+            },
+            "incorporationNumber": "01051975",
+            "name": "EY",
+            "registeredCharityNumber": "AA"
+          },
+          "employerPayrollReference": "HZA904Ci9t",
+          "perceivedBirthYear": 1975,
+          "personDetails": {
+            "additionalNationalityCode": "GBP",
+            "additionalNationalityDescription": "GBP",
+            "additionalNationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "address": {
+              "address1": "58",
+              "address2": "CCCC Lowe Glens",
+              "address3": "Gleasonland",
+              "address4": "HK",
+              "address5": "Faroe Islands",
+              "postcode": "CC11 1JU"
+            },
+            "contact": {
+              "fax": "171.160.8351",
+              "home": "1-091-742-4316",
+              "mobile": "1-557-435-3633",
+              "primaryEmail": "giovanna.balistreri@yahoo.com",
+              "secondaryEmail": "geovanni.cremin@hotmail.com",
+              "work": "(565) 668-8450"
+            },
+            "dateOfBirth": "1991-10-29",
+            "disabilityStatus": "i2veQXTYQ9",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "GBP",
+              "observedEthnicityDescription": "GBP",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "GBP",
+              "selfDefinedEthnicityDescription": "GBP",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Toney",
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "NA",
+            "lastName": "O'Kon",
+            "middleName": "Jesse",
+            "nationalInsuranceNumber": "RS672054A",
+            "nationalityCode": "GBP",
+            "nationalityDescription": "GBP",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Service",
+            "occupationCode": "SS",
+            "personMarkers": [
+              {
+                "id": "61e900f9-a467-487e-91cd-be2b8cf26f80",
+                "markerTypeCode": "GBP",
+                "markerTypeDescription": "GBP",
+                "markerTypeid": "969668a7-abf1-4898-bf56-3528c0d00d75"
+              }
+            ],
+            "specificRequirements": "NA",
+            "title": "MR"
+          },
+          "vehicleOperatorLicenceNumber": "BS007"
+        },
+        "prosecutionCaseId": "b99b7464-b0ee-40af-9647-6557c8fefdc8"
+      },
+      {
+        "id": "fc66ef42-541e-46dd-88cf-ed96909882e8",
+        "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+        "pncId": "1234567",
+        "personDefendant": {
+          "arrestSummonsNumber": "007",
+          "bailConditions": "REGULARLY NEED TO SIGN IN THE REGISTER AND NEAREST POLICE STATION",
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
+          "custodyTimeLimit": "2019-10-01",
+          "driverLicenceCode": "FULL",
+          "driverLicenseIssue": "DVLA",
+          "driverNumber": "007",
+          "employerOrganisation": {
+            "address": {
+              "address1": "58",
+              "address2": "54321 High Road",
+              "address3": "Winterland",
+              "address4": "Scotland",
+              "address5": "UK",
+              "postcode": "BB22 1JU"
+            },
+            "contact": {
+              "fax": "171.160.8351",
+              "home": "1-091-742-4316",
+              "mobile": "1-557-435-3633",
+              "primaryEmail": "giovanna.balistreri@yahoo.com",
+              "secondaryEmail": "geovanni.cremin@hotmail.com",
+              "work": "(565) 668-8450"
+            },
+            "incorporationNumber": "01051975",
+            "name": "EY",
+            "registeredCharityNumber": "AA"
+          },
+          "employerPayrollReference": "HZA904Ci9t",
+          "perceivedBirthYear": 1975,
+          "personDetails": {
+            "additionalNationalityCode": "GBP",
+            "additionalNationalityDescription": "GBP",
+            "additionalNationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "address": {
+              "address1": "58",
+              "address2": "54321 High Road",
+              "address3": "Winterland",
+              "address4": "Scotland",
+              "address5": "UK",
+              "postcode": "BB22 1JU"
+            },
+            "contact": {
+              "fax": "171.160.8351",
+              "home": "1-091-742-4316",
+              "mobile": "1-557-435-3633",
+              "primaryEmail": "giovanna.balistreri@yahoo.com",
+              "secondaryEmail": "geovanni.cremin@hotmail.com",
+              "work": "(565) 668-8450"
+            },
+            "dateOfBirth": "1991-10-29",
+            "disabilityStatus": "i2veQXTYQ9",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "GBP",
+              "observedEthnicityDescription": "GBP",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "GBP",
+              "selfDefinedEthnicityDescription": "GBP",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Arfur",
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "NA",
+            "lastName": "Daley",
+            "middleName": "Wideboy",
+            "nationalInsuranceNumber": "RS672054A",
+            "nationalityCode": "GBP",
+            "nationalityDescription": "GBP",
+            "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+            "occupation": "Service",
+            "occupationCode": "SS",
+            "personMarkers": [
+              {
+                "id": "61e900f9-a467-487e-91cd-be2b8cf26f80",
+                "markerTypeCode": "GBP",
+                "markerTypeDescription": "GBP",
+                "markerTypeid": "969668a7-abf1-4898-bf56-3528c0d00d75"
+              }
+            ],
+            "specificRequirements": "NA",
+            "title": "MR"
+          },
+          "vehicleOperatorLicenceNumber": "BS007"
+        },
+        "offences": [
+          {
+            "count": 3,
+            "endDate": "2019-06-29",
+            "id": "d03a2842-daf0-4363-9026-6729b7ae8218",
+            "offenceCode": "OF61016A",
+            "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Section 18 - attempt    wounding with intent",
+            "startDate": "2018-12-29",
+            "wording": "Wound / inflict grievous bodily harm without intent",
+            "proceedingsConcluded": false,
+            "dateOfInformation": "2019-09-02",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "statementOfFacts": "You did it",
+            "statementOfFactsWelsh": "You did it in Welsh",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "modeOfTrial": "CROWN",
+            "orderIndex": 1,
+            "laaReference": {
+              "laaApplicationReference": "LAA REF OFF 1",
+              "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+              "statusCode": "LAA STATUS CODE OFF 1",
+              "statusDescription": "LAA STATUS DESC OFF 1",
+              "effectiveFromDate": "2019-08-12",
+              "effectiveToDate": "2019-10-12",
+              "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+            }
+          },
+          {
+            "count": 3,
+            "endDate": "2019-06-29",
+            "id": "90967dbd-f817-40af-a65f-cf6b913c9d7b",
+            "offenceCode": "OF61016A",
+            "offenceDefinitionId": "2464e6ab-8731-3aa2-877a-009cb99659f7",
+            "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+            "offenceTitle": "Section 18 - attempt    wounding with intent",
+            "startDate": "2018-12-29",
+            "wording": "Wound / inflict grievous bodily harm without intent",
+            "proceedingsConcluded": false,
+            "dateOfInformation": "2019-09-02",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "statementOfFacts": "You did it",
+            "statementOfFactsWelsh": "You did it in Welsh",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "modeOfTrial": "CROWN",
+            "orderIndex": 1,
+            "laaReference": {
+              "laaApplicationReference": "LAA REF OFF 1",
+              "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+              "statusCode": "LAA STATUS CODE OFF 1",
+              "statusDescription": "LAA STATUS DESC OFF 1",
+              "effectiveFromDate": "2019-08-12",
+              "effectiveToDate": "2019-10-12",
+              "laaRepresentativeAccountNumber": "LAA REPRESENTATIVE ACC NO OFF 1"
+            }
+          }
+        ],
+        "prosecutionCaseId": "b99b7464-b0ee-40af-9647-6557c8fefdc8"
+      }
+    ],
+    "id": "b99b7464-b0ee-40af-9647-6557c8fefdc8",
+    "initiationCode": "J",
+    "policeOfficerInCase": {
+      "personDetails": {
+        "additionalNationalityCode": "GBP",
+        "additionalNationalityDescription": "GBP",
+        "additionalNationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+        "address": {
+          "address1": "58",
+          "address2": "54702 Lowe Glens",
+          "address3": "Gleasonland",
+          "address4": "HK",
+          "address5": "Faroe Islands",
+          "postcode": "SW11 1JU"
+        },
+        "contact": {
+          "fax": "171.160.8351",
+          "home": "1-091-742-4316",
+          "mobile": "1-557-435-3633",
+          "primaryEmail": "giovanna.balistreri@yahoo.com",
+          "secondaryEmail": "geovanni.cremin@hotmail.com",
+          "work": "(565) 668-8450"
+        },
+        "dateOfBirth": "1994-10-29",
+        "disabilityStatus": "i2veQXTYQ9",
+        "documentationLanguageNeeds": "ENGLISH",
+        "ethnicity": {
+          "observedEthnicityCode": "GBP",
+          "observedEthnicityDescription": "GBP",
+          "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+          "selfDefinedEthnicityCode": "GBP",
+          "selfDefinedEthnicityDescription": "GBP",
+          "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+        },
+        "firstName": "Eryn",
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "NA",
+        "lastName": "Kovacek",
+        "middleName": "Jermain",
+        "nationalInsuranceNumber": "RS672054A",
+        "nationalityCode": "GBP",
+        "nationalityDescription": "GBP",
+        "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+        "occupation": "Service",
+        "occupationCode": "SS",
+        "personMarkers": [
+          {
+            "id": "61e900f9-a467-487e-91cd-be2b8cf26f80",
+            "markerTypeCode": "GBP",
+            "markerTypeDescription": "GBP",
+            "markerTypeid": "969668a7-abf1-4898-bf56-3528c0d00d75"
+          }
+        ],
+        "specificRequirements": "NA",
+        "title": "MR"
+      },
+      "policeOfficerRank": "ScotlandYardInvestigation",
+      "policeWorkerLocationCode": "Chemsford",
+      "policeWorkerReferenceNumber": "007LicenseToKill"
+    },
+    "prosecutionCaseIdentifier": {
+      "prosecutionAuthorityCode": "TFL2",
+      "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+      "prosecutionAuthorityReference": "TFL12345-ABC"
+    }
+  }
+}

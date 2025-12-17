@@ -1,0 +1,1669 @@
+{
+  "aliases": [
+    {
+      "firstName": "MAX",
+      "lastName": "parker"
+    }
+  ],
+  "courtProceedingsInitiated": "2025-05-06T12:02:47.224Z",
+  "croNumber": "29094/78G",
+  "id": "56db3e7c-83b4-4b82-8851-25936ccddcb3",
+  "initiationCode": "Q",
+  "masterDefendantId": "9ec9d81f-5946-4071-8b22-5eff665f00bb",
+  "offences": [
+    {
+      "allocationDecision": {
+        "allocationDecisionDate": "2025-05-20",
+        "motReasonCode": "05",
+        "motReasonDescription": "Court directs trial by jury",
+        "motReasonId": "d47268e9-db2e-3aa3-827b-ba3afb7ff94a",
+        "offenceId": "0215917b-6345-4e88-8f5c-d5716ead7eb7",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "sequenceNumber": 20
+      },
+      "arrestDate": "2024-06-02",
+      "chargeDate": "2025-05-06",
+      "count": 0,
+      "endorsableFlag": false,
+      "id": "0215917b-6345-4e88-8f5c-d5716ead7eb7",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2025-05-20",
+        "indicatedPleaValue": "NO_INDICATION",
+        "offenceId": "0215917b-6345-4e88-8f5c-d5716ead7eb7",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4558",
+          "courtClerk": {
+            "firstName": "Michael",
+            "lastName": "Page",
+            "userId": "7c44cec5-3e3a-46d6-986e-0cff9e15a501"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "aca27ea2-f423-4568-a372-89d0f62bdf40",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4362a1a4-aa80-4a68-ae61-f57962709f3d",
+              "label": "Sent for trial under",
+              "promptReference": "sentForTrialUnder",
+              "promptSequence": 100,
+              "qualifier": "XA",
+              "type": "FIXL",
+              "usergroups": [
+
+              ],
+              "value": "Section 51(1) & (2)(b) of the Crime and Disorder Act 1998",
+              "welshLabel": "Traddodwyd ar gyfer treial ar",
+              "welshValue": "Adran 51 (1) a (2) (b) Deddf Trosedd ac Anhrefn 1998"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+              "label": "Bail remand days to count (tagged days)",
+              "promptReference": "bailRemandDaysToCountTaggedDays",
+              "promptSequence": 300,
+              "type": "INT",
+              "usergroups": [
+
+              ],
+              "value": "0",
+              "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+              "welshValue": "0"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "07fe6e7e-dde2-45d6-b0c0-aa8e1b2883b8",
+              "label": "No indication given re victim personal statement",
+              "promptReference": "noIndicationGivenReVictimPersonalStatement",
+              "promptSequence": 800,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Ni roddwyd unrhyw arwydd o ddatganiad personol dioddefwyr",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+              "label": "PSR ordered",
+              "promptReference": "pSROrdered",
+              "promptSequence": 1200,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified organisation name",
+              "promptReference": "probationyottobenotifiedOrganisationName",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified email address 1",
+              "promptReference": "probationyottobenotifiedEmailAddress1",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+              "label": "Next hearing in Crown Court",
+              "promptReference": "1b812793-7ec7-4683-9ef0-e1889d346adb",
+              "promptSequence": 200,
+              "usergroups": [
+
+              ],
+              "value": "Fixed Date:11/06/2025\nTime of hearing:10:30\nCourthouse organisation name:Aylesbury Crown Court\nCourthouse address line 1:HMCTS\nCourthouse address line 2:Walton Street\nCourthouse address line 3:Aylesbury\nCourthouse address line 4:Bucks\nCourthouse post code:HP21 7FT\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES",
+              "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+            }
+          ],
+          "judicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "label": "Sent to Crown Court for trial on unconditional bail",
+          "lastSharedDateTime": "2025-05-20",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "",
+            "courtCentre": {
+              "address": {
+                "address1": "HMCTS",
+                "address2": "Walton Street",
+                "address3": "Aylesbury",
+                "address4": "Bucks",
+                "postcode": "HP21 7FT"
+              },
+              "code": "C43AY00",
+              "courtHearingLocation": "C43AY00",
+              "id": "ac2a72fd-1131-3e18-a84f-0dfe82d70d7a",
+              "name": "Aylesbury Crown Court",
+              "psaCode": 1921,
+              "welshName": "Llys Y Goron Aylesbury"
+            },
+            "estimatedDuration": "20 MINUTES",
+            "estimatedMinutes": 20,
+            "jurisdictionType": "CROWN",
+            "listedStartDateTime": "2025-06-11T09:30:00.000Z",
+            "type": {
+              "description": "Plea and Trial Preparation",
+              "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+            }
+          },
+          "orderedDate": "2025-05-20",
+          "orderedHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+          "postHearingCustodyStatus": "U",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 231100,
+          "resultDefinitionGroup": "SentToCC",
+          "resultText": "CCIU - Sent to Crown Court for trial on unconditional bail\nSent for trial under Section 51(1) & (2)(b) of the Crime and Disorder Act 1998. Bail remand days to count (tagged days): 0. No indication given re victim personal statement. Remanded on unconditional bail until hearing on 11/06/2025 at 10:30, Aylesbury Crown Court. Defendant to attend the next hearing",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "aca27ea2-f423-4568-a372-89d0f62bdf40",
+          "rootJudicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [
+
+          ],
+          "welshLabel": "Traddodi i Lys y Goron ar gyfer dedfryd ar fechnïaeth ddiamod"
+        }
+      ],
+      "lastAdjournDate": "2025-05-20",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 1,
+      "maxPenalty": "EW:6M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "PK78008",
+      "offenceDateCode": 5,
+      "offenceDefinitionId": "98a2cc1e-09dc-3308-bb05-acfff026bdbf",
+      "offenceLegislation": "Contrary to sections 1(1)(a) and 6 of the Protection of Children Act 1978.",
+      "offenceLegislationWelsh": "Yn groes i adrannau 1(1)(a) a 6 Deddf Amddiffyn Plant 1978.",
+      "offenceTitle": "Make indecent photograph / pseudo-photograph of a child",
+      "offenceTitleWelsh": "Gwneud ffotograff/ffug-ffotograff anweddus o blentyn",
+      "orderIndex": 4,
+      "proceedingsConcluded": false,
+      "startDate": "2024-06-02",
+      "wording": "Make indecent photograph / pseudo-photograph of a child (recordable), H4434, PK78008, 086/02 \n\nOn or before 02/06/2024 at Milton Keynes and elsewhere made indecent photographs, namely 2 x cat A images and 19 videos on exhibit RMM/01 of children\n\n "
+    },
+    {
+      "allocationDecision": {
+        "allocationDecisionDate": "2025-05-20",
+        "motReasonCode": "05",
+        "motReasonDescription": "Court directs trial by jury",
+        "motReasonId": "d47268e9-db2e-3aa3-827b-ba3afb7ff94a",
+        "offenceId": "8c34dcde-d219-4bdc-9c01-9ee4c6cc1549",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "sequenceNumber": 20
+      },
+      "arrestDate": "2024-06-02",
+      "chargeDate": "2025-05-06",
+      "count": 0,
+      "endorsableFlag": false,
+      "id": "8c34dcde-d219-4bdc-9c01-9ee4c6cc1549",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2025-05-20",
+        "indicatedPleaValue": "NO_INDICATION",
+        "offenceId": "8c34dcde-d219-4bdc-9c01-9ee4c6cc1549",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4558",
+          "courtClerk": {
+            "firstName": "Michael",
+            "lastName": "Page",
+            "userId": "7c44cec5-3e3a-46d6-986e-0cff9e15a501"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "b472874b-cd65-402b-95e8-e8e8fd9190b8",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4362a1a4-aa80-4a68-ae61-f57962709f3d",
+              "label": "Sent for trial under",
+              "promptReference": "sentForTrialUnder",
+              "promptSequence": 100,
+              "qualifier": "XA",
+              "type": "FIXL",
+              "usergroups": [
+
+              ],
+              "value": "Section 51(1) & (2)(b) of the Crime and Disorder Act 1998",
+              "welshLabel": "Traddodwyd ar gyfer treial ar",
+              "welshValue": "Adran 51 (1) a (2) (b) Deddf Trosedd ac Anhrefn 1998"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+              "label": "Bail remand days to count (tagged days)",
+              "promptReference": "bailRemandDaysToCountTaggedDays",
+              "promptSequence": 300,
+              "type": "INT",
+              "usergroups": [
+
+              ],
+              "value": "0",
+              "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+              "welshValue": "0"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "07fe6e7e-dde2-45d6-b0c0-aa8e1b2883b8",
+              "label": "No indication given re victim personal statement",
+              "promptReference": "noIndicationGivenReVictimPersonalStatement",
+              "promptSequence": 800,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Ni roddwyd unrhyw arwydd o ddatganiad personol dioddefwyr",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+              "label": "PSR ordered",
+              "promptReference": "pSROrdered",
+              "promptSequence": 1200,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified organisation name",
+              "promptReference": "probationyottobenotifiedOrganisationName",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified email address 1",
+              "promptReference": "probationyottobenotifiedEmailAddress1",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+              "label": "Next hearing in Crown Court",
+              "promptReference": "c689513d-0fc5-4338-995a-19c46f5bd90c",
+              "promptSequence": 200,
+              "usergroups": [
+
+              ],
+              "value": "Fixed Date:11/06/2025\nTime of hearing:10:30\nCourthouse organisation name:Aylesbury Crown Court\nCourthouse address line 1:HMCTS\nCourthouse address line 2:Walton Street\nCourthouse address line 3:Aylesbury\nCourthouse address line 4:Bucks\nCourthouse post code:HP21 7FT\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES",
+              "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+            }
+          ],
+          "judicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "label": "Sent to Crown Court for trial on unconditional bail",
+          "lastSharedDateTime": "2025-05-20",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "",
+            "courtCentre": {
+              "address": {
+                "address1": "HMCTS",
+                "address2": "Walton Street",
+                "address3": "Aylesbury",
+                "address4": "Bucks",
+                "postcode": "HP21 7FT"
+              },
+              "code": "C43AY00",
+              "courtHearingLocation": "C43AY00",
+              "id": "ac2a72fd-1131-3e18-a84f-0dfe82d70d7a",
+              "name": "Aylesbury Crown Court",
+              "psaCode": 1921,
+              "welshName": "Llys Y Goron Aylesbury"
+            },
+            "estimatedDuration": "20 MINUTES",
+            "estimatedMinutes": 20,
+            "jurisdictionType": "CROWN",
+            "listedStartDateTime": "2025-06-11T09:30:00.000Z",
+            "type": {
+              "description": "Plea and Trial Preparation",
+              "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+            }
+          },
+          "orderedDate": "2025-05-20",
+          "orderedHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+          "postHearingCustodyStatus": "U",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 231100,
+          "resultDefinitionGroup": "SentToCC",
+          "resultText": "CCIU - Sent to Crown Court for trial on unconditional bail\nSent for trial under Section 51(1) & (2)(b) of the Crime and Disorder Act 1998. Bail remand days to count (tagged days): 0. No indication given re victim personal statement. Remanded on unconditional bail until hearing on 11/06/2025 at 10:30, Aylesbury Crown Court. Defendant to attend the next hearing",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "b472874b-cd65-402b-95e8-e8e8fd9190b8",
+          "rootJudicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [
+
+          ],
+          "welshLabel": "Traddodi i Lys y Goron ar gyfer dedfryd ar fechnïaeth ddiamod"
+        }
+      ],
+      "lastAdjournDate": "2025-05-20",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 1,
+      "maxPenalty": "EW:12M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "CJ08004",
+      "offenceDateCode": 5,
+      "offenceDefinitionId": "c11b1237-7bf2-32b6-bb20-89bdcfe7c30f",
+      "offenceLegislation": "Contrary to sections 63(1), (7)(d) and 67(3) of the Criminal Justice and Immigration Act 2008.",
+      "offenceTitle": "Possess extreme pornographic image / images portraying an act of intercourse / oral sex with a dead / alive animal",
+      "orderIndex": 5,
+      "proceedingsConcluded": false,
+      "startDate": "2024-06-02",
+      "wording": "Possess extreme pornographic image / images portraying an act of intercourse / oral sex with a dead / alive animal (recordable), H9768, CJ08004, 086/14 \n\nOn 02/06/2024 at Milton Keynes possessed extreme pornographic images, namely, 16 images on exhibit RMM/01 which portrayed, in an explicit and realistic way, a person performing an act of intercourse with a live or dead unknown animal,  which were grossly offensive, disgusting or otherwise of an obscene character and a reasonable person looking at the image would think that any such person or animal was real\n\n "
+    },
+    {
+      "allocationDecision": {
+        "allocationDecisionDate": "2025-05-20",
+        "motReasonCode": "05",
+        "motReasonDescription": "Court directs trial by jury",
+        "motReasonId": "d47268e9-db2e-3aa3-827b-ba3afb7ff94a",
+        "offenceId": "630fbc56-a236-4e27-ac9c-77b00f10f39f",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "sequenceNumber": 20
+      },
+      "arrestDate": "2024-06-02",
+      "chargeDate": "2025-05-06",
+      "count": 0,
+      "endorsableFlag": false,
+      "id": "630fbc56-a236-4e27-ac9c-77b00f10f39f",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2025-05-20",
+        "indicatedPleaValue": "NO_INDICATION",
+        "offenceId": "630fbc56-a236-4e27-ac9c-77b00f10f39f",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4558",
+          "courtClerk": {
+            "firstName": "Michael",
+            "lastName": "Page",
+            "userId": "7c44cec5-3e3a-46d6-986e-0cff9e15a501"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "101f8d73-2cb9-4aab-9db4-2f89771b9d1f",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4362a1a4-aa80-4a68-ae61-f57962709f3d",
+              "label": "Sent for trial under",
+              "promptReference": "sentForTrialUnder",
+              "promptSequence": 100,
+              "qualifier": "XA",
+              "type": "FIXL",
+              "usergroups": [
+
+              ],
+              "value": "Section 51(1) & (2)(b) of the Crime and Disorder Act 1998",
+              "welshLabel": "Traddodwyd ar gyfer treial ar",
+              "welshValue": "Adran 51 (1) a (2) (b) Deddf Trosedd ac Anhrefn 1998"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+              "label": "Bail remand days to count (tagged days)",
+              "promptReference": "bailRemandDaysToCountTaggedDays",
+              "promptSequence": 300,
+              "type": "INT",
+              "usergroups": [
+
+              ],
+              "value": "0",
+              "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+              "welshValue": "0"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "07fe6e7e-dde2-45d6-b0c0-aa8e1b2883b8",
+              "label": "No indication given re victim personal statement",
+              "promptReference": "noIndicationGivenReVictimPersonalStatement",
+              "promptSequence": 800,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Ni roddwyd unrhyw arwydd o ddatganiad personol dioddefwyr",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+              "label": "PSR ordered",
+              "promptReference": "pSROrdered",
+              "promptSequence": 1200,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified organisation name",
+              "promptReference": "probationyottobenotifiedOrganisationName",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified email address 1",
+              "promptReference": "probationyottobenotifiedEmailAddress1",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+              "label": "Next hearing in Crown Court",
+              "promptReference": "c6a6bee1-dcd8-450f-83a6-a5db2dc9b0a0",
+              "promptSequence": 200,
+              "usergroups": [
+
+              ],
+              "value": "Fixed Date:11/06/2025\nTime of hearing:10:30\nCourthouse organisation name:Aylesbury Crown Court\nCourthouse address line 1:HMCTS\nCourthouse address line 2:Walton Street\nCourthouse address line 3:Aylesbury\nCourthouse address line 4:Bucks\nCourthouse post code:HP21 7FT\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES",
+              "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+            }
+          ],
+          "judicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "label": "Sent to Crown Court for trial on unconditional bail",
+          "lastSharedDateTime": "2025-05-20",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "",
+            "courtCentre": {
+              "address": {
+                "address1": "HMCTS",
+                "address2": "Walton Street",
+                "address3": "Aylesbury",
+                "address4": "Bucks",
+                "postcode": "HP21 7FT"
+              },
+              "code": "C43AY00",
+              "courtHearingLocation": "C43AY00",
+              "id": "ac2a72fd-1131-3e18-a84f-0dfe82d70d7a",
+              "name": "Aylesbury Crown Court",
+              "psaCode": 1921,
+              "welshName": "Llys Y Goron Aylesbury"
+            },
+            "estimatedDuration": "20 MINUTES",
+            "estimatedMinutes": 20,
+            "jurisdictionType": "CROWN",
+            "listedStartDateTime": "2025-06-11T09:30:00.000Z",
+            "type": {
+              "description": "Plea and Trial Preparation",
+              "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+            }
+          },
+          "orderedDate": "2025-05-20",
+          "orderedHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+          "postHearingCustodyStatus": "U",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 231100,
+          "resultDefinitionGroup": "SentToCC",
+          "resultText": "CCIU - Sent to Crown Court for trial on unconditional bail\nSent for trial under Section 51(1) & (2)(b) of the Crime and Disorder Act 1998. Bail remand days to count (tagged days): 0. No indication given re victim personal statement. Remanded on unconditional bail until hearing on 11/06/2025 at 10:30, Aylesbury Crown Court. Defendant to attend the next hearing",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "101f8d73-2cb9-4aab-9db4-2f89771b9d1f",
+          "rootJudicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [
+
+          ],
+          "welshLabel": "Traddodi i Lys y Goron ar gyfer dedfryd ar fechnïaeth ddiamod"
+        }
+      ],
+      "lastAdjournDate": "2025-05-20",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 1,
+      "maxPenalty": "EW:6M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "PK78003",
+      "offenceDateCode": 5,
+      "offenceDefinitionId": "f0713f57-db19-30bc-a4e0-1bfe5e3fa6e8",
+      "offenceLegislation": "Contrary to sections 1(1)(b) and 6of the Protection of Children Act 1978.",
+      "offenceLegislationWelsh": "Yn groes i Adrannau 1(1)(b) a 6 Deddf Amddiffyn Plant 1978.",
+      "offenceTitle": "Distribute an indecent photograph / pseudo-photograph of a child",
+      "offenceTitleWelsh": "Dosbarthu ffotograff/ffug-ffotograff anweddus o blentyn",
+      "orderIndex": 6,
+      "proceedingsConcluded": false,
+      "startDate": "2024-05-17",
+      "wording": "Distribute an indecent photograph / pseudo-photograph of a child (recordable), H2101, PK78003, 086/02 \n\nOn 17/05/2024 at Milton Keynes and elsewhere distributed indecent photographs, namely ,3 category A videos to Ivy Kenya, of children \n\n "
+    },
+    {
+      "allocationDecision": {
+        "allocationDecisionDate": "2025-05-20",
+        "motReasonCode": "05",
+        "motReasonDescription": "Court directs trial by jury",
+        "motReasonId": "d47268e9-db2e-3aa3-827b-ba3afb7ff94a",
+        "offenceId": "f5419243-0102-4c36-b8f3-9217359006d3",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "sequenceNumber": 20
+      },
+      "arrestDate": "2024-06-02",
+      "chargeDate": "2025-05-06",
+      "count": 0,
+      "endDate": "2024-05-22",
+      "endorsableFlag": false,
+      "id": "f5419243-0102-4c36-b8f3-9217359006d3",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2025-05-20",
+        "indicatedPleaValue": "NO_INDICATION",
+        "offenceId": "f5419243-0102-4c36-b8f3-9217359006d3",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4558",
+          "courtClerk": {
+            "firstName": "Michael",
+            "lastName": "Page",
+            "userId": "7c44cec5-3e3a-46d6-986e-0cff9e15a501"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "3e416df3-cde2-41c1-b7eb-efb594c72214",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4362a1a4-aa80-4a68-ae61-f57962709f3d",
+              "label": "Sent for trial under",
+              "promptReference": "sentForTrialUnder",
+              "promptSequence": 100,
+              "qualifier": "XA",
+              "type": "FIXL",
+              "usergroups": [
+
+              ],
+              "value": "Section 51(1) & (2)(b) of the Crime and Disorder Act 1998",
+              "welshLabel": "Traddodwyd ar gyfer treial ar",
+              "welshValue": "Adran 51 (1) a (2) (b) Deddf Trosedd ac Anhrefn 1998"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+              "label": "Bail remand days to count (tagged days)",
+              "promptReference": "bailRemandDaysToCountTaggedDays",
+              "promptSequence": 300,
+              "type": "INT",
+              "usergroups": [
+
+              ],
+              "value": "0",
+              "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+              "welshValue": "0"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "07fe6e7e-dde2-45d6-b0c0-aa8e1b2883b8",
+              "label": "No indication given re victim personal statement",
+              "promptReference": "noIndicationGivenReVictimPersonalStatement",
+              "promptSequence": 800,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Ni roddwyd unrhyw arwydd o ddatganiad personol dioddefwyr",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+              "label": "PSR ordered",
+              "promptReference": "pSROrdered",
+              "promptSequence": 1200,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified organisation name",
+              "promptReference": "probationyottobenotifiedOrganisationName",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified email address 1",
+              "promptReference": "probationyottobenotifiedEmailAddress1",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+              "label": "Next hearing in Crown Court",
+              "promptReference": "6e4bebb3-222b-4c7a-95f0-504de01ae588",
+              "promptSequence": 200,
+              "usergroups": [
+
+              ],
+              "value": "Fixed Date:11/06/2025\nTime of hearing:10:30\nCourthouse organisation name:Aylesbury Crown Court\nCourthouse address line 1:HMCTS\nCourthouse address line 2:Walton Street\nCourthouse address line 3:Aylesbury\nCourthouse address line 4:Bucks\nCourthouse post code:HP21 7FT\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES",
+              "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+            }
+          ],
+          "judicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "label": "Sent to Crown Court for trial on unconditional bail",
+          "lastSharedDateTime": "2025-05-20",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "",
+            "courtCentre": {
+              "address": {
+                "address1": "HMCTS",
+                "address2": "Walton Street",
+                "address3": "Aylesbury",
+                "address4": "Bucks",
+                "postcode": "HP21 7FT"
+              },
+              "code": "C43AY00",
+              "courtHearingLocation": "C43AY00",
+              "id": "ac2a72fd-1131-3e18-a84f-0dfe82d70d7a",
+              "name": "Aylesbury Crown Court",
+              "psaCode": 1921,
+              "welshName": "Llys Y Goron Aylesbury"
+            },
+            "estimatedDuration": "20 MINUTES",
+            "estimatedMinutes": 20,
+            "jurisdictionType": "CROWN",
+            "listedStartDateTime": "2025-06-11T09:30:00.000Z",
+            "type": {
+              "description": "Plea and Trial Preparation",
+              "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+            }
+          },
+          "orderedDate": "2025-05-20",
+          "orderedHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+          "postHearingCustodyStatus": "U",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 231100,
+          "resultDefinitionGroup": "SentToCC",
+          "resultText": "CCIU - Sent to Crown Court for trial on unconditional bail\nSent for trial under Section 51(1) & (2)(b) of the Crime and Disorder Act 1998. Bail remand days to count (tagged days): 0. No indication given re victim personal statement. Remanded on unconditional bail until hearing on 11/06/2025 at 10:30, Aylesbury Crown Court. Defendant to attend the next hearing",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "3e416df3-cde2-41c1-b7eb-efb594c72214",
+          "rootJudicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [
+
+          ],
+          "welshLabel": "Traddodi i Lys y Goron ar gyfer dedfryd ar fechnïaeth ddiamod"
+        }
+      ],
+      "lastAdjournDate": "2025-05-20",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 1,
+      "maxPenalty": "EW:12M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "SX03247",
+      "offenceDateCode": 4,
+      "offenceDefinitionId": "cccc9a79-6363-3900-987e-ef52af7686cf",
+      "offenceLegislation": "Contrary to section 103I(1) and (3) of the Sexual Offences Act 2003.",
+      "offenceLegislationWelsh": "Yn groes i adran 103I(1) a (3) Deddf Troseddau Rhywiol 2003.",
+      "offenceTitle": "Breach SOPO / interim SOPO / foreign travel order",
+      "offenceTitleWelsh": "Torri SOPO / SOPO  interim  / gorchymyn teithio tramor",
+      "orderIndex": 7,
+      "proceedingsConcluded": false,
+      "startDate": "2022-02-01",
+      "wording": "Breach SOPO / interim SOPO / foreign travel order (recordable), H101098, SX03247, 068/08 \n\nBetween 01/02/2022 and 22/05/2024 at Milton Keynes and elsewhere, without reasonable excuse, did something, namely deleted the browser history of a device capable of accessing the internet, which you were prohibited from doing by a sexual offences prevention order made under section 104 of the Sexual Offences Act 2003 by Isleworth Crown Court on 04/07/2014\n\n "
+    },
+    {
+      "allocationDecision": {
+        "allocationDecisionDate": "2025-05-20",
+        "motReasonCode": "05",
+        "motReasonDescription": "Court directs trial by jury",
+        "motReasonId": "d47268e9-db2e-3aa3-827b-ba3afb7ff94a",
+        "offenceId": "fc76162d-7561-46f4-9e57-4f468f8c0ecf",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "sequenceNumber": 20
+      },
+      "arrestDate": "2024-06-02",
+      "chargeDate": "2025-05-06",
+      "count": 0,
+      "endorsableFlag": false,
+      "id": "fc76162d-7561-46f4-9e57-4f468f8c0ecf",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2025-05-20",
+        "indicatedPleaValue": "NO_INDICATION",
+        "offenceId": "fc76162d-7561-46f4-9e57-4f468f8c0ecf",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4558",
+          "courtClerk": {
+            "firstName": "Michael",
+            "lastName": "Page",
+            "userId": "7c44cec5-3e3a-46d6-986e-0cff9e15a501"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "59a31dfd-fd9e-41d2-be6a-ed5ca763d810",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4362a1a4-aa80-4a68-ae61-f57962709f3d",
+              "label": "Sent for trial under",
+              "promptReference": "sentForTrialUnder",
+              "promptSequence": 100,
+              "qualifier": "XA",
+              "type": "FIXL",
+              "usergroups": [
+
+              ],
+              "value": "Section 51(1) & (2)(b) of the Crime and Disorder Act 1998",
+              "welshLabel": "Traddodwyd ar gyfer treial ar",
+              "welshValue": "Adran 51 (1) a (2) (b) Deddf Trosedd ac Anhrefn 1998"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+              "label": "Bail remand days to count (tagged days)",
+              "promptReference": "bailRemandDaysToCountTaggedDays",
+              "promptSequence": 300,
+              "type": "INT",
+              "usergroups": [
+
+              ],
+              "value": "0",
+              "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+              "welshValue": "0"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "07fe6e7e-dde2-45d6-b0c0-aa8e1b2883b8",
+              "label": "No indication given re victim personal statement",
+              "promptReference": "noIndicationGivenReVictimPersonalStatement",
+              "promptSequence": 800,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Ni roddwyd unrhyw arwydd o ddatganiad personol dioddefwyr",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+              "label": "PSR ordered",
+              "promptReference": "pSROrdered",
+              "promptSequence": 1200,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified organisation name",
+              "promptReference": "probationyottobenotifiedOrganisationName",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified email address 1",
+              "promptReference": "probationyottobenotifiedEmailAddress1",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+              "label": "Next hearing in Crown Court",
+              "promptReference": "7b65b92f-9e78-4af2-a587-a2c41eb777b7",
+              "promptSequence": 200,
+              "usergroups": [
+
+              ],
+              "value": "Fixed Date:11/06/2025\nTime of hearing:10:30\nCourthouse organisation name:Aylesbury Crown Court\nCourthouse address line 1:HMCTS\nCourthouse address line 2:Walton Street\nCourthouse address line 3:Aylesbury\nCourthouse address line 4:Bucks\nCourthouse post code:HP21 7FT\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES",
+              "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+            }
+          ],
+          "judicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "label": "Sent to Crown Court for trial on unconditional bail",
+          "lastSharedDateTime": "2025-05-20",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "",
+            "courtCentre": {
+              "address": {
+                "address1": "HMCTS",
+                "address2": "Walton Street",
+                "address3": "Aylesbury",
+                "address4": "Bucks",
+                "postcode": "HP21 7FT"
+              },
+              "code": "C43AY00",
+              "courtHearingLocation": "C43AY00",
+              "id": "ac2a72fd-1131-3e18-a84f-0dfe82d70d7a",
+              "name": "Aylesbury Crown Court",
+              "psaCode": 1921,
+              "welshName": "Llys Y Goron Aylesbury"
+            },
+            "estimatedDuration": "20 MINUTES",
+            "estimatedMinutes": 20,
+            "jurisdictionType": "CROWN",
+            "listedStartDateTime": "2025-06-11T09:30:00.000Z",
+            "type": {
+              "description": "Plea and Trial Preparation",
+              "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+            }
+          },
+          "orderedDate": "2025-05-20",
+          "orderedHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+          "postHearingCustodyStatus": "U",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 231100,
+          "resultDefinitionGroup": "SentToCC",
+          "resultText": "CCIU - Sent to Crown Court for trial on unconditional bail\nSent for trial under Section 51(1) & (2)(b) of the Crime and Disorder Act 1998. Bail remand days to count (tagged days): 0. No indication given re victim personal statement. Remanded on unconditional bail until hearing on 11/06/2025 at 10:30, Aylesbury Crown Court. Defendant to attend the next hearing",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "59a31dfd-fd9e-41d2-be6a-ed5ca763d810",
+          "rootJudicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [
+
+          ],
+          "welshLabel": "Traddodi i Lys y Goron ar gyfer dedfryd ar fechnïaeth ddiamod"
+        }
+      ],
+      "lastAdjournDate": "2025-05-20",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 1,
+      "maxPenalty": "EW:6M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "PK78008",
+      "offenceDateCode": 5,
+      "offenceDefinitionId": "98a2cc1e-09dc-3308-bb05-acfff026bdbf",
+      "offenceLegislation": "Contrary to sections 1(1)(a) and 6 of the Protection of Children Act 1978.",
+      "offenceLegislationWelsh": "Yn groes i adrannau 1(1)(a) a 6 Deddf Amddiffyn Plant 1978.",
+      "offenceTitle": "Make indecent photograph / pseudo-photograph of a child",
+      "offenceTitleWelsh": "Gwneud ffotograff/ffug-ffotograff anweddus o blentyn",
+      "orderIndex": 8,
+      "proceedingsConcluded": false,
+      "startDate": "2024-06-02",
+      "wording": "Make indecent photograph / pseudo-photograph of a child (recordable), H4434, PK78008, 086/02 \n\nOn or before 02/06/2024 at Milton Keynes and elsewhere made indecent photographs, namely 10 videos and 8 still category C images on exhibit RMM/01 of children\n\n "
+    },
+    {
+      "allocationDecision": {
+        "allocationDecisionDate": "2025-05-20",
+        "motReasonCode": "05",
+        "motReasonDescription": "Court directs trial by jury",
+        "motReasonId": "d47268e9-db2e-3aa3-827b-ba3afb7ff94a",
+        "offenceId": "a29cffc5-69d5-44c5-8353-61555d76f11a",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "sequenceNumber": 20
+      },
+      "arrestDate": "2024-06-03",
+      "chargeDate": "2025-05-06",
+      "count": 0,
+      "endDate": "2024-06-02",
+      "endorsableFlag": false,
+      "id": "a29cffc5-69d5-44c5-8353-61555d76f11a",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2025-05-20",
+        "indicatedPleaValue": "NO_INDICATION",
+        "offenceId": "a29cffc5-69d5-44c5-8353-61555d76f11a",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4558",
+          "courtClerk": {
+            "firstName": "Michael",
+            "lastName": "Page",
+            "userId": "7c44cec5-3e3a-46d6-986e-0cff9e15a501"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "e0250907-6e39-4791-9851-67e03af38857",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4362a1a4-aa80-4a68-ae61-f57962709f3d",
+              "label": "Sent for trial under",
+              "promptReference": "sentForTrialUnder",
+              "promptSequence": 100,
+              "qualifier": "XA",
+              "type": "FIXL",
+              "usergroups": [
+
+              ],
+              "value": "Section 51(1) & (2)(b) of the Crime and Disorder Act 1998",
+              "welshLabel": "Traddodwyd ar gyfer treial ar",
+              "welshValue": "Adran 51 (1) a (2) (b) Deddf Trosedd ac Anhrefn 1998"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+              "label": "Bail remand days to count (tagged days)",
+              "promptReference": "bailRemandDaysToCountTaggedDays",
+              "promptSequence": 300,
+              "type": "INT",
+              "usergroups": [
+
+              ],
+              "value": "0",
+              "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+              "welshValue": "0"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "07fe6e7e-dde2-45d6-b0c0-aa8e1b2883b8",
+              "label": "No indication given re victim personal statement",
+              "promptReference": "noIndicationGivenReVictimPersonalStatement",
+              "promptSequence": 800,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Ni roddwyd unrhyw arwydd o ddatganiad personol dioddefwyr",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+              "label": "PSR ordered",
+              "promptReference": "pSROrdered",
+              "promptSequence": 1200,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified organisation name",
+              "promptReference": "probationyottobenotifiedOrganisationName",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified email address 1",
+              "promptReference": "probationyottobenotifiedEmailAddress1",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+              "label": "Next hearing in Crown Court",
+              "promptReference": "ce1b93a4-afc3-452e-a22d-53bc7c3bfd4f",
+              "promptSequence": 200,
+              "usergroups": [
+
+              ],
+              "value": "Fixed Date:11/06/2025\nTime of hearing:10:30\nCourthouse organisation name:Aylesbury Crown Court\nCourthouse address line 1:HMCTS\nCourthouse address line 2:Walton Street\nCourthouse address line 3:Aylesbury\nCourthouse address line 4:Bucks\nCourthouse post code:HP21 7FT\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES",
+              "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+            }
+          ],
+          "judicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "label": "Sent to Crown Court for trial on unconditional bail",
+          "lastSharedDateTime": "2025-05-20",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "",
+            "courtCentre": {
+              "address": {
+                "address1": "HMCTS",
+                "address2": "Walton Street",
+                "address3": "Aylesbury",
+                "address4": "Bucks",
+                "postcode": "HP21 7FT"
+              },
+              "code": "C43AY00",
+              "courtHearingLocation": "C43AY00",
+              "id": "ac2a72fd-1131-3e18-a84f-0dfe82d70d7a",
+              "name": "Aylesbury Crown Court",
+              "psaCode": 1921,
+              "welshName": "Llys Y Goron Aylesbury"
+            },
+            "estimatedDuration": "20 MINUTES",
+            "estimatedMinutes": 20,
+            "jurisdictionType": "CROWN",
+            "listedStartDateTime": "2025-06-11T09:30:00.000Z",
+            "type": {
+              "description": "Plea and Trial Preparation",
+              "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+            }
+          },
+          "orderedDate": "2025-05-20",
+          "orderedHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+          "postHearingCustodyStatus": "U",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 231100,
+          "resultDefinitionGroup": "SentToCC",
+          "resultText": "CCIU - Sent to Crown Court for trial on unconditional bail\nSent for trial under Section 51(1) & (2)(b) of the Crime and Disorder Act 1998. Bail remand days to count (tagged days): 0. No indication given re victim personal statement. Remanded on unconditional bail until hearing on 11/06/2025 at 10:30, Aylesbury Crown Court. Defendant to attend the next hearing",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "e0250907-6e39-4791-9851-67e03af38857",
+          "rootJudicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [
+
+          ],
+          "welshLabel": "Traddodi i Lys y Goron ar gyfer dedfryd ar fechnïaeth ddiamod"
+        }
+      ],
+      "lastAdjournDate": "2025-05-20",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 1,
+      "maxPenalty": "EW:6M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "SX03204",
+      "offenceDateCode": 4,
+      "offenceDefinitionId": "49c880df-e7b3-34d1-a09b-3397910ccea8",
+      "offenceLegislation": "Contrary to section 91(1)(a) and (2) of the Sexual Offences Act 2003.",
+      "offenceLegislationWelsh": "Yn groes i adran 91(1)(a) a (2) Deddf Troseddau Rhywiol 2003.",
+      "offenceTitle": "Sex offenders register - fail comply with notification requirements - SOA 2003",
+      "offenceTitleWelsh": "Cofrestr troseddwyr rhyw – methu cydymffurfio â gofynion hysbysu - Deddf Troseddau Rhywiol 2003",
+      "orderIndex": 9,
+      "proceedingsConcluded": false,
+      "startDate": "2024-05-24",
+      "wording": "Sex offenders register - fail comply with notification requirements - SOA 2003 (recordable), H5862, SX03204, 066/17 \n\nBetween 24/05/2024 and 02/06/2024 at Milton Keynes and elsewhere, being a relevant offender within the terms of section 80 of the Sexual Offences Act 2003, failed without reasonable excuse to comply with the notification requirements as provided by Part 2 of that Act in that you failed to notify an address where you stayed for 7 days or more \n\n "
+    },
+    {
+      "allocationDecision": {
+        "allocationDecisionDate": "2025-05-20",
+        "motReasonCode": "05",
+        "motReasonDescription": "Court directs trial by jury",
+        "motReasonId": "d47268e9-db2e-3aa3-827b-ba3afb7ff94a",
+        "offenceId": "6c08081e-6380-46a0-9d77-64cae91b4cc7",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "sequenceNumber": 20
+      },
+      "arrestDate": "2024-06-02",
+      "chargeDate": "2025-05-06",
+      "count": 0,
+      "endorsableFlag": false,
+      "id": "6c08081e-6380-46a0-9d77-64cae91b4cc7",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2025-05-20",
+        "indicatedPleaValue": "NO_INDICATION",
+        "offenceId": "6c08081e-6380-46a0-9d77-64cae91b4cc7",
+        "originatingHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4558",
+          "courtClerk": {
+            "firstName": "Michael",
+            "lastName": "Page",
+            "userId": "7c44cec5-3e3a-46d6-986e-0cff9e15a501"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "eff9fc13-02dc-4061-afa6-baaadf3b02a3",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4362a1a4-aa80-4a68-ae61-f57962709f3d",
+              "label": "Sent for trial under",
+              "promptReference": "sentForTrialUnder",
+              "promptSequence": 100,
+              "qualifier": "XA",
+              "type": "FIXL",
+              "usergroups": [
+
+              ],
+              "value": "Section 51(1) & (2)(b) of the Crime and Disorder Act 1998",
+              "welshLabel": "Traddodwyd ar gyfer treial ar",
+              "welshValue": "Adran 51 (1) a (2) (b) Deddf Trosedd ac Anhrefn 1998"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+              "label": "Bail remand days to count (tagged days)",
+              "promptReference": "bailRemandDaysToCountTaggedDays",
+              "promptSequence": 300,
+              "type": "INT",
+              "usergroups": [
+
+              ],
+              "value": "0",
+              "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+              "welshValue": "0"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "07fe6e7e-dde2-45d6-b0c0-aa8e1b2883b8",
+              "label": "No indication given re victim personal statement",
+              "promptReference": "noIndicationGivenReVictimPersonalStatement",
+              "promptSequence": 800,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Ni roddwyd unrhyw arwydd o ddatganiad personol dioddefwyr",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "ed26a92b-0850-435b-a4c7-2c77baaea4b3",
+              "label": "PSR ordered",
+              "promptReference": "pSROrdered",
+              "promptSequence": 1200,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "false",
+              "welshValue": "false"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified organisation name",
+              "promptReference": "probationyottobenotifiedOrganisationName",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "South West and Central Division NPS",
+              "welshValue": "South West and Central Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "714cfc3a-c860-49e0-a775-32fa7a1540db",
+              "label": "Probation / YOT to be notified email address 1",
+              "promptReference": "probationyottobenotifiedEmailAddress1",
+              "promptSequence": 1300,
+              "type": "NAMEADDRESS",
+              "usergroups": [
+
+              ],
+              "value": "SWSCNPS.Court@justice.gov.uk",
+              "welshValue": "SWSCNPS.Court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [
+
+              ],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+              "label": "Next hearing in Crown Court",
+              "promptReference": "394cc58b-f3c6-4ad4-956f-b1d442355ca4",
+              "promptSequence": 200,
+              "usergroups": [
+
+              ],
+              "value": "Fixed Date:11/06/2025\nTime of hearing:10:30\nCourthouse organisation name:Aylesbury Crown Court\nCourthouse address line 1:HMCTS\nCourthouse address line 2:Walton Street\nCourthouse address line 3:Aylesbury\nCourthouse address line 4:Bucks\nCourthouse post code:HP21 7FT\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES",
+              "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+            }
+          ],
+          "judicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "label": "Sent to Crown Court for trial on unconditional bail",
+          "lastSharedDateTime": "2025-05-20",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "",
+            "courtCentre": {
+              "address": {
+                "address1": "HMCTS",
+                "address2": "Walton Street",
+                "address3": "Aylesbury",
+                "address4": "Bucks",
+                "postcode": "HP21 7FT"
+              },
+              "code": "C43AY00",
+              "courtHearingLocation": "C43AY00",
+              "id": "ac2a72fd-1131-3e18-a84f-0dfe82d70d7a",
+              "name": "Aylesbury Crown Court",
+              "psaCode": 1921,
+              "welshName": "Llys Y Goron Aylesbury"
+            },
+            "estimatedDuration": "20 MINUTES",
+            "estimatedMinutes": 20,
+            "jurisdictionType": "CROWN",
+            "listedStartDateTime": "2025-06-11T09:30:00.000Z",
+            "type": {
+              "description": "Plea and Trial Preparation",
+              "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+            }
+          },
+          "orderedDate": "2025-05-20",
+          "orderedHearingId": "fa98487b-ee19-4777-9a69-00f3bcee3ba3",
+          "postHearingCustodyStatus": "U",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 231100,
+          "resultDefinitionGroup": "SentToCC",
+          "resultText": "CCIU - Sent to Crown Court for trial on unconditional bail\nSent for trial under Section 51(1) & (2)(b) of the Crime and Disorder Act 1998. Bail remand days to count (tagged days): 0. No indication given re victim personal statement. Remanded on unconditional bail until hearing on 11/06/2025 at 10:30, Aylesbury Crown Court. Defendant to attend the next hearing",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "eff9fc13-02dc-4061-afa6-baaadf3b02a3",
+          "rootJudicialResultTypeId": "705140dc-833a-4aa0-a872-839009fc4494",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [
+
+          ],
+          "welshLabel": "Traddodi i Lys y Goron ar gyfer dedfryd ar fechnïaeth ddiamod"
+        }
+      ],
+      "lastAdjournDate": "2025-05-20",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 1,
+      "maxPenalty": "EW:6M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "PK78008",
+      "offenceDateCode": 5,
+      "offenceDefinitionId": "98a2cc1e-09dc-3308-bb05-acfff026bdbf",
+      "offenceLegislation": "Contrary to sections 1(1)(a) and 6 of the Protection of Children Act 1978.",
+      "offenceLegislationWelsh": "Yn groes i adrannau 1(1)(a) a 6 Deddf Amddiffyn Plant 1978.",
+      "offenceTitle": "Make indecent photograph / pseudo-photograph of a child",
+      "offenceTitleWelsh": "Gwneud ffotograff/ffug-ffotograff anweddus o blentyn",
+      "orderIndex": 10,
+      "proceedingsConcluded": false,
+      "startDate": "2024-06-02",
+      "wording": "Make indecent photograph / pseudo-photograph of a child (recordable), H4434, PK78008, 086/02  \n\nOn or before 02/06/2024 at Milton Keynes and elsewhere made indecent photographs, namely 4 videos and 2 still category B images on exhibit RMM/01 of children\n\n "
+    }
+  ],
+  "personDefendant": {
+    "arrestSummonsNumber": "2400000000000696980K",
+    "driverNumber": "DRAPE607283P98YR",
+    "personDetails": {
+      "address": {
+        "address1": "BULLINGDON",
+        "address2": "PATRICK HAUGH ROAD",
+        "address3": "ARNCOTT",
+        "address4": "BICESTER",
+        "address5": "OXFORDSHIRE",
+        "postcode": "OX25 1PZ"
+      },
+      "contact": {
+        "home": "07460756916",
+        "primaryEmail": "pparkercfc@gmail.com"
+      },
+      "dateOfBirth": "1963-07-28",
+      "documentationLanguageNeeds": "ENGLISH",
+      "ethnicity": {
+        "observedEthnicityCode": "1",
+        "observedEthnicityDescription": "White",
+        "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+        "selfDefinedEthnicityCode": "W1",
+        "selfDefinedEthnicityDescription": "British",
+        "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+      },
+      "firstName": "MAX",
+      "gender": "MALE",
+      "hearingLanguageNeeds": "ENGLISH",
+      "lastName": "parker",
+      "occupation": "Unemployed",
+      "title": "Mr"
+    }
+  },
+  "pncId": "19780029094K",
+  "prosecutionAuthorityReference": "2400000000000696980K",
+  "prosecutionCaseId": "bdcc273d-d4fb-43a6-ad46-16f6deb8c355"
+}

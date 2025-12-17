@@ -1,0 +1,5 @@
+{
+  "caseId": "%CASE_ID%",
+  "assigneeId": "da5ad16a-fa39-406d-8615-b5d501527e4f",
+  "isAdvocateDefendingOrProsecuting": "%USER_ROLE_IN_CASE%"
+}

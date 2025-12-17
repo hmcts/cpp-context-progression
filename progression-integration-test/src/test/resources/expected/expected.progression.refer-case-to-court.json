@@ -1,0 +1,73 @@
+{
+  "documentIndices": [
+    {
+      "caseIds": [
+        "CASE-ID"
+      ],
+      "category": "Defendant level",
+      "defendantIds": [
+        "e1d32d9d-29ec-4934-a932-22a50f223966"
+      ],
+      "document": {
+        "containsFinancialMeans": true,
+        "courtDocumentId": "COURT-DOCUMENT-ID1",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "e1d32d9d-29ec-4934-a932-22a50f223966"
+            ],
+            "prosecutionCaseId": "CASE-ID"
+          }
+        },
+        "documentTypeDescription": "Magistrate's Sending sheet",
+        "documentTypeId": "460f7ec0-c002-11e8-a355-529269fb1459",
+        "documentTypeRBAC": {
+          "deleteUserGroups": [
+            "Crown Court"
+          ],
+          "downloadUserGroups": [
+            "Listing Officers",
+            "Legal advisors",
+            "Magistrates"
+          ],
+          "readUserGroups": [
+            "Listing Officers",
+            "Legal advisors",
+            "Magistrates"
+          ],
+          "uploadUserGroups": [
+            "Listing Officers",
+            "Legal advisors"
+          ]
+        },
+        "seqNum": 10,
+        "materials": [
+          {
+            "id": "1ae357c9-4f98-43b7-8ce4-36e54981b667",
+            "name": "BankStatment.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "Listing Officers",
+              "Legal advisors",
+              "Magistrates"
+            ]
+          },
+          {
+            "id": "ff03d69e-231a-4a65-9ab1-88d9887bf847",
+            "name": "Fine.pdf",
+            "uploadDateTime": "2018-03-20T16:14:29.000Z",
+            "userGroups": [
+              "Listing Officers",
+              "Legal advisors",
+              "Magistrates"
+            ]
+          }
+        ],
+        "mimeType": "pdf",
+        "name": "Bank Statement"
+      },
+      "hearingIds": [],
+      "type": "Magistrate's Sending sheet"
+    }
+  ]
+}

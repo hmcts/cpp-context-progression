@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.command.store-booking-reference-court-schedule-ids.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDay": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "bookingReferenceCourtScheduleIds": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/progression/courts/booking-reference-court-schedule-ids.json"
+      }
+    }
+  },
+  "required": [
+    "hearingId",
+    "hearingDay",
+    "bookingReferenceCourtScheduleIds"
+  ],
+  "additionalProperties": false
+}

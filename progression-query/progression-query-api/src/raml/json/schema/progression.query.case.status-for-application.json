@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.application.aaag-for-case.json",
+  "description": "A Case status by applicationId",
+  "type": "object",
+  "properties": {
+    "caseStatus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseStatus"
+  ],
+  "additionalProperties": false
+}

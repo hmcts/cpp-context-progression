@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.public-list-opa-notice-generated.json",
+  "type": "object",
+  "properties": {
+    "opaNotice": {
+      "$ref": "http://justice.gov.uk/core/courts/opa-notice.json"
+    }
+  },
+  "required": [
+    "opaNotice"
+  ],
+  "additionalProperties": false
+}

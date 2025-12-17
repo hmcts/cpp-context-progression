@@ -1,0 +1,23 @@
+{
+  "courtDocument": {
+    "courtDocumentId": "%DOCUMENT_ID%",
+    "documentCategory": {
+      "caseDocument": {
+        "prosecutionCaseId": "b6b7abd8-6f9b-46e3-8b52-3d3b0949b152"
+      }
+    },
+    "name": "Test",
+    "documentTypeId": "f471eb51-614c-4447-bd8d-28f9c2815c9e",
+    "documentTypeDescription": "Electronic Notifications",
+    "mimeType": "pdf",
+    "materials": [
+      {
+        "id": "%MATERIAL_ID%",
+        "name": "test",
+        "receivedDateTime": "2019-12-07T07:16:26.661Z"
+      }
+    ],
+    "containsFinancialMeans": true,
+    "sendToCps": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/event/send-to-cps-flag-updated.json",
+  "type": "object",
+  "properties": {
+    "courtDocumentId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "sendToCps": {
+      "type": "boolean"
+    },
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    }
+  },
+  "required": [
+    "courtDocumentId"
+  ],
+  "additionalProperties": false
+}

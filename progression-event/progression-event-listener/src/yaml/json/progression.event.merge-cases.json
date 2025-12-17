@@ -1,0 +1,11 @@
+{
+  "prosecutionCaseId": "54c0c81e-4085-4d6a-b233-e77938e50465",
+  "casesToLink": [
+    {
+      "caseUrns": [
+        "97859120"
+      ],
+      "caseLinkType": "MERGE"
+    }
+  ]
+}

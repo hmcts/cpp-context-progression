@@ -1,0 +1,353 @@
+{
+  "defendants": [
+    {
+      "pncId": "1234567-1",
+      "croNumber":"croNumber",
+      "aliases": [
+        {
+          "firstName": "Jim",
+          "middleName": "John",
+          "lastName": "Jefferies",
+          "title": "MR",
+          "legalEntityName": "Chicken & Curry Best In Town LTD"
+        }
+      ],
+      "id": "a7fc1cf1-7729-4839-aa4b-ed76d2fabacc",
+      "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+      "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+      "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a",
+      "numberOfPreviousConvictionsCited": 5,
+      "prosecutionAuthorityReference": "TFL12345-ABC",
+      "witnessStatement": "he did not do it",
+      "witnessStatementWelsh": "he did not do it in Welsh",
+      "mitigation": "I was not there",
+      "mitigationWelsh": "I was not there in Welsh",
+      "associatedPersons": [
+        {
+          "person": {
+            "title": "MR",
+            "firstName": "Harry",
+            "middleName": "Jack",
+            "lastName": "Kane",
+            "dateOfBirth": "1995-01-01",
+            "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "United Kingdom",
+            "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+            "additionalNationalityCode": "USA",
+            "additionalNationalityDescription": "United States of America",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "observedEthnicityCode": "IC1",
+              "observedEthnicityDescription": "IC1 Description",
+              "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "selfDefinedEthnicityCode": "IC1",
+              "selfDefinedEthnicityDescription": "IC1 Description"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "Hindi",
+            "documentationLanguageNeeds": "WELSH",
+            "nationalInsuranceNumber": "NH222222B",
+            "occupation": "Footballer",
+            "occupationCode": "F",
+            "address": {
+              "address1": "22",
+              "address2": "Acacia Avenue",
+              "address3": "Acacia Town",
+              "address4": "Acacia City",
+              "address5": "Acacia Country",
+              "postcode": "GIR 0AA"
+            },
+            "contact": {
+              "home": "123456",
+              "work": "7891011",
+              "mobile": "45678910",
+              "primaryEmail": "harry.kane@spurs.co.uk",
+              "secondaryEmail": "harry.kane@hotmail.com",
+              "fax": "3425678"
+            }
+          },
+          "role": "parent"
+        }
+      ],
+      "legalEntityDefendant": {
+        "organisation": {
+          "name": "b",
+          "address": {
+            "address1": "22",
+            "address2": "Acacia Avenue",
+            "address3": "Acacia Town",
+            "address4": "Acacia City",
+            "address5": "Acacia Country",
+            "postcode": "GIR 0AA"
+          },
+          "contact": {
+            "home": "123456",
+            "work": "7891011",
+            "mobile": "45678910",
+            "primaryEmail": "harry.kane@spurs.co.uk",
+            "secondaryEmail": "harry.kane@hotmail.com",
+            "fax": "3425678"
+          },
+          "incorporationNumber": 12345,
+          "registeredCharityNumber": 12356
+        }
+      },
+      "offences": [
+        {
+          "proceedingsConcluded": false,
+          "offenceCode": "TFL123",
+          "offenceTitle": "TFL Ticket Dodger",
+          "count": 0,
+          "id": "fe261841-4f77-49a3-b916-ff403cc40a77",
+          "wording": "TFL ticket dodged",
+          "offenceDefinitionId": "bfd0a307-7c59-43f9-8713-d568fa4e4fff",
+          "startDate": "2019-05-01",
+          "endDate": "2019-05-12",
+          "chargeDate": "2019-05-02",
+          "arrestDate": "2019-05-03",
+          "offenceLegislation": "a",
+          "dateOfInformation": "2020-01-01",
+          "modeOfTrial": "a",
+          "orderIndex": 0,
+          "laaApplnReference": {
+            "applicationReference": "LAA REF OFF 1",
+            "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+            "statusCode": "LAA STATUS CODE OFF 1",
+            "statusDescription": "LAA STATUS DESC OFF 1",
+            "effectiveStartDate": "2019-08-12",
+            "effectiveEndDate": "2019-10-12"
+          }
+        },
+        {
+          "proceedingsConcluded": false,
+          "offenceCode": "TFL123",
+          "offenceTitle": "TFL Ticket Dodger",
+          "count": 0,
+          "id": "fe261841-4f77-49a3-b916-ff403cc40a77",
+          "wording": "TFL ticket dodged",
+          "offenceDefinitionId": "bfd0a307-7c59-43f9-8713-d568fa4e4fff",
+          "startDate": "2019-05-01",
+          "endDate": "2019-05-12",
+          "chargeDate": "2019-05-02",
+          "arrestDate": "2019-05-03",
+          "offenceLegislation": "a",
+          "dateOfInformation": "2000-01-01",
+          "modeOfTrial": "a",
+          "orderIndex": 0,
+          "laaApplnReference": {
+            "applicationReference": "LAA REF OFF 1",
+            "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+            "statusCode": "LAA STATUS CODE OFF 1",
+            "statusDescription": "LAA STATUS DESC OFF 1",
+            "effectiveStartDate": "2019-08-12",
+            "effectiveEndDate": "2019-10-12"
+          }
+        }
+      ],
+      "id": "a7fc1cf1-7729-4839-aa4b-ed76d2fabacc"
+    },
+    {
+      "id": "ff9fb1f4-b8d3-4052-b02c-77521bc3b14c",
+      "pncId": "1234567-2",
+      "croNumber": "1234567-2",
+      "masterDefendantId":"27525add-a01b-485e-9ff7-16acec4681fe",
+      "courtProceedingsInitiated":"2015-01-12T05:27:17.210Z",
+      "prosecutionCaseId": "3d49475d-0b81-42e4-b32e-3cc6a090825a",
+      "numberOfPreviousConvictionsCited": 5,
+      "prosecutionAuthorityReference": "TFL12345-ABC",
+      "witnessStatement": "he did not do it",
+      "witnessStatementWelsh": "he did not do it in Welsh",
+      "mitigation": "I was not there",
+      "mitigationWelsh": "I was not there in Welsh",
+      "associatedPersons": [
+        {
+          "person": {
+            "title": "MR",
+            "firstName": "Harry",
+            "middleName": "Jack",
+            "lastName": "Kane",
+            "dateOfBirth": "1995-01-01",
+            "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "United Kingdom",
+            "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+            "additionalNationalityCode": "USA",
+            "additionalNationalityDescription": "United States of America",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "observedEthnicityCode": "IC1",
+              "observedEthnicityDescription": "IC1 Description",
+              "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+              "selfDefinedEthnicityCode": "IC1",
+              "selfDefinedEthnicityDescription": "IC1 Description"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "Hindi",
+            "documentationLanguageNeeds": "WELSH",
+            "nationalInsuranceNumber": "NH222222B",
+            "occupation": "Footballer",
+            "occupationCode": "F",
+            "address": {
+              "address1": "22",
+              "address2": "Acacia Avenue",
+              "address3": "Acacia Town",
+              "address4": "Acacia City",
+              "address5": "Acacia Country",
+              "postcode": "GIR 0AA"
+            },
+            "contact": {
+              "home": "123456",
+              "work": "7891011",
+              "mobile": "45678910",
+              "primaryEmail": "harry.kane@spurs.co.uk",
+              "secondaryEmail": "harry.kane@hotmail.com",
+              "fax": "3425678"
+            }
+          },
+          "role": "parent"
+        }
+      ],
+      "personDefendant": {
+        "bailStatus": {
+          "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+          "code": "C",
+          "description": "Remanded into Custody"
+        },
+        "personDetails": {
+          "title": "MR",
+          "firstName": "Harry",
+          "middleName": "Jack",
+          "lastName": "Kane Junior",
+          "dateOfBirth": "2010-01-01",
+          "nationalityId": "0f36a570-46ef-41d1-b290-9037a64fa1a4",
+          "nationalityCode": "GBR",
+          "nationalityDescription": "United Kingdom",
+          "additionalNationalityId": "9aa0ffba-67a4-4137-b392-3c01951eb9c2",
+          "additionalNationalityCode": "USA",
+          "additionalNationalityDescription": "United States of America",
+          "disabilityStatus": "a",
+          "ethnicity": {
+            "observedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+            "observedEthnicityCode": "IC1",
+            "observedEthnicityDescription": "IC1 Description",
+            "selfDefinedEthnicityId": "d36d2ba2-6862-4114-b9f9-0c620e1e903c",
+            "selfDefinedEthnicityCode": "IC1",
+            "selfDefinedEthnicityDescription": "IC1 Description"
+          },
+          "gender": "MALE",
+          "interpreterLanguageNeeds": "Welsh",
+          "documentationLanguageNeeds": "WELSH",
+          "nationalInsuranceNumber": "NH323232B",
+          "occupation": "Kid",
+          "occupationCode": "F",
+          "specificRequirements": "Screen",
+          "address": {
+            "address1": "22",
+            "address2": "Acacia Avenue",
+            "address3": "Acacia Town",
+            "address4": "Acacia City",
+            "address5": "Acacia Country",
+            "postcode": "GIR 0AA"
+          },
+          "contact": {
+            "home": "123456",
+            "work": "7891011",
+            "mobile": "45678910",
+            "primaryEmail": "harry.kanejunior@spurs.co.uk",
+            "secondaryEmail": "harry.kanejunior@hotmail.com",
+            "fax": "3425678"
+          }
+        },
+        "custodyTimeLimit": "2018-01-01",
+        "perceivedBirthYear": 2015,
+        "driverNumber": "AACC12345",
+        "arrestSummonsNumber": "arrest123",
+        "employerOrganisation": {
+          "name": "Disneyland Paris",
+          "incorporationNumber": "Mickeymouse1",
+          "address": {
+            "address1": "Disney Road",
+            "address2": "Disney Town",
+            "address3": "Disney District",
+            "address4": "Paris",
+            "address5": "France",
+            "postcode": "DI5 9EY"
+          },
+          "contact": {
+            "work": "0207 654 3246 extn 1234",
+            "primaryEmail": "person@hotmail.com",
+            "secondaryEmail": "associate@hotmail.com",
+            "fax": "a"
+          }
+        },
+        "employerPayrollReference": "payyou1234"
+      },
+      "offences": [
+        {
+          "proceedingsConcluded": false,
+          "offenceCode": "TFL123",
+          "offenceTitle": "TFL Ticket Dodger",
+          "count": 0,
+          "id": "fe261841-4f77-49a3-b916-ff403cc40a77",
+          "wording": "TFL ticket dodged",
+          "offenceDefinitionId": "bfd0a307-7c59-43f9-8713-d568fa4e4fff",
+          "startDate": "2019-05-01",
+          "endDate": "2019-05-12",
+          "chargeDate": "2019-05-02",
+          "arrestDate": "2019-05-03",
+          "offenceLegislation": "a",
+          "dateOfInformation": "0000-01-01",
+          "modeOfTrial": "a",
+          "orderIndex": 0,
+          "laaApplnReference": {
+            "applicationReference": "LAA REF OFF 1",
+            "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+            "statusCode": "LAA STATUS CODE OFF 1",
+            "statusDescription": "LAA STATUS DESC OFF 1",
+            "effectiveStartDate": "2019-08-12",
+            "effectiveEndDate": "2019-10-12"
+          }
+        }
+      ]
+    }
+  ],
+  "listHearingRequests": [
+    {
+      "hearingType": {
+        "description": "TO_JAIL",
+        "id": "6a7e9f2b-db71-4a78-b688-244f4d611b70"
+      },
+      "jurisdictionType": "MAGISTRATES",
+      "courtCentre": {
+        "id": "0946d5d3-f5e3-4206-a0b1-7d0938fe8bbe"
+      },
+      "listDefendantRequests": [
+        {
+          "referralReason": {
+            "description": "Dodged TFL tickets with passion",
+            "defendantId": "a7fc1cf1-7729-4839-aa4b-ed76d2fabacc",
+            "id": "19a294db-8de6-40f9-b742-5aecd6d1ce32"
+          },
+          "defendantOffences": [
+            "fe261841-4f77-49a3-b916-ff403cc40a77"
+          ],
+          "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+        },
+        {
+          "referralReason": {
+            "description": "Dodged TFL tickets with passion",
+            "defendantId": "ff9fb1f4-b8d3-4052-b02c-77521bc3b14c",
+            "id": "8f1bc27e-f98b-4ff4-81e8-18ee48bad1fa"
+          },
+          "defendantOffences": [
+            "fe261841-4f77-49a3-b916-ff403cc40a77"
+          ],
+          "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+        }
+      ]
+    }
+  ]
+}

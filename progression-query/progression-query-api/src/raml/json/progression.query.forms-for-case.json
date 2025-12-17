@@ -1,0 +1,26 @@
+{
+  "caseId": "12a54831-5134-415b-9679-1ec7e4b84859",
+  "forms": [
+    {
+      "courtFormId": "b59e7d36-537c-4012-806c-1cb6b9532283",
+      "formType": "BCM",
+      "defendants": [
+        {
+          "defendantId": "68b54831-5134-415b-9679-1ec7e4b84254"
+        },
+        {
+          "defendantId": "99b54831-5134-415b-9679-1ec7e4b84254"
+        }
+      ]
+    },
+    {
+      "courtFormId": "b59e7d36-537c-4012-806c-1cb6b9532283",
+      "formType": "BCM",
+      "defendants": [
+        {
+          "defendantId": "12b54831-5134-415b-9679-1ec7e4b84254"
+        }
+      ]
+    }
+  ]
+}

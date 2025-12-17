@@ -1,0 +1,28 @@
+package uk.gov.moj.cpp.progression;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.pollForResponse;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupForUshersCrownListQueryStub;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupReferenceDataQueryCourtCenterDataByCourtNameStub;
+import static uk.gov.moj.cpp.progression.helper.StubUtil.setupStagingPubHubCommandStub;
+import static uk.gov.moj.cpp.progression.stub.DocumentGeneratorStub.DOCUMENT_TEXT;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class SearchUshersCrownListIT extends AbstractIT {
+
+    @BeforeEach
+    public void setUp() {
+        setupForUshersCrownListQueryStub();
+        setupStagingPubHubCommandStub();
+        setupReferenceDataQueryCourtCenterDataByCourtNameStub();
+    }
+
+    @Test
+    public void shouldCreateUshersDocument() {
+        final String documentContentResponse = pollForResponse("/courtlist?listId=USHERS_CROWN&courtCentreId=f8254db1-1683-483e-afb3-b87fde5a0a26&startDate=2022-12-19&endDate=2022-12-19&_=bc9153c0-8278-494e-8f72-d63973bab35f", "application/vnd.progression.search.court.list+json");
+        assertThat(documentContentResponse, equalTo(DOCUMENT_TEXT));
+    }
+}

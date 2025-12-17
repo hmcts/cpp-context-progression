@@ -1,0 +1,1489 @@
+{
+  "finalisedFormData": [
+    {
+      "id": "Jane JOHNSON, 22 May 1976 + 1",
+      "title": "Preparation for effective trial",
+      "name": "Jane JOHNSON, 22 May 1976, created on 22 December 10:45 2022",
+      "sections": [
+        {
+          "key": "form",
+          "header": "Preparation for effective trial",
+          "label": "Criminal Procedure Rules Parts 1 & 3",
+          "courtPlace": "Liverpool Magistrates’ Court",
+          "subSections": [
+            {
+              "key": "formData",
+              "heading": "This form:",
+              "fields": [
+                {
+                  "label": "",
+                  "value": "collects information about the case that the court will need to arrange for an effective trial",
+                  "subValue": "CrimPR rules 3.2 and 3.3\nCrimPR rule 3.5\nCrimPR 1.2(1) & 3.12"
+                },
+                {
+                  "label": "",
+                  "value": "records the court’s directions"
+                }
+              ]
+            },
+            {
+              "key": "formData",
+              "heading": "After the court gives directions for trial, you must tell the court at once if:",
+              "fields": [
+                {
+                  "label": "",
+                  "value": "information about the case changes, or,"
+                },
+                {
+                  "label": "",
+                  "value": "you think another direction is needed"
+                }
+              ]
+            },
+            {
+              "key": "CCD",
+              "heading": "Court contact details",
+              "fields": [
+                {
+                  "label": "ccd",
+                  "value": "Liverpool Magistrates’ Court\nDerby Square\nLiverpool\nL2 1XA",
+                  "subValue": "Email: me-customersupportliverpool@justice.gov.uk\nPhone: 0151 473 7373"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            }
+          ]
+        },
+        {
+          "key": "part1",
+          "header": "Part 1",
+          "label": "Prosecuting authority",
+          "value": "CPS",
+          "subSections": [
+            {
+              "key": "header1",
+              "name": "John SMITH",
+              "fields": [
+                {
+                  "label": "Date of birth",
+                  "value": "25 June 1989"
+                },
+                {
+                  "label": "Age",
+                  "value": "21 years"
+                },
+                {
+                  "label": "Interpreter required",
+                  "value": "Yes, Spanish"
+                },
+                {
+                  "label": "Proceedings initiated by",
+                  "value": "Charge"
+                },
+                {
+                  "label": "Offences",
+                  "value": "Aid abet the driving of a motor vehicle with a proportion of a specified controlled drug above the specified limit\nRacially / religiously aggravated harassment with fear of violence"
+                },
+                {
+                  "label": "Defendant’s representative",
+                  "value": "Chris Elisasson\n25 King St, Farnborough, GU53 7GH\n0208 675 2726"
+                },
+                {
+                  "label": "Funding",
+                  "value": "Legal aid granted"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "name": "Sam SMITHSSON",
+              "fields": [
+                {
+                  "label": "Date of birth and age",
+                  "value": "25 June 1989, 21 years"
+                },
+                {
+                  "label": "Interpreter required",
+                  "value": "Yes, Spanish"
+                },
+                {
+                  "label": "Proceedings initiated by",
+                  "value": "Charge"
+                },
+                {
+                  "label": "Offences",
+                  "value": "Aid abet the driving of a motor vehicle with a proportion of a specified controlled drug above the specified limit\nRacially / religiously aggravated harassment with fear of violence"
+                },
+                {
+                  "label": "Defendant’s representative",
+                  "value": "Chris Elisasson\n25 King St, Farnborough, GU53 7GH\n0208 675 2726"
+                },
+                {
+                  "label": "Funding",
+                  "value": "Legal aid granted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part2",
+          "header": "Part 2: Prosecutor",
+          "subSections": [
+            {
+              "key": "header1",
+              "value": "4. Case management",
+              "fields": [
+                {
+                  "label": "4.1 Evidence",
+                  "question": "Does the prosecutor intend to serve more evidence?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "4.2 Disclosure of unused prosecution material",
+                  "question": "Has the initial duty of disclosure of unused prosecution material been complied with?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "4.3 Investigation",
+                  "question": "Are there any pending enquiries or lines of investigation?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit."
+                },
+                {
+                  "label": "4.4 Modern Slavery Act",
+                  "question": "Is there any suggestion that the defendant has been a victim of slavery or exploitation?",
+                  "value": "No"
+                },
+                {
+                  "label": "4.5 Prosecution case",
+                  "question": "The prosecution will rely on:",
+                  "value": "Defendant’s admissions in interview\nA record of the defendant’s interview\nElectronically recorded evidence"
+                },
+                {
+                  "label": "4.6 Display equipment",
+                  "question": "Will the prosecutor need any equipment in the trial courtroom? (e.g. live link or other media player, etc.)",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "info": "The prosecutor must make sure that any electronic media can be played in the courtroom."
+                },
+                {
+                  "label": "4.7 Points of law",
+                  "question": "Does the prosecutor presently expect the case to involve a complex, novel or unusual point of law and/or fact?",
+                  "value": "Yes"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "value": "5. Applications for directions",
+              "fields": [
+                {
+                  "label": "5.1 Prosecution witness requiring assistance, special measures, etc.",
+                  "question": "Are there any prosecution witness requirements that may make special measures, reasonable adjustments or other support appropriate?",
+                  "value": "Yes"
+                },
+                {
+                  "label": "5.2 Ground rules for questioning",
+                  "question": "Does the prosecutor want the court to arrange a discussion of ground rules for questioning?",
+                  "value": "Yes",
+                  "info": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases."
+                },
+                {
+                  "label": "5.3 Variation of standard directions",
+                  "question": "Does the prosecutor want the court to vary a standard trial preparation time limit or make any other direction?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part3",
+          "header": "Part 3: Defendant 1",
+          "value": "John SMITH, 25 June 1989",
+          "subSections": [
+            {
+              "key": "header1",
+              "label": "6 Advice on plea and absence",
+              "value": "Credit for guilty plea; trial in absence",
+              "fields": [
+                {
+                  "label": "6a. Does the defendant understand that: they will receive credit for a guilty plea?",
+                  "question": "",
+                  "value": "Yes",
+                  "info2": "A guilty plea may affect the sentence and any order for costs and other financial penalties / charges"
+                },
+                {
+                  "label": "6b. Does the defendant understand that the trial and sentencing, if convicted, can go ahead even if they do not attend?",
+                  "question": "",
+                  "value": "Yes",
+                  "info": "CrimPR rule 24.12"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "7. Partial or different guilty plea",
+              "fields": [
+                {
+                  "label": "7.1 Mixed pleas",
+                  "question": "If more than one offence is alleged, does the defendant want to plead guilty to any of them?\nWhich offences does the defendant want to plead guilty to?",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "7.2 Basis of plea",
+                  "question": "Does the defendant want to plead guilty, but not on the facts alleged? Provide details of the facts on which the defendant wants to plead guilty.",
+                  "value": "No",
+                  "info": "Not applicable"
+                },
+                {
+                  "label": "7.3 Different offence",
+                  "question": "Does the defendant want to plead guilty, but to a different offence?\nWhat offence does the defendant want to plead guilty to?",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "8. Case management information",
+              "value": "Initial details of the prosecution case should have been served: CrimPR rule 8.2. Questions 8.1, 8.2, 8.3 and 8.4 are to help the court find out what is in dispute and give appropriate directions for trial.",
+              "fields": [
+                {
+                  "label": "8.1a Presence",
+                  "question": "The defendant was present at the scene of the offence alleged",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1b Involvement",
+                  "question": "The defendant [[carried out] [took part in] the conduct alleged] [drove the vehicle involved]",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1c Injury / loss / damage",
+                  "question": "[Nature of injury] [extent of loss or damage] alleged by the prosecution",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1d Identification",
+                  "question": "The defendant was correctly identified\nExplain what is in dispute",
+                  "value": "Disputed",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "8.1e Lawful arrest",
+                  "question": "The defendant was arrested lawfully\nExplain what is in dispute",
+                  "value": "Disputed",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "8.1f Interview",
+                  "question": "The defendant’s interview [summary] [record] is accurate",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1g Fingerprints /DNA",
+                  "question": "Fingerprint / DNA evidence4",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1h Scientific evidence",
+                  "question": "[Medical] [identification of drug] [other scientific] prosecution evidence",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1i Alcohol /Drug testing procedure",
+                  "question": "The [alcohol] [drug] testing procedure was carried out correctly",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1j Disqualification / court order (e.g. restraining order)",
+                  "question": "The defendant was [disqualified from driving] [subject to the court order specified] at the time of the offence alleged",
+                  "value": "",
+                  "info": ""
+                },
+                {
+                  "label": "8.1k Continuity",
+                  "question": "Exhibits and samples were collected and delivered as stated by the prosecution (i.e. continuity)",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1l Anticipated defence(s)",
+                  "question": "The defendant is likely to rely upon:",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "",
+                  "question": "If there is any suggestion that the defendant has been a victim of slavery or exploitation, give details including the date of any reference to the national referral mechanism. If any other defence is anticipated, give an outline.",
+                  "value": "Reaonable excuse\nSlavery or exploitation",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "8.2 Admissions",
+              "fields": [
+                {
+                  "label": "",
+                  "question": "Can any facts which are not in dispute be recorded in a written admission? Undisputed facts can be admitted by reference to a statement accepted in paragraph 8.1, e.g. “I admit 8.1(a)and (e).” Facts which are admitted are evidence: CrimPR rule 24.6 & Criminal Justice Act 1967, s.10.",
+                  "value": "Yes, one will be provided now",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem.",
+                  "info2": "Provide a written admission"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part3b",
+          "header": "Part 3: Defendant 1",
+          "value": "John SMITH, 25 June 1989",
+          "subSections": [
+            {
+              "key": "grey",
+              "label": "8.3 Issues",
+              "question": "What are the real issues in this case?",
+              "fields": [
+                {
+                  "label": "",
+                  "question": "(a) Explain what particular facts are in dispute, if any, in addition to those identified in paragraph 8.1?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "",
+                  "question": "(b) Explain what matters of law are in dispute, if any?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.\n"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.4 Points of law",
+              "fields": [
+                {
+                  "question": "Does the defendant presently expect the case to involve a complex, novel or unusual point of law and / or fact? Provide details",
+                  "value": "Yes."
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.5 Defence statement",
+              "fields": [
+                {
+                  "question": "Does the defendant presently intend to give a defence statement?",
+                  "value": "Yes.",
+                  "info2": "Giving a defence statement is voluntary, but if one is given it must include the information collected in paragraphs 8.1 and 8.3 and must include particulars of facts relied on by the defence."
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.6 Display equiment",
+              "fields": [
+                {
+                  "question": "What equipment (live link or other media player, etc.) will the defendant need in the trial courtroom?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar  lorem.",
+                  "info2": "The defendant must make sure that any electronic media can be played in the courtroom."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "9. Applications for directions",
+              "fields": [
+                {
+                  "label": "9.1 Variation of standard directions",
+                  "question": "Does the defendant want the court to vary a standard trial preparation time limit or make any other direction?\nProvide details",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "9.2 Defendant or defence witness requiring assistance, special measures, etc.",
+                  "question": "Are there any defendant or defence witness requirements that may make special measures, reasonable adjustments or other support appropriate? If yes, give details in Part 4.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "9.3 Ground rules for questioning",
+                  "question": "Does the defendant want the court to arrange a discussion of ground rules for questioning?",
+                  "value": "Yes",
+                  "info2": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part4",
+          "header": "Part 4: Witnesses",
+          "label": "10. Prosecution witnesses",
+          "subSections": [
+            {
+              "key": "header1",
+              "value": "If this information changes, you must tell the court at once: CrimPR 1.2, 3.10",
+              "totalEinCLabel": "Total EinC",
+              "totalEinCValue": "1 hour 30 minutes",
+              "totalXExamLabel": "Total x-exam",
+              "totalXExamValue": "0 minutes",
+              "fields": [
+                {
+                  "col2Label": "EinC",
+                  "col2Value": "30m",
+                  "subFieldLabels": [
+                    {
+                      "label": "Name",
+                      "value": "Sofia Mateo"
+                    },
+                    {
+                      "label": "Age if under 18",
+                      "value": "17"
+                    },
+                    {
+                      "label": "Language needs",
+                      "value": "Welsh"
+                    },
+                    {
+                      "label": "Special or other measures needed?",
+                      "value": "Spanish"
+                    }
+                  ],
+                  "subFields": [
+                    {
+                      "label": "Name",
+                      "value": "Sofia Mateo",
+                      "col1Label": "P",
+                      "col1Value": "D1",
+                      "col1Info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                    },
+                    {
+                      "col1Label": "",
+                      "col1Value": "D2",
+                      "col1Info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                    }
+                  ],
+                  "directionsLabel": "Directions for Sofia MATEO",
+                  "directionsValues": [
+                    {
+                      "value": "Witness summons ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "The witness shall be escorted to the courtroom"
+                    },
+                    {
+                      "value": "Spanish interpreter ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "Live link ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "The defendant may not cross-examine Sofia MATEO and the court directs cross examination to be carried out by Christian Hawthorne."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "John SMITH + 1, 25 June 1989",
+      "title": "Preparation for effective trial",
+      "name": "Joseph Stallion, 22 May 1954, created on 22 December 10:45 2022",
+      "sections": [
+        {
+          "key": "form",
+          "header": "Preparation for effective trial",
+          "label": "Criminal Procedure Rules Parts 1 & 3",
+          "courtPlace": "Liverpool Magistrates’ Court",
+          "subSections": [
+            {
+              "key": "formData",
+              "heading": "This form:",
+              "fields": [
+                {
+                  "label": "",
+                  "value": "collects information about the case that the court will need to arrange for an effective trial",
+                  "subValue": "CrimPR rules 3.2 and 3.3\nCrimPR rule 3.5\nCrimPR 1.2(1) & 3.12"
+                },
+                {
+                  "label": "",
+                  "value": "records the court’s directions"
+                }
+              ]
+            },
+            {
+              "key": "formData",
+              "heading": "After the court gives directions for trial, you must tell the court at once if:",
+              "fields": [
+                {
+                  "label": "",
+                  "value": "information about the case changes, or,"
+                },
+                {
+                  "label": "",
+                  "value": "you think another direction is needed"
+                }
+              ]
+            },
+            {
+              "key": "CCD",
+              "heading": "Court contact details",
+              "fields": [
+                {
+                  "label": "ccd",
+                  "value": "Liverpool Magistrates’ Court\nDerby Square\nLiverpool\nL2 1XA",
+                  "subValue": "Email: me-customersupportliverpool@justice.gov.uk\nPhone: 0151 473 7373"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            }
+          ]
+        },
+        {
+          "key": "part1",
+          "header": "Part 1",
+          "label": "Prosecuting authority",
+          "value": "CPS",
+          "subSections": [
+            {
+              "key": "header1",
+              "name": "John SMITH",
+              "fields": [
+                {
+                  "label": "Date of birth",
+                  "value": "25 June 1989"
+                },
+                {
+                  "label": "Age",
+                  "value": "21 years"
+                },
+                {
+                  "label": "Interpreter required",
+                  "value": "Yes, Spanish"
+                },
+                {
+                  "label": "Proceedings initiated by",
+                  "value": "Charge"
+                },
+                {
+                  "label": "Offences",
+                  "value": "Aid abet the driving of a motor vehicle with a proportion of a specified controlled drug above the specified limit\nRacially / religiously aggravated harassment with fear of violence"
+                },
+                {
+                  "label": "Defendant’s representative",
+                  "value": "Chris Elisasson\n25 King St, Farnborough, GU53 7GH\n0208 675 2726"
+                },
+                {
+                  "label": "Funding",
+                  "value": "Legal aid granted"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "name": "Sam SMITHSSON",
+              "fields": [
+                {
+                  "label": "Date of birth and age",
+                  "value": "25 June 1989, 21 years"
+                },
+                {
+                  "label": "Interpreter required",
+                  "value": "Yes, Spanish"
+                },
+                {
+                  "label": "Proceedings initiated by",
+                  "value": "Charge"
+                },
+                {
+                  "label": "Offences",
+                  "value": "Aid abet the driving of a motor vehicle with a proportion of a specified controlled drug above the specified limit\nRacially / religiously aggravated harassment with fear of violence"
+                },
+                {
+                  "label": "Defendant’s representative",
+                  "value": "Chris Elisasson\n25 King St, Farnborough, GU53 7GH\n0208 675 2726"
+                },
+                {
+                  "label": "Funding",
+                  "value": "Legal aid granted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part2",
+          "header": "Part 2: Prosecutor",
+          "subSections": [
+            {
+              "key": "header1",
+              "value": "4. Case management",
+              "fields": [
+                {
+                  "label": "4.1 Evidence",
+                  "question": "Does the prosecutor intend to serve more evidence?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "4.2 Disclosure of unused prosecution material",
+                  "question": "Has the initial duty of disclosure of unused prosecution material been complied with?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "4.3 Investigation",
+                  "question": "Are there any pending enquiries or lines of investigation?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit."
+                },
+                {
+                  "label": "4.4 Modern Slavery Act",
+                  "question": "Is there any suggestion that the defendant has been a victim of slavery or exploitation?",
+                  "value": "No"
+                },
+                {
+                  "label": "4.5 Prosecution case",
+                  "question": "The prosecution will rely on:",
+                  "value": "Defendant’s admissions in interview\nA record of the defendant’s interview\nElectronically recorded evidence"
+                },
+                {
+                  "label": "4.6 Display equipment",
+                  "question": "Will the prosecutor need any equipment in the trial courtroom? (e.g. live link or other media player, etc.)",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "info": "The prosecutor must make sure that any electronic media can be played in the courtroom."
+                },
+                {
+                  "label": "4.7 Points of law",
+                  "question": "Does the prosecutor presently expect the case to involve a complex, novel or unusual point of law and/or fact?",
+                  "value": "Yes"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "value": "5. Applications for directions",
+              "fields": [
+                {
+                  "label": "5.1 Prosecution witness requiring assistance, special measures, etc.",
+                  "question": "Are there any prosecution witness requirements that may make special measures, reasonable adjustments or other support appropriate?",
+                  "value": "Yes"
+                },
+                {
+                  "label": "5.2 Ground rules for questioning",
+                  "question": "Does the prosecutor want the court to arrange a discussion of ground rules for questioning?",
+                  "value": "Yes",
+                  "info": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases."
+                },
+                {
+                  "label": "5.3 Variation of standard directions",
+                  "question": "Does the prosecutor want the court to vary a standard trial preparation time limit or make any other direction?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part3",
+          "header": "Part 3: Defendant 1",
+          "value": "John SMITH, 25 June 1989",
+          "subSections": [
+            {
+              "key": "header1",
+              "label": "6 Advice on plea and absence",
+              "value": "Credit for guilty plea; trial in absence",
+              "fields": [
+                {
+                  "label": "6a. Does the defendant understand that: they will receive credit for a guilty plea?",
+                  "question": "",
+                  "value": "Yes",
+                  "info2": "A guilty plea may affect the sentence and any order for costs and other financial penalties / charges"
+                },
+                {
+                  "label": "6b. Does the defendant understand that the trial and sentencing, if convicted, can go ahead even if they do not attend?",
+                  "question": "",
+                  "value": "Yes",
+                  "info": "CrimPR rule 24.12"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "7. Partial or different guilty plea",
+              "fields": [
+                {
+                  "label": "7.1 Mixed pleas",
+                  "question": "If more than one offence is alleged, does the defendant want to plead guilty to any of them?\nWhich offences does the defendant want to plead guilty to?",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "7.2 Basis of plea",
+                  "question": "Does the defendant want to plead guilty, but not on the facts alleged? Provide details of the facts on which the defendant wants to plead guilty.",
+                  "value": "No",
+                  "info": "Not applicable"
+                },
+                {
+                  "label": "7.3 Different offence",
+                  "question": "Does the defendant want to plead guilty, but to a different offence?\nWhat offence does the defendant want to plead guilty to?",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "8. Case management information",
+              "value": "Initial details of the prosecution case should have been served: CrimPR rule 8.2. Questions 8.1, 8.2, 8.3 and 8.4 are to help the court find out what is in dispute and give appropriate directions for trial.",
+              "fields": [
+                {
+                  "label": "8.1a Presence",
+                  "question": "The defendant was present at the scene of the offence alleged",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1b Involvement",
+                  "question": "The defendant [[carried out] [took part in] the conduct alleged] [drove the vehicle involved]",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1c Injury / loss / damage",
+                  "question": "[Nature of injury] [extent of loss or damage] alleged by the prosecution",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1d Identification",
+                  "question": "The defendant was correctly identified\nExplain what is in dispute",
+                  "value": "Disputed",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "8.1e Lawful arrest",
+                  "question": "The defendant was arrested lawfully\nExplain what is in dispute",
+                  "value": "Disputed",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "8.1f Interview",
+                  "question": "The defendant’s interview [summary] [record] is accurate",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1g Fingerprints /DNA",
+                  "question": "Fingerprint / DNA evidence4",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1h Scientific evidence",
+                  "question": "[Medical] [identification of drug] [other scientific] prosecution evidence",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1i Alcohol /Drug testing procedure",
+                  "question": "The [alcohol] [drug] testing procedure was carried out correctly",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1j Disqualification / court order (e.g. restraining order)",
+                  "question": "The defendant was [disqualified from driving] [subject to the court order specified] at the time of the offence alleged",
+                  "value": "",
+                  "info": ""
+                },
+                {
+                  "label": "8.1k Continuity",
+                  "question": "Exhibits and samples were collected and delivered as stated by the prosecution (i.e. continuity)",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1l Anticipated defence(s)",
+                  "question": "The defendant is likely to rely upon:",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "",
+                  "question": "If there is any suggestion that the defendant has been a victim of slavery or exploitation, give details including the date of any reference to the national referral mechanism. If any other defence is anticipated, give an outline.",
+                  "value": "Reaonable excuse\nSlavery or exploitation",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "8.2 Admissions",
+              "fields": [
+                {
+                  "label": "",
+                  "question": "Can any facts which are not in dispute be recorded in a written admission? Undisputed facts can be admitted by reference to a statement accepted in paragraph 8.1, e.g. “I admit 8.1(a)and (e).” Facts which are admitted are evidence: CrimPR rule 24.6 & Criminal Justice Act 1967, s.10.",
+                  "value": "Yes, one will be provided now",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem.",
+                  "info2": "Provide a written admission"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part3b",
+          "header": "Part 3: Defendant 1",
+          "value": "John SMITH, 25 June 1989",
+          "subSections": [
+            {
+              "key": "grey",
+              "label": "8.3 Issues",
+              "question": "What are the real issues in this case?",
+              "fields": [
+                {
+                  "label": "",
+                  "question": "(a) Explain what particular facts are in dispute, if any, in addition to those identified in paragraph 8.1?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "",
+                  "question": "(b) Explain what matters of law are in dispute, if any?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.\n"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.4 Points of law",
+              "fields": [
+                {
+                  "question": "Does the defendant presently expect the case to involve a complex, novel or unusual point of law and / or fact? Provide details",
+                  "value": "Yes."
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.5 Defence statement",
+              "fields": [
+                {
+                  "question": "Does the defendant presently intend to give a defence statement?",
+                  "value": "Yes.",
+                  "info2": "Giving a defence statement is voluntary, but if one is given it must include the information collected in paragraphs 8.1 and 8.3 and must include particulars of facts relied on by the defence."
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.6 Display equiment",
+              "fields": [
+                {
+                  "question": "What equipment (live link or other media player, etc.) will the defendant need in the trial courtroom?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar  lorem.",
+                  "info2": "The defendant must make sure that any electronic media can be played in the courtroom."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "9. Applications for directions",
+              "fields": [
+                {
+                  "label": "9.1 Variation of standard directions",
+                  "question": "Does the defendant want the court to vary a standard trial preparation time limit or make any other direction?\nProvide details",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "9.2 Defendant or defence witness requiring assistance, special measures, etc.",
+                  "question": "Are there any defendant or defence witness requirements that may make special measures, reasonable adjustments or other support appropriate? If yes, give details in Part 4.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "9.3 Ground rules for questioning",
+                  "question": "Does the defendant want the court to arrange a discussion of ground rules for questioning?",
+                  "value": "Yes",
+                  "info2": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part4",
+          "header": "Part 4: Witnesses",
+          "label": "10. Prosecution witnesses",
+          "subSections": [
+            {
+              "key": "header1",
+              "value": "If this information changes, you must tell the court at once: CrimPR 1.2, 3.10",
+              "totalEinCLabel": "Total EinC",
+              "totalEinCValue": "1 hour 30 minutes",
+              "totalXExamLabel": "Total x-exam",
+              "totalXExamValue": "0 minutes",
+              "fields": [
+                {
+                  "col2Label": "EinC",
+                  "col2Value": "30m",
+                  "subFieldLabels": [
+                    {
+                      "label": "Name",
+                      "value": "Sofia Mateo"
+                    },
+                    {
+                      "label": "Age if under 18",
+                      "value": "17"
+                    },
+                    {
+                      "label": "Language needs",
+                      "value": "Welsh"
+                    },
+                    {
+                      "label": "Special or other measures needed?",
+                      "value": "Spanish"
+                    }
+                  ],
+                  "subFields": [
+                    {
+                      "label": "Name",
+                      "value": "Sofia Mateo",
+                      "col1Label": "P",
+                      "col1Value": "D1",
+                      "col1Info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                    },
+                    {
+                      "col1Label": "",
+                      "col1Value": "D2",
+                      "col1Info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                    }
+                  ],
+                  "directionsLabel": "Directions for Sofia MATEO",
+                  "directionsValues": [
+                    {
+                      "value": "Witness summons ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "The witness shall be escorted to the courtroom"
+                    },
+                    {
+                      "value": "Spanish interpreter ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "Live link ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "The defendant may not cross-examine Sofia MATEO and the court directs cross examination to be carried out by Christian Hawthorne."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Kris kidman, 14 June 1981 + 1",
+      "title": "Preparation for effective trial",
+      "name": "Kris kidman, 14 June 1981, created on 22 December 10:45 2022",
+      "sections": [
+        {
+          "key": "form",
+          "header": "Preparation for effective trial",
+          "label": "Criminal Procedure Rules Parts 1 & 3",
+          "courtPlace": "Liverpool Magistrates’ Court",
+          "subSections": [
+            {
+              "key": "formData",
+              "heading": "This form:",
+              "fields": [
+                {
+                  "label": "",
+                  "value": "collects information about the case that the court will need to arrange for an effective trial",
+                  "subValue": "CrimPR rules 3.2 and 3.3\nCrimPR rule 3.5\nCrimPR 1.2(1) & 3.12"
+                },
+                {
+                  "label": "",
+                  "value": "records the court’s directions"
+                }
+              ]
+            },
+            {
+              "key": "formData",
+              "heading": "After the court gives directions for trial, you must tell the court at once if:",
+              "fields": [
+                {
+                  "label": "",
+                  "value": "information about the case changes, or,"
+                },
+                {
+                  "label": "",
+                  "value": "you think another direction is needed"
+                }
+              ]
+            },
+            {
+              "key": "CCD",
+              "heading": "Court contact details",
+              "fields": [
+                {
+                  "label": "ccd",
+                  "value": "Liverpool Magistrates’ Court\nDerby Square\nLiverpool\nL2 1XA",
+                  "subValue": "Email: me-customersupportliverpool@justice.gov.uk\nPhone: 0151 473 7373"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            }
+          ]
+        },
+        {
+          "key": "part1",
+          "header": "Part 1",
+          "label": "Prosecuting authority",
+          "value": "CPS",
+          "subSections": [
+            {
+              "key": "header1",
+              "name": "John SMITH",
+              "fields": [
+                {
+                  "label": "Date of birth",
+                  "value": "25 June 1989"
+                },
+                {
+                  "label": "Age",
+                  "value": "21 years"
+                },
+                {
+                  "label": "Interpreter required",
+                  "value": "Yes, Spanish"
+                },
+                {
+                  "label": "Proceedings initiated by",
+                  "value": "Charge"
+                },
+                {
+                  "label": "Offences",
+                  "value": "Aid abet the driving of a motor vehicle with a proportion of a specified controlled drug above the specified limit\nRacially / religiously aggravated harassment with fear of violence"
+                },
+                {
+                  "label": "Defendant’s representative",
+                  "value": "Chris Elisasson\n25 King St, Farnborough, GU53 7GH\n0208 675 2726"
+                },
+                {
+                  "label": "Funding",
+                  "value": "Legal aid granted"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "name": "Sam SMITHSSON",
+              "fields": [
+                {
+                  "label": "Date of birth and age",
+                  "value": "25 June 1989, 21 years"
+                },
+                {
+                  "label": "Interpreter required",
+                  "value": "Yes, Spanish"
+                },
+                {
+                  "label": "Proceedings initiated by",
+                  "value": "Charge"
+                },
+                {
+                  "label": "Offences",
+                  "value": "Aid abet the driving of a motor vehicle with a proportion of a specified controlled drug above the specified limit\nRacially / religiously aggravated harassment with fear of violence"
+                },
+                {
+                  "label": "Defendant’s representative",
+                  "value": "Chris Elisasson\n25 King St, Farnborough, GU53 7GH\n0208 675 2726"
+                },
+                {
+                  "label": "Funding",
+                  "value": "Legal aid granted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part2",
+          "header": "Part 2: Prosecutor",
+          "subSections": [
+            {
+              "key": "header1",
+              "value": "4. Case management",
+              "fields": [
+                {
+                  "label": "4.1 Evidence",
+                  "question": "Does the prosecutor intend to serve more evidence?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "4.2 Disclosure of unused prosecution material",
+                  "question": "Has the initial duty of disclosure of unused prosecution material been complied with?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                },
+                {
+                  "label": "4.3 Investigation",
+                  "question": "Are there any pending enquiries or lines of investigation?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit."
+                },
+                {
+                  "label": "4.4 Modern Slavery Act",
+                  "question": "Is there any suggestion that the defendant has been a victim of slavery or exploitation?",
+                  "value": "No"
+                },
+                {
+                  "label": "4.5 Prosecution case",
+                  "question": "The prosecution will rely on:",
+                  "value": "Defendant’s admissions in interview\nA record of the defendant’s interview\nElectronically recorded evidence"
+                },
+                {
+                  "label": "4.6 Display equipment",
+                  "question": "Will the prosecutor need any equipment in the trial courtroom? (e.g. live link or other media player, etc.)",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.",
+                  "info": "The prosecutor must make sure that any electronic media can be played in the courtroom."
+                },
+                {
+                  "label": "4.7 Points of law",
+                  "question": "Does the prosecutor presently expect the case to involve a complex, novel or unusual point of law and/or fact?",
+                  "value": "Yes"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "value": "5. Applications for directions",
+              "fields": [
+                {
+                  "label": "5.1 Prosecution witness requiring assistance, special measures, etc.",
+                  "question": "Are there any prosecution witness requirements that may make special measures, reasonable adjustments or other support appropriate?",
+                  "value": "Yes"
+                },
+                {
+                  "label": "5.2 Ground rules for questioning",
+                  "question": "Does the prosecutor want the court to arrange a discussion of ground rules for questioning?",
+                  "value": "Yes",
+                  "info": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases."
+                },
+                {
+                  "label": "5.3 Variation of standard directions",
+                  "question": "Does the prosecutor want the court to vary a standard trial preparation time limit or make any other direction?",
+                  "value": "Yes\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part3",
+          "header": "Part 3: Defendant 1",
+          "value": "John SMITH, 25 June 1989",
+          "subSections": [
+            {
+              "key": "header1",
+              "label": "6 Advice on plea and absence",
+              "value": "Credit for guilty plea; trial in absence",
+              "fields": [
+                {
+                  "label": "6a. Does the defendant understand that: they will receive credit for a guilty plea?",
+                  "question": "",
+                  "value": "Yes",
+                  "info2": "A guilty plea may affect the sentence and any order for costs and other financial penalties / charges"
+                },
+                {
+                  "label": "6b. Does the defendant understand that the trial and sentencing, if convicted, can go ahead even if they do not attend?",
+                  "question": "",
+                  "value": "Yes",
+                  "info": "CrimPR rule 24.12"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "7. Partial or different guilty plea",
+              "fields": [
+                {
+                  "label": "7.1 Mixed pleas",
+                  "question": "If more than one offence is alleged, does the defendant want to plead guilty to any of them?\nWhich offences does the defendant want to plead guilty to?",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "7.2 Basis of plea",
+                  "question": "Does the defendant want to plead guilty, but not on the facts alleged? Provide details of the facts on which the defendant wants to plead guilty.",
+                  "value": "No",
+                  "info": "Not applicable"
+                },
+                {
+                  "label": "7.3 Different offence",
+                  "question": "Does the defendant want to plead guilty, but to a different offence?\nWhat offence does the defendant want to plead guilty to?",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "8. Case management information",
+              "value": "Initial details of the prosecution case should have been served: CrimPR rule 8.2. Questions 8.1, 8.2, 8.3 and 8.4 are to help the court find out what is in dispute and give appropriate directions for trial.",
+              "fields": [
+                {
+                  "label": "8.1a Presence",
+                  "question": "The defendant was present at the scene of the offence alleged",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1b Involvement",
+                  "question": "The defendant [[carried out] [took part in] the conduct alleged] [drove the vehicle involved]",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1c Injury / loss / damage",
+                  "question": "[Nature of injury] [extent of loss or damage] alleged by the prosecution",
+                  "value": "Not disputed"
+                },
+                {
+                  "label": "8.1d Identification",
+                  "question": "The defendant was correctly identified\nExplain what is in dispute",
+                  "value": "Disputed",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "8.1e Lawful arrest",
+                  "question": "The defendant was arrested lawfully\nExplain what is in dispute",
+                  "value": "Disputed",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "8.1f Interview",
+                  "question": "The defendant’s interview [summary] [record] is accurate",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1g Fingerprints /DNA",
+                  "question": "Fingerprint / DNA evidence4",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1h Scientific evidence",
+                  "question": "[Medical] [identification of drug] [other scientific] prosecution evidence",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1i Alcohol /Drug testing procedure",
+                  "question": "The [alcohol] [drug] testing procedure was carried out correctly",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1j Disqualification / court order (e.g. restraining order)",
+                  "question": "The defendant was [disqualified from driving] [subject to the court order specified] at the time of the offence alleged",
+                  "value": "",
+                  "info": ""
+                },
+                {
+                  "label": "8.1k Continuity",
+                  "question": "Exhibits and samples were collected and delivered as stated by the prosecution (i.e. continuity)",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "8.1l Anticipated defence(s)",
+                  "question": "The defendant is likely to rely upon:",
+                  "value": "Not disputed",
+                  "info": ""
+                },
+                {
+                  "label": "",
+                  "question": "If there is any suggestion that the defendant has been a victim of slavery or exploitation, give details including the date of any reference to the national referral mechanism. If any other defence is anticipated, give an outline.",
+                  "value": "Reaonable excuse\nSlavery or exploitation",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "8.2 Admissions",
+              "fields": [
+                {
+                  "label": "",
+                  "question": "Can any facts which are not in dispute be recorded in a written admission? Undisputed facts can be admitted by reference to a statement accepted in paragraph 8.1, e.g. “I admit 8.1(a)and (e).” Facts which are admitted are evidence: CrimPR rule 24.6 & Criminal Justice Act 1967, s.10.",
+                  "value": "Yes, one will be provided now",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem.",
+                  "info2": "Provide a written admission"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part3b",
+          "header": "Part 3: Defendant 1",
+          "value": "John SMITH, 25 June 1989",
+          "subSections": [
+            {
+              "key": "grey",
+              "label": "8.3 Issues",
+              "question": "What are the real issues in this case?",
+              "fields": [
+                {
+                  "label": "",
+                  "question": "(a) Explain what particular facts are in dispute, if any, in addition to those identified in paragraph 8.1?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at."
+                },
+                {
+                  "label": "",
+                  "question": "(b) Explain what matters of law are in dispute, if any?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet. Quisque vulputate lorem dolor, eu porta dui varius at.\n"
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.4 Points of law",
+              "fields": [
+                {
+                  "question": "Does the defendant presently expect the case to involve a complex, novel or unusual point of law and / or fact? Provide details",
+                  "value": "Yes."
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.5 Defence statement",
+              "fields": [
+                {
+                  "question": "Does the defendant presently intend to give a defence statement?",
+                  "value": "Yes.",
+                  "info2": "Giving a defence statement is voluntary, but if one is given it must include the information collected in paragraphs 8.1 and 8.3 and must include particulars of facts relied on by the defence."
+                }
+              ]
+            },
+            {
+              "key": "",
+              "label": "8.6 Display equiment",
+              "fields": [
+                {
+                  "question": "What equipment (live link or other media player, etc.) will the defendant need in the trial courtroom?",
+                  "value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar  lorem.",
+                  "info2": "The defendant must make sure that any electronic media can be played in the courtroom."
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "label": "9. Applications for directions",
+              "fields": [
+                {
+                  "label": "9.1 Variation of standard directions",
+                  "question": "Does the defendant want the court to vary a standard trial preparation time limit or make any other direction?\nProvide details",
+                  "value": "Yes",
+                  "info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem."
+                },
+                {
+                  "label": "9.2 Defendant or defence witness requiring assistance, special measures, etc.",
+                  "question": "Are there any defendant or defence witness requirements that may make special measures, reasonable adjustments or other support appropriate? If yes, give details in Part 4.",
+                  "value": "Yes"
+                },
+                {
+                  "label": "9.3 Ground rules for questioning",
+                  "question": "Does the defendant want the court to arrange a discussion of ground rules for questioning?",
+                  "value": "Yes",
+                  "info2": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "part4",
+          "header": "Part 4: Witnesses",
+          "label": "10. Prosecution witnesses",
+          "subSections": [
+            {
+              "key": "header1",
+              "value": "If this information changes, you must tell the court at once: CrimPR 1.2, 3.10",
+              "totalEinCLabel": "Total EinC",
+              "totalEinCValue": "1 hour 30 minutes",
+              "totalXExamLabel": "Total x-exam",
+              "totalXExamValue": "0 minutes",
+              "fields": [
+                {
+                  "col2Label": "EinC",
+                  "col2Value": "30m",
+                  "subFieldLabels": [
+                    {
+                      "label": "Name",
+                      "value": "Sofia Mateo"
+                    },
+                    {
+                      "label": "Age if under 18",
+                      "value": "17"
+                    },
+                    {
+                      "label": "Language needs",
+                      "value": "Welsh"
+                    },
+                    {
+                      "label": "Special or other measures needed?",
+                      "value": "Spanish"
+                    }
+                  ],
+                  "subFields": [
+                    {
+                      "label": "Name",
+                      "value": "Sofia Mateo",
+                      "col1Label": "P",
+                      "col1Value": "D1",
+                      "col1Info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                    },
+                    {
+                      "col1Label": "",
+                      "col1Value": "D2",
+                      "col1Info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sit amet pulvinar lorem. Duis ultrices varius erat at aliquet."
+                    }
+                  ],
+                  "directionsLabel": "Directions for Sofia MATEO",
+                  "directionsValues": [
+                    {
+                      "value": "Witness summons ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "The witness shall be escorted to the courtroom"
+                    },
+                    {
+                      "value": "Spanish interpreter ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "Live link ordered for Sofia MATEO"
+                    },
+                    {
+                      "value": "The defendant may not cross-examine Sofia MATEO and the court directs cross examination to be carried out by Christian Hawthorne."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <set-backend-service base-url= {{laa-outbound-caseoutcome-endpoint}} />
+        <send-request mode="new" response-variable-name="clientIdResponse" timeout="20" ignore-error="false">
+            <set-url>{{laa-outbound-client-id}}</set-url>
+            <set-method>GET</set-method>
+            <authentication-managed-identity resource="https://vault.azure.net" />
+        </send-request>
+        <send-request mode="new" response-variable-name="clientSecretResponse" timeout="20" ignore-error="false">
+            <set-url>{{laa-outbound-client-secret}}</set-url>
+            <set-method>GET</set-method>
+            <authentication-managed-identity resource="https://vault.azure.net" />
+        </send-request>
+        <set-variable name="client_id" value="@{
+           var secret = ((IResponse)context.Variables["clientIdResponse"]).Body.As<JObject>();
+           return secret["value"].ToString();
+        }" />
+        <set-variable name="client_secret" value="@{
+           var secret = ((IResponse)context.Variables["clientSecretResponse"]).Body.As<JObject>();
+           return secret["value"].ToString();
+        }" />
+        <send-request mode="new" response-variable-name="response_body" timeout="20" ignore-error="true">
+            <set-url>https://laa-court-data-adaptor-uat.apps.live-1.cloud-platform.service.justice.gov.uk/oauth/token</set-url>
+            <set-method>POST</set-method>
+            <set-header name="Content-Type" exists-action="override">
+                <value>application/json</value>
+            </set-header>
+            <set-body>@{return new JObject(
+                new JProperty("grant_type","client_credentials"),
+                new JProperty("client_id", (string)context.Variables["client_id"]),
+                new JProperty("client_secret", (string)context.Variables["client_secret"])
+                ).ToString();}</set-body>
+        </send-request>
+        <base />
+        <set-variable name="bearer_token" value="@((String)((IResponse)context.Variables["response_body"]).Body.As<JObject>()["access_token"])" />
+        <set-header name="Authorization" exists-action="append">
+            <value>@("Bearer " + ((string)context.Variables["bearer_token"]))</value>
+        </set-header>
+        <set-header name="Content-Type" exists-action="override">
+            <value>application/x-www-form-urlencoded</value>
+        </set-header>
+        <authentication-certificate thumbprint="D98F310E09EAA5108D841FF4A5F654A7ECA82737" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>

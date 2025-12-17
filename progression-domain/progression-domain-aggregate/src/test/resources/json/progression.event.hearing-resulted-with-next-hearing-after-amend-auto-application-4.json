@@ -1,0 +1,2040 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "courtHearingLocation": "B01LY01",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2024-08-19"
+          }
+        ],
+        "defendantId": "d9d2073d-c52d-4abd-8f7b-ac7e82b6afd7"
+      },
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2024-08-19"
+          }
+        ],
+        "defendantId": "b92bce89-106f-40d3-8749-f9d86df61a32"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2024-08-19T09:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "HEARING_ID",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2024-08-19T16:12:29.004Z",
+            "id": "d9d2073d-c52d-4abd-8f7b-ac7e82b6afd7",
+            "isYouth": false,
+            "masterDefendantId": "d9d2073d-c52d-4abd-8f7b-ac7e82b6afd7",
+            "offences": [
+              {
+                "arrestDate": "2024-08-04",
+                "chargeDate": "2024-08-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "d1c22396-468b-42ee-a6b7-7df78d8bd650",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-20",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": true,
+                    "category": "FINAL",
+                    "cjsCode": "1116",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "durationEndDate": "31/08/2025"
+                    },
+                    "dvlaCode": "M",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c056a08a-4b75-48cd-a6e3-c20cda9417ba",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "bc256fd1-dedd-43ab-8882-f9fbb448a62d",
+                        "label": "First review date",
+                        "promptReference": "firstReviewDate",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "25/11/2024",
+                        "welshLabel": "Dyddiad yr adolygiad cyntaf",
+                        "welshValue": "25/11/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 200,
+                        "type": "TIME",
+                        "usergroups": [
+
+                        ],
+                        "value": "10:30",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:30"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Crown Court",
+                        "welshValue": "Croydon Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Altyre Road",
+                        "welshValue": "Altyre Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "CR9 5AB",
+                        "welshValue": "CR9 5AB"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 1",
+                        "promptReference": "hCHOUSEEmailAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "London.crowncourt@cps.gov.uk",
+                        "welshValue": "London.crowncourt@cps.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 2",
+                        "promptReference": "hCHOUSEEmailAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "PECSCroydonCombined@serco.com",
+                        "welshValue": "PECSCroydonCombined@serco.com"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "978001b1-47d5-4cda-a1b6-b6c3a2e4975d",
+                        "label": "Review frequency",
+                        "promptReference": "reviewFrequency",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Quarterly",
+                        "welshLabel": "Amlder yr adolygiadau",
+                        "welshValue": "Quarterly"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isDurationEndDate": true,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                        "label": "End Date",
+                        "promptReference": "endDate",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "31/08/2025",
+                        "welshLabel": "Dyddiad terfyn",
+                        "welshValue": "31/08/2025"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                        "label": "Responsible officer",
+                        "promptReference": "responsibleOfficer",
+                        "promptSequence": 200,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "a probation officer",
+                        "welshLabel": "Swyddog cyfrifol",
+                        "welshValue": "swyddog prawf"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                        "label": "Supervising Court",
+                        "promptReference": "supervisingCourt",
+                        "promptSequence": 300,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Magistrates' Court",
+                        "welshLabel": "Llys sy’n Goruchwylio",
+                        "welshValue": "Croydon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "South East and Eastern Division NPS",
+                        "welshValue": "South East and Eastern Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "seenps.court@justice.gov.uk",
+                        "welshValue": "seenps.court@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "bc256fd1-dedd-43ab-8882-f9fbb448a62d",
+                        "label": "First review date",
+                        "promptReference": "firstReviewDate",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "20/09/2024",
+                        "welshLabel": "Dyddiad yr adolygiad cyntaf",
+                        "welshValue": "20/09/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 200,
+                        "type": "TIME",
+                        "usergroups": [
+
+                        ],
+                        "value": "10:30",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:30"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Magistrates' Court",
+                        "welshValue": "Croydon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Magistrates' Court",
+                        "welshValue": "The Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Barclay Road",
+                        "welshValue": "Barclay Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "CR9 3NG",
+                        "welshValue": "CR9 3NG"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 1",
+                        "promptReference": "hCHOUSEEmailAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "London.magistrates@cps.gov.uk",
+                        "welshValue": "London.magistrates@cps.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 2",
+                        "promptReference": "hCHOUSEEmailAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "PECSCroydonMags@serco.com",
+                        "welshValue": "PECSCroydonMags@serco.com"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "978001b1-47d5-4cda-a1b6-b6c3a2e4975d",
+                        "label": "Review frequency",
+                        "promptReference": "reviewFrequency",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Monthly",
+                        "welshLabel": "Amlder yr adolygiadau",
+                        "welshValue": "Monthly"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f092fe58-2297-4d10-818a-8b303692ac39",
+                        "label": "Under direction of",
+                        "promptReference": "underDirectionOf",
+                        "promptSequence": 100,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Surrey Mags Court",
+                        "welshLabel": "Dan arweiniad",
+                        "welshValue": "Surrey Mags Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "0b74fb53-acb7-42db-b9b6-976ce74b59b5",
+                        "label": "Treatment place",
+                        "promptReference": "treatmentPlace",
+                        "promptSequence": 200,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Surrey Rehab Centre",
+                        "welshLabel": "Lleoliad y driniaeth",
+                        "welshValue": "Surrey Rehab Centre"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "10028ef8-efc7-4a40-9703-1e121a6fbc84",
+                        "label": "Period to provide samples",
+                        "promptReference": "periodToProvideSamples",
+                        "promptSequence": 300,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "3 Months",
+                        "welshLabel": "Cyfnod i ddarparu samplau",
+                        "welshValue": "3 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "label": "Community order England / Wales",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or to return the plea form sent with the summons",
+                      "applicationTypeCode": "SE20508",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "The Law Courts",
+                          "address2": "Altyre Road",
+                          "address3": "Croydon",
+                          "postcode": "CR9 5AB"
+                        },
+                        "code": "C01CY00",
+                        "courtHearingLocation": "C01CY00",
+                        "id": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+                        "name": "Croydon Crown Court",
+                        "psaCode": 2576,
+                        "roomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Y Goron Croydon"
+                      },
+                      "endDate": "2025-08-31",
+                      "estimatedMinutes": 10,
+                      "isFirstReviewHearing": true,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2024-11-25T10:30:00.000Z",
+                      "orderName": "Community order England / Wales",
+                      "probationTeamAddress": "",
+                      "probationTeamName": "South East and Eastern Division NPS",
+                      "type": {
+                        "description": "Review",
+                        "id": "bd4dab38-ea91-434b-8e73-e0d50ef0cbdf"
+                      }
+                    },
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 64000,
+                    "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 31/08/2025. This order to be reviewed Quarterly. First review on 25/11/2024 at 10:30 at Croydon Crown Court, Courtroom 01.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "c056a08a-4b75-48cd-a6e3-c20cda9417ba",
+                    "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ]
+                  },
+                  {
+                    "alwaysPublished": true,
+                    "amendmentDate": "2024-08-20",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "cjsCode": "3109",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "1cefe894-8a40-4cac-9791-4ac92121c729",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "bc256fd1-dedd-43ab-8882-f9fbb448a62d",
+                        "label": "First review date",
+                        "promptReference": "firstReviewDate",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "20/09/2024",
+                        "welshLabel": "Dyddiad yr adolygiad cyntaf",
+                        "welshValue": "20/09/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 200,
+                        "type": "TIME",
+                        "usergroups": [
+
+                        ],
+                        "value": "10:30",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:30"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Magistrates' Court",
+                        "welshValue": "Croydon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Magistrates' Court",
+                        "welshValue": "The Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Barclay Road",
+                        "welshValue": "Barclay Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "CR9 3NG",
+                        "welshValue": "CR9 3NG"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 1",
+                        "promptReference": "hCHOUSEEmailAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "London.magistrates@cps.gov.uk",
+                        "welshValue": "London.magistrates@cps.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 2",
+                        "promptReference": "hCHOUSEEmailAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "PECSCroydonMags@serco.com",
+                        "welshValue": "PECSCroydonMags@serco.com"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "978001b1-47d5-4cda-a1b6-b6c3a2e4975d",
+                        "label": "Review frequency",
+                        "promptReference": "reviewFrequency",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Monthly",
+                        "welshLabel": "Amlder yr adolygiadau",
+                        "welshValue": "Monthly"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f092fe58-2297-4d10-818a-8b303692ac39",
+                        "label": "Under direction of",
+                        "promptReference": "underDirectionOf",
+                        "promptSequence": 100,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Surrey Mags Court",
+                        "welshLabel": "Dan arweiniad",
+                        "welshValue": "Surrey Mags Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "0b74fb53-acb7-42db-b9b6-976ce74b59b5",
+                        "label": "Treatment place",
+                        "promptReference": "treatmentPlace",
+                        "promptSequence": 200,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Surrey Rehab Centre",
+                        "welshLabel": "Lleoliad y driniaeth",
+                        "welshValue": "Surrey Rehab Centre"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "10028ef8-efc7-4a40-9703-1e121a6fbc84",
+                        "label": "Period to provide samples",
+                        "promptReference": "periodToProvideSamples",
+                        "promptSequence": 300,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "3 Months",
+                        "welshLabel": "Cyfnod i ddarparu samplau",
+                        "welshValue": "3 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "61ea03c9-c113-446b-a392-402144fcd9e8",
+                    "label": "Drug rehabilitation residential with review",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or to return the plea form sent with the summons",
+                      "applicationTypeCode": "SE20510",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "The Magistrates' Court",
+                          "address2": "Barclay Road",
+                          "address3": "Croydon",
+                          "postcode": "CR9 3NG"
+                        },
+                        "code": "B01EF00",
+                        "courtHearingLocation": "B01EF01",
+                        "id": "31b3d313-7a7c-4598-bb4b-c1bff9b00e26",
+                        "name": "Croydon Magistrates' Court",
+                        "psaCode": 2576,
+                        "roomId": "bfb67c13-789c-373b-b442-52b82faf863e",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Ynadon Croydon"
+                      },
+                      "endDate": "2025-08-31",
+                      "estimatedMinutes": 10,
+                      "isFirstReviewHearing": true,
+                      "jurisdictionType": "MAGISTRATES",
+                      "listedStartDateTime": "2024-09-20T09:30:00.000Z",
+                      "orderName": "Community order England / Wales",
+                      "probationTeamAddress": "",
+                      "probationTeamName": "South East and Eastern Division NPS",
+                      "type": {
+                        "description": "Review",
+                        "id": "bd4dab38-ea91-434b-8e73-e0d50ef0cbdf"
+                      }
+                    },
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "parentJudicialResultId": "529f04d3-f567-4b4c-8334-06dbc40f9185",
+                    "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "BM",
+                    "rank": 45600,
+                    "resultDefinitionGroup": "Community Requirement",
+                    "resultText": "DRR - Drug rehabilitation residential with review\nDrug Rehabilitation Requirement: Have treatment for drug dependency by or under the direction of Surrey Mags Court at Surrey Rehab Centre as a resident for 3 Months. To be reviewed Monthly. First review on 20/09/2024 at 10:30 at Croydon Magistrates' Court, courtroom Courtroom 01.",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "c056a08a-4b75-48cd-a6e3-c20cda9417ba",
+                    "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Adsefydlu defnyddiwr cyffuriau - preswyl gydag adolygiad"
+                  }
+                ],
+                "lastAdjournDate": "2024-08-19",
+                "lastAdjournedHearingType": "To attend or to return the plea form sent with the summons",
+                "listingNumber": 1,
+                "maxPenalty": "Indictable only",
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "42916c3b-128f-3b6e-ad14-b51fc36fbf1a",
+                "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt robbery",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "orderIndex": 1,
+                "proceedingsConcluded": true,
+                "startDate": "2024-05-21",
+                "wording": "Attempt robbery"
+              },
+              {
+                "arrestDate": "2024-08-04",
+                "chargeDate": "2024-08-09",
+                "count": 0,
+                "dvlaOffenceCode": "CU10",
+                "endorsableFlag": true,
+                "id": "8941a850-0d76-428d-9ea6-f0cf5820780f",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-20",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": true,
+                    "category": "FINAL",
+                    "cjsCode": "1116",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "durationEndDate": "31/08/2025"
+                    },
+                    "dvlaCode": "M",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "e5b83c9e-0621-4398-a089-26d575033669",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isDurationEndDate": true,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+                        "label": "End Date",
+                        "promptReference": "endDate",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "31/08/2025",
+                        "welshLabel": "Dyddiad terfyn",
+                        "welshValue": "31/08/2025"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+                        "label": "Responsible officer",
+                        "promptReference": "responsibleOfficer",
+                        "promptSequence": 200,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "a probation officer",
+                        "welshLabel": "Swyddog cyfrifol",
+                        "welshValue": "swyddog prawf"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                        "label": "Supervising Court",
+                        "promptReference": "supervisingCourt",
+                        "promptSequence": 300,
+                        "type": "FIXL",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Magistrates' Court",
+                        "welshLabel": "Llys sy’n Goruchwylio",
+                        "welshValue": "Croydon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "South East and Eastern Division NPS",
+                        "welshValue": "South East and Eastern Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 700,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "seenps.court@justice.gov.uk",
+                        "welshValue": "seenps.court@justice.gov.uk"
+                      }
+                    ],
+                    "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "label": "Community order England / Wales",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 64000,
+                    "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 31/08/2025. ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "e5b83c9e-0621-4398-a089-26d575033669",
+                    "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ]
+                  },
+                  {
+                    "alwaysPublished": true,
+                    "amendmentDate": "2024-08-20",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "cjsCode": "3109",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "e6aa2dd8-2a9e-445c-952e-9e5c2d8a7ae1",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f092fe58-2297-4d10-818a-8b303692ac39",
+                        "label": "Under direction of",
+                        "promptReference": "underDirectionOf",
+                        "promptSequence": 100,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Surrey Mags Court",
+                        "welshLabel": "Dan arweiniad",
+                        "welshValue": "Surrey Mags Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "0b74fb53-acb7-42db-b9b6-976ce74b59b5",
+                        "label": "Treatment place",
+                        "promptReference": "treatmentPlace",
+                        "promptSequence": 200,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Surrey Rehab Centre",
+                        "welshLabel": "Lleoliad y driniaeth",
+                        "welshValue": "Surrey Rehab Centre"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "10028ef8-efc7-4a40-9703-1e121a6fbc84",
+                        "label": "Period to provide samples",
+                        "promptReference": "periodToProvideSamples",
+                        "promptSequence": 300,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "3 Months",
+                        "welshLabel": "Cyfnod i ddarparu samplau",
+                        "welshValue": "3 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "61ea03c9-c113-446b-a392-402144fcd9e8",
+                    "label": "Drug rehabilitation residential with review",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "parentJudicialResultId": "d45a011d-32b6-43d1-9f98-58a3fe533b0e",
+                    "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "BM",
+                    "rank": 45600,
+                    "resultDefinitionGroup": "Community Requirement",
+                    "resultText": "DRR - Drug rehabilitation residential with review\nDrug Rehabilitation Requirement: Have treatment for drug dependency by or under the direction of Surrey Mags Court at Surrey Rehab Centre as a resident for 3 Months. ",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "e5b83c9e-0621-4398-a089-26d575033669",
+                    "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Adsefydlu defnyddiwr cyffuriau - preswyl gydag adolygiad"
+                  }
+                ],
+                "listingNumber": 1,
+                "maxPenalty": "S:3pp",
+                "modeOfTrial": "Summary",
+                "offenceCode": "RC86851",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "a9223eee-f3de-3b8a-b6bb-f0feb6f7f737",
+                "offenceLegislation": "Contrary to regulation 18(1) of the Road Vehicles    (Construction and Use) Regulations 1986, section 41A of the Road    Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Vehicle defect - permit use of a motor vehicle / trailer with defective brakes",
+                "orderIndex": 2,
+                "proceedingsConcluded": true,
+                "startDate": "2024-05-21",
+                "wording": "Vehicle defect - permit use of a motor vehicle / trailer with defective brakes"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX000043657794",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "10 Downing Street",
+                  "address2": "Downing Street",
+                  "address3": "Westminster",
+                  "address4": "Greater London",
+                  "address5": "London",
+                  "postcode": "SW1A 2AA"
+                },
+                "contact": {
+                  "home": "0868847601",
+                  "mobile": "0104075889",
+                  "primaryEmail": "adelina.johnston@hotmail.com"
+                },
+                "dateOfBirth": "1982-08-19",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "BobKittie",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "TestBotRunolfsson",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": true,
+            "prosecutionAuthorityReference": "2391NX000043657794",
+            "prosecutionCaseId": "763e634c-f81b-4a91-a7bc-ef8bd6b52343"
+          },
+          {
+            "courtProceedingsInitiated": "2024-08-19T16:12:29.005Z",
+            "id": "b92bce89-106f-40d3-8749-f9d86df61a32",
+            "isYouth": false,
+            "masterDefendantId": "b92bce89-106f-40d3-8749-f9d86df61a32",
+            "offences": [
+              {
+                "arrestDate": "2024-08-04",
+                "chargeDate": "2024-08-09",
+                "count": 0,
+                "dateHeldInCustodySince": "2024-08-19",
+                "endorsableFlag": false,
+                "id": "cff7937c-59a9-4cad-8bc2-44fc4de06f3f",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "3815d61f-9da9-480d-8aa5-767ed83075b4",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "13f7c43a-8e77-47bb-b36f-b7ddb6046cd2",
+                        "promptSequence": 0,
+                        "usergroups": [
+
+                        ],
+                        "value": "Date of hearing:20/08/2024\nTime of hearing:10:00\nCourthouse organisation name:Croydon Magistrates' Court\nCourthouse address line 1:The Magistrates' Court\nCourthouse address line 2:Barclay Road\nCourthouse address line 3:Croydon\nCourthouse post code:CR9 3NG\nCourtroom:Courtroom 01\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES\nBooking reference:b4cbea27-194f-423d-949e-3ac2bdc5727b",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+
+                        ],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "e15c9dc1-5d7a-4f7a-8d61-b443f99b2724",
+                        "label": "To attend or to return the plea form sent with the summons",
+                        "promptReference": "eb1ff751-c114-4bed-96a7-a9cdd5cac81f",
+                        "promptSequence": 200,
+                        "qualifier": "DM",
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "I fynychu neu i ddychwelyd y ffurflen bledio a anfonwyd gyda'r wŷs"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "96157d5a-8680-40a9-8def-409e35a806f7",
+                        "promptSequence": 300,
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                     "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "DM",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 20/08/2024 at 10:00 in Courtroom 01, Croydon Magistrates' Court. Reason: To attend or to return the plea form sent with the summons. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "3815d61f-9da9-480d-8aa5-767ed83075b4",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Gohiriad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "eb1ff751-c114-4bed-96a7-a9cdd5cac81f",
+                    "judicialResultTypeId": "e15c9dc1-5d7a-4f7a-8d61-b443f99b2724",
+                    "label": "To attend or to return the plea form sent with the summons",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "parentJudicialResultId": "96157d5a-8680-40a9-8def-409e35a806f7",
+                    "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 119600,
+                    "resultDefinitionGroup": "Adjournment reasons",
+                    "resultText": "To attend or to return the plea form sent with the summons",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "3815d61f-9da9-480d-8aa5-767ed83075b4",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "I fynychu neu i ddychwelyd y ffurflen bledio a anfonwyd gyda'r wŷs"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "13f7c43a-8e77-47bb-b36f-b7ddb6046cd2",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                        "label": "Date of hearing",
+                        "promptReference": "HDATE",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "20/08/2024",
+                        "welshLabel": "Dyddiad y gwrandawiad",
+                        "welshValue": "20/08/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 200,
+                        "type": "TIME",
+                        "usergroups": [
+
+                        ],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Magistrates' Court",
+                        "welshValue": "Croydon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Magistrates' Court",
+                        "welshValue": "The Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Barclay Road",
+                        "welshValue": "Barclay Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "CR9 3NG",
+                        "welshValue": "CR9 3NG"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Plea and Trial Preparation",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea and Trial Preparation"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "20 MINUTES",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "20 MINUTES"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                        "label": "Booking reference",
+                        "promptReference": "bookingReference",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "b4cbea27-194f-423d-949e-3ac2bdc5727b",
+                        "welshLabel": "Cyfeirnod archebu",
+                        "welshValue": "b4cbea27-194f-423d-949e-3ac2bdc5727b"
+                      }
+                    ],
+                    "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                    "label": "Next hearing in magistrates' court",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "parentJudicialResultId": "ba4ec043-5e2f-4540-9868-1675bed7daeb",
+                    "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 2300,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "hearing on 20/08/2024 at 10:00 in Courtroom 01, Croydon Magistrates' Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "3815d61f-9da9-480d-8aa5-767ed83075b4",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                  }
+                ],
+                "lastAdjournDate": "2024-08-19",
+                "lastAdjournedHearingType": "To attend or to return the plea form sent with the summons",
+                "listingNumber": 1,
+                "maxPenalty": "EW:Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "FS13012",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "c8b95c21-fdca-3f0c-ab6f-6412e4b4955a",
+                "offenceLegislation": "Contrary to paragraph 6 of Schedule 4 to, and regulation 19(2) of, the Food Safety and Hygiene (England) Regulations 2013.",
+                "offenceTitle": "Keep cooked or reheated food at temperature below 63 Celsius",
+                "orderIndex": 1,
+                "proceedingsConcluded": false,
+                "startDate": "2024-05-21",
+                "wording": "Keep cooked or reheated food at temperature below 63 Celsius"
+              },
+              {
+                "arrestDate": "2024-08-04",
+                "chargeDate": "2024-08-09",
+                "count": 0,
+                "dateHeldInCustodySince": "2024-08-19",
+                "endorsableFlag": false,
+                "id": "89fdb9d4-bb30-42fa-a9be-1ef75f1ff1e1",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "13c2710c-f9b0-4c21-9461-ab1678f732f3",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "c8d165ef-f27a-4be2-b912-8c4289cc967c",
+                        "promptSequence": 0,
+                        "usergroups": [
+
+                        ],
+                        "value": "Date of hearing:20/08/2024\nTime of hearing:10:00\nCourthouse organisation name:Croydon Magistrates' Court\nCourthouse address line 1:The Magistrates' Court\nCourthouse address line 2:Barclay Road\nCourthouse address line 3:Croydon\nCourthouse post code:CR9 3NG\nCourtroom:Courtroom 01\nHearing type:Plea and Trial Preparation\nEstimated duration:20 MINUTES\nBooking reference:b4cbea27-194f-423d-949e-3ac2bdc5727b",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [
+
+                        ],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "e15c9dc1-5d7a-4f7a-8d61-b443f99b2724",
+                        "label": "To attend or to return the plea form sent with the summons",
+                        "promptReference": "3b358c7e-160a-4bff-9f04-4b104be1769a",
+                        "promptSequence": 200,
+                        "qualifier": "DM",
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "I fynychu neu i ddychwelyd y ffurflen bledio a anfonwyd gyda'r wŷs"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "9d38266a-4304-4e08-bbe0-4119c5882a00",
+                        "promptSequence": 300,
+                        "usergroups": [
+
+                        ],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "DM",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 20/08/2024 at 10:00 in Courtroom 01, Croydon Magistrates' Court. Reason: To attend or to return the plea form sent with the summons. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "13c2710c-f9b0-4c21-9461-ab1678f732f3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Gohiriad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "3b358c7e-160a-4bff-9f04-4b104be1769a",
+                    "judicialResultTypeId": "e15c9dc1-5d7a-4f7a-8d61-b443f99b2724",
+                    "label": "To attend or to return the plea form sent with the summons",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "parentJudicialResultId": "9d38266a-4304-4e08-bbe0-4119c5882a00",
+                    "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 119600,
+                    "resultDefinitionGroup": "Adjournment reasons",
+                    "resultText": "To attend or to return the plea form sent with the summons",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "13c2710c-f9b0-4c21-9461-ab1678f732f3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "I fynychu neu i ddychwelyd y ffurflen bledio a anfonwyd gyda'r wŷs"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": false,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c8d165ef-f27a-4be2-b912-8c4289cc967c",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                        "label": "Date of hearing",
+                        "promptReference": "HDATE",
+                        "promptSequence": 100,
+                        "type": "DATE",
+                        "usergroups": [
+
+                        ],
+                        "value": "20/08/2024",
+                        "welshLabel": "Dyddiad y gwrandawiad",
+                        "welshValue": "20/08/2024"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 200,
+                        "type": "TIME",
+                        "usergroups": [
+
+                        ],
+                        "value": "10:00",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "10:00"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon Magistrates' Court",
+                        "welshValue": "Croydon Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "The Magistrates' Court",
+                        "welshValue": "The Magistrates' Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Barclay Road",
+                        "welshValue": "Barclay Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "Croydon",
+                        "welshValue": "Croydon"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 300,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [
+
+                        ],
+                        "value": "CR9 3NG",
+                        "welshValue": "CR9 3NG"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Courtroom 01",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 01"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 500,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "Plea and Trial Preparation",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Plea and Trial Preparation"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [
+
+                        ],
+                        "value": "20 MINUTES",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "20 MINUTES"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                        "label": "Booking reference",
+                        "promptReference": "bookingReference",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [
+
+                        ],
+                        "value": "b4cbea27-194f-423d-949e-3ac2bdc5727b",
+                        "welshLabel": "Cyfeirnod archebu",
+                        "welshValue": "b4cbea27-194f-423d-949e-3ac2bdc5727b"
+                      }
+                    ],
+                    "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                    "label": "Next hearing in magistrates' court",
+                    "lastSharedDateTime": "2024-08-20",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-19",
+                    "orderedHearingId": "8d8bedef-3524-4cb3-a13e-5ca3890a6196",
+                    "parentJudicialResultId": "270b79e8-8391-411d-837e-1dbc0ef0523e",
+                    "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 2300,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "hearing on 20/08/2024 at 10:00 in Courtroom 01, Croydon Magistrates' Court",
+                    "resultWording": "",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "13c2710c-f9b0-4c21-9461-ab1678f732f3",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [
+
+                    ],
+                    "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                  }
+                ],
+                "lastAdjournDate": "2024-08-19",
+                "lastAdjournedHearingType": "To attend or to return the plea form sent with the summons",
+                "listingNumber": 1,
+                "maxPenalty": "EW:6M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "BC90005",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "f674c590-b264-30b8-aa4d-4a7bdf0a9a28",
+                "offenceLegislation": "Contrary to section 178(2) and (4) of the Broadcasting Act 1990.",
+                "offenceTitle": "Offer to supply a foreign satellite programme",
+                "orderIndex": 2,
+                "proceedingsConcluded": false,
+                "startDate": "2024-05-21",
+                "wording": "Offer to supply a foreign satellite programme"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX00003998725",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "50 Main Street",
+                  "address2": "Main Street",
+                  "address3": "Liverpool",
+                  "address4": "Merseyside",
+                  "postcode": "L1 1AA"
+                },
+                "contact": {
+                  "home": "0183508429",
+                  "mobile": "06693341849",
+                  "primaryEmail": "johnna.rau@hotmail.com"
+                },
+                "dateOfBirth": "1953-08-19",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "RobLou",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "TestBotLabadie",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": false,
+            "prosecutionAuthorityReference": "2391NX00003998725",
+            "prosecutionCaseId": "763e634c-f81b-4a91-a7bc-ef8bd6b52343"
+          }
+        ],
+        "id": "763e634c-f81b-4a91-a7bc-ef8bd6b52343",
+        "initiationCode": "C",
+        "originatingOrganisation": "0480000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityName": "City of London Police",
+          "prosecutionAuthorityOUCode": "0480000",
+          "caseURN": "RQ847752732"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2024-08-19",
+  "sharedTime": "2024-08-20T07:54:32.786Z"
+}

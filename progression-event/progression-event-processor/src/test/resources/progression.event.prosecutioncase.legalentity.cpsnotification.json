@@ -1,0 +1,347 @@
+{
+	"prosecutionCase": {
+		"caseMarkers": [
+			{
+				"id": "e0ae10d8-b5ba-4464-bd17-adf6a5105fe6",
+				"markerTypeCode": "HT",
+				"markerTypeDescription": "Human Trafficking",
+				"markerTypeid": "e7eff972-189c-4957-8b1e-cb45213aa64e"
+			}
+		],
+		"defendants": [
+			{
+				"aliases": [
+					{
+						"firstName": "AliasJack",
+						"lastName": "AliasReaper",
+						"middleName": "AliasAaron Sr",
+						"title": "MR"
+					},
+					{
+						"firstName": "Alias2Jack",
+						"lastName": "Alias2Reaper",
+						"middleName": "Alias2Aaron Mr",
+						"title": "MR"
+					}
+				],
+				"associatedPersons": [
+					{
+						"person": {
+							"address": {
+								"address1": "ParentGAddress Line 1",
+								"address2": "ParentGAddress Line 2",
+								"address3": "ParentGAddress Line 3",
+								"address4": "ParentGAddress Line 4",
+								"address5": "ParentG Address Line 5",
+								"postcode": "PG0 1XX"
+							},
+							"contact": {
+								"home": "9991231230",
+								"mobile": "9991231230",
+								"primaryEmail": "999aer@test.com",
+								"secondaryEmail": "999aer@test.com",
+								"work": "9991231230"
+							},
+							"dateOfBirth": "1979-05-23",
+							"ethnicity": {
+								"observedEthnicityCode": "4",
+								"observedEthnicityDescription": "Asian",
+								"observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+								"selfDefinedEthnicityCode": "W1",
+								"selfDefinedEthnicityDescription": "British",
+								"selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+							},
+							"firstName": "parentGuardianJack",
+							"gender": "MALE",
+							"lastName": "parentGuardianReaper",
+							"middleName": "parentGuardianAaron Sr",
+							"title": "MR"
+						},
+						"role": "ParentGuardian"
+					}
+				],
+				"id": "27845ff6-0269-4af8-9041-93b731c55ea8",
+				"numberOfPreviousConvictionsCited": 3,
+				"offences": [
+					{
+						"arrestDate": "2019-06-13",
+						"chargeDate": "2019-06-12",
+						"count": 0,
+						"endDate": "2020-06-11",
+						"id": "89b00c9e-86bd-4c7e-ac2b-2c0be8329c5d",
+						"modeOfTrial": "Summary",
+						"offenceCode": "CA03014",
+						"offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+						"offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+						"orderIndex": 1,
+						"startDate": "2019-06-11",
+						"wording": "Test Prosecution charge wording",
+						"wordingWelsh": "Test Prosecution charge wording in Welsh"
+					},
+					{
+						"arrestDate": "2017-06-13",
+						"chargeDate": "2017-06-13",
+						"count": 0,
+						"endDate": "2019-06-12",
+						"id": "e7a9277e-282c-4797-b981-450af6e7a3c2",
+						"modeOfTrial": "Summary",
+						"offenceCode": "RT88584B",
+						"offenceDefinitionId": "2464e6ab-8731-3aa2-877a-009cb99659f7",
+						"offenceFacts": {
+							"alcoholReadingAmount": 3,
+							"alcoholReadingMethodCode": "B"
+						},
+						"offenceTitle": "Aid abet the driving of a motor vehicle with a proportion of a specified controlled drug above the specified limit",
+						"orderIndex": 2,
+						"startDate": "2017-06-12",
+						"wording": "Second OFfence - Test Prosecution charge wording",
+						"wordingWelsh": "Second OFfence - Test Prosecution charge wording in Welsh"
+					}
+				],
+				"personDefendant": {
+					"arrestSummonsNumber": "SummonsNumber001",
+					"bailConditions": "Test bail conditions",
+					"bailStatus": {
+						"code": "C",
+						"description": "Remanded into Custody",
+						"id": "12e69486-4d01-3403-a50a-7419ca040635"
+					},
+					"driverNumber": "AS",
+					"personDetails": {
+						"additionalNationalityCode": "POL",
+						"additionalNationalityDescription": "Pole",
+						"additionalNationalityId": "e3baf6cc-1711-43cd-8aad-80ca6e89c946",
+						"address": {
+							"address1": "Address Line 1",
+							"address2": "Address Line 2",
+							"address3": "Address Line 3",
+							"address4": "Address Line 4",
+							"address5": "Address Line 5",
+							"postcode": "CR0 1XX"
+						},
+						"contact": {
+							"home": "1231231230",
+							"mobile": "1231231230",
+							"primaryEmail": "aer@af.com",
+							"secondaryEmail": "aer@af.com",
+							"work": "1231231230"
+						},
+						"dateOfBirth": "1970-02-03",
+						"documentationLanguageNeeds": "ENGLISH",
+						"ethnicity": {
+							"observedEthnicityCode": "4",
+							"observedEthnicityDescription": "Asian",
+							"observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+							"selfDefinedEthnicityCode": "W1",
+							"selfDefinedEthnicityDescription": "British",
+							"selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+						},
+						"firstName": "John",
+						"gender": "MALE",
+						"interpreterLanguageNeeds": "no special language needs",
+						"lastName": "SMITH",
+						"middleName": "Adam Theodore",
+						"nationalInsuranceNumber": "SN123456C",
+						"nationalityCode": "GBR",
+						"nationalityDescription": "British",
+						"nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+						"occupation": "TA",
+						"occupationCode": "666",
+						"specificRequirements": "no special needs",
+						"title": "MR"
+					}
+				},
+				"prosecutionAuthorityReference": "0Vm2L3oqsvVWu5gKL3wXLb8qLjgjZr7jLm2Y",
+				"prosecutionCaseId": "03434b77-d1c4-4cd7-8f04-fe6dd0d4d074"
+			},
+			{
+				"aliases": [
+					{
+						"legalEntityName": "MOJ"
+					},
+					{
+						"legalEntityName": "MinstryOfJustice"
+					}
+				],
+				"croNumber": "croNumber",
+				"id": "f9ef2dbf-d205-4444-8059-fefed44111dd",
+				"legalEntityDefendant": {
+					"organisation": {
+						"address": {
+							"address1": "Corp Address Line 1",
+							"address2": "Corp Address Line 2",
+							"address3": "Corp Address Line 3",
+							"address4": "Corp Address Line 4",
+							"address5": "Corp Address Line 5",
+							"postcode": "CR0 1XX"
+						},
+						"contact": {
+							"work": "07894278021"
+						},
+						"name": "ABC LTD"
+					}
+				},
+				"numberOfPreviousConvictionsCited": 4,
+				"offences": [
+					{
+						"arrestDate": "2019-06-13",
+						"chargeDate": "2019-06-12",
+						"count": 0,
+						"endDate": "2020-06-11",
+						"id": "3ab34b51-38ff-4eb5-9196-210d35bd7025",
+						"modeOfTrial": "Summary",
+						"offenceCode": "CA03014",
+						"offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+						"offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+						"orderIndex": 1,
+						"startDate": "2019-06-11",
+						"wording": "Test Prosecution charge wording",
+						"wordingWelsh": "Test Prosecution charge wording in Welsh"
+					},
+					{
+						"arrestDate": "2017-06-13",
+						"chargeDate": "2017-06-12",
+						"count": 0,
+						"endDate": "2018-06-12",
+						"id": "52d45765-be0f-4b65-bc99-41d23271aa09",
+						"modeOfTrial": "Summary",
+						"offenceCode": "OF61016A",
+						"offenceDefinitionId": "9324e54a-d406-4b44-8461-d2d7c9ba9059",
+						"offenceTitle": "Section 18 - attempt    wounding with intent",
+						"orderIndex": 2,
+						"startDate": "2017-06-12",
+						"wording": "Offence2 Test Prosecution charge wording",
+						"wordingWelsh": "Offence2 Test Prosecution charge wording in Welsh"
+					}
+				],
+				"pncId": "pncIdentifier",
+				"prosecutionAuthorityReference": "F6TMqpZ2dWCT84vOmhIK6LPZgvBhx0L98XFq",
+				"prosecutionCaseId": "03434b77-d1c4-4cd7-8f04-fe6dd0d4d074"
+			}
+		],
+		"id": "03434b77-d1c4-4cd7-8f04-fe6dd0d4d074",
+		"initiationCode": "C",
+		"originatingOrganisation": "GAAAA01",
+		"prosecutionCaseIdentifier": {
+			"prosecutionAuthorityCode": "DVLA",
+			"prosecutionAuthorityId": "6ae4b163-658b-3ae2-a66d-43401cac2f96",
+			"caseURN": "52GD8537319"
+		}
+	},
+	"courtDocuments": [
+		{
+			"containsFinancialMeans": false,
+			"courtDocumentId": "d82da5ee-ea50-4ad5-a686-f64e0c18ebcc",
+			"documentCategory": {
+				"defendantDocument": {
+					"defendants": [
+						"27845ff6-0269-4af8-9041-93b731c55ea8"
+					],
+					"prosecutionCaseId": "03434b77-d1c4-4cd7-8f04-fe6dd0d4d074"
+				}
+			},
+			"documentTypeDescription": "Basis of Plea",
+			"documentTypeId": "460f77c2-c002-11e8-a355-529269fb1459",
+			"isRemoved": false,
+			"materials": [
+				{
+					"id": "88e0b56e-3606-40e1-a948-9d00837a9d24",
+					"uploadDateTime": "2019-12-02T16:14:42.213Z",
+					"userGroups": [
+						"Legal Advisers",
+						"Crown Court Admin",
+						"Court Administrators",
+						"Court Clerks",
+						"Listing Officers",
+						"Defence Users"
+					]
+				}
+			],
+			"name": "sample.pdf"
+		}
+	],
+	"hearingsAtAGlance": {
+		"courtApplications": [
+
+		],
+		"defendantHearings": [
+			{
+				"defendantId": "27845ff6-0269-4af8-9041-93b731c55ea8",
+				"defendantName": "John Adam Theodore SMITH",
+				"hearingIds": [
+
+				]
+			},
+			{
+				"defendantId": "f9ef2dbf-d205-4444-8059-fefed44111dd",
+				"defendantName": "ABC LTD",
+				"hearingIds": [
+
+				]
+			}
+		],
+		"hearings": [
+			{
+				"id": "a8254db1-1683-483e-afb3-b87fde5a0a77",
+				"courtCentre": {
+					"id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+					"name": "Lavender Hill Magistrates' Court",
+					"roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+					"roomName": "Courtroom 01"
+				},
+				"hearingDays": [
+					{
+						"sittingDay": "SITTING_DAY1"
+					},
+					{
+						"sittingDay": "SITTING_DAY2"
+					},
+					{
+						"sittingDay": "SITTING_DAY3"
+					}
+				]
+
+			},
+			{
+				"id": "b8254db1-1683-483e-afb3-b87fde5a0a88",
+				"courtCentre": {
+					"id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+					"name": "Lavender Hill Magistrates' Court",
+					"roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+					"roomName": "Courtroom 01"
+				},
+				"hearingDays": [
+					{
+						"sittingDay": "SITTING_DAY4"
+					},
+					{
+						"sittingDay": "SITTING_DAY5"
+					}
+				]
+
+			},
+			{
+				"id": "c8254db1-1683-483e-afb3-b87fde5a0a99",
+				"courtCentre": {
+					"id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+					"name": "Lavender Hill Magistrates' Court",
+					"roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+					"roomName": "Courtroom 01"
+				},
+				"hearingDays": [
+					{
+						"sittingDay": "SITTING_DAY6"
+					}
+
+				]
+
+			}
+		],
+		"id": "03434b77-d1c4-4cd7-8f04-fe6dd0d4d074",
+		"prosecutionCaseIdentifier": {
+			"prosecutionAuthorityCode": "DVLA",
+			"prosecutionAuthorityId": "6ae4b163-658b-3ae2-a66d-43401cac2f96",
+			"caseURN": "52GD8537319"
+		}
+	}
+}

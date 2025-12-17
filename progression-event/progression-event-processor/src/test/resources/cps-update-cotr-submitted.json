@@ -1,0 +1,25 @@
+{
+  "submissionId": "4bafb21c-1b09-11ed-861d-0242ac120002",
+  "caseId": "417f38c6-1b09-11ed-861d-0242ac120002",
+  "formDefendants": [
+    {
+      "defendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3"
+    }
+  ],
+  "defendantSubject": [
+    {
+      "defendants": {
+        "prosecutorDefendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3",
+        "cpsDefendantId": "68e55356-7683-4cb7-a1a2-d0f94286a6d3",
+        "asn": "1234567890TH"
+      }
+    }
+  ],
+  "tag": "tag",
+  "trialDate": "1980-01-24",
+  "certifyThatTheProsecutionIsTrialReady": "Y",
+  "formCompletedOnBehalfOfProsecutionBy" : "formCompletedOnBehalfOfProsecutionBy",
+  "furtherProsecutionInformationProvidedAfterCertification": "furtherProsecutionInformationProvidedAfterCertification",
+  "certificationDate" : "1980-01-24",
+  "cotrId": "4bafb21c-1b09-11ed-861d-0242ac120002"
+}

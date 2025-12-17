@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/public.progression.refer-prosecution-cases-to-court-rejected.json",
+  "type": "object",
+  "properties": {
+    "sjpCourtReferral": {
+      "$ref": "http://justice.gov.uk/core/courts/sjpCourtReferral.json#"
+    },
+    "prosecutorCourtReferral": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutorCourtReferral.json#"
+    },
+    "rejectedReason": {
+      "description": "The system generated description of why a referral was rejected",
+      "type": "string"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "sjpCourtReferral",
+        "rejectedReason"
+      ]
+    },
+    {
+      "required": [
+        "prosecutorCourtReferral",
+        "rejectedReason"
+      ]
+    }
+  ],
+  "additionalProperties": false
+}

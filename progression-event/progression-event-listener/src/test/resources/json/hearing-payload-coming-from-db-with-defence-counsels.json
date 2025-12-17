@@ -1,0 +1,269 @@
+{
+  "courtCentre": {
+    "address": {
+      "address1": "181 Marylebone Road",
+      "address2": "London",
+      "address3": "",
+      "address4": "",
+      "address5": "",
+      "postcode": "NW1 5BR"
+    },
+    "code": "B01IX00",
+    "courtHearingLocation": "B01IX05",
+    "id": "67aa82ba-67bb-4699-8176-5f572048352b",
+    "lja": {
+      "ljaCode": "2570",
+      "ljaName": "Central London Magistrates' Court"
+    },
+    "name": "Westminster Magistrates' Court",
+    "roomId": "5f3bf957-8787-3fe1-a1db-8934fb2cf1b2",
+    "roomName": "Courtroom 05"
+  },
+  "defenceCounsels": [
+    {
+      "attendanceDays": [
+        "2023-12-01"
+      ],
+      "defendants": [
+        "DEFENDANT_ID1"
+      ],
+      "firstName": "DefF1 Elsa",
+      "id": "7e382ecc-dcf4-441d-add6-1f3eb732b25c",
+      "lastName": "DefL1 Elsa",
+      "middleName": "",
+      "status": "DefFL11 Elsa",
+      "title": ""
+    },
+    {
+      "attendanceDays": [
+        "2023-12-01"
+      ],
+      "defendants": [
+        "DEFENDANT_ID2"
+      ],
+      "firstName": "DefF2 Gordon",
+      "id": "027783c4-8a6f-4043-8d86-b21122b03a93",
+      "lastName": "DefL2 Gordon",
+      "middleName": "",
+      "status": "DefFL22 Gordon",
+      "title": ""
+    }
+  ],
+  "hasSharedResults": false,
+  "hearingDays": [
+    {
+      "courtCentreId": "67aa82ba-67bb-4699-8176-5f572048352b",
+      "courtRoomId": "5f3bf957-8787-3fe1-a1db-8934fb2cf1b2",
+      "isCancelled": false,
+      "listedDurationMinutes": 20,
+      "listingSequence": 2,
+      "sittingDay": "2023-12-01T10:00:00.000Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "HEARING_ID",
+  "jurisdictionType": "MAGISTRATES",
+  "prosecutionCases": [
+    {
+      "caseStatus": "ACTIVE",
+      "cpsOrganisation": "A30AB00",
+      "defendants": [
+        {
+          "courtProceedingsInitiated": "2023-11-30T19:02:59.787Z",
+          "croNumber": "214693/65O",
+          "id": "DEFENDANT_ID1",
+          "isYouth": false,
+          "masterDefendantId": "DEFENDANT_ID1",
+          "offences": [
+            {
+              "arrestDate": "2023-11-28",
+              "chargeDate": "2023-11-29",
+              "count": 0,
+              "endDate": "2023-11-28",
+              "endorsableFlag": false,
+              "id": "OFFENCE_ID1",
+              "listingNumber": 1,
+              "maxPenalty": "S:L3",
+              "modeOfTrial": "Summary",
+              "offenceCode": "CA03010",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+              "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+              "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+              "offenceTitle": "Use a television set without a licence",
+              "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+              "orderIndex": 1,
+              "startDate": "2023-10-31",
+              "wording": "From 31 October 2023, used a television receiver without a licence."
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "7wosccqx",
+            "bailConditions": "Bail condition 1",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "Address line 1",
+                "address2": "Address line 2",
+                "address3": "Address line 3",
+                "address4": "Address line 4",
+                "address5": "North Zella",
+                "postcode": "TW14 9XD"
+              },
+              "contact": {
+                "mobile": "07890123456",
+                "primaryEmail": "Wiley.Denesik54@example.com"
+              },
+              "dateOfBirth": "1983-06-19",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "4",
+                "observedEthnicityDescription": "Other",
+                "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Elsa",
+              "gender": "FEMALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Schamberger",
+              "occupation": "Lead Paradigm Liaison",
+              "occupationCode": "2",
+              "title": "Dr."
+            },
+            "policeBailConditions": "Bail condition 1",
+            "policeBailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            }
+          },
+          "pncId": "2023810766U",
+          "prosecutionAuthorityReference": "7wosccqx",
+          "prosecutionCaseId": "8adf9031-1150-48b1-b97f-a9391266e94a"
+        },
+        {
+          "courtProceedingsInitiated": "2023-11-30T19:02:59.787Z",
+          "croNumber": "267557/28T",
+          "id": "DEFENDANT_ID2",
+          "isYouth": false,
+          "masterDefendantId": "DEFENDANT_ID2",
+          "offences": [
+            {
+              "arrestDate": "2023-11-28",
+              "chargeDate": "2023-11-29",
+              "count": 0,
+              "endDate": "2023-11-28",
+              "endorsableFlag": false,
+              "id": "OFFENCE_ID2",
+              "listingNumber": 2,
+              "maxPenalty": "S:L3",
+              "modeOfTrial": "Summary",
+              "offenceCode": "CA03010",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "6d4e6673-a075-35e9-9ded-448284bf316b",
+              "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+              "offenceLegislationWelsh": "Yn groes i adran 363(2) a (4) Deddf Cyfathrebu 2003.",
+              "offenceTitle": "Use a television set without a licence",
+              "offenceTitleWelsh": "Defnyddio set deledu heb drwydded",
+              "orderIndex": 1,
+              "startDate": "2023-10-31",
+              "wording": "From 31 October 2023, used a television receiver without a licence."
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "je56kqf8",
+            "bailConditions": "Bail condition 1",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "Address line 1",
+                "address2": "Address line 2",
+                "address3": "Address line 3",
+                "address4": "Address line 4",
+                "address5": "North Cassieport",
+                "postcode": "TW14 9XD"
+              },
+              "contact": {
+                "mobile": "07890123456",
+                "primaryEmail": "Jaylan58@example.net"
+              },
+              "dateOfBirth": "1989-06-19",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "4",
+                "observedEthnicityDescription": "Other",
+                "observedEthnicityId": "a87ff679-a2f3-371d-9181-a67b7542122c",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Gordon",
+              "gender": "FEMALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Mayer",
+              "occupation": "Lead Branding Technician",
+              "occupationCode": "0",
+              "title": "Mr."
+            },
+            "policeBailConditions": "Bail condition 1",
+            "policeBailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            }
+          },
+          "pncId": "2023264915C",
+          "prosecutionAuthorityReference": "je56kqf8",
+          "prosecutionCaseId": "8adf9031-1150-48b1-b97f-a9391266e94a"
+        }
+      ],
+      "id": "8adf9031-1150-48b1-b97f-a9391266e94a",
+      "initiationCode": "C",
+      "isCpsOrgVerifyError": false,
+      "originatingOrganisation": "0480000",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "Bishopsgate police station",
+          "address2": "182, Bishopsgate",
+          "address5": "London",
+          "postcode": "EC2M 4NP"
+        },
+        "contact": {
+          "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+        },
+        "majorCreditorCode": "COLP",
+        "prosecutionAuthorityCode": "CITYPF",
+        "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+        "prosecutionAuthorityName": "City of London Police",
+        "prosecutionAuthorityOUCode": "0480000",
+        "caseURN": "82GD7984623"
+      },
+      "prosecutor": {
+        "address": {
+          "address1": "King Edward Court",
+          "address2": "Nottingham",
+          "postcode": "NG1 1EL"
+        },
+        "isCps": true,
+        "prosecutorCode": "CPS-EM",
+        "prosecutorId": "42880989-5d09-332e-a711-8797af06ecea",
+        "prosecutorName": "CPS East Midlands"
+      },
+      "statementOfFacts": "Prosecution facts"
+    }
+  ],
+  "type": {
+    "description": "First hearing",
+    "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+  }
+}

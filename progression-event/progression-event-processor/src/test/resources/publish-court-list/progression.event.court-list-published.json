@@ -1,0 +1,124 @@
+{
+  "courtCentreId": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+  "courtListId": "7a7ca6d9-ceb2-34c4-b957-f71edd1efd67",
+  "courtLists": [
+    {
+      "courtRoomId": "731816c1-5ee4-373a-9bda-840e13a5bcb0",
+      "hearings": [
+        {
+          "caseIdentifier": {
+            "authorityCode": "SURRPF",
+            "authorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+            "caseReference": "91GD6403223"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-02-09T16:58:43.676Z",
+              "id": "80bac7ab-426d-4770-b6a6-eb09e30748be",
+              "legalEntityDefendant": {
+                "organisation": {
+                  "address": {
+                    "address1": "61",
+                    "address2": "Richmond Road",
+                    "address4": "WESTERN CENTRAL LONDON",
+                    "address5": "London",
+                    "postcode": "E16 1YJ"
+                  },
+                  "incorporationNumber": "123456",
+                  "name": "Sweet And Jones Associates",
+                  "registeredCharityNumber": "234567"
+                }
+              },
+              "masterDefendantId": "80bac7ab-426d-4770-b6a6-eb09e30748be",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "405a2085-7e7d-498e-a76e-763e91d1c729",
+                  "offenceCode": "CA03010",
+                  "offenceDefinitionId": "405a2085-7e7d-498e-a76e-763e91d1c729",
+                  "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                  "offenceTitle": "Use / install a television set without a licence",
+                  "orderIndex": 1,
+                  "startDate": "2023-01-10",
+                  "wording": "Use / install a television set without a licence 1"
+                }
+              ],
+              "prosecutionCaseId": "f16da331-b12a-408c-8fed-2d4d617e0a8a"
+            },
+            {
+              "courtProceedingsInitiated": "2023-02-15T14:50:08.189Z",
+              "id": "48876c6c-1d84-487f-8d72-62b01888f439",
+              "masterDefendantId": "48876c6c-1d84-487f-8d72-62b01888f439",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "cec4b1f8-0fbc-474c-b14a-f4e274ac4224",
+                  "offenceCode": "TH68023",
+                  "offenceDefinitionId": "cec4b1f8-0fbc-474c-b14a-f4e274ac4224",
+                  "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+                  "offenceTitle": "Robbery",
+                  "orderIndex": 1,
+                  "startDate": "2020-09-18",
+                  "wording": "Robbery"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "19",
+                    "address2": "King Street",
+                    "address5": "Manchester",
+                    "postcode": "MK3 5EA"
+                  },
+                  "dateOfBirth": "1979-05-02",
+                  "firstName": "Yousuf",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "Aguirre"
+                }
+              },
+              "prosecutionCaseId": "f16da331-b12a-408c-8fed-2d4d617e0a8a"
+            }
+          ],
+          "endTime": "2023-02-20T10:20",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "First hearing",
+            "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+          },
+          "restrictFromCourtList": false,
+          "startTime": "2023-02-20T10:00",
+          "weekCommencing": false
+        }
+      ],
+      "judiciary": [
+        {
+          "judicialId": "00f50b1e-9691-3727-8408-61c58352eec6",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "01963f7f-c2d0-325e-b6df-148b2907f78c",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "01963f7f-c2d0-325e-b6df-148b2907f78c",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        }
+      ],
+      "sittingDate": "2023-02-20",
+      "weekCommencing": false
+    }
+  ],
+  "endDate": "2023-02-20",
+  "publishCourtListType": "FINAL",
+  "requestedTime": "2023-02-15T18:23:33.152Z",
+  "startDate": "2023-02-20",
+  "weekCommencing": false,
+  "sendNotificationToParties": true
+
+}

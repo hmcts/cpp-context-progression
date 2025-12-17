@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "courtCentreId": {
+            "type": "string"
+          },
+          "caseId": {
+            "type": "string"
+          },
+          "caseUrn": {
+            "type": "string"
+          },
+          "fromCourtCentre": {
+            "type": "string"
+          },
+          "sendingCommittalDate": {
+            "type": "string"
+          },
+          "sentenceHearingDate": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "courtCentreId",
+          "caseId",
+          "caseUrn",
+          "fromCourtCentre",
+          "sendingCommittalDate",
+          "sentenceHearingDate",
+          "status"
+        ]
+      }
+    }
+  },
+  "required": [
+    "cases"
+  ]
+}

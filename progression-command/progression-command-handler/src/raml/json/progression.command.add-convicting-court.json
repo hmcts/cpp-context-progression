@@ -1,0 +1,28 @@
+{
+  "caseId": "335306b7-490e-428f-9523-de07a99ac8aa",
+  "addConvictingInformation": [
+    {
+      "convictionDate": "2022-02-04T17:22:57.175Z",
+      "convictingCourt": {
+        "lja": {
+          "ljaName": "South West London Magistrates' Court",
+          "ljaCode": "2577"
+        },
+        "address": {
+          "address3": "",
+          "address2": "London",
+          "address1": "176A Lavender Hill",
+          "postcode": "SW11 1JU",
+          "address5": "",
+          "address4": ""
+        },
+        "code": "B01LY00",
+        "name": "Lavender Hill Magistrates' Court",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "offenceId": "2527c5ac-6861-44f2-bd96-40966f7e3236"
+    }
+  ]
+}

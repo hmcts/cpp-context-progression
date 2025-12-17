@@ -1,0 +1,224 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "type": {
+      "id": "e857c8ea-cd95-47d1-842f-2d618e77a9b5",
+      "code": "AS14518",
+      "type": "Application for an order of reimbursement in relation to a closure order",
+      "legislation": "In accordance with section 16E of the Magistrates' Courts Act 1980.",
+      "categoryCode": "VP",
+      "linkType": "LINKED",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType" : "GENERIC_BREACH",
+      "appealFlag": false,
+      "applicantAppellantFlag" : false,
+      "pleaApplicableFlag" : false,
+      "commrOfOathFlag" : false,
+      "courtOfAppealFlag" : false,
+      "courtExtractAvlFlag" : false,
+      "prosecutorThirdPartyFlag" : false,
+      "spiOutApplicableFlag" : false,
+      "offenceActiveOrder" : "OFFENCE"
+    },
+    "applicationReceivedDate": "2020-01-01",
+    "applicationReference": "AS14519",
+    "applicationExternalCreatorType": "PROSECUTOR",
+    "applicant": {
+      "id": "9ce6e439-d5da-4202-a446-ef4ca7072540",
+      "summonsRequired": false,
+      "notificationRequired": true,
+      "organisation": {
+        "name": "Applicant Organisation",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "a1",
+          "address2": "a2",
+          "address3": "a3",
+          "address4": "a4",
+          "address5": "a5",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": "00999900990",
+          "work": "00999900990",
+          "mobile": "00999900990",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      }
+    },
+    "subject": {
+      "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+      "summonsRequired": false,
+      "notificationRequired": true
+    },
+    "applicationStatus": "DRAFT",
+    "outOfTimeReasons": "Out of times reasons for linked application test",
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityCode": "TFL",
+          "caseURN": "TFL4359536"
+        },
+        "isSJP": false,
+        "caseStatus": "INACTIVE",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2020-04-14",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e",
+              "originatingHearingId": "5914d601-7c26-4900-b3d6-e8d27bcd058d",
+              "sequenceNumber": 90
+            },
+            "aquittalDate": "2020-04-14",
+            "chargeDate": "2020-03-14",
+            "count": 1,
+            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "isDisposed": true,
+            "modeOfTrial": "Summary",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2020-04-14",
+              "notifiedPleaValue": "NO_NOTIFICATION",
+              "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e"
+            },
+            "offenceCode": "CA03012",
+            "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+            "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "",
+            "offenceTitle": "Possess / control TV set with intent another use install without a licence",
+            "offenceTitleWelsh": "",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "28b3d444-ae80-4920-a70f-ef01e128188e",
+              "originatingHearingId": "5914d601-7c26-4900-b3d6-e8d27bcd058d",
+              "pleaDate": "2020-04-14",
+              "pleaValue": "NOT_GUILTY"
+            },
+            "startDate": "2020-03-10",
+            "wording": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 ",
+            "wordingWelsh": "On 01/11/2017 at Chelmsford intentionally obstructed a person authorised by the BBC in the exercise of a power conferred by virtue of a search warrant issued under section 366 of the Communications Act 2003 by Chelmsford Magistrates Court on 25/10/2017 "
+          }
+        ]
+      }
+    ],
+    "respondents" : [{
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+      "synonym": "Edward",
+      "personDetails": {
+        "title": "DR",
+        "firstName": "EDWARD",
+        "middleName": "Middle Name",
+        "lastName": "HARRISON",
+        "dateOfBirth": "2000-01-01",
+        "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "nationalityCode": "a",
+        "nationalityDescription": "a",
+        "additionalNationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "additionalNationalityCode": "a",
+        "additionalNationalityDescription": "a",
+        "disabilityStatus": "a",
+        "ethnicity": {
+          "observedEthnicityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "observedEthnicityCode": "a",
+          "observedEthnicityDescription": "a",
+          "selfDefinedEthnicityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "selfDefinedEthnicityCode": "a",
+          "selfDefinedEthnicityDescription": "a"
+        },
+        "gender": "MALE",
+        "interpreterLanguageNeeds": "a",
+        "documentationLanguageNeeds": "ENGLISH",
+        "nationalInsuranceNumber": "NH111111B",
+        "occupation": "a",
+        "occupationCode": "a",
+        "specificRequirements": "a",
+        "address": {
+          "address1": "a1",
+          "address2": "a2",
+          "address3": "a3",
+          "address4": "a4",
+          "address5": "a5",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": "00999900990",
+          "work": "00999900990",
+          "mobile": "00999900990",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "fax"
+        },
+        "personMarkers": [
+          {
+            "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "markerTypeid": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "markerTypeCode": "a",
+            "markerTypeDescription": "a"
+          }
+        ]
+      },
+      "organisation": {
+        "name": "Respondent Organisation",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "a1",
+          "address2": "a2",
+          "address3": "a3",
+          "address4": "a4",
+          "address5": "a5",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": "00999900990",
+          "work": "00999900990",
+          "mobile": "00999900990",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      },
+      "summonsRequired": false,
+      "notificationRequired": true
+    }]
+  },
+  "courtHearing": {
+    "id": "HEARING_ID",
+    "hearingType": {
+      "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "estimatedMinutes": 20,
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "earliestStartDateTime": "2015-01-12T05:27:17.210Z"
+  },
+  "summonsApprovalRequired": false
+}

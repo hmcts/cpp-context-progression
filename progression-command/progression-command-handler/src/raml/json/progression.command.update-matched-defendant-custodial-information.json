@@ -1,0 +1,14 @@
+{
+  "caseId": "e32fd505-0243-4a8c-8222-18116a934444",
+  "matchedMasterDefendantId": "86009c70-759d-3308-8de4-194886ff9a77",
+  "defendants": [
+    "e32fd505-0243-4a8c-8222-18116a934444",
+    "32ef7a73-df50-4349-8c72-ca3b9ace6361"
+  ],
+  "custodialEstablishment": {
+    "id": "22ef7a73-df50-4349-8c72-ca3b9ace6363",
+    "name": "police",
+    "custody": "92ef7a73-df50-4349-8c72-ca3b9ace6361"
+  }
+}
+

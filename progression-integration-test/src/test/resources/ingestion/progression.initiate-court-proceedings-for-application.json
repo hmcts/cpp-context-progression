@@ -1,0 +1,216 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
+    "commissionerOfOath": false,
+    "applicationReceivedDate": "2021-08-11",
+    "type": {
+      "id": "57810183-a5c2-3195-8748-c6b97eda1ebd",
+      "type": "Appeal against conviction",
+      "categoryCode": "CC",
+      "jurisdiction": "CROWN",
+      "linkType": "SJP",
+      "legislation": "section 108 of the Magistrates Courts Act 1980",
+      "appealFlag": true,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "hearingCode": "APL",
+      "applicantAppellantFlag": true,
+      "pleaApplicableFlag": false,
+      "offenceActiveOrder": "OFFENCE",
+      "commrOfOathFlag": false,
+      "breachType": "NOT_APPLICABLE",
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": true,
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": true
+    },
+    "applicant": {
+      "id": "1d45b762-9494-4d06-8c5d-e2edd60de3dd",
+      "masterDefendant": {
+        "masterDefendantId": "68d9d480-50ca-488f-ae15-c99f86b36312",
+        "personDefendant": {
+          "arrestSummonsNumber": "E28GC01123537140",
+          "driverNumber": "CRIME709136TC8GZ",
+          "personDetails": {
+            "address": {
+              "address1": "p",
+              "address2": "Willie Mills",
+              "address3": "Swansea",
+              "address4": "Avon",
+              "postcode": "SW1 3AE"
+            },
+            "contact": {
+              "home": "427-667-4078"
+            },
+            "dateOfBirth": "1976-09-09",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "Webster",
+            "gender": "FEMALE",
+            "lastName": "Mayer",
+            "occupationCode": "0",
+            "title": "MR"
+          }
+        },
+        "defendantCase": [
+          {
+            "defendantId": "68d9d480-50ca-488f-ae15-c99f86b36312",
+            "caseId": "57926220-ab7d-4dd9-96a3-4b613f1f5766",
+            "caseReference": "30DB9942809"
+          }
+        ]
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "respondents": [
+      {
+        "id": "4a41b020-3ff1-4da1-b1df-79d8125be917",
+        "notificationRequired": true,
+        "summonsRequired": false,
+        "prosecutingAuthority": {
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityCode": "DERPF"
+        }
+      }
+    ],
+    "subject": {
+      "id": "1d45b762-9494-4d06-8c5d-e2edd60de3dd",
+      "masterDefendant": {
+        "masterDefendantId": "68d9d480-50ca-488f-ae15-c99f86b36312",
+        "personDefendant": {
+          "arrestSummonsNumber": "E28GC01123537140",
+          "driverNumber": "CRIME709136TC8GZ",
+          "personDetails": {
+            "address": {
+              "address1": "p",
+              "address2": "Willie Mills",
+              "address3": "Swansea",
+              "address4": "Avon",
+              "postcode": "SW1 3AE"
+            },
+            "contact": {
+              "home": "427-667-4078"
+            },
+            "dateOfBirth": "1976-09-09",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "Webster",
+            "gender": "FEMALE",
+            "lastName": "Mayer",
+            "occupationCode": "0",
+            "title": "MR"
+          }
+        },
+        "defendantCase": [
+          {
+            "defendantId": "68d9d480-50ca-488f-ae15-c99f86b36312",
+            "caseId": "57926220-ab7d-4dd9-96a3-4b613f1f5766",
+            "caseReference": "30DB9942809"
+          }
+        ]
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "courtApplicationCases": [
+      {
+        "prosecutionCaseId": "CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "caseURN": "30DB9942809"
+        },
+        "isSJP": true,
+        "caseStatus": "INACTIVE",
+        "offences": [
+          {
+            "chargeDate": "2019-12-02",
+            "convictionDate": "2021-08-11",
+            "count": 0,
+            "id": "983a2ae5-81dd-4b74-9fb4-d4052070f260",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2021-08-11",
+              "notifiedPleaValue": "NO_NOTIFICATION",
+              "offenceId": "983a2ae5-81dd-4b74-9fb4-d4052070f260"
+            },
+            "offenceCode": "CJ88116",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "796234a9-339a-4e2a-993d-cd91356738d2",
+            "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act    1988.",
+            "offenceTitle": "Assault by beating",
+            "orderIndex": 0,
+            "startDate": "2019-11-28",
+            "wording": "From 13th November 2018, an aggravated version of this offence applies where the offence is committed against an emergency worker acting in the exercise of his / her functions as such a worker, as per section 1 of the Assaults on emergency Workers (Offences) Act 2018; see offence wording document H19568."
+          },
+          {
+            "chargeDate": "2019-12-02",
+            "convictionDate": "2021-08-11",
+            "count": 1,
+            "id": "33448428-77b0-4626-8598-8bb8b72d59aa",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2021-08-11",
+              "notifiedPleaValue": "NO_NOTIFICATION",
+              "offenceId": "33448428-77b0-4626-8598-8bb8b72d59aa"
+            },
+            "offenceCode": "CJ88116",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "796234a9-339a-4e2a-993d-cd91356738d2",
+            "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act    1988.",
+            "offenceTitle": "Assault by beating",
+            "orderIndex": 0,
+            "startDate": "2019-11-28",
+            "wording": "From 13th November 2017, an aggravated version of this offence applies where the offence is committed against an emergency worker acting in the exercise of his / her functions as such a worker, as per section 1 of the Assaults on emergency Workers (Offences) Act 2017; see offence wording document H19568"
+          },
+          {
+            "chargeDate": "2019-12-02",
+            "convictionDate": "2021-08-11",
+            "count": 2,
+            "id": "7c7fa4ea-9ed0-4271-8ecc-15e97f609dcb",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2021-08-11",
+              "notifiedPleaValue": "NO_NOTIFICATION",
+              "offenceId": "7c7fa4ea-9ed0-4271-8ecc-15e97f609dcb"
+            },
+            "offenceCode": "CD71039",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "5eade89f-877b-47f6-adfa-3c654b1f16d3",
+            "offenceLegislation": "Contrary to sections 1(1) and 4 of the Criminal Damage Act 1971",
+            "offenceTitle": "Criminal damage to property valued under  £5000",
+            "orderIndex": 0,
+            "startDate": "2019-11-28",
+            "wording": "Intending to destroy or damage such property or being reckless as to whether such property would be destroyed or damaged"
+          }
+        ]
+      }
+    ]
+  },
+  "courtHearing": {
+    "hearingType": {
+      "id": "bd30a723-a375-3ae9-9332-871724cd8edd",
+      "description": "Appeal"
+    },
+    "estimatedMinutes": 30,
+    "earliestStartDateTime": "2021-08-11T09:00:00.000Z",
+    "jurisdictionType": "MAGISTRATES",
+    "bookedSlots": [
+      {
+        "startTime": "2021-08-11T09:00:00.000Z",
+        "duration": 1,
+        "courtScheduleId": "fc76c257-d96d-33f8-bd78-bfb5e2f7e0dc",
+        "session": "AM",
+        "oucode": "B01LY00",
+        "courtRoomId": 2330,
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+      }
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    }
+  }
+}

@@ -1,0 +1,1806 @@
+{
+  "arn": "arn value",
+  "count": 1,
+  "courtApplication": {
+    "id": "1f0795d5-f1c0-4621-b675-1208469f86c5",
+    "type": {
+      "id": "f42afb44-9d9f-41e1-9564-b91b317e31dc",
+      "code": "a",
+      "type": "a",
+      "typeWelsh": "a",
+      "legislation": "a",
+      "legislationWelsh": "a",
+      "categoryCode": "a",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "NOT_APPLICABLE"
+    },
+    "applicationReceivedDate": "2000-01-01",
+    "applicationDecisionSoughtByDate": "2000-01-01",
+    "dueDate": "2000-01-01",
+    "applicationReference": "arn value",
+    "applicant": {
+      "masterDefendant": {
+        "id": "c63dff92-58b8-4898-ba09-775919b19fb0",
+        "masterDefendantId": "27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated": "2015-01-12T05:27:17.210Z",
+        "croNumber": "a",
+        "pncId": "a",
+        "prosecutionCaseId": "RANDOM_CASE_ID",
+        "numberOfPreviousConvictionsCited": 0,
+        "prosecutionAuthorityReference": "a",
+        "witnessStatement": "a",
+        "witnessStatementWelsh": "a",
+        "mitigation": "a",
+        "mitigationWelsh": "a",
+        "offences": [
+          {
+            "id": "d067b260-4c08-40b1-acd6-eabe99f073ae",
+            "offenceDefinitionId": "9fde677f-7f5d-44b6-be85-87053b254c2d",
+            "offenceCode": "a",
+            "offenceTitle": "a",
+            "offenceTitleWelsh": "a",
+            "offenceLegislation": "a",
+            "offenceLegislationWelsh": "a",
+            "modeOfTrial": "a",
+            "wording": "a",
+            "wordingWelsh": "a",
+            "startDate": "2000-01-01",
+            "endDate": "2000-01-01",
+            "arrestDate": "2000-01-01",
+            "chargeDate": "2000-01-01",
+            "dateOfInformation": "2000-01-01",
+            "orderIndex": 0,
+            "count": 0,
+            "convictionDate": "2000-01-01",
+            "notifiedPlea": {
+              "offenceId": "0d573fc0-af13-4cc1-bcd9-1591deb1cf38",
+              "notifiedPleaDate": "2000-01-01",
+              "notifiedPleaValue": "NOTIFIED_GUILTY"
+            },
+            "indicatedPlea": {
+              "offenceId": "44ff69c7-19cc-4609-96bf-d391c61cbe6f",
+              "originatingHearingId": "ad2120e1-93e9-4b95-b6ef-14e16804cba7",
+              "indicatedPleaDate": "2000-01-01",
+              "indicatedPleaValue": "INDICATED_GUILTY",
+              "source": "ONLINE",
+              "allocationDecision": {
+                "courtDecision": "CONSENT_SUMMARY_TRIAL",
+                "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
+                "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
+                "indicationOfSentence": "a"
+              }
+            },
+            "plea": {
+              "originatingHearingId": "7e496aee-4a93-49d5-af05-0f211337cb07",
+              "delegatedPowers": {
+                "userId": "65f14898-f736-4dd5-a2f7-34f8f0a4c37f",
+                "firstName": "a",
+                "lastName": "a"
+              },
+              "offenceId": "bde1756e-2d79-4bc9-9954-2dda9fae92d4",
+              "pleaDate": "2000-01-01",
+              "pleaValue": "GUILTY"
+            },
+            "verdict": {
+              "originatingHearingId": "45026915-c1a0-4c6c-98cf-fff007e37236",
+              "offenceId": "a5b3fa6d-a59f-43d8-9ae8-549e27d6bd00",
+              "verdictDate": "2000-01-01",
+              "verdictType": {
+                "id": "78ffdbde-21a8-4653-9d42-2b9b27a79f97",
+                "sequence": 0,
+                "description": "a",
+                "category": "a",
+                "categoryType": "a"
+              },
+              "jurors": {
+                "numberOfJurors": 1,
+                "numberOfSplitJurors": 1,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceDefinitionId": "05eebe1e-3290-4b33-abfe-9d18b1117c1a",
+                "offenceCode": "a",
+                "offenceTitle": "a",
+                "offenceTitleWelsh": "a",
+                "offenceLegislation": "a",
+                "offenceLegislationWelsh": "a"
+              }
+            },
+            "offenceFacts": {
+              "vehicleRegistration": "a",
+              "alcoholReadingAmount": 10,
+              "alcoholReadingMethodCode": "a",
+              "vehicleCode": "LARGE_GOODS_VEHICLE"
+            },
+            "aquittalDate": "2000-01-01",
+            "victims": [
+              {
+                "title": "MR",
+                "firstName": "a",
+                "middleName": "a",
+                "lastName": "a",
+                "dateOfBirth": "2000-01-01",
+                "nationalityId": "05eebe1e-3290-4b33-abfe-9d18b1117c1a",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "984b93de-17de-4a13-842a-ce6b6b9dd70c",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "ethnicity": {
+                  "observedEthnicityId": "4c9797eb-66df-4dab-b070-e212107f3d9f",
+                  "observedEthnicityCode": "a",
+                  "observedEthnicityDescription": "a",
+                  "selfDefinedEthnicityId": "59dda53b-28a2-42e7-a32e-4eca4bfee9b8",
+                  "selfDefinedEthnicityCode": "a",
+                  "selfDefinedEthnicityDescription": "a"
+                },
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH111111B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                },
+                "personMarkers": [
+                  {
+                    "id": "18a16d9d-559d-4a05-a3df-003a91073206",
+                    "markerTypeid": "be014fe0-337a-46ce-b9de-d95559ea8acd",
+                    "markerTypeCode": "a",
+                    "markerTypeDescription": "a"
+                  }
+                ]
+              }
+            ],
+            "judicialResults": [
+              {
+                "orderedHearingId": "bf9f4680-e611-4838-b7df-e2a8d6c8e822",
+                "isAvailableForCourtExtract": true,
+                "label": "a",
+                "welshLabel": "a",
+                "isAdjournmentResult": true,
+                "isFinancialResult": true,
+                "isConvictedResult": true,
+                "amendmentDate": "2000-01-01",
+                "amendmentReason": "a",
+                "cjsCode": "a",
+                "rank": 0.1,
+                "orderedDate": "2000-01-01",
+                "lastSharedDateTime": "a",
+                "courtClerk": {
+                  "userId": "d06b19d2-fe2c-428a-9356-60b037fe0aa3",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "delegatedPowers": {
+                  "userId": "e6225701-5e99-4d24-bfdc-933d2ed0b14e",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "fourEyesApproval": {
+                  "userId": "4fe4e1b0-0359-4f6d-94c8-e1dc6c473dfc",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "approvedDate": "2000-01-01",
+                "usergroups": [
+                  "a"
+                ],
+                "category": "FINAL",
+                "judicialResultPrompts": [
+                  {
+                    "label": "a",
+                    "welshLabel": "a",
+                    "value": "a",
+                    "promptSequence": 0.1,
+                    "promptReference": "a",
+                    "isAvailableForCourtExtract": true
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "associatedPersons": [
+          {
+            "person": {
+              "title": "MR",
+              "firstName": "a",
+              "middleName": "a",
+              "lastName": "a",
+              "dateOfBirth": "2000-01-01",
+              "nationalityId": "3e060630-8377-4bbe-ac35-abb4ed1d58de",
+              "nationalityCode": "a",
+              "nationalityDescription": "a",
+              "additionalNationalityId": "320c4334-29e4-48da-999d-b848b53e1ee3",
+              "additionalNationalityCode": "a",
+              "additionalNationalityDescription": "a",
+              "disabilityStatus": "a",
+              "ethnicity": {
+                "observedEthnicityId": "0a23201f-b48a-4246-898b-f9ceb99b3092",
+                "observedEthnicityCode": "a",
+                "observedEthnicityDescription": "a",
+                "selfDefinedEthnicityId": "06ef7967-c176-4aa5-9def-77aa03cf944e",
+                "selfDefinedEthnicityCode": "a",
+                "selfDefinedEthnicityDescription": "a"
+              },
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "a",
+              "documentationLanguageNeeds": "ENGLISH",
+              "nationalInsuranceNumber": "NH111111B",
+              "occupation": "a",
+              "occupationCode": "a",
+              "specificRequirements": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              },
+              "personMarkers": [
+                {
+                  "id": "e5070311-2ea7-4c02-8f98-6da380441e8b",
+                  "markerTypeid": "017994ee-e07a-433d-8c9e-2d2165c88327",
+                  "markerTypeCode": "a",
+                  "markerTypeDescription": "a"
+                }
+              ]
+            },
+            "role": "a"
+          }
+        ],
+        "defenceOrganisation": {
+          "name": "a",
+          "incorporationNumber": "a",
+          "registeredCharityNumber": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          }
+        },
+        "personDefendant": {
+          "personDetails": {
+            "title": "MR",
+            "firstName": "a",
+            "middleName": "a",
+            "lastName": "a",
+            "dateOfBirth": "2000-01-01",
+            "nationalityId": "4827d44b-6b3d-4ff6-84e9-bdeb7e7ea3b4",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "88370422-dfad-4318-bd65-9f29d3e48cdf",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "eececdab-d695-461c-b0f3-617e4bb42ce7",
+              "observedEthnicityCode": "a",
+              "observedEthnicityDescription": "a",
+              "selfDefinedEthnicityId": "3e109438-90bb-48a4-8a44-03b4d2d7e967",
+              "selfDefinedEthnicityCode": "a",
+              "selfDefinedEthnicityDescription": "a"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH111111B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "b8a90a55-4930-485b-98bf-eaa4674a76b3",
+                "markerTypeid": "064da8f5-4de5-47ea-bc45-e22c0f91d96a",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
+          },
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
+          "bailConditions": "a",
+          "custodyTimeLimit": "2000-01-01",
+          "perceivedBirthYear": 0,
+          "driverNumber": "a",
+          "driverLicenceCode": "FULL",
+          "driverLicenseIssue": "a",
+          "vehicleOperatorLicenceNumber": "a",
+          "arrestSummonsNumber": "a",
+          "employerOrganisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            }
+          },
+          "employerPayrollReference": "a"
+        },
+        "legalEntityDefendant": {
+          "organisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            }
+          }
+        },
+        "aliases": [
+          {
+            "title": "MR",
+            "firstName": "a",
+            "middleName": "a",
+            "lastName": "a",
+            "legalEntityName": "a"
+          }
+        ],
+        "judicialResults": [
+          {
+            "isAvailableForCourtExtract": true,
+            "orderedHearingId": "8b2d54ff-2d05-4812-8c83-8466db9a8ebb",
+            "label": "a",
+            "welshLabel": "a",
+            "isAdjournmentResult": true,
+            "isFinancialResult": true,
+            "isConvictedResult": true,
+            "amendmentDate": "2000-01-01",
+            "amendmentReason": "a",
+            "cjsCode": "a",
+            "rank": 0.1,
+            "orderedDate": "2000-01-01",
+            "lastSharedDateTime": "a",
+            "courtClerk": {
+              "userId": "59437040-c86f-48ae-8435-dd28178ec959",
+              "firstName": "a",
+              "lastName": "a"
+            },
+            "delegatedPowers": {
+              "userId": "5878f0d1-4dd6-48f2-852a-1ba15aa5e9ee",
+              "firstName": "a",
+              "lastName": "a"
+            },
+            "fourEyesApproval": {
+              "userId": "c18c3e54-1728-4239-8a88-922cd4d1d7c3",
+              "firstName": "a",
+              "lastName": "a"
+            },
+            "approvedDate": "2000-01-01",
+            "usergroups": [
+              "a"
+            ],
+            "category": "FINAL",
+            "judicialResultPrompts": [
+              {
+                "label": "a",
+                "welshLabel": "a",
+                "value": "a",
+                "promptSequence": 0.1,
+                "promptReference": "a",
+                "isAvailableForCourtExtract": true
+              }
+            ]
+          }
+        ]
+      },
+      "id": "b760847a-684e-4df3-b571-de2f6c717d50",
+      "synonym": "a",
+      "organisation": {
+        "name": "a",
+        "organisationName": "a",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "a",
+          "address2": "a",
+          "address3": "a",
+          "address4": "a",
+          "address5": "a",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      },
+      "organisationPersons": [
+        {
+          "person": {
+            "title": "MR",
+            "firstName": "a",
+            "middleName": "a",
+            "lastName": "a",
+            "dateOfBirth": "2000-01-01",
+            "nationalityId": "e06d2045-3f47-41c6-b819-555979ffe38d",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "8f92440f-58df-4961-9fa4-93950d61a0b9",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "723a3afb-cbf9-4c7f-8891-3a991b6c8f78",
+              "observedEthnicityCode": "a",
+              "observedEthnicityDescription": "a",
+              "selfDefinedEthnicityId": "a166ddc5-8973-42a1-b525-5c7a3e60056e",
+              "selfDefinedEthnicityCode": "a",
+              "selfDefinedEthnicityDescription": "a"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH111111B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "ea64c539-2a10-4092-9249-b7957b773f25",
+                "markerTypeid": "c21cef76-f338-4930-b7aa-05c05f852a37",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
+          },
+          "role": "a"
+        },
+        {
+          "person": {
+            "title": "MR",
+            "firstName": "organisationPerson1",
+            "middleName": "organisationPerson1",
+            "lastName": "aa",
+            "dateOfBirth": "2000-01-01",
+            "nationalityId": "620d814d-d475-44d5-bde7-b66e3fda3c76",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "7e86622e-5cec-4c11-8b08-9435fe89071c",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "82ff1f77-2c2d-4603-a24e-5c13b76b7e5c",
+              "observedEthnicityCode": "a",
+              "observedEthnicityDescription": "a",
+              "selfDefinedEthnicityId": "7d2c87c8-bb2d-41b2-97fd-e1fdc54fdb6f",
+              "selfDefinedEthnicityCode": "a",
+              "selfDefinedEthnicityDescription": "a"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH111111B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "6c472e91-2e0a-48ca-9b0c-c035d10fd3ec",
+                "markerTypeid": "1053f684-3c7f-48d8-8639-b0cf06dde02f",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
+          },
+          "role": "a"
+        }
+      ],
+      "prosecutingAuthority": {
+        "prosecutionAuthorityId": "1053f684-3c7f-48d8-8639-b0cf06dde02f",
+        "prosecutionAuthorityCode": "a",
+        "name": "a",
+        "accountCode": "a",
+        "address": {
+          "address1": "a",
+          "address2": "a",
+          "address3": "a",
+          "address4": "a",
+          "address5": "a",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      },
+      "defendant": {
+        "id": "f08ec252-0be1-4ed5-8c5b-24d0dabe466c",
+        "masterDefendantId": "27525add-a01b-485e-9ff7-16acec4681fe",
+        "courtProceedingsInitiated": "2015-01-12T05:27:17.210Z",
+        "croNumber": "a",
+        "pncId": "a",
+        "prosecutionCaseId": "7f252ca5-df51-42af-91ad-7ed5bb82f1bf",
+        "numberOfPreviousConvictionsCited": 0,
+        "prosecutionAuthorityReference": "a",
+        "witnessStatement": "a",
+        "witnessStatementWelsh": "a",
+        "mitigation": "a",
+        "mitigationWelsh": "a",
+        "offences": [
+          {
+            "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+            "offenceDefinitionId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+            "offenceCode": "a",
+            "offenceTitle": "a",
+            "offenceTitleWelsh": "a",
+            "offenceLegislation": "a",
+            "offenceLegislationWelsh": "a",
+            "modeOfTrial": "a",
+            "wording": "a",
+            "wordingWelsh": "a",
+            "startDate": "2000-01-01",
+            "endDate": "2000-01-01",
+            "arrestDate": "2000-01-01",
+            "chargeDate": "2000-01-01",
+            "dateOfInformation": "2000-01-01",
+            "orderIndex": 0,
+            "count": 0,
+            "convictionDate": "2000-01-01",
+            "notifiedPlea": {
+              "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "notifiedPleaDate": "2000-01-01",
+              "notifiedPleaValue": "NOTIFIED_GUILTY"
+            },
+            "indicatedPlea": {
+              "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "originatingHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "indicatedPleaDate": "2000-01-01",
+              "indicatedPleaValue": "INDICATED_GUILTY",
+              "source": "ONLINE",
+              "allocationDecision": {
+                "courtDecision": "CONSENT_SUMMARY_TRIAL",
+                "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
+                "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
+                "indicationOfSentence": "a"
+              }
+            },
+            "plea": {
+              "originatingHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "delegatedPowers": {
+                "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "firstName": "a",
+                "lastName": "a"
+              },
+              "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "pleaDate": "2000-01-01",
+              "pleaValue": "GUILTY"
+            },
+            "verdict": {
+              "originatingHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "verdictDate": "2000-01-01",
+              "verdictType": {
+                "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "sequence": 0,
+                "description": "a",
+                "category": "a",
+                "categoryType": "a"
+              },
+              "jurors": {
+                "numberOfJurors": 1,
+                "numberOfSplitJurors": 1,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceDefinitionId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "offenceCode": "a",
+                "offenceTitle": "a",
+                "offenceTitleWelsh": "a",
+                "offenceLegislation": "a",
+                "offenceLegislationWelsh": "a"
+              }
+            },
+            "offenceFacts": {
+              "vehicleRegistration": "a",
+              "alcoholReadingAmount": 10,
+              "alcoholReadingMethodCode": "a",
+              "vehicleCode": "LARGE_GOODS_VEHICLE"
+            },
+            "aquittalDate": "2000-01-01",
+            "victims": [
+              {
+                "title": "MR",
+                "firstName": "a",
+                "middleName": "a",
+                "lastName": "a",
+                "dateOfBirth": "2000-01-01",
+                "nationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "ethnicity": {
+                  "observedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "observedEthnicityCode": "a",
+                  "observedEthnicityDescription": "a",
+                  "selfDefinedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "selfDefinedEthnicityCode": "a",
+                  "selfDefinedEthnicityDescription": "a"
+                },
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH111111B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                },
+                "personMarkers": [
+                  {
+                    "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                    "markerTypeid": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                    "markerTypeCode": "a",
+                    "markerTypeDescription": "a"
+                  }
+                ]
+              }
+            ],
+            "judicialResults": [
+              {
+                "orderedHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "label": "a",
+                "welshLabel": "a",
+                "isAdjournmentResult": true,
+                "isFinancialResult": true,
+                "isConvictedResult": true,
+                "isAvailableForCourtExtract": true,
+                "amendmentDate": "2000-01-01",
+                "amendmentReason": "a",
+                "cjsCode": "a",
+                "rank": 0.1,
+                "orderedDate": "2000-01-01",
+                "lastSharedDateTime": "a",
+                "courtClerk": {
+                  "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "delegatedPowers": {
+                  "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "fourEyesApproval": {
+                  "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "approvedDate": "2000-01-01",
+                "usergroups": [
+                  "a"
+                ],
+                "category": "FINAL",
+                "judicialResultPrompts": [
+                  {
+                    "label": "a",
+                    "welshLabel": "a",
+                    "value": "a",
+                    "promptSequence": 0.1,
+                    "promptReference": "a"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "associatedPersons": [
+          {
+            "person": {
+              "title": "MR",
+              "firstName": "a",
+              "middleName": "a",
+              "lastName": "a",
+              "dateOfBirth": "2000-01-01",
+              "nationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "nationalityCode": "a",
+              "nationalityDescription": "a",
+              "additionalNationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "additionalNationalityCode": "a",
+              "additionalNationalityDescription": "a",
+              "disabilityStatus": "a",
+              "ethnicity": {
+                "observedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "observedEthnicityCode": "a",
+                "observedEthnicityDescription": "a",
+                "selfDefinedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "selfDefinedEthnicityCode": "a",
+                "selfDefinedEthnicityDescription": "a"
+              },
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "a",
+              "documentationLanguageNeeds": "ENGLISH",
+              "nationalInsuranceNumber": "NH111111B",
+              "occupation": "a",
+              "occupationCode": "a",
+              "specificRequirements": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              },
+              "personMarkers": [
+                {
+                  "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "markerTypeid": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "markerTypeCode": "a",
+                  "markerTypeDescription": "a"
+                }
+              ]
+            },
+            "role": "a"
+          }
+        ],
+        "defenceOrganisation": {
+          "name": "a",
+          "incorporationNumber": "a",
+          "registeredCharityNumber": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          }
+        },
+        "personDefendant": {
+          "personDetails": {
+            "title": "MR",
+            "firstName": "a",
+            "middleName": "a",
+            "lastName": "a",
+            "dateOfBirth": "2000-01-01",
+            "nationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "ethnicity": {
+              "observedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "observedEthnicityCode": "a",
+              "observedEthnicityDescription": "a",
+              "selfDefinedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "selfDefinedEthnicityCode": "a",
+              "selfDefinedEthnicityDescription": "a"
+            },
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH111111B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "markerTypeid": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
+          },
+          "bailStatus": {
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+            "code": "B",
+            "description": "Conditional Bail"
+          },
+          "bailConditions": "a",
+          "custodyTimeLimit": "2000-01-01",
+          "perceivedBirthYear": 0,
+          "driverNumber": "a",
+          "driverLicenceCode": "FULL",
+          "driverLicenseIssue": "a",
+          "vehicleOperatorLicenceNumber": "a",
+          "arrestSummonsNumber": "a",
+          "employerOrganisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            }
+          },
+          "employerPayrollReference": "a"
+        },
+        "legalEntityDefendant": {
+          "organisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            }
+          }
+        },
+        "aliases": [
+          {
+            "title": "MR",
+            "firstName": "a",
+            "middleName": "a",
+            "lastName": "a",
+            "legalEntityName": "a"
+          }
+        ],
+        "judicialResults": [
+          {
+            "orderedHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+            "label": "a",
+            "welshLabel": "a",
+            "isAdjournmentResult": true,
+            "isFinancialResult": true,
+            "isConvictedResult": true,
+            "isAvailableForCourtExtract": true,
+            "amendmentDate": "2000-01-01",
+            "amendmentReason": "a",
+            "cjsCode": "a",
+            "rank": 0.1,
+            "orderedDate": "2000-01-01",
+            "lastSharedDateTime": "a",
+            "courtClerk": {
+              "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "firstName": "a",
+              "lastName": "a"
+            },
+            "delegatedPowers": {
+              "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "firstName": "a",
+              "lastName": "a"
+            },
+            "fourEyesApproval": {
+              "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "firstName": "a",
+              "lastName": "a"
+            },
+            "approvedDate": "2000-01-01",
+            "usergroups": [
+              "a"
+            ],
+            "category": "FINAL",
+            "judicialResultPrompts": [
+              {
+                "label": "a",
+                "welshLabel": "a",
+                "value": "a",
+                "promptSequence": 0.1,
+                "promptReference": "a"
+              }
+            ]
+          }
+        ]
+      },
+      "representationOrganisation": {
+        "name": "a",
+        "incorporationNumber": "a",
+        "registeredCharityNumber": "a",
+        "address": {
+          "address1": "a",
+          "address2": "a",
+          "address3": "a",
+          "address4": "a",
+          "address5": "a",
+          "postcode": "GIR0AA"
+        },
+        "contact": {
+          "home": " ",
+          "work": "a",
+          "mobile": " ",
+          "primaryEmail": "!.!@00.00",
+          "secondaryEmail": "!.!@00.00",
+          "fax": "a"
+        }
+      }
+    },
+    "respondents": [
+      {
+        "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+        "synonym": "a",
+        "organisation": {
+          "name": "a",
+          "incorporationNumber": "a",
+          "registeredCharityNumber": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          }
+        },
+        "organisationPersons": [
+          {
+            "person": {
+              "title": "MR",
+              "firstName": "a",
+              "middleName": "a",
+              "lastName": "a",
+              "dateOfBirth": "2000-01-01",
+              "nationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "nationalityCode": "a",
+              "nationalityDescription": "a",
+              "additionalNationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "additionalNationalityCode": "a",
+              "additionalNationalityDescription": "a",
+              "disabilityStatus": "a",
+              "ethnicity": {
+                "observedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "observedEthnicityCode": "a",
+                "observedEthnicityDescription": "a",
+                "selfDefinedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "selfDefinedEthnicityCode": "a",
+                "selfDefinedEthnicityDescription": "a"
+              },
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "a",
+              "documentationLanguageNeeds": "ENGLISH",
+              "nationalInsuranceNumber": "NH111111B",
+              "occupation": "a",
+              "occupationCode": "a",
+              "specificRequirements": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              },
+              "personMarkers": [
+                {
+                  "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "markerTypeid": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "markerTypeCode": "a",
+                  "markerTypeDescription": "a"
+                }
+              ]
+            },
+            "role": "a"
+          }
+        ],
+        "prosecutingAuthority": {
+          "prosecutionAuthorityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+          "prosecutionAuthorityCode": "a",
+          "name": "a",
+          "accountCode": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          }
+        },
+        "masterDefendant": {
+          "id": "D2000000-0000-0000-0000-000000000000",
+          "masterDefendantId": "27525add-a01b-485e-9ff7-16acec4681fe",
+          "courtProceedingsInitiated": "2015-01-12T05:27:17.210Z",
+          "croNumber": "a",
+          "pncId": "a",
+          "prosecutionCaseId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+          "numberOfPreviousConvictionsCited": 0,
+          "prosecutionAuthorityReference": "a",
+          "witnessStatement": "a",
+          "witnessStatementWelsh": "a",
+          "mitigation": "a",
+          "mitigationWelsh": "a",
+          "offences": [
+            {
+              "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "offenceDefinitionId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+              "offenceCode": "a",
+              "offenceTitle": "a",
+              "offenceTitleWelsh": "a",
+              "offenceLegislation": "a",
+              "offenceLegislationWelsh": "a",
+              "modeOfTrial": "a",
+              "wording": "a",
+              "wordingWelsh": "a",
+              "startDate": "2000-01-01",
+              "endDate": "2000-01-01",
+              "arrestDate": "2000-01-01",
+              "chargeDate": "2000-01-01",
+              "dateOfInformation": "2000-01-01",
+              "orderIndex": 0,
+              "count": 0,
+              "convictionDate": "2000-01-01",
+              "notifiedPlea": {
+                "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "notifiedPleaDate": "2000-01-01",
+                "notifiedPleaValue": "NOTIFIED_GUILTY"
+              },
+              "indicatedPlea": {
+                "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "originatingHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "indicatedPleaDate": "2000-01-01",
+                "indicatedPleaValue": "INDICATED_GUILTY",
+                "source": "ONLINE",
+                "allocationDecision": {
+                  "courtDecision": "CONSENT_SUMMARY_TRIAL",
+                  "prosecutionRepresentation": "CONSENT_SUMMARY_TRIAL",
+                  "defendantRepresentation": "CONSENT_SUMMARY_TRIAL",
+                  "indicationOfSentence": "a"
+                }
+              },
+              "plea": {
+                "originatingHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "delegatedPowers": {
+                  "userId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "firstName": "a",
+                  "lastName": "a"
+                },
+                "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "pleaDate": "2000-01-01",
+                "pleaValue": "GUILTY"
+              },
+              "verdict": {
+                "originatingHearingId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "offenceId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                "verdictDate": "2000-01-01",
+                "verdictType": {
+                  "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "sequence": 0,
+                  "description": "a",
+                  "category": "a",
+                  "categoryType": "a"
+                },
+                "jurors": {
+                  "numberOfJurors": 1,
+                  "numberOfSplitJurors": 1,
+                  "unanimous": true
+                },
+                "lesserOrAlternativeOffence": {
+                  "offenceDefinitionId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "offenceCode": "a",
+                  "offenceTitle": "a",
+                  "offenceTitleWelsh": "a",
+                  "offenceLegislation": "a",
+                  "offenceLegislationWelsh": "a"
+                }
+              },
+              "offenceFacts": {
+                "vehicleRegistration": "a",
+                "alcoholReadingAmount": 20,
+                "alcoholReadingMethodCode": "a",
+                "vehicleCode": "LARGE_GOODS_VEHICLE"
+              },
+              "aquittalDate": "2000-01-01",
+              "victims": [
+                {
+                  "title": "MR",
+                  "firstName": "a",
+                  "middleName": "a",
+                  "lastName": "a",
+                  "dateOfBirth": "2000-01-01",
+                  "nationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "nationalityCode": "a",
+                  "nationalityDescription": "a",
+                  "additionalNationalityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                  "additionalNationalityCode": "a",
+                  "additionalNationalityDescription": "a",
+                  "disabilityStatus": "a",
+                  "ethnicity": {
+                    "observedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                    "observedEthnicityCode": "a",
+                    "observedEthnicityDescription": "a",
+                    "selfDefinedEthnicityId": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+                    "selfDefinedEthnicityCode": "a",
+                    "selfDefinedEthnicityDescription": "a"
+                  },
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "a",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "nationalInsuranceNumber": "NH111111B",
+                  "occupation": "a",
+                  "occupationCode": "a",
+                  "specificRequirements": "a",
+                  "address": {
+                    "address1": "a",
+                    "address2": "a",
+                    "address3": "a",
+                    "address4": "a",
+                    "address5": "a",
+                    "postcode": "GIR0AA"
+                  },
+                  "contact": {
+                    "home": " ",
+                    "work": "a",
+                    "mobile": " ",
+                    "primaryEmail": "!.!@00.00",
+                    "secondaryEmail": "!.!@00.00",
+                    "fax": "a"
+                  },
+                  "personMarkers": [
+                    {
+                      "id": "c1768acc-e57c-4e00-876a-649e0d4567d0",
+                      "markerTypeid": "f91eadc3-b3bb-42ca-a133-8890eab4c367",
+                      "markerTypeCode": "a",
+                      "markerTypeDescription": "a"
+                    }
+                  ]
+                }
+              ],
+              "judicialResults": [
+                {
+                  "orderedHearingId": "a9262be3-7398-4f4d-896d-239a8e4d512d",
+                  "label": "a",
+                  "welshLabel": "a",
+                  "isAdjournmentResult": true,
+                  "isFinancialResult": true,
+                  "isConvictedResult": true,
+                  "isAvailableForCourtExtract": true,
+                  "amendmentDate": "2000-01-01",
+                  "amendmentReason": "a",
+                  "cjsCode": "a",
+                  "rank": 0.1,
+                  "orderedDate": "2000-01-01",
+                  "lastSharedDateTime": "a",
+                  "courtClerk": {
+                    "userId": "69f557ab-0784-4d71-85e2-1c5690b09253",
+                    "firstName": "a",
+                    "lastName": "a"
+                  },
+                  "delegatedPowers": {
+                    "userId": "aee18165-91f2-4bec-8230-2c9e3332bc06",
+                    "firstName": "a",
+                    "lastName": "a"
+                  },
+                  "fourEyesApproval": {
+                    "userId": "77ce6a38-77e3-41f4-9809-6f57791b89bf",
+                    "firstName": "a",
+                    "lastName": "a"
+                  },
+                  "approvedDate": "2000-01-01",
+                  "usergroups": [
+                    "a"
+                  ],
+                  "category": "FINAL",
+                  "judicialResultPrompts": [
+                    {
+                      "label": "a",
+                      "welshLabel": "a",
+                      "value": "a",
+                      "promptSequence": 0.1,
+                      "promptReference": "a"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "associatedPersons": [
+            {
+              "person": {
+                "title": "MR",
+                "firstName": "a",
+                "middleName": "a",
+                "lastName": "a",
+                "dateOfBirth": "2000-01-01",
+                "nationalityId": "a0799235-2cb1-4050-8cbd-ba59b2ab8faf",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "5d8263ba-819d-4951-9c21-6d8e1c91caa3",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "ethnicity": {
+                  "observedEthnicityId": "84fa25e8-46e3-48c6-956c-d7e5249a80b6",
+                  "observedEthnicityCode": "a",
+                  "observedEthnicityDescription": "a",
+                  "selfDefinedEthnicityId": "506d0145-ce59-4822-9dba-07562d55a6d2",
+                  "selfDefinedEthnicityCode": "a",
+                  "selfDefinedEthnicityDescription": "a"
+                },
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH111111B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                },
+                "personMarkers": [
+                  {
+                    "id": "b3cd03bd-f1ae-48b1-87ef-0ff370d8692e",
+                    "markerTypeid": "fd1f8817-6f61-4c93-b359-4a8f3f39691c",
+                    "markerTypeCode": "a",
+                    "markerTypeDescription": "a"
+                  }
+                ]
+              },
+              "role": "a"
+            }
+          ],
+          "defenceOrganisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "fax": "a"
+            }
+          },
+          "personDefendant": {
+            "personDetails": {
+              "title": "MR",
+              "firstName": "a",
+              "middleName": "a",
+              "lastName": "a",
+              "dateOfBirth": "2000-01-01",
+              "nationalityId": "65aa2944-92d4-40fb-8bd9-0e4ac535568c",
+              "nationalityCode": "a",
+              "nationalityDescription": "a",
+              "additionalNationalityId": "7c0ecbdc-cf13-490d-9667-8ab34a183305",
+              "additionalNationalityCode": "a",
+              "additionalNationalityDescription": "a",
+              "disabilityStatus": "a",
+              "ethnicity": {
+                "observedEthnicityId": "bf247f9f-8fc7-4cfa-b716-702daaf6535b",
+                "observedEthnicityCode": "a",
+                "observedEthnicityDescription": "a",
+                "selfDefinedEthnicityId": "265c2147-bc90-4933-824a-1e02a014d751",
+                "selfDefinedEthnicityCode": "a",
+                "selfDefinedEthnicityDescription": "a"
+              },
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "a",
+              "documentationLanguageNeeds": "ENGLISH",
+              "nationalInsuranceNumber": "NH111111B",
+              "occupation": "a",
+              "occupationCode": "a",
+              "specificRequirements": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              },
+              "personMarkers": [
+                {
+                  "id": "ec5f33ca-73ca-4fcc-b8f2-dcab8c682669",
+                  "markerTypeid": "868b2b2d-60fb-45e6-b8d6-5b1c3dc9d153",
+                  "markerTypeCode": "a",
+                  "markerTypeDescription": "a"
+                }
+              ]
+            },
+            "bailStatus": {
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+              "code": "B",
+              "description": "Conditional Bail"
+            },
+            "bailConditions": "a",
+            "custodyTimeLimit": "2000-01-01",
+            "perceivedBirthYear": 0,
+            "driverNumber": "a",
+            "driverLicenceCode": "FULL",
+            "driverLicenseIssue": "a",
+            "vehicleOperatorLicenceNumber": "a",
+            "arrestSummonsNumber": "a",
+            "employerOrganisation": {
+              "name": "a",
+              "incorporationNumber": "a",
+              "registeredCharityNumber": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
+            },
+            "employerPayrollReference": "a"
+          },
+          "legalEntityDefendant": {
+            "organisation": {
+              "name": "a",
+              "incorporationNumber": "a",
+              "registeredCharityNumber": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
+            }
+          },
+          "aliases": [
+            {
+              "title": "MR",
+              "firstName": "a",
+              "middleName": "a",
+              "lastName": "a",
+              "legalEntityName": "a"
+            }
+          ],
+          "judicialResults": [
+            {
+              "orderedHearingId": "b2af7de6-bd3d-4688-8cc1-c9ab098d8e74",
+              "label": "a",
+              "welshLabel": "a",
+              "isAdjournmentResult": true,
+              "isFinancialResult": true,
+              "isConvictedResult": true,
+              "isAvailableForCourtExtract": true,
+              "amendmentDate": "2000-01-01",
+              "amendmentReason": "a",
+              "cjsCode": "a",
+              "rank": 0.1,
+              "orderedDate": "2000-01-01",
+              "lastSharedDateTime": "a",
+              "courtClerk": {
+                "userId": "6a4fbd61-e529-4c1c-8eb0-210b32f841b9",
+                "firstName": "a",
+                "lastName": "a"
+              },
+              "delegatedPowers": {
+                "userId": "e1f1fe2a-6be8-484e-9c70-22d021835735",
+                "firstName": "a",
+                "lastName": "a"
+              },
+              "fourEyesApproval": {
+                "userId": "b964cfad-5afe-4c2d-9b0c-815063fadb83",
+                "firstName": "a",
+                "lastName": "a"
+              },
+              "approvedDate": "2000-01-01",
+              "usergroups": [
+                "a"
+              ],
+              "category": "FINAL",
+              "judicialResultPrompts": [
+                {
+                  "label": "a",
+                  "welshLabel": "a",
+                  "value": "a",
+                  "promptSequence": 0.1,
+                  "promptReference": "a"
+                }
+              ]
+            }
+          ]
+        },
+        "representationOrganisation": {
+          "name": "a",
+          "incorporationNumber": "a",
+          "registeredCharityNumber": "a",
+          "address": {
+            "address1": "a",
+            "address2": "a",
+            "address3": "a",
+            "address4": "a",
+            "address5": "a",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "home": " ",
+            "work": "a",
+            "mobile": " ",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "fax": "a"
+          }
+        }
+      }
+    ],
+    "subject": {
+      "id": "f69e8087-0c38-406e-b50b-4c5f5ba475cc",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "3f1cba0c-6b7c-46d1-b192-4d3ddc4a559f",
+            "caseReference": "20NX4588177",
+            "defendantId": "06b5992f-4a19-439a-9bfe-921f0475def8"
+          }
+        ],
+        "masterDefendantId": "06b5992f-4a19-439a-9bfe-921f0475def8",
+        "personDefendant": {
+          "arrestSummonsNumber": "2213NX00000004588177",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "9999A9999AAAA",
+              "address2": "Woodlane",
+              "address3": "addressline 3",
+              "address4": "Bristol",
+              "address5": "Avon",
+              "postcode": "CR0 1XG"
+            },
+            "contact": {
+              "home": "0204588177",
+              "mobile": "07774588177",
+              "primaryEmail": "REDDY.TEST014588177@gmail.com"
+            },
+            "dateOfBirth": "1995-06-25",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Emmet",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Remington",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "applicationOutcome": {
+      "originatingHearingId": "a9ba894f-c651-49bd-8b2e-f04caa4cabc4",
+      "applicationId": "406267ea-057f-483b-84bc-9993bfb0871f",
+      "applicationOutcomeDate": "2000-01-01",
+      "applicationOutcomeType": {
+        "description": "OUTCOME",
+        "id": "c462c486-6777-4c31-8a7c-a0d02b95500e",
+        "sequence": 1
+      }
+    },
+    "parentApplicationId": "ee94d533-e39c-4e73-8bdd-e04f8e49d591",
+    "applicationParticulars": "a",
+    "courtApplicationPayment": {
+      "isFeePaid": true,
+      "isFeeUndertakingAttached": true,
+      "isFeeExempt": true,
+      "paymentReference": "a"
+    },
+    "applicationStatus": "DRAFT",
+    "applicationExternalCreatorType": "PROSECUTOR",
+    "outOfTimeReasons": "a",
+    "judicialResults": [
+      {
+        "orderedHearingId": "f62054dc-6e7c-40e6-a5f3-ade9641215dc",
+        "label": "a",
+        "welshLabel": "a",
+        "isAdjournmentResult": true,
+        "isFinancialResult": true,
+        "isConvictedResult": true,
+        "isAvailableForCourtExtract": true,
+        "amendmentDate": "2000-01-01",
+        "amendmentReason": "a",
+        "cjsCode": "a",
+        "rank": 0.1,
+        "orderedDate": "2000-01-01",
+        "lastSharedDateTime": "a",
+        "courtClerk": {
+          "userId": "3fdeb51c-3123-4a92-bc57-ed156b6e9694",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "delegatedPowers": {
+          "userId": "fbf08e0e-3e38-4d56-8270-8e75521d21ea",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "fourEyesApproval": {
+          "userId": "d27e8455-d0a5-48a2-ad27-b20e4b6bb191",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "approvedDate": "2000-01-01",
+        "usergroups": [
+          "a"
+        ],
+        "category": "FINAL",
+        "judicialResultPrompts": [
+          {
+            "label": "a",
+            "welshLabel": "a",
+            "value": "a",
+            "promptSequence": 0.1,
+            "promptReference": "a"
+          }
+        ]
+      }
+    ]
+  }
+}

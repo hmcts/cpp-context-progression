@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/generate-court-register-by-date.json",
+  "type": "object",
+  "properties": {
+    "registerDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "courtHouse": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "registerDate"
+  ],
+  "additionalProperties": false
+}

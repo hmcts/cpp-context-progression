@@ -1,0 +1,81 @@
+{
+  "pleaStatusTypes": [
+    {
+      "sequence":20,
+      "pleaTypeCode":"G",
+      "pleaTypeUIFlag":true,
+      "pleaTypeDescription":"Guilty",
+      "pleaTypeGuiltyFlag":"Yes",
+      "pleaTypeCivilFlag":"No",
+      "pleaStatusCode":"1",
+      "pleaValue": "GUILTY",
+      "jurisdiction": "EITHER"
+    },
+    {
+      "sequence":40,
+      "pleaTypeCode":"GSJP",
+      "pleaTypeUIFlag":true,
+      "pleaTypeDescription":"Guilty Single Justice Procedure",
+      "pleaTypeGuiltyFlag":"Yes",
+      "pleaTypeCivilFlag":"No",
+      "pleaStatusCode":"6",
+      "pleaValue": "GUILTY_SINGLE_JUSTICE_PROCEDURE",
+      "jurisdiction": "MAGISTRATES"
+    },
+    {
+      "sequence":50,
+      "pleaTypeCode":"IG",
+      "pleaTypeUIFlag":true,
+      "pleaTypeDescription":"Indicated plea of Guilty",
+      "pleaTypeGuiltyFlag":"Yes",
+      "pleaTypeCivilFlag":"No",
+      "pleaStatusCode":"1",
+      "pleaValue": "INDICATED_GUILTY",
+      "jurisdiction": "MAGISTRATES"
+    },
+    {
+      "sequence":60,
+      "pleaTypeCode":"ADB",
+      "pleaTypeUIFlag":false,
+      "pleaTypeDescription":"Admits Breach",
+      "pleaTypeGuiltyFlag":"Yes",
+      "pleaTypeCivilFlag":"No",
+      "pleaStatusCode":"1",
+      "pleaValue": "ADMITS_BREACH",
+      "jurisdiction": "MAGISTRATES"
+    },
+    {
+      "sequence":70,
+      "pleaTypeCode":"NG",
+      "pleaTypeUIFlag":true,
+      "pleaTypeDescription":"Not Guilty",
+      "pleaTypeGuiltyFlag":"No",
+      "pleaTypeCivilFlag":"No",
+      "pleaStatusCode":"2",
+      "pleaValue": "NOT_GUILTY",
+      "jurisdiction": "EITHER"
+    },
+    {
+      "sequence":80,
+      "pleaTypeCode":"UNFIT",
+      "pleaTypeUIFlag":true,
+      "pleaTypeDescription":"Unfit to Plead",
+      "pleaTypeGuiltyFlag":"No",
+      "pleaTypeCivilFlag":"No",
+      "pleaStatusCode":"3",
+      "pleaValue": "UNFIT_TO_PLEAD",
+      "jurisdiction": "MAGISTRATES"
+    },
+    {
+      "sequence":130,
+      "pleaTypeCode":"CON",
+      "pleaTypeUIFlag":false,
+      "pleaTypeDescription":"Consents",
+      "pleaTypeGuiltyFlag":"Yes",
+      "pleaTypeCivilFlag":"Yes",
+      "pleaStatusCode":"7",
+      "pleaValue": "CONSENTS",
+      "jurisdiction": "MAGISTRATES"
+    }
+  ]
+}

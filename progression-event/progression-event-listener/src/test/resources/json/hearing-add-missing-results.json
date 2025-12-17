@@ -1,0 +1,314 @@
+{
+  "prosecutionCaseId": "bcaec5fc-f01f-47f1-b42d-becde3c45c23",
+  "hearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+  "defendantId": "359584a2-cb26-43e6-b761-4e7deae7d9f5",
+  "offenceId": "14f5345e-5508-4d92-a548-a9cd267263b1",
+  "defendantCaseJudicialResults": [
+    {
+      "alwaysPublished": false,
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "category": "ANCILLARY",
+      "courtClerk": {
+        "firstName": "David",
+        "lastName": "Godfrey",
+        "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+      },
+      "d20": false,
+      "excludedFromResults": false,
+      "isAdjournmentResult": false,
+      "isAvailableForCourtExtract": true,
+      "isConvictedResult": false,
+      "isDeleted": false,
+      "isFinancialResult": false,
+      "isNewAmendment": true,
+      "isUnscheduled": false,
+      "judicialResultId": "f5e42367-64b5-4d3d-8049-b9da33ce4fd3",
+      "judicialResultPrompts": [
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "a7764b92-cd6e-428a-b8c0-ba67809a01ec",
+          "label": "Name of witness(es)",
+          "promptReference": "nameOfWitnesses",
+          "promptSequence": 100,
+          "type": "TXT",
+          "usergroups": [
+          ],
+          "value": "Kerry-Ann Levett",
+          "welshValue": "Kerry-Ann Levett"
+        },
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "ca43ea08-3a2b-49cf-bb7f-ac350cc519d6",
+          "label": "Representative's name and address first name",
+          "promptReference": "representativesnameandaddressFirstName",
+          "promptSequence": 200,
+          "type": "NAMEADDRESS",
+          "usergroups": [
+          ],
+          "value": "Henary",
+          "welshValue": "Henary"
+        },
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "ca43ea08-3a2b-49cf-bb7f-ac350cc519d6",
+          "label": "Representative's name and address last name",
+          "promptReference": "representativesnameandaddressLastName",
+          "promptSequence": 200,
+          "type": "NAMEADDRESS",
+          "usergroups": [
+          ],
+          "value": "Young",
+          "welshValue": "Young"
+        },
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "ca43ea08-3a2b-49cf-bb7f-ac350cc519d6",
+          "label": "Representative's name and address address line 1",
+          "promptReference": "representativesnameandaddressAddress1",
+          "promptSequence": 200,
+          "type": "NAMEADDRESS",
+          "usergroups": [
+          ],
+          "value": "Reeds Solicitors",
+          "welshValue": "Reeds Solicitors"
+        },
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "ca43ea08-3a2b-49cf-bb7f-ac350cc519d6",
+          "label": "Representative's name and address address line 2",
+          "promptReference": "representativesnameandaddressAddress2",
+          "promptSequence": 200,
+          "type": "NAMEADDRESS",
+          "usergroups": [
+          ],
+          "value": "10 Commercial Rd",
+          "welshValue": "10 Commercial Rd"
+        },
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "ca43ea08-3a2b-49cf-bb7f-ac350cc519d6",
+          "label": "Representative's name and address address line 3",
+          "promptReference": "representativesnameandaddressAddress3",
+          "promptSequence": 200,
+          "type": "NAMEADDRESS",
+          "usergroups": [
+          ],
+          "value": "Swindon",
+          "welshValue": "Swindon"
+        },
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "ca43ea08-3a2b-49cf-bb7f-ac350cc519d6",
+          "label": "Representative's name and address post code",
+          "promptReference": "representativesnameandaddressPostCode",
+          "promptSequence": 200,
+          "type": "NAMEADDRESS",
+          "usergroups": [
+          ],
+          "value": "SN1 5NF",
+          "welshValue": "SN1 5NF"
+        }
+      ],
+      "judicialResultTypeId": "633d192a-cc90-484e-aa1d-318816b7d44a",
+      "label": "Appointment for the Purpose of Cross Examination",
+      "lastSharedDateTime": "2022-11-18",
+      "level": "C",
+      "lifeDuration": false,
+      "offenceId": "14f5345e-5508-4d92-a548-a9cd267263b1",
+      "orderedDate": "2022-11-18",
+      "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+      "postHearingCustodyStatus": "A",
+      "publishedAsAPrompt": false,
+      "publishedForNows": false,
+      "rank": 142400,
+      "resultDefinitionGroup": "Special measures",
+      "resultText": "SMIP - Appointment for the Purpose of Cross Examination\nThe court appoints Henary Young Reeds for the purpose of cross examination of Kerry-Ann Levett, a witness in the proceedings.",
+      "rollUpPrompts": true,
+      "rootJudicialResultId": "f5e42367-64b5-4d3d-8049-b9da33ce4fd3",
+      "rootJudicialResultTypeId": "633d192a-cc90-484e-aa1d-318816b7d44a",
+      "terminatesOffenceProceedings": false,
+      "urgent": false,
+      "usergroups": [
+      ]
+    },
+    {
+      "alwaysPublished": true,
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "category": "ANCILLARY",
+      "courtClerk": {
+        "firstName": "David",
+        "lastName": "Godfrey",
+        "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+      },
+      "d20": false,
+      "excludedFromResults": false,
+      "isAdjournmentResult": false,
+      "isAvailableForCourtExtract": true,
+      "isConvictedResult": false,
+      "isDeleted": false,
+      "isFinancialResult": false,
+      "isNewAmendment": true,
+      "isUnscheduled": false,
+      "judicialResultId": "936fd9ae-ea60-4c63-a665-00699eefd0c3",
+      "judicialResultPrompts": [
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "8c390d4e-3e46-4d75-9db8-961976e6d011",
+          "label": "Name of witness",
+          "promptReference": "nameOfWitness",
+          "promptSequence": 100,
+          "type": "TXT",
+          "usergroups": [
+          ],
+          "value": "Kerry-Ann Levett",
+          "welshValue": "Kerry-Ann Levett"
+        }
+      ],
+      "judicialResultTypeId": "02c8aef6-601a-46e8-bbe5-d614e0da764a",
+      "label": "Special measures direction: Witness to give evidence by means of a live link",
+      "lastSharedDateTime": "2022-11-18",
+      "level": "C",
+      "lifeDuration": false,
+      "offenceId": "14f5345e-5508-4d92-a548-a9cd267263b1",
+      "orderedDate": "2022-11-18",
+      "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+      "postHearingCustodyStatus": "A",
+      "publishedAsAPrompt": false,
+      "publishedForNows": false,
+      "rank": 122600,
+      "resultDefinitionGroup": "Special measures",
+      "resultText": "SMLL - Special measures direction: Witness to give evidence by means of a live link\nKerry-Ann Levett to give evidence by means of a live link.",
+      "rollUpPrompts": false,
+      "rootJudicialResultId": "936fd9ae-ea60-4c63-a665-00699eefd0c3",
+      "rootJudicialResultTypeId": "02c8aef6-601a-46e8-bbe5-d614e0da764a",
+      "terminatesOffenceProceedings": false,
+      "urgent": false,
+      "usergroups": [
+      ]
+    },
+    {
+      "alwaysPublished": true,
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "category": "ANCILLARY",
+      "courtClerk": {
+        "firstName": "David",
+        "lastName": "Godfrey",
+        "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+      },
+      "d20": false,
+      "excludedFromResults": false,
+      "isAdjournmentResult": false,
+      "isAvailableForCourtExtract": true,
+      "isConvictedResult": false,
+      "isDeleted": false,
+      "isFinancialResult": false,
+      "isNewAmendment": true,
+      "isUnscheduled": false,
+      "judicialResultId": "93e4050d-471f-48ec-bd00-8afc95c1d951",
+      "judicialResultPrompts": [
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "1f983fe8-b061-4d33-86ec-1aeb37df4d8d",
+          "label": "In respect of witness name",
+          "promptReference": "inRespectOfWitnessName",
+          "promptSequence": 100,
+          "type": "TXT",
+          "usergroups": [
+          ],
+          "value": "Kerry-Ann Levett",
+          "welshValue": "Kerry-Ann Levett"
+        }
+      ],
+      "judicialResultTypeId": "028f5bea-fe0c-4c1b-a650-e4e0a4259f01",
+      "label": "Special measures direction: A video recording be admitted of the evidence in chief of the interview",
+      "lastSharedDateTime": "2022-11-18",
+      "level": "C",
+      "lifeDuration": false,
+      "offenceId": "14f5345e-5508-4d92-a548-a9cd267263b1",
+      "orderedDate": "2022-11-18",
+      "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+      "postHearingCustodyStatus": "A",
+      "publishedAsAPrompt": false,
+      "publishedForNows": false,
+      "rank": 122800,
+      "resultDefinitionGroup": "Special measures",
+      "resultText": "SMVR - Special measures direction: A video recording be admitted of the evidence in chief of the interview\nA video recording be admitted of the evidence in chief of the interview of Kerry-Ann Levett.",
+      "rollUpPrompts": false,
+      "rootJudicialResultId": "93e4050d-471f-48ec-bd00-8afc95c1d951",
+      "rootJudicialResultTypeId": "028f5bea-fe0c-4c1b-a650-e4e0a4259f01",
+      "terminatesOffenceProceedings": false,
+      "urgent": false,
+      "usergroups": [
+      ]
+    }
+  ],
+  "offenceJudicialResults": [
+    {
+      "alwaysPublished": false,
+      "canBeSubjectOfBreach": false,
+      "canBeSubjectOfVariation": false,
+      "category": "ANCILLARY",
+      "courtClerk": {
+        "firstName": "David",
+        "lastName": "Godfrey",
+        "userId": "bd4e4057-4581-4da6-b754-48c402759e5f"
+      },
+      "d20": false,
+      "excludedFromResults": false,
+      "isAdjournmentResult": false,
+      "isAvailableForCourtExtract": true,
+      "isConvictedResult": false,
+      "isDeleted": false,
+      "isFinancialResult": false,
+      "isNewAmendment": true,
+      "isUnscheduled": false,
+      "judicialResultId": "fe8adecd-6ac5-4a20-8bcf-6eff62f090b4",
+      "judicialResultPrompts": [
+        {
+          "courtExtract": "Y",
+          "isFinancialImposition": false,
+          "judicialResultPromptTypeId": "8c390d4e-3e46-4d75-9db8-961976e6d011",
+          "label": "Name of witness",
+          "promptReference": "nameOfWitness",
+          "promptSequence": 100,
+          "type": "TXT",
+          "usergroups": [
+          ],
+          "value": "Kerry-Ann Levett",
+          "welshValue": "Kerry-Ann Levett"
+        }
+      ],
+      "judicialResultTypeId": "f62d4a71-0f52-402e-9223-5dcbcc9a0021",
+      "label": "Direction made under section 36 of the Youth Justice and Criminal Evidence Act 1999 that the accused shall not cross examine the following witness in person",
+      "lastSharedDateTime": "2022-11-18",
+      "level": "O",
+      "lifeDuration": false,
+      "orderedDate": "2022-11-18",
+      "orderedHearingId": "52c9d944-72d3-40c3-9545-c343cc223d4d",
+      "postHearingCustodyStatus": "A",
+      "publishedAsAPrompt": false,
+      "publishedForNows": false,
+      "rank": 28200,
+      "resultText": "NXX - Direction made under section 36 of the Youth Justice and Criminal Evidence Act 1999 that the accused shall not cross examine the following witness in person\nName of witness: Kerry-Ann Levett",
+      "rollUpPrompts": false,
+      "rootJudicialResultId": "fe8adecd-6ac5-4a20-8bcf-6eff62f090b4",
+      "rootJudicialResultTypeId": "f62d4a71-0f52-402e-9223-5dcbcc9a0021",
+      "terminatesOffenceProceedings": false,
+      "urgent": false,
+      "usergroups": [
+      ]
+    }
+  ]
+}

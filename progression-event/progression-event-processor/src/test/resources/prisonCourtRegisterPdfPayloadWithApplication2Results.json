@@ -1,0 +1,115 @@
+{
+  "registerDate": "%CURRENT_DATE%",
+  "ljaName": "Central London Magistrates' Court",
+  "courtHouse": "City of London Magistrates' Court",
+  "courtHouseAddress": "1 Queen Victoria Street, London",
+  "cases": [
+    {
+      "name": "sushma test2",
+      "address1": "9999A9999AAAA",
+      "address2": "Woodlane",
+      "address3": "Bristol",
+      "address4": "Avon",
+      "address5": "",
+      "postCode": "",
+      "jurisdiction": "MAGISTRATES",
+      "hearingType": "First hearing",
+      "defendantAppearanceDetails": "-",
+      "attendingSolicitorName": "-",
+      "defenceCounselName": "-",
+      "defenceCounselStatus": "-",
+      "defendantType": "Applicant",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "-",
+      "parentGuardianAddress1": "-",
+      "dateOfBirth": "03/12/1964",
+      "age": "%AGE%",
+      "gender": "MALE",
+      "nationality": "-",
+      "aliases": "-",
+      "caseReference": "69GD8085622",
+      "dateOfHearing": "05/05/2022",
+      "prosecutorName": "Northumbria Police",
+      "arrestSummonsNumber": "2010DD0100000000503B",
+      "prosecutionCounselName": "-",
+      "prosecutionCounselStatus": "-",
+      "offences": [
+        {
+          "offenceCode": "RT88339",
+          "offenceTitle": "Drive whilst unfit through drink",
+          "wording": "ON TUESDAY 10-OCTOBER-2019 AT JACKSON STREET DISHONESTLY RECEIVED STOLEN GOODS NAMELY WATCH OF A VALUE UNKNOWN BELONGING TO HILDA ROBERTS KNOWING OR BELIEVING THE SAME TO BE STOLEN GOODS. CONTRARY TO SECTION 22(1) OF THE THEFT ACT 1968.\nContrary to section 4(1) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+          "allocationDecision": "Summary-only offence",
+          "convictionDate": "05/05/2022",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1002",
+              "resultText": "Imprisonment\nTotal custodial period 8 Weeks\nPrison organisation name HMP/YOI Eastwood Park\nPrison email address 1 Custody.Eastwoodpark@justice.gov.uk\nPrison email address 2 Reception.EastwoodPark@justice.gov.uk\nConveyor / custodian name organisation name City of London Magistrates' Court: PECS\nConveyor / custodian name email address 1 PECSCityofLondonMags@serco.com\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 4 Weeks\nBail remand days to count (tagged days) 0"
+            }
+          ],
+          "pleaValue": "GUILTY, 05/05/2022",
+          "indicatedPleaValue": "-"
+        }
+      ]
+    },
+    {
+      "name": "sushma test2",
+      "address1": "9999A9999AAAA",
+      "address2": "Woodlane",
+      "address3": "Bristol",
+      "address4": "Avon",
+      "address5": "",
+      "postCode": "",
+      "jurisdiction": "MAGISTRATES",
+      "hearingType": "First hearing",
+      "defendantAppearanceDetails": "-",
+      "attendingSolicitorName": "-",
+      "defenceCounselName": "-",
+      "defenceCounselStatus": "-",
+      "defendantType": "Applicant",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "-",
+      "parentGuardianAddress1": "-",
+      "dateOfBirth": "03/12/1964",
+      "age": "%AGE%",
+      "gender": "MALE",
+      "nationality": "-",
+      "aliases": "-",
+      "caseReference": "69GD8785622",
+      "dateOfHearing": "05/05/2022",
+      "prosecutorName": "-",
+      "arrestSummonsNumber": "2010DD0100000000503B",
+      "prosecutionCounselName": "-",
+      "prosecutionCounselStatus": "-",
+      "offences": [
+        {
+          "offenceCode": "CJ03522",
+          "offenceTitle": "Drive whilst unfit through drink",
+          "wording": "Resentenced Original code : RT88339, Original details: ON TUESDAY 10-OCTOBER-2019 AT JACKSON STREET DISHONESTLY RECEIVED STOLEN GOODS NAMELY WATCH OF A VALUE UNKNOWN BELONGING TO HILDA ROBERTS KNOWING OR BELIEVING THE SAME TO BE STOLEN GOODS. CONTRARY TO SECTION 22(1) OF THE THEFT ACT 1968.\nContrary to section 4(1) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+          "allocationDecision": "Summary-only offence",
+          "convictionDate": "03/05/2022",
+          "verdictCode": "-",
+          "results": [
+            {
+              "resultCode": "1002",
+              "resultText": "Imprisonment\nImprisonment Period 4 Weeks\nBail remand days to count (tagged days) 0"
+            }
+          ],
+          "pleaValue": "GUILTY, 03/05/2022",
+          "indicatedPleaValue": "-"
+        }
+      ],
+      "applications": [
+        {
+          "type": "Conviction of an offence while a community order is in force",
+          "result": [
+            "No adjudication - dealt with for original offence",
+            "Order revoked\nDate original order made 03/05/2022\nOrder revoked community order\nCourt that made the original order City of London Magistrates' Court"
+          ]
+        }
+      ]
+    }
+  ]
+}

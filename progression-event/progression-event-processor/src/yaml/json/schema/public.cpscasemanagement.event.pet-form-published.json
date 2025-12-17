@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/cps/casemanagement/event/cpscasemanagement.event.pet-form-published.json",
+  "type": "object",
+  "properties": {
+    "petId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "formId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "petDefendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantOrSuspectId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+
+          "offenceOrProposedChargeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            }
+          }
+        },
+        "required": [
+          "defendantOrSuspectId",
+          "offenceOrProposedChargeIds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "userId": {
+      "description": "Logged In User Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "petId",
+    "caseId",
+    "formId",
+    "petDefendants",
+    "userId"
+  ],
+  "additionalProperties": false
+}

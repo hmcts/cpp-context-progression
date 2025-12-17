@@ -1,0 +1,16 @@
+{
+  "caseId": "12a54831-5134-415b-9679-1ec7e4b84859",
+  "courtFormId": "104400a6-1952-498a-8037-1072c873a080",
+  "data": "{ \"firstName\": \"John\", \"lastName\": \"Doe\" }",
+  "lastUpdated": "2021-01-13T00:00Z[UTC]",
+  "formType": "BCM",
+  "defendants": [
+    {
+      "defendantId": "68b54831-5134-415b-9679-1ec7e4b84254",
+      "offenceIds": []
+    },
+    {
+      "defendantId": "99b54831-5134-415b-9679-1ec7e4b84254"
+    }
+  ]
+}

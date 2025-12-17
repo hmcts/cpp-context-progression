@@ -1,0 +1,51 @@
+{
+  "courtDocument": {
+    "containsFinancialMeans": true,
+    "sendToCps": true,
+    "courtDocumentId": "COURT-DOCUMENT-ID",
+    "documentCategory": {
+      "defendantDocument": {
+        "defendants": [
+          "DEFENDENT-ID"
+        ],
+        "prosecutionCaseId": "CASE-ID"
+      }
+    },
+    "documentTypeDescription": "Orders, Notices & Warning",
+    "documentTypeId": "460fbe94-c002-11e8-a355-529269fb1459",
+    "documentTypeRBAC": {
+      "deleteUserGroups": [
+        "Crown Court"
+      ],
+      "downloadUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ],
+      "readUserGroups": [
+        "Listing Officers",
+        "Legal advisors",
+        "Magistrates"
+      ],
+      "uploadUserGroups": [
+        "Listing Officers",
+        "Legal advisors"
+      ]
+    },
+    "materials": [
+      {
+        "id": "MATERIAL-ID",
+        "receivedDateTime": "2019-12-07T07:16:26.661Z",
+        "uploadDateTime": "%UPLOADDATETIME%",
+        "userGroups": [
+          "Listing Officers",
+          "Legal advisors",
+          "Magistrates"
+        ]
+      }
+    ],
+    "mimeType": "application/pdf",
+    "name": "Orders, Notices & Warning.pdf",
+    "seqNum": 10
+  }
+}

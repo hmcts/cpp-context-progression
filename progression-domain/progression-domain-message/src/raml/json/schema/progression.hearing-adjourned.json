@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/hearing/courts/hearing-adjourned.json",
+  "type": "object",
+  "properties": {
+    "adjournedHearing": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "nextHearings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/nextHearing.json"
+      }
+    }
+  },
+  "required": [
+    "nextHearings",
+    "adjournedHearing"
+  ],
+  "additionalProperties": false
+}

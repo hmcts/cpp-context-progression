@@ -1,0 +1,201 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "South Western (Lavender Hill)",
+      "welshName": "welshName_Test"
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 20,
+        "sittingDay": "2018-03-01T00:00:00.000Z"
+      }
+    ],
+    "id": "RANDOM_HEARING_ID",
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "SJP_REFERRAL",
+        "defendants": [
+          {
+            "associatedPersons": [
+              {
+                "person": {
+                  "additionalNationalityCode": "GBR",
+                  "additionalNationalityDescription": "British",
+                  "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "address": {
+                    "address1": "22",
+                    "address2": "Acacia Avenue",
+                    "address3": "Acacia Town",
+                    "address4": "Acacia City",
+                    "address5": "Acacia Country",
+                    "postcode": "CR7 0AA"
+                  },
+                  "contact": {
+                    "fax": "3425678",
+                    "home": "123456",
+                    "mobile": "+45678910",
+                    "primaryEmail": "harry.kane@spurs.co.uk",
+                    "secondaryEmail": "harry.kane@hotmail.com",
+                    "work": "7891011"
+                  },
+                  "dateOfBirth": "1995-01-01",
+                  "disabilityStatus": "a",
+                  "documentationLanguageNeeds": "WELSH",
+                  "firstName": "Harry",
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "Hindi",
+                  "lastName": "Kane",
+                  "middleName": "Jack",
+                  "nationalInsuranceNumber": "NH222222B",
+                  "nationalityCode": "GBR",
+                  "nationalityDescription": "British",
+                  "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "occupation": "Footballer",
+                  "occupationCode": "F",
+                  "title": "DR"
+                },
+                "role": "parent"
+              }
+            ],
+            "courtProceedingsInitiated": "2020-10-13T09:57:14.771Z",
+            "defenceOrganisation": {
+              "name": "defence Organisation abc"
+            },
+            "id": "82a02e51-155e-403f-a898-2e506c09bf30",
+            "masterDefendantId": "82a02e51-155e-403f-a898-2e506c09bf30",
+            "mitigation": "I was not there",
+            "mitigationWelsh": "I was not there in Welsh",
+            "numberOfPreviousConvictionsCited": 5,
+            "offences": [
+              {
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "count": 0,
+                "endDate": "2018-01-01",
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2018-04-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY",
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+                },
+                "offenceCode": "TTH105HY",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "offenceFacts": {
+                  "alcoholReadingAmount": 111,
+                  "alcoholReadingMethodCode": "2222",
+                  "vehicleRegistration": "AA12345"
+                },
+                "offenceLegislation": "ABCDE",
+                "offenceLegislationWelsh": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+                "offenceTitle": "ABCDE",
+                "offenceTitleWelsh": "ABCDEFGHIJKLMNOP",
+                "orderIndex": 1,
+                "startDate": "2018-01-01",
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "arrest123",
+              "bailStatus": {
+                "code": "C",
+                "description": "Remanded into Custody",
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+              },
+              "custodyTimeLimit": "2018-01-01",
+              "driverNumber": "AACC12345",
+              "employerOrganisation": {
+                "address": {
+                  "address1": "Disney Road",
+                  "address2": "Disney Town",
+                  "address3": "Disney District",
+                  "address4": "Paris",
+                  "address5": "France",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "fax": "a",
+                  "primaryEmail": "person@hotmail.com",
+                  "secondaryEmail": "associate@hotmail.com",
+                  "work": "0207 654 3246 extn 1234"
+                },
+                "incorporationNumber": "Mickeymouse1",
+                "name": "Disneyland Paris"
+              },
+              "employerPayrollReference": "payyou1234",
+              "perceivedBirthYear": 2015,
+              "personDetails": {
+                "additionalNationalityCode": "GBR",
+                "additionalNationalityDescription": "British",
+                "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "address": {
+                  "address1": "22",
+                  "address2": "Acacia Avenue",
+                  "address3": "Acacia Town",
+                  "address4": "Acacia City",
+                  "address5": "Acacia Country",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "fax": "3425678",
+                  "home": "123456",
+                  "mobile": "45678910",
+                  "primaryEmail": "harry.kanejunior@spurs.co.uk",
+                  "secondaryEmail": "harry.kanejunior@hotmail.com",
+                  "work": "7891011"
+                },
+                "dateOfBirth": "2010-01-01",
+                "disabilityStatus": "a",
+                "documentationLanguageNeeds": "WELSH",
+                "ethnicity": {
+                  "observedEthnicityCode": "W2",
+                  "observedEthnicityDescription": "Irish",
+                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                  "selfDefinedEthnicityCode": "W2",
+                  "selfDefinedEthnicityDescription": "Irish",
+                  "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+                },
+                "firstName": "Harry",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "Welsh",
+                "lastName": "Kane Junior",
+                "middleName": "Jack",
+                "nationalInsuranceNumber": "NH323232B",
+                "nationalityCode": "GBR",
+                "nationalityDescription": "British",
+                "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "occupation": "Kid",
+                "occupationCode": "F",
+                "specificRequirements": "Screen",
+                "title": "DR"
+              }
+            },
+            "prosecutionAuthorityReference": "TFL12345-ABC",
+            "prosecutionCaseId": "2cf27bd6-9964-4ccf-b6e1-5fee467e8d1a",
+            "witnessStatement": "he did not do it",
+            "witnessStatementWelsh": "he did not do it in Welsh"
+          }
+        ],
+        "id": "2cf27bd6-9964-4ccf-b6e1-5fee467e8d1a",
+        "initiationCode": "J",
+        "originatingOrganisation": "G01FT01AB",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityReference": "c3f7f2ca"
+        },
+        "statementOfFacts": "You did it",
+        "statementOfFactsWelsh": "You did it in Welsh"
+      }
+    ],
+    "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+    "type": {
+      "description": "Further Plea & Trial Preparation",
+      "id": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+    }
+  },
+  "hearingListingStatus": "SENT_FOR_LISTING"
+}

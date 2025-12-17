@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/case-forms.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "forms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "courtFormId": {
+            "description": "Form Reference Id",
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "formType": {
+            "description": "Form Type",
+            "$ref": "http://justice.gov.uk/core/courts/formType.json"
+          },
+          "defendants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "defendantId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "offences": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                  }
+                }
+              },
+              "required": [
+                "defendantId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "lastUpdated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "courtFormId",
+          "defendants"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "forms",
+    "caseId"
+  ],
+  "additionalProperties": false
+}

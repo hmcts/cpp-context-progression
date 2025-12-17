@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.events.defendant-unmatched-v2.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendant": {
+      "$ref": "http://justice.gov.uk/core/courts/defendant.json"
+    }
+  },
+  "required": [
+    "defendantId",
+    "prosecutionCaseId",
+    "defendant"
+  ],
+  "additionalProperties": false
+}

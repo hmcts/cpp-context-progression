@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/public.progression.defendant-address-changed.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+    }
+  },
+  "required": [
+    "courtApplication"
+  ]
+}

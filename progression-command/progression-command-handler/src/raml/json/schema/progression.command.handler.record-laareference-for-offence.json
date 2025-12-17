@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/external/record-laaReference-for-offence.json",
+  "type": "object",
+  "description": "updating offence with LAA reference ",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offenceId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationReference": {
+      "description": "The human readable reference to the application supplied by legal aid agency",
+      "type": "string"
+    },
+    "statusCode": {
+      "description": "The status code from reference data",
+      "type": "string"
+    },
+    "statusDescription": {
+      "description": "The status description from reference data",
+      "type": "string"
+    },
+    "statusDate": {
+      "description": "The date that the status was recorded",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "offenceId",
+    "applicationReference",
+    "statusCode"
+  ],
+  "additionalProperties": false
+}

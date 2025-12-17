@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="update-plea-indicated-plea-offence" author="progression">
+        <createTable tableName="offence_plea">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="value" type="TEXT"/>
+            <column name="plea_date" type="DATETIME"/>
+        </createTable>
+
+        <createTable tableName="offence_indicated_plea">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="value" type="TEXT"/>
+            <column name="allocation_decision" type="TEXT"/>
+        </createTable>
+
+        <dropColumn columnName="plea" tableName="offence"/>
+        <dropColumn columnName="indicated_plea" tableName="offence"/>
+
+        <addColumn tableName="offence">
+            <column name="plea_id" type="UUID">
+                <constraints foreignKeyName="fk_offence_plea"
+                             referencedTableName="offence_plea"
+                             referencedColumnNames="id"/>
+            </column>
+
+        </addColumn>
+
+        <addColumn tableName="offence">
+            <column name="indicated_plea_id" type="UUID">
+                <constraints foreignKeyName="fk_offence_indicated_plea"
+                             referencedTableName="offence_indicated_plea"
+                             referencedColumnNames="id"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="offence">
+            <column name="conviction_date" type="DATETIME"/>
+        </addColumn>
+
+    </changeSet>
+</databaseChangeLog>

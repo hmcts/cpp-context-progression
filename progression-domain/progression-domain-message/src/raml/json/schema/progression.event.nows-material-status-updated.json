@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/nows-material-status-updated.json",
+  "type": "object",
+  "properties": {
+    "details":{
+      "$ref": "http://justice.gov.uk/core/courts/materialDetails.json#"
+    },
+    "status" : {
+      "type": "string"
+    },
+    "welshTranslationRequired" : {
+      "type": "boolean"
+    },
+    "caseSubjects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/caseSubject"
+      }
+    },
+    "defendantAsn": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cpsDefendantIds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "details",
+    "status",
+    "welshTranslationRequired"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "caseSubject": {
+      "type": "object",
+      "properties": {
+        "urn": {
+          "type": "string"
+        },
+        "prosecutingAuthorityOUCode": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
+

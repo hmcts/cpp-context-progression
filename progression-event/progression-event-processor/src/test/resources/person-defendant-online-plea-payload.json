@@ -1,0 +1,110 @@
+{
+  "id": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "caseId": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "defendantId": "b1ae452f-da24-48ac-bac3-d13e528c2da6",
+  "urn": "TFL1234567",
+  "initiationCode": "J",
+  "canContinue": true,
+  "cantContinueReason": "NONE",
+  "completed": false,
+  "assigned": false,
+  "status": "IN-PROGRESS",
+  "policeFlag": false,
+  "postConviction": false,
+  "comeToCourt": true,
+  "witnessDispute": "witness dispute details",
+  "witnessDetails": "witness details",
+  "outstandingFines": false,
+  "interpreterLanguage": "French",
+  "speakWelsh": false,
+  "unavailability": null,
+  "disabilityNeeds": {
+    "needed": true,
+    "disabilityNeeds": "some info for disabilityNeeds"
+  },
+  "personalDetails": {
+    "firstName": "John",
+    "lastName": "Protractor-3076799829",
+    "dateOfBirth": "1977-10-17",
+    "nationalInsuranceNumber": "AA123456D",
+    "driverLicenceDetails": "Swedish licence with ID: 1234567890",
+    "address": {
+      "address1": "Flat 55",
+      "address2": "1 Oxford Road",
+      "address3": "Croydon",
+      "address4": "Surrey",
+      "address5": "London",
+      "postCode": "SW99 1AA"
+    },
+    "contactDetails": {
+      "home": "123456789",
+      "mobile": "1234566789",
+      "email": "test@test.com"
+    }
+  },
+  "financialMeans": {
+    "income": {
+      "amount": 200.25,
+      "frequency": "MONTHLY"
+    },
+    "benefits": {
+      "claimed": true,
+      "type": "jobseekers allowance",
+      "deductPenaltyPreference": false
+    },
+    "employmentStatus": "EMPLOYED"
+  },
+  "employer": {
+    "employeeReference": "12345",
+    "name": "Pret a manger",
+    "phone": "020 7998 0007",
+    "address": {
+      "address1": "18 Tottenham Court Road",
+      "address2": "London",
+      "address3": "England",
+      "address4": "UK",
+      "address5": "Greater London",
+      "postcode": "W1T 1JY"
+    }
+  },
+  "outgoings": [
+    {
+      "description": "Accommodation",
+      "amount": 50
+    },
+    {
+      "description": "Council Tax",
+      "amount": 50
+    },
+    {
+      "description": "Household bills",
+      "amount": 50
+    },
+    {
+      "description": "Travel expenses",
+      "amount": 50
+    },
+    {
+      "description": "Child maintenance",
+      "amount": 50
+    },
+    {
+      "description": "Amount of other expenses",
+      "amount": 50
+    }
+  ],
+  "offences": [
+    {
+      "id": "8fd81570-65d3-4424-b630-537006afeb62",
+      "title": "Public service vehicle - passenger use altered / defaced ticket",
+      "titleWelsh": "Cerbyd gwasanaeth cyhoeddus - defnydd tocyn wedi'i addasu / amharu ar ddefnyddwyr",
+      "legislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+      "legislationWelsh": "Yn groes i reoliad 7 (1) (a) o Reoliadau Cerbydau Gwasanaeth Cyhoeddus (Ymddygiad Gyrwyr, Arolygwyr, Ymddygiad a Theithwyr) 1990 ac adran 25 o Ddeddf Cerbydau Teithwyr Cyhoeddus 1981.",
+      "wording": "On 10/08/2016 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+      "wordingWelsh": "Welsh wording: On 10/08/2016 At Threadneedle Street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction",
+      "pendingWithdrawal": false,
+      "plea": null,
+      "hasPlea": false
+    }
+  ]
+}

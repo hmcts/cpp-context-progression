@@ -1,0 +1,104 @@
+{
+  "courtRegisterDocumentRequests": [
+    {
+      "courtCentreId": "47239847-a065-4d07-90ba-a8daa064ecc4",
+      "requestDate": "2020-12-12",
+      "payload": {
+        "registerDate": "2019-02-01",
+        "courtCentreId": "47239847-a065-4d07-90ba-a8daa064ecc4",
+        "fileName": "court-register_2019-02-01_oucode.csv",
+        "recipients": [
+          {
+            "recipientName": "John Smith",
+            "emailAddress1": "john.smith@hmcts.net",
+            "emailTemplateName": "someEmailTemplateName"
+          }
+        ],
+        "defendants": [
+          {
+            "name": "Fred  Smith",
+            "dateOfBirth": "2001-12-27",
+            "address": {
+              "address1": "Flat 1",
+              "address2": "1 Old Road",
+              "address3": "London",
+              "address4": "Merton"
+            },
+            "gender": "MALE",
+            "postHearingCustodyStatus": "Not Applicable",
+            "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+            "parentGuardian": {
+              "name": "Father - Fred  Father - Smith",
+              "address": {
+                "address1": "Father - Flat 1",
+                "address2": "Father - 1 Old Road",
+                "address3": "Father - London",
+                "address4": "Father - Merton",
+                "postCode": "Father - SW99 1AA"
+              }
+            },
+            "hearing": {
+              "defendantPresent": true,
+              "attendingSolicitorName": "Harold Benjamin Solicitors",
+              "jurisdiction": "MAGISTRATES",
+              "hearingType": "Sentence"
+            },
+            "prosecutionCasesOrApplications": [
+              {
+                "caseOrApplicationReference": "TFL4359536",
+                "offences": [
+                  {
+                    "offenceCode": "PS90010",
+                    "orderIndex": 1,
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                    "pleaValue": "NOT_GUILTY",
+                    "verdictCode": "Guilty",
+                    "allocationDecision": "",
+                    "convictionDate": "2019-11-14",
+                    "pleaDate": "2019-11-14"
+                  }
+                ],
+                "results": [
+                  {
+                    "resultText": "some result",
+                    "cjsResultCode": "cjscode"
+                  }
+                ],
+                "prosecutionCounsels": [
+                  {
+                    "name": "prosecution Counsel Name",
+                    "status": "status"
+                  }
+                ]
+              }
+            ],
+            "aliases": [
+              {
+                "middleName": "Duncan",
+                "firstName": "John",
+                "title": "Mr",
+                "lastName": "Smith"
+              }
+            ],
+            "defendantResults": [
+              {
+                "resultText": "some result",
+                "cjsResultCode": "cjscode"
+              }
+            ],
+            "defenceCounsels": [
+              {
+                "name": "prosecution Counsel Name",
+                "status": "status"
+              }
+            ]
+          }
+        ],
+        "hearingVenue": {
+          "ljaName": "Mersey Courts",
+          "courtHouse": "liverpool crown court"
+        }
+      }
+    }
+  ]
+}

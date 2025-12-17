@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/document-added.json",
+  "type": "object",
+  "properties": {
+    "caseURN": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "defendantName": {
+      "type": "string"
+    },
+    "caseId": {
+      "type": "string"
+    },
+    "documentTypeId": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
+

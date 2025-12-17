@@ -1,0 +1,51 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.progression.command.accesscontrol.PermissionRuleConstants;
+
+
+rule "Command - Rule for Add Form"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.create-form");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getBCMCreatePermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getPTPHCreatePermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for Update Form"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-form");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getBCMEditPermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getPTPHEditPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for finalise Form"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.finalise-form");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getBCMFinalisePermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getPTPHFinalisePermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for edit Form"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.request-edit-form");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getBCMEditPermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getPTPHEditPermission()));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for Update form defendants"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-form-defendants");
+    eval(userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getBCMEditPermission()) || userAndGroupProvider.hasPermission($action, PermissionRuleConstants.getPTPHEditPermission()));
+  then
+    $outcome.setSuccess(true);
+end

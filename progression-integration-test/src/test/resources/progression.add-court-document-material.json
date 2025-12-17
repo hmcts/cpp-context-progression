@@ -1,0 +1,26 @@
+{
+  "courtDocument": {
+    "courtDocumentId": "%RANDOM_DOCUMENT_ID%",
+    "documentCategory": {
+      "defendantDocument": {
+        "prosecutionCaseId": "%RANDOM_CASE_ID%",
+        "defendants": [
+          "%RANDOM_DEFENDANT_ID%"
+        ]
+      }
+    },
+    "name": "SJP Notice",
+    "documentTypeId": "0bb7b276-9dc0-4af2-83b9-f4acef0c7898",
+    "documentTypeDescription": "SJP Notice",
+    "mimeType": "pdf",
+    "materials": [
+      {
+        "id": "%RANDOM_MATERIAL_ID%",
+        "name": "test",
+        "receivedDateTime": "2019-12-07T07:16:26.661Z"
+      }
+    ],
+    "containsFinancialMeans": true,
+    "sendToCps": true
+  }
+}

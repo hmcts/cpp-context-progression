@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/application/progression.add-case-to-hearing-bdf.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "casesBdf": {
+      "type": "array",
+      "minItems": 1,
+      "additionalItems": false,
+      "items": {
+        "$ref": "#/definitions/caseBdf"
+      }
+    }
+  },
+  "required": [
+    "hearingId"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "caseBdf" : {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "defendantsBdf": {
+          "type": "array",
+          "minItems": 1,
+          "additionalItems": false,
+          "items": {
+            "$ref": "#/definitions/defendantBdf"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "defendantBdf" : {
+      "type": "object",
+      "properties": {
+        "defendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "offences": {
+          "type": "array",
+          "minItems": 1,
+          "additionalItems": false,
+          "items": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

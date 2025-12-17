@@ -1,0 +1,48 @@
+{
+  "modifiedDate": "2018-03-01",
+  "updatedOffences": [
+    {
+      "defendantId": "DEFENDANT_ID",
+      "prosecutionCaseId": "CASE_ID",
+      "offences": [
+        {
+          "id": "UPDATED_OFFENCE_ID",
+          "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+          "offenceCode": "AAA updated",
+          "offenceTitle": "a title updated",
+          "offenceTitleWelsh": "a title in Welsh updated",
+          "offenceLegislation": "legislation updated",
+          "offenceLegislationWelsh": "legislation in Welsh updated",
+          "wording": "No Travel Card updated",
+          "wordingWelsh": "No Travel Card In Welsh",
+          "startDate": "2020-01-01",
+          "endDate": "2020-01-01",
+          "arrestDate": "2020-01-01",
+          "chargeDate": "2020-01-01",
+          "dateOfInformation": "2018-01-01",
+          "modeOfTrial": "b",
+          "orderIndex": 2,
+          "proceedingsConcluded" : true,
+          "count": 0,
+          "notifiedPlea": {
+            "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "notifiedPleaDate": "2018-04-01",
+            "notifiedPleaValue": "NOTIFIED_GUILTY"
+          },
+          "offenceFacts": {
+            "vehicleRegistration": "AA12345",
+            "alcoholReadingAmount": 100,
+            "alcoholReadingMethodCode": "B"
+          },
+          "laaApplnReference": {
+            "applicationReference": "LAA-API-TEST-1228",
+            "statusCode": "FM",
+            "statusDate": "1980-07-16",
+            "statusDescription": "Failed on Means",
+            "statusId": "4218b955-7bf8-3972-a37b-b0f921f5e5e4"
+          }
+        }
+      ]
+    }
+  ]
+}

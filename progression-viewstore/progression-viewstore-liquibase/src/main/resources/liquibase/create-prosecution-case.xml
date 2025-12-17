@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-prosecution-case" author="cpp.context.progression">
+        <createTable tableName="prosecution_case">
+            <column name="id" type="UUID"/>
+            <column name="payload" type="TEXT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="add-prosecution-case-key-constraints" author="cpp.context.progression">
+
+        <addPrimaryKey columnNames="id" constraintName="prosecution_case_primary_key"
+                       tableName="prosecution_case"/>
+
+    </changeSet>
+
+</databaseChangeLog>

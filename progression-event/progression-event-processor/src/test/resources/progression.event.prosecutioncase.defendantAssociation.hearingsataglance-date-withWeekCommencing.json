@@ -1,0 +1,225 @@
+{
+  "courtApplications": [],
+  "defendantHearings": [
+    {
+      "defendantId": "924cbf53-0b51-4633-9e99-2682be854af4",
+      "defendantName": "Fred Smith",
+      "hearingIds": [
+        "87f568bd-7285-4d7b-b76a-e83ac96309e4"
+      ]
+    }
+  ],
+  "hearings": [
+    {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantReferralReasons": [
+        {
+          "defendantId": "924cbf53-0b51-4633-9e99-2682be854af4",
+          "description": "Defence request",
+          "id": "798e3d82-44fa-40e6-a93d-4c8f5322fa66"
+        }
+      ],
+      "defendants": [
+        {
+          "address": {
+            "address1": "Flat 1",
+            "address2": "1 Old Road",
+            "address3": "London",
+            "address4": "Merton",
+            "postcode": "SW99 1AA"
+          },
+          "age": "53",
+          "courtApplications": [],
+          "dateOfBirth": "1965-12-27",
+          "defenceOrganisation": {
+            "defenceCounsels": [],
+            "defendantId": "924cbf53-0b51-4633-9e99-2682be854af4"
+          },
+          "id": "924cbf53-0b51-4633-9e99-2682be854af4",
+          "judicialResults": [],
+          "name": "Fred Smith",
+          "offences": [
+            {
+              "convictionDate": "2019-12-12",
+              "count": 1,
+              "id": "a624732b-9b47-4c2e-8aca-933324507624",
+              "judicialResults": [],
+              "notifiedPlea": {
+                "notifiedPleaDate": "2019-12-12",
+                "notifiedPleaValue": "NO_NOTIFICATION",
+                "offenceId": "a624732b-9b47-4c2e-8aca-933324507624"
+              },
+              "offenceCode": "PS90010",
+              "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+              "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+              "offenceLegislationWelsh": "",
+              "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+              "offenceTitleWelsh": "",
+              "pleas": [],
+              "startDate": "2018-07-02",
+              "verdicts": [],
+              "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+            }
+          ]
+        }
+      ],
+      "hasResultAmended": false,
+      "hearingDays": [
+        {
+          "listedDurationMinutes": 1,
+          "listingSequence": 0,
+          "sittingDay": "2124-12-13T09:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 30,
+          "listingSequence": 0,
+          "sittingDay": "2024-12-14T10:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 30,
+          "listingSequence": 0,
+          "sittingDay": "2022-12-15T10:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 30,
+          "listingSequence": 0,
+          "sittingDay": "2019-12-17T10:00:00.000Z"
+        },
+        {
+          "listedDurationMinutes": 2,
+          "listingSequence": 0,
+          "sittingDay": "2019-12-18T15:00:00.000Z"
+        }
+      ],
+      "hearingListingStatus": "HEARING_INITIALISED",
+      "id": "87f568bd-7285-4d7b-b76a-e83ac96309e4",
+      "judiciary": [
+        {
+          "firstName": "Shamim (Sham)",
+          "isBenchChairman": true,
+          "isDeputy": true,
+          "judicialId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+          "judicialRoleType": {
+            "judicialRoleTypeId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+            "judiciaryType": "DJ"
+          },
+          "lastName": "Qureshi",
+          "title": "Mr"
+        }
+      ],
+      "jurisdictionType": "MAGISTRATES",
+      "type": {
+        "description": "Sentence",
+        "id": "c6d76309-c912-436b-a21b-a4c4450bc052"
+      }
+    },
+    {
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantReferralReasons": [
+        {
+          "defendantId": "924cbf53-0b51-4633-9e99-2682be854af4",
+          "description": "Defence request",
+          "id": "798e3d82-44fa-40e6-a93d-4c8f5322fa66"
+        }
+      ],
+      "defendants": [
+        {
+          "address": {
+            "address1": "Flat 1",
+            "address2": "1 Old Road",
+            "address3": "London",
+            "address4": "Merton",
+            "postcode": "SW99 1AA"
+          },
+          "age": "53",
+          "courtApplications": [],
+          "dateOfBirth": "1965-12-27",
+          "defenceOrganisation": {
+            "defenceCounsels": [],
+            "defendantId": "924cbf53-0b51-4633-9e99-2682be854af4"
+          },
+          "id": "924cbf53-0b51-4633-9e99-2682be854af4",
+          "judicialResults": [],
+          "name": "Fred Smith",
+          "offences": [
+            {
+              "convictionDate": "2019-12-12",
+              "count": 1,
+              "id": "a624732b-9b47-4c2e-8aca-933324507624",
+              "judicialResults": [],
+              "notifiedPlea": {
+                "notifiedPleaDate": "2019-12-12",
+                "notifiedPleaValue": "NO_NOTIFICATION",
+                "offenceId": "a624732b-9b47-4c2e-8aca-933324507624"
+              },
+              "offenceCode": "PS90010",
+              "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+              "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+              "offenceLegislationWelsh": "",
+              "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+              "offenceTitleWelsh": "",
+              "pleas": [],
+              "startDate": "2018-07-02",
+              "verdicts": [],
+              "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+            }
+          ]
+        }
+      ],
+      "hasResultAmended": false,
+      "hearingListingStatus": "SENT_FOR_LISTING",
+      "id": "87f568bd-7285-4d7b-b76a-e83ac96309e4",
+      "judiciary": [
+        {
+          "firstName": "Shamim (Sham)",
+          "isBenchChairman": true,
+          "isDeputy": true,
+          "judicialId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+          "judicialRoleType": {
+            "judicialRoleTypeId": "0a87257e-5308-397d-b432-30edf4ad1dae",
+            "judiciaryType": "DJ"
+          },
+          "lastName": "Qureshi",
+          "title": "Mr"
+        }
+      ],
+      "jurisdictionType": "MAGISTRATES",
+      "type": {
+        "description": "Sentence",
+        "id": "c6d76309-c912-436b-a21b-a4c4450bc052"
+      }
+    }
+  ],
+  "id": "01702930-c1c8-4cfb-8f1c-1df9a58f4e5b",
+  "prosecutionCaseIdentifier": {
+    "prosecutionAuthorityCode": "TFL",
+    "prosecutionAuthorityId": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+    "prosecutionAuthorityReference": "TFL9135196"
+  }
+}
