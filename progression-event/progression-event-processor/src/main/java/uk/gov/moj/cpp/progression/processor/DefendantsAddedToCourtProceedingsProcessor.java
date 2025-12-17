@@ -99,6 +99,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     @Inject
     private ApplicationParameters applicationParameters;
 
+
     @Handles("progression.event.replayed-defendants-added-to-court-proceedings")
     public void processReplay(final JsonEnvelope jsonEnvelope) {
         final ReplayedDefendantsAddedToCourtProceedings replayedDefendantsAddedToCourtProceedings = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ReplayedDefendantsAddedToCourtProceedings.class);
