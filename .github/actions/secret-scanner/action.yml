@@ -1,0 +1,67 @@
+name: Secret Scanner
+
+description: Scans the code base to detect for the presence of secrets.
+
+inputs:
+  github_token:
+    required: true
+    description: GitHub token for authentication, required for accessing the repository and posting comments.
+
+  gitleaks_license:
+    required: true
+    description: Gitleaks license key to use the licensed version.
+
+  gitleaks_regex_internal_url:
+    required: true
+    description: Regex to identify internal urls
+
+  gitleaks_regex_banned_ids:
+    required: true
+    description: Regex to identify banned IDs
+
+runs:
+  using: "composite"
+  steps:
+    - name: Prepare Gitleaks config
+      shell: bash
+      run: |
+        echo "Executing step: Prepare Gitleaks config"
+        set -euo pipefail
+        
+        # Validate that regex parameters are not empty or null
+        # Note: Missing secrets evaluate to empty strings in GitHub Actions
+        GITLEAKS_REGEX_INTERNAL_URL_VALUE="${{ inputs.gitleaks_regex_internal_url }}"
+        GITLEAKS_REGEX_BANNED_IDS_VALUE="${{ inputs.gitleaks_regex_banned_ids }}"
+        
+        if [ -z "$GITLEAKS_REGEX_INTERNAL_URL_VALUE" ] || [ "$GITLEAKS_REGEX_INTERNAL_URL_VALUE" = "null" ]; then
+          echo "::error::gitleaks_regex_internal_url is required and cannot be empty or null. Please ensure the secret is defined and has a value."
+          exit 1
+        fi
+        
+        if [ -z "$GITLEAKS_REGEX_BANNED_IDS_VALUE" ] || [ "$GITLEAKS_REGEX_BANNED_IDS_VALUE" = "null" ]; then
+          echo "::error::gitleaks_regex_banned_ids is required and cannot be empty or null. Please ensure the secret is defined and has a value."
+          exit 1
+        fi
+        
+        export GITLEAKS_REGEX_INTERNAL_URL="$GITLEAKS_REGEX_INTERNAL_URL_VALUE"
+        export GITLEAKS_REGEX_BANNED_IDS="$GITLEAKS_REGEX_BANNED_IDS_VALUE"        
+        CUSTOM_CONFIG_FILE="$RUNNER_TEMP/gitleaks-custom-rules.toml"
+        envsubst < "${{ github.action_path }}/gitleaks-custom-rules-template.toml" > "$CUSTOM_CONFIG_FILE"
+        
+        # Set GITLEAKS_CONFIG env variable and make it available to subsequent steps
+        echo "GITLEAKS_CONFIG=$CUSTOM_CONFIG_FILE" >> "$GITHUB_ENV"
+        echo "------------ Scan will run with builtin + custom rules ------------"
+
+    - name: Gitleaks scanning
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITLEAKS_LICENSE: ${{ inputs.gitleaks_license }}
+        GITLEAKS_ENABLE_COMMENTS: "false" # suppress PR comments
+        GITLEAKS_ENABLE_SUMMARY:  "false" # suppress Job Summary
+
+    - name: TruffleHog 🐽 scanning
+      uses: trufflesecurity/trufflehog@main
+      with:
+        extra_args: --results=verified
+

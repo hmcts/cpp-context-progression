@@ -99,13 +99,18 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     @Inject
     private ApplicationParameters applicationParameters;
 
+
     @Handles("progression.event.replayed-defendants-added-to-court-proceedings")
     public void processReplay(final JsonEnvelope jsonEnvelope) {
         final ReplayedDefendantsAddedToCourtProceedings replayedDefendantsAddedToCourtProceedings = jsonObjectToObjectConverter.convert(jsonEnvelope.payloadAsJsonObject(), ReplayedDefendantsAddedToCourtProceedings.class);
         final String prosecutionCaseId = replayedDefendantsAddedToCourtProceedings.getDefendants().get(0).getProsecutionCaseId().toString();
         final Integer interval = replayedDefendantsAddedToCourtProceedings.getInterval();
 
-        addDefendantToCourtProceedings(jsonEnvelope, prosecutionCaseId, replayedDefendantsAddedToCourtProceedings.getDefendants(), replayedDefendantsAddedToCourtProceedings.getListHearingRequests(), interval);
+        final JsonObjectBuilder builder = createObjectBuilder();
+        jsonEnvelope.payloadAsJsonObject().keySet().stream().filter(key -> !"interval".equals(key)).forEach(key -> builder.add(key, jsonEnvelope.payloadAsJsonObject().get(key)));
+        JsonEnvelope envelope = JsonEnvelope.envelopeFrom(jsonEnvelope.metadata(), builder.build());
+
+        addDefendantToCourtProceedings(envelope, prosecutionCaseId, replayedDefendantsAddedToCourtProceedings.getDefendants(), replayedDefendantsAddedToCourtProceedings.getListHearingRequests(), interval);
     }
 
     @Handles("progression.event.defendants-added-to-court-proceedings")
