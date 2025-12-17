@@ -59,6 +59,7 @@
             **/uk/gov/justice/services/domain/CaseDocuments.java,
             **/uk/gov/moj/cpp/progression/value/object/**/*
         </sonar.exclusions>
+        <sonar.cpd.exclusions>**/uk/gov/moj/cpp/**/*.java</sonar.cpd.exclusions>
         <resteasy-multipart-provider.version>3.0.7.Final</resteasy-multipart-provider.version>
         <mvn.site.url>file://${project.build.directory}/site</mvn.site.url>
         <javafaker.version>1.0.2</javafaker.version>
