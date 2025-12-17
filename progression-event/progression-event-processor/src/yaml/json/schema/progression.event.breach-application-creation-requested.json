@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/breach-application-creation-requested.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "masterDefendantId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "breachedApplications": {
+      "$ref": "#/definitions/breachedApplication"
+    }
+  },
+  "required": [
+    "hearingId",
+    "masterDefendantId",
+    "breachedApplications"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "breachedApplication": {
+      "type": "object",
+      "properties": {
+        "courtOrder": {
+          "description": "When the application is in relation to a court order e.g. breach proceedings, the details of the court order",
+          "$ref": "http://justice.gov.uk/core/courts/courtOrder.json"
+        },
+        "applicationType": {
+          "description": "The type of application made to court for judicial decision.  Taken from reference data",
+          "$ref": "http://justice.gov.uk/core/courts/courtApplicationType.json"
+        },        "id": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+        }
+      },
+
+      "required": [
+        "courtOrder",
+        "applicationType"
+      ]
+    }
+  }
+}

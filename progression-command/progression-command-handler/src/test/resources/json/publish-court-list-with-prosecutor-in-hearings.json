@@ -1,0 +1,1866 @@
+{"courtCentreId": "4d3332e0-d6de-37a9-b638-b14e8a944cd6",
+  "courtListId": "5dec5287-0299-3a4a-ab26-c72ff193c6b8",
+  "courtLists": [
+    {
+      "courtRoomId": "13921ecd-297c-36c6-a86d-5b36c7597710",
+      "hearings": [
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2775323"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-11-05T03:27:14.446Z",
+              "id": "e99ac0c5-7c9b-41b4-be53-e75a2e7b7d1a",
+              "masterDefendantId": "e99ac0c5-7c9b-41b4-be53-e75a2e7b7d1a",
+              "offences": [
+                {
+                  "id": "e5974293-6478-4fdb-8f20-916b7d50e1ae",
+                  "offenceCode": "CJ88160",
+                  "offenceDefinitionId": "e5974293-6478-4fdb-8f20-916b7d50e1ae",
+                  "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act 1988 and section 1 of the Assaults on Emergency Workers (Offences) Act 2018.",
+                  "offenceTitle": "Assault by beating of an emergency worker",
+                  "startDate": "2023-11-04",
+                  "wording": "XXXX on the 4th day of November 2023 assaulted by beating XXX\nXXX, an emergency worker, namely a police officer, acting in the exercise of the\nfunctions of such a worker."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "11 xxx xxx",
+                    "address2": "xxxx",
+                    "address3": "xxxx",
+                    "address4": "xxx",
+                    "postcode": "XXXX XXX"
+                  },
+                  "dateOfBirth": "1980-12-03",
+                  "firstName": "xxx",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "MUNN"
+                }
+              },
+              "prosecutionCaseId": "68401a1d-3b8f-453c-aaa6-3da35b1e1b55"
+            }
+          ],
+          "endTime": "2023-12-15T10:20",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea and Trial Preparation",
+            "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+          },
+          "publicListNote": "DEF VIA PVL, PRE CON 09:45am. COUNSEL VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:00",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1991623"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-07-17T01:26:55.356Z",
+              "id": "13fa5c6e-220a-4556-85d4-489bfa23bfdb",
+              "masterDefendantId": "13fa5c6e-220a-4556-85d4-489bfa23bfdb",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "513a0ddb-b3bf-48ee-90b9-a169c29a69da",
+                  "offenceCode": "OF61102",
+                  "offenceDefinitionId": "513a0ddb-b3bf-48ee-90b9-a169c29a69da",
+                  "offenceLegislation": "Contrary to section 47 of the Offences Against the Person Act 1861.",
+                  "offenceTitle": "Assault a person thereby occasioning them actual bodily harm",
+                  "orderIndex": 1,
+                  "startDate": "2023-07-14",
+                  "wording": "On 14/07/2023 at Hatfield XXXXX in the county of Essex, assaulted XXXX XXX, thereby occasioning  her,  actual bodily harm"
+                },
+                {
+                  "count": 0,
+                  "id": "76bd72ab-c4b7-494e-90f1-bdc3724bf663",
+                  "offenceCode": "CJ88116",
+                  "offenceDefinitionId": "76bd72ab-c4b7-494e-90f1-bdc3724bf663",
+                  "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act    1988.",
+                  "offenceTitle": "Assault by beating",
+                  "orderIndex": 3,
+                  "startDate": "2023-07-14",
+                  "wording": "On 14/07/2023 at Hatfield XXXX in the county of Essex assaulted XXXX XXXX by beating  her"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxx",
+                    "address2": "XXX",
+                    "postcode": "XXX XXX"
+                  },
+                  "dateOfBirth": "2001-11-12",
+                  "firstName": "XXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXX"
+                }
+              },
+              "prosecutionCaseId": "4791f876-4952-495c-bba4-41909d2c9e70"
+            }
+          ],
+          "endTime": "2023-12-15T12:45",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Committal for Sentence",
+            "id": "1466e2a6-3760-41de-9d23-17deac22d0a2"
+          },
+          "publicListNote": "DEFENDANT TO BE PRODUCED. DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T11:45",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2762523"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-11-03T16:23:35.764Z",
+              "id": "d0f9fbc9-dbf3-4310-b27c-c185979533ec",
+              "masterDefendantId": "d0f9fbc9-dbf3-4310-b27c-c185979533ec",
+              "offences": [
+                {
+                  "id": "4b97c71c-afb1-4c37-ac7c-2ecb04413fa6",
+                  "offenceCode": "MD71171",
+                  "offenceDefinitionId": "4b97c71c-afb1-4c37-ac7c-2ecb04413fa6",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in supply of heroin",
+                  "startDate": "2023-08-11",
+                  "wording": "XXXX XXXX between the 10th day of August 2023 and the 2nd day of\nNovember 2023 at Southend on Sea, was concerned in the supplying of a quantity of diamorphine, a\ncontrolled drug of Class A, to another in contravention of section 4(1) of the Misuse\nof Drugs Act 1971."
+                },
+                {
+                  "id": "47ed4356-497d-4243-a9c3-6e88cee03e6f",
+                  "offenceCode": "MD71174",
+                  "offenceDefinitionId": "47ed4356-497d-4243-a9c3-6e88cee03e6f",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply of crack cocaine",
+                  "startDate": "2023-08-11",
+                  "wording": "ENOCH ODUBANJO between the 10th day of August 2023 and the 2nd day of\nNovember 2023 at Southend on Sea was concerned in the supplying of a quantity of cocaine, a\ncontrolled drug of Class A, to another in contravention of section 4(1) of the Misuse\nof Drugs Act 1971."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "XXXX",
+                    "address3": "XXXX",
+                    "address4": "XXXX XXXX",
+                    "postcode": "XXX XXXX"
+                  },
+                  "dateOfBirth": "1901-01-01",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "90aba507-553c-43bd-80f4-4dec753c7857"
+            }
+          ],
+          "endTime": "2023-12-15T14:30",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea and Trial Preparation",
+            "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+          },
+          "publicListNote": "DEFENDANT AND DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP.",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T14:00",
+          "weekCommencing": false
+        }
+      ],
+      "judiciary": [
+        {
+          "judicialId": "7931ac8a-174a-3077-a2d7-c255455e27ea",
+          "judicialRoleType": {
+            "judiciaryType": "CIRCUIT_JUDGE"
+          }
+        }
+      ],
+      "sittingDate": "2023-12-15",
+      "weekCommencing": false
+    },
+    {
+      "courtRoomId": "31a9740d-31e4-34e5-a15b-2b943d0a38fb",
+      "hearings": [
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2527323"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-09-29T10:44:09.775Z",
+              "id": "7bdaf4c4-168a-4698-a8b1-cb770ee6c155",
+              "masterDefendantId": "7bdaf4c4-168a-4698-a8b1-cb770ee6c155",
+              "offences": [
+                {
+                  "count": 3,
+                  "id": "71e30395-09a5-4b8a-b316-fdc33f15f4be",
+                  "offenceCode": "MD71530",
+                  "offenceDefinitionId": "71e30395-09a5-4b8a-b316-fdc33f15f4be",
+                  "offenceLegislation": "Contrary to section 5(2) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess a controlled drug of Class B - Cannabis / Cannabis Resin",
+                  "orderIndex": 1,
+                  "startDate": "2023-09-28",
+                  "wording": "XXX XXX on the 28th day of September 2023 had in his possession a \nquantity of cannabis, a controlled drug of Class B, in contravention of section 5(1) of \nthe Misuse of Drugs Act 1971."
+                },
+                {
+                  "count": 0,
+                  "id": "d064db49-90f5-40b6-9f2c-6cd4edb28c6e",
+                  "offenceCode": "MD71174",
+                  "offenceDefinitionId": "d064db49-90f5-40b6-9f2c-6cd4edb28c6e",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply of crack cocaine",
+                  "orderIndex": 3,
+                  "startDate": "2023-08-23",
+                  "wording": "On 28/09/2023 at Basildon in the county of Essex were concerned in the supplying of  a quantity  of \"crack\" cocaine, a controlled drug of class A, to unknown persons in contravention of section 4(1) of the Misuse of Drugs Act 1971"
+                },
+                {
+                  "count": 0,
+                  "id": "0c268003-13f5-4185-813c-1cf9b327e01e",
+                  "offenceCode": "MD71234",
+                  "offenceDefinitionId": "0c268003-13f5-4185-813c-1cf9b327e01e",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Crack Cocaine",
+                  "orderIndex": 7,
+                  "startDate": "2023-09-28",
+                  "wording": "On 28/09/2023 at Basildon in the county of Essex had in your possession  a quantity  of \"crack\" cocaine, a controlled drug of class Awith intent to supply it to unknown persons in contravention of section 4(1) of the Misuse of Drugs Act 1971"
+                },
+                {
+                  "count": 6,
+                  "id": "2e3edd82-1a52-4168-8aae-aae068b2f002",
+                  "offenceCode": "PC02021",
+                  "offenceDefinitionId": "2e3edd82-1a52-4168-8aae-aae068b2f002",
+                  "offenceLegislation": "Contrary to sections 329(1) and 334 of the Proceeds of Crime Act 2002.",
+                  "offenceTitle": "Acquire / use / possess criminal property",
+                  "orderIndex": 9,
+                  "startDate": "2023-09-28",
+                  "wording": "MITCHELL PEARSON on the 28th day of September 2023 possessed criminal property \nnamely, a quantity of cash in the sum of \u00a31540 knowing or suspecting it to represent \nin whole or part and whether directly or indirectly, the proceeds of criminal conduct."
+                },
+                {
+                  "id": "4fda2a33-5696-4f95-a6d0-788a63fc196c",
+                  "offenceCode": "MD71174",
+                  "offenceDefinitionId": "4fda2a33-5696-4f95-a6d0-788a63fc196c",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply of crack cocaine",
+                  "orderIndex": 10,
+                  "startDate": "2023-09-28",
+                  "wording": "MITCHELL PEARSON and JOHN BLACKFORD between the 12th day of September \n2023 and the 29th day of September 2023 were concerned in the supplying of a \nquantity of crack cocaine, a controlled drug of Class A, to another in contravention of \nsection 4(1) of the Misuse of Drugs Act 1971."
+                },
+                {
+                  "count": 2,
+                  "id": "a7ce6da5-b74e-4d1a-a3e5-e5881f180198",
+                  "offenceCode": "MD71234",
+                  "offenceDefinitionId": "a7ce6da5-b74e-4d1a-a3e5-e5881f180198",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Crack Cocaine",
+                  "orderIndex": 11,
+                  "startDate": "2023-09-28",
+                  "wording": "MITCHELL PEARSON and JOHN BLACKFORD on the 28th day of September 2023 had \nin their possession a quantity of crack cocaine, a controlled drug of Class A with \nintent to supply it to another in contravention of section 4(1) of the Misuse of Drugs \nAct 1971."
+                },
+                {
+                  "count": 1,
+                  "id": "4b2f4ce8-9c16-4c33-bd14-ebc5262a63ec",
+                  "offenceCode": "MD71174",
+                  "offenceDefinitionId": "4b2f4ce8-9c16-4c33-bd14-ebc5262a63ec",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply of crack cocaine",
+                  "orderIndex": 12,
+                  "startDate": "2023-09-12",
+                  "wording": "MITCHELL PEARSON and JOHN BLACKFORD between the 12th day of September \n2023 and the 29th day of September 2023 were concerned in the supplying of a \nquantity of crack cocaine, a controlled drug of Class A, to another in contravention of \nsection 4(1) of the Misuse of Drugs Act 1971.\n"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxx",
+                    "address2": "xxx",
+                    "address3": "xxx",
+                    "postcode": "XXXX XXX"
+                  },
+                  "dateOfBirth": "2002-09-15",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "ea4c534d-713f-42d9-8000-3f60ba42e063"
+            },
+            {
+              "courtProceedingsInitiated": "2023-09-29T10:44:11.822Z",
+              "id": "e6a57940-7ec8-4e3e-b989-f8d0a8907e2a",
+              "masterDefendantId": "e6a57940-7ec8-4e3e-b989-f8d0a8907e2a",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "5332fe4c-7c55-471f-a6c2-d0230ebde2a0",
+                  "offenceCode": "MD71234",
+                  "offenceDefinitionId": "5332fe4c-7c55-471f-a6c2-d0230ebde2a0",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Crack Cocaine",
+                  "orderIndex": 2,
+                  "startDate": "2023-09-28",
+                  "wording": "On 28/09/2023 at Basildon in the county of Essex had in your possession  a quantity  of \"crack\" cocaine, a controlled drug of class Awith intent to supply it to unknown persons in contravention of section 4(1) of the Misuse of Drugs Act 1971"
+                },
+                {
+                  "count": 5,
+                  "id": "8f3e5117-51d6-462e-9867-7924e106e6e7",
+                  "offenceCode": "MD71531",
+                  "offenceDefinitionId": "8f3e5117-51d6-462e-9867-7924e106e6e7",
+                  "offenceLegislation": "Contrary to section 4(2)(a) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Produce controlled drug of Class B - cannabis",
+                  "orderIndex": 6,
+                  "startDate": "2023-09-28",
+                  "wording": "XXX XXXXXD on the 28th day of September 2023 produced 2 cannabis plants, a \ncontrolled drug of Class B, in contravention of section 4(1) of the Misuse of Drugs Act \n1971."
+                },
+                {
+                  "count": 0,
+                  "id": "76d61bb4-e7e3-4b2e-834e-e65e93d15b3d",
+                  "offenceCode": "MD71174",
+                  "offenceDefinitionId": "76d61bb4-e7e3-4b2e-834e-e65e93d15b3d",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply of crack cocaine",
+                  "orderIndex": 7,
+                  "startDate": "2023-08-23",
+                  "wording": "On 28/09/2023 at Basildon in the county of Essex were concerned in the supplying of  a quantity  of \"crack\" cocaine, a controlled drug of class A, to unknown persons in contravention of section 4(1) of the Misuse of Drugs Act 1971"
+                },
+                {
+                  "count": 7,
+                  "id": "ad097bb5-aa35-418c-a040-8fe839b7f753",
+                  "offenceCode": "PC02021",
+                  "offenceDefinitionId": "ad097bb5-aa35-418c-a040-8fe839b7f753",
+                  "offenceLegislation": "Contrary to sections 329(1) and 334 of the Proceeds of Crime Act 2002.",
+                  "offenceTitle": "Acquire / use / possess criminal property",
+                  "orderIndex": 9,
+                  "startDate": "2023-09-28",
+                  "wording": "XXXX XXXXX on the 28th day of September 2023 possessed criminal property \nnamely, a quantity of cash in the sum of \u00a3260 knowing or suspecting it to represent \nin whole or part and whether directly or indirectly, the proceeds of criminal conduct.\n"
+                },
+                {
+                  "count": 2,
+                  "id": "cdb75cd8-5136-4102-8d8d-e4c8832d0c06",
+                  "offenceCode": "MD71234",
+                  "offenceDefinitionId": "cdb75cd8-5136-4102-8d8d-e4c8832d0c06",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Crack Cocaine",
+                  "orderIndex": 11,
+                  "startDate": "2023-09-28",
+                  "wording": "XXXX XXXXX and JOHN BLACKFORD on the 28th day of September 2023 had \nin their possession a quantity of crack cocaine, a controlled drug of Class A with \nintent to supply it to another in contravention of section 4(1) of the Misuse of Drugs \nAct 1971."
+                },
+                {
+                  "count": 1,
+                  "id": "fa1abebf-ba03-4652-94d8-ddf30921ac3e",
+                  "offenceCode": "MD71174",
+                  "offenceDefinitionId": "fa1abebf-ba03-4652-94d8-ddf30921ac3e",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply of crack cocaine",
+                  "orderIndex": 12,
+                  "startDate": "2023-09-12",
+                  "wording": "XXXX XXXX and JOHN BLACKFORD between the 12th day of September \n2023 and the 29th day of September 2023 were concerned in the supplying of a \nquantity of crack cocaine, a controlled drug of Class A, to another in contravention of \nsection 4(1) of the Misuse of Drugs Act 1971.\n"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxxxxx",
+                    "address2": "xxxx",
+                    "address3": "xxxxx",
+                    "address4": "XXXX",
+                    "postcode": "XX14 2XX"
+                  },
+                  "dateOfBirth": "1995-01-01",
+                  "firstName": "xxxx",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "ea4c534d-713f-42d9-8000-3f60ba42e063"
+            }
+          ],
+          "endTime": "2023-12-15T15:00",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Sentence",
+            "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+          },
+          "publicListNote": "PEARSON VIA PVL, PRE 13:45pm. BLACKFORD TO ATTEND. COUNSEL TO ATTEND",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T14:00",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1989322"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-05-11T14:50:49.113Z",
+              "id": "e6184649-35ef-4ee5-a93a-d048ffaf5a2e",
+              "masterDefendantId": "e6184649-35ef-4ee5-a93a-d048ffaf5a2e",
+              "offences": [
+                {
+                  "count": 1,
+                  "id": "7cb66475-7b19-485d-8de3-360ff0743148",
+                  "offenceCode": "CJ88160",
+                  "offenceDefinitionId": "7cb66475-7b19-485d-8de3-360ff0743148",
+                  "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act 1988 and section 1 of the Assaults on Emergency Workers (Offences) Act 2018.",
+                  "offenceTitle": "Assault by beating of an emergency worker",
+                  "orderIndex": 1,
+                  "startDate": "2022-07-31",
+                  "wording": "XXXX XXXXX on the 31st day of July 2022 assaulted Samantha Hilbery, an emergency worker, namely a police constable, acting in the exercise of her functions as such a worker, by beating her."
+                },
+                {
+                  "id": "1f5e9e1a-18c2-47e6-b406-b54bf175183f",
+                  "offenceCode": "BA76001",
+                  "offenceDefinitionId": "1f5e9e1a-18c2-47e6-b406-b54bf175183f",
+                  "offenceLegislation": "Contrary to section 6(1) of the Bail Act 1976.",
+                  "offenceTitle": "Fail to surrender to police / court bail at the appointed time",
+                  "orderIndex": 2,
+                  "startDate": "2023-08-22",
+                  "wording": "On or in 22 August 2023 at Basildon failed without reasonable cause to surrender to custody at Basildon crown Court having been released on bail in criminal proceedings on or in 14 July 2023 at Croydon Magistrates court"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxx ",
+                    "address2": "xxxx ",
+                    "address5": "XXXX",
+                    "postcode": "XXX XXXXX"
+                  },
+                  "dateOfBirth": "1991-01-01",
+                  "firstName": "XXXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXXXX"
+                }
+              },
+              "prosecutionCaseId": "11070efd-06dd-412a-ba64-d0343e740af0"
+            }
+          ],
+          "endTime": "2023-12-15T13:00",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea",
+            "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+          },
+          "publicListNote": "DEFENDANT AND DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T12:00",
+          "weekCommencing": false
+        }
+      ],
+      "judiciary": [
+        {
+          "judicialId": "2bbdd6cd-3ef9-44c8-b61c-d8699a960fb5",
+          "judicialRoleType": {
+            "judiciaryType": "RECORDER"
+          }
+        }
+      ],
+      "sittingDate": "2023-12-15",
+      "weekCommencing": false
+    },
+    {
+      "courtRoomId": "018621ab-6f28-371f-8a99-e118ace2cc2a",
+      "hearings": [
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1108323"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-02-10T08:28:39.167Z",
+              "id": "af9fe238-ed55-4b90-9e2f-e4b3cfdb3fd6",
+              "masterDefendantId": "af9fe238-ed55-4b90-9e2f-e4b3cfdb3fd6",
+              "offences": [
+                {
+                  "id": "e4f3a5a6-1685-4957-a1a7-7f326623e446",
+                  "offenceCode": "SX03007",
+                  "offenceDefinitionId": "e4f3a5a6-1685-4957-a1a7-7f326623e446",
+                  "offenceLegislation": "Contrary to section 3 of the Sexual Offences Act 2003.",
+                  "offenceTitle": "Sexual assault on a female",
+                  "reportingRestrictions": [
+                    {
+                      "id": "52390099-71e2-4324-a074-22b20194f27c",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-02-10"
+                    }
+                  ],
+                  "startDate": "2023-02-04",
+                  "wording": "JAMIE LEWIS on the 4th day of February 2023 intentionally touched Angela Purkis, the circumstances being that the touching was sexual, Angela Purkis did not consent to it, and JAMIE LEWIS did not reasonably believe that Angela Purkis consented. "
+                },
+                {
+                  "id": "dcb54535-d4c3-45e9-ae37-a7f2c5fdc44c",
+                  "offenceCode": "COML025",
+                  "offenceDefinitionId": "dcb54535-d4c3-45e9-ae37-a7f2c5fdc44c",
+                  "offenceLegislation": "Contrary to Common Law",
+                  "offenceTitle": "Murder - victim one year of age or older",
+                  "reportingRestrictions": [
+                    {
+                      "id": "52390099-71e2-4324-a074-22b20194f27c",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-02-10"
+                    }
+                  ],
+                  "startDate": "2023-02-04",
+                  "wording": "JAMIE LEWIS, KEITH ARANSIBIA and KEIRON ARANSIBIA on the 4th day of February 2023 murdered Matthew Portwood."
+                },
+                {
+                  "id": "e8c81947-c57d-4da7-8785-7799a9141635",
+                  "offenceCode": "COML022",
+                  "offenceDefinitionId": "e8c81947-c57d-4da7-8785-7799a9141635",
+                  "offenceLegislation": "Contrary to Common Law.",
+                  "offenceTitle": "Manslaughter",
+                  "reportingRestrictions": [
+                    {
+                      "id": "52390099-71e2-4324-a074-22b20194f27c",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-02-10"
+                    }
+                  ],
+                  "startDate": "2023-10-04",
+                  "wording": "On or in 4 October 2023 at aa unlawfully killed aa"
+                },
+                {
+                  "id": "e25c7b55-600c-4ab8-b29e-e4b3da80ad89",
+                  "offenceCode": "COML022",
+                  "offenceDefinitionId": "e25c7b55-600c-4ab8-b29e-e4b3da80ad89",
+                  "offenceLegislation": "Contrary to Common Law.",
+                  "offenceTitle": "Manslaughter",
+                  "reportingRestrictions": [
+                    {
+                      "id": "52390099-71e2-4324-a074-22b20194f27c",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-02-10"
+                    }
+                  ],
+                  "startDate": "2023-02-04",
+                  "wording": "XXXX and XXXX on the 4th day of February 2023 unlawfully killed XXXXX XXXXXXX"
+                },
+                {
+                  "id": "848b4a18-a033-47f1-92b7-fa8378379929",
+                  "offenceCode": "CJ88144",
+                  "offenceDefinitionId": "848b4a18-a033-47f1-92b7-fa8378379929",
+                  "offenceLegislation": "Contrary to section 139(1) and (6) of the Criminal Justice Act    1988.",
+                  "offenceTitle": "Possess knife blade / sharp pointed article in a public place - Criminal Justice Act 1988",
+                  "reportingRestrictions": [
+                    {
+                      "id": "52390099-71e2-4324-a074-22b20194f27c",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-02-10"
+                    }
+                  ],
+                  "startDate": "2023-02-04",
+                  "wording": "JAMIE LEWIS on the 4th day of February 2023 without good reason or lawful authority, had with him in a public place, namely Haystack Public House, Canvey Island, an article which had a blade or was sharply pointed, namely a knife."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxx",
+                    "address2": "xxxx",
+                    "address3": "xxx",
+                    "postcode": "XXXX XXX"
+                  },
+                  "dateOfBirth": "1991-01-01",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "60715159-9eed-4946-8758-e25d4bad4a33"
+            }
+          ],
+          "endTime": "2023-12-15T11:30",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Sentence",
+            "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+          },
+          "publicListNote": "DEFT TO BE PRODUCED. DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:30",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2241423"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-08-20T20:03:23.389Z",
+              "id": "69956242-453f-427f-8e67-56803f91f0cd",
+              "masterDefendantId": "69956242-453f-427f-8e67-56803f91f0cd",
+              "offences": [
+                {
+                  "count": 1,
+                  "id": "bac36afe-ae1d-4b40-baaf-3880ca40f1c0",
+                  "offenceCode": "OF61016",
+                  "offenceDefinitionId": "bac36afe-ae1d-4b40-baaf-3880ca40f1c0",
+                  "offenceLegislation": "Contrary to section 18 of the Offences Against the    Person Act 1861.",
+                  "offenceTitle": "Section 18 - wounding    with intent",
+                  "orderIndex": 1,
+                  "reportingRestrictions": [
+                    {
+                      "id": "c4a02e4f-586d-4174-9b5f-259a9c43fd69",
+                      "judicialResultId": "c43a7e71-f42b-4538-9514-1a4243f3e02b",
+                      "label": "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999",
+                      "orderedDate": "2023-08-21"
+                    }
+                  ],
+                  "startDate": "2023-08-19",
+                  "wording": "XXX on the 19th day of August 2023 unlawfully and maliciously wounded Matthew FOX with intent to do him grievous bodily harm."
+                },
+                {
+                  "count": 2,
+                  "id": "7d4355b4-fa85-40c0-9c47-00a763b954f8",
+                  "offenceCode": "CJ88116",
+                  "offenceDefinitionId": "7d4355b4-fa85-40c0-9c47-00a763b954f8",
+                  "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act 1988.",
+                  "offenceTitle": "Assault by beating",
+                  "orderIndex": 2,
+                  "reportingRestrictions": [
+                    {
+                      "id": "90c2341b-ca41-4379-ae15-fbdc6ec4ddd8",
+                      "judicialResultId": "997cc0b0-861f-4b6c-b5b0-0089c59c2d60",
+                      "label": "Direction made under Section 45 of the Youth Justice and Criminal Evidence Act 1999",
+                      "orderedDate": "2023-08-21"
+                    }
+                  ],
+                  "startDate": "2023-08-19",
+                  "wording": "XXX on the 19th day of August 2023 assaulted Lily MYNOTT by beating her.\n"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxx ",
+                    "address2": "xxx",
+                    "address3": "xxx",
+                    "postcode": "XXXX XXXX"
+                  },
+                  "dateOfBirth": "1990-01-10",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "e4422aee-194e-4d8c-afd0-101d6175fda8"
+            }
+          ],
+          "endTime": "2023-12-15T10:45",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Further Case Management",
+            "id": "933e7d20-0649-3c65-8108-55a81faac1ec"
+          },
+          "publicListNote": "DEFENDANT AND DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:00",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1701417"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-01-20T10:03:11.289Z",
+              "id": "8620eb7f-6246-4a2b-bfbe-25d731e61e7c",
+              "masterDefendantId": "8620eb7f-6246-4a2b-bfbe-25d731e61e7c",
+              "offences": [
+                {
+                  "count": 12,
+                  "id": "d87d079b-d830-4b87-b8cd-6e083e35d93c",
+                  "offenceCode": "SX03019",
+                  "offenceDefinitionId": "d87d079b-d830-4b87-b8cd-6e083e35d93c",
+                  "offenceLegislation": "Contrary to section 8(1)    and (3) of the Sexual Offences Act 2003",
+                  "offenceTitle": "Cause / incite a girl under 13 to engage in sexual activity - no penetration",
+                  "orderIndex": 8,
+                  "reportingRestrictions": [
+                    {
+                      "id": "f21f597e-8722-42e6-b114-c8da8c21edeb",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012  intentionally caused or incited a girl under the age of 13, namely 7-8 years  to engage in sexual activity of a non penetrative nature, namely grabbing her hand over his penis.\n\n[bathroom incident at yacht club"
+                },
+                {
+                  "count": 9,
+                  "id": "8922b881-96ac-43d0-9a15-1838ac2acff3",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "8922b881-96ac-43d0-9a15-1838ac2acff3",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 11,
+                  "reportingRestrictions": [
+                    {
+                      "id": "cc66bccd-5e79-408b-af51-11df564dd767",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012 at yacht club intentionally penetrated the vagina of a girl under the age of 13, namely 7-8 years old with a part of your body, namely, fingers  and that penetration was sexual.\n\n[cellar incident when witness Terry enters]"
+                },
+                {
+                  "count": 6,
+                  "id": "e40a41dd-9ebf-42e3-9ff3-6cfeda3fecaa",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "e40a41dd-9ebf-42e3-9ff3-6cfeda3fecaa",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 5,
+                  "reportingRestrictions": [
+                    {
+                      "id": "5368fec4-037a-46e4-83c7-6f83ff3e4bad",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012  intentionally penetrated the vagina of a girl under the age of 13, namely,  7-8 years old with a part of your body, namely fingers  and that penetration was sexual on at least 5 occasions. \n\n[multiple incidents  in the cellar]"
+                },
+                {
+                  "count": 5,
+                  "id": "45c79590-ce60-43e3-a7bf-2bc372b8cf88",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "45c79590-ce60-43e3-a7bf-2bc372b8cf88",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 4,
+                  "reportingRestrictions": [
+                    {
+                      "id": "9a37f392-a9ec-424d-ac65-bf62559a2ed1",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2013-01-01",
+                  "wording": "between 01/01/2013 and 31/12/2012  intentionally penetrated the vagina of a girl under the age of 13, namely,  8 years old, with a part of your body, namely, fingers and that penetration was sexual.\n\n(incident involving witness Adrian walk in]"
+                },
+                {
+                  "count": 8,
+                  "id": "b1429648-ded0-4eab-a36a-9d635f7ed76c",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "b1429648-ded0-4eab-a36a-9d635f7ed76c",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 7,
+                  "reportingRestrictions": [
+                    {
+                      "id": "3ae14051-838d-4596-b25e-cf4f44879046",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012  penetrated the vagina of a girl under the age of 13, namely 7-8 years old,  with a part of your body, namely, fingers and that penetration was sexual on at least 2 occasions. \n\n[multiple incident in the bathroom at yacht club]"
+                },
+                {
+                  "count": 1,
+                  "id": "8d3efb12-a0e6-441a-82e8-a7c0aaa4776e",
+                  "offenceCode": "SX03013",
+                  "offenceDefinitionId": "8d3efb12-a0e6-441a-82e8-a7c0aaa4776e",
+                  "offenceLegislation": "Contrary to section 5    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Rape a girl under 13",
+                  "orderIndex": 10,
+                  "reportingRestrictions": [
+                    {
+                      "id": "39c0c3fc-7527-4e49-a0d4-287d28735a07",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012 at his caravan  intentionally penetrated the vagina  of a girl under the age of 13 with your penis"
+                },
+                {
+                  "count": 2,
+                  "id": "53ac08fd-ada7-4339-b8f8-664138fbea31",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "53ac08fd-ada7-4339-b8f8-664138fbea31",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 2,
+                  "reportingRestrictions": [
+                    {
+                      "id": "e24bb4d0-50fe-477a-8bac-7ef4f9606687",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012 at Boat at Windsor  intentionally penetrated the vagina of a girl under the age of 13, namely 7-8 years , with a part of your body, namely, fingers  and that penetration was sexual.\n[1st incident]"
+                },
+                {
+                  "count": 11,
+                  "id": "662ede4e-988a-4a04-a862-02adad87228f",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "662ede4e-988a-4a04-a862-02adad87228f",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 13,
+                  "reportingRestrictions": [
+                    {
+                      "id": "f0638602-5af6-4aa5-89fd-db9c5ba4b51d",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012 at the forest  intentionally penetrated the vagina of a girl under the age of 13, 7-8 years with a part of your body, namely, fingers  and that penetration was sexual."
+                },
+                {
+                  "count": 4,
+                  "id": "112c720a-d538-472f-bde4-f6600c8752d2",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "112c720a-d538-472f-bde4-f6600c8752d2",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 9,
+                  "reportingRestrictions": [
+                    {
+                      "id": "b1a3c2a4-1a17-41fb-a045-a4891ae79ef9",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012  at his caravan intentionally penetrated the vaginaof a girl under the age of 13, namely,  7-8 years with a part of your body, namely, his fingers and that penetration was sexual on at least 3 occasions. \n\n[multiple incident count]"
+                },
+                {
+                  "count": 10,
+                  "id": "9df6014f-74b6-460c-90c8-5e12dc87975a",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "9df6014f-74b6-460c-90c8-5e12dc87975a",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 12,
+                  "reportingRestrictions": [
+                    {
+                      "id": "fead7474-30ed-433d-a4ca-38b848b34bda",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012 at yacht club intentionally penetrated the vagina of a girl under the age of 13, namely, 7-8 years  with a part of your body, namely, fingers and that penetration was sexual.\n\n[cellar incident when witness Terry enters]"
+                },
+                {
+                  "count": 7,
+                  "id": "74c623b7-c0be-4183-9674-38668f674675",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "74c623b7-c0be-4183-9674-38668f674675",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 6,
+                  "reportingRestrictions": [
+                    {
+                      "id": "6a34d542-342f-4371-87a8-97e17cf759a2",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 01/01/2012 intentionally penetrated the vagina of a girl under the age of 13, namely f7-8 years old,  with a part of your body, namely fingers and that penetration was sexual.\n\n[chair incident]"
+                },
+                {
+                  "count": 3,
+                  "id": "9aafb329-bb87-4f61-8150-5b3fd241b3c6",
+                  "offenceCode": "SX03015",
+                  "offenceDefinitionId": "9aafb329-bb87-4f61-8150-5b3fd241b3c6",
+                  "offenceLegislation": "Contrary to section 6    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a girl under 13    by penetration with a part of your body / a thing - SOA 2003",
+                  "orderIndex": 3,
+                  "reportingRestrictions": [
+                    {
+                      "id": "c07e76a8-fe18-43b2-af94-13346c9d06bb",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2023-01-20"
+                    }
+                  ],
+                  "startDate": "2011-01-01",
+                  "wording": "between 01/01/2011 and 31/12/2012  intentionally penetrated the vagina of a girl under the age of 13, namely, 7-8 years with a part of your body, namely ,fingers  and that penetration was sexual.\n\n(2nd incident on same day as charge 1 by the garage bins]"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxx",
+                    "address2": "XXX XXX",
+                    "address3": "XXX",
+                    "address4": "XXXX",
+                    "postcode": "XXX XXXX"
+                  },
+                  "dateOfBirth": "1989-11-11",
+                  "firstName": "XXXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXX"
+                }
+              },
+              "prosecutionCaseId": "8bd5063e-d3a8-4bda-9e5c-6c2d1b9b03d6"
+            }
+          ],
+          "endTime": "2023-12-15T13:00",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Ground Rules Hearing",
+            "id": "70e377a6-8352-4e75-b65c-46ce4a14f4c5"
+          },
+          "publicListNote": "DEFENDANT AND DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T12:30",
+          "weekCommencing": false
+        }
+      ],
+      "judiciary": [
+        {
+          "judicialId": "cb8a99ff-c156-37df-903e-bf101012af7e",
+          "judicialRoleType": {
+            "judiciaryType": "CIRCUIT_JUDGE"
+          }
+        }
+      ],
+      "sittingDate": "2023-12-15",
+      "weekCommencing": false
+    },
+    {
+      "courtRoomId": "dde5d308-98af-3ec8-a266-422301820b4d",
+      "hearings": [
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1498623"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-05-05T13:24:41.795Z",
+              "id": "eebec37e-a3b0-4d9b-827a-1328c18747d6",
+              "masterDefendantId": "eebec37e-a3b0-4d9b-827a-1328c18747d6",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "f23d9e54-2627-4f52-af9f-6ca6897de48a",
+                  "offenceCode": "TH68020",
+                  "offenceDefinitionId": "f23d9e54-2627-4f52-af9f-6ca6897de48a",
+                  "offenceLegislation": "Contrary to section 1(1) and 7 of the    Theft Act 1968.",
+                  "offenceTitle": "Theft - other - including theft by finding",
+                  "orderIndex": 1,
+                  "startDate": "2022-11-11",
+                  "wording": "On 11/11/2022 at Colchester in the county of Essex, stole two boxes of eggs  to the value of \u00a34.00  belonging to Alastair ROBINSON."
+                },
+                {
+                  "count": 0,
+                  "id": "f9a7db67-ded4-4e53-8a00-622ec9626f11",
+                  "offenceCode": "CA81001",
+                  "offenceDefinitionId": "f9a7db67-ded4-4e53-8a00-622ec9626f11",
+                  "offenceLegislation": "Contrary to section 9 of the    Criminal Attempts Act 1981.",
+                  "offenceTitle": "Vehicle interference - motor vehicle",
+                  "orderIndex": 2,
+                  "startDate": "2022-11-11",
+                  "wording": "On 11/11/2022 at Colchester in the county of Essex interfered with a motor vehicle, namely a blue Ford Focus index RE54FFZ, or anything carried in or on the same with the intention that an offence of theft of the said motor vehicle or part of it or of anything carried in or on the said motor vehicle or an offence under section 12(1) of the Theft Act 1968 should be committed"
+                },
+                {
+                  "count": 0,
+                  "id": "cfe0acfd-d228-48a4-9eab-72cef608f722",
+                  "offenceCode": "CA81001",
+                  "offenceDefinitionId": "cfe0acfd-d228-48a4-9eab-72cef608f722",
+                  "offenceLegislation": "Contrary to section 9 of the    Criminal Attempts Act 1981.",
+                  "offenceTitle": "Vehicle interference - motor vehicle",
+                  "orderIndex": 3,
+                  "startDate": "2022-11-11",
+                  "wording": "On 11/11/2022 at Colchester in the county of Essex interfered with a motor vehicle, namely a blue Smart 42 index ST65XHX, or anything carried in or on the same with the intention that an offence of theft of the said motor vehicle or part of it or of anything carried in or on the said motor vehicle or an offence under section 12(1) of the Theft Act 1968 should be committed"
+                },
+                {
+                  "count": 0,
+                  "id": "532c6fea-32a7-4aa6-8fb2-8626effc2366",
+                  "offenceCode": "CA81001",
+                  "offenceDefinitionId": "532c6fea-32a7-4aa6-8fb2-8626effc2366",
+                  "offenceLegislation": "Contrary to section 9 of the    Criminal Attempts Act 1981.",
+                  "offenceTitle": "Vehicle interference - motor vehicle",
+                  "orderIndex": 4,
+                  "startDate": "2022-11-10",
+                  "wording": "On 10/11/2022 at Colchester in the county of Essex interfered with a motor vehicle, namely a grey Mercedes A180 index VX66NPA, or anything carried in or on the same with the intention that an offence of theft of the said motor vehicle or part of it or of anything carried in or on the said motor vehicle or an offence under section 12(1) of the Theft Act 1968 should be committed"
+                },
+                {
+                  "count": 0,
+                  "id": "e487a3bc-b0bb-4bd1-87c1-ba3f237c2f55",
+                  "offenceCode": "TH68013",
+                  "offenceDefinitionId": "e487a3bc-b0bb-4bd1-87c1-ba3f237c2f55",
+                  "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft Act 1968.",
+                  "offenceTitle": "Theft of motor vehicle",
+                  "orderIndex": 5,
+                  "startDate": "2022-11-10",
+                  "wording": "Between 10/11/2022 and 11/11/2022 at Colchester in the county of Essex, stole a motor vehicle, namely a grey Vauxhall Adam index BV64GDY,  of a value unknown  belonging to Daisy WEBB."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "XXXX",
+                    "address2": "XXXXX",
+                    "address3": "XXXX",
+                    "address4": "XXXXX",
+                    "address5": "XXX",
+                    "postcode": "XXXX XXX"
+                  },
+                  "dateOfBirth": "1990-10-11",
+                  "firstName": "XX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXXX"
+                }
+              },
+              "prosecutionCaseId": "c662f78c-ca67-44bf-b55c-14c4f15cd0d2"
+            }
+          ],
+          "endTime": "2023-12-15T11:30",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Committal for Sentence",
+            "id": "1466e2a6-3760-41de-9d23-17deac22d0a2"
+          },
+          "publicListNote": "RES HHJ Sawyer Defendant via PVL, PRE CON 10:45. COUNSEL VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T11:00",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2761823"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-11-04T09:48:22.150Z",
+              "id": "e8046af7-bbd5-4cda-9668-8d3a4c4f675d",
+              "masterDefendantId": "e8046af7-bbd5-4cda-9668-8d3a4c4f675d",
+              "offences": [
+                {
+                  "id": "02d57867-b804-42de-8553-20518ffcd35d",
+                  "offenceCode": "MD71170",
+                  "offenceDefinitionId": "02d57867-b804-42de-8553-20518ffcd35d",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in supply of cocaine",
+                  "startDate": "2023-11-03",
+                  "wording": "XXXXXX on or before the 3rd day of November 2023 at Southend-on-Sea in the county of Essex was concerned in the\nsupplying of a quantity of cocaine, a controlled drug of Class A, to another in\ncontravention of section 4(1) of the Misuse of Drugs Act 1971."
+                },
+                {
+                  "id": "8ba61fa1-4249-467d-83dd-267d00acc535",
+                  "offenceCode": "MD71595",
+                  "offenceDefinitionId": "8ba61fa1-4249-467d-83dd-267d00acc535",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply ketamine",
+                  "startDate": "2023-11-03",
+                  "wording": "XXXXXXXX on or before the 3rd day of November 2023 at Southend-on-Sea in the county of Essex was concerned in the supplying of a quantity of ketamine, a controlled drug of Class B, to another in contravention of section 4(1) of the Misuse of Drugs Act 1971."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxxxx",
+                    "address2": "xxxxx",
+                    "address3": "xxx xx",
+                    "postcode": "XXX XXXX"
+                  },
+                  "dateOfBirth": "1990-09-02",
+                  "firstName": "XXXXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "751a2ca2-908a-4e61-a51e-a0944c7c53b3"
+            }
+          ],
+          "endTime": "2023-12-15T11:00",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea and Trial Preparation",
+            "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+          },
+          "publicListNote": "BEFORE HHJ SAWYER CT 2. DEF VIA PVL, PRE CON 10:15am. COUNSEL VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:30",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1620323"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-10-18T12:35:00.809Z",
+              "id": "5771cc22-1a99-43de-985a-90d3a4f0e5d1",
+              "masterDefendantId": "5771cc22-1a99-43de-985a-90d3a4f0e5d1",
+              "offences": [
+                {
+                  "id": "dc7d3639-3198-46fd-9ba2-8449c0780fac",
+                  "offenceCode": "CJ08004",
+                  "offenceDefinitionId": "dc7d3639-3198-46fd-9ba2-8449c0780fac",
+                  "offenceLegislation": "Contrary to sections 63(1), (7)(d) and 67(3) of the Criminal Justice and Immigration Act 2008.",
+                  "offenceTitle": "Possess extreme pornographic image / images portraying an act of intercourse / oral sex with a dead / alive animal",
+                  "startDate": "2023-03-18",
+                  "wording": "XXXXX on or before the 18th day of March 2023 possessed an extreme\npornographic image which was grossly offensive, disgusting or otherwise of an\nobscene character and portrayed in an explicit and realistic way a person performing\nan act of intercourse or oral sex with an animal\nThis count relates to the seven images recovered from the defendants device which\nshowed acts of intercourse with a chicken, dog and horse\n\n"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxx",
+                    "address2": "xxx",
+                    "address3": "XXXXX",
+                    "postcode": "XXXXX XXXX"
+                  },
+                  "dateOfBirth": "1999-01-21",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXXX"
+                }
+              },
+              "prosecutionCaseId": "1481f3c2-cf9d-4965-8e54-9a2a87d88e45"
+            }
+          ],
+          "endTime": "2023-12-15T12:15",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea and Trial Preparation",
+            "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+          },
+          "publicListNote": "BEFORE HHJ SAWTER CT2. DEFENDANT AND DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP.",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T11:45",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1725522"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-05-10T09:44:42.377Z",
+              "id": "eea2a768-35d1-4029-9210-762d9fcf7aec",
+              "masterDefendantId": "eea2a768-35d1-4029-9210-762d9fcf7aec",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "a75e9656-b942-4c00-a103-d359f5e862ce",
+                  "offenceCode": "FA06001",
+                  "offenceDefinitionId": "a75e9656-b942-4c00-a103-d359f5e862ce",
+                  "offenceLegislation": "Contrary to sections 1 and 2 of the Fraud Act 2006.",
+                  "offenceTitle": "Fraud by false representation - Fraud Act 2006",
+                  "orderIndex": 2,
+                  "startDate": "2022-01-31",
+                  "wording": "between 31/01/2022 and 28/03/2022 at Screwfix stores committed fraud in that you dishonestly made a false representation, namely, that you were entitled to pay for goods with a Travelodge PLC store card, intending to make a gain, namely , for yourself to the value of \u00a313233.67."
+                },
+                {
+                  "count": 0,
+                  "id": "7b65f669-514c-4b35-b26c-cb0c24fba04c",
+                  "offenceCode": "FA06001",
+                  "offenceDefinitionId": "7b65f669-514c-4b35-b26c-cb0c24fba04c",
+                  "offenceLegislation": "Contrary to sections 1 and 2 of the Fraud Act 2006.",
+                  "offenceTitle": "Fraud by false representation - Fraud Act 2006",
+                  "orderIndex": 4,
+                  "startDate": "2022-01-31",
+                  "wording": "between 31/01/2022 and 28/03/2022 at Various petrol stations committed fraud in that you dishonestly made a false representation, namely that you were entitled to pay for goods with a Travelodge PLC store card, intending to make a gain, namely , for yourself to the value of \u00a3486.43."
+                },
+                {
+                  "count": 0,
+                  "id": "d6589748-b61c-4d70-b407-6196e8e75944",
+                  "offenceCode": "FA06001",
+                  "offenceDefinitionId": "d6589748-b61c-4d70-b407-6196e8e75944",
+                  "offenceLegislation": "Contrary to sections 1 and 2 of the Fraud Act 2006.",
+                  "offenceTitle": "Fraud by false representation - Fraud Act 2006",
+                  "orderIndex": 3,
+                  "startDate": "2022-01-31",
+                  "wording": "between 31/01/2022 and 28/03/2022 at various B&Q stores committed fraud in that you dishonestly made a false representation, namely that you were entitled to pay for goods with a Travelodge PLC store card, intending to make a gain, namely , for yourself to the value of \u00a3359.62."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxx",
+                    "address2": "XXXXXX",
+                    "address3": "XXXX",
+                    "postcode": "XXXX XXXX"
+                  },
+                  "dateOfBirth": "1981-05-13",
+                  "firstName": "XXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "00d81ea1-0bc4-48b0-91a1-459b303844bf"
+            }
+          ],
+          "endTime": "2023-12-15T15:00",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Committal for Sentence",
+            "id": "1466e2a6-3760-41de-9d23-17deac22d0a2"
+          },
+          "publicListNote": "BEFORE HJ SAWYER. CT 2. DEFENDANT AND DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T14:00",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1273323"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-08-02T10:58:56.897Z",
+              "id": "fd7293c3-bbe7-4d85-a445-5490f367a369",
+              "masterDefendantId": "fd7293c3-bbe7-4d85-a445-5490f367a369",
+              "offences": [
+                {
+                  "count": 2,
+                  "id": "cdaafe60-2a30-49d7-ad10-ba9251ab665f",
+                  "offenceCode": "RT88026",
+                  "offenceDefinitionId": "cdaafe60-2a30-49d7-ad10-ba9251ab665f",
+                  "offenceLegislation": "Contrary to section 2 of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                  "offenceTitle": "Drive a motor vehicle dangerously",
+                  "orderIndex": 2,
+                  "startDate": "2023-02-06",
+                  "wording": "XXXX XXX on the 6th day of February 2023 drove a mechanically propelled vehicle namely a Peugeot van index KE14 BWK on a road namely Stadium Way dangerously."
+                },
+                {
+                  "count": 1,
+                  "id": "5fbd7c5b-b424-40b0-ba85-e81145bbe5dc",
+                  "offenceCode": "OF61017A",
+                  "offenceDefinitionId": "5fbd7c5b-b424-40b0-ba85-e81145bbe5dc",
+                  "offenceLegislation": "Contrary to section 1(1)    of the Criminal Attempts Act 1981.",
+                  "offenceTitle": "Attempt to cause grievous bodily harm with intent to do grievous bodily harm",
+                  "orderIndex": 1,
+                  "startDate": "2023-02-06",
+                  "wording": "XXX XXX on the 6th day of February 2023 attempted to cause grievous bodily harm to Robert LONG with intent to do him grievous bodily harm."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxxxxx",
+                    "address2": "xxxxxx",
+                    "address3": "XXX",
+                    "postcode": "XXX XXXXX"
+                  },
+                  "dateOfBirth": "1983-01-21",
+                  "firstName": "  XXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXX"
+                }
+              },
+              "prosecutionCaseId": "a9720afb-e1d3-43e2-ba73-de37eeace520"
+            }
+          ],
+          "endTime": "2023-12-15T13:00",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Further Case Management",
+            "id": "933e7d20-0649-3c65-8108-55a81faac1ec"
+          },
+          "publicListNote": "BEFORE HHJ SAWYER, CT 2. DEFENDANT TO ATTEND. COUNSEL VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T12:30",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1731121"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2022-11-23T13:58:00.510Z",
+              "id": "4ab39cab-9ac3-409c-ba97-908ca43d6ddc",
+              "masterDefendantId": "4ab39cab-9ac3-409c-ba97-908ca43d6ddc",
+              "offences": [
+                {
+                  "id": "b976232c-1b04-4e14-a212-2077c9a931e5",
+                  "offenceCode": "MD71530",
+                  "offenceDefinitionId": "b976232c-1b04-4e14-a212-2077c9a931e5",
+                  "offenceLegislation": "Contrary to section 5(2) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess a controlled drug of Class B - Cannabis / Cannabis Resin",
+                  "startDate": "2021-08-31",
+                  "wording": "XXX on the 31st day of August 2021 had in his possession a quantity of cannabis, a controlled drug of class B in contravention of section 5(1) of the Misuse of Drugs Act 1971"
+                },
+                {
+                  "id": "10f38767-f2f9-4fdd-864c-cb8dac388075",
+                  "offenceCode": "SX03001",
+                  "offenceDefinitionId": "10f38767-f2f9-4fdd-864c-cb8dac388075",
+                  "offenceLegislation": "Contrary to section 1    of the Sexual Offences Act 2003",
+                  "offenceTitle": "Rape a girl aged 13 / 14 / 15 - SOA 2003",
+                  "reportingRestrictions": [
+                    {
+                      "id": "89000cd1-52c4-40e8-a3fd-4d5d130e2fa6",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2022-11-23"
+                    }
+                  ],
+                  "startDate": "2021-08-30",
+                  "wording": "XXXX on the 30th day of August 2021 intentionally penetrated the anus of a Millie May Ashman who did not consent to the penetration, Claud Kinel not reasonably believing that Millie May Ashman consented"
+                },
+                {
+                  "id": "1ce2eb0f-f91b-4986-a233-9cdd0d759145",
+                  "offenceCode": "SX03005",
+                  "offenceDefinitionId": "1ce2eb0f-f91b-4986-a233-9cdd0d759145",
+                  "offenceLegislation": "Contrary to section 2 of the    Sexual Offences Act 2003",
+                  "offenceTitle": "Assault a female 13 and over by    penetration with part of body / a thing - SOA 2003",
+                  "reportingRestrictions": [
+                    {
+                      "id": "800755a4-fc47-4b81-ba6c-4a75a51d21f0",
+                      "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                      "orderedDate": "2022-11-23"
+                    }
+                  ],
+                  "startDate": "2021-08-30",
+                  "wording": "XXXX on the 30th day of August 2021 intentionally penetrated the vagina of a Millie May Ashman with a part of his body, namely fingers, the circumstances being that the penetration was sexual, Millie May Ashman did not consent to it, and Claud Kinel did not reasonably believe that Millie May Ashman consented\n\n\n\n"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxxxx",
+                    "address2": "XXX",
+                    "address3": "XXXXX",
+                    "address4": "XXXX",
+                    "address5": "XXXXX",
+                    "postcode": "XX XXXX"
+                  },
+                  "dateOfBirth": "1996-12-20",
+                  "firstName": "XXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "5bea437d-5e9f-45e9-a21b-ba8ddd8623f5"
+            }
+          ],
+          "endTime": "2023-12-15T14:45",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Trial (Part Heard)",
+            "id": "5b931bb8-8b04-3d61-b01a-0153df670730"
+          },
+          "publicListNote": "BEFORE HHJ SAWYER. DEFENDANT AND ALL COUNSEL TO ATTEND. INTERPRETER REQUESTED.",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T09:45",
+          "weekCommencing": false
+        }
+      ],
+      "judiciary": [],
+      "sittingDate": "2023-12-15",
+      "weekCommencing": false
+    },
+    {
+      "courtRoomId": "b7bb77c7-b3ab-3e2f-a3d4-1490bd008a0f",
+      "hearings": [
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2111523"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-08-02T22:55:27.730Z",
+              "id": "370e9054-1e9b-402f-a081-2e175f99e766",
+              "masterDefendantId": "370e9054-1e9b-402f-a081-2e175f99e766",
+              "offences": [
+                {
+                  "count": 1,
+                  "id": "53a1bce3-9597-4359-b469-5ad8fabda697",
+                  "offenceCode": "MD71171",
+                  "offenceDefinitionId": "53a1bce3-9597-4359-b469-5ad8fabda697",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in supply of heroin",
+                  "orderIndex": 7,
+                  "startDate": "2022-08-06",
+                  "wording": "XXXXX  between the 6th day of August 2022 and the 12th day of April \n2023 was concerned in the supplying of a quantity of heroin, a controlled drug of \nClass A, to another in contravention of section 4(1) of the Misuse of Drugs Act 1971"
+                },
+                {
+                  "count": 2,
+                  "id": "4a6f144f-06aa-4afd-b828-43174fd99353",
+                  "offenceCode": "MD71174",
+                  "offenceDefinitionId": "4a6f144f-06aa-4afd-b828-43174fd99353",
+                  "offenceLegislation": "Contrary to section 4(3)(b) of and    Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Concerned in the supply of crack cocaine",
+                  "orderIndex": 8,
+                  "startDate": "2022-08-06",
+                  "wording": "XXXXX between the 6th day of August 2022 and the 12th day of April \n2023 was concerned in the supplying of a quantity of crack cocaine, a controlled drug \nof Class A, to another in contravention of section 4(1) of the Misuse of Drugs Act \n1971."
+                },
+                {
+                  "count": 5,
+                  "id": "6fa94676-3a78-43e2-8ad0-3bd1f2b0972b",
+                  "offenceCode": "MD71230",
+                  "offenceDefinitionId": "6fa94676-3a78-43e2-8ad0-3bd1f2b0972b",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Cocaine",
+                  "orderIndex": 11,
+                  "startDate": "2023-04-11",
+                  "wording": "XXXX on the 11th day of April 2023 had in his possession a quantity of \ncocaine, a controlled drug of Class A with intent to supply it to another in \ncontravention of section 4(1) of the Misuse of Drugs Act 1971."
+                },
+                {
+                  "count": 4,
+                  "id": "8f3264ba-b3e4-4fc9-b8fb-d8070e6a336b",
+                  "offenceCode": "MD71234",
+                  "offenceDefinitionId": "8f3264ba-b3e4-4fc9-b8fb-d8070e6a336b",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Crack Cocaine",
+                  "orderIndex": 10,
+                  "startDate": "2023-04-11",
+                  "wording": "XXXXX on the 11th day of April 2023 had in his possession a quantity of \ncrack cocaine, a controlled drug of Class A with intent to supply it to another in \ncontravention of section 4(1) of the Misuse of Drugs Act 1971."
+                },
+                {
+                  "count": 3,
+                  "id": "90b7230b-d1ce-4ee0-a68a-316ee1837d1c",
+                  "offenceCode": "MD71231",
+                  "offenceDefinitionId": "90b7230b-d1ce-4ee0-a68a-316ee1837d1c",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of    Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Heroin",
+                  "orderIndex": 9,
+                  "startDate": "2023-04-11",
+                  "wording": "XXXX on the 11th day of April 2023 had in his possession a quantity of \nheroin, a controlled drug of Class A with intent to supply it to another in \ncontravention of section 4(1) of the Misuse of Drugs Act 1971."
+                },
+                {
+                  "count": 6,
+                  "id": "debb9d57-a7da-4bb4-83b7-3309a80b3327",
+                  "offenceCode": "MD71230",
+                  "offenceDefinitionId": "debb9d57-a7da-4bb4-83b7-3309a80b3327",
+                  "offenceLegislation": "Contrary to section 5(3) of and Schedule 4 to the Misuse of Drugs Act 1971.",
+                  "offenceTitle": "Possess with intent to supply a controlled drug of Class A - Cocaine",
+                  "orderIndex": 12,
+                  "startDate": "2023-08-02",
+                  "wording": "XXXX on the 2nd day of August 2023 had in his possession a quantity of \ncocaine, a controlled drug of Class A with intent to supply it to another in \ncontravention of section 4(1) of the Misuse of Drugs Act 1971.\n"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxxx",
+                    "address2": "xxx",
+                    "address3": "xxxx",
+                    "postcode": "XXX XXXX"
+                  },
+                  "dateOfBirth": "1998-09-23",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXXX"
+                }
+              },
+              "prosecutionCaseId": "cc174826-b0e2-4f45-97b4-6ec0cfa2d477"
+            }
+          ],
+          "endTime": "2023-12-15T10:45",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Further Case Management",
+            "id": "933e7d20-0649-3c65-8108-55a81faac1ec"
+          },
+          "publicListNote": "DEFENDANT TO BE PRODUCED. DEFENCE COUNSEL TO ATTEND. CROWN VIA CVP.",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:15",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR1824723"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-06-22T10:01:52.881Z",
+              "id": "ed1810e5-f79a-4c28-a59b-e344ba399cf3",
+              "masterDefendantId": "ed1810e5-f79a-4c28-a59b-e344ba399cf3",
+              "offences": [
+                {
+                  "id": "a3d492c6-c20a-46d7-93cb-0e33603fc239",
+                  "offenceCode": "SC15005",
+                  "offenceDefinitionId": "a3d492c6-c20a-46d7-93cb-0e33603fc239",
+                  "offenceLegislation": "Contrary to section 75A(1)(a) and (5) of the Serious Crime Act 2015.",
+                  "offenceTitle": "Intentional strangulation",
+                  "startDate": "2023-06-01",
+                  "wording": "XXXX on the 1st day of June 2023 strangled Mariana CHUTOROG."
+                },
+                {
+                  "id": "805bf721-6155-4b5c-bb55-fab0ba61f5e1",
+                  "offenceCode": "CJ88116",
+                  "offenceDefinitionId": "805bf721-6155-4b5c-bb55-fab0ba61f5e1",
+                  "offenceLegislation": "Contrary to section 39 of the Criminal Justice Act 1988.",
+                  "offenceTitle": "Assault by beating",
+                  "startDate": "2023-06-01",
+                  "wording": "XXX between the 1st day of May 2023 and the 1st day of June 2023 \nassaulted Mariana CHITOROG by beating her"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "No fixed abode"
+                  },
+                  "dateOfBirth": "1996-08-08",
+                  "firstName": "XXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "48d9c044-6a43-47cf-bdc8-c64b18ca8b97"
+            }
+          ],
+          "endTime": "2023-12-16T04:15",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea",
+            "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+          },
+          "prosecutor": {
+            "prosecutorCode": "CPS-EEE",
+            "prosecutorId": "92575f4d-5c8d-3624-aa1e-89f34e007c2a"
+          },
+          "publicListNote": "DEFENDANT TO BE PRODUCED. ALL COUNSEL TO ATTEND. INTERPRETER BOOKED",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:15",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2644423"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-10-17T08:15:59.279Z",
+              "id": "e14baa3d-b9d9-4ace-b5ed-93ca69edf863",
+              "masterDefendantId": "e14baa3d-b9d9-4ace-b5ed-93ca69edf863",
+              "offences": [
+                {
+                  "id": "eddc7832-def4-4dde-b23f-c2ca2323dd0b",
+                  "offenceCode": "OF61014",
+                  "offenceDefinitionId": "eddc7832-def4-4dde-b23f-c2ca2323dd0b",
+                  "offenceLegislation": "Contrary to section 16 of the Offences Against the Person Act 1861.",
+                  "offenceTitle": "Threats to kill",
+                  "startDate": "2023-10-15",
+                  "wording": "XXXXX on the 15th day of October 2023 without lawful excuse made to Amea Chitty a threat to kill her intending that the said Amea Chitty would fear that the said threat would be carried out."
+                },
+                {
+                  "id": "e2b1beec-1508-42a7-9bfe-ab1268802403",
+                  "offenceCode": "BA76005",
+                  "offenceDefinitionId": "e2b1beec-1508-42a7-9bfe-ab1268802403",
+                  "offenceLegislation": "Contrary to section 7(3)(b), (4) and (5) of the Bail Act 1976.",
+                  "offenceTitle": "Arrest by a constable for breaking / likely to break bail conditions - duty to surrender into the custody of a court",
+                  "startDate": "2023-11-09",
+                  "wording": "On or in 9 November 2023 at Colchester having been arrested by a constable for breaking a bail condition, namely NOT TO CONTACT DIRECTLY OR INDIRECTLY AMEA CHITTY SAVE THROUGH SOLICITORS,  SOCIAL SERVICES OR THE FAMILY COURT FOR CHILD CONTACT ARRANGEMENTS ONLY being a person released on 17/10/2023 by South Essex Magistrates Court being under a duty to surrender into the custody of a court"
+                },
+                {
+                  "id": "cee7748d-88b3-4f48-bcbe-3bc0dcfec1fe",
+                  "offenceCode": "SC15004",
+                  "offenceDefinitionId": "cee7748d-88b3-4f48-bcbe-3bc0dcfec1fe",
+                  "offenceLegislation": "Contrary to section 76(1) and (11) of the Serious Crime Act 2015.",
+                  "offenceTitle": "Engage in controlling / coercive behaviour in an intimate / family relationship",
+                  "startDate": "2017-01-01",
+                  "wording": "XXXX between the 1st day of January 2017 and the 31st day of March 2023 at a time when he was personally connected to Amea Chitty engaged in behaviour towards her that was controlling or coercive which had a serious effect on her, namely that it caused Amea Chitty to fear violence on at least two occasions. "
+                },
+                {
+                  "id": "e8f74418-a0ff-4f83-bedc-99ece38b2856",
+                  "offenceCode": "OF61102",
+                  "offenceDefinitionId": "e8f74418-a0ff-4f83-bedc-99ece38b2856",
+                  "offenceLegislation": "Contrary to section 47 of the Offences Against the Person Act 1861.",
+                  "offenceTitle": "Assault a person thereby occasioning them actual bodily harm",
+                  "startDate": "2023-10-15",
+                  "wording": "XXXX on the 15th day of October 2023 assaulted Amea Chitty thereby occasioning her actual bodily harm."
+                },
+                {
+                  "id": "e6dd0de3-6851-41a9-a0eb-4a114894d78c",
+                  "offenceCode": "PH97011",
+                  "offenceDefinitionId": "e6dd0de3-6851-41a9-a0eb-4a114894d78c",
+                  "offenceLegislation": "Contrary to section 4A(1)(a)(b)(ii) and (5) of the Protection from Harassment Act 1997.",
+                  "offenceTitle": "Stalking involving serious alarm / distress",
+                  "startDate": "2023-04-01",
+                  "wording": "XXXXxx between the 1st day of April 2023 and the 16th day of October 2023 pursued a course of conduct which amounted to stalking and caused AMEA CHITTY serious alarm or distress which had a substantial adverse effect on her usual day-to-day activities when he knew or ought to have known that his conduct would cause her such alarm or distress. "
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxxxx",
+                    "address2": "XXXX",
+                    "address4": "XXXXX",
+                    "postcode": "XXX XXXXX"
+                  },
+                  "dateOfBirth": "1992-10-04",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "ce892f8e-369f-4f23-a9dc-4b76658a460a"
+            }
+          ],
+          "endTime": "2023-12-15T10:45",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea and Trial Preparation",
+            "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+          },
+          "publicListNote": "DEFENDANT TO BE PRODUCED. ALL COUNSEL TO ATTEND.",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:15",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2061621"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-04-28T16:28:13.532Z",
+              "id": "62b10683-a36a-4dcc-a128-4849b31c0a6c",
+              "masterDefendantId": "62b10683-a36a-4dcc-a128-4849b31c0a6c",
+              "offences": [
+                {
+                  "count": 6,
+                  "id": "6ff9dbb1-16a1-46fd-a338-f7239cfb8684",
+                  "offenceCode": "CJ08004",
+                  "offenceDefinitionId": "6ff9dbb1-16a1-46fd-a338-f7239cfb8684",
+                  "offenceLegislation": "Contrary to sections 63(1), (7)(d) and 67(3) of the Criminal Justice and Immigration Act 2008.",
+                  "offenceTitle": "Possess extreme pornographic image / images portraying an act of intercourse / oral sex with a dead / alive animal",
+                  "orderIndex": 7,
+                  "startDate": "2021-07-06",
+                  "wording": "XXXX on and before the 17th day of December 2021 at Canvey Island in the county of Essex possessed 26 extreme pornographic videos which were grossly offensive, disgusting or otherwise of an obscene character and portrayed in an explicit and realistic way a person performing an act of intercourse or oral sex with an animal. "
+                },
+                {
+                  "count": 3,
+                  "id": "e017a463-8469-4952-a451-9ac9dcd56a06",
+                  "offenceCode": "SX03224A",
+                  "offenceDefinitionId": "e017a463-8469-4952-a451-9ac9dcd56a06",
+                  "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                  "offenceTitle": "Adult attempt to engage in sexual communication with a child",
+                  "orderIndex": 3,
+                  "startDate": "2021-12-10",
+                  "wording": "XXXX on the 10th day of December 2021 at Canvey Island in the county of Essex attempted to engage in sexual communication with a child under the age of 16 namely 13. "
+                },
+                {
+                  "count": 5,
+                  "id": "4ca1f142-56ca-47cc-ba31-da2a9bd2eb12",
+                  "offenceCode": "CJ09001",
+                  "offenceDefinitionId": "4ca1f142-56ca-47cc-ba31-da2a9bd2eb12",
+                  "offenceLegislation": "Contrary to sections 62(1) and 66(2) of the Coroners and Justice Act 2009.",
+                  "offenceTitle": "Possess a prohibited image of a child",
+                  "orderIndex": 6,
+                  "startDate": "2021-06-06",
+                  "wording": "XXXX on and before the 17th day of December 2021 at Canvey Island in the county of Essex possessed 244 prohibited images and 6 prohibited videos of a child. "
+                },
+                {
+                  "count": 4,
+                  "id": "ddf00456-b675-4a6b-a3c5-3f44c61f0ab4",
+                  "offenceCode": "PK78008",
+                  "offenceDefinitionId": "ddf00456-b675-4a6b-a3c5-3f44c61f0ab4",
+                  "offenceLegislation": "Contrary to sections 1(1)(a) and 6    of the Protection of Children Act 1978.",
+                  "offenceTitle": "Make indecent photograph / pseudo-photograph of a    child",
+                  "orderIndex": 5,
+                  "startDate": "2021-07-06",
+                  "wording": "XXXX on or before the 17th day of December 2021 at Canvey Island in the county of Essex made 21 category C indecent photographs of a child. "
+                },
+                {
+                  "count": 2,
+                  "id": "f01526a2-82ae-4641-826f-54ff4a149e62",
+                  "offenceCode": "SX03029A",
+                  "offenceDefinitionId": "f01526a2-82ae-4641-826f-54ff4a149e62",
+                  "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                  "offenceTitle": "Attempt to cause / incite a girl 13 to 15 to engage in sexual activity - offender 18 or over - penetration",
+                  "orderIndex": 13,
+                  "startDate": "2021-12-10",
+                  "wording": "XXXXXX between the 9th day of December 2021 and the 16th day of December 2021 at Canvey Island in the county of Essex attempted to incite a child under the age of 16 namely 13 to engage in sexual activity namely masturbation involving the penetration of her vagina. "
+                },
+                {
+                  "count": 1,
+                  "id": "06590501-f168-4542-a7f9-1bd91b75d1d9",
+                  "offenceCode": "SX03029A",
+                  "offenceDefinitionId": "06590501-f168-4542-a7f9-1bd91b75d1d9",
+                  "offenceLegislation": "Contrary to section 1(1) of the Criminal Attempts Act 1981.",
+                  "offenceTitle": "Attempt to cause / incite a girl 13 to 15 to engage in sexual activity - offender 18 or over - penetration",
+                  "orderIndex": 14,
+                  "startDate": "2021-12-07",
+                  "wording": "XXXXX  between the 7th day of December 2021 and the 16th day of December 2021 at Canvey Island in the county of Essex attempted to incite a child under the age of 16 namely 14 to engage in sexual activity namely masturbation involving the penetration of her vagina. "
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxx",
+                    "address2": "XXXX",
+                    "address3": "XXX",
+                    "postcode": "XXXX XXX"
+                  },
+                  "dateOfBirth": "1991-04-24",
+                  "firstName": "XXXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXXX"
+                }
+              },
+              "prosecutionCaseId": "a63d3eea-8bf1-4483-a382-82161c48af39"
+            }
+          ],
+          "endTime": "2023-12-15T10:15",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea",
+            "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+          },
+          "publicListNote": "DEF VIA PVL, PRE CON 09:45am. COUNSEL VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:00",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2772223"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-11-05T21:15:51.352Z",
+              "id": "ad6fadd3-8c2e-4104-84da-9f381e968e7b",
+              "masterDefendantId": "ad6fadd3-8c2e-4104-84da-9f381e968e7b",
+              "offences": [
+                {
+                  "id": "f529e14b-c48b-4f6c-b540-9199a177c480",
+                  "offenceCode": "COML025A",
+                  "offenceDefinitionId": "f529e14b-c48b-4f6c-b540-9199a177c480",
+                  "offenceLegislation": "Contrary to section 1(1) of the    Criminal Attempts Act 1981.",
+                  "offenceTitle": "Attempt murder - victim aged 1 year or over",
+                  "startDate": "2023-11-04",
+                  "wording": "DAVID COE on the 4th day of November 2023 attempted to murder Acting Police Sergeant 381 Proud."
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxxxxx",
+                    "address2": "XXXX XXX",
+                    "address3": "XXX",
+                    "postcode": "XXX XXX"
+                  },
+                  "dateOfBirth": "1978-08-09",
+                  "firstName": "XXX",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXX"
+                }
+              },
+              "prosecutionCaseId": "5bd0f566-45a2-4b95-b8c0-fefea1e36c9c"
+            }
+          ],
+          "endTime": "2023-12-15T10:45",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Plea and Trial Preparation",
+            "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced"
+          },
+          "publicListNote": "DEFENDANT AND ALL COUNSEL TO ATTEND",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:15",
+          "weekCommencing": false
+        },
+        {
+          "caseIdentifier": {
+            "authorityCode": "ESXPF",
+            "authorityId": "8c0b34e5-750d-3de6-a0c9-8c0bd075cb46",
+            "caseReference": "42MR2578523"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-11-22T15:54:20.789Z",
+              "id": "cda50545-7619-4a0c-8ae3-720eac2df378",
+              "masterDefendantId": "cda50545-7619-4a0c-8ae3-720eac2df378",
+              "offences": [
+                {
+                  "id": "2b619959-8993-4214-86b8-5f5bf178b337",
+                  "offenceCode": "COML025",
+                  "offenceDefinitionId": "2b619959-8993-4214-86b8-5f5bf178b337",
+                  "offenceLegislation": "Contrary to Common Law",
+                  "offenceTitle": "Murder - victim one year of age or older",
+                  "startDate": "2023-10-06",
+                  "wording": "On 06/10/2023 at Grays in the county of Essex murdered Ashton ROWBOTHAM"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "xxxx",
+                    "address2": "xxx",
+                    "address3": "xxx",
+                    "address4": "xxx",
+                    "postcode": "XX10 XXX"
+                  },
+                  "dateOfBirth": "2002-08-08",
+                  "firstName": "xxx",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "XXX"
+                }
+              },
+              "prosecutionCaseId": "95c45ad9-4f81-4cbb-b9ab-3055078e5dcd"
+            }
+          ],
+          "endTime": "2023-12-15T11:00",
+          "hasVideoLink": true,
+          "hearingType": {
+            "description": "Bail Application",
+            "id": "633224da-6db3-4df5-8097-62cee52f7a61"
+          },
+          "publicListNote": "DEFENDANT EXCUSED. COUNSEL VIA CVP",
+          "restrictFromCourtList": false,
+          "startTime": "2023-12-15T10:15",
+          "weekCommencing": false
+        }
+      ],
+      "judiciary": [
+        {
+          "judicialId": "210cf037-53ad-3ae1-8a0f-91682c0f6886",
+          "judicialRoleType": {
+            "judiciaryType": "CIRCUIT_JUDGE"
+          }
+        }
+      ],
+      "sittingDate": "2023-12-15",
+      "weekCommencing": false
+    }
+  ],
+  "endDate": "2023-12-15",
+  "publishCourtListType": "DRAFT",
+  "requestedTime": "2023-12-14T10:37:55.191Z",
+  "sendNotificationToParties": true,
+  "startDate": "2023-12-15",
+  "weekCommencing": false
+}

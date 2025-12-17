@@ -1,0 +1,53 @@
+{
+  "publishCourtListType": "WARN",
+  "issueDate": "2023-02-15",
+  "weekCommencingStartDate": "2023-02-20",
+  "weekCommencingEndDate": "2023-02-24",
+  "ljaCode": "MERS",
+  "ljaName": "Merseyside LJA",
+  "weekCommencing": true,
+  "courtName": "Croydon Crown Court",
+  "courtAddress": {
+    "line1": "The Law Courts",
+    "line2": "Altyre Road",
+    "line3": "Croydon",
+    "postCode": "CR9 5AB",
+    "isWelsh": false
+  },
+  "addressee": {
+    "name": "Transport For London",
+    "address": {
+      "line1": "6th Floor Windsor House",
+      "line2": "42-50 Victoria Street",
+      "line3": "London",
+      "postCode": "SW1H 0TL"
+    }
+  },
+  "hearingByWeekCommencingDateNoCourtroom": {
+    "weekCommencingStartDate": "2023-02-20",
+    "weekCommencingEndDate": "2023-02-24",
+    "hearingByCourtrooms": [
+      {
+        "hearings": [
+          {
+            "caseReference": "91GD6403223",
+            "hearingType": "Trial",
+            "defendants": [
+              {
+                "defendantName": "Yousuf Aguirre",
+                "defendantDateOfBirth": "1979-05-02"
+              },
+              {
+                "defendantName": "Freddie Smith",
+                "defendantDateOfBirth": "1970-01-01"
+              },
+              {
+                "defendantName": "Sweet And Jones Associates"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

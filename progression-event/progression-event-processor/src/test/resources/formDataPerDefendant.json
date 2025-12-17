@@ -1,0 +1,591 @@
+{
+  "id": "Mariano ELENOR, 1 Jan 1990",
+  "title": "Preparation for effective trial",
+  "name": "PET Mariano ELENOR, 1 Jan 1990, created at 15.09 on 28 June 2023",
+  "isWelsh": false,
+  "sections": [
+    {
+      "key": "form",
+      "title": "",
+      "header": "Preparation for effective trial",
+      "label": "Criminal Procedure Rules Parts 1 & 3",
+      "courtPlace": "Lavender Hill Magistrates' Court",
+      "subSections": [
+        {
+          "key": "formData",
+          "heading": "This form:",
+          "fields": [
+            {
+              "label": "",
+              "value": "collects information about the case that the court will need to arrange for an effective trial",
+              "subValue": "CrimPR rules 3.2 and 3.3\nCrimPR rule 3.5\nCrimPR 1.2(1) & 3.12"
+            },
+            {
+              "label": "",
+              "value": "records the court's directions"
+            }
+          ]
+        },
+        {
+          "key": "formData",
+          "heading": "After the court gives directions for trial, you must tell the court at once if:",
+          "fields": [
+            {
+              "label": "",
+              "value": "information about the case changes, or,"
+            },
+            {
+              "label": "",
+              "value": "you think another direction is needed"
+            }
+          ]
+        },
+        {
+          "key": "CCD",
+          "heading": "Court contact details",
+          "fields": [
+            {
+              "label": "ccd",
+              "value": "176A Lavender Hill\nLondon\nSW11 1JU",
+              "subValue": ""
+            }
+          ]
+        },
+        {
+          "key": "hr"
+        }
+      ]
+    },
+    {
+      "key": "part1",
+      "header": "Part 1: Summary",
+      "title": "Part 1: Summary",
+      "label": "Prosecuting authority",
+      "value": "Derbyshire Police",
+      "subSections": [
+        {
+          "key": "header1",
+          "name": "Mariano ELENOR",
+          "isYouth": "no",
+          "fields": [
+            {
+              "label": "Date of birth and age",
+              "value": "1 Jan 1990, 33"
+            },
+            {
+              "label": "Interpreter required",
+              "value": "No"
+            },
+            {
+              "label": "Proceedings initiated by",
+              "value": "Charge"
+            },
+            {
+              "label": "Offences",
+              "value": "\n\n"
+            },
+            {
+              "label": "Defendant's representative",
+              "value": "\n"
+            },
+            {
+              "label": "Funding",
+              "value": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "part2",
+      "title": "",
+      "header": "Part 2: Prosecution",
+      "subSections": [
+        {
+          "key": "header1",
+          "heading": "4. Case Management Information",
+          "value": "",
+          "fields": [
+            {
+              "emphasise": false,
+              "title": "4.1 Evidence",
+              "label": "Does the prosecutor intend to serve more evidence?",
+              "info2": "",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "4.2 Disclosure of unused prosecution material",
+              "label": "Has the initial duty of disclosure of unused prosecution material been complied with?",
+              "info2": "",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "4.3 Investigation",
+              "label": "Are there any pending enquiries or lines of investigation?",
+              "info2": "",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "4.4 Modern Slavery Act",
+              "label": "Is there any suggestion that the defendant has been a victim of slavery or exploitation?",
+              "info2": "",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "4.5 Prosecution case",
+              "label": "The prosecution will rely on",
+              "info2": "",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "4.6 Display equipment",
+              "label": "Will the prosecutor need any equipment in the trial courtroom? (e.g. live link or other media player, etc.)",
+              "info2": "The prosecutor must make sure that any electronic media can be played in the courtroom.",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "4.7 Points of law",
+              "label": "Does the prosecutor presently expect the case to involve a complex, novel or unusual point of law and/or fact?",
+              "info2": "",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "key": "header1",
+          "heading": "5. Applications for directions",
+          "value": "",
+          "fields": [
+            {
+              "emphasise": false,
+              "title": "5.1 Prosecution witness requiring assistance, special measures, etc.",
+              "label": "Are there any prosecution witness requirements that may make special measures, reasonable adjustments or other support appropriate?",
+              "info2": "",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "5.2 Ground rules for questioning",
+              "label": "Does the prosecutor want the court to arrange a discussion of ground rules for questioning?",
+              "info2": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases.",
+              "value": ""
+            },
+            {
+              "emphasise": false,
+              "title": "5.3 Variation of standard directions",
+              "label": "Does the prosecutor want the court to vary a standard trial preparation time limit or make any other direction?",
+              "info2": "",
+              "value": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "part3",
+      "header": "Part 3: Defendant",
+      "defendants": [
+        {
+          "key": "part3",
+          "header": "Part 3: Defendant 1",
+          "value": "Mariano ELENOR, 1 Jan 1990",
+          "title": "",
+          "subSections": [
+            {
+              "key": "header1",
+              "heading": "6. Advice on plea and absence",
+              "value": "",
+              "fields": [
+                {
+                  "emphasise": false,
+                  "title": "6.1a Credit for guilty plea",
+                  "label": "Does the defendant understand that: they will receive credit for a guilty plea?",
+                  "info2": "A guilty plea may affect the sentence and any order for costs. If the defendant has not previously committed an offence the court may make a referral order in the event of a guilty plea.",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "6.1b Trial in absence",
+                  "label": "Does the defendant understand that the trial and sentencing, if convicted, can go ahead even if they do not attend?",
+                  "info2": "CrimPR rule 24.12",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "7. Partial or different guilty plea",
+              "value": "",
+              "fields": [
+                {
+                  "emphasise": false,
+                  "title": "7.1 Mixed pleas",
+                  "label": "If more than one offence is alleged, does the defendant want to plead guilty to any of them?",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "7.2 Basis of plea",
+                  "label": "Does the defendant want to plead guilty, but not on the facts alleged?",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "7.3 Different offence",
+                  "label": "Does the defendant want to plead guilty, but to a different offence?",
+                  "info2": "",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "8. Case management",
+              "value": "Initial details of the prosecution case should have been served: CrimPR rule 8.2. Questions 8.1, 8.2, 8.3 and 8.4 are to help the court find out what is in dispute and give appropriate directions for trial.",
+              "fields": [
+                {
+                  "emphasise": false,
+                  "title": "8.1a Presence",
+                  "label": "The defendant was present at the scene of the offence alleged",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1b Involvement",
+                  "label": "The defendant [[carried out] [took part in] the conduct alleged] [drove the vehicle involved]",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1c injury / loss / damage",
+                  "label": "[Nature of injury] [extent of loss or damage] alleged by the prosecution",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1d Identification",
+                  "label": "The defendant was correctly identified",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1e Lawful arrest",
+                  "label": "The defendant was arrested lawfully",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1f Interview",
+                  "label": "The defendant’s interview [summary] [record] is accurate",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1g Fingerprints /DNA",
+                  "label": "Fingerprint / DNA evidence",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1h Scientific evidence",
+                  "label": "[Medical] [identification of drug] [other scientific] prosecution evidence",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1i Alcohol /Drug testing procedure",
+                  "label": "The [alcohol] [drug] testing procedure was carried out correctly.",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1j disqualification / court order (e.g. restraining order)",
+                  "label": "The defendant was [disqualified from driving] [subject to the court order specified] at the time of the offence alleged",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1k Continuity",
+                  "label": "Exhibits and samples were collected and delivered as stated by the prosecution (i.e. continuity)",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.1l Anticipated defence(s)",
+                  "label": "The defendant is likely to rely upon:",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.2 Admissions",
+                  "label": "Can any facts which are not in dispute be recorded in a written admission?",
+                  "info2": "Undisputed facts can be admitted by reference to a statement accepted in paragraph 8.1, e.g. “I admit 8.1(a)and (e).” Facts which are admitted are evidence: CrimPR rule 24.6 & Criminal Justice Act 1967, s.10.",
+                  "value": ""
+                },
+                {
+                  "emphasise": true,
+                  "title": "8.3 Issues",
+                  "label": "What are the real issues in this case?",
+                  "hintText": "",
+                  "fields": [
+                    {
+                      "emphasise": false,
+                      "title": "",
+                      "label": "(a) Explain what particular facts are in dispute, if any, in addition to those identified in paragraph 8.1?",
+                      "info2": "",
+                      "value": ""
+                    },
+                    {
+                      "emphasise": false,
+                      "title": "",
+                      "label": "(b) Explain what matters of law are in dispute, if any?",
+                      "info2": "",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.4 Points of law",
+                  "label": "Does the defendant presently expect the case to involve a complex, novel or unusual point of law and / or fact?",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.5 Defence statement",
+                  "label": "Does the defendant presently intend to give a defence statement?",
+                  "info2": "Giving a defence statement is voluntary, but if one is given it must include the information collected in paragraphs 8.1 and 8.3 and must include particulars of facts relied on by the defence.",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "8.6 Display equiment",
+                  "label": "What equipment (live link or other media player, etc.) will the defendant need in the trial courtroom?",
+                  "info2": "The defendant must make sure that any electronic media can be played in the courtroom.",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "9. Applications for directions",
+              "value": "",
+              "fields": [
+                {
+                  "emphasise": false,
+                  "title": "9.1 Variation of standard directions",
+                  "label": "Does the defendant want the court to vary a standard trial preparation time limit or make any other direction?",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "9.2 Defendant or defence witness requiring assistance, special measures, etc.",
+                  "label": "Are there any defendant or defence witness requirements that may make special measures, reasonable adjustments or other support appropriate? If yes, give details in Part 4.",
+                  "info2": "",
+                  "value": ""
+                },
+                {
+                  "emphasise": false,
+                  "title": "9.3 Ground rules for questioning",
+                  "label": "Does the defendant want the court to arrange a discussion of ground rules for questioning?",
+                  "info2": "If an intermediary is appointed, the court must discuss ground rules with the intermediary and advocates. A discussion may be helpful in other cases.",
+                  "value": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "part4b",
+      "title": "",
+      "header": "Part 4: Witnesses",
+      "label": "11. Expected defence witnesses",
+      "footer": "If the defendant is likely to give evidence, list him or her as the first expected defence witness.  Special or other measures may include screens, evidence by live link or in private, video recorded evidence, intermediary, breaks in examination or other measures to accommodate disability. They may increase the time needed for the witness. In some cases, the defendant may not be allowed to cross-examine a prosecution witness.",
+      "subSections": [
+        {
+          "key": "header1",
+          "heading": "If this information changes, you must tell the court at once: CrimPR 1.2, 3.10",
+          "totalEinCLabel": "Total EinC",
+          "totalEinCValue": "0 Minutes",
+          "totalXExamLabel": "Total x-exam",
+          "totalXExamValue": "0 Minutes",
+          "fields": [
+            {
+              "subFieldCourtCols": [
+                {
+                  "label": "EinC",
+                  "value": "0 Minutes"
+                },
+                {
+                  "label": "X-exam",
+                  "value": "0 Minutes"
+                }
+              ],
+              "subFieldCourt": [],
+              "subFieldData": [
+                {
+                  "label": "Name",
+                  "value": "Mariano Elenor"
+                }
+              ],
+              "subFields": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "part5",
+      "header": "Part 5: Record of court's decisions and directions for effective trial",
+      "title": "",
+      "subSections": [
+        {
+          "footerLabel": "After the court gives directions for trial, if information about the case changes, or you think another direction is needed, you must tell the court and the other party or parties at once: CrimPR rules 1.2(1) & 3.12.",
+          "fields": [
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12. Directions for trial</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>The court must actively manage the case by giving any direction appropriate to the needs of that case as early as possible: CrimPR rule 3.2(3). Complete or delete the following as appropriate.</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.1 Service of evidence</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>The Prosecutor must serve any further evidence by [Date]</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.2 Disclosure</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>If the initial duty of disclosure has not been compiled with, the prosecutor must comply by [Date]</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.3 Witness & evidence</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Part 4 of this form indicates which witnesses are to give oral evidence, with time estimates, <br> and which witnesses' evidence is to be read. The court expects evidence to be given as indicated in that Part.<br>A party who wants to use electronic media, etc. must check before the trial that it can be played in the courtroom.<br>If the trial will take place in Wales and the defendant or any witness wishes to speak Welsh, <br> then ( i ) a Welsh-speaking judge/magistrates and legal adviser should be arranged if possible, and (ii) a Welsh language interpreter is required for anyone who does not speak Welsh.</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.4 Securing attendance CrimPR Part 17; rule 3.8(3).</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>[Witness Summons] [Warrant] [Other steps to secure attendance] ordered for [Case participant]</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.5 Interpretation ordered</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>[Language and dialect] interpretation ordered for [Case Participant] to be arranged by .</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.6 Special measures, reasonable adjustments or other support</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'> ordered for [Case participant]</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.7 Prohibited cross-examination CrimPR Part 23</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>The defendant [Defendant] may not cross-examine the following witness(es) except through a lawyer: [Witness] <br>The following directions apply for as long as the defendant has no legal representative for the trial:<br>- the defendant to give notice of his/her appointment of a lawyer to cross-examine the witness(es) by: [Date] <br>If the defendant gives no such notice by that date then either:<br>- [If the defendant gives no such notice by that date then either:] [the court appoints the following lawyer to cross-examine the witness(es)] [Name of lawyer] [the court directs the appointment for that purpose of a lawyer to be selected at a later date]</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.8 Directions for intermediary’s report and ground rules</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Directions for intermediary’s report and ground rules</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.9 Standard trial preparation directions</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Standard trial preparation directions</div></div>"
+            },
+            {
+              "label": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>12.10 Other Directions</b></div>",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>[Select assignee (optional)] <b>Teste”s tester”s - trst</b> by [Due date (optional)]</div></div>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "part6",
+      "header": "Arrangements for trial",
+      "title": "",
+      "subSections": [
+        {
+          "fields": [
+            {
+              "label": "Trial date:",
+              "value": ""
+            },
+            {
+              "label": "Trial time:",
+              "value": ""
+            },
+            {
+              "label": "Trial venue:",
+              "value": ""
+            },
+            {
+              "label": "Custody time limit expires:"
+            },
+            {
+              "label": "Court category:",
+              "line": "greyLine"
+            },
+            {
+              "label": "Total estimated trial length:"
+            },
+            {
+              "label": "Evidence and submissions:"
+            },
+            {
+              "label": "Deliberations and decisions:",
+              "info": "A detailed timetable must be considered and attached if necessary: CrimPR rules 3.9 & 3.11",
+              "line": "greyLine"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "part7",
+      "header": "Directions for intermediary's report and ground rules",
+      "title": "",
+      "subSections": [
+        {
+          "footerLabel": "",
+          "fields": [
+            {
+              "label": "",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Intermediary's report CrimPR rule 18.32</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Intermediary's report CrimPR rule 18.32<br>a. Intermediary's report for [Case Participant] to be delivered to the court by: [Date] to be arranged by  <br>b. The court will determine the application for an intermediary by: [Date]</div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Ground rules hearing CrimPR rule 3.9</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Ground rules hearing CrimPR rule 3.9<br>c. The court will discuss ground rules for questioning on: [Date] <br>If an intermediary is appointed for a witness or for the defendant, the court must discuss the ground rules for questioning with the intermediary and the advocates before the witness or defendant gives evidence. Sufficient time must be allowed for this.</div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Ground rules: witness(es) CrimPR rules 3.8(7), 3.9</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Ground rules: witness(es) CrimPR rules 3.8(7), 3.9<br>d. The following ground rules will apply for the questioning of  :<br>(a) clear and simple language to be used;<br>(b) no tagged questions;<br>(c) no multiple questions;<br>(d) no questions to be repeated unless not heard or not understood;<br>(e) the witness must be allowed to answer one question before another is asked;<br>(f) questions to be asked in cross-examination to be submitted by: [Date] to be arranged by  ;<br>(g) other ground rules: </div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Ground rules: defendant CrimPR rules 3.8(7), 3.9</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Ground rules: defendant CrimPR rules 3.8(7), 3.9<br>e. The following ground rules will apply for the questioning of the defendant  :<br>(a) clear and simple language to be used;<br>(b) no tagged questions;<br>(c) no multiple questions;<br>(d) no questions to be repeated unless not heard or not understood;<br>(e) the defendant must be allowed to answer one question before another is asked;<br>(f) questions to be asked in cross-examination to be submitted by: [Date] to be arranged by  ;<br>(g) other ground rules: </div></div>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "part8",
+      "header": "Standard trial preparation time limits",
+      "title": "",
+      "subSections": [
+        {
+          "footerLabel": "",
+          "fields": [
+            {
+              "label": "",
+              "infoHtml": "<div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Written admissions</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Written admissions (Criminal Procedure Rules, r.24.6; Criminal Justice Act 1967,s.10)<br><b>a. The parties must serve any written admissions of agreed facts within 14 days.*</b</div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Defence statement</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Defence statement (Criminal Procedure Rules, r.15.4; Criminal Procedure and Investigations Act 1996, s.b. 6)<br><b>b. Any defence statement must be served within 14 days of the prosecutor complying with the initial duty of disclosure.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Defence witnesses</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Defence witnesses (Criminal Procedure and Investigations Act 1996, s.6C)<br><b>c. Defence witness names, etc. must be notified within 14 days of the prosecutor complying with the initial duty of disclosure.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Application for disclosure</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Application for disclosure (Criminal Procedure Rules, r.15.5; Criminal Procedure and Investigations Act 1996, s.8)<br><b>d. The defendant must serve any application for an order for prosecution disclosure as soon as reasonably practicable after the prosecutor complies with the initial duty of disclosure.*  Under s.8 of the Criminal Procedure and Investigations Act 1996, no such application may be made unless a defence statement has been served.</b><br><b>e. The prosecutor must serve any representations in response within 14 days after that.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Witness statements</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Witness statements (Criminal Procedure Rules, r.16.4; Criminal Justice Act 1967,s.9)<br><b>f. The defendant must serve any defence witness statement to be read at trial at least 14 days before the trial.*</b><br><b>g. Any objection to a witness statement being read at trial must be made within 7 days of service of the statement. This does not apply to the statements listed in Part 4.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Measures to assist a witness or defendant to give evidence</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Measures to assist a witness or defendant to give evidence (Criminal Procedure Rules, rr.18.3, 18.13, 18.17, 18.22, 18.26)<br><b>h. Any [further] application for special or other measures must be served within 28 days.</b><br><b>i. Any representations in response must be served within 14 days after that.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Cross-examination where defendant not represented </b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Cross-examination where defendant not represented (Criminal Procedure Rules, rr.23.2, 23.4, 23.7)<br><b>j. The defendant must serve notice of any representative appointed to cross-examine within 7 days.*</b><br><b>k. The prosecutor must serve any application to prohibit cross-examination by the defendant in person as soon as reasonably practicable.</b><br><b>l. Any representations in response must be served within 14 days after that.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Expert evidence</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Expert evidence (Criminal Procedure Rules, rr.19.3, 19.4)<br>m. If either party relies on expert evidence, the directions below apply.<br>(i) The expert’s report must be served within 28 days.*<br>(ii) A party who wants that expert to attend the trial must give notice within 7 days after (i).*\n(iii) A party who relies on expert evidence in response must serve it within 14 days after (ii).*<br>(iv) There must be a meeting of experts under rule 19.6 within 14 days after (iii).*<br>(v) The parties must notify the court immediately after (iv) if the length of the trial is affected by the outcome of the meeting.*</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Hearsay evidence</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Hearsay evidence (Criminal Procedure Rules, rr.20.2, 20.3).<br><b>n. The prosecutor must serve any notice to introduce hearsay evidence within 28 days.</b><br><b>o. The defendant must serve any notice to introduce hearsay evidence as soon as reasonably practicable.</b><br><b>p. Any application to determine an objection to hearsay evidence must be served within 14 days of service of the notice or evidence.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Bad character evidence</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Bad character evidence (Criminal Procedure Rules, rr.21.2, 21.3, 21.4)<br><b>q. The prosecutor must serve any notice to introduce evidence of the defendant’s bad character within 28 days.</b><br><b>r. Any application to determine an objection to that notice must be served within 14 days after that.</b><br><b>s. Any application to introduce evidence of a non-defendant’s bad character must be served within 14 days of prosecution disclosure.</b><br><b>t. Any notice of objection to that evidence must be served within 14 days after that.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Previous sexual behaviour evidence</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Previous sexual behaviour evidence (Criminal Procedure Rules, rr.22.2, 22.3, 22.4,22.5)<br><b>u. The defendant must serve any application for permission to introduce evidence of a complainant's previous sexual behaviour within 28 days of prosecution disclosure.</b><br><b>v. The prosecutor must serve any representations in response within 14 days after that.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Point of law, including abuse of process etc.</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Point of law, including abuse of process etc. (Criminal Procedure Rules, rr.3.3,3.12)<br><b>w. Any skeleton argument must be served at least 14 days before the trial.*</b><br><b>x. Any skeleton argument in reply must be served within 7 days after that.*</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'><b>Trial readiness</b></div><div style='font-family:Arial, sans-serif !important; font-size:8pt !important;\n    margin-bottom:15px !important'>Trial readiness (Criminal Procedure Rules, rr.3.3, 3.12)<br><b>y. The parties must certify readiness for trial at least 14 days before the trial,* confirming that witnesses due to give evidence in person will do so and confirming the trial time estimate.</b></div></div>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

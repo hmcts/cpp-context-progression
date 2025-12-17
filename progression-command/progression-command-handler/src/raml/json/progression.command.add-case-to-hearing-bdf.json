@@ -1,0 +1,12 @@
+{
+  "hearingId" : "f8254db1-1683-483e-afb3-b87fde5a0a26",
+  "cases" : [
+    {
+      "caseId" : "f8254db1-1683-483e-afb3-b87fde5a0a27",
+      "defendants" : [{
+        "defendantId" : "f8254db1-1683-483e-afb3-b87fde5a0a28",
+        "offences" : ["f8254db1-1683-483e-afb3-b87fde5a0a29","f8254db1-1683-483e-afb3-b87fde5a0a25"]
+      }]
+    }
+  ]
+}

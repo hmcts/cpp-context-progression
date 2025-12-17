@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/record-nows-material-request.json",
+  "type": "object",
+  "properties": {
+    "context":{
+      "$ref": "http://justice.gov.uk/core/courts/materialDetails.json#"
+    }
+  },
+  "required": [
+    "context"
+  ],
+  "additionalProperties": false
+}
+

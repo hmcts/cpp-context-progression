@@ -1,0 +1,157 @@
+{
+  "courtCentreId": "07e45c88-9e5d-3e44-b664-d5345bb13be2",
+  "courtListId": "7a7ca6d9-ceb2-34c4-b957-f71edd1efd67",
+  "publishCourtListType": "FIRM",
+  "requestedTime": "2023-02-15T18:23:33.152Z",
+  "startDate": "2023-02-20",
+  "endDate": "2023-02-24",
+  "weekCommencing": true,
+  "courtLists": [
+    {
+      "sittingDate": "2023-02-20",
+      "weekCommencing": true,
+      "judiciary": [
+        {
+          "judicialId": "00f50b1e-9691-3727-8408-61c58352eec6",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "01963f7f-c2d0-325e-b6df-148b2907f78c",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        },
+        {
+          "judicialId": "01963f7f-c2d0-325e-b6df-148b2907f78c",
+          "judicialRoleType": {
+            "judiciaryType": "CROWN"
+          }
+        }
+      ],
+      "hearings": [
+        {
+          "startTime": "2023-02-20T00:00",
+          "endTime": "2023-02-27T00:00",
+          "hearingType": {
+            "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+            "description": "Trial"
+          },
+          "restrictFromCourtList": false,
+          "weekCommencing": true,
+          "hasVideoLink": true,
+          "caseIdentifier": {
+            "authorityId": "764bff92-a135-34cb-b858-8bb6b4b66301",
+            "authorityCode": "SURRPF",
+            "caseReference": "91GD6403223"
+          },
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2023-02-09T16:58:43.676Z",
+              "id": "808f65d0-dc76-42b5-8510-ea45c038b8c0",
+              "masterDefendantId": "808f65d0-dc76-42b5-8510-ea45c038b8c0",
+              "prosecutionCaseId": "6c510b76-5ea0-4471-b0e2-a99fca32a623",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "405a2085-7e7d-498e-a76e-763e91d1c729",
+                  "offenceCode": "CA03010",
+                  "offenceDefinitionId": "405a2085-7e7d-498e-a76e-763e91d1c729",
+                  "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+                  "offenceTitle": "Use / install a television set without a licence",
+                  "orderIndex": 1,
+                  "startDate": "2023-01-10",
+                  "wording": "Use / install a television set without a licence 1"
+                }
+              ],
+              "legalEntityDefendant": {
+                "organisation": {
+                  "name": "Sweet And Jones Associates",
+                  "incorporationNumber": "123456",
+                  "registeredCharityNumber": "234567",
+                  "address": {
+                    "address1": "61",
+                    "address2": "Richmond Road",
+                    "address4": "WESTERN CENTRAL LONDON",
+                    "address5": "London",
+                    "postcode": "WC1 7VJ"
+                  }
+                }
+              }
+            },
+            {
+              "courtProceedingsInitiated": "2023-02-15T14:50:08.189Z",
+              "id": "c4fbed8f-790d-4480-86c8-bb1b8a49cf78",
+              "masterDefendantId": "c4fbed8f-790d-4480-86c8-bb1b8a49cf78",
+              "prosecutionCaseId": "6c510b76-5ea0-4471-b0e2-a99fca32a623",
+              "offences": [
+                {
+                  "count": 0,
+                  "id": "cec4b1f8-0fbc-474c-b14a-f4e274ac4224",
+                  "offenceCode": "TH68023",
+                  "offenceDefinitionId": "cec4b1f8-0fbc-474c-b14a-f4e274ac4224",
+                  "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+                  "offenceTitle": "Robbery",
+                  "orderIndex": 1,
+                  "startDate": "2020-09-18",
+                  "wording": "Robbery"
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "19",
+                    "address2": "King Street",
+                    "address5": "Manchester",
+                    "postcode": "M49 6CW"
+                  },
+                  "dateOfBirth": "1979-05-02",
+                  "firstName": "Yousuf",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "Aguirre"
+                }
+              }
+            },
+            {
+              "courtProceedingsInitiated": "2022-10-10T13:24:35.170Z",
+              "id": "dcd8800b-640e-48ae-9447-8fb481b73c2e",
+              "masterDefendantId": "dcd8800b-640e-48ae-9447-8fb481b73c2e",
+              "prosecutionCaseId": "6c510b76-5ea0-4471-b0e2-a99fca32a623",
+              "offences": [
+                {
+                  "id": "892faaab-9c50-43e4-81d3-c09329172f97",
+                  "count": 0,
+                  "startDate": "2022-10-01",
+                  "orderIndex": 1,
+                  "offenceCode": "TH68055",
+                  "shadowListed": false,
+                  "offenceWording": "On or in 1 October 2022 at Byker knowing that a conveyance, namely Subaru Imprezza had been taken without the consent of the owner or other lawful authority, allowed yourself to be carried in or on the said conveyance",
+                  "statementOfOffence": {
+                    "title": "Carried in / on conveyance taken without consent ( not motor vehicle )",
+                    "welshTitle": "Cael eich cludo mewn / ar gerbyd a gymerwyd heb ganiatâd (dim cerbyd modur)",
+                    "legislation": "Contrary to section 12(1) of the Theft Act 1968.",
+                    "welshLegislation": "Yn groes i adran 12(1) Deddf Dwyn 1968."
+                  },
+                  "restrictFromCourtList": false
+                }
+              ],
+              "personDefendant": {
+                "personDetails": {
+                  "address": {
+                    "address1": "10 Watery Lane",
+                    "postcode": "NE1 4SJ"
+                  },
+                  "dateOfBirth": "1970-01-01",
+                  "firstName": "Freddie",
+                  "gender": "NOT_KNOWN",
+                  "lastName": "Smith"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

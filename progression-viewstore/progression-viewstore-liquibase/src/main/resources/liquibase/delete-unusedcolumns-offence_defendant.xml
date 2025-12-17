@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+	<changeSet id="GPE-2757-delete-unusedcolumns-offence_defendant" author="progression">
+        <dropColumn columnName="num_previous_convictions" tableName="defendant" />
+        <dropColumn columnName="pending_withdrawal" tableName="offence" />
+        <dropColumn columnName="witness_statement" tableName="offence" />
+        <dropColumn columnName="prosecution_facts" tableName="offence" />
+        <dropColumn columnName="libra_offence_date_code" tableName="offence" />
+        <dropColumn columnName="compensation" tableName="offence" />
+
+
+    </changeSet>
+</databaseChangeLog>

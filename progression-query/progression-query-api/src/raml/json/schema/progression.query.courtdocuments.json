@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.courtdocuments",
+  "properties": {
+    "documentIndices": {
+      "type": "array",
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtDocumentIndex.json#"
+      }
+    }
+  },
+  "required": [
+    "documents"
+  ]
+}

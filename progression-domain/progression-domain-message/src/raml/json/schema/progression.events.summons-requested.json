@@ -1,0 +1,15 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "http://justice.gov.uk/progression/courts/new-summons-requested.json",
+	"type": "object",
+	"properties": {
+		"summonsContent": {
+			"description": "The content of the summons",
+			"$ref": "http://justice.gov.uk/core/courts/summons/summons-document-content.json"
+		}
+	},
+	"required": [
+		"summonsContent"
+	],
+	"additionalProperties": false
+}

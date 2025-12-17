@@ -1,0 +1,7 @@
+{
+  "shareCourtDocumentDetails": {
+    "courtDocumentId": "COURT_DOCUMENT_ID",
+    "hearingId": "HEARING_ID",
+    "userGroupId": "USER_GROUP"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "hearing": {
+    "id": "f93d22ee-e06b-48e1-8e50-133ff475d025",
+    "type": {
+      "description": "Sentence",
+      "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+    "hearingLanguage": "ENGLISH",
+    "courtCentre": {
+      "id": "6bb8a527-2a23-4d7d-b6e2-dd94d2a7d63d"
+      "name":"Port Talbot",
+      "roomName":"Courtroom 04",
+      "roomId":"f8254db1-1683-483e-afb3-b87fde5a0a26"
+    },
+    "judiciary": [
+      {
+        "isBenchChairman": false,
+        "isDeputy": false,
+        "judicialId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType": "Recorder"
+        },
+        "title": "Mr",
+        "firstName": "Mark J",
+        "lastName": "Ainsworth"
+      }
+    ],
+    "hearingDays": [
+      {
+        "sittingDay": "2018-09-28T12:13:00.000Z",
+        "listedDurationMinutes": 0
+      },
+      {
+        "sittingDay": "2018-09-30T09:30:00.000Z",
+        "listedDurationMinutes": 0
+      }
+    ]
+  }
+}

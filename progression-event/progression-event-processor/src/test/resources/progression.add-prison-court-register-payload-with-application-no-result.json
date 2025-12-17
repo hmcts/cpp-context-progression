@@ -1,0 +1,168 @@
+{
+  "prisonCourtRegister": {
+    "hearingDate": "2020-07-10T09:00:00.000Z",
+    "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+    "custodyLocation": {
+      "custodyAddress": {
+        "email": "omu.theverne@justice.gov.uk"
+      },
+      "name": "HMIRC The Verne"
+    },
+    "defendant": {
+      "address": {
+        "address1": "56saon",
+        "address2": "56Police House",
+        "address3": "StreetDescription1",
+        "address4": "Locality1",
+        "address5": "Town2",
+        "postCode": "TW14 9XD"
+      },
+      "aliases": [
+        {
+          "firstName": "PersonGivenName1",
+          "lastName": "PersonFamilyName1"
+        },
+        {
+          "firstName": "PersonGivenName2",
+          "lastName": "PersonFamilyName2"
+        }
+      ],
+      "dateOfBirth": "2008-08-08",
+      "defenceCounsels": [
+        {
+          "name": "Mrs Doris Horseferry",
+          "status": "QC"
+        },
+        {
+          "name": "Mrs Doris Horseferry2",
+          "status": "QC2"
+        }
+      ],
+      "gender": "MALE",
+      "hearing": {
+        "attendingSolicitorName": "Test defence Organisation",
+        "hearingType": "Plea and Trial Preparation",
+        "jurisdiction": "CROWN",
+        "defendantAppearanceDetails": "Not Present"
+      },
+      "masterDefendantId": "7df47dd4-2f57-4a76-be04-5483a84fb285",
+      "name": "Robert PersonGivenName20A PersonGivenName30A Ormsby",
+      "nationality": "Pole",
+      "postHearingCustodyStatus": "Not Applicable",
+      "prosecutionCasesOrApplications": [
+        {
+          "caseOrApplicationReference": "22JT1321158",
+          "prosecutorName": "West Mercia Police",
+          "offences": [
+            {
+              "orderIndex": 1,
+              "pleaValue": "GUILTY",
+              "convictionDate": "2022-06-24",
+              "pleaDate": "2022-06-24",
+              "results": [
+                {
+                  "resultText": "Imprisonment\nTotal custodial period 1 Years\nPrison organisation name HMP/YOI Eastwood Park\nPrison email address 1 Custody.Eastwoodpark@justice.gov.uk\nPrison email address 2 Reception.EastwoodPark@justice.gov.uk\nConveyor / custodian name organisation name Cardiff Magistrates' Court: PECS\nConveyor / custodian name email address 1 CardiffMC@geoamey.co.uk\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 1",
+                  "cjsResultCode": "1002"
+                }
+              ],
+              "offenceCode": "TH68023A",
+              "offenceTitle": "Attempt robbery",
+              "allocationDecision": "Indictable-only offence",
+              "wording": "Contrary to section 1(1) of the    Criminal Attempts Act 1981."
+            },
+            {
+              "orderIndex": 1,
+              "pleaValue": "GUILTY",
+              "convictionDate": "2022-06-24",
+              "pleaDate": "2022-06-24",
+              "results": [
+                {
+                  "resultText": "Imprisonment\nTotal custodial period 1 Years\nPrison organisation name HMP/YOI Eastwood Park\nPrison email address 1 Custody.Eastwoodpark@justice.gov.uk\nPrison email address 2 Reception.EastwoodPark@justice.gov.uk\nConveyor / custodian name organisation name Cardiff Magistrates' Court: PECS\nConveyor / custodian name email address 1 CardiffMC@geoamey.co.uk\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 1",
+                  "cjsResultCode": "1002"
+                }
+              ],
+              "offenceCode": "TH68023A",
+              "offenceTitle": "Attempt robbery",
+              "allocationDecision": "Indictable-only offence",
+              "wording": "Contrary to section 1(1) of the    Criminal Attempts Act 1981."
+            }
+          ],
+          "results": [
+            {
+              "resultText": "Defendant's details changed",
+              "cjsResultCode": "4592"
+            }
+          ],
+          "arrestSummonsNumber": "2001PY0300000000028V"
+        },
+        {
+          "caseOrApplicationReference": "52JJ1221014",
+          "applicationType": "Commission of a further offence during the operational period of a suspended sentence order",
+          "offences": [
+            {
+              "orderIndex": 1,
+              "pleaValue": "GUILTY",
+              "convictionDate": "2022-02-11",
+              "pleaDate": "2022-02-11",
+              "results": [
+                {
+                  "resultText": "Imprisonment\nTotal custodial period 1 Years\nPrison organisation name HMP/YOI Eastwood Park\nPrison email address 1 Custody.Eastwoodpark@justice.gov.uk\nPrison email address 2 Reception.EastwoodPark@justice.gov.uk\nConveyor / custodian name organisation name Cardiff Magistrates' Court: PECS\nConveyor / custodian name email address 1 CardiffMC@geoamey.co.uk\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 1",
+                  "cjsResultCode": "1002"
+                }
+              ],
+              "offenceCode": "CJO3523",
+              "offenceTitle": "Attempt robbery",
+              "allocationDecision": "Indictable-only offence",
+              "wording": "Resentenced Original code : TH68023A, Original details: Contrary to section 1(1) of the    Criminal Attempts Act 1981."
+            },
+            {
+              "orderIndex": 1,
+              "pleaValue": "GUILTY",
+              "convictionDate": "2022-02-11",
+              "pleaDate": "2022-02-11",
+              "results": [
+                {
+                  "resultText": "Imprisonment\nTotal custodial period 1 Years\nPrison organisation name HMP/YOI Eastwood Park\nPrison email address 1 Custody.Eastwoodpark@justice.gov.uk\nPrison email address 2 Reception.EastwoodPark@justice.gov.uk\nConveyor / custodian name organisation name Cardiff Magistrates' Court: PECS\nConveyor / custodian name email address 1 CardiffMC@geoamey.co.uk\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 1 Years\nBail remand days to count (tagged days) 1",
+                  "cjsResultCode": "1002"
+                }
+              ],
+              "offenceCode": "CJO3523",
+              "offenceTitle": "Attempt robbery",
+              "allocationDecision": "Indictable-only offence",
+              "wording": "Resentenced Original code : TH68023A, Original details: Contrary to section 1(1) of the    Criminal Attempts Act 1981."
+            }
+          ],
+          "arrestSummonsNumber": "2001PY0300000000028V"
+        }
+      ],
+      "defendantResults": [
+        {
+          "cjsResultCode": "D1017",
+          "resultText": "Def Absolute discharge 1017\n"
+        },
+        {
+          "cjsResultCode": "D1018",
+          "resultText": "Def Absolute discharge 1018\n"
+        }
+      ]
+    },
+    "hearingVenue": {
+      "courtHouse": "Liverpool Crown Court",
+      "ljaName": "Merseyside Magistrates' Court",
+      "address": {
+        "address1": "Shire Hall",
+        "address2": "Tindal Square",
+        "address3": "Chelmsford",
+        "address4": "Essex"
+      }
+    },
+    "recipients": [
+      {
+        "emailAddress1": "omu.theverne@justice.gov.uk",
+        "emailTemplateName": "pcr_standard",
+        "recipientName": "HMIRC The Verne"
+      }
+    ]
+  },
+  "defendantType": "Applicant"
+}

@@ -1,0 +1,475 @@
+{
+  "trialReadinessHearings": [
+    {
+      "caseMarkers": [],
+      "courtCentre": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "welshName": "Llys Ynadon Lavender Hill"
+      },
+      "defendantParties": [
+        {
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "firstName": "Tom",
+          "id": "8f5210e8-072b-4fea-aca0-ba9aa668c752",
+          "isYouth": false,
+          "lastName": "Ginsen",
+          "prosecution": "Surrey Police"
+        }
+      ],
+      "hearingDay": {
+        "listedDurationMinutes": 20,
+        "sittingDay": "2022-05-03T15:00:00.000Z"
+      },
+      "hearingType": {
+        "description": "First hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      },
+      "id": "2bd271de-7504-4075-b13f-cb206f5cf190",
+      "jurisdictionType": "MAGISTRATES",
+      "offences": [
+        {
+          "id": "24d83e4c-7852-483a-a245-7a42288496ba",
+          "offenceType": "Indictable"
+        }
+      ],
+      "prosecutionCases": [
+        {
+          "caseUrn": "03May144024",
+          "id": "1897085e-2bdc-4c6b-a2f1-06f75b568ce5"
+        }
+      ]
+    },
+    {
+      "caseMarkers": [],
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantParties": [
+        {
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "firstName": "John",
+          "id": "9d613324-2d4b-4220-868e-a66d59bd8eb1",
+          "isYouth": false,
+          "lastName": "Smith",
+          "prosecution": "Derbyshire Police"
+        },
+        {
+          "firstName": "",
+          "id": "88eb3297-7a15-4582-b357-17e0d0798375",
+          "isYouth": false,
+          "lastName": "",
+          "prosecution": "Derbyshire Police"
+        }
+      ],
+      "hearingDay": {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2022-05-13T09:01:01.001Z"
+      },
+      "hearingType": {
+        "description": "First hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      },
+      "id": "678c5873-ba79-4a43-acb3-d0814c3e35be",
+      "offences": [
+        {
+          "id": "b2d9537d-9d98-4e60-a7c6-f9b597ee9573",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "47e197b5-8420-4920-9259-b22e205ccef5",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "9b24b36a-f66b-409b-ae69-08bd833d7288",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "08c9920d-1be4-479e-aa0f-054818123909",
+          "offenceType": "Summary"
+        }
+      ],
+      "prosecutionCases": [
+        {
+          "caseUrn": "53NP8919322",
+          "id": "fa3aa335-481c-42f2-95a9-7879805c8646"
+        }
+      ]
+    },
+    {
+      "caseMarkers": [],
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantParties": [
+        {
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "firstName": "PAUL",
+          "id": "fa39490f-b34c-4624-828b-139b187fca0d",
+          "isYouth": false,
+          "lastName": "COLLINGWOOD",
+          "prosecution": "Derbyshire Police"
+        }
+      ],
+      "hearingDay": {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2022-05-15T22:30:00.000Z"
+      },
+      "hearingType": {
+        "description": "First hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      },
+      "id": "72e49a46-f0e5-46ab-bc3a-844d563a9397",
+      "offences": [
+        {
+          "id": "b2530556-7080-40d7-a0b8-70460869f5fc",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "6deb42cb-b0ed-41d6-92b7-e56f54df6cda",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "0b6bc95e-7767-450e-b3a5-720c71b6344c",
+          "offenceType": "Summary"
+        }
+      ],
+      "prosecutionCases": [
+        {
+          "caseUrn": "28DI5468529",
+          "id": "0298ab8c-b98a-47c8-9bb7-1e905eb8fbaf"
+        }
+      ]
+    },
+    {
+      "caseMarkers": [],
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantParties": [
+        {
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "defence": "Sonja & Co LLP",
+          "firstName": "Dereck",
+          "id": "4148e114-9880-4847-9eab-a0275a4b01e5",
+          "isYouth": false,
+          "lastName": "Cremin",
+          "prosecution": "City of London Police"
+        },
+        {
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "defence": "Sonja & Co LLP",
+          "firstName": "Nathan",
+          "id": "4e222476-fd07-40d0-8271-312f0531d385",
+          "isYouth": false,
+          "lastName": "Farrell",
+          "prosecution": "City of London Police"
+        }
+      ],
+      "hearingDay": {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 1,
+        "sittingDay": "2022-05-09T09:00:00.000Z"
+      },
+      "hearingType": {
+        "description": "Trial",
+        "id": "bf8155e1-90b9-4080-b133-bfbad895d6e4"
+      },
+      "id": "a29b8f9f-c497-40e7-b9c5-7ece82784fad",
+      "offences": [
+        {
+          "id": "36e36a9a-1862-42c8-aee2-650b2f105869",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "7426646b-f292-4571-9601-e3dfaf51feb7",
+          "offenceType": "Summary"
+        }
+      ],
+      "prosecutionCases": [
+        {
+          "caseUrn": "50GD6488322",
+          "id": "383eedc9-6f6e-4a74-ab1f-f1c195044631"
+        }
+      ]
+    },
+    {
+      "caseMarkers": [],
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantParties": [
+        {
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "firstName": "Robert",
+          "id": "3216298d-4613-4176-9383-e11dac2a1269",
+          "isYouth": false,
+          "lastName": "Ormsby",
+          "prosecution": "Derbyshire Police"
+        }
+      ],
+      "hearingDay": {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 1,
+        "sittingDay": "2022-05-03T09:01:01.001Z"
+      },
+      "hearingType": {
+        "description": "First hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      },
+      "id": "a9ba9bc4-eab9-43b4-83c7-08e9b73538eb",
+      "offences": [
+        {
+          "id": "3fad4ea1-e0a9-497c-be41-f2fbab26af5f",
+          "offenceType": "Summary"
+        }
+      ],
+      "prosecutionCases": [
+        {
+          "caseUrn": "22GD3897322",
+          "id": "b028bb44-57ca-47b3-ab05-7c05a948f0c9"
+        }
+      ]
+    },
+    {
+      "caseMarkers": [],
+      "courtCentre": {
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "name": "Lavender Hill Magistrates' Court",
+        "welshName": "Llys Ynadon Lavender Hill"
+      },
+      "defendantParties": [
+        {
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "firstName": "Tom",
+          "id": "5f15aea9-3271-43c2-b179-9f172972ed70",
+          "isYouth": false,
+          "lastName": "Ginsen",
+          "prosecution": "Surrey Police"
+        }
+      ],
+      "hearingDay": {
+        "listedDurationMinutes": 20,
+        "sittingDay": "2022-05-09T15:00:00.000Z"
+      },
+      "hearingType": {
+        "description": "First hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      },
+      "id": "dcea9aa6-eeb5-4486-b7fd-2e1f7cf91e1d",
+      "offences": [
+        {
+          "id": "92d5b8d3-9f6d-4b92-8d1e-3bc6ee82866c",
+          "offenceType": "Indictable"
+        }
+      ],
+      "prosecutionCases": [
+        {
+          "caseUrn": "09May124621",
+          "id": "19fb5953-bc2c-4b9d-8994-4042d2b4a5e4"
+        }
+      ]
+    },
+    {
+      "caseMarkers": [],
+      "courtCentre": {
+        "address": {
+          "address1": "176A Lavender Hill",
+          "address2": "London",
+          "address3": "",
+          "address4": "",
+          "address5": "",
+          "postcode": "SW11 1JU"
+        },
+        "code": "B01LY00",
+        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "lja": {
+          "ljaCode": "2577",
+          "ljaName": "South West London Magistrates' Court"
+        },
+        "name": "Lavender Hill Magistrates' Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "defendantParties": [
+        {
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "firstName": "John",
+          "id": "934e30a4-61bf-4abe-b738-685236e3abc4",
+          "isYouth": false,
+          "lastName": "Smith",
+          "prosecution": "Derbyshire Police"
+        },
+        {
+          "firstName": "",
+          "id": "9b0ec9fd-9ac8-4fa1-aa4c-e245faf40c9b",
+          "isYouth": false,
+          "lastName": "",
+          "prosecution": "Derbyshire Police"
+        }
+      ],
+      "hearingDay": {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2022-05-13T09:01:01.001Z"
+      },
+      "hearingType": {
+        "description": "First hearing",
+        "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+      },
+      "id": "f9d8eeab-ead7-4ecc-bd4b-aeae46c58ef9",
+      "offences": [
+        {
+          "id": "f11c91f2-a1dc-4e33-ad89-8199dd84bb0e",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "358ef232-1c9f-4f5e-bd3a-81c36edcee42",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "f09750b0-fab6-4e77-aa4a-1d24dc8148a6",
+          "offenceType": "Summary"
+        },
+        {
+          "id": "72ab1ea2-c941-452f-9f74-e41d09038b56",
+          "offenceType": "Summary"
+        }
+      ],
+      "prosecutionCases": [
+        {
+          "caseUrn": "53NP2953222",
+          "id": "29ee9b64-ef5b-44b2-bc7d-2ad829b541c8"
+        }
+      ]
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

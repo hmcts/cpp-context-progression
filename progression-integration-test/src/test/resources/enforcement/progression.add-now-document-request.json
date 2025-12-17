@@ -1,0 +1,141 @@
+{
+  "masterDefendantId": "%DEFENDANT_ID%",
+  "notVisibleToUserGroups": [
+    "Court Clerks",
+    "Legal Advisers"
+  ],
+  "nowDistribution": {
+    "email": true,
+    "emailTemplateName": "TemplateName"
+  },
+  "nowContent": {
+    "welshOrderName": "Rhybudd o gosb ariannol",
+    "defendant": {
+      "dateOfBirth": "1957-02-20",
+      "name": "Samip Smith",
+      "address": {
+        "line1": "Flat 1, Armageddon House",
+        "line2": "13 Old Road",
+        "line3": "Giggleswick",
+        "line4": "Merton",
+        "postCode": "SW11 1AB"
+      }
+    },
+    "financialOrderDetails": {
+      "paymentTerms": "Instalments only with instalment amount 20, monthly, instalment start date 2020-07-11",
+      "enforcementPhoneNumber": "020 7556 8500",
+      "enforcementAddress": {
+        "line1": "LCCC Enforcement Unit",
+        "line2": "P.O. Box 31089",
+        "line3": "London",
+        "postCode": "SW1P 3WT"
+      },
+      "enforcementEmail": "LCCCCollectionUnit@justice.gov.uk",
+      "accountingDivisionCode": 77,
+      "bacsBankName": "HMCTS LCCC",
+      "bacsSortCode": "56-00-33",
+      "bacsAccountNumber": "27049175",
+      "totalAmountImposed": "NaN",
+      "totalBalance": "NaN"
+    },
+    "nextHearingCourtDetails": {
+      "hearingDate": "2020-03-09T10:00:00Z",
+      "courtAddress": {
+        "line1": "176A Lavender Hill",
+        "line2": "London",
+        "postCode": "SW11 1JU"
+      },
+      "courtName": "Lavender Hill Magistrates' Court"
+    },
+    "civilNow": false,
+    "cases": [
+      {
+        "defendantCaseResults": [
+          {
+            "welshLabel": "Gordal",
+            "prompts": [
+              {
+                "label": "Amount of surcharge",
+                "value": "£12"
+              }
+            ],
+            "label": "Surcharge"
+          }
+        ],
+        "reference": "TFL15746USFY2",
+        "defendantCaseOffences": [
+          {
+            "title": "Use / install a television set without a licence",
+            "legislation": "Contrary to section 363(2) and (4) of the    Communications Act 2003.",
+            "civilOffence": false,
+            "convictionDate": "2020-03-09",
+            "displayText": "String2",
+            "wording": "On 02/07/2015 At threadneedle street EC2 Being a passenger on a Public service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares where the vehicle was being operated by a Driver without a Conductor did not as directed by the Driver an Inspector or a Notice displayed on the vehicle pay the fare for the journey in accordance with the direction ",
+            "startDate": "2020-01-01",
+            "results": [
+              {
+                "welshLabel": "Dirwy",
+                "prompts": [
+                  {
+                    "label": "Amount of fine",
+                    "value": "£12"
+                  }
+                ],
+                "nowRequirementText": [
+                  {
+                    "label": "contactDetails",
+                    "value": "Telephone: 0300 303 0656  (Monday to Friday 9am to 5pm)"
+                  }
+                ],
+                "label": "Fine"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "nowText": [
+      {
+        "label": "orderText",
+        "value": "<h3>If the court has made a Deduction from Benefits order or an Attachment of Earnings order, please see further down.</h3> <h3>How to pay</h3> <p>Allow 5 days for payment to reach us.</p> <p><strong>Online:</strong> <a href=\"http://www.gov.uk/pay-court-fine-online\">www.gov.uk/pay-court-fine-online</a></p> <p><strong>By phone:</strong> 0300 790 9901</p> <p><strong>When paying online or by phone:</strong></p> <ul> <li>you can pay 24 hours a day with a credit or debit card (Visa, Mastercard or Maestro)</li> <li>you must quote your division number and account number as stated at the top of this notice</li> <li>you&rsquo;ll be given an authorisation number when you pay - keep this as proof along with the date and amount. The court won&rsquo;t issue you a receipt.</li> </ul> <p><strong>If you are granted time to pay, you can either:</strong></p> <ul> <li>ask for a payment card which you can use at a Post Office or PayPoint Outlets</li> <li>set up a direct debit</li> </ul> <p><strong>Paying other parties</strong></p> <p>You can only make your payment to HM Courts and Tribunals Service.</p> <p>If you pay anyone else, for example, the prosecutor or victims, there&rsquo;ll be no record and we may have to take action against you for non-payment.</p> <p>We&rsquo;ll pay any amounts owed to other parties once we&rsquo;ve received your payment.</p> <p><strong>Fraud and scams</strong></p> <p>There are several fake websites offering to let you pay your court fines, often with a discount.</p> <p>You can only use the official website, or telephone line, as above. If you use any other site or number to pay, we can&rsquo;t accept it and you&rsquo;ll still be liable to pay the debt.</p> <p>&nbsp;</p> <p><strong>For any questions NOT relating to financial penalties</strong></p> <p>Contact the Service Centre:</p><p><strong>Telephone:</strong> 0300 303 0656 Monday to Friday 9am to 5pm</p> <p>&nbsp;</p> <p><strong>If you&rsquo;re having difficulty paying or to discuss alternative ways to pay:</strong></p> <p>Contact the Fines Team:</p>",
+        "welshValue": "<h3>Os yw&rsquo;r llys wedi gwneud Gorchymyn Didynnu o Fudd-daliadau neu Orchymyn Atafaelu Enillion, parhewch i ddarllen.</h3> <h3>Sut i dalu</h3> <p>Gadewch 5 diwrnod i&rsquo;r taliad ein cyrraedd.</p> <p><strong>Ar-lein:</strong> <a href=\"http://www.gov.uk/talu-dirwy-llys-ar-lein\">www.gov.uk/talu-dirwy-llys-ar-lein</a></p> <p><strong>Ff&ocirc;n:</strong> 0300 790 9901</p> <p><strong>Pan fyddwch yn talu ar-lein neu dros y ff&ocirc;n:</strong></p> <ul> <li>gallwch dalu 24 awr y dydd gyda cherdyn credyd neu ddebyd (Visa, Mastercard neu Maestro)</li> <li>rhaid ichi ddyfynnu eich rhif adran a'ch rhif cyfrif fel y&rsquo;u nodwyd ar frig y rhybudd hwn</li> <li>rhoddir rhif awdurdodi i chi pan fyddwch yn talu &ndash; cadwch hwn fel prawf yn ogystal &acirc;&rsquo;r dyddiad a&rsquo;r swm. Ni fydd y llys yn rhoi derbynneb i chi.</li> </ul> <p><strong>Os rhoddir rhagor o amser i chi dalu, gallwch naill ai:</strong></p> <ul> <li>ofyn am gerdyn talu y gallwch ei ddefnyddio yn Swyddfa&rsquo;r Post neu fan PayPoint</li> <li>trefnu debyd uniongyrchol</li> </ul> <p><strong>Talu part&iuml;on eraill</strong></p> <p>Gallwch ond wneud eich taliad i Wasanaeth Llysoedd a Thribiwnlysoedd EM.</p> <p>Os byddwch yn talu rhywun arall, er enghraifft, yr erlynydd neu&rsquo;r dioddefwyr, ni fydd yna gofnod o hyn ac efallai y bydd rhaid i ni gymryd camau yn eich erbyn am beidio &acirc; thalu.</p> <p>Byddwn yn talu unrhyw swm sy&rsquo;n ddyledus i bart&iuml;on eraill unwaith y byddwn wedi cael eich taliad.</p> <p><strong>Twyll a sgamiau</strong></p> <p>Mae yna nifer o wefannau ffug sy&rsquo;n cynnig cyfle i chi dalu eich dirwyon llys, yn aml gyda disgownt.</p> <p>Gallwch ond ddefnyddio&rsquo;r wefan neu&rsquo;r linell ff&ocirc;n swyddogol, fel a nodwyd uchod. Os byddwch yn defnyddio unrhyw wefan neu rif arall i dalu, ni allwn ei dderbyn a bydd rhaid i chi dal dalu'r ddyled.</p> <p>&nbsp;</p> <p><strong>Ar gyfer unrhyw gwestiynau NAD YDYNT yn ymwneud &acirc; chosbau ariannol </strong></p> <p>Cysylltwch &acirc;&rsquo;r Ganolfan Gyswllt:</p> <p><strong>Rhif ff&ocirc;n:</strong> 0300 303 0656 (dydd Llun i ddydd Gwener, 9am to 5pm)</p> <p>&nbsp;</p> <p><strong>Os ydych yn cael anhawster talu neu os ydych eisiau trafod ffyrdd gwahanol o dalu:</strong></p> <p>Cysylltwch &acirc;&rsquo;r T&icirc;m Dirwyon</p>"
+      },
+      {
+        "label": "fineBands",
+        "value": "<table width=\"95%\"> <tbody> <tr> <td width=\"120\"> <p><strong><em>Daily earnings</em></strong></p> </td> <td width=\"134\"> <p><strong><em>Weekly earnings</em></strong></p> </td> <td width=\"141\"> <p><strong><em>Monthly earnings</em></strong></p> </td> <td width=\"206\"> <p><strong><em>% to be deducted each time you&rsquo;re paid</em></strong></p> </td> </tr> <tr> <td width=\"120\"> <p><em>&pound;0.00 - &pound;8.00</em></p> </td> <td width=\"134\"> <p><em>&pound;0.00 - &pound;55.00</em></p> </td> <td width=\"141\"> <p><em>&pound;0.00 - &pound;220.00</em></p> </td> <td width=\"206\"> <p><em>0%</em></p> </td> </tr> <tr> <td width=\"120\"> <p><em>&pound;8.01 - &pound;15.00</em></p> </td> <td width=\"134\"> <p><em>&pound;55.01 - &pound;100.00</em></p> </td> <td width=\"141\"> <p><em>&pound;220.01 - &pound;400.00</em></p> </td> <td width=\"206\"> <p><em>3%</em></p> </td> </tr> <tr> <td width=\"120\"> <p><em>&pound;15.01 - &pound;20.00</em></p> </td> <td width=\"134\"> <p><em>&pound;100.01 - &pound;135.00</em></p> </td> <td width=\"141\"> <p><em>&pound;400.01 - &pound;540.00</em></p> </td> <td width=\"206\"> <p><em>5%</em></p> </td> </tr> <tr> <td width=\"120\"> <p><em>&pound;20.01 - &pound;24.00</em></p> </td> <td width=\"134\"> <p><em>&pound;135.01 - &pound;165.00</em></p> </td> <td width=\"141\"> <p><em>&pound;540.01 - &pound;660.00</em></p> </td> <td width=\"206\"> <p><em>7%</em></p> </td> </tr> <tr> <td width=\"120\"> <p><em>&pound;24.01 - &pound;38.00</em></p> </td> <td width=\"134\"> <p><em>&pound;165.01 - &pound;260.00</em></p> </td> <td width=\"141\"> <p><em>&pound;660.01 - &pound;1040.00</em></p> </td> <td width=\"206\"> <p><em>12%</em></p> </td> </tr> <tr> <td width=\"120\"> <p><em>&pound;38.01 - &pound;53.00</em></p> </td> <td width=\"134\"> <p><em>&pound;260.01 - &pound;370.00</em></p> </td> <td width=\"141\"> <p><em>&pound;1040.01 - &pound;1480.00</em></p> </td> <td width=\"206\"> <p><em>17%</em></p> </td> </tr> <tr> <td width=\"120\"> <p><em>&pound;53.01 or more</em></p> </td> <td width=\"134\"> <p><em>&pound;370.01 or more</em></p> </td> <td width=\"141\"> <p><em>&pound;1480.01 or more</em></p> </td> <td width=\"206\"> <p><em>17% of lowest amount shown here and 50% of anything over</em></p> </td> </tr> </tbody> </table>"
+      }
+    ],
+    "orderingCourt": {
+      "ljaCode": "2577",
+      "courtCentreName": "Lavender Hill Magistrates' Court",
+      "welshCourtCentre": false,
+      "address": {
+        "line1": "176A Lavender Hill",
+        "line2": "London",
+        "postCode": "SW11 1JU"
+      }
+    },
+    "orderName": "Notice of Financial Penalty",
+    "courtClerkName": "Erica Wilson",
+    "orderDate": "2020-04-12",
+    "orderAddressee": {
+      "name": "Samip Smith",
+      "address": {
+        "line1": "Flat 1, Armageddon House",
+        "line2": "13 Old Road",
+        "line3": "Giggleswick",
+        "line4": "Merton",
+        "postCode": "SW11 1AB"
+      }
+    }
+  },
+  "bilingualTemplateName": "BilingualNoticeOrderWarrants",
+  "requestId": "%REQUEST_ID%",
+  "hearingId": "%HEARING_ID%",
+  "nowTypeId": "66cd749a-1d51-11e8-accf-0ed5f89f718b",
+  "materialId": "%MATERIAL_ID%",
+  "storageRequired": false,
+  "templateName": "NoticeOrderWarrants",
+  "subTemplateName": "Noticefine",
+  "subscriberName": "Police Video Link Copy Of Defendant Order"
+}

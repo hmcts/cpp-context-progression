@@ -1,0 +1,88 @@
+{
+  "courtDocumentId": "14abb347-18ba-4ff6-90cd-c2c8a12636ed",
+  "courtDocument":{
+    "containsFinancialMeans":false,
+    "courtDocumentId":"f201cd6e-dc4c-4674-b4e9-c8698c68297e",
+    "documentCategory":{
+      "defendantDocument":{
+        "defendants":[
+          "f4bdba7b-3ffb-45ef-8a9f-e21d6cf9a206"
+        ],
+        "prosecutionCaseId":"5c4d2175-fabc-40af-b574-6d91003ab8e4"
+      }
+    },
+    "documentTypeDescription":"Pre Cons",
+    "documentTypeId":"460f9e32-c002-11e8-a355-529269fb1459",
+    "documentTypeRBAC":{
+      "deleteUserGroups":[
+        "Second Line Support"
+      ],
+      "downloadUserGroups":[
+        "District Judge",
+        "Defence Users",
+        "Probation Admin",
+        "Youth Offending Service Admin",
+        "CPS",
+        "Court Administrators",
+        "Crown Court Admin",
+        "Legal Advisers",
+        "Listing Officers",
+        "Court Clerks",
+        "Court Associate",
+        "Second Line Support"
+      ],
+      "readUserGroups":[
+        "District Judge",
+        "Magistrates",
+        "Defence Users",
+        "Probation Admin",
+        "Youth Offending Service Admin",
+        "CPS",
+        "Court Administrators",
+        "Crown Court Admin",
+        "Legal Advisers",
+        "Listing Officers",
+        "Court Clerks",
+        "Court Associate",
+        "Second Line Support"
+      ],
+      "uploadUserGroups":[
+        "System Users",
+        "Listing Officers",
+        "Legal Advisers",
+        "Court Administrators",
+        "Crown Court Admin",
+        "Second Line Support",
+        "CPS",
+        "Court Clerks",
+        "Court Associate"
+      ]
+    },
+    "materials":[
+      {
+        "id":"04e4027a-f703-418e-880a-22abae77a373",
+        "receivedDateTime":"2020-01-01T00:00:00.000Z",
+        "uploadDateTime":"2020-03-04T15:59:20.851Z",
+        "userGroups":[
+          "District Judge",
+          "Magistrates",
+          "Defence Users",
+          "Probation Admin",
+          "Youth Offending Service Admin",
+          "CPS",
+          "Court Administrators",
+          "Crown Court Admin",
+          "Legal Advisers",
+          "Listing Officers",
+          "Court Clerks",
+          "Court Associate",
+          "Second Line Support"
+        ]
+      }
+    ],
+    "mimeType":"application/pdf",
+    "name":"test111",
+    "seqNum":140
+  },
+  "sendToCps": true
+}

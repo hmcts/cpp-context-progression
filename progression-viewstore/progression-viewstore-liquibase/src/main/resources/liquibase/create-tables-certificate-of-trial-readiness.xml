@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="create_tables_certificate_of_trial_readiness" author="Progression">
+        <!-- cotr_details -->
+        <createTable tableName="cotr_details">
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="hearing_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="prosecution_case_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_archived" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="prosecution_form_data" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="case_progression_review_note" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="listing_review_notes" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="judge_review_notes" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="id" constraintName="cotr_details_pk" tableName="cotr_details"/>
+
+        <addForeignKeyConstraint baseColumnNames="hearing_id" baseTableName="cotr_details"
+                                 constraintName="cotr_details_hearing_id_fk" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="hearing_id"
+                                 referencedTableName="hearing"/>
+
+        <addForeignKeyConstraint baseColumnNames="prosecution_case_id" baseTableName="cotr_details"
+                                 constraintName="cotr_details_prosecution_case_id_fk" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="prosecution_case"/>
+        <!-- cotr_defendant -->
+        <createTable tableName="cotr_defendant">
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cotr_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="defendant_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="d_number" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="defendant_form" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="served_by" type="uuid">
+                <constraints nullable="true"/>
+            </column>
+            <column name="served_by_name" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="served_on" type="DATETIME TZ">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="id" constraintName="cotr_defendant_pk" tableName="cotr_defendant"/>
+
+        <addForeignKeyConstraint baseColumnNames="cotr_id" baseTableName="cotr_defendant"
+                                 constraintName="cotr_defendant_cotr_id_fk" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="cotr_details"/>
+
+        <!-- cotr-defence-further-info -->
+        <createTable tableName="cotr_defence_further_info">
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cotr_defendant_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="further_information" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="info_added_by" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="added_on" type="DATETIME TZ">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_certification_ready" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="info_added_by_name" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="id" constraintName="cotr_defence_further_info_pk" tableName="cotr_defence_further_info"/>
+
+        <!-- cotr-prosecution-further-info -->
+        <createTable tableName="cotr_prosecution_further_info">
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cotr_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="further_information" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="info_added_by" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="added_on" type="DATETIME TZ">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="is_certification_ready" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="info_added_by_name" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="id" constraintName="cotr_prosecution_further_info_pk" tableName="cotr_prosecution_further_info"/>
+
+        <addForeignKeyConstraint baseColumnNames="cotr_id"
+                                 baseTableName="cotr_prosecution_further_info"
+                                 constraintName="cotr_prosecution_further_info_cotr_id_fk"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id"
+                                 referencedTableName="cotr_details"/>
+
+    </changeSet>
+
+</databaseChangeLog>

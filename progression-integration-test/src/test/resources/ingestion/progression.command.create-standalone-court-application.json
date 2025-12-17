@@ -1,0 +1,79 @@
+{
+  "courtApplication": {
+    "id": "RANDOM_APPLICATION_ID",
+    "type": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "code": "a",
+      "type": "alone-appType",
+      "typeWelsh": "a",
+      "legislation": "a",
+      "legislationWelsh": "a",
+      "categoryCode": "a",
+      "applicantAppellantFlag": false,
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "GENERIC_APPLICATION",
+      "breachType": "GENERIC_BREACH",
+      "appealFlag": false,
+      "pleaApplicableFlag": false,
+      "commrOfOathFlag": false,
+      "courtOfAppealFlag": false,
+      "courtExtractAvlFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": false,
+      "offenceActiveOrder": "OFFENCE"
+    },
+    "applicationReceivedDate": "2019-01-01",
+    "applicant": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "personDetails": {
+        "firstName": "RANDOM_APPLICANT_FIRSTNAME",
+        "middleName": "RANDOM_APPLICANT_MIDDLENAME",
+        "lastName": "RANDOM_APPLICANT_LASTNAME",
+        "gender": "NOT_SPECIFIED"
+      },
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "respondents": [
+      {
+        "id": "18cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "personDetails": {
+          "firstName": "RANDOM_RESPONDENT_FIRSTNAME",
+          "middleName": "RANDOM_RESPONDENT_MIDDLENAME",
+          "lastName": "RANDOM_RESPONDENT_LASTNAME",
+          "gender": "NOT_SPECIFIED"
+        },
+        "summonsRequired": false,
+        "notificationRequired": false
+      },
+      {
+        "id": "28cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "personDetails": {
+          "firstName": "RANDOM_RESPONDENT_FIRSTNAME",
+          "middleName": "RANDOM_RESPONDENT_MIDDLENAME",
+          "lastName": "RANDOM_RESPONDENT_LASTNAME",
+          "gender": "NOT_SPECIFIED"
+        },
+        "organisation": {
+          "name": "RANDOM_RESPONDENT_ORGANISATION_NAME"
+        },
+        "summonsRequired": false,
+        "notificationRequired": false
+      }
+    ],
+    "subject": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "personDetails": {
+        "firstName": "RANDOM_APPLICANT_FIRSTNAME",
+        "middleName": "RANDOM_APPLICANT_MIDDLENAME",
+        "lastName": "RANDOM_APPLICANT_LASTNAME",
+        "gender": "NOT_SPECIFIED"
+      },
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "applicationStatus": "DRAFT",
+    "outOfTimeReasons": "a"
+  }
+}

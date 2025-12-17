@@ -1,0 +1,24 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="add-pet-case-defendant-offence" author="Oktay Ekincioglu">
+        <createTable tableName="pet_case_defendant_offence">
+            <column name="case_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="defendant_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="offence_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pet_id" type="UUID">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="defendant_id, offence_id" constraintName="pk_pet_case_defendant_offence"
+                       tableName="pet_case_defendant_offence"/>
+    </changeSet>
+</databaseChangeLog>

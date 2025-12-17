@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-document-audit.json",
+  "type": "object",
+  "properties": {
+    "documentName": {
+      "type": "string"
+    },
+    "courtDocumentId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "documentTypeId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialName": {
+      "type": "string"
+    },
+    "userId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "action": {
+      "type": "string"
+    },
+    "actionDateTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "documentName",
+    "userId",
+    "action",
+    "auditDateTime"
+  ],
+  "additionalProperties": false
+}

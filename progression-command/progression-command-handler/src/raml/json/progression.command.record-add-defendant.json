@@ -1,0 +1,51 @@
+{
+  "caseId": "6ac98e9c-66b2-4363-8a78-641dbec8bbd2",
+  "defendantId": "7e2f843e-d639-40b3-8611-8015f3a18958",
+  "person":{
+    "id":"ab746921-d839-4867-bcf9-b41db8ebc852",
+    "title":"Mr",
+    "firstName":"David",
+    "lastName":"LLOYD",
+    "dateOfBirth":"1980-07-15",
+    "nationality":"England",
+    "gender":"Male",
+    "homeTelephone": "02012345678",
+    "workTelephone": "02012345679",
+    "mobile": "07777777777",
+    "fax": "02011111111",
+    "email": "email@email.com",
+    "address":{
+      "address1":"14 Tottenham Court Road",
+      "address2":"London",
+      "address3":"England",
+      "address4":"UK",
+      "postCode":"W1T 1JY"
+    }
+  },
+  "policeDefendantId": "BS2CM01ADEF1",
+  "caseUrn": "URN3M01ADEF1",
+  "offences": [{
+    "id": "7e2f843e-d639-40b3-8611-8015f3a18959",
+    "policeOffenceId": "A00PCD7073",
+    "cpr": {
+      "defendantOffender": {
+        "year": "09",
+        "organisationUnit": "XX45GD00",
+        "number": "10000000001",
+        "checkDigit": "A"
+      },
+      "cjsCode": "OF61131",
+      "offenceSequence": "001"
+    },
+    "asnSequenceNumber": "001",
+    "cjsCode": "OF61131",
+    "reason": "131",
+    "description": "Wounding/inflicting grievous bodily harm.",
+    "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+    "category": "Either Way",
+    "arrestDate": "2010-08-01",
+    "startDate": "2010-08-01",
+    "endDate": "2011-08-01",
+    "chargeDate": "2010-08-01"
+  }]
+}

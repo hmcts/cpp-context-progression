@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/pet.json",
+  "type": "object",
+  "properties": {
+    "petId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "formId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "offences": {
+            "type": "array",
+            "items": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            }
+          }
+        },
+        "required": [
+          "defendantId",
+          "caseId",
+          "offences"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "data": {
+      "type": "string"
+    },
+    "lastUpdated": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "petId",
+    "formId",
+    "defendants",
+    "data",
+    "lastUpdated"
+  ],
+  "additionalProperties": false
+}

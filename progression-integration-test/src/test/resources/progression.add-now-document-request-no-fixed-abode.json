@@ -1,0 +1,104 @@
+{
+  "masterDefendantId": "%MATERIAL_ID%",
+  "nowDistribution": {
+    "firstClassLetter": true
+  },
+  "nowContent": {
+    "defendant": {
+      "dateOfBirth": "1985-01-01",
+      "prosecutingAuthorityReference": "TFL",
+      "name": "Test Ormsby",
+      "address": {
+        "line1": "56Police House",
+        "line2": "StreetDescription",
+        "line3": "Locality2O"
+      }
+    },
+    "civilNow": false,
+    "cases": [
+      {
+        "reference": "45GD8918520",
+        "defendantCaseOffences": [
+          {
+            "title": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+            "legislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+            "civilOffence": false,
+            "convictionDate": "2020-04-10",
+            "displayText": "Community order England / Wales\nEnd Date 27 May 2020\nResponsible officer a probation officer\nSupervising Court Lavenar\nPersistent offender previously fined yes\nJudge reserves breach proceedings false\nDirection that a failure to comply be dealt with by magistrates' court true\nProbation team to be notified Prison",
+            "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse",
+            "startDate": "2004-12-09",
+            "results": [
+              {
+                "prompts": [
+                  {
+                    "label": "End Date",
+                    "value": "27 May 2020"
+                  },
+                  {
+                    "label": "Responsible officer",
+                    "value": "a probation officer"
+                  },
+                  {
+                    "label": "Supervising Court",
+                    "value": "Lavenar"
+                  },
+                  {
+                    "label": "Persistent offender previously fined",
+                    "value": "yes"
+                  },
+                  {
+                    "label": "Judge reserves breach proceedings",
+                    "value": "false"
+                  },
+                  {
+                    "label": "Direction that a failure to comply be dealt with by magistrates' court",
+                    "value": "true"
+                  },
+                  {
+                    "label": "Probation team to be notified",
+                    "value": "Prison"
+                  }
+                ],
+                "label": "Community order England / Wales"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "nowText": [
+      {
+        "label": "orderText",
+        "value": "<p>The Court has made a Community Order containing the requirements specified in this order. You must have complied with all the requirements by the end date stated. This is the date when the order will stop being in force. &nbsp;</p> <p>While this Community Order remains in force, <strong><u>you must</u></strong></p> <ul> <li>keep in touch with your Probation Officer as they tell you</li> <li>tell your Probation Officer if you intend to change your address</li> <li>comply with all requirements included in the order</li> </ul> <p><strong>WARNING</strong></p> <p>If you do not comply with this order, you will be brought back to court. The Court may then</p> <ul> <li>change the order by adding extra requirements</li> <li>pass a different sentence for the original offences, or</li> <li><strong>You could be sent to prison</strong></li> </ul> <p><strong>Note</strong></p> <p><span>Either you or your Probation Officer can ask the court to look again at this order and the court can then change it or cancel it if the court feels that is the right thing to do. The court may also pass a different sentence for the original offences. If you wish to ask the court to look at your order again you should get in touch with the court</span></p>"
+      }
+    ],
+    "orderingCourt": {
+      "ljaCode": "1910",
+      "courtCentreName": "St. Albans Crown Court",
+      "welshCourtCentre": false,
+      "address": {
+        "line1": "The Court Building",
+        "line2": "Bricket Road",
+        "line3": "St. Albans",
+        "line4": "Herts.",
+        "postCode": "AL1 3JW"
+      }
+    },
+    "orderName": "Community order",
+    "courtClerkName": "Evan Roberts",
+    "orderDate": "2020-04-12",
+    "orderAddressee": {
+      "name": "Test Ormsby",
+      "address": {
+        "line1": "No fixed abode"
+      }
+    }
+  },
+  "bilingualTemplateName": "BilingualNoticeOrderWarrants",
+  "hearingId": "%HEARING_ID%",
+  "nowTypeId": "603a6581-6e57-44fe-b998-ab461c518676",
+  "materialId": "%MATERIAL_ID%",
+  "storageRequired": false,
+  "templateName": "OPE_Layout16",
+  "subscriberName": "Defendant"
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.command.generate-nows.json",
+  "type": "object",
+  "properties": {
+    "createNowsRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/createNowsRequest.json"
+    }
+  },
+  "required": [
+    "createNowsRequest"
+  ],
+  "additionalProperties": false
+}

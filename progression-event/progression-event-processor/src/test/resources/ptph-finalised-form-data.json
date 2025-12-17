@@ -1,0 +1,1484 @@
+{
+  "caseId": "%caseId%",
+  "courtFormId": "%courtFormId%",
+  "formType": "%formType%",
+  "userId": "%userId%",
+  "finalisedFormData": [
+    {
+      "id": "Crime Inc +1",
+      "defendantIds": [
+        "f1ac5dc1-d459-46c5-8ae6-cc1e95ce7946",
+        "46084ecd-7ab6-427e-9115-e98cea205bc0"
+      ],
+      "title": "Plea and trial preparation hearing",
+      "name": "PTPH Crime Inc, created at 13.17 on 15 July 2022",
+      "isWelsh": false,
+      "sections": [
+        {
+          "key": "form",
+          "header": "Plea and trial preparation hearing form",
+          "label": "The pre-hearing information form must be completed by the parties for all cases sent to the Crown Court where a trial is expected unless the case is expressly exempted by the CrimPR or CrimPD.",
+          "courtName": "Crown Court at ",
+          "courtPlace": "",
+          "ptiUrn": "54GD3991322",
+          "date": "Invalid date",
+          "defendants": "D1 Crime Inc, D2 Mollie CONN",
+          "title": "",
+          "subSections": [
+            {
+              "key": "header1",
+              "heading": "D1 Crime Inc, ",
+              "fields": [
+                {
+                  "label": "Principal charges",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "yes",
+                  "label": "Remand status",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "yes",
+                  "label": "Custody time limit",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "yes",
+                  "label": "Date of sending",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "Defence contacts",
+              "fields": [
+                {
+                  "label": "Defence Solicitors (or unrepresented defendant)",
+                  "value": ""
+                },
+                {
+                  "label": "Defendant address details",
+                  "value": ""
+                },
+                {
+                  "label": "Defendant contact details",
+                  "value": ""
+                },
+                {
+                  "label": "Case progression officer",
+                  "value": ""
+                },
+                {
+                  "label": "Advocate at PTPH",
+                  "value": ""
+                },
+                {
+                  "label": "Advocate for trial",
+                  "value": ""
+                },
+                {
+                  "label": "Funding",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "D2 Mollie CONN, 15 July 2010",
+              "fields": [
+                {
+                  "label": "Principal charges",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "yes",
+                  "label": "Remand status",
+                  "value": "Not applicable"
+                },
+                {
+                  "hasNoLineSpace": "yes",
+                  "label": "Custody time limit",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "yes",
+                  "label": "Date of sending",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "Defence contacts",
+              "fields": [
+                {
+                  "label": "Defence Solicitors (or unrepresented defendant)",
+                  "value": ""
+                },
+                {
+                  "label": "Defendant address details",
+                  "value": ""
+                },
+                {
+                  "label": "Defendant contact details",
+                  "value": ""
+                },
+                {
+                  "label": "Case progression officer",
+                  "value": ""
+                },
+                {
+                  "label": "Advocate at PTPH",
+                  "value": ""
+                },
+                {
+                  "label": "Advocate for trial",
+                  "value": ""
+                },
+                {
+                  "label": "Funding",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Court case progression",
+              "fields": [
+                {
+                  "label": "Court case progression officer",
+                  "value": "\\n\\nWestminster Magistrates' Court\\n"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "Prosecution contacts",
+              "fields": [
+                {
+                  "label": "Advocate at PTPH",
+                  "value": ""
+                },
+                {
+                  "label": "Advocate for trial",
+                  "value": ""
+                },
+                {
+                  "label": "Reviewing Lawyer",
+                  "value": ""
+                },
+                {
+                  "label": "Case Progression Officer (usually Paralegal)",
+                  "value": ""
+                },
+                {
+                  "label": "CPS office",
+                  "value": ""
+                },
+                {
+                  "label": "Officer in the case",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Prosecution information for PTPH",
+              "fields": [
+                {
+                  "label": "Draft Indictment",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Summary of circumstances of the offence(s) and of any account given by defendant(s) in interview (this may be in Form MG5)",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Statements identified by prosecution as being of importance for the purpose of plea and initial case management",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Exhibits identified by prosecution as being of importance for the purpose of plea and initial case management",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Relevant CCTV that would be relied upon by prosecution at trial",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Streamlined Forensic Report(s) or indication of scientific evidence that the prosecution is likely to introduce",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Indication of medical evidence that the prosecution is likely to introduce",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Indication of other expert evidence that the prosecution is likely to introduce",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Indication of bad character evidence to be relied on",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Indication of any hearsay evidence to be relied on",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Indication of special measures to be sought",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Defendant's criminal record if any",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Victim Personal Statement if any",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Has a Disclosure Management Document been provided?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Does the Prosecution believe that any third party holds potentially disclosable material?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Will the prosecution be making enquiries to review that material?",
+                  "hintText": "",
+                  "value": "\\n"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "D1 Information Crime Inc",
+              "fields": [
+                {
+                  "label": "Defence time estimate for trial",
+                  "hintText": "Include jury retirement and give the estimate in days or part days",
+                  "value": ""
+                },
+                {
+                  "label": "Real issues",
+                  "hintText": "Defence to summarise so far as known, the real issues in the case",
+                  "value": ""
+                },
+                {
+                  "label": "Was the defendant under 18 at sending?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Is the defendant vulnerable for a reason other than or additional to youth?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Is the defendant said to be a victim of modern slavery?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Streamlined Forensic Reports",
+                  "hintText": "Are the conclusions of any served Streamlined Forensics Report (SFR1) admitted as fact? If not, identify the disputed issues concerning that conclusion. Make clear what is admitted and what is not admitted",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Has a Disclosure Management Document been served?",
+                  "hintText": "Any responses raising cross-disclosure concerns may be uploaded separately to the Defence Statement section for review at PTPH",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Third party",
+                  "hintText": "Do any areas of third party disclosure need to be pursued?",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Preliminary Issues",
+                  "hintText": "Are there preliminary issues such as abuse of process or fitness to participate in trial process?",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Dismissal",
+                  "hintText": "Is an application for dismissal anticipated after time for service elapses? ",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Severance",
+                  "hintText": "Is an application for severance anticipated? (CrimPR 3.21)",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Arraignment",
+                  "hintText": "Can the defendant be arraigned at PTPH?",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Alternative Plea",
+                  "hintText": "Is the defendant willing to offer a plea to another offence and/or a plea on a limited basis?",
+                  "value": "\\n"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "All parties: Information about other proceedings",
+              "fields": [
+                {
+                  "label": "Particulars of any related CRIMINAL proceedings?",
+                  "hintText": "",
+                  "value": "",
+                  "isLabelRegular": "yes"
+                },
+                {
+                  "label": "Particulars of any related FAMILY proceedings?",
+                  "hintText": "",
+                  "value": "",
+                  "isLabelRegular": "yes"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "D2 Information Mollie CONN, 15 Jul 2010",
+              "fields": [
+                {
+                  "label": "Defence time estimate for trial",
+                  "hintText": "Include jury retirement and give the estimate in days or part days",
+                  "value": ""
+                },
+                {
+                  "label": "Real issues",
+                  "hintText": "Defence to summarise so far as known, the real issues in the case",
+                  "value": ""
+                },
+                {
+                  "label": "Was the defendant under 18 at sending?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Is the defendant vulnerable for a reason other than or additional to youth?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Is the defendant said to be a victim of modern slavery?",
+                  "hintText": "",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Streamlined Forensic Reports",
+                  "hintText": "Are the conclusions of any served Streamlined Forensics Report (SFR1) admitted as fact? If not, identify the disputed issues concerning that conclusion. Make clear what is admitted and what is not admitted",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Has a Disclosure Management Document been served?",
+                  "hintText": "Any responses raising cross-disclosure concerns may be uploaded separately to the Defence Statement section for review at PTPH",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Third party",
+                  "hintText": "Do any areas of third party disclosure need to be pursued?",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Preliminary Issues",
+                  "hintText": "Are there preliminary issues such as abuse of process or fitness to participate in trial process?",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Dismissal",
+                  "hintText": "Is an application for dismissal anticipated after time for service elapses? ",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Severance",
+                  "hintText": "Is an application for severance anticipated? (CrimPR 3.21)",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Arraignment",
+                  "hintText": "Can the defendant be arraigned at PTPH?",
+                  "value": "\\n"
+                },
+                {
+                  "label": "Alternative Plea",
+                  "hintText": "Is the defendant willing to offer a plea to another offence and/or a plea on a limited basis?",
+                  "value": "\\n"
+                }
+              ]
+            },
+            {
+              "key": "header1",
+              "heading": "All parties: Information about other proceedings",
+              "fields": [
+                {
+                  "label": "Particulars of any related CRIMINAL proceedings?",
+                  "hintText": "",
+                  "value": "",
+                  "isLabelRegular": "yes"
+                },
+                {
+                  "label": "Particulars of any related FAMILY proceedings?",
+                  "hintText": "",
+                  "value": "",
+                  "isLabelRegular": "yes"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            }
+          ]
+        },
+        {
+          "key": "judicialOrders",
+          "header": "Plea and Trial Preparation Hearing Judicial Orders",
+          "label": "The pre-hearing information form must be completed by the parties for all cases sent to the Crown Court where a trial is expected unless the case is expressly exempted by the CrimPR or CrimPD.",
+          "courtName": "Crown Court at ",
+          "courtPlace": "",
+          "ptiUrn": "54GD3991322",
+          "date": "Invalid date",
+          "defendants": "D1 Crime Inc, \\nD2 Mollie CONN, 15 July 2010",
+          "title": "",
+          "witnessInfo": {
+            "title": "Witness and intermediary requirements known at PTPH",
+            "label": "Prosecution witnesses relied on",
+            "witnessSubText1": "The defendant to give notice of his/her appointment of a lawyer to cross-examine the witness(es) by: 7 Oct 2022",
+            "witnessSubText2": "The defendant to give notice of his/her appointment of a lawyer to cross-examine the witness(es) by: 7 Oct 2022",
+            "witnesses": []
+          },
+          "youngVulnerableIntimidatedTitle": "Young/Vulnerable/Intimidated Defendants - measures to assist that can be granted at PTPH",
+          "youngVulnerableIntimidatedFooter": "The Court is required to give reasons for departing from the relevant provisions of the CrimPD - See CrimPD | 3D-3G and 3N; CrimPD V18A-B - R v Grant-Morris (2017] EWCA Crim 1228 and the Equal Treatment Bench Book",
+          "subSections": [
+            {
+              "key": "header1",
+              "heading": "Crime Inc",
+              "fields": [
+                {
+                  "label": "During court proceedings the defendant is to be referred to as",
+                  "value": ""
+                },
+                {
+                  "label": "Measures that can be granted at PTPH without formal application",
+                  "value": "",
+                  "hintText": "CrimPD 3C-3G\\nThese measures apply to pre-trial hearings as appropriate"
+                },
+                {
+                  "label": "Publicity about the Defendant",
+                  "value": ""
+                },
+                {
+                  "label": "Severance - Where the defendant appears alongside a defendant who is not vulnerable",
+                  "value": ""
+                },
+                {
+                  "label": "Ground rules hearing",
+                  "value": ""
+                },
+                {
+                  "label": "Intermediary",
+                  "value": ""
+                },
+                {
+                  "label": "Non-trial hearings - suitability of video link",
+                  "value": ""
+                },
+                {
+                  "label": "Other",
+                  "value": ""
+                },
+                {
+                  "label": "Measures to assist the defendant to give evidence",
+                  "value": "",
+                  "hintText": "CrimPD V 18\\nIf the defendant seeks additional special measures such as the use of live link (with or without pre-trial practice) or screens to give evidence, or to have a supporter (other than an intermediary) in the live-link room or to sit near the defendant during evidence or other special measure then a formal application will be required at Stage 2"
+                },
+                {
+                  "label": "Has the Judge given an oral judgement on the measures required?",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Mollie CONN, 15 Jul 2010",
+              "fields": [
+                {
+                  "label": "During court proceedings the defendant is to be referred to as",
+                  "value": ""
+                },
+                {
+                  "label": "Measures that can be granted at PTPH without formal application",
+                  "value": "",
+                  "hintText": "CrimPD 3C-3G\\nThese measures apply to pre-trial hearings as appropriate"
+                },
+                {
+                  "label": "Publicity about the Defendant",
+                  "value": ""
+                },
+                {
+                  "label": "Severance - Where the defendant appears alongside a defendant who is not vulnerable",
+                  "value": ""
+                },
+                {
+                  "label": "Ground rules hearing",
+                  "value": ""
+                },
+                {
+                  "label": "Intermediary",
+                  "value": ""
+                },
+                {
+                  "label": "Non-trial hearings - suitability of video link",
+                  "value": ""
+                },
+                {
+                  "label": "Other",
+                  "value": ""
+                },
+                {
+                  "label": "Measures to assist the defendant to give evidence",
+                  "value": "",
+                  "hintText": "CrimPD V 18\\nIf the defendant seeks additional special measures such as the use of live link (with or without pre-trial practice) or screens to give evidence, or to have a supporter (other than an intermediary) in the live-link room or to sit near the defendant during evidence or other special measure then a formal application will be required at Stage 2"
+                },
+                {
+                  "label": "Has the Judge given an oral judgement on the measures required?",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "heading": "Arraignment",
+              "key": "header1",
+              "fields": [
+                {
+                  "label": "Judicial checks and comments",
+                  "value": ""
+                },
+                {
+                  "label": "Comment",
+                  "value": ""
+                },
+                {
+                  "label": "Pleas entered at PTPH or reason if not arraigned",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Trial",
+              "fields": [
+                {
+                  "label": "Trial date",
+                  "value": ""
+                },
+                {
+                  "label": "Listing",
+                  "value": ""
+                },
+                {
+                  "label": "Time estimate",
+                  "value": ""
+                },
+                {
+                  "label": "Add further details about estimate if necessary",
+                  "value": ""
+                },
+                {
+                  "label": "Certification of trial readiness status to be completed by all parties",
+                  "hintText": "(If no date is inserted then to be 28 days before trial date)",
+                  "value": ""
+                },
+                {
+                  "label": "Facilities required",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Stage 1",
+              "hintText": "Ordinarily 50 days (custody cases) or 70 days (bail cases) after sending.",
+              "fields": [
+                {
+                  "label": "Unless individual dates are provided the prosecution shall serve the following by:",
+                  "value": ""
+                },
+                {
+                  "label": "Service of prosecution case to include making available ABE transcripts and recordings relied on",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Initial disclosure",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Updated or initial Disclosure Management Document - to address issues raised by defence on the PTPH form",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Multi-media evidence (inc. CCTV and BWV) relied upon as part of the prosecution case",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Written record of defendant's taped interview (ROTI).",
+                  "hintText": "Parties are required to engage pre-trial to agree a summary or editing. Where there is a substantially interview a short summary rather than a full transcript is sufficient unless otherwise ordered. Audio recording of defendant's interviews to be obtained from investigator if required by defence",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "999 call transcript(s) and recording(s) if relied upon as part of the prosecution case",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Telephone, cell site, or other social media records relied if relied on as part of the prosecution case.",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Telephone, cell site, social media, and/or timeline analysis",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Forensic statements (SFR 2 or MG11) that can be served by Stage 1.",
+                  "hintText": "This order only applies where, in relation to SFR1 (or other served summary of expert's conclusions), the defendant has identified on the PTPH form a conclusion that is not admitted and what the disputed issues are.  The SFR2 or MG11 will be limited to those identified issues",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Bad character notice(s) with supporting evidence relied on",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Hearsay application(s)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Special measures application(s)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Third party disclosure",
+              "fields": [
+                {
+                  "label": "Unless individual dates are provided the prosecution shall comply with the orders below by:",
+                  "value": ""
+                },
+                {
+                  "label": "The following areas of third party material have been identified",
+                  "value": ""
+                },
+                {
+                  "label": "Prosecution shall either make requests to third party and if necessary apply for third party disclosure summonses, OR notify defence in writing that no requests will be made for third party disclosure",
+                  "hintText": "",
+                  "value": "Invalid date"
+                },
+                {
+                  "label": "If the prosecution is to pursue third party disclosure, then the prosecution must serve a report in writing on the outcome of efforts to identify potentially disclosable materials held by third parties and any ongoing enquiries not yet completed. The same may be included in a Disclosure Management Document",
+                  "hintText": "",
+                  "value": "Invalid date"
+                },
+                {
+                  "label": "Any disclosable third party disclosure shall be served on the defence",
+                  "hintText": "",
+                  "value": "Invalid date"
+                },
+                {
+                  "label": "Prosecution to make any application required to the Family Court",
+                  "hintText": "",
+                  "value": "Invalid date"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Stage 2",
+              "hintText": "",
+              "fields": [
+                {
+                  "label": "Unless individual dates are provided it is ordered that the defence shall serve the following by:",
+                  "value": ""
+                },
+                {
+                  "label": "Defence Statement to include particulars of alibi; and requests for disclosure, describing the material and explaining, by reference to the issues in the case, why it is disclosable",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Response to prosecution Disclosure Management Document if served identifying by reference to the issues in the case any disputes as to reasonable lines of enquiry or levels of data extraction",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Provide particulars of prosecution witnesses required to give live evidence; defence witnesses and interpreter requirements by using the CP Standard Witness Table or in the case of unrepresented defendants providing a paper Standard Witness Table",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Response to Summary of Expert Conclusions (SFR1) stating which, if any, of the expert's conclusions are admitted as fact and where a conclusion is not admitted stating what are the disputed issues concerning that conclusion",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Response to prosecution bad character notice(s)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Response to prosecution hearsay application(s)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Response to prosecution special measures application(s)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Special measures application for defendant or defence witnesses. Any reply from prosecution or other party to be served within 14 days",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Defence expert evidence to be relied upon",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Stage 3",
+              "hintText": "Ordinarily 14 or 28 days after Stage 2",
+              "fields": [
+                {
+                  "label": "Unless individual dates are provided it is ordered that the prosecution shall serve the following by:",
+                  "value": ""
+                },
+                {
+                  "label": "Further disclosure of items required to be disclosed under CPIA resulting from or requested by the Defence Statement. (If the Defence Statement is served late the prosecution have a like period from service of the Defence Statement as between Stages 2 and 3 to serve further disclosure)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Further updated Disclosure Management Document. (If the Defence DMD response is served late the prosecution have a like period from service of the DMD Response as between Stages 2 and 3 to serve further disclosure)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Further evidence to be relied upon that could not be served by Stage 1",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Forensic science statements (SFR2 or MG11) required as a result of the Defence response to a summary of conclusions (SFR1)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Expert medical evidence",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Psychiatric evidence",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Other (specify) expert evidence",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Live link or Remote link application(s) - If remote link is from abroad the application must identify any steps required or taken to comply with mutual co-operation obligations",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Intermediary report(s) with draft specific Ground Rules if to be applied for",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "List of editing proposals to ABE interview recording",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Stage 4",
+              "hintText": "Ordinarily 14 or 28 days after Stage 3",
+              "fields": [
+                {
+                  "label": "Unless individual dates are given it is ordered that the defence shall serve the following by:",
+                  "value": ""
+                },
+                {
+                  "label": "Complaint about prosecution non-disclosure to comply with s.8 CPIA and CrimPR 15.5",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Application(s) for witness summons for third party disclosure if the prosecution indicates at PTPH that it will not be pursuing any TPD issues OR any defendant is dissatisfied with the outcome of prosecution enquiries",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "List of editing proposals to ABE interview recording (if any) and response to prosecution proposals (if served)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "S.100 or 101 bad character of non-defendant application. Any reply from prosecution or other party to be served within 14 days",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "S.41 Evidence of sexual behaviour application. Any reply from prosecution or other party to be served within 14 days",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Response to prosecution intermediary report(s)",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Intermediary report for defendant or defence witnesses with draft ground rules. Any reply from prosecution or other party to be served within 14 days",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Live link or remote link application(s) - If remote link is from abroad the application must identify any steps required or taken to comply with mutual co-operation obligations",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Defence expert evidence to be relied upon that could not be served by Stage 2",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Pre-arraignment FCMH - abuse; dismissal; severance; other",
+              "fields": [
+                {
+                  "label": "To resolve",
+                  "value": "",
+                  "subMap": [
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Date of hearing",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time estimate",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Attendance",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Application/skeleton and supporting materials by:",
+                  "value": ""
+                },
+                {
+                  "label": "Response and supporting materials by:",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Pre-arraignment FCMH - fitness to participate in the trial process",
+              "fields": [
+                {
+                  "label": "To resolve",
+                  "value": "",
+                  "subMap": [
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Date of hearing",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time estimate",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Attendance",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Where the Court has a Mental Health Liaison and Diversion Service the Defence must engage with the service",
+                  "value": "",
+                  "isLabelRegular": "yes"
+                },
+                {
+                  "label": "Defence first medical report (or notice to the court and prosecution in writing that defendant is fit and the case should be listed for arraignment) by:",
+                  "value": ""
+                },
+                {
+                  "label": "Prosecution to notify defence if the prosecution do OR do not intend to obtain medican report within 7 days or by:",
+                  "value": ""
+                },
+                {
+                  "label": "If prosecution are to serve medical report then to be served by:",
+                  "value": ""
+                },
+                {
+                  "label": "If prosecution are not to serve medical report then defence to serve any second medical report by:",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Pre-trial recorded cross-examination (s.28) - vulnerable witnesses - s.16 YJCEA",
+              "hintText": "The judge being satisfied that the following witness(es) is/are eligible for assistance under s.16 of the YJCEA a s.28 direction is made that their ABE interviews shall stand as their evidence in chief and they shall be cross examined in advance of the trial",
+              "fields": [
+                {
+                  "label": "The case is allocated to",
+                  "hintText": "The future management of the case will be under the supervision of the trial judge",
+                  "value": ""
+                },
+                {
+                  "label": "s.4 Contempt of Court Act 1981 order has been made for the",
+                  "value": ""
+                },
+                {
+                  "label": "Witnesses",
+                  "value": " , "
+                },
+                {
+                  "label": "Timetable",
+                  "value": ""
+                },
+                {
+                  "label": "Intermediary report(s) to be served by:",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Ground Rules Form and any applications relevant to the witness to be served by",
+                  "hintText": "Eg s.100 bad character; s.41 sexual behaviour; or s.8 non-disclosure",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Responses to above applications to be served by",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "s.28 directions and Ground Rules Hearing",
+                  "value": "Invalid date",
+                  "subMap": [
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time marking",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time estimate",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Attendance",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Any intermediary relied on shall attend the Ground Rules Hearing",
+                  "value": ""
+                },
+                {
+                  "label": "Date for witness to refresh their memory",
+                  "hintText": "The officer in the case or another suitable police officer (or investigator equivalent) shall attend during the memory refreshing and make a note of any material comment by the witness",
+                  "value": "Invalid date"
+                },
+                {
+                  "label": "The judge and advocates shall meet the witness on",
+                  "value": "Invalid date",
+                  "subMap": [
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time marking",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time estimate",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "The advocates are not to meet the witness without the judge",
+                  "value": ""
+                },
+                {
+                  "label": "Pre-trial cross-examination hearing",
+                  "value": "Invalid date",
+                  "subMap": [
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time marking",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time estimate",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "",
+                  "value": ""
+                },
+                {
+                  "label": "Supplemental Special Measures orders",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Pre-trial recorded cross-examination (s.28) - intimidated witnesses - s.17 YJCEA",
+              "hintText": "The judge being satisfied that the following witness(es) is/are eligible for assistance under s.17 of the YJCEA a s.28 direction is made that their ABE interviews shall stand as their evidence in chief and they shall be cross examined in advance of the trial",
+              "fields": [
+                {
+                  "label": "The case is allocated to",
+                  "hintText": "The future management of the case will be under the supervision of the trial judge",
+                  "value": ""
+                },
+                {
+                  "label": "s.4 Contempt of Court Act 1981 order has been made for the",
+                  "value": ""
+                },
+                {
+                  "label": "Witnesses",
+                  "value": " , "
+                },
+                {
+                  "label": "Timetable",
+                  "value": ""
+                },
+                {
+                  "label": "Applications relevant to the witness to be served by",
+                  "hintText": "Eg s.100 bad character; s.41 sexual behaviour; or s.8 non-disclosure",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "Responses to above applications to be served by",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                },
+                {
+                  "label": "S.28 Directions Hearing",
+                  "value": "Invalid date",
+                  "subMap": [
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time marking",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time estimate",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Attendance",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "The hearing may be vacated upon all parties informing the court CPO in writing that they are fully ready and no orders are required.",
+                  "value": ""
+                },
+                {
+                  "label": "Date for witness to refresh their memory",
+                  "hintText": "The officer in the case or another suitable police officer (or investigator equivalent) shall attend during the memory refreshing and make a note of any material comment by the witness",
+                  "value": "Invalid date"
+                },
+                {
+                  "label": "Pre-trial cross-examination hearing",
+                  "value": "Invalid date",
+                  "subMap": [
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time marking",
+                      "value": ""
+                    },
+                    {
+                      "hasNoLineSpace": "yes",
+                      "label": "Time estimate",
+                      "value": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "",
+                  "value": ""
+                },
+                {
+                  "label": "Supplemental Special Measures orders",
+                  "hintText": "",
+                  "value": "Invalid date\\n"
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "FCMH - general",
+              "fields": [
+                {
+                  "label": "To resolve",
+                  "value": []
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Date of hearing",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Time estimate",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Attendance",
+                  "value": ""
+                },
+                {
+                  "label": "Application/skeleton and supporting materials by:",
+                  "value": ""
+                },
+                {
+                  "label": "Response and supporting materials by:",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Pre-trial review - general",
+              "hintText": "The PTR may be vacated if, when providing trial readiness information all parties confirm that they are fully trial ready and no orders are required.",
+              "fields": [
+                {
+                  "label": "Specific issues to be considered:",
+                  "value": []
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Date of PTR",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Time estimate",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Attendance",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Ground rules and welfare and/or S.41 sexual behaviour and pre-trial review - (not s.28)",
+              "fields": [
+                {
+                  "label": "Purpose of hearing",
+                  "value": ""
+                },
+                {
+                  "label": "Specific issues to be considered",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Date of hearing",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Time estimate",
+                  "value": ""
+                },
+                {
+                  "hasNoLineSpace": "no",
+                  "label": "Attendance",
+                  "value": ""
+                },
+                {
+                  "label": "Intermediary",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Trial preparation",
+              "hintText": "These orders will only be required in more substantial cases",
+              "fields": [
+                {
+                  "label": "Prosecution",
+                  "value": "",
+                  "subMap": [
+                    {
+                      "label": "Opening Note",
+                      "hintText": "",
+                      "value": "Invalid date\\n"
+                    },
+                    {
+                      "label": "Prosecution draft edited defendant's interview (ROTI)",
+                      "hintText": "",
+                      "value": "Invalid date\\n"
+                    },
+                    {
+                      "label": "Witness Timetable for prosecution witnesses with copy to the Witness Service",
+                      "hintText": "",
+                      "value": "Invalid date\\n"
+                    }
+                  ]
+                },
+                {
+                  "label": "Defence",
+                  "value": "",
+                  "subMap": [
+                    {
+                      "label": "Notice of objection or comment on the Opening Note; responses and requests for inclusion to the Draft agreed fact and jury bundle",
+                      "hintText": "",
+                      "value": "Invalid date\\n"
+                    },
+                    {
+                      "label": "Defence response to defendant's interview edits",
+                      "hintText": "",
+                      "value": "Invalid date\\n"
+                    },
+                    {
+                      "label": "Any defence response to Witness Timetable",
+                      "hintText": "",
+                      "value": "Invalid date\\n"
+                    }
+                  ]
+                },
+                null
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "article",
+              "heading": "Standard orders for witnesses and defendants",
+              "fields": [
+                {
+                  "label": "Video links",
+                  "values": [
+                    {
+                      "item": "1. Where a defendant appears at PTPH by video link from custody without objection at the hearing the court makes a live link direction under s.57B Crime and Disorder Act 1998."
+                    }
+                  ]
+                },
+                {
+                  "label": "Witness requirements",
+                  "values": [
+                    {
+                      "item": "2. The witness requirements are as confirmed by the court on the Witness List and any special measures or orders endorsed shall apply."
+                    },
+                    {
+                      "item": "3. If no Standard Witness Table information is served by a defendant, the served written statements of witnesses (compliant with s.9 CJA 1967 and with notice as required by CrimPR 16) not listed as required in the Witness Table at PTPH shall be admissible as evidence to the like extent as oral evidence to the like effect by that witness."
+                    }
+                  ]
+                },
+                {
+                  "label": "Where Special measures are granted for the use of ABE interviews; live link or screens",
+                  "values": [
+                    {
+                      "item": "4. Where a witness has provided an ABE interview, the ABE interview as edited by agreement or by order of the court shall stand as that witness' evidence in chief unless otherwise ordered."
+                    },
+                    {
+                      "item": "5. A witness whose ABE interview is relied on shall view that interview in the week preceding the trial in the presence of the officer in the case (or equivalent) or other suitable police officer (or investigator equivalent) who shall record any material comment the witness shall make and pass that record to the prosecutor."
+                    },
+                    {
+                      "item": "6. Any preference between screens or live link shall be identified after a court visit and shall include the witness' reasons for the preference."
+                    },
+                    {
+                      "item": "7. The attendance of any such witness at trial must be timetabled for the time when the witness is expected to commence examination."
+                    }
+                  ]
+                },
+                {
+                  "label": "Young or vulnerable witnesses or defendants CrimPR 18 & 3.9(7)",
+                  "values": [
+                    {
+                      "item": "8. Young or vulnerable witnesses or defendants to whom an Advocates Gateway Toolkit or the ICCA 20 Principles of Questioning apply are to be examined and cross-examined in accordance with those principles unless those are superseded by specific ground rules."
+                    }
+                  ]
+                },
+                {
+                  "label": "Where provision is made for a witness by remote link",
+                  "values": [
+                    {
+                      "item": "9. Particulars of the link must be provided not less than three weeks before trial - CrimPD 18.23-4."
+                    },
+                    {
+                      "item": "10. Any party seeking to rely on a witness giving evidence from a place outside the jurisdiction must ensure that mutual assistance obligations are complied with in advance of the trial."
+                    }
+                  ]
+                },
+                {
+                  "label": "Expert witnesses - CrimPR 19",
+                  "values": [
+                    {
+                      "item": "11. Expert witnesses of comparable disciplines must liaise and serve on the parties and the Court a statement of the points on which they agree and disagree with reasons no less than 14 days prior to the trial OR by such date as may be inserted here: 10 Mar 2021."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "hr"
+            },
+            {
+              "key": "header1",
+              "heading": "Final judicial warnings",
+              "fields": [
+                {
+                  "label": "Judicial warnings given",
+                  "value": ""
+                },
+                {
+                  "label": "Other",
+                  "value": ""
+                },
+                {
+                  "label": "Reason if judicial warnings not given",
+                  "value": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

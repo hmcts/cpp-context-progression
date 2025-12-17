@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Command schema for generating court register document request",
+  "id": "http://justice.gov.uk/progression/courts/generate-court-register.json",
+  "type": "object",
+  "properties": {
+    "registerDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "registerDate"
+  ],
+  "additionalProperties": false
+}

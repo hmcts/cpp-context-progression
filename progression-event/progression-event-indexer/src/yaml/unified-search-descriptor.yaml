@@ -1,0 +1,64 @@
+unified_search_descriptor:
+  name: example
+  spec_version: 1.0.0
+  service: progression
+  service_component: EVENT_INDEXER
+  events:
+     - name: progression.event.prosecution-case-created
+       transformer_config: progression.event.prosecution-case-created-spec.json
+       index_name: crime_case_index
+     - name: progression.event.prosecutionCase-defendant-listing-status-changed-v2
+       transformer_config: progression.event.prosecution-case-defendant-listing-status-changed-v2-spec.json
+       index_name: crime_case_index
+     - name: progression.event.prosecutionCase-defendant-listing-status-changed-v3
+       transformer_config: progression.event.prosecution-case-defendant-listing-status-changed-v3-spec.json
+       index_name: crime_case_index
+     - name: progression.event.prosecutionCase-defendant-listing-status-changed
+       transformer_config: progression.event.prosecution-case-defendant-listing-status-changed-spec.json
+       index_name: crime_case_index
+     - name: progression.event.court-application-created
+       transformer_config: progression.event.court-application-created-spec.json
+       index_name: crime_case_index
+     - name: progression.event.prosecution-case-defendant-updated
+       transformer_config: progression.event.prosecution-case-defendant-updated-spec.json
+       index_name: crime_case_index
+     - name: progression.events.offences-for-defendant-changed
+       transformer_config: progression.event.offences-for-defendant-changed-spec.json
+       index_name: crime_case_index
+     - name: progression.event.hearing-resulted-case-updated
+       transformer_config: progression.event.hearing-resulted-case-updated-spec.json
+       index_name: crime_case_index
+     - name: progression.event.defendants-added-to-court-proceedings
+       transformer_config: progression.event.defendant-added-to-court-proceeding-java-spec.json
+       index_name: crime_case_index
+     - name: progression.event.hearing-confirmed-case-status-updated
+       transformer_config: progression.events.hearing-confirmed-case-status-updated-spec.json
+       index_name: crime_case_index
+     - name: progression.event.court-application-proceedings-edited
+       transformer_config: progression.event.court-application-proceedings-edited-spec.json
+       index_name: crime_case_index
+     - name: progression.event.case-cps-prosecutor-updated
+       transformer_config: progression.event.case-cps-prosecutor-updated-spec.json
+       index_name: crime_case_index
+     - name: progression.event.application-referred-to-boxwork
+       transformer_config: progression.event.application-referred-to-boxwork-spec.json
+       index_name: crime_case_index
+     - name: progression.event.hearing-resulted-application-updated
+       transformer_config: progression.event.hearing-resulted-application-updated-spec.json
+       index_name: crime_case_index
+     - name: progression.event.application-referred-to-court-hearing
+       transformer_config: progression.event.application-referred-to-court-hearing-spec.json
+       index_name: crime_case_index
+     - name: progression.event.application-referral-to-existing-hearing
+       transformer_config: progression.event.application-referral-to-existing-hearing-spec.json
+       index_name: crime_case_index
+     - name: progression.event.case-hearing-details-updated-in-unified-search
+       transformer_config: progression.event.case-hearing-details-updated-in-unified-search-spec.json
+       index_name: crime_case_index
+     - name: progression.event.case-ejected
+       transformer_config: progression.event.case-ejected-spec.json
+       index_name: crime_case_index
+     - name: progression.event.court-application-status-updated
+       transformer_config: progression.event.court-application-status-updated-spec.json
+       index_name: crime_case_index
+...

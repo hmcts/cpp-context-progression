@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.email-request-accepted.json",
+  "type": "object",
+  "properties": {
+      "caseId": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      },
+      "applicationId": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      },
+      "notificationId": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      },
+      "acceptedTime": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "oneOf": [
+      {
+        "required": [
+          "caseId",
+          "notificationId",
+          "acceptedTime"
+        ]
+      },
+      {
+        "required": [
+          "applicationId",
+          "notificationId",
+          "acceptedTime"
+        ]
+      }
+    ],
+  "additionalProperties": false
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/case-pending-for-sentence-hearing.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "caseStatusUpdatedDateTime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "status",
+    "caseStatusUpdatedDateTime"
+  ]
+}

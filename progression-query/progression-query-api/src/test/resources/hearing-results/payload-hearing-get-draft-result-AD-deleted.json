@@ -1,0 +1,107 @@
+{
+    "version": 4,
+    "hearingId": "5db13eee-7ce6-472f-8306-5c92ab68c64f",
+    "relations": [
+        {
+            "ruleType": "standalone",
+            "resultLineId": "59a70b3c-66c9-4709-a1b5-fef03df88ffa",
+            "childResultLineIds": []
+        },
+        {
+            "ruleType": "standalone",
+            "resultLineId": "c6aa5a13-8e0e-4f78-9911-15a9282675e5",
+            "childResultLineIds": []
+        }
+    ],
+    "hearingDay": "2025-02-28",
+    "resultLines": {
+        "59a70b3c-66c9-4709-a1b5-fef03df88ffa": {
+            "label": "Conditional discharge",
+            "valid": true,
+            "caseId": "b900dceb-082a-4b7d-a23f-acb0f60c2250",
+            "category": "F",
+            "offenceId": "91cd5599-f904-456a-80e5-39c65203e2f1",
+            "shortCode": "cd",
+            "sharedDate": "2025-02-28T14:42:03.714Z",
+            "defendantId": "3f5dac88-1805-49e0-aa92-2a76bc0869d7",
+            "orderedDate": "2025-02-28",
+            "resultLevel": "O",
+            "unscheduled": false,
+            "originalText": "CD",
+            "resultLineId": "59a70b3c-66c9-4709-a1b5-fef03df88ffa",
+            "resultPrompts": [
+                {
+                    "type": "DURATION",
+                    "label": "Period of conditional discharge",
+                    "value": [
+                        {
+                            "type": "INT",
+                            "label": "Months",
+                            "value": "20",
+                            "promptId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                            "promptRef": "Months",
+                            "welshLabel": "Mis"
+                        }
+                    ],
+                    "promptId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                    "promptRef": "periodofConditionalDischarge"
+                }
+            ],
+            "unresolvedParts": [],
+            "masterDefendantId": "3f5dac88-1805-49e0-aa92-2a76bc0869d7",
+            "resultDefinitionId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+            "nonStandaloneAncillaryResult": false
+        },
+        "c6aa5a13-8e0e-4f78-9911-15a9282675e5": {
+            "label": "Absolute discharge",
+            "valid": true,
+            "caseId": "b900dceb-082a-4b7d-a23f-acb0f60c2250",
+            "deleted": true,
+            "category": "F",
+            "offenceId": "91cd5599-f904-456a-80e5-39c65203e2f1",
+            "shortCode": "ad",
+            "sharedDate": "2025-02-28T14:42:03.714Z",
+            "defendantId": "3f5dac88-1805-49e0-aa92-2a76bc0869d7",
+            "orderedDate": "2025-02-28",
+            "resultLevel": "O",
+            "unscheduled": false,
+            "originalText": "AD",
+            "resultLineId": "c6aa5a13-8e0e-4f78-9911-15a9282675e5",
+            "amendmentDate": "2025-02-28T14:40:10.262Z",
+            "amendmentsLog": {
+                "isAmended": true,
+                "amendmentsRecord": [
+                    {
+                        "amendedBy": "Erica Wilson",
+                        "validatedBy": "Emma Cleaner",
+                        "amendmentDate": "2025-02-28T14:40:10.262Z",
+                        "validationDate": "2025-02-28T14:44:57.623Z",
+                        "amendmentReason": {
+                            "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                            "seqNo": 20,
+                            "reasonCode": "EO",
+                            "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+                        },
+                        "resultPromptsRecord": []
+                    }
+                ]
+            },
+            "resultPrompts": [],
+            "amendmentReason": {
+                "id": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                "seqNo": 20,
+                "reasonCode": "EO",
+                "reasonDescription": "Error or Omission in result announced in court (Amendment under the Slip rule)"
+            },
+            "unresolvedParts": [],
+            "masterDefendantId": "3f5dac88-1805-49e0-aa92-2a76bc0869d7",
+            "resultDefinitionId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+            "nonStandaloneAncillaryResult": false
+        }
+    },
+    "__metadata__": {
+        "version": 1,
+        "lastSharedTime": "2025-02-28T14:44:59.620Z"
+    },
+    "shadowListedOffenceIds": []
+}

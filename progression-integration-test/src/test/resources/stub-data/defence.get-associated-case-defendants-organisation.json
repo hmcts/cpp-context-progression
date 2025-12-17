@@ -1,0 +1,22 @@
+{
+  "caseDefendantOrganisation": {
+    "caseId": "fcb1edc9-786a-462d-9400-318c95c7b700",
+    "urn": "ABCD09T56",
+    "defendants": [
+      {
+        "defendantId": "fcb1edc9-786a-462d-9400-318c95c7b700",
+        "defendantFirstName": "Gilbert",
+        "defendantLastName": "Ormsby",
+        "organisationName": "FalseFlag LLP",
+        "associatedOrganisation": "fcb1edc9-786a-462d-9400-318c95c7b700",
+        "organisationAddress": {
+          "address1": "Legal House",
+          "address2": "15 Sewell Street",
+          "address3": "Hammersmith",
+          "address4": "London",
+          "addressPostcode": "SE14 2AB"
+        }
+      }
+    ]
+  }
+}

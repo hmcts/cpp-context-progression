@@ -1,0 +1,14 @@
+{
+  "courtDocumentId": "3aa6d35d-70c3-45fb-a05e-bfedbce16412",
+  "name": "SJP Notice",
+  "documentTypeId": "0bb7b276-9dc0-4af2-83b9-f4acef0c7898",
+  "receivedDateTime": "2019-12-07T07:16:26.661Z",
+  "containsFinancialMeans": true,
+  "defendants": [
+    {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+    }
+  ],
+  "sendToCps": true
+}
+

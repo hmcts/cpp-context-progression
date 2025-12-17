@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/materialDetails.json",
+  "description": "The context for material",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "description": "The requesting user",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "fileId": {
+      "description": "File ref",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "description": "The hearingId",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "The caseId",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "description": "The ApplicationId",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "description": "The address4",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "firstClassLetter": {
+      "type": "boolean"
+    },
+    "secondClassLetter": {
+      "type": "boolean"
+    },
+    "isNotificationApi": {
+      "type": "boolean"
+    },
+    "isCps": {
+      "type": "boolean"
+    },
+    "emailNotifications": {
+      "description": "The email notifications required to be sent for this document",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/notification/email-channel.json"
+      }
+    },
+    "welshTranslationRequired": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "userId",
+    "fileId",
+    "hearingId",
+    "materialId"
+  ],
+  "additionalProperties": false
+}

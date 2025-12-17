@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/add-document-with-prosecution-case-id.json",
+  "type": "object",
+  "properties": {
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties": false
+}
+

@@ -1,0 +1,24 @@
+{
+  "_metadata": {
+    "name": "progression.event.defendant-request-from-current-hearing-to-extend-hearing-created"
+  },
+  "currentHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+  "extendHearingId": "18a2165c-848f-46d6-9472-9bc5e81eb300",
+  "defendantRequests": [
+    {
+      "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+      "referralReason": {
+        "id": "04e0915a-5759-4bd3-a3c2-35c5206d4e3b",
+        "description": "forTrial",
+        "defendantId": "e1d32d9d-29ec-4934-a932-22a50f223966"
+      },
+      "datesToAvoid": "thursdays",
+      "summonsRequired": "SJP_REFERRAL",
+      "hearingLanguageNeeds": "WELSH",
+      "defendantOffences": [
+        "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+      ]
+    }
+  ]
+
+}

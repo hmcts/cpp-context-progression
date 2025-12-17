@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="add-index-case-defendant-hearing-defendant-id" author="narender.pal">
+        <sql>
+            CREATE INDEX IF NOT EXISTS case_defendant_hearing_defendant_id_idx ON
+            case_defendant_hearing (defendant_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

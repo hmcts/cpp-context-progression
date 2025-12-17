@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/courtDocumentIndex.json",
+  "type": "object",
+  "properties": {
+    "caseIds": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "hearingIds": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "defendantIds": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "type": {
+      "type": "string"
+    },
+    "category":  {
+        "type": "string"
+     },
+    "document": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    },
+    "sendToCps": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "courtDocument",
+    "category",
+    "type"
+  ],
+  "additionalProperties": false
+}

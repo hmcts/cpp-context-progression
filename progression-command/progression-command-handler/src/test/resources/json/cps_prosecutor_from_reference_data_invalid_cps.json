@@ -1,0 +1,15 @@
+{
+  "id": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "TFL2",
+  "shortName": "TFL",
+  "fullName": "Transport for London",
+  "oucode": "GAFTL00",
+  "nameWelsh": "Transport for London",
+  "region": "London",
+  "stackType": "Regional",
+  "informantEmailAddress": "tfl.enforcement@tfl.cjsm.net",
+  "sjpFlag": true,
+  "cpsFlag": false,
+  "policeFlag": false
+}

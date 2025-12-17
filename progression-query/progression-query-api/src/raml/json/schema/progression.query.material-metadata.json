@@ -1,0 +1,29 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "caseDocumentMetadata"
+  ],
+  "properties": {
+    "caseDocumentMetadata": {
+      "type": "object",
+      "required": [
+        "filename",
+        "mimeType",
+        "addedAt"
+      ],
+      "properties": {
+        "filename": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "addedAt": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

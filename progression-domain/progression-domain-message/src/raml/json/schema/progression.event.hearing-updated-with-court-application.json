@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.hearing-updated-with-court-application.json",
+  "type": "object",
+  "properties": {
+    "courtApplication": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    }
+  },
+  "additionalProperties": false
+}

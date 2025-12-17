@@ -1,0 +1,40 @@
+{
+  "offences": [
+    {
+      "id": "7e2f843e-d639-40b3-8611-8015f3a18958",
+      "offenceCode": "H8198",
+      "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+      "indicatedPlea": {
+        "id": "642826a3-5ab3-40c9-b369-7b330f47c1a7",
+        "value" :"INDICATED_GUILTY"
+      },
+      "section": "Section 51",
+      "startDate": "2010-08-01",
+      "endDate": "2011-08-01",
+      "orderIndex": 1,
+      "count": 1,
+      "convictionDate": "2017-08-01",
+      "plea":
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edae",
+        "value" : "GUILTY",
+        "pleaDate" : "2017-02-02"
+      }
+    },{
+      "id": "1e2f843e-d639-40b3-8611-8015f3a18952",
+      "offenceCode": "H8198",
+      "wording": "on 01/08/2009 at  the County public house, unlawfully and maliciously wounded, John Smith",
+      "section": "Section 51",
+      "startDate": "2010-08-02",
+      "endDate": "2011-08-02",
+      "orderIndex": 1,
+      "count": 1,
+      "indicatedPlea":
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edaf",
+        "value" : "INDICATED_GUILTY",
+        "allocationDecision" : "ELECT_TRIAL"
+      }
+    }
+  ]
+}

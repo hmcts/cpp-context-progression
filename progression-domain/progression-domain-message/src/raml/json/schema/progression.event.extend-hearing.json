@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/extend-hearing.json",
+  "type": "object",
+  "properties": {
+    "hearingRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/hearingListingNeeds.json"
+    },
+    "extendedHearingFrom": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isAdjourned": {
+      "type": "boolean"
+    },
+    "isPartiallyAllocated": {
+      "type": "boolean"
+    },
+    "isUnAllocatedHearing": {
+      "type": "boolean"
+    },
+    "shadowListedOffences": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    }
+  },
+  "required": [
+    "hearingRequest"
+  ],
+  "additionalProperties": false
+}

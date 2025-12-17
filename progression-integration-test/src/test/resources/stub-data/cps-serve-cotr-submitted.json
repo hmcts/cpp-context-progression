@@ -1,0 +1,42 @@
+{
+  "submissionId": "%SUBMISSION_ID%",
+  "caseId": "%CASE_ID%",
+  "caseUrn": "87GD9945217",
+  "formDefendants": [
+    {
+      "defendantId": "%DEFENDANT_ID%",
+      "cpsDefendantId" : "%CPS_DEFENDANT_ID%"
+    }
+  ],
+  "trialDate": "1980-01-24",
+  "lastRecordedTimeEstimate": 4,
+  "hasAllEvidenceToBeReliedOnBeenServed" : "Y",
+  "hasAllEvidenceToBeReliedOnBeenServedDetails" : "hasAllEvidenceToBeReliedOnBeenServedDetails",
+  "hasAllDisclosureBeenProvided": "No",
+  "hasAllDisclosureBeenProvidedDetails" : "hasAllDisclosureBeenProvidedDetails",
+  "haveOtherDirectionsBeenCompliedWith" : "No",
+  "haveOtherDirectionsBeenCompliedWithDetails" : "haveOtherDirectionsBeenCompliedWithDetails",
+  "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttend" : "Y",
+  "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttendDetails" : "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttendDetails",
+  "haveAnyWitnessSummonsesRequiredBeenReceivedAndServed" : "No",
+  "haveAnyWitnessSummonsesRequiredBeenReceivedAndServedDetails" : "haveAnyWitnessSummonsesRequiredBeenReceivedAndServedDetails",
+  "haveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolved" : "Y",
+  "haveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolvedDetails" : "haveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolvedDetails",
+  "haveInterpretersForWitnessesBeenArranged" : "Y",
+  "haveInterpretersForWitnessesBeenArrangedDetails" : "haveInterpretersForWitnessesBeenArrangedDetails",
+  "haveEditedAbeInterviewsBeenPreparedAndAgreed" : "Y",
+  "haveEditedAbeInterviewsBeenPreparedAndAgreedDetails" : "haveEditedAbeInterviewsBeenPreparedAndAgreedDetails",
+  "haveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreement": "No",
+  "haveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreementDetails" : "haveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreementDetails",
+  "isTheCaseReadyToProceedWithoutDelayBeforeTheJury" : "Y",
+  "isTheCaseReadyToProceedWithoutDelayBeforeTheJuryDetails" : "isTheCaseReadyToProceedWithoutDelayBeforeTheJuryDetails",
+  "isTheTimeEstimateCorrect" : "isTheTimeEstimateCorrect",
+  "isTheTimeEstimateCorrectDetails" : "isTheTimeEstimateCorrectDetails",
+  "furtherInformationToAssistTheCourt" : "furtherInformationToAssistTheCourt",
+  "certifyThatTheProsecutionIsTrialReady": "Y",
+  "certifyThatTheProsecutionIsTrialReadyDetails" : "testing details",
+  "applyForThePtrToBeVacated" : "Y",
+  "applyForThePtrToBeVacatedDetails" : "applyForThePtrToBeVacatedDetails",
+  "formCompletedOnBehalfOfTheProsecutionBy" : "formCompletedOnBehalfOfTheProsecutionBy",
+  "certificationDate" : "1980-01-24"
+}

@@ -1,0 +1,380 @@
+{
+  "application": {
+    "applicant": {
+      "id": "18122045-f974-4851-9dfb-ed0ca471c7e4",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "804bcaa0-4199-4df1-9201-c4befd714430",
+            "caseReference": "07WZ0204222",
+            "defendantId": "a7bee893-bb8a-4cda-9ef4-b9c81f006692"
+          }
+        ],
+        "masterDefendantId": "a7bee893-bb8a-4cda-9ef4-b9c81f006692",
+        "personDefendant": {
+          "arrestSummonsNumber": "2200000000000168930V",
+          "bailReasons": "To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person, To prevent offending",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "30 ELIZABETH LANE",
+              "address2": "ELLESMERE PORT",
+              "postcode": "CV65 4AB"
+            },
+            "contact": {
+              "home": "01978454321",
+              "mobile": "07366654321",
+              "primaryEmail": "NEVAEHGORDON180@GMAIL.COM"
+            },
+            "dateOfBirth": "1990-02-26",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "TOM",
+            "gender": "FEMALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "interpreterLanguageNeeds": "English",
+            "lastName": "BROWN",
+            "middleName": "SARAH ",
+            "occupation": "Student"
+          },
+          "policeBailConditions": "NOT TO CONTACT BY ANY MEANS INCLUDING VIA SOCIAL MEDIA BY SELF, SERVANT OR AGENT RICHARD BUGGY EXCEPT VIA SOCIAL SERVICES FOR CHILD CONTACTNOT TO CONTACT BY ANY MEANS INCLUDING VIA SOCIAL MEDIA BY SELF, SERVANT OR AGENT BETH MANTEL\n\n",
+          "policeBailStatus": {
+            "code": "B",
+            "description": "Conditional bail",
+            "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "applicationParticulars": "Application to amend curfew order imposed 27.06.2022 at Warrington Combined Court to include the cutilage of her garden so that she can play with her children in the garden and also to enable her to smoke outside. ",
+    "applicationReceivedDate": "2022-06-28",
+    "applicationReference": "07WZ0204222",
+    "applicationStatus": "LISTED",
+    "commissionerOfOath": false,
+    "courtOrder": {
+      "canBeSubjectOfBreachProceedings": true,
+      "canBeSubjectOfVariationProceedings": true,
+      "courtOrderOffences": [
+        {
+          "offence": {
+            "allocationDecision": {
+              "allocationDecisionDate": "2022-05-26",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "63c0481b-0431-469e-bbc2-01845939f3ac",
+              "originatingHearingId": "1da33851-b6f2-4403-a990-6ccd6ba055ea",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-02-19",
+            "chargeDate": "2022-05-21",
+            "convictingCourt": {
+              "code": "B07FQ00",
+              "id": "cb2ff1e3-e68e-3037-a563-1a0fcc165273",
+              "lja": {
+                "ljaCode": "1710",
+                "ljaName": "Cheshire Magistrates' Court"
+              },
+              "name": "Warrington Combined Court",
+              "roomId": "f8688877-4db3-347b-bfc4-7c1dd6f01c57"
+            },
+            "convictionDate": "2022-05-26",
+            "count": 0,
+            "id": "63c0481b-0431-469e-bbc2-01845939f3ac",
+            "isDisposed": true,
+            "laaApplnReference": {
+              "applicationReference": "7365182",
+              "effectiveEndDate": "2022-05-25",
+              "effectiveStartDate": "2022-05-25",
+              "laaContractNumber": "0J394Z",
+              "offenceLevelStatus": "Granted",
+              "statusCode": "GR",
+              "statusDate": "2022-05-25",
+              "statusDescription": "Granted (One Advocate)",
+              "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+            },
+            "lastAdjournDate": "2022-05-26",
+            "lastAdjournedHearingType": "For a pre-sentence report to be prepared",
+            "listingNumber": 1,
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03005",
+            "offenceDateCode": 5,
+            "offenceDefinitionId": "46260ca3-5882-40e1-9807-38a2a512c79b",
+            "offenceLegislation": "Contrary to section 127(1)(a) and (3) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 127(1)(a) a (3) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Send by public communication network an offensive / indecent / obscene / menacing message / matter",
+            "offenceTitleWelsh": "Anfon mater / neges bygythiol /anllad / anweddus / tramgwyddus drwy rwydwaith cyfathrebu cyhoeddus ||",
+            "orderIndex": 4,
+            "plea": {
+              "offenceId": "63c0481b-0431-469e-bbc2-01845939f3ac",
+              "originatingHearingId": "1da33851-b6f2-4403-a990-6ccd6ba055ea",
+              "pleaDate": "2022-05-26",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": false,
+            "startDate": "2022-02-05",
+            "wording": "On 05/02/2022 at Cheshire sent by means of a public electronic communications network a message namely an email regarding Beth Mantel that was grossly offensive or of an indecent, obscene or menacing character\n \n'Contrary to section 127(1)(a) and (3) of the Communications Act 2003.'"
+          },
+          "prosecutionCaseId": "804bcaa0-4199-4df1-9201-c4befd714430",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Legal Officer",
+              "address2": "Police HQ",
+              "address3": "Clemonds Hey",
+              "address4": "Winsford",
+              "address5": "Cheshire",
+              "postcode": "CW7 2UA"
+            },
+            "contact": {
+              "primaryEmail": "CCRS@cheshire.pnn.police.uk"
+            },
+            "majorCreditorCode": "PO07",
+            "prosecutionAuthorityCode": "CHESPF",
+            "prosecutionAuthorityId": "efecc139-0c86-3018-a858-1f8e8dbe7402",
+            "prosecutionAuthorityName": "Cheshire Police",
+            "prosecutionAuthorityOUCode": "0070000",
+            "caseURN": "07WZ0204222"
+          }
+        },
+        {
+          "offence": {
+            "allocationDecision": {
+              "allocationDecisionDate": "2022-05-26",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "8b3153b3-0a04-4384-be15-557725d38346",
+              "originatingHearingId": "1da33851-b6f2-4403-a990-6ccd6ba055ea",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-02-19",
+            "chargeDate": "2022-05-21",
+            "convictingCourt": {
+              "code": "B07FQ00",
+              "id": "cb2ff1e3-e68e-3037-a563-1a0fcc165273",
+              "lja": {
+                "ljaCode": "1710",
+                "ljaName": "Cheshire Magistrates' Court"
+              },
+              "name": "Warrington Combined Court",
+              "roomId": "f8688877-4db3-347b-bfc4-7c1dd6f01c57"
+            },
+            "convictionDate": "2022-05-26",
+            "count": 0,
+            "id": "8b3153b3-0a04-4384-be15-557725d38346",
+            "isDisposed": true,
+            "laaApplnReference": {
+              "applicationReference": "7365182",
+              "effectiveEndDate": "2022-05-25",
+              "effectiveStartDate": "2022-05-25",
+              "laaContractNumber": "0J394Z",
+              "offenceLevelStatus": "Granted",
+              "statusCode": "GR",
+              "statusDate": "2022-05-25",
+              "statusDescription": "Granted (One Advocate)",
+              "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+            },
+            "lastAdjournDate": "2022-05-26",
+            "lastAdjournedHearingType": "For a pre-sentence report to be prepared",
+            "listingNumber": 1,
+            "modeOfTrial": "Summary",
+            "offenceCode": "CA03005",
+            "offenceDateCode": 5,
+            "offenceDefinitionId": "46260ca3-5882-40e1-9807-38a2a512c79b",
+            "offenceLegislation": "Contrary to section 127(1)(a) and (3) of the Communications Act 2003.",
+            "offenceLegislationWelsh": "Yn groes i adran 127(1)(a) a (3) Deddf Cyfathrebu 2003.",
+            "offenceTitle": "Send by public communication network an offensive / indecent / obscene / menacing message / matter",
+            "offenceTitleWelsh": "Anfon mater / neges bygythiol /anllad / anweddus / tramgwyddus drwy rwydwaith cyfathrebu cyhoeddus ||",
+            "orderIndex": 5,
+            "plea": {
+              "offenceId": "8b3153b3-0a04-4384-be15-557725d38346",
+              "originatingHearingId": "1da33851-b6f2-4403-a990-6ccd6ba055ea",
+              "pleaDate": "2022-05-26",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": false,
+            "startDate": "2022-02-05",
+            "wording": "On 05/02/2022 at Cheshire sent by means of a public electronic communications network messages to Richard Buggy that was grossly offensive or of an indecent, obscene or menacing character\n\n'Contrary to section 127(1)(a) and (3) of the Communications Act 2003.'"
+          },
+          "prosecutionCaseId": "804bcaa0-4199-4df1-9201-c4befd714430",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Legal Officer",
+              "address2": "Police HQ",
+              "address3": "Clemonds Hey",
+              "address4": "Winsford",
+              "address5": "Cheshire",
+              "postcode": "CW7 2UA"
+            },
+            "contact": {
+              "primaryEmail": "CCRS@cheshire.pnn.police.uk"
+            },
+            "majorCreditorCode": "PO07",
+            "prosecutionAuthorityCode": "CHESPF",
+            "prosecutionAuthorityId": "efecc139-0c86-3018-a858-1f8e8dbe7402",
+            "prosecutionAuthorityName": "Cheshire Police",
+            "prosecutionAuthorityOUCode": "0070000",
+            "caseURN": "07WZ0204222"
+          }
+        }
+      ],
+      "defendantIds": [
+        "a7bee893-bb8a-4cda-9ef4-b9c81f006692"
+      ],
+      "endDate": "2023-06-26",
+      "id": "02091eea-1337-475f-ba95-94d8c3fa9d30",
+      "isSJPOrder": false,
+      "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+      "label": "Community order England / Wales",
+      "masterDefendantId": "a7bee893-bb8a-4cda-9ef4-b9c81f006692",
+      "orderDate": "2022-06-27",
+      "orderingCourt": {
+        "address": {
+          "address1": "Warrington Magistrates' Court",
+          "address2": "The Law Courts",
+          "address3": "Legh Street",
+          "address4": "Warrington",
+          "address5": "Cheshire",
+          "postcode": "WA1 1UR"
+        },
+        "code": "B07FQ00",
+        "id": "cb2ff1e3-e68e-3037-a563-1a0fcc165273",
+        "lja": {
+          "ljaCode": "1710",
+          "ljaName": "Cheshire Magistrates' Court"
+        },
+        "name": "Warrington Combined Court",
+        "roomId": "f8688877-4db3-347b-bfc4-7c1dd6f01c57",
+        "roomName": "Courtroom 02"
+      },
+      "orderingHearingId": "8f8fa978-d90f-4b2b-8c6b-b4296cf929ba",
+      "startDate": "2022-06-27"
+    },
+    "id": "804bcaa0-4199-4df1-9201-c4befd714430",
+    "subject": {
+      "id": "18122045-f974-4851-9dfb-ed0ca471c7e4",
+      "masterDefendant": {
+        "defendantCase": [
+          {
+            "caseId": "804bcaa0-4199-4df1-9201-c4befd714430",
+            "caseReference": "07WZ0204222",
+            "defendantId": "a7bee893-bb8a-4cda-9ef4-b9c81f006692"
+          }
+        ],
+        "masterDefendantId": "a7bee893-bb8a-4cda-9ef4-b9c81f006692",
+        "personDefendant": {
+          "arrestSummonsNumber": "2200000000000168930V",
+          "bailReasons": "To prevent interference with witnesses or otherwise obstruct the course of justice, whether in relation to the defendant or any other person, To prevent offending",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "45 HOUGHTON LANE",
+              "address2": "ELLESMERE PORT",
+              "postcode": "CH65 4FH"
+            },
+            "contact": {
+              "home": "01978439619",
+              "mobile": "07366609628",
+              "primaryEmail": "NEVAEHGORDON180@GMAIL.COM"
+            },
+            "dateOfBirth": "1990-02-26",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "KAYLEIGH",
+            "gender": "FEMALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "interpreterLanguageNeeds": "English",
+            "lastName": "GORDON",
+            "middleName": "SARAH ",
+            "occupation": "Student"
+          },
+          "policeBailConditions": "NOT TO CONTACT BY ANY MEANS INCLUDING VIA SOCIAL MEDIA BY SELF, SERVANT OR AGENT RICHARD BUGGY EXCEPT VIA SOCIAL SERVICES FOR CHILD CONTACTNOT TO CONTACT BY ANY MEANS INCLUDING VIA SOCIAL MEDIA BY SELF, SERVANT OR AGENT BETH MANTEL\n\n",
+          "policeBailStatus": {
+            "code": "B",
+            "description": "Conditional bail",
+            "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+          }
+        }
+      },
+      "notificationRequired": true,
+      "summonsRequired": false
+    },
+    "type": {
+      "appealFlag": false,
+      "applicantAppellantFlag": false,
+      "boxworkNotifTemplate": "NOT_APPLICABLE",
+      "breachType": "NOT_APPLICABLE",
+      "categoryCode": "CO",
+      "code": "CJ03513",
+      "commrOfOathFlag": false,
+      "courtExtractAvlFlag": true,
+      "courtOfAppealFlag": false,
+      "hearingCode": "APN",
+      "id": "cdce92b1-d38f-30f7-9e26-8060369788e0",
+      "jurisdiction": "EITHER",
+      "legislation": "In accordance with part 4 of Schedule 8 to the Criminal Justice Act 2003.",
+      "legislationWelsh": "Yn unol â Rhan 4 Atodlen 8 Deddf Cyfiawnder Troseddol 2003.",
+      "linkType": "LINKED",
+      "listingNotifTemplate": "POSTAL_NOTIFICATION",
+      "offenceActiveOrder": "COURT_ORDER",
+      "pleaApplicableFlag": false,
+      "prosecutorThirdPartyFlag": false,
+      "spiOutApplicableFlag": true,
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "type": "Application to amend the requirements of a community order",
+      "typeWelsh": "Cais i ddiwygio gofynion gorchymyn cymunedol"
+    }
+  },
+  "courtHearing": {
+    "bookedSlots": [
+      {
+        "courtCentreId": "1d477ab6-1434-3419-bfa1-daaf6b6e843a",
+        "courtRoomId": 765,
+        "courtScheduleId": "9ab3efe4-593f-3632-bc63-76918365124f",
+        "duration": 180,
+        "oucode": "B07ED00",
+        "roomId": "966803b5-cd5f-3f99-a02a-db1ba9bb8830",
+        "session": "PM",
+        "startTime": "2022-07-07T13:00:00.000Z"
+      }
+    ],
+    "courtCentre": {
+      "id": "1d477ab6-1434-3419-bfa1-daaf6b6e843a",
+      "name": "Crewe Magistrates' Court",
+      "roomId": "966803b5-cd5f-3f99-a02a-db1ba9bb8830",
+      "roomName": "Courtroom 02"
+    },
+    "earliestStartDateTime": "2022-07-07T13:00:00.000Z",
+    "estimatedMinutes": 20,
+    "hearingType": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    },
+    "id": "257c6f54-059d-4f27-8d09-7bca22b22f97",
+    "jurisdictionType": "MAGISTRATES"
+  }
+}

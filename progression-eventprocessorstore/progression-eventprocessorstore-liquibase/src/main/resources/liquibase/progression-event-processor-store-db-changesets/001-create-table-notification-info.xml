@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet author="narender.pal" id="001" logicalFilePath="001-create-table-notification-info.xml">
+
+        <createTable tableName="notification_info">
+            <column name="notification_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="notification_type" type="text"/>
+            <column name="process_name" type="text"/>
+            <column name="payload" type="text"/>
+            <column name="processed_timestamp" type="DATETIME TZ"/>
+            <column name="status" type="text"/>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

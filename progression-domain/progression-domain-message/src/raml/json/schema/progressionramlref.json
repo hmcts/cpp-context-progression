@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progressionramlref.json",
+  "type": "object",
+  "properties": {
+    "changeBoxWorkAssignment": {
+      "$ref": "http://justice.gov.uk/progression/courts/change-boxwork-assignment.json"
+    },
+    "applicationQueryResult": {
+      "$ref": "http://justice.gov.uk/courts/progression/query/progression.query.application"
+    }
+  }
+}

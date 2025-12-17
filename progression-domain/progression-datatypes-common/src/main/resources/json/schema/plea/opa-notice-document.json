@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/opa-notice-document.json",
+  "type": "object",
+  "properties": {
+    "caseUrn": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "middleName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "organisationName": {
+      "type": "string"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/opa-offence.json",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "legislation": {
+            "type": "string"
+          },
+          "wording": {
+            "type": "string"
+          },
+          "offenceDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "reportRestrictions": {
+            "type": "string"
+          },
+          "indicatedPlea": {
+            "type": "string"
+          },
+          "pleaStartDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "nextHearingDate": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date-time"
+          },
+          "nextHearingLocation": {
+            "type": "string"
+          },
+          "decisionDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "allocationDecision": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "firstHearingDate": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date-time"
+    },
+    "court": {
+      "type": "string"
+    },
+    "courtId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtAddress": {
+      "$ref": "http://justice.gov.uk/core/courts/address.json#"
+    },
+    "prosecutor": {
+      "type": "string"
+    },
+    "youth": {
+      "type": "string"
+    },
+    "dob": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "age": {
+      "type": "string"
+    },
+    "defendantAddress": {
+      "$ref": "http://justice.gov.uk/core/courts/address.json#"
+    },
+    "bailStatus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "offences"
+  ],
+  "additionalProperties": false
+}

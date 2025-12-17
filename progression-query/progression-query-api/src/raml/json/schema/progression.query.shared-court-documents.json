@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.shared-court-documents",
+  "type": "object",
+  "properties": {
+    "sharedCourtDocuments": {
+      "type": "array",
+      "items": {
+        "courtDocument":{
+          "type":"object",
+          "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+        }
+      }
+    }
+  },
+  "required": [
+    "sharedCourtDocuments"
+  ]
+}

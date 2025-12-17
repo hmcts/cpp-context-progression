@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-document-send-to-cps.json",
+  "type": "object",
+  "properties": {
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    },
+    "notificationType": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "courtDocument"
+  ],
+  "additionalProperties": false
+}

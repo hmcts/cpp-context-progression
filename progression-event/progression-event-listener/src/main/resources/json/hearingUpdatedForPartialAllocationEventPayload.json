@@ -1,0 +1,19 @@
+{
+  "hearingId": "HEARING_ID",
+  "prosecutionCasesToRemove": [
+    {
+      "caseId": "CASE_ID",
+      "defendantsToRemove": [
+        {
+          "defendantId": "DEFENDANT_ID",
+          "offencesToRemove": [
+            {
+              "offenceId": "OFFENCE_ID"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

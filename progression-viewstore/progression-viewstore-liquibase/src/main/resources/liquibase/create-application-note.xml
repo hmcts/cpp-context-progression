@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-application-note" author="cpp.context.progression">
+        <createTable tableName="application_note">
+            <column name="id" type="UUID"/>
+            <column name="application_id" type="UUID"/>
+            <column name="note" type="TEXT"/>
+            <column name="is_pinned" type="boolean" defaultValue="false"/>
+            <column name="first_name" type="TEXT"/>
+            <column name="last_name" type="TEXT"/>
+            <column name="created_date_time" type="DATETIME"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="id" constraintName="application_note_id_pk"
+                       tableName="application_note"/>
+
+        <sql>
+            create index application_note_idx_desc on application_note (application_id asc, created_date_time desc);
+        </sql>
+
+        <rollback>
+            <dropTable tableName="application_note"/>
+        </rollback>
+
+    </changeSet>
+</databaseChangeLog>

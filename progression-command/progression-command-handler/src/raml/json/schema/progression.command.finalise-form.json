@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/finalise-form.json",
+  "type": "object",
+  "properties": {
+    "courtFormId": {
+      "description": "Court Form Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDateTime": {
+     "type": "string",
+     "format": "date-time"
+   },
+    "finalisedFormData": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "courtFormId",
+    "finalisedFormData"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+	<changeSet id="remove-case-progression-id" author="rtodd">
+
+		<dropForeignKeyConstraint baseTableName="defendant" constraintName="fk_case_progression_id"/>
+
+		<sql>update defendant as def set case_progression_id =
+			(select cpr.caseid from caseprogressiondetail as cpr where cpr.id = def.case_progression_id )
+		</sql>
+
+		<renameColumn tableName="defendant"
+					  oldColumnName="case_progression_id"
+					  newColumnName="caseid"
+		/>
+
+		<addForeignKeyConstraint baseColumnNames="caseid"
+								 baseTableName="defendant"
+								 constraintName="fk_caseid"
+								 referencedColumnNames="caseid"
+								 referencedTableName="caseprogressiondetail"
+								 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+		/>
+		<dropColumn columnName="directionissuedon" tableName="caseprogressiondetail" />
+
+		<dropPrimaryKey tableName="caseprogressiondetail" constraintName="caseprogressiondetail_pkey"/>
+
+		<addPrimaryKey columnNames="caseid" constraintName="caseprogressiondetail_pkey"
+					   tableName="caseprogressiondetail" />
+
+		<dropColumn columnName="id" tableName="caseprogressiondetail" />
+
+
+	</changeSet>
+</databaseChangeLog>

@@ -1,0 +1,790 @@
+{
+  "prosecutionCases": [
+    {
+      "caseMarkers": [
+        {
+          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "markerTypeCode": "WP",
+          "markerTypeDescription": "Prohibited Weapons",
+          "markerTypeid": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+        }
+      ],
+      "civilFees": [
+        {
+          "feeId": "9f110b17-a15d-452f-859f-cb5fd49f604f",
+          "feeType": "INITIAL",
+          "paymentReference": "paymentReferenceOne"
+        }
+      ],
+      "cpsOrganisation": "A01",
+      "defendants": [
+        {
+          "aliases": [
+            {
+              "firstName": "johnny",
+              "lastName": "robber"
+            },
+            {
+              "firstName": "jack the",
+              "lastName": "knife"
+            }
+          ],
+          "associatedPersons": [
+            {
+              "person": {
+                "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "address": {
+                  "address1": "22",
+                  "address2": "Acacia Avenue",
+                  "address3": "Acacia Town",
+                  "address4": "Acacia City",
+                  "address5": "Acacia Country",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "fax": "3425678",
+                  "home": "123456",
+                  "mobile": "+45678910",
+                  "primaryEmail": "harry.kane@spurs.co.uk",
+                  "secondaryEmail": "harry.kane@hotmail.com",
+                  "work": "7891011"
+                },
+                "dateOfBirth": "1995-01-01",
+                "disabilityStatus": "a",
+                "documentationLanguageNeeds": "WELSH",
+                "ethnicity": {
+                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+                },
+                "firstName": "Harry",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "Hindi",
+                "lastName": "Kane",
+                "middleName": "Jack",
+                "nationalInsuranceNumber": "NH222222B",
+                "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "occupation": "Footballer",
+                "occupationCode": "F",
+                "title": "DR"
+              },
+              "role": "parent"
+            }
+          ],
+          "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+          "id": "84495ec8-211c-4c84-b6d4-f1d8964ae139",
+          "masterDefendantId": "84495ec8-211c-4c84-b6d4-f1d8964ae139",
+          "mitigation": "I was not there",
+          "mitigationWelsh": "I was not there in Welsh",
+          "numberOfPreviousConvictionsCited": 5,
+          "offences": [
+            {
+              "arrestDate": "2018-01-01",
+              "chargeDate": "2018-01-01",
+              "civilOffence": {
+                "isExParte": true,
+                "isRespondent": true
+              },
+              "count": 0,
+              "endDate": "2018-01-01",
+              "id": "e6973781-1480-4f60-a47c-86ed4440edb6",
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "amendmentDate": "2000-01-01",
+                  "amendmentReason": "a",
+                  "approvedDate": "2000-01-01",
+                  "category": "FINAL",
+                  "cjsCode": "a",
+                  "courtClerk": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "d20": false,
+                  "delegatedPowers": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "excludedFromResults": false,
+                  "fourEyesApproval": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "isAdjournmentResult": true,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isFinancialResult": true,
+                  "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                      "label": "a",
+                      "promptReference": "a",
+                      "promptSequence": 0.1,
+                      "value": "a",
+                      "welshLabel": "a"
+                    }
+                  ],
+                  "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                  "label": "a",
+                  "lastSharedDateTime": "a",
+                  "lifeDuration": false,
+                  "orderedDate": "2000-01-01",
+                  "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 0.1,
+                  "resultText": "resultText",
+                  "rollUpPrompts": false,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                    "a"
+                  ],
+                  "welshLabel": "a"
+                }
+              ],
+              "notifiedPlea": {
+                "notifiedPleaDate": "2018-04-01",
+                "notifiedPleaValue": "NOTIFIED_GUILTY",
+                "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+              },
+              "offenceCode": "TTH105HY",
+              "offenceDateCode": 4,
+              "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+              "offenceFacts": {
+                "alcoholReadingAmount": 111,
+                "alcoholReadingMethodCode": "2222",
+                "vehicleRegistration": "AA12345"
+              },
+              "offenceTitle": "ROBBERY",
+              "orderIndex": 1,
+              "startDate": "2018-01-01",
+              "wording": "No Travel Card",
+              "wordingWelsh": "No Travel Card In Welsh"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "arrest123",
+            "bailConditions": "bail conditions...",
+            "bailStatus": {
+              "code": "C",
+              "description": "Remanded into Custody",
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+            },
+            "custodyTimeLimit": "2018-01-01",
+            "driverNumber": "AACC12345",
+            "employerOrganisation": {
+              "address": {
+                "address1": "Disney Road",
+                "address2": "Disney Town",
+                "address3": "Disney District",
+                "address4": "Paris",
+                "address5": "France",
+                "postcode": "CR7 0AA"
+              },
+              "contact": {
+                "fax": "a",
+                "primaryEmail": "person@hotmail.com",
+                "secondaryEmail": "associate@hotmail.com",
+                "work": "0207 654 3246 extn 1234"
+              },
+              "incorporationNumber": "Mickeymouse1",
+              "name": "Disneyland Paris"
+            },
+            "employerPayrollReference": "payyou1234",
+            "perceivedBirthYear": 2015,
+            "personDetails": {
+              "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "address": {
+                "address1": "22",
+                "address2": "Acacia Avenue",
+                "address3": "Acacia Town",
+                "address4": "Acacia City",
+                "address5": "Acacia Country",
+                "postcode": "CR7 0AA"
+              },
+              "contact": {
+                "fax": "3425678",
+                "home": "123456",
+                "mobile": "45678910",
+                "primaryEmail": "harry.kanejunior@spurs.co.uk",
+                "secondaryEmail": "harry.kanejunior@hotmail.com",
+                "work": "7891011"
+              },
+              "dateOfBirth": "1988-01-01",
+              "disabilityStatus": "a",
+              "documentationLanguageNeeds": "WELSH",
+              "ethnicity": {
+                "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+              },
+              "firstName": "Harry",
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "Welsh",
+              "lastName": "Kane Junior",
+              "middleName": "Jack",
+              "nationalInsuranceNumber": "NH323232B",
+              "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "occupation": "Kid",
+              "occupationCode": "F",
+              "specificRequirements": "Screen",
+              "title": "DR"
+            },
+            "policeBailConditions": "bail conditions...",
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Remanded into Custody",
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+            }
+          },
+          "pncId": "1234567",
+          "prosecutionAuthorityReference": "TFL12345-ABC",
+          "prosecutionCaseId": "b16827f8-5fad-44d1-bb43-643da018ceb2",
+          "witnessStatement": "he did not do it",
+          "witnessStatementWelsh": "he did not do it in Welsh"
+        }
+      ],
+      "groupId": "c493733f-1a3f-43d9-83b0-f3d8eb1745ac",
+      "id": "b16827f8-5fad-44d1-bb43-643da018ceb2",
+      "initiationCode": "J",
+      "isCivil": true,
+      "isGroupMaster": false,
+      "isGroupMember": true,
+      "originatingOrganisation": "G01FT01AB",
+      "prosecutionCaseIdentifier": {
+        "prosecutionAuthorityCode": "TFL",
+        "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+        "prosecutionAuthorityReference": "a1aded46"
+      },
+      "statementOfFacts": "You did it",
+      "statementOfFactsWelsh": "You did it in Welsh"
+    },
+    {
+      "caseMarkers": [
+        {
+          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "markerTypeCode": "WP",
+          "markerTypeDescription": "Prohibited Weapons",
+          "markerTypeid": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+        }
+      ],
+      "civilFees": [
+        {
+          "feeId": "dae8e9ce-f007-43a1-b37c-153bf59e5008",
+          "feeType": "INITIAL",
+          "paymentReference": "paymentReferenceOne"
+        }
+      ],
+      "cpsOrganisation": "A01",
+      "defendants": [
+        {
+          "aliases": [
+            {
+              "firstName": "johnny",
+              "lastName": "robber"
+            },
+            {
+              "firstName": "jack the",
+              "lastName": "knife"
+            }
+          ],
+          "associatedPersons": [
+            {
+              "person": {
+                "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "address": {
+                  "address1": "22",
+                  "address2": "Acacia Avenue",
+                  "address3": "Acacia Town",
+                  "address4": "Acacia City",
+                  "address5": "Acacia Country",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "fax": "3425678",
+                  "home": "123456",
+                  "mobile": "+45678910",
+                  "primaryEmail": "harry.kane@spurs.co.uk",
+                  "secondaryEmail": "harry.kane@hotmail.com",
+                  "work": "7891011"
+                },
+                "dateOfBirth": "1995-01-01",
+                "disabilityStatus": "a",
+                "documentationLanguageNeeds": "WELSH",
+                "ethnicity": {
+                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+                },
+                "firstName": "Harry",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "Hindi",
+                "lastName": "Kane",
+                "middleName": "Jack",
+                "nationalInsuranceNumber": "NH222222B",
+                "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "occupation": "Footballer",
+                "occupationCode": "F",
+                "title": "DR"
+              },
+              "role": "parent"
+            }
+          ],
+          "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+          "id": "56b9b8ce-8736-40ca-b94c-3bf1d8c8ff54",
+          "masterDefendantId": "56b9b8ce-8736-40ca-b94c-3bf1d8c8ff54",
+          "mitigation": "I was not there",
+          "mitigationWelsh": "I was not there in Welsh",
+          "numberOfPreviousConvictionsCited": 5,
+          "offences": [
+            {
+              "arrestDate": "2018-01-01",
+              "chargeDate": "2018-01-01",
+              "civilOffence": {
+                "isExParte": true,
+                "isRespondent": true
+              },
+              "count": 0,
+              "endDate": "2018-01-01",
+              "id": "dbd2a8f0-8fb4-41ad-897e-a0e5d61f99cc",
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "amendmentDate": "2000-01-01",
+                  "amendmentReason": "a",
+                  "approvedDate": "2000-01-01",
+                  "category": "FINAL",
+                  "cjsCode": "a",
+                  "courtClerk": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "d20": false,
+                  "delegatedPowers": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "excludedFromResults": false,
+                  "fourEyesApproval": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "isAdjournmentResult": true,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isFinancialResult": true,
+                  "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                      "label": "a",
+                      "promptReference": "a",
+                      "promptSequence": 0.1,
+                      "value": "a",
+                      "welshLabel": "a"
+                    }
+                  ],
+                  "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                  "label": "a",
+                  "lastSharedDateTime": "a",
+                  "lifeDuration": false,
+                  "orderedDate": "2000-01-01",
+                  "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 0.1,
+                  "resultText": "resultText",
+                  "rollUpPrompts": false,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                    "a"
+                  ],
+                  "welshLabel": "a"
+                }
+              ],
+              "notifiedPlea": {
+                "notifiedPleaDate": "2018-04-01",
+                "notifiedPleaValue": "NOTIFIED_GUILTY",
+                "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+              },
+              "offenceCode": "TTH105HY",
+              "offenceDateCode": 4,
+              "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+              "offenceFacts": {
+                "alcoholReadingAmount": 111,
+                "alcoholReadingMethodCode": "2222",
+                "vehicleRegistration": "AA12345"
+              },
+              "offenceTitle": "ROBBERY",
+              "orderIndex": 1,
+              "startDate": "2018-01-01",
+              "wording": "No Travel Card",
+              "wordingWelsh": "No Travel Card In Welsh"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "arrest123",
+            "bailConditions": "bail conditions...",
+            "bailStatus": {
+              "code": "C",
+              "description": "Remanded into Custody",
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+            },
+            "custodyTimeLimit": "2018-01-01",
+            "driverNumber": "AACC12345",
+            "employerOrganisation": {
+              "address": {
+                "address1": "Disney Road",
+                "address2": "Disney Town",
+                "address3": "Disney District",
+                "address4": "Paris",
+                "address5": "France",
+                "postcode": "CR7 0AA"
+              },
+              "contact": {
+                "fax": "a",
+                "primaryEmail": "person@hotmail.com",
+                "secondaryEmail": "associate@hotmail.com",
+                "work": "0207 654 3246 extn 1234"
+              },
+              "incorporationNumber": "Mickeymouse1",
+              "name": "Disneyland Paris"
+            },
+            "employerPayrollReference": "payyou1234",
+            "perceivedBirthYear": 2015,
+            "personDetails": {
+              "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "address": {
+                "address1": "22",
+                "address2": "Acacia Avenue",
+                "address3": "Acacia Town",
+                "address4": "Acacia City",
+                "address5": "Acacia Country",
+                "postcode": "CR7 0AA"
+              },
+              "contact": {
+                "fax": "3425678",
+                "home": "123456",
+                "mobile": "45678910",
+                "primaryEmail": "harry.kanejunior@spurs.co.uk",
+                "secondaryEmail": "harry.kanejunior@hotmail.com",
+                "work": "7891011"
+              },
+              "dateOfBirth": "1988-01-01",
+              "disabilityStatus": "a",
+              "documentationLanguageNeeds": "WELSH",
+              "ethnicity": {
+                "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+              },
+              "firstName": "Harry",
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "Welsh",
+              "lastName": "Kane Junior",
+              "middleName": "Jack",
+              "nationalInsuranceNumber": "NH323232B",
+              "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "occupation": "Kid",
+              "occupationCode": "F",
+              "specificRequirements": "Screen",
+              "title": "DR"
+            },
+            "policeBailConditions": "bail conditions...",
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Remanded into Custody",
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+            }
+          },
+          "pncId": "1234567",
+          "prosecutionAuthorityReference": "TFL12345-ABC",
+          "prosecutionCaseId": "44ddb0d0-45c1-41f2-bd17-d6a19223a2d2",
+          "witnessStatement": "he did not do it",
+          "witnessStatementWelsh": "he did not do it in Welsh"
+        }
+      ],
+      "groupId": "c493733f-1a3f-43d9-83b0-f3d8eb1745ac",
+      "id": "44ddb0d0-45c1-41f2-bd17-d6a19223a2d2",
+      "initiationCode": "J",
+      "isCivil": true,
+      "isGroupMaster": false,
+      "isGroupMember": true,
+      "originatingOrganisation": "G01FT01AB",
+      "prosecutionCaseIdentifier": {
+        "prosecutionAuthorityCode": "TFL",
+        "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+        "prosecutionAuthorityReference": "2bdad9c0"
+      },
+      "statementOfFacts": "You did it",
+      "statementOfFactsWelsh": "You did it in Welsh"
+    },
+    {
+      "caseMarkers": [
+        {
+          "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "markerTypeCode": "WP",
+          "markerTypeDescription": "Prohibited Weapons",
+          "markerTypeid": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+        }
+      ],
+      "civilFees": [
+        {
+          "feeId": "f142a233-0df2-4cfd-875e-1ed43ac5c5d3",
+          "feeType": "INITIAL",
+          "paymentReference": "paymentReferenceOne"
+        }
+      ],
+      "cpsOrganisation": "A01",
+      "defendants": [
+        {
+          "aliases": [
+            {
+              "firstName": "johnny",
+              "lastName": "robber"
+            },
+            {
+              "firstName": "jack the",
+              "lastName": "knife"
+            }
+          ],
+          "associatedPersons": [
+            {
+              "person": {
+                "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "address": {
+                  "address1": "22",
+                  "address2": "Acacia Avenue",
+                  "address3": "Acacia Town",
+                  "address4": "Acacia City",
+                  "address5": "Acacia Country",
+                  "postcode": "CR7 0AA"
+                },
+                "contact": {
+                  "fax": "3425678",
+                  "home": "123456",
+                  "mobile": "+45678910",
+                  "primaryEmail": "harry.kane@spurs.co.uk",
+                  "secondaryEmail": "harry.kane@hotmail.com",
+                  "work": "7891011"
+                },
+                "dateOfBirth": "1995-01-01",
+                "disabilityStatus": "a",
+                "documentationLanguageNeeds": "WELSH",
+                "ethnicity": {
+                  "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+                },
+                "firstName": "Harry",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "Hindi",
+                "lastName": "Kane",
+                "middleName": "Jack",
+                "nationalInsuranceNumber": "NH222222B",
+                "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "occupation": "Footballer",
+                "occupationCode": "F",
+                "title": "DR"
+              },
+              "role": "parent"
+            }
+          ],
+          "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+          "id": "12be6b27-3e78-47a5-8d4e-a88a0e28f1b1",
+          "masterDefendantId": "12be6b27-3e78-47a5-8d4e-a88a0e28f1b1",
+          "mitigation": "I was not there",
+          "mitigationWelsh": "I was not there in Welsh",
+          "numberOfPreviousConvictionsCited": 5,
+          "offences": [
+            {
+              "arrestDate": "2018-01-01",
+              "chargeDate": "2018-01-01",
+              "civilOffence": {
+                "isExParte": true,
+                "isRespondent": true
+              },
+              "count": 0,
+              "endDate": "2018-01-01",
+              "id": "ffbe72d1-5c07-4a28-b563-00ed4321a985",
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "amendmentDate": "2000-01-01",
+                  "amendmentReason": "a",
+                  "approvedDate": "2000-01-01",
+                  "category": "FINAL",
+                  "cjsCode": "a",
+                  "courtClerk": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "d20": false,
+                  "delegatedPowers": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "excludedFromResults": false,
+                  "fourEyesApproval": {
+                    "firstName": "a",
+                    "lastName": "a",
+                    "userId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "isAdjournmentResult": true,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": true,
+                  "isFinancialResult": true,
+                  "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                      "label": "a",
+                      "promptReference": "a",
+                      "promptSequence": 0.1,
+                      "value": "a",
+                      "welshLabel": "a"
+                    }
+                  ],
+                  "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                  "label": "a",
+                  "lastSharedDateTime": "a",
+                  "lifeDuration": false,
+                  "orderedDate": "2000-01-01",
+                  "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 0.1,
+                  "resultText": "resultText",
+                  "rollUpPrompts": false,
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [
+                    "a"
+                  ],
+                  "welshLabel": "a"
+                }
+              ],
+              "notifiedPlea": {
+                "notifiedPleaDate": "2018-04-01",
+                "notifiedPleaValue": "NOTIFIED_GUILTY",
+                "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+              },
+              "offenceCode": "TTH105HY",
+              "offenceDateCode": 4,
+              "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+              "offenceFacts": {
+                "alcoholReadingAmount": 111,
+                "alcoholReadingMethodCode": "2222",
+                "vehicleRegistration": "AA12345"
+              },
+              "offenceTitle": "ROBBERY",
+              "orderIndex": 1,
+              "startDate": "2018-01-01",
+              "wording": "No Travel Card",
+              "wordingWelsh": "No Travel Card In Welsh"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "arrest123",
+            "bailConditions": "bail conditions...",
+            "bailStatus": {
+              "code": "C",
+              "description": "Remanded into Custody",
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+            },
+            "custodyTimeLimit": "2018-01-01",
+            "driverNumber": "AACC12345",
+            "employerOrganisation": {
+              "address": {
+                "address1": "Disney Road",
+                "address2": "Disney Town",
+                "address3": "Disney District",
+                "address4": "Paris",
+                "address5": "France",
+                "postcode": "CR7 0AA"
+              },
+              "contact": {
+                "fax": "a",
+                "primaryEmail": "person@hotmail.com",
+                "secondaryEmail": "associate@hotmail.com",
+                "work": "0207 654 3246 extn 1234"
+              },
+              "incorporationNumber": "Mickeymouse1",
+              "name": "Disneyland Paris"
+            },
+            "employerPayrollReference": "payyou1234",
+            "perceivedBirthYear": 2015,
+            "personDetails": {
+              "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "address": {
+                "address1": "22",
+                "address2": "Acacia Avenue",
+                "address3": "Acacia Town",
+                "address4": "Acacia City",
+                "address5": "Acacia Country",
+                "postcode": "CR7 0AA"
+              },
+              "contact": {
+                "fax": "3425678",
+                "home": "123456",
+                "mobile": "45678910",
+                "primaryEmail": "harry.kanejunior@spurs.co.uk",
+                "secondaryEmail": "harry.kanejunior@hotmail.com",
+                "work": "7891011"
+              },
+              "dateOfBirth": "1988-01-01",
+              "disabilityStatus": "a",
+              "documentationLanguageNeeds": "WELSH",
+              "ethnicity": {
+                "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+                "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+              },
+              "firstName": "Harry",
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "Welsh",
+              "lastName": "Kane Junior",
+              "middleName": "Jack",
+              "nationalInsuranceNumber": "NH323232B",
+              "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "occupation": "Kid",
+              "occupationCode": "F",
+              "specificRequirements": "Screen",
+              "title": "DR"
+            },
+            "policeBailConditions": "bail conditions...",
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Remanded into Custody",
+              "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+            }
+          },
+          "pncId": "1234567",
+          "prosecutionAuthorityReference": "TFL12345-ABC",
+          "prosecutionCaseId": "86a0c871-ec40-4155-8e45-73c0d3a7b613",
+          "witnessStatement": "he did not do it",
+          "witnessStatementWelsh": "he did not do it in Welsh"
+        }
+      ],
+      "groupId": "c493733f-1a3f-43d9-83b0-f3d8eb1745ac",
+      "id": "86a0c871-ec40-4155-8e45-73c0d3a7b613",
+      "initiationCode": "J",
+      "isCivil": true,
+      "isGroupMaster": true,
+      "isGroupMember": true,
+      "originatingOrganisation": "G01FT01AB",
+      "prosecutionCaseIdentifier": {
+        "prosecutionAuthorityCode": "TFL",
+        "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+        "prosecutionAuthorityReference": "ba5833d6"
+      },
+      "statementOfFacts": "You did it",
+      "statementOfFactsWelsh": "You did it in Welsh"
+    }
+  ]
+}

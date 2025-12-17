@@ -1,0 +1,20 @@
+{
+  "prosecutors": [
+    {
+      "prosecutor": {
+        "caseId": "859f2fb6-d763-46a0-a8fb-67d241b63ac8",
+        "prosecutionAuthorityId": "5a6df7a7-2a47-471a-82a1-a07bf887a932",
+        "prosecutorId": "9a6df7a7-2a47-471a-82a1-a07bf887a931"
+      }
+    },
+    {
+      "prosecutor": {
+        "caseId": "0be32979-09e0-4292-bcbb-5806211d0dfe",
+        "prosecutionAuthorityId": "e9c198cf-a92c-40a1-8fa3-3f407f276863",
+        "prosecutorId": "7a6df7a7-1a47-471a-82a1-a07bf887a210"
+      }
+    }
+  ]
+}
+
+

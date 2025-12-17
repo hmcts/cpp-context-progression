@@ -1,0 +1,42 @@
+{
+  "modifiedDate": "2018-03-01",
+  "addedOffences": [
+    {
+      "defendantId": "c344c2ad-bee0-4f10-8b38-119b65cede68",
+      "offences": [
+        {
+          "count": 0,
+          "id": "2a142c22-574e-409c-8f75-7871328fe69d",
+          "modeOfTrial": "Summary",
+          "offenceCode": "CA03012",
+          "offenceDefinitionId": "3ebe41c9-666d-4964-aa80-a005d89927a3",
+          "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+          "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+          "orderIndex": 2,
+          "startDate": "2020-06-19",
+          "endDate": "2019-06-29",
+          "wording": "OK",
+          "proceedingsConcluded": false,
+          "dateOfInformation": "2019-09-02",
+          "wordingWelsh": "No Travel Card In Welsh",
+          "statementOfFacts": "You did it",
+          "statementOfFactsWelsh": "You did it in Welsh",
+          "arrestDate": "2018-01-01",
+          "chargeDate": "2018-01-01",
+          "modeOfTrial": "CROWN",
+          "laaApplnReference": {
+            "applicationReference": "LAA REF OFF 1",
+            "statusId": "bbf6f4b1-79cd-45ef-8255-66ae0845a06d",
+            "statusCode": "LAA STATUS CODE OFF 1",
+            "statusDescription": "LAA STATUS DESC OFF 1",
+            "effectiveStartDate": "2019-08-12",
+            "effectiveEndDate": "2019-10-12"
+          }
+        }
+      ],
+      "prosecutionCaseId": "6945f603-2f6d-4094-a9a9-f6f6b3b2f50b"
+    }
+  ]
+}
+
+

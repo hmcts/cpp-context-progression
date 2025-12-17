@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/listing/courts/public.hearing-partially-updated.json",
+  "type": "object",
+  "properties": {
+    "hearingIdToBeUpdated": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCases": {
+      "description": "Prosecution cases to be added in allocated hearing",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "properties": {
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "defendants": {
+            "description": "Defendants to be added in allocated hearing",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "defendantId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "offences": {
+                  "description": "Offences to be added in allocated hearing",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "properties": {
+                      "offenceId": {
+                        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                      }
+                    },
+                    "required": [
+                      "offenceId"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "offences",
+                "defendantId"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "defendants",
+          "caseId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "hearingIdToBeUpdated",
+    "prosecutionCases"
+  ],
+  "additionalProperties": false
+}

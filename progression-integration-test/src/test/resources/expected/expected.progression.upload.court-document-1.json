@@ -1,0 +1,35 @@
+{
+  "documentIndices": [{
+    "caseIds": [],
+    "category": "Applications",
+    "defendantIds": [],
+    "document": {
+      "containsFinancialMeans": false,
+      "courtDocumentId": "%DOCUMENT_ID%",
+      "documentCategory": {
+        "applicationDocument": {
+          "applicationId": "%APPLICATION_ID%"
+        }
+      },
+      "documentTypeDescription": "test document",
+      "documentTypeId": "%DOCUMENT_TYPE_ID%",
+      "documentTypeRBAC": {
+        "deleteUserGroups": ["Crown Court"],
+        "downloadUserGroups": ["Listing Officers", "Legal advisors", "Magistrates"],
+        "readUserGroups": ["Listing Officers", "Legal advisors", "Magistrates"],
+        "uploadUserGroups": ["Listing Officers", "Legal advisors"]
+      },
+      "materials": [{
+        "id": "%MATERIAL_ID%",
+        "name": "immaterial",
+        "uploadDateTime": "2020-04-20T14:01:56.049Z",
+        "userGroups": ["Listing Officers", "Legal advisors", "Magistrates"]
+      }],
+      "mimeType": "mimeType",
+      "name": "test",
+      "seqNum": 10
+    },
+    "hearingIds": [],
+    "type": "test document"
+  }]
+}

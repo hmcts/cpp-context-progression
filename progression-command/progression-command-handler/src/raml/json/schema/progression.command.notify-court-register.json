@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Command schema for notifying court register document to the court center",
+  "id": "http://justice.gov.uk/progression/courts/notify-court-register.json",
+  "type": "object",
+  "properties": {
+    "systemDocGeneratorId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "courtRegisterId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties": false
+}

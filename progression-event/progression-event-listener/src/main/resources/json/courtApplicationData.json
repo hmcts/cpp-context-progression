@@ -1,0 +1,198 @@
+{
+  "applicant": {
+    "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+    "representationOrganisation": {
+      "address": {
+        "address1": "a",
+        "address2": "a",
+        "address3": "a",
+        "address4": "a",
+        "address5": "a",
+        "postcode": "GIR0AA"
+      },
+      "contact": {
+        "fax": "a",
+        "home": " ",
+        "mobile": " ",
+        "primaryEmail": "Rob@abc.com",
+        "secondaryEmail": "rob@abc.com",
+        "work": "a"
+      },
+      "incorporationNumber": "a",
+      "name": "a",
+      "registeredCharityNumber": "a"
+    }
+  },
+  "applicationOutcome": {
+    "applicationId": "8449d43f-aa2f-4c36-ab25-763b86ae3c8a",
+    "applicationOutcomeDate": "2019-01-01",
+    "applicationOutcomeType": {
+      "description": "OUTCOME",
+      "id": "89abc992-c78d-4b3a-93b5-eac694c47db2",
+      "sequence": 0
+    },
+    "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f"
+  },
+  "applicationReceivedDate": "2019-01-01",
+  "applicationReference": "1add158c-1",
+  "applicationStatus": "EJECTED",
+  "courtApplicationPayment": {
+    "paymentReference": "a"
+  },
+  "id": "8449d43f-aa2f-4c36-ab25-763b86ae3c8a",
+  "judicialResults": [
+    {
+      "amendmentDate": "2019-01-01",
+      "amendmentReason": "a",
+      "approvedDate": "2019-01-01",
+      "category": "FINAL",
+      "cjsCode": "a",
+      "courtClerk": {
+        "firstName": "courtClerk a",
+        "lastName": "courtClerk a",
+        "userId": "00000000-0000-0000-0000-000000000000"
+      },
+      "delegatedPowers": {
+        "firstName": "delegatedPowers a",
+        "lastName": "delegatedPowers a",
+        "userId": "00000000-0000-0000-0000-000000000000"
+      },
+      "fourEyesApproval": {
+        "firstName": "fourEyesApproval a",
+        "lastName": "fourEyesApproval a",
+        "userId": "00000000-0000-0000-0000-000000000000"
+      },
+      "isAdjournmentResult": true,
+      "isAvailableForCourtExtract": true,
+      "isConvictedResult": true,
+      "isFinancialResult": true,
+      "judicialResultPrompts": [
+        {
+          "isAvailableForCourtExtract": true,
+          "label": "a",
+          "promptReference": "a",
+          "promptSequence": 0.1,
+          "value": "a",
+          "welshLabel": "a"
+        }
+      ],
+      "label": "a",
+      "lastSharedDateTime": "a",
+      "orderedDate": "2019-01-01",
+      "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+      "rank": 0.1,
+      "usergroups": [
+        "a"
+      ],
+      "welshLabel": "a"
+    }
+  ],
+  "linkedCaseId": "96b77634-2a2c-4c01-826e-39f25ede7727",
+  "outOfTimeReasons": "a",
+  "removalReason": "Legal",
+  "respondents": [
+    {
+      "applicationResponse": {
+        "applicationId": "8449d43f-aa2f-4c36-ab25-763b86ae3c8a",
+        "applicationResponseDate": "2019-01-01",
+        "applicationResponseType": {
+          "description": "Admitted",
+          "id": "6c6dfbfa-c90a-4ef7-ac47-2e12e0026f21",
+          "sequence": 0
+        },
+        "originatingHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f"
+      },
+      "partyDetails": {
+        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+        "organisation": {
+          "address": {
+            "address1": "a1",
+            "address2": "a2",
+            "address3": "a3",
+            "address4": "a4",
+            "address5": "a5",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "fax": "a",
+            "home": "00999900990",
+            "mobile": "00999900990",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "work": "00999900990"
+          },
+          "incorporationNumber": "a",
+          "name": "a",
+          "registeredCharityNumber": "a"
+        },
+        "personDetails": {
+          "additionalNationalityCode": "a",
+          "additionalNationalityDescription": "a",
+          "additionalNationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "address": {
+            "address1": "a1",
+            "address2": "a2",
+            "address3": "a3",
+            "address4": "a4",
+            "address5": "a5",
+            "postcode": "GIR0AA"
+          },
+          "contact": {
+            "fax": "fax",
+            "home": "00999900990",
+            "mobile": "00999900990",
+            "primaryEmail": "!.!@00.00",
+            "secondaryEmail": "!.!@00.00",
+            "work": "00999900990"
+          },
+          "dateOfBirth": "2000-01-01",
+          "disabilityStatus": "a",
+          "documentationLanguageNeeds": "ENGLISH",
+          "ethnicity": {
+            "observedEthnicityCode": "a",
+            "observedEthnicityDescription": "a",
+            "observedEthnicityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "selfDefinedEthnicityCode": "a",
+            "selfDefinedEthnicityDescription": "a",
+            "selfDefinedEthnicityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+          },
+          "firstName": "a",
+          "gender": "MALE",
+          "interpreterLanguageNeeds": "a",
+          "lastName": "a",
+          "middleName": "a",
+          "nationalInsuranceNumber": "NH111111B",
+          "nationalityCode": "a",
+          "nationalityDescription": "a",
+          "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "occupation": "a",
+          "occupationCode": "a",
+          "personMarkers": [
+            {
+              "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+              "markerTypeCode": "a",
+              "markerTypeDescription": "a",
+              "markerTypeid": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+            }
+          ],
+          "specificRequirements": "a",
+          "title": "MR"
+        },
+        "synonym": "a"
+      }
+    }
+  ],
+  "type": {
+    "applicantSynonym": "a",
+    "applicationCategory": "a",
+    "applicationCode": "a",
+    "applicationJurisdictionType": "MAGISTRATES",
+    "applicationLegislation": "a",
+    "applicationLegislationWelsh": "a",
+    "applicationType": "a",
+    "applicationTypeWelsh": "a",
+    "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+    "linkType": "STANDALONE",
+    "respondentSynonym": "a"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-case-added-to-crown-court.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "courtCentreId": {
+      "type": "string"
+    }
+
+  },
+  "required": [
+    "caseId",
+    "courtCentreId"
+  ]
+}

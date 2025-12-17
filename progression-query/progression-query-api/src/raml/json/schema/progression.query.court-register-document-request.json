@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Response schema for court register document request",
+  "id": "http://justice.gov.uk/progression/courts/court-register/court-register-document-request.json",
+  "type": "object",
+  "properties": {
+    "courtRegisterDocumentRequests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "courtCentreId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "requestDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "payload": {
+            "$ref": "http://justice.gov.uk/core/courts/courtRegisterDocument/courtRegisterDocumentRequest.json"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

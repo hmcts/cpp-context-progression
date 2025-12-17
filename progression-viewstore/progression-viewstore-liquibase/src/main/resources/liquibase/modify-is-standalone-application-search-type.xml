@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+	<changeSet id="modify-is-standalone-application-search-type" author="cpp.context.progression">
+		<modifyDataType tableName="search_prosecution_case" newDataType="BPCHAR(1)" columnName="is_standalone_application"/>
+	</changeSet>
+</databaseChangeLog>

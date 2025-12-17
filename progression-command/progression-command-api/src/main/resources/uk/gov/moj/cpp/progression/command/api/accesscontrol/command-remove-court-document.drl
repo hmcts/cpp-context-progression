@@ -1,0 +1,26 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - remove court document"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.remove-court-document");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "Second Line Support", "Court Administrators", "NCES"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - remove court document link by bdf"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.remove-court-document-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+
+

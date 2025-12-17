@@ -1,0 +1,355 @@
+{
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+          "prosecutingAuthority": {
+            "prosecutionAuthorityCode": "TVL",
+            "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962"
+          },
+          "summonsRequired" : false,
+          "notificationRequired": false
+        },
+        "subject": {
+          "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+          "summonsRequired": false,
+          "notificationRequired": true
+        },
+        "applicationReceivedDate": "2020-06-01",
+        "applicationReference": "APPLICATION_REF",
+        "applicationStatus": "FINALISED",
+        "id": "APPLICATION_ID",
+        "judicialResults": [
+          {
+            "alwaysPublished": false,
+            "category": "ANCILLARY",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "judicialResultId": "a3dde5d1-04bc-4fbe-b677-67dc5c62727b",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                "label": "Fixed Date",
+                "promptReference": "fixedDate",
+                "promptSequence": 200,
+                "type": "DATE",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "02 Jul 2020",
+                "welshLabel": ""
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "dfac671c-5b85-42a1-bb66-9aeee388a08d",
+                "label": "Time of hearing",
+                "promptReference": "timeOfHearing",
+                "promptSequence": 400,
+                "type": "TIME",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "15:07",
+                "welshLabel": ""
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "7746831a-d5dd-4fa8-ac13-528573948c8a",
+                "label": "Courthouse name",
+                "promptReference": "HCHOUSE",
+                "promptSequence": 500,
+                "type": "TXT",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "Liverpool Crown Court",
+                "welshLabel": ""
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "5f507153-6dc9-4ec0-94db-c821eff333f1",
+                "label": "Courtroom",
+                "promptReference": "HCROOM",
+                "promptSequence": 600,
+                "type": "INT",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "Crown Court 5-3",
+                "welshLabel": ""
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                "label": "Estimated duration",
+                "promptReference": "HEST",
+                "promptSequence": 700,
+                "type": "INT",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "20 Minutes",
+                "welshLabel": ""
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                "label": "Hearing type",
+                "promptReference": "HTYPE",
+                "promptSequence": 700,
+                "type": "TXT",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "Sentence",
+                "welshLabel": ""
+              },
+              {
+                "courtExtract": "N",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "a0ec3e68-5210-422f-9959-73c1c7ce495a",
+                "label": "Existing Hearing Id",
+                "promptReference": "existingHearingId",
+                "promptSequence": 1000,
+                "type": "TXT",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "efc8fdc7-a8d5-4ccf-bccd-dcdf20bd934e",
+                "welshLabel": ""
+              },
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "9403f0d7-90b5-4377-84b4-f06a77811362",
+                "label": "Remand Status",
+                "promptReference": "remandStatus",
+                "promptSequence": 900,
+                "type": "FIXL",
+                "usergroups": [
+                  "Court Clerks",
+                  "Legal Advisers"
+                ],
+                "value": "Unconditional Bail",
+                "welshLabel": ""
+              }
+            ],
+            "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+            "label": "Next hearing in Crown Court",
+            "lastSharedDateTime": "2020-06-27",
+            "lifeDuration": false,
+            "nextHearing": {
+              "adjournmentReason": "",
+              "bookingReference": "fbed768b-ee95-4434-87c8-e81cbc8d24c7",
+              "courtCentre": {
+                "address": {
+                  "address1": "QEII Law Courts",
+                  "address2": "Derby Square",
+                  "address3": "Liverpool",
+                  "postcode": "L2 1XA"
+                },
+                "courtHearingLocation": "C05LV00",
+                "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                "name": "Liverpool Crown Court",
+                "psaCode": 1810,
+                "roomId": "fbe3ca1a-6be6-3bd5-86e8-fc879aa5e3e7",
+                "roomName": "Crown Court 5-3",
+                "welshName": "Llys Y Goron Lerpwl"
+              },
+              "estimatedMinutes": 20,
+              "jurisdictionType": "CROWN",
+              "listedStartDateTime": "2020-07-02T14:07:00.000Z",
+              "type": {
+                "description": "SentenceApp4noBookingRef",
+                "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+              },
+              "existingHearingId": "ADJOURNED_ID"
+            },
+            "orderedDate": "2020-06-27",
+            "orderedHearingId": "1de482e8-9656-4bcc-938d-95345def0b8a",
+            "postHearingCustodyStatus": "A",
+            "publishedAsAPrompt": true,
+            "rollUpPrompts": false,
+            "publishedForNows": false,
+            "rank": 2400,
+            "resultDefinitionGroup": "Next hearing",
+            "resultText": "Next hearing in Crown Court\nFixed Date 02 Jul 2020\nTime of hearing 15:07\nCourthouse name Liverpool Crown Court\nCourtroom Crown Court 5-3\nEstimated duration 20 Minutes\nHearing type Sentence\nExisting Hearing Id efc8fdc7-a8d5-4ccf-bccd-dcdf20bd934e\nRemand Status Unconditional Bail",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": []
+          }
+        ],
+        "respondents": [
+          {
+                "id": "DEFENDANT_ID",
+            "summonsRequired" : false,
+            "notificationRequired" : false
+          }
+        ],
+        "type": {
+          "categoryCode": "VP",
+          "jurisdiction": "MAGISTRATES",
+          "legislation": "In accordance with Section 48(7) of the Local Government (Miscellaneous Provisions) Act 1976.",
+          "type": "Appeal against conditions attached to a private hire licence",
+          "id": "2c9bff82-fe9c-315f-b41a-44923d5d8669",
+          "appealFlag": false,
+          "applicantAppellantFlag" : false,
+          "linkType": "STANDALONE",
+          "summonsTemplateType" : "GENERIC_APPLICATION",
+          "breachType" : "NOT_APPLICABLE",
+          "pleaApplicableFlag" : false,
+          "commrOfOathFlag" : false,
+          "courtOfAppealFlag" : false,
+          "courtExtractAvlFlag" : false,
+          "prosecutorThirdPartyFlag" : false,
+          "spiOutApplicableFlag" : false,
+          "offenceActiveOrder" : "NOT_APPLICABLE"
+        },
+        "courtApplicationCases" : [
+          {
+            "prosecutionCaseId": "CASE_ID",
+            "isSJP" : false,
+            "caseStatus": "ACTIVE",
+            "prosecutionCaseIdentifier" : {
+              "prosecutionAuthorityReference" : "APPLICATION_REF",
+              "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+              "prosecutionAuthorityCode": "TFL"
+            }
+          }
+        ]
+      }
+    ],
+    "id": "HEARING_ID",
+    "type": {
+      "id": "01234567-1234-1234-1234-123456789123",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "a",
+    "hearingLanguage": "ENGLISH",
+    "hearingDays": [
+      {
+        "sittingDay": "2015-01-12T05:27:17.210Z",
+        "listingSequence": 0,
+        "listedDurationMinutes": 0
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME",
+      "welshName": "a",
+      "roomId": "00000000-0000-0000-0000-000000000000",
+      "roomName": "a",
+      "welshRoomName": "a"
+    },
+    "judiciary": [
+      {
+        "judicialId": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType": "RECORDER"
+        },
+        "isDeputy": true,
+        "isBenchChairman": true
+      }
+    ],
+    "hasSharedResults": true,
+    "defendantReferralReasons": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "description": "a",
+        "defendantId": "00000000-0000-0000-0000-000000000000"
+      }
+    ],
+    "prosecutionCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defenceCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "defendants": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defendantAttendance": [
+      {
+        "defendantId": "00000000-0000-0000-0000-000000000000",
+        "attendanceDays": [
+          {
+            "day": "2018-01-01",
+            "attendanceType": "IN_PERSON"
+          }
+        ]
+      }
+    ],
+    "hearingCaseNotes": [
+      {
+        "id": "a4cd3c1d-be10-410d-a50d-e260cdaf6d19",
+        "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+        "courtClerk": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "noteDateTime": "2016-06-01T10:00:00Z",
+        "noteType": "HMCTS",
+        "note": "a"
+      }
+    ]
+  },
+  "sharedTime": "2016-06-01T10:00:00Z"
+}

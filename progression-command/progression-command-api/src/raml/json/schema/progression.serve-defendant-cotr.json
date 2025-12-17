@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/serve-defendant-cotr.json",
+  "type": "object",
+  "properties": {
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "isWelshForm": {
+      "type": "boolean"
+    },
+    "correctEstimate": {
+      "type": "boolean"
+    },
+    "defendantFormData": {
+      "type": "string"
+    },
+    "pdfContent": {
+      "$ref": "http://justice.gov.uk/core/courts/cotr-pdf-content.json"
+    },
+    "servedByName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "defendantId",
+    "defendantFormData"
+  ],
+  "additionalProperties": false
+}

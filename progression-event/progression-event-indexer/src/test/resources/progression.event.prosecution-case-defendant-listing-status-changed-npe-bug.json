@@ -1,0 +1,188 @@
+{
+  "boxWorkTaskStatus": "COMPLETE",
+  "boxWorkAssignedUserId": "207f6f5e-7a47-4a78-83aa-871182501be6",
+  "hearing": {
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "d22ce92b-e54e-4c0c-9d05-a895fd115cc6",
+          "personDetails": {
+            "address": {
+              "address1": "12th Floor",
+              "address2": "Southern House",
+              "address3": "Wellesley Grove",
+              "address4": "Croydon",
+              "address5": "Surrey",
+              "postcode": "CR0 1WX"
+            },
+            "contact": {
+              "home": "0123434567",
+              "mobile": "0765434567",
+              "primaryEmail": "david.stone@application.org"
+            },
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "Natalie",
+            "gender": "NOT_SPECIFIED",
+            "interpreterLanguageNeeds": "No",
+            "lastName": "Metz",
+            "middleName": "Mel",
+            "specificRequirements": "Wheelchair access required"
+          },
+          "representationOrganisation": {
+            "address": {
+              "address1": "12th Floor",
+              "address2": "Southern House",
+              "address3": "Wellesley Grove",
+              "address4": "East Croydon",
+              "address5": "Surrey",
+              "postcode": "CR0 1WX"
+            },
+            "contact": {
+              "home": "01234987654",
+              "mobile": "07898765438",
+              "primaryEmail": "steven.sole@application.org"
+            },
+            "name": "Steven C Sole"
+          }
+        },
+        "applicationParticulars": "testing particulars",
+        "applicationReceivedDate": "2020-02-11",
+        "applicationReference": "G7QBTS7XDH",
+        "applicationStatus": "FINALISED",
+        "applicationExternalCreatorType": "PROSECUTOR",
+        "applicationDecisionSoughtByDate": "2019-06-25",
+        "courtApplicationPayment": {
+          "isFeeExempt": false,
+          "isFeePaid": true,
+          "isFeeUndertakingAttached": true,
+          "paymentReference": "payment reference3456789"
+        },
+        "dueDate": "2020-02-13",
+        "id": "8a4d41b7-2cbf-4060-b729-8f1f44091666",
+        "judicialResults": [
+          {
+            "category": "FINAL",
+            "cjsCode": "1017",
+            "courtClerk": {
+              "firstName": "Emma",
+              "lastName": "Cleaner",
+              "userId": "676ae4c5-fdd9-469e-a528-dd5b12c90287"
+            },
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": true,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "judicialResultId": "ce32df50-4a1a-4e24-89d6-38e7750c164a",
+            "label": "Absolute discharge",
+            "lastSharedDateTime": "2020-02-13",
+            "orderedDate": "2020-02-13",
+            "orderedHearingId": "bc306de9-f63d-4d6b-bea4-e7e531ef2d1d",
+            "rank": 7400,
+            "usergroups": [
+              "Court Clerks",
+              "Legal Advisers"
+            ],
+            "welshLabel": "Rhyddhad diamod"
+          }
+        ],
+        "outOfTimeReasons": "out of time reason testing",
+        "respondents": [
+          {
+            "partyDetails": {
+              "id": "0a983486-e810-47fa-965d-86a71d771c4c",
+              "personDetails": {
+                "address": {
+                  "address1": "3rd Floor",
+                  "address2": "Sourthern House",
+                  "address3": "Wellesley Grove",
+                  "address4": "East Croydon",
+                  "address5": "Surrey",
+                  "postcode": "CR0 1WX"
+                },
+                "contact": {
+                  "home": "01234987654",
+                  "mobile": "09823456769",
+                  "primaryEmail": "richard.bloye@respondant.org"
+                },
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Dorothy",
+                "gender": "NOT_SPECIFIED",
+                "interpreterLanguageNeeds": "No",
+                "lastName": "Gulgowski",
+                "middleName": "De",
+                "specificRequirements": "Wheelchair"
+              },
+              "representationOrganisation": {
+                "address": {
+                  "address1": "11th Floor",
+                  "address2": "Moj Building",
+                  "address3": "Wellesley Grove",
+                  "address4": "Croydon",
+                  "address5": "Surrey",
+                  "postcode": "CR0 1WX"
+                },
+                "contact": {
+                  "home": "01238765434",
+                  "mobile": "09876545678",
+                  "primaryEmail": "chris.dunn@respondant.org"
+                },
+                "name": "Chris Dunn"
+              }
+            }
+          }
+        ],
+        "type": {
+          "categoryCode": "VP",
+          "applicationCode": "PC02520",
+          "applicationJurisdictionType": "MAGISTRATES",
+          "legislation": "Pursuant to section 303Z1 of the Proceeds of Crime Act 2002.",
+          "applicationSummonsRecipientType": "RESPONDENT",
+          "applicationSummonsTemplateType": "GENERIC_SUMMONS",
+          "type": "Application for an account freezing order",
+          "id": "3958e85e-104b-34c2-ac96-bbf4f9769da2",
+          "isAppealApplication": false,
+          "isBreachApplication": false,
+          "linkType": "STANDALONE",
+          "respondentSynonym": "respondent"
+        }
+      }
+    ],
+    "courtCentre": {
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "name": "Lavender Hill Magistrates' Court"
+    },
+    "hasSharedResults": true,
+    "judiciary": [
+      {
+        "judicialId": "66e93f60-5a48-40d5-b406-37a53ed6d5c2",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder1"
+        }
+      },
+      {
+        "judicialId": "79a91058-2235-42ec-a339-860d8f46ab58",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder"
+        }
+      }
+    ],
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 10,
+        "listingSequence":2,
+        "sittingDay": "2020-02-13T11:40:00.000Z"
+      }
+    ],
+    "id": "bc306de9-f63d-4d6b-bea4-e7e531ef2d1d",
+    "isBoxHearing": true,
+    "jurisdictionType": "MAGISTRATES",
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    }
+  },
+  "hearingListingStatus": "HEARING_RESULTED"
+}

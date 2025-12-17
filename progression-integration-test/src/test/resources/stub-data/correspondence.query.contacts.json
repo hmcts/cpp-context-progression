@@ -1,0 +1,25 @@
+{
+  "contacts": [
+    {
+      "caseContext": "HMCTS",
+      "caseId": "CASE_ID",
+      "contactId": "9549d390-74e2-4aef-a2e8-b4eec90363e9",
+      "contactPersonName": "contactPersonName",
+      "primaryEmail": "RANDOM_EMAIL",
+      "contactType": {
+        "contactTypeMapping": "Defence advocate",
+        "id": "18502c3f-ee7e-4549-9934-318644c41b01"
+      },
+      "isAdhocContact": true,
+      "address": {
+        "address1": "address1",
+        "address2": "address2",
+        "postcode": "postcode"
+      },
+      "defendantIds": [
+        "DEFENDANT_ID_1",
+        "DEFENDANT_ID_2"
+      ]
+    }
+  ]
+}

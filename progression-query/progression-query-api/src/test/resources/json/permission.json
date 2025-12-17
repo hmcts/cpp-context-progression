@@ -1,0 +1,22 @@
+{
+  "permissions": [
+    {
+      "permissionId": "5b6f843e-d639-40b3-8611-8015f3a34758",
+      "description": "a test 1 permission",
+      "object" :"defenceClientId",
+      "action" : "View",
+      "source": "4a18bec5-ab1a-410a-9889-885694356401",
+      "target": "faee972d-f9dd-43d3-9f41-8acc3b908d09",
+      "active": "true"
+    },
+    {
+      "permissionId": "5b6f843e-d639-40b3-8611-8015f3a34758",
+      "description": "a test 1 permission",
+      "object" :"defenceClientId",
+      "action" : "View",
+      "source": "4a18bec5-ab1a-410a-9889-885694356402",
+      "target": "faee972d-f9dd-43d3-9f41-8acc3b908d09",
+      "active": "true"
+    }
+  ]
+}

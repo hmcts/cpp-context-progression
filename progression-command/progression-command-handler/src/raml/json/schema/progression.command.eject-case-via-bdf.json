@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/command.eject-case-via-bdf.json",
+  "type": "object",
+  "description": "update case or application status as ejected ",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "removalReason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "prosecutionCaseId",
+    "removalReason"
+  ],
+  "additionalProperties": false
+}

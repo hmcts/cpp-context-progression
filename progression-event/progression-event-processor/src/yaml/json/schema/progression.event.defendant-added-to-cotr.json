@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/event/progression.event.defendant-added-to-cotr.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantNumber": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "cotrId",
+    "hearingId",
+    "defendantId",
+    "defendantNumber"
+  ],
+  "additionalProperties": false
+}

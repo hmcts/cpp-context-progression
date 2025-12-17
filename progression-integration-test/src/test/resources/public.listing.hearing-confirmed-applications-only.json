@@ -1,0 +1,36 @@
+{
+  "confirmedHearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "description": "Sentence",
+      "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "hearingDays": [
+      {
+        "sittingDay": "2018-11-12T09:27:12Z",
+        "listedDurationMinutes": 0,
+        "listingSequence": 0
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "judiciary": [
+      {
+        "isBenchChairman": false,
+        "isDeputy": false,
+        "judicialId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+        "judicialRoleType":{
+          "judicialRoleTypeId":"433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType":"MAGISTRATE"
+        }
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME"
+    },
+    "courtApplicationIds": [
+        "APPLICATION_ID"
+    ]
+  }
+}

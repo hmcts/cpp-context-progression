@@ -1,0 +1,10 @@
+{
+  "prosecutionCaseId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+  "hearingId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+  "caseMarkers": [{
+    "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+    "markerTypeid": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+    "markerTypeCode": "WP",
+    "markerTypeDescription": "Prohibited Weapons"
+  }]
+}

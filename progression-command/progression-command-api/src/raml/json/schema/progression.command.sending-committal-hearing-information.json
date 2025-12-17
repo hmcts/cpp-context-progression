@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "fromCourtCentre": {
+      "type": "string"
+    },
+    "sendingCommittalDate": {
+      "type": "string"
+    },
+    "courtCenterID": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "fromCourtCentre",
+    "sendingCommittalDate"
+  ]
+}

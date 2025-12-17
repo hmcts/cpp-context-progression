@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/add-court-document.json",
+  "type": "object",
+  "properties": {
+    "courtDocument": {
+      "$ref": "#/definitions/courtDocument"
+    }
+  },
+  "required": [
+    "courtDocument"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "material": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "receivedDateTime":{
+          "type":"string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "courtDocument": {
+      "type": "object",
+      "properties": {
+        "courtDocumentId": {
+          "description": "The technical identifier of a document",
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "documentCategory": {
+          "type": "object",
+          "properties": {
+            "caseDocument": {
+              "type": "object",
+              "properties": {
+                "prosecutionCaseId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                }
+              },
+              "required": [
+                "prosecutionCaseId"
+              ],
+              "additionalProperties": false
+            },
+            "applicationDocument": {
+              "type": "object",
+              "properties": {
+                "applicationId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "prosecutionCaseId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "defendants": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                  }
+                }
+              },
+              "required": [
+                "applicationId"
+              ],
+              "additionalProperties": false
+            },
+            "defendantDocument": {
+              "type": "object",
+              "properties": {
+                "prosecutionCaseId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "defendants": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                  }
+                }
+              },
+              "required": [
+                "defendants",
+                "prosecutionCaseId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "caseDocument"
+              ]
+            },
+            {
+              "required": [
+                "applicationDocument"
+              ]
+            },
+            {
+              "required": [
+                "defendantDocument"
+              ]
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "documentTypeId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "documentTypeDescription": {
+          "type": "string"
+        },
+        "materials": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/material"
+          }
+        },
+        "containsFinancialMeans": {
+          "type": "boolean"
+        },
+        "sendToCps": {
+          "type": "boolean"
+        },
+        "isCpsCase": {
+          "type": "boolean"
+        },
+        "isUnbundledDocument": {
+          "type": "boolean",
+          "default": false
+        },
+        "notificationType": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "courtDocumentId",
+        "documentCategory",
+        "name",
+        "documentTypeId",
+        "materials",
+        "containsFinancialMeans"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

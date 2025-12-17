@@ -1,0 +1,15 @@
+{
+  "caseNotes": [
+    {
+      "id" : "08744ce7-5684-4137-a896-67ccf94a1728",
+      "note": "This is a note",
+      "author": {
+        "firstName": "Bob",
+        "lastName": "Marley"
+      },
+      "createdDateTime": "2020-02-03T17:47:52.067Z",
+      "isPinned": true
+    }
+  ]
+}
+

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="add-print-status-table" author="beyond"
+               logicalFilePath="liquibase/changelog.xml">
+        <createTable tableName="print_status">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="case_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notification_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="material_id" type="uuid"/>
+            <column name="status" type="varchar(100)"/>
+            <column name="updated" type="datetime"/>
+            <column name="error_message" type="varchar(1000)"/>
+            <column name="status_code" type="integer"/>
+        </createTable>
+
+        <createIndex tableName="print_status"
+                     indexName="print_status_case_id_idx">
+            <column name="case_id"/>
+        </createIndex>
+
+        <createIndex tableName="print_status"
+                     indexName="print_status_notification_id_idx">
+            <column name="notification_id"/>
+        </createIndex>
+
+        <createIndex tableName="print_status"
+                     indexName="print_status_status_idx">
+            <column name="status"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="print_status"/>
+        </rollback>
+
+    </changeSet>
+</databaseChangeLog>

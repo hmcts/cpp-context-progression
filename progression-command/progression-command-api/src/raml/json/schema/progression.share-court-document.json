@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/share-court-document.json",
+  "type": "object",
+  "properties": {
+    "shareCourtDocumentDetails": {
+      "type": "object",
+      "properties": {
+        "courtDocumentId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "hearingId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "userGroupId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "userId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "courtDocumentId",
+            "userGroupId"
+          ]
+        },
+        {
+          "required": [
+            "courtDocumentId",
+            "userId"
+          ]
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

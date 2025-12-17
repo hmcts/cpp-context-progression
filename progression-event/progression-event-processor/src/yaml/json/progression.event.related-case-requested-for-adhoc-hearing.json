@@ -1,0 +1,227 @@
+{
+  "listNewHearing": {
+    "courtCentre": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "name": "Lavender Hill Magistrate's Court"
+    },
+    "earliestStartDateTime": "2024-05-30T18:32:04.238Z",
+    "estimatedMinutes": 20,
+    "hearingType": {
+      "description": "sentencing",
+      "id": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+    },
+    "id": "c5e6552c-82ec-4572-b88c-2e0a4be57c17",
+    "jurisdictionType": "MAGISTRATES",
+    "listDefendantRequests": [
+      {
+        "defendantId": "d213ddf5-07c4-45ff-8e43-6b533596541a",
+        "defendantOffences": [
+          "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+        ],
+        "prosecutionCaseId": "904ce37b-7c21-400c-81ba-df9658c05564"
+      }
+    ]
+  },
+  "prosecutionCase": {
+    "caseStatus": "SJP_REFERRAL",
+    "defendants": [
+      {
+        "associatedPersons": [
+          {
+            "person": {
+              "additionalNationalityCode": "GBR",
+              "additionalNationalityDescription": "British",
+              "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "address": {
+                "address1": "22",
+                "address2": "Acacia Avenue",
+                "address3": "Acacia Town",
+                "address4": "Acacia City",
+                "address5": "Acacia Country",
+                "postcode": "CR7 0AA"
+              },
+              "contact": {
+                "fax": "3425678",
+                "home": "123456",
+                "mobile": "+45678910",
+                "primaryEmail": "harry.kane@spurs.co.uk",
+                "secondaryEmail": "harry.kane@hotmail.com",
+                "work": "7891011"
+              },
+              "dateOfBirth": "1995-01-01",
+              "disabilityStatus": "a",
+              "documentationLanguageNeeds": "WELSH",
+              "firstName": "Harry",
+              "gender": "MALE",
+              "interpreterLanguageNeeds": "Hindi",
+              "lastName": "Kane",
+              "middleName": "Jack",
+              "nationalInsuranceNumber": "NH222222B",
+              "nationalityCode": "GBR",
+              "nationalityDescription": "British",
+              "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "occupation": "Footballer",
+              "occupationCode": "F",
+              "title": "DR"
+            },
+            "role": "parent"
+          }
+        ],
+        "courtProceedingsInitiated": "2024-05-28T13:15:49.859Z",
+        "defenceOrganisation": {
+          "name": "defence Organisation abc"
+        },
+        "id": "d213ddf5-07c4-45ff-8e43-6b533596541a",
+        "masterDefendantId": "d213ddf5-07c4-45ff-8e43-6b533596541a",
+        "mitigation": "I was not there",
+        "mitigationWelsh": "I was not there in Welsh",
+        "numberOfPreviousConvictionsCited": 5,
+        "offences": [
+          {
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "count": 0,
+            "dvlaOffenceCode": "ABC123",
+            "endDate": "2018-01-01",
+            "endorsableFlag": true,
+            "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+            "maxPenalty": "Max Penalty",
+            "modeOfTrial": "Summary",
+            "notifiedPlea": {
+              "notifiedPleaDate": "2018-04-01",
+              "notifiedPleaValue": "NOTIFIED_GUILTY",
+              "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+            },
+            "offenceCode": "TTH105HY",
+            "offenceDateCode": 4,
+            "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+            "offenceFacts": {
+              "alcoholReadingAmount": 111,
+              "alcoholReadingMethodCode": "2222",
+              "vehicleRegistration": "AA12345"
+            },
+            "offenceLegislation": "ABCDE",
+            "offenceLegislationWelsh": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "offenceTitle": "ABCDE",
+            "offenceTitleWelsh": "ABCDEFGHIJKLMNOP",
+            "orderIndex": 1,
+            "reportingRestrictions": [
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "2021-08-28"
+              }
+            ],
+            "startDate": "2018-01-01",
+            "wording": "No Travel Card",
+            "wordingWelsh": "No Travel Card In Welsh"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "arrest123",
+          "bailStatus": {
+            "code": "C",
+            "description": "Remanded into Custody",
+            "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+          },
+          "custodyTimeLimit": "2018-01-01",
+          "driverNumber": "AACC12345",
+          "employerOrganisation": {
+            "address": {
+              "address1": "Disney Road",
+              "address2": "Disney Town",
+              "address3": "Disney District",
+              "address4": "Paris",
+              "address5": "France",
+              "postcode": "CR7 0AA"
+            },
+            "contact": {
+              "fax": "a",
+              "primaryEmail": "person@hotmail.com",
+              "secondaryEmail": "associate@hotmail.com",
+              "work": "0207 654 3246 extn 1234"
+            },
+            "incorporationNumber": "Mickeymouse1",
+            "name": "Disneyland Paris"
+          },
+          "employerPayrollReference": "payyou1234",
+          "perceivedBirthYear": 2015,
+          "personDetails": {
+            "additionalNationalityCode": "GBR",
+            "additionalNationalityDescription": "British",
+            "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+            "address": {
+              "address1": "22",
+              "address2": "Acacia Avenue",
+              "address3": "Acacia Town",
+              "address4": "Acacia City",
+              "address5": "Acacia Country",
+              "postcode": "CR7 0AA"
+            },
+            "contact": {
+              "fax": "3425678",
+              "home": "123456",
+              "mobile": "45678910",
+              "primaryEmail": "harry.kanejunior@spurs.co.uk",
+              "secondaryEmail": "harry.kanejunior@hotmail.com",
+              "work": "7891011"
+            },
+            "dateOfBirth": "1994-05-28",
+            "disabilityStatus": "a",
+            "documentationLanguageNeeds": "WELSH",
+            "ethnicity": {
+              "observedEthnicityCode": "W2",
+              "observedEthnicityDescription": "Irish",
+              "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "selfDefinedEthnicityCode": "W2",
+              "selfDefinedEthnicityDescription": "Irish",
+              "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+            },
+            "firstName": "Harry",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "WELSH",
+            "interpreterLanguageNeeds": "Welsh",
+            "lastName": "Kane Junior",
+            "middleName": "Jack",
+            "nationalInsuranceNumber": "NH323232B",
+            "nationalityCode": "GBR",
+            "nationalityDescription": "British",
+            "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+            "occupation": "Kid",
+            "occupationCode": "F",
+            "specificRequirements": "Screen",
+            "title": "DR"
+          }
+        },
+        "pncId": "1234567",
+        "prosecutionAuthorityReference": "TFL12345-ABC",
+        "prosecutionCaseId": "904ce37b-7c21-400c-81ba-df9658c05564",
+        "witnessStatement": "he did not do it",
+        "witnessStatementWelsh": "he did not do it in Welsh"
+      }
+    ],
+    "id": "904ce37b-7c21-400c-81ba-df9658c05564",
+    "initiationCode": "J",
+    "originatingOrganisation": "G01FT01AB",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "6th Floor Windsor House",
+        "address2": "42-50 Victoria Street",
+        "address3": "London",
+        "postcode": "SW1H 0TL"
+      },
+      "contact": {
+        "primaryEmail": "test@test.com"
+      },
+      "majorCreditorCode": "TFL2",
+      "prosecutionAuthorityCode": "TFL",
+      "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+      "prosecutionAuthorityName": "Transport for London",
+      "prosecutionAuthorityOUCode": "GB10056",
+      "prosecutionAuthorityReference": "9e063cd2"
+    },
+    "statementOfFacts": "You did it",
+    "statementOfFactsWelsh": "You did it in Welsh"
+  },
+  "sendNotificationToParties": true
+}

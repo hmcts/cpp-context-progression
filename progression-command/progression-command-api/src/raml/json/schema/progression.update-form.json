@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/update-form.json",
+  "type": "object",
+  "properties": {
+    "formData": {
+      "description": "Form Data",
+      "type": "string"
+    }
+  },
+  "required": [
+    "formData"
+  ],
+  "additionalProperties": false
+}

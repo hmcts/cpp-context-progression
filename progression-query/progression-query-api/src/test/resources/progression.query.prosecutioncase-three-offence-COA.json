@@ -1,0 +1,1018 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "INACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-05-19T07:03:40.770Z",
+        "id": "5578d027-5a07-49b0-8317-f1a0dab13657",
+        "masterDefendantId": "5578d027-5a07-49b0-8317-f1a0dab13657",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-05-15",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "ac62d897-c840-460d-bed5-e18a3aa03300",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "count": 0,
+            "dvlaOffenceCode": "CU30",
+            "endorsableFlag": true,
+            "id": "ac62d897-c840-460d-bed5-e18a3aa03300",
+            "isDisposed": false,
+            "listingNumber": 1,
+            "maxPenalty": "S:L5 LE 3pp",
+            "modeOfTrial": "Summary",
+            "offenceCode": "RC86403",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "425ae2e2-3dac-3133-a8b2-e671966e16c0",
+            "offenceLegislation": "Contrary to regulation 27(1)(e) of the Road Vehicles (Construction and Use) Regulations 1986, section 41A of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+            "offenceTitle": "Use a motor vehicle / trailer with tyre with any of the ply / cord exposed",
+            "orderIndex": 1,
+            "plea": {
+              "offenceId": "ac62d897-c840-460d-bed5-e18a3aa03300",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "pleaDate": "2025-05-15",
+              "pleaValue": "NOT_GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "verdict": {
+              "jurors": {
+                "numberOfJurors": 12,
+                "numberOfSplitJurors": 0,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceCode": "RC86403",
+                "offenceDefinitionId": "425ae2e2-3dac-3133-a8b2-e671966e16c0",
+                "offenceLegislation": "Contrary to regulation 27(1)(e) of the Road Vehicles (Construction and Use) Regulations 1986, section 41A of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Use a motor vehicle / trailer with tyre with any of the ply / cord exposed"
+              },
+              "offenceId": "ac62d897-c840-460d-bed5-e18a3aa03300",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "verdictDate": "2025-05-15",
+              "verdictType": {
+                "category": "Not Guilty",
+                "categoryType": "NOT_GUILTY",
+                "cjsVerdictCode": "N",
+                "description": "Found not guilty",
+                "id": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "sequence": 20,
+                "verdictCode": "N"
+              }
+            },
+            "wording": "Dawn Heidenreich at Lakin Alley, Aggravated vehicle takingKay Kulas to assault Miss Russell Hahn, ( driver did not take ) and vehicle damage of £5000 or over."
+          },
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-05-16",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "count": 0,
+            "dvlaOffenceCode": "SP50",
+            "endorsableFlag": true,
+            "id": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+            "isDisposed": false,
+            "listingNumber": 1,
+            "maxPenalty": "S:L3 LE 3-6pp",
+            "modeOfTrial": "Summary",
+            "offenceCode": "RR84161",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "317b9eca-5e7d-36a9-8720-ff9d618877b2",
+            "offenceLegislation": "Contrary to the above Local Traffic Order and number and section 16(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+            "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod a rhif ac adran 16(1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+            "offenceTitle": "Speeding - exceed temporary 60 mph restriction on a motorway ( road works ) - automatic camera device",
+            "offenceTitleWelsh": "Goryrru - cyflymach na'r cyfyngiad cyflymder dros dro o 60 mya ar draffordd (gwaith ffordd) - dyfais camera awtomatig",
+            "orderIndex": 2,
+            "plea": {
+              "offenceId": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "pleaDate": "2025-05-16",
+              "pleaValue": "NOT_GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "verdict": {
+              "jurors": {
+                "numberOfJurors": 12,
+                "numberOfSplitJurors": 0,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceCode": "RR84161",
+                "offenceDefinitionId": "317b9eca-5e7d-36a9-8720-ff9d618877b2",
+                "offenceLegislation": "Contrary to the above Local Traffic Order and number and section 16(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Speeding - exceed temporary 60 mph restriction on a motorway ( road works ) - automatic camera device"
+              },
+              "offenceId": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "verdictDate": "2025-05-16",
+              "verdictType": {
+                "category": "Not Guilty",
+                "categoryType": "NOT_GUILTY",
+                "cjsVerdictCode": "N",
+                "description": "Found not guilty",
+                "id": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "sequence": 20,
+                "verdictCode": "N"
+              }
+            },
+            "wording": "On Fri Mar 14 2025 06:57:08 GMT+0000 (Greenwich Mean Time) Dawn Heidenreich exceed the speed on motorway. Health  0692 Orlando Wells."
+          },
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-05-17",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "sequenceNumber": 90
+            },
+            "aquittalDate": "2025-05-17",
+            "arrestDate": "2022-12-14",
+            "chargeDate": "2022-12-15",
+            "count": 0,
+            "dvlaOffenceCode": "IN10",
+            "endorsableFlag": true,
+            "id": "34e97bd1-2428-4862-8963-964a3e5866cb",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": true,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1018",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "durationElement": {
+                  "primaryDurationUnit": "M",
+                  "primaryDurationValue": 3
+                },
+                "dvlaCode": "E",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "3680921f-4664-4ab1-994a-4547fa41ad40",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "durationSequence": 1,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                    "label": "Period of conditional discharge",
+                    "promptReference": "periodofConditionalDischarge",
+                    "promptSequence": 100,
+                    "type": "INT",
+                    "usergroups": [],
+                    "value": "3 Months",
+                    "welshLabel": "Cyfnod o ryddhad amodol",
+                    "welshValue": "3 Months"
+                  }
+                ],
+                "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "label": "Conditional discharge",
+                "lastSharedDateTime": "2025-05-19",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-05-17",
+                "orderedHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 73800,
+                "resultText": "CD - Conditional discharge\nDischarged conditionally for 3 Months.",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "3680921f-4664-4ab1-994a-4547fa41ad40",
+                "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad Amodol"
+              }
+            ],
+            "listingNumber": 1,
+            "maxPenalty": "S:Ultd Fine LE 6-8pp",
+            "modeOfTrial": "Summary",
+            "offenceCode": "RA88001",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "d78f6d87-b9e3-33a9-b483-84c370f66a04",
+            "offenceLegislation": "Contrary to section 143 of, the Road Traffic Act 1988 and Schedule 2 to, the Road Traffic Offenders Act 1988.",
+            "offenceLegislationWelsh": "Yn groes i adran 143 Deddf Traffig Ffyrdd 1988 ac Atodlen 2 i Ddeddf Troseddwyr Traffig Ffyrdd 1988.",
+            "offenceTitle": "Use a motor vehicle on a road / public place without third party insurance",
+            "offenceTitleWelsh": "Defnyddio cerbyd modur ar ffordd / mewn man cyhoeddus heb yswiriant trydydd parti",
+            "orderIndex": 3,
+            "plea": {
+              "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "pleaDate": "2025-05-17",
+              "pleaValue": "NOT_GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-12-12",
+            "verdict": {
+              "jurors": {
+                "numberOfJurors": 12,
+                "numberOfSplitJurors": 0,
+                "unanimous": true
+              },
+              "lesserOrAlternativeOffence": {
+                "offenceCode": "RA88001",
+                "offenceDefinitionId": "d78f6d87-b9e3-33a9-b483-84c370f66a04",
+                "offenceLegislation": "Contrary to section 143 of, the Road Traffic Act 1988 and Schedule 2 to, the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Use a motor vehicle on a road / public place without third party insurance"
+              },
+              "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+              "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "verdictDate": "2025-05-17",
+              "verdictType": {
+                "category": "Not Guilty",
+                "categoryType": "NOT_GUILTY",
+                "cjsVerdictCode": "N",
+                "description": "Found not guilty",
+                "id": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                "sequence": 20,
+                "verdictCode": "N"
+              }
+            },
+            "wording": "On Fri Jan 17 2025 17:54:27 GMT+0000 (Greenwich Mean Time) at Johnston Avenue, Dawn Heidenreich Use a motor vehicle without third party insurance.Patrick Fisher PhD ."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "D28GC01122253397",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "9999A9999AAAA",
+              "address2": "Woodlane",
+              "address3": "addressline 3",
+              "address4": "Bristol",
+              "address5": "Avon",
+              "postcode": "ML3 8UD"
+            },
+            "contact": {
+              "home": "0202253397",
+              "mobile": "07772253397",
+              "primaryEmail": "ABCD.TEST012253397@gmail.com"
+            },
+            "dateOfBirth": "1991-11-11",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Dawn",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Heidenreich",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "D28GC01122253397",
+        "prosecutionCaseId": "f0b7a849-32c7-4818-89a0-fa4dfa37797f"
+      }
+    ],
+    "id": "f0b7a849-32c7-4818-89a0-fa4dfa37797f",
+    "initiationCode": "C",
+    "originatingOrganisation": "0300000",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Criminal Justice Department",
+        "address2": "Derbyshire Constabulary",
+        "address3": "Butterley Hall",
+        "address4": "Ripley",
+        "address5": "Derby",
+        "postcode": "DE5 3RS"
+      },
+      "contact": {
+        "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+      },
+      "majorCreditorCode": "PO30",
+      "prosecutionAuthorityCode": "DERPF",
+      "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+      "prosecutionAuthorityName": "Derbyshire Police",
+      "prosecutionAuthorityOUCode": "0300000",
+      "caseURN": "28DI2253397"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "5578d027-5a07-49b0-8317-f1a0dab13657",
+        "defendantName": "Dawn Heidenreich",
+        "hearingIds": [
+          "20de365a-4ee5-45a6-9a61-6572160c1942"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-05-15"
+              }
+            ],
+            "defendantId": "5578d027-5a07-49b0-8317-f1a0dab13657"
+          }
+        ],
+        "defendantJudicialResults": [
+          {
+            "judicialResult": {
+              "alwaysPublished": true,
+              "canBeSubjectOfBreach": false,
+              "canBeSubjectOfVariation": false,
+              "canExtendActiveOrder": false,
+              "category": "FINAL",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "588afe92-87d9-4fed-9c04-712b445d6afb",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                  "label": "Date to pay in full by",
+                  "promptReference": "PBD",
+                  "promptSequence": 100,
+                  "type": "DATE",
+                  "usergroups": [],
+                  "value": "12/07/2025",
+                  "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                  "welshValue": "12/07/2025"
+                }
+              ],
+              "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+              "label": "Pay by date",
+              "lastSharedDateTime": "2025-05-19",
+              "level": "D",
+              "lifeDuration": false,
+              "offenceId": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+              "orderedDate": "2025-05-16",
+              "orderedHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+              "parentJudicialResultId": "55f409a7-d509-4ad7-a95c-2b05c89d909d",
+              "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+              "postHearingCustodyStatus": "A",
+              "preserveActiveOrder": false,
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "rank": 120500,
+              "resultDefinitionGroup": "Payment terms",
+              "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 12/07/2025.",
+              "rollUpPrompts": false,
+              "rootJudicialResultId": "cde8eb30-998e-4e04-9211-7c193fe43784",
+              "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Dyddiad terfyn ar gyfer talu"
+            },
+            "masterDefendantId": "5578d027-5a07-49b0-8317-f1a0dab13657"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "9999A9999AAAA",
+              "address2": "Woodlane",
+              "address3": "addressline 3",
+              "address4": "Bristol",
+              "address5": "Avon",
+              "postcode": "ML3 8UD"
+            },
+            "age": "33",
+            "courtApplications": [],
+            "dateOfBirth": "1991-11-11",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "5578d027-5a07-49b0-8317-f1a0dab13657"
+            },
+            "id": "5578d027-5a07-49b0-8317-f1a0dab13657",
+            "judicialResults": [],
+            "name": "Dawn Heidenreich",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-05-15",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "ac62d897-c840-460d-bed5-e18a3aa03300",
+                  "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                  "sequenceNumber": 90
+                },
+                "count": 0,
+                "id": "ac62d897-c840-460d-bed5-e18a3aa03300",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1017",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "dvlaCode": "J",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "e754230c-aaf0-4a3b-aeab-2a146132f284",
+                    "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "label": "Absolute discharge",
+                    "lastSharedDateTime": "2025-05-19",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-15",
+                    "orderedHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 53800,
+                    "resultText": "AD - Absolute discharge",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "e754230c-aaf0-4a3b-aeab-2a146132f284",
+                    "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad diamod"
+                  }
+                ],
+                "offenceCode": "RC86403",
+                "offenceDefinitionId": "425ae2e2-3dac-3133-a8b2-e671966e16c0",
+                "offenceLegislation": "Contrary to regulation 27(1)(e) of the Road Vehicles (Construction and Use) Regulations 1986, section 41A of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceTitle": "Use a motor vehicle / trailer with tyre with any of the ply / cord exposed",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "ac62d897-c840-460d-bed5-e18a3aa03300",
+                    "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "pleaDate": "2025-05-15",
+                    "pleaValue": "NOT_GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "RC86403",
+                      "offenceDefinitionId": "425ae2e2-3dac-3133-a8b2-e671966e16c0",
+                      "offenceLegislation": "Contrary to regulation 27(1)(e) of the Road Vehicles (Construction and Use) Regulations 1986, section 41A of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                      "offenceTitle": "Use a motor vehicle / trailer with tyre with any of the ply / cord exposed"
+                    },
+                    "offenceId": "ac62d897-c840-460d-bed5-e18a3aa03300",
+                    "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "verdictDate": "2025-05-15",
+                    "verdictType": {
+                      "category": "Not Guilty",
+                      "categoryType": "NOT_GUILTY",
+                      "cjsVerdictCode": "N",
+                      "description": "Found not guilty",
+                      "id": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                      "sequence": 20,
+                      "verdictCode": "N"
+                    }
+                  }
+                ],
+                "wording": "Dawn Heidenreich at Lakin Alley, Aggravated vehicle takingKay Kulas to assault Miss Russell Hahn, ( driver did not take ) and vehicle damage of £5000 or over."
+              },
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-05-16",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+                  "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                  "sequenceNumber": 90
+                },
+                "count": 0,
+                "id": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "cde8eb30-998e-4e04-9211-7c193fe43784",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£200.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£200.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2025-05-19",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-16",
+                    "orderedHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 72100,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £200.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "cde8eb30-998e-4e04-9211-7c193fe43784",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "offenceCode": "RR84161",
+                "offenceDefinitionId": "317b9eca-5e7d-36a9-8720-ff9d618877b2",
+                "offenceLegislation": "Contrary to the above Local Traffic Order and number and section 16(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                "offenceLegislationWelsh": "Yn groes i'r Gorchymyn Traffig Lleol uchod a rhif ac adran 16(1) Deddf Rheoleiddio Traffig Ffyrdd 1984 ac Atodlen 2 Deddf Tramgwyddwyr Traffig Ffyrdd 1988.",
+                "offenceTitle": "Speeding - exceed temporary 60 mph restriction on a motorway ( road works ) - automatic camera device",
+                "offenceTitleWelsh": "Goryrru - cyflymach na'r cyfyngiad cyflymder dros dro o 60 mya ar draffordd (gwaith ffordd) - dyfais camera awtomatig",
+                "orderIndex": 2,
+                "pleas": [
+                  {
+                    "offenceId": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+                    "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "pleaDate": "2025-05-16",
+                    "pleaValue": "NOT_GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": false,
+                "startDate": "2022-12-12",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "RR84161",
+                      "offenceDefinitionId": "317b9eca-5e7d-36a9-8720-ff9d618877b2",
+                      "offenceLegislation": "Contrary to the above Local Traffic Order and number and section 16(1) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+                      "offenceTitle": "Speeding - exceed temporary 60 mph restriction on a motorway ( road works ) - automatic camera device"
+                    },
+                    "offenceId": "fd3feb45-557d-4681-981f-b6fd81ffd597",
+                    "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "verdictDate": "2025-05-16",
+                    "verdictType": {
+                      "category": "Not Guilty",
+                      "categoryType": "NOT_GUILTY",
+                      "cjsVerdictCode": "N",
+                      "description": "Found not guilty",
+                      "id": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                      "sequence": 20,
+                      "verdictCode": "N"
+                    }
+                  }
+                ],
+                "wording": "On Fri Mar 14 2025 06:57:08 GMT+0000 (Greenwich Mean Time) Dawn Heidenreich exceed the speed on motorway. Health  0692 Orlando Wells."
+              },
+              {
+                "acquittalDate": "2025-05-17",
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-05-17",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                  "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                  "sequenceNumber": 90
+                },
+                "count": 0,
+                "id": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1018",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "M",
+                      "primaryDurationValue": 3
+                    },
+                    "dvlaCode": "E",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "3680921f-4664-4ab1-994a-4547fa41ad40",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                        "label": "Period of conditional discharge",
+                        "promptReference": "periodofConditionalDischarge",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "3 Months",
+                        "welshLabel": "Cyfnod o ryddhad amodol",
+                        "welshValue": "3 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "label": "Conditional discharge",
+                    "lastSharedDateTime": "2025-05-19",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-05-17",
+                    "orderedHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 73800,
+                    "resultText": "CD - Conditional discharge\nDischarged conditionally for 3 Months.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "3680921f-4664-4ab1-994a-4547fa41ad40",
+                    "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad Amodol"
+                  }
+                ],
+                "offenceCode": "RA88001",
+                "offenceDefinitionId": "d78f6d87-b9e3-33a9-b483-84c370f66a04",
+                "offenceLegislation": "Contrary to section 143 of, the Road Traffic Act 1988 and Schedule 2 to, the Road Traffic Offenders Act 1988.",
+                "offenceLegislationWelsh": "Yn groes i adran 143 Deddf Traffig Ffyrdd 1988 ac Atodlen 2 i Ddeddf Troseddwyr Traffig Ffyrdd 1988.",
+                "offenceTitle": "Use a motor vehicle on a road / public place without third party insurance",
+                "offenceTitleWelsh": "Defnyddio cerbyd modur ar ffordd / mewn man cyhoeddus heb yswiriant trydydd parti",
+                "orderIndex": 3,
+                "pleas": [
+                  {
+                    "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                    "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "pleaDate": "2025-05-17",
+                    "pleaValue": "NOT_GUILTY"
+                  }
+                ],
+                "proceedingsConcluded": true,
+                "startDate": "2022-12-12",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "RA88001",
+                      "offenceDefinitionId": "d78f6d87-b9e3-33a9-b483-84c370f66a04",
+                      "offenceLegislation": "Contrary to section 143 of, the Road Traffic Act 1988 and Schedule 2 to, the Road Traffic Offenders Act 1988.",
+                      "offenceTitle": "Use a motor vehicle on a road / public place without third party insurance"
+                    },
+                    "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                    "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                    "verdictDate": "2025-05-17",
+                    "verdictType": {
+                      "category": "Not Guilty",
+                      "categoryType": "NOT_GUILTY",
+                      "cjsVerdictCode": "N",
+                      "description": "Found not guilty",
+                      "id": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                      "sequence": 20,
+                      "verdictCode": "N"
+                    }
+                  }
+                ],
+                "wording": "On Fri Jan 17 2025 17:54:27 GMT+0000 (Greenwich Mean Time) at Johnston Avenue, Dawn Heidenreich Use a motor vehicle without third party insurance.Patrick Fisher PhD ."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-15T09:00:00.000Z"
+          },
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-16T09:00:00.000Z"
+          },
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": true,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-05-17T09:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "20de365a-4ee5-45a6-9a61-6572160c1942",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      }
+    ],
+    "id": "f0b7a849-32c7-4818-89a0-fa4dfa37797f",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Criminal Justice Department",
+        "address2": "Derbyshire Constabulary",
+        "address3": "Butterley Hall",
+        "address4": "Ripley",
+        "address5": "Derby",
+        "postcode": "DE5 3RS"
+      },
+      "contact": {
+        "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+      },
+      "majorCreditorCode": "PO30",
+      "prosecutionAuthorityCode": "DERPF",
+      "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+      "prosecutionAuthorityName": "Derbyshire Police",
+      "prosecutionAuthorityOUCode": "0300000",
+      "caseURN": "28DI2253397"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  },
+  "activeCourtOrders": [
+    {
+      "masterDefendantId": "5578d027-5a07-49b0-8317-f1a0dab13657",
+      "courtOrders": [
+        {
+          "canBeSubjectOfBreachProceedings": true,
+          "canBeSubjectOfVariationProceedings": false,
+          "courtOrderOffences": [
+            {
+              "offence": {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-05-17",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                  "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                  "sequenceNumber": 90
+                },
+                "aquittalDate": "2025-05-17",
+                "arrestDate": "2022-12-14",
+                "chargeDate": "2022-12-15",
+                "count": 0,
+                "dvlaOffenceCode": "IN10",
+                "endorsableFlag": true,
+                "id": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                "isDisposed": true,
+                "listingNumber": 1,
+                "maxPenalty": "S:Ultd Fine LE 6-8pp",
+                "modeOfTrial": "Summary",
+                "offenceCode": "RA88001",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "d78f6d87-b9e3-33a9-b483-84c370f66a04",
+                "offenceLegislation": "Contrary to section 143 of, the Road Traffic Act 1988 and Schedule 2 to, the Road Traffic Offenders Act 1988.",
+                "offenceLegislationWelsh": "Yn groes i adran 143 Deddf Traffig Ffyrdd 1988 ac Atodlen 2 i Ddeddf Troseddwyr Traffig Ffyrdd 1988.",
+                "offenceTitle": "Use a motor vehicle on a road / public place without third party insurance",
+                "offenceTitleWelsh": "Defnyddio cerbyd modur ar ffordd / mewn man cyhoeddus heb yswiriant trydydd parti",
+                "orderIndex": 3,
+                "plea": {
+                  "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                  "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                  "pleaDate": "2025-05-17",
+                  "pleaValue": "NOT_GUILTY"
+                },
+                "startDate": "2022-12-12",
+                "verdict": {
+                  "jurors": {
+                    "numberOfJurors": 12,
+                    "numberOfSplitJurors": 0,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceCode": "RA88001",
+                    "offenceDefinitionId": "d78f6d87-b9e3-33a9-b483-84c370f66a04",
+                    "offenceLegislation": "Contrary to section 143 of, the Road Traffic Act 1988 and Schedule 2 to, the Road Traffic Offenders Act 1988.",
+                    "offenceTitle": "Use a motor vehicle on a road / public place without third party insurance"
+                  },
+                  "offenceId": "34e97bd1-2428-4862-8963-964a3e5866cb",
+                  "originatingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+                  "verdictDate": "2025-05-17",
+                  "verdictType": {
+                    "category": "Not Guilty",
+                    "categoryType": "NOT_GUILTY",
+                    "cjsVerdictCode": "N",
+                    "description": "Found not guilty",
+                    "id": "c81e728d-9d4c-3f63-af06-7f89cc14862c",
+                    "sequence": 20,
+                    "verdictCode": "N"
+                  }
+                },
+                "wording": "On Fri Jan 17 2025 17:54:27 GMT+0000 (Greenwich Mean Time) at Johnston Avenue, Dawn Heidenreich Use a motor vehicle without third party insurance.Patrick Fisher PhD ."
+              },
+              "prosecutionCaseId": "f0b7a849-32c7-4818-89a0-fa4dfa37797f",
+              "prosecutionCaseIdentifier": {
+                "address": {
+                  "address1": "Criminal Justice Department",
+                  "address2": "Derbyshire Constabulary",
+                  "address3": "Butterley Hall",
+                  "address4": "Ripley",
+                  "address5": "Derby",
+                  "postcode": "DE5 3RS"
+                },
+                "contact": {
+                  "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+                },
+                "majorCreditorCode": "PO30",
+                "prosecutionAuthorityCode": "DERPF",
+                "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+                "prosecutionAuthorityName": "Derbyshire Police",
+                "prosecutionAuthorityOUCode": "0300000",
+                "caseURN": "28DI2253397"
+              }
+            }
+          ],
+          "defendantIds": [
+            "5578d027-5a07-49b0-8317-f1a0dab13657"
+          ],
+          "endDate": "2025-08-16",
+          "id": "3277f09e-7568-447f-88a8-f6f5f1d2a739",
+          "isSJPOrder": false,
+          "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+          "label": "Conditional discharge",
+          "masterDefendantId": "5578d027-5a07-49b0-8317-f1a0dab13657",
+          "orderDate": "2025-05-17",
+          "orderingCourt": {
+            "address": {
+              "address1": "176A Lavender Hill",
+              "address2": "London",
+              "address3": "",
+              "address4": "",
+              "address5": "",
+              "postcode": "SW11 1JU"
+            },
+            "code": "B01LY00",
+            "courtHearingLocation": "B01LY01",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "roomName": "Courtroom 01"
+          },
+          "orderingHearingId": "20de365a-4ee5-45a6-9a61-6572160c1942",
+          "startDate": "2025-05-17"
+        }
+      ]
+    }
+  ]
+}

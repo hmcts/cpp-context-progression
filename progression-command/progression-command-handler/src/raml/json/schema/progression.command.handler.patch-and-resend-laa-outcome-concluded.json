@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/handler/patch-and-resend-laa-outcome-concluded.json",
+  "type": "object",
+  "description": "Resend outcome concluded update to LAA for existing progression.event.laa-defendant-proceeding-concluded-changed event",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "resultDate": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "caseId",
+    "hearingId",
+    "resultDate"
+  ],
+  "additionalProperties": false
+}

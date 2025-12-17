@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/remove-court-document.json",
+  "type": "object",
+  "properties": {
+    "isRemoved": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "isRemoved"
+  ]
+}

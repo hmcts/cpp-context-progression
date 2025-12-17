@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/notification-sent-for-plea-document.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "systemDocGeneratorId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "notificationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "email": {
+      "type": "string"
+    },
+    "pleaNotificationType": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/plea-notification-type.json",
+      "type": "string",
+      "enum": [
+        "CompanyOnlinePlea",
+        "CompanyFinanceData",
+        "IndividualOnlinePlea",
+        "IndividualFinanceData"
+      ]
+    }
+  },
+  "required": [
+    "systemDocGeneratorId",
+    "caseId",
+    "email",
+    "pleaNotificationType",
+    "urn",
+    "notificationId"
+  ],
+  "additionalProperties": false
+}

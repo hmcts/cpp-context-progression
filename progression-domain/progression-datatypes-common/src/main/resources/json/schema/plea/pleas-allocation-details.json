@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/pleas-allocation-details.json",
+  "type": "object",
+  "properties": {
+    "allocationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseUrn": {
+      "type": "string"
+    },
+    "hearingCourtCode": {
+      "type": "string"
+    },
+    "offencePleas": {
+      "type": "array",
+      "items": {
+        "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/offence-plea-details.json"
+      }
+    },
+    "crownCourtObjection": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/yesNoNa"
+    },
+    "disputeOffenceValue": {
+      "type": "boolean"
+    },
+    "disputeOffenceValueDetails": {
+      "type": "string"
+    },
+    "electingCrownCourtTrial": {
+      "type": "boolean"
+    },
+    "electingCrownCourtTrialDetails": {
+      "type": "string"
+    },
+    "sentencingIndication": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/yesNoNa"
+    },
+    "consentToMagistratesCourtTrial": {
+      "type": "string"
+    },
+    "acknowledgement": {
+      "type": "boolean"
+    },
+    "youthAcknowledgement": {
+      "type": "boolean"
+    },
+    "representationsOnGraveCrime": {
+      "type": "boolean"
+    },
+    "representationsOnGraveCrimeDetails" : {
+      "type": "string"
+    },
+    "defendantNameDobConfirmation": {
+      "type": "boolean"
+    },
+    "defendantDetails": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/defendant-details.json",
+      "type": "object",
+      "properties":  {
+        "firstName":{
+          "type": "string"
+        },
+        "middleName": {
+          "type": "string"
+        },
+        "surname": {
+          "type": "string"
+        },
+        "dob" :{
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date"
+        },
+        "organisationName": {
+          "type": "string"
+        }
+      }
+    },
+    "offenceType": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/offenceType"
+    },
+    "additionalInformation": {
+      "type": "string"
+    },
+    "defendantTurningEighteenDetails": {
+      "type": "string"
+    },
+    "theftFromShop": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/yesNoNa"
+    },
+    "theftFromShopDetails": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "defendantId",
+    "offencePleas",
+    "allocationId"
+  ],
+  "additionalProperties": false
+}

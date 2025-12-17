@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/pagination-data.json",
+  "type": "object",
+  "properties": {
+    "totalRecordCount": {
+      "description": "total number of records",
+      "type": "integer"
+    },
+    "page": {
+      "description": "the page number to be show",
+      "type": "integer"
+    },
+    "pageSize": {
+      "description": "number of records in the page",
+      "type": "integer"
+    },
+    "sortField": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/sortField"
+    },
+    "sortOrder": {
+      "$ref": "http://moj.gov.uk/cpp/progression/enum-def.json#/definitions/sortOrder"
+    }
+  },
+  "additionalProperties": false
+}

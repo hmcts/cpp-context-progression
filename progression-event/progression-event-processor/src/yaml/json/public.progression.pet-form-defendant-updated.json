@@ -1,0 +1,11 @@
+{
+  "petId": "8f8fe782-a287-11eb-bcbc-0242ac130002",
+  "caseId": "905ec457-4842-4a0a-98b2-99f87fa54491",
+  "defendantId": "9a7fe782-a287-11eb-bcbc-0242ac130003",
+  "defendantData": "{\"id\": \"9a7fe782-a287-11eb-bcbc-0242ac130003\",\"defenceDynamicFormAnswers\": {\"someField\": true, \"someOtherField\": \"someOtherValue\"}}",
+  "updatedBy": {
+    "id": "d0dff4cf-c833-4758-a54a-d18ad004095d",
+    "firstName": "firstName",
+    "lastName": "lastName"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "courtCentreId":"Liverpool",
+  "caseId" : "5daefec6-5f77-4109-82d9-1e60544a6c08",
+  "caseUrn" : "22C22222222",
+  "fromCourtCentre" : "Magistrate court liverpool",
+  "sendingCommittalDate" : "2016-04-20",
+  "sentenceHearingDate" : "2016-05-19",
+  "status": "READY_FOR_REVIEW"
+}

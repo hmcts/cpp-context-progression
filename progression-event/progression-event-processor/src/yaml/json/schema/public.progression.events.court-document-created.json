@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-court-document-created.json",
+  "type": "object",
+  "properties": {
+    "courtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/courtDocument.json#"
+    }
+  },
+  "required": [
+    "courtDocument"
+  ]
+}

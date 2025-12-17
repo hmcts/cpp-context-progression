@@ -1,0 +1,8 @@
+{
+  "_metadata": {
+    "name": "progression.event.prosecutionCase-defendant-listing-status-changed"
+  },
+  "boxWorkAssignedUserId":"2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+  "boxWorkTaskStatus": "IN_PROGRESS",
+  "notifyNCES":false
+  }

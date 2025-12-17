@@ -1,0 +1,149 @@
+{
+  "defendant": {
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce01",
+    "prosecutionCaseId": "PROSECUTION_CASE_ID",
+    "isYouth": true,
+    "associatedPersons": [
+      {
+        "person": {
+          "title": "DR",
+          "firstName": "Harry",
+          "middleName": "Jack",
+          "lastName": "Kane",
+          "dateOfBirth": "1995-01-01",
+          "nationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+          "additionalNationalityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+          "disabilityStatus": "a",
+          "gender": "MALE",
+          "interpreterLanguageNeeds": "Hindi",
+          "documentationLanguageNeeds": "WELSH",
+          "nationalInsuranceNumber": "NH222222B",
+          "occupation": "Footballer",
+          "occupationCode": "F",
+          "address": {
+            "address1": "22",
+            "address2": "Acacia Avenue",
+            "address3": "Acacia Town",
+            "address4": "Acacia City",
+            "address5": "Acacia Country",
+            "postcode": "CR7 0AA"
+          },
+          "contact": {
+            "home": "123456",
+            "work": "7891011",
+            "mobile": "+45678910",
+            "primaryEmail": "harry.kane@spurs.co.uk",
+            "secondaryEmail": "harry.kane@hotmail.com",
+            "fax": "3425678"
+          }
+        },
+        "role": "parent"
+      }
+    ],
+    "offences": [
+      {
+        "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+        "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+        "offenceCode": "SX1500",
+        "offenceTitle": "Section 18 - attempt    wounding with intent",
+        "wording": "No Travel Card",
+        "wordingWelsh": "No Travel Card In Welsh",
+        "startDate": "2018-01-01",
+        "endDate": "2018-01-01",
+        "arrestDate": "2018-01-01",
+        "chargeDate": "2018-01-01",
+        "orderIndex": 1,
+        "count": 0,
+        "notifiedPlea": {
+          "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "notifiedPleaDate": "2018-04-01",
+          "notifiedPleaValue": "NOTIFIED_GUILTY"
+        },
+        "offenceFacts": {
+          "vehicleRegistration": "AA12345",
+          "alcoholReadingAmount": 111,
+          "alcoholReadingMethodCode": "2222"
+        }
+      },
+      {
+        "id": "4789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+        "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+        "offenceCode": "SLX9500",
+        "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+        "wording": "No Travel Card",
+        "wordingWelsh": "No Travel Card In Welsh",
+        "startDate": "2018-01-01",
+        "endDate": "2018-01-01",
+        "arrestDate": "2018-01-01",
+        "chargeDate": "2018-01-01",
+        "orderIndex": 1,
+        "count": 0,
+        "notifiedPlea": {
+          "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "notifiedPleaDate": "2018-04-01",
+          "notifiedPleaValue": "NOTIFIED_GUILTY"
+        },
+        "offenceFacts": {
+          "vehicleRegistration": "AA12345",
+          "alcoholReadingAmount": 111,
+          "alcoholReadingMethodCode": "2222"
+        }
+      }
+    ],
+    "personDefendant": {
+      "personDetails": {
+        "title": "DR",
+        "firstName": "Harry",
+        "middleName": "Jack",
+        "lastName": "Kane Junior",
+        "dateOfBirth": "DATE_OF_BIRTH",
+        "address": {
+          "address1": "703 MALLERTON WAY",
+          "address2": "DUNSTABLE",
+          "postcode": "LN5 5TT"
+        },
+        "gender": "MALE",
+        "contact": {
+          "home": "015324443756"
+        },
+        "documentationLanguageNeeds": "ENGLISH",
+        "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+        "nationalityDescription": "British",
+        "nationalityCode": "GBR",
+        "ethnicity": {
+          "selfDefinedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+          "selfDefinedEthnicityDescription": "British",
+          "selfDefinedEthnicityCode": "W1",
+          "observedEthnicityId": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+        }
+      },
+      "arrestSummonsNumber": "TFL",
+      "employerOrganisation": {
+        "name": "Disneyland Paris",
+        "incorporationNumber": "Mickeymouse1",
+        "address": {
+          "address1": "Disney Road",
+          "address2": "Disney Town",
+          "address3": "Disney District",
+          "address4": "Paris",
+          "address5": "France",
+          "postcode": "CR7 0AA"
+        },
+        "contact": {
+          "work": "0207 654 3246 extn 1234",
+          "primaryEmail": "person@hotmail.com",
+          "secondaryEmail": "associate@hotmail.com",
+          "fax": "a"
+        }
+      },
+      "bailStatus": {
+        "code": "C",
+        "description": "Remanded into Custody",
+        "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5"
+      },
+      "custodyTimeLimit": "2018-01-01",
+      "driverNumber": "AACC12345"
+    },
+    "masterDefendantId": "e641d232-bc35-4dca-93fa-db8c0a69a92d"
+  }
+}

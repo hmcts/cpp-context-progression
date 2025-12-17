@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/public.progression.civil-fees-response.json",
+  "type": "object",
+  "properties": {
+    "civilFeeResults": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "FAILED"
+      ]
+    }
+  },
+  "required": [
+    "civilFeeResults"
+  ],
+  "additionalProperties": false
+}

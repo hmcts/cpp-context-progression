@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/public.progression.case-removed-from-group-cases.json",
+  "type": "object",
+  "properties": {
+    "groupId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "masterCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "removedCase": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json"
+    },
+    "newGroupMaster": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json"
+    }
+  },
+  "required": [
+    "groupId",
+    "masterCaseId",
+    "removedCase"
+  ]
+}

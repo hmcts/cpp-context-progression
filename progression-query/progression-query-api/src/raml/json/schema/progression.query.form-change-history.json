@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/form-change-history.json",
+  "type": "object",
+  "properties": {
+    "formChangeHistory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "courtFormId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "formId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "materialId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "date": {
+            "type": "string"
+          },
+          "updatedBy": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "data": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "courtFormId",
+          "formId",
+          "date",
+          "updatedBy",
+          "data",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "formChangeHistory"
+  ],
+  "additionalProperties": false
+}

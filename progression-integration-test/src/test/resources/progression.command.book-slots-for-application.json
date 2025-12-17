@@ -1,0 +1,152 @@
+{
+  "hearingRequest": {
+    "id": "RANDOM_HEARING_ID",
+    "type": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "description": "a"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "courtCentre": {
+      "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "name": "a",
+      "welshName": "a",
+      "roomId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+      "roomName": "a",
+      "welshRoomName": "a",
+      "address": {
+        "address1": "a",
+        "address2": "a",
+        "address3": "a",
+        "address4": "a",
+        "address5": "a",
+        "postcode": "GIR0AA"
+      }
+    },
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z",
+    "earliestStartDateTime": "2015-01-12T05:27:17.210Z",
+    "endDate": "1000-01-01",
+    "estimatedMinutes": 30,
+    "prosecutorDatesToAvoid": "a",
+    "listingDirections": "a",
+    "reportingRestrictionReason": "a",
+    "judiciary": [
+      {
+        "judicialId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "judiciaryType": "a"
+        },
+        "isDeputy": true,
+        "isBenchChairman": true
+      }
+    ],
+    "courtApplications": [
+      {
+        "applicant": {
+          "defendant": {
+            "courtProceedingsInitiated": "2020-06-13T07:49:06.929Z",
+            "id": "687c6c80-6146-414e-8d67-41ab3751462e",
+            "isYouth": false,
+            "masterDefendantId": "687c6c80-6146-414e-8d67-41ab3751462e",
+            "numberOfPreviousConvictionsCited": 99,
+            "offences": [
+              {
+                "chargeDate": "2018-08-01",
+                "count": 1,
+                "id": "102eed06-4994-4b1e-8972-13b0cf151b38",
+                "modeOfTrial": "Summary",
+                "notifiedPlea": {
+                  "notifiedPleaDate": "2020-06-13",
+                  "notifiedPleaValue": "NO_NOTIFICATION",
+                  "offenceId": "102eed06-4994-4b1e-8972-13b0cf151b38"
+                },
+                "offenceCode": "PS90010",
+                "offenceDefinitionId": "20f3dd74-1d32-43fa-bec3-7ffca5b73ebe",
+                "offenceLegislation": "Contrary to regulation 7(1)(a) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passenger Vehicles Act 1981.",
+                "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                "orderIndex": 1,
+                "startDate": "2018-07-02",
+                "wording": "On 02/07/2018 at Bond street, being a passenger on a vehicle, namely Volvo B9TL 30x, used for the carriage of passengers at separate fares, used a ticket which had been altered or defaced."
+              }
+            ],
+            "personDefendant": {
+              "personDetails": {
+                "address": {
+                  "address1": "DKktJP7LgX",
+                  "address2": "1 Old Road",
+                  "address3": "London",
+                  "address4": "Merton",
+                  "postcode": "SW99 1AA"
+                },
+                "dateOfBirth": "1925-02-16",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Fred",
+                "gender": "MALE",
+                "lastName": "Smith",
+                "title": "MR"
+              }
+            },
+            "prosecutionCaseId": "RANDOM_CASE_ID"
+          },
+          "id": "687c6c80-6146-414e-8d67-41ab3751462e"
+        },
+        "applicationReceivedDate": "2020-06-20",
+        "applicationReference": "RANDOM_REFERENCE",
+        "applicationStatus": "DRAFT",
+        "id": "RANDOM_APPLICATION_ID",
+        "linkedCaseId": "RANDOM_CASE_ID",
+        "type": {
+          "applicantSynonym": "Applicant",
+          "applicationCategory": "CO",
+          "applicationCode": "LA12507",
+          "applicationJurisdictionType": "EITHER",
+          "applicationLegislation": "Pursuant to Regulation 16 and 17 of the Criminal Legal Aid (Determinations by a Court and Choice of Representative) Regulations 2013.",
+          "applicationType": "Application to assign Advocate/QC",
+          "id": "097dbf28-12ce-34bf-a782-83036d0c24c2",
+          "isAppealApplication": false,
+          "isBreachApplication": false,
+          "linkType": "LINKED",
+          "respondentSynonym": "Respondent"
+        }
+      }
+    ],
+    "defendantListingNeeds": [
+      {
+        "prosecutionCaseId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "defendantId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "datesToAvoid": "a",
+        "listingReason": "a",
+        "hearingLanguageNeeds": "ENGLISH"
+      }
+    ],
+    "courtApplicationPartyListingNeeds": [
+      {
+        "courtApplicationId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "courtApplicationPartyId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "hearingLanguageNeeds": "ENGLISH"
+      }
+    ],
+    "bookedSlots": [
+      {
+        "oucode": "B01EF00",
+        "session": "AM",
+        "duration": 180,
+        "startTime": "2020-05-21T00:00:00.000Z",
+        "courtRoomId": 793,
+        "courtScheduleId": "8e837de0-743a-4a2c-9db3-b2e678c48729"
+      },
+      {
+        "oucode": "B01EF01",
+        "session": "AM",
+        "duration": 180,
+        "startTime": "2020-05-22T00:00:00.000Z",
+        "courtRoomId": 793,
+        "courtScheduleId": "b7fd32dc-54eb-4bb1-b5fe-88077390e25c"
+      }
+    ]
+  }
+}

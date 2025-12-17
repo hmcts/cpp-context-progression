@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.nows-requested",
+  "type": "object",
+  "properties": {
+    "nowDocumentRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-document-request.json"
+    }
+  },
+  "required": [
+    "nowDocumentRequest"
+  ],
+  "additionalProperties": false
+}
+

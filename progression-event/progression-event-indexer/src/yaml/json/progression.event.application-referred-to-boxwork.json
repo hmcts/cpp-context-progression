@@ -1,0 +1,39 @@
+{
+  "application": {
+    "type": {
+      "id": "2650cec5-a28d-370e-b2fd-3070cb74592c",
+      "linkType": "LINKED",
+      "applicantSynonym": "Applicant",
+      "respondentSynonym": "Respondent",
+      "applicationCode": "CJ03521",
+      "applicationType": "Review of community order",
+      "applicationLegislation": "In accordance with section 178 of the Criminal Justice Act 2003.",
+      "applicationCategory": "CO",
+      "isAppealApplication": false,
+      "isBreachApplication": false,
+      "applicationJurisdictionType": "EITHER"
+    },
+    "id": "RANDOM_APP_ID",
+    "applicationStatus": "LISTED",
+    "applicationExternalCreatorType": "PROSECUTOR",
+    "applicationReceivedDate": "2020-11-04",
+    "applicant": {
+      "id": "19138a71-c38b-432d-83b8-e1630c049db9",
+      "personDetails": {
+        "firstName": "SIMITH",
+        "lastName": "fdfdsfd",
+        "gender": "NOT_SPECIFIED"
+      }
+    },
+    "applicationReference": "Z3UXCOX63S",
+    "dueDate": "2020-11-04"
+  },
+  "boxHearing" : {
+    "jurisdictionType" : "CROWN",
+    "courtCentre" : {
+      "id": "7e967376-eacf-4fca-9b30-21b0c5aad427",
+      "name" : "Bexley Magistrates' Court"
+    },
+    "applicationDueDate" : "2020-11-04T00:00:00+00:00"
+  }
+}

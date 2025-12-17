@@ -1,0 +1,24 @@
+{
+  "groups": [
+    {
+      "id": "7e2f143e-d619-40b3-8611-8015f3a18957",
+      "groupName": "Listing Officers"
+    },
+    {
+      "groupId": "8c5327b6-354e-4574-9558-b13fce8c055a",
+      "groupName": "Court Clerks"
+    },
+    {
+      "groupId": "8c5327b6-354e-4574-9558-b13fce8c055a",
+      "groupName": "Crown Court Admin"
+    },
+    {
+      "groupId": "c529dac4-1ba8-414e-962d-84af6a4d9ae2",
+      "groupName": "Court Administrators"
+    },
+    {
+      "groupId": "5f4543e6-7212-11e7-8cf7-a6006ad3dba1",
+      "groupName": "Legal Advisers"
+    }
+  ]
+}

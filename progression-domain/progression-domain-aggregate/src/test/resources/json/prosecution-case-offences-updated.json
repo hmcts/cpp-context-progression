@@ -1,0 +1,36 @@
+{
+  "_metadata":{
+    "name":"progression.event.prosecution-case-offences-updated"
+  },
+  "defendantCaseOffences": {
+    "defendantId": "e1d32d9d-29ec-4934-a932-22a50f223966",
+    "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+    "legalAidStatus" :"NO_VALUE",
+    "offences": [
+      {
+        "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+        "offenceDefinitionId": "e1d32d9d-29ec-4934-a932-22a50f223966",
+        "wording": "No Travel Card",
+        "wordingWelsh": "No Travel Card In Welsh",
+        "startDate": "2018-01-01",
+        "endDate": "2018-01-01",
+        "arrestDate": "2018-01-01",
+        "chargeDate": "2018-01-01",
+        "orderIndex": 1,
+        "offenceCode":"NEW CODE",
+        "count": 0,
+        "notifiedPlea": {
+          "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+          "notifiedPleaDate": "2018-04-01",
+          "notifiedPleaValue": "NOTIFIED_GUILTY"
+        },
+        "offenceFacts": {
+          "vehicleRegistration": "AA12345",
+          "alcoholReadingAmount": 111,
+          "alcoholReadingMethodCode": "2222"
+        },
+        "maxPenalty":""
+      }
+    ]
+  }
+}

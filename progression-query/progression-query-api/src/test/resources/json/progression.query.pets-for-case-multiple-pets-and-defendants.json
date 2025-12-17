@@ -1,0 +1,62 @@
+{
+  "pets": [
+    {
+      "petId": "PET_ID_1",
+      "isYouth": false,
+      "defendants": [
+        {
+          "defendantId": "DEFENDANT_ID_1",
+          "caseId": "CASE_ID",
+          "offences": [
+            "OFFENCE_ID1",
+            "OFFENCE_ID2"
+          ]
+        },
+        {
+          "defendantId": "DEFENDANT_ID_2",
+          "caseId": "CASE_ID",
+          "offences": [
+            "OFFENCE_ID1",
+            "OFFENCE_ID2"
+          ]
+        },
+        {
+          "defendantId": "DEFENDANT_ID_3",
+          "caseId": "CASE_ID",
+          "offences": [
+            "OFFENCE_ID1",
+            "OFFENCE_ID2"
+          ]
+        }
+      ]
+    },
+    {
+      "petId": "PET_ID_2",
+      "isYouth": false,
+      "defendants": [
+        {
+          "defendantId": "DEFENDANT_ID_2",
+          "caseId": "CASE_ID",
+          "offences": [
+            "OFFENCE_ID1",
+            "OFFENCE_ID2"
+          ]
+        }
+      ]
+    },
+    {
+      "petId": "PET_ID_3",
+      "isYouth": false,
+      "defendants": [
+        {
+          "defendantId": "DEFENDANT_ID_3",
+          "caseId": "CASE_ID",
+          "offences": [
+            "OFFENCE_ID1",
+            "OFFENCE_ID2"
+          ]
+        }
+      ]
+    }
+  ]
+}

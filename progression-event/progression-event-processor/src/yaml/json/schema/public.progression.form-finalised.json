@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/form-finalised.json",
+  "type": "object",
+  "properties": {
+    "courtFormId": {
+      "description": "Court Form Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseURN": {
+      "description": "Case URN",
+      "type": "string"
+    },
+    "formType": {
+      "description": "Form Type",
+      "$ref": "http://justice.gov.uk/core/courts/formType.json"
+    },
+    "updatedBy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "id",
+            "firstName",
+            "lastName"
+          ]
+        },
+        {
+          "required": [
+            "name"
+          ]
+        }
+      ]
+    },
+    "documentMetaData": {
+      "description": "Array of meta data of all documents",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "isWelsh": {
+            "type": "boolean"
+          },
+          "materialId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "fileName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+      "hearingDateTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "caseId",
+    "formType",
+    "courtFormId",
+    "updatedBy",
+    "documentMetaData"
+  ],
+  "additionalProperties": false
+}

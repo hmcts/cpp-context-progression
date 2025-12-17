@@ -1,0 +1,116 @@
+{
+  "defendantsOffences": [{
+      "switchedToYouth": false,
+      "defendantCaseOffences": {
+        "defendantId": "DEFENDANT_ID_1",
+        "prosecutionCaseId": "CASE_ID",
+        "offences": [
+          {
+            "id": "OFFENCE_ID_1",
+            "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+            "wording": "No Travel Card",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "startDate": "2018-01-01",
+            "endDate": "2018-01-01",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "orderIndex": 1,
+            "offenceCode": "OFFENCE_CODE_1",
+            "offenceTitle": "offence title",
+            "offenceTitleWelsh": "offence title Welsh",
+            "count": 1,
+            "indictmentParticular": "offence-indictmentParticular",
+            "notifiedPlea": {
+              "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+              "notifiedPleaDate": "2018-04-01",
+              "notifiedPleaValue": "NOTIFIED_GUILTY"
+            },
+            "offenceFacts": {
+              "vehicleRegistration": "AA12345",
+              "alcoholReadingAmount": 123,
+              "alcoholReadingMethodCode": "2222"
+            },
+            "reportingRestrictions": [
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "2020-01-01"
+              }
+            ]
+          },
+          {
+            "id": "OFFENCE_ID_2",
+            "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+            "wording": "No Travel Card",
+            "wordingWelsh": "No Travel Card In Welsh",
+            "startDate": "2018-01-01",
+            "endDate": "2018-01-01",
+            "arrestDate": "2018-01-01",
+            "chargeDate": "2018-01-01",
+            "orderIndex": 1,
+            "offenceCode": "OFFENCE_CODE_1",
+            "offenceTitle": "offence title",
+            "offenceTitleWelsh": "offence title Welsh",
+            "notifiedPlea": {
+              "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+              "notifiedPleaDate": "2018-04-01",
+              "notifiedPleaValue": "NOTIFIED_GUILTY"
+            },
+            "offenceFacts": {
+              "vehicleRegistration": "AA12345",
+              "alcoholReadingAmount": 123,
+              "alcoholReadingMethodCode": "2222"
+            },
+            "reportingRestrictions": [
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "REPORTING_RESTRICTION_ORDERED_DATE"
+              },
+              {
+                "id": "3789ab16-e588-4b7f-806a-44dc0eb0e75e",
+                "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                "orderedDate": "2020-01-01"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

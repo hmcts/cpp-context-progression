@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/prison-court-register-without-recipients-recorded.json",
+  "type": "object",
+  "properties": {
+    "courtCentreId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prisonCourtRegisterStreamId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prisonCourtRegister": {
+      "$ref": "http://justice.gov.uk/core/courts/prisonCourtRegisterDocument/prisonCourtRegisterDocumentRequest.json"
+    }
+  },
+  "required": [
+    "courtCentreId",
+    "prisonCourtRegister"
+  ],
+  "additionalProperties": false
+}

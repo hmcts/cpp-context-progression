@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/hearing/courts/public.events.hearing.hearing-resulted.json",
+  "type": "object",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+    },
+    "isReshare": {
+      "type": "boolean"
+    },
+    "sharedTime": {
+      "format": "date-time"
+    },
+    "shadowListedOffences": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    },
+    "hearingDay": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    }
+  },
+  "required": [
+    "isReshare",
+    "hearing",
+    "sharedTime",
+    "hearingDay"
+  ],
+  "additionalProperties": false
+}

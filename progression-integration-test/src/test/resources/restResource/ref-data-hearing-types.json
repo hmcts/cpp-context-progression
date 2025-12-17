@@ -1,0 +1,59 @@
+{
+  "hearingTypes": [
+    {
+      "id": "HEARINGTYPEID",
+      "seqId": 1,
+      "hearingCode": "PTP",
+      "hearingDescription": "Plea & Trial Preparation",
+      "welshHearingDescription": "Diffynnydd i fynychu i",
+      "defaultDurationMin": 20,
+      "trialTypeFlag": false,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+      "seqId": 2,
+      "hearingCode": "FPTP",
+      "hearingDescription": "Further Plea & Trial Preparation",
+      "welshHearingDescription": "Diffynnydd i fynychu 2",
+      "defaultDurationMin": 20,
+      "trialTypeFlag": false,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced",
+      "seqId": 3,
+      "hearingCode": "TIS",
+      "hearingDescription": "Trial",
+      "welshHearingDescription": "Diffynnydd i fynychu i",
+      "defaultDurationMin": 20,
+      "trialTypeFlag": true,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "9cc41e45-b594-4ba6-906e-1a4626b08fed",
+      "seqId": 4,
+      "hearingCode": "TRL",
+      "hearingDescription": "Trial of Issue",
+      "welshHearingDescription": "Diffynnydd i fynychu 2",
+      "defaultDurationMin": 20,
+      "trialTypeFlag": true,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776",
+      "seqId": 5,
+      "hearingCode": "FHG",
+      "hearingDescription": "First hearing",
+      "welshHearingDescription": "Gwrandawiad Cyntaf",
+      "defaultDurationMin": 20,
+      "trialTypeFlag": false,
+      "validFrom": null,
+      "validTo": null
+    }
+  ]
+}

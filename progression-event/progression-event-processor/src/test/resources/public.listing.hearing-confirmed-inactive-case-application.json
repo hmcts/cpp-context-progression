@@ -1,0 +1,31 @@
+{
+  "confirmedHearing": {
+    "courtApplicationIds": [
+      "%APPLICATION_ID%"
+    ],
+    "courtCentre": {
+      "code": "C20WO00",
+      "id": "9c207c41-a4ef-3dd0-9d7f-93d9b395ed26",
+      "name": "Wolverhampton Crown Court",
+      "roomId": "5eeb37e5-347f-3261-830f-9762d494f628"
+    },
+    "hearingDays": [
+      {
+        "courtCentreId": "9c207c41-a4ef-3dd0-9d7f-93d9b395ed26",
+        "courtRoomId": "5eeb37e5-347f-3261-830f-9762d494f628",
+        "isCancelled": false,
+        "listedDurationMinutes": 15,
+        "listingSequence": 0,
+        "sittingDay": "2024-05-30T09:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "%HEARING_ID%",
+    "jurisdictionType": "CROWN",
+    "type": {
+      "description":"%HEARING_TYPE%",
+      "id": "c79769ac-35d8-4ccf-96a5-1d7a2aa844d2"
+    }
+  },
+  "sendNotificationToParties": true
+}

@@ -1,0 +1,344 @@
+{
+  "hearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "id": "01234567-1234-1234-1234-123456789123",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "a",
+    "hearingLanguage": "ENGLISH",
+    "hearingDays": [
+      {
+        "sittingDay": "2015-01-12T05:27:17.210Z",
+        "listingSequence": 0,
+        "listedDurationMinutes": 0
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "a",
+      "welshName": "a",
+      "roomId": "00000000-0000-0000-0000-000000000000",
+      "roomName": "a",
+      "welshRoomName": "a"
+    },
+    "courtApplications": [
+      {
+        "id": "APPLICATION_ID",
+        "type": {
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "type": "a",
+          "typeWelsh": "a",
+          "legislation": "a",
+          "legislationWelsh": "a",
+          "categoryCode": "a",
+          "linkType": "STANDALONE",
+          "jurisdiction": "MAGISTRATES",
+          "summonsTemplateType" : "GENERIC_APPLICATION",
+          "breachType" : "NOT_APPLICABLE",
+          "appealFlag": false,
+          "applicantAppellantFlag" : false,
+          "pleaApplicableFlag" : false,
+          "commrOfOathFlag" : false,
+          "courtOfAppealFlag" : false,
+          "courtExtractAvlFlag" : false,
+          "prosecutorThirdPartyFlag" : false,
+          "spiOutApplicableFlag" : false,
+          "offenceActiveOrder" : "NOT_APPLICABLE"
+        },
+        "applicationReceivedDate": "1000-01-01",
+        "applicant": {
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "synonym": "a",
+          "summonsRequired" : false,
+          "notificationRequired" : false,
+          "personDetails": {
+            "title": "MR",
+            "firstName": "a",
+            "middleName": "a",
+            "lastName": "a",
+            "dateOfBirth": "1000-01-01",
+            "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "nationalityCode": "a",
+            "nationalityDescription": "a",
+            "additionalNationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "additionalNationalityCode": "a",
+            "additionalNationalityDescription": "a",
+            "disabilityStatus": "a",
+            "gender": "MALE",
+            "interpreterLanguageNeeds": "a",
+            "documentationLanguageNeeds": "ENGLISH",
+            "nationalInsuranceNumber": "NH222222B",
+            "occupation": "a",
+            "occupationCode": "a",
+            "specificRequirements": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "rob@abc.com",
+              "secondaryEmail": "rob@abc.com",
+              "fax": "a"
+            },
+            "personMarkers": [
+              {
+                "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "markerTypeid": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "markerTypeCode": "a",
+                "markerTypeDescription": "a"
+              }
+            ]
+          },
+          "organisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "rob@abc.com",
+              "secondaryEmail": "rob@abc.com",
+              "fax": "a"
+            }
+          },
+          "organisationPersons": [
+            {
+              "person": {
+                "title": "MR",
+                "firstName": "a",
+                "middleName": "a",
+                "lastName": "a",
+                "dateOfBirth": "1000-01-01",
+                "nationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH222222B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "rob@abc.com",
+                  "secondaryEmail": "rob@abc.com",
+                  "fax": "a"
+                },
+                "personMarkers": [
+                  {
+                    "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                    "markerTypeid": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+                    "markerTypeCode": "a",
+                    "markerTypeDescription": "a"
+                  }
+                ]
+              },
+              "role": "a"
+            }
+          ],
+          "prosecutingAuthority": {
+            "prosecutionAuthorityId": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+            "prosecutionAuthorityCode": "a",
+            "name": "a",
+            "accountCode": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "rob@abc.com",
+              "secondaryEmail": "rob@abc.com",
+              "fax": "a"
+            }
+          },
+          "representationOrganisation": {
+            "name": "a",
+            "incorporationNumber": "a",
+            "registeredCharityNumber": "a",
+            "address": {
+              "address1": "a",
+              "address2": "a",
+              "address3": "a",
+              "address4": "a",
+              "address5": "a",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "home": " ",
+              "work": "a",
+              "mobile": " ",
+              "primaryEmail": "rob@abc.com",
+              "secondaryEmail": "rob@abc.com",
+              "fax": "a"
+            }
+          }
+        },
+        "subject" : {
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+          "summonsRequired" : false,
+          "notificationRequired" : false
+        },
+        "applicationStatus": "LISTED",
+        "judicialResults": [
+          {
+            "isAvailableForCourtExtract": true,
+            "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+            "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+            "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+            "label": "a",
+            "welshLabel": "a",
+            "isAdjournmentResult": true,
+            "isFinancialResult": true,
+            "isConvictedResult": true,
+            "amendmentDate": "2019-01-01",
+            "amendmentReason": "a",
+            "cjsCode": "a",
+            "rank": 0.1,
+            "orderedDate": "2019-01-01",
+            "lastSharedDateTime": "a",
+            "courtClerk": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "courtClerk a",
+              "lastName": "courtClerk a"
+            },
+            "delegatedPowers": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "delegatedPowers a",
+              "lastName": "delegatedPowers a"
+            },
+            "fourEyesApproval": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "fourEyesApproval a",
+              "lastName": "fourEyesApproval a"
+            },
+            "approvedDate": "2019-01-01",
+            "usergroups": [
+              "a"
+            ],
+            "category": "FINAL",
+            "terminatesOffenceProceedings": false,
+            "lifeDuration" : false,
+            "rollUpPrompts": false,
+            "publishedForNows" : true,
+            "publishedAsAPrompt" : false,
+            "excludedFromResults" : false,
+            "alwaysPublished" : false,
+            "urgent" : false,
+            "d20" : false,
+            "resultText" : "resultText For Nows",
+            "judicialResultPrompts": [
+              {
+                "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                "label": "a",
+                "welshLabel": "a",
+                "value": "a",
+                "promptSequence": 0.1,
+                "promptReference": "a",
+                "courtExtract" : "Y"
+              }
+            ]
+          },
+          {
+            "isAvailableForCourtExtract": true,
+            "orderedHearingId": "88cdf36e-93e4-41b0-8277-17d9dba7f07f",
+            "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+            "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+            "label": "a",
+            "welshLabel": "a",
+            "isAdjournmentResult": true,
+            "isFinancialResult": true,
+            "isConvictedResult": true,
+            "amendmentDate": "2019-01-01",
+            "amendmentReason": "a",
+            "cjsCode": "a",
+            "rank": 0.1,
+            "orderedDate": "2019-01-01",
+            "lastSharedDateTime": "a",
+            "courtClerk": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "courtClerk a",
+              "lastName": "courtClerk a"
+            },
+            "delegatedPowers": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "delegatedPowers a",
+              "lastName": "delegatedPowers a"
+            },
+            "fourEyesApproval": {
+              "userId": "00000000-0000-0000-0000-000000000000",
+              "firstName": "fourEyesApproval a",
+              "lastName": "fourEyesApproval a"
+            },
+            "approvedDate": "2019-01-01",
+            "usergroups": [
+              "a"
+            ],
+            "category": "FINAL",
+            "terminatesOffenceProceedings": false,
+            "lifeDuration" : false,
+            "rollUpPrompts": false,
+            "publishedForNows" : false,
+            "publishedAsAPrompt" : false,
+            "excludedFromResults" : false,
+            "alwaysPublished" : false,
+            "urgent" : false,
+            "d20" : false,
+            "resultText" : "resultText For Non Nows",
+            "judicialResultPrompts": [
+              {
+                "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                "label": "a",
+                "welshLabel": "a",
+                "value": "a",
+                "promptSequence": 0.1,
+                "promptReference": "a",
+                "courtExtract" : "Y"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "sharedTime": "2016-06-01T10:00:00Z"
+}

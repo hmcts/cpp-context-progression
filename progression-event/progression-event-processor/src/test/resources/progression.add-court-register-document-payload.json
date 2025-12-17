@@ -1,0 +1,210 @@
+{
+  "courtRegisterDocumentRequests": [
+    {
+        "registerDate": "2019-02-01T11:59:49.000Z",
+        "hearingDate": "2020-07-10T09:00:00.000Z",
+        "courtCentreId": "%COURT_CENTRE_ID%",
+        "fileName": "court-register_2019-02-01_oucode.csv",
+        "defendantType" : "applicant",
+        "recipients": [
+          {
+            "recipientName": "John Smith",
+            "emailAddress1": "john.smith@hmcts.net",
+            "emailTemplateName": "e11cd868-f041-4ff0-a8fa-b60b573408fd"
+          }
+        ],
+        "defendants": [
+          {
+            "name": "Fred  Smith",
+            "dateOfBirth": "2001-12-27",
+            "address": {
+              "address1": "Flat 1",
+              "address2": "1 Old Road",
+              "address3": "London",
+              "address4": "Merton"
+            },
+            "gender": "MALE",
+            "postHearingCustodyStatus": "Not Applicable",
+            "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+            "parentGuardian": {
+              "name": "Father - Fred  Father - Smith",
+              "address": {
+                "address1": "Father - Flat 1",
+                "address2": "Father - 1 Old Road",
+                "address3": "Father - London",
+                "address4": "Father - Merton",
+                "postCode": "Father - SW99 1AA"
+              }
+            },
+            "hearing": {
+              "defendantPresent": true,
+              "defendantAppearanceDetails": "In Person",
+              "attendingSolicitorName": "Harold Benjamin Solicitors",
+              "jurisdiction": "MAGISTRATES",
+              "hearingType": "Sentence"
+            },
+            "prosecutionCasesOrApplications": [
+              {
+                "caseOrApplicationReference": "TFL4359536",
+                "offences": [
+                  {
+                    "offenceCode": "PS90010",
+                    "orderIndex": 1,
+                    "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                    "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.####Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+                    "pleaValue": "NOT_GUILTY",
+                    "verdictCode": "Guilty",
+                    "allocationDecision": "",
+                    "convictionDate": "2019-11-14",
+                    "pleaDate": "2019-11-14",
+                    "results": [
+                      {
+                        "resultText": "some result",
+                        "cjsResultCode": "cjscode"
+                      }
+                    ]
+                  }
+                ],
+                "results": [
+                  {
+                    "resultText": "some result",
+                    "cjsResultCode": "cjscode"
+                  }
+                ],
+                "prosecutionCounsels": [
+                  {
+                    "name": "prosecution Counsel Name",
+                    "status": "status"
+                  }
+                ]
+              }
+            ],
+            "aliases": [
+              {
+                "middleName": "Duncan",
+                "firstName": "John",
+                "title": "Mr",
+                "lastName": "Smith"
+              }
+            ],
+            "defendantResults": [
+              {
+                "resultText": "some result",
+                "cjsResultCode": "cjscode"
+              }
+            ],
+            "defenceCounsels": [
+              {
+                "name": "prosecution Counsel Name",
+                "status": "status"
+              }
+            ]
+          }
+        ],
+        "hearingVenue": {
+          "ljaName": "Mersey Courts",
+          "courtHouse": "liverpool crown court"
+        }
+    },
+    {
+      "registerDate": "2019-02-01",
+      "hearingDate": "2020-07-10T09:00:00.000Z",
+      "courtCentreId": "%COURT_CENTRE_ID%",
+      "fileName": "court-register_2019-02-01_oucode.csv",
+      "defendantType" : "applicant",
+      "recipients": [
+        {
+          "recipientName": "John Smith",
+          "emailAddress1": "john.smith@hmcts.net",
+          "emailTemplateName": "e11cd868-f041-4ff0-a8fa-b60b573408fd"
+        }
+      ],
+      "defendants": [
+        {
+          "name": "Fred  Smith 2",
+          "dateOfBirth": "2001-12-27",
+          "address": {
+            "address1": "Flat 1",
+            "address2": "1 Old Road",
+            "address3": "London",
+            "address4": "Merton"
+          },
+          "gender": "MALE",
+          "postHearingCustodyStatus": "Not Applicable",
+          "masterDefendantId": "6647df67-a065-4d07-90ba-a8daa064ecc4",
+          "parentGuardian": {
+            "name": "Father - Fred  Father - Smith",
+            "address": {
+              "address1": "Father - Flat 1",
+              "address2": "Father - 1 Old Road",
+              "address3": "Father - London",
+              "address4": "Father - Merton",
+              "postCode": "Father - SW99 1AA"
+            }
+          },
+          "hearing": {
+            "defendantPresent": true,
+            "defendantAppearanceDetails": "In Person",
+            "attendingSolicitorName": "Harold Benjamin Solicitors",
+            "jurisdiction": "MAGISTRATES",
+            "hearingType": "Sentence"
+          },
+          "prosecutionCasesOrApplications": [
+            {
+              "caseOrApplicationReference": "TFL4359536",
+              "offences": [
+                {
+                  "offenceCode": "PS90010 X",
+                  "orderIndex": 1,
+                  "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+                  "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.####Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+                  "pleaValue": "NOT_GUILTY",
+                  "verdictCode": "Guilty",
+                  "allocationDecision": "",
+                  "convictionDate": "2019-11-14",
+                  "pleaDate": "2019-11-14"
+                }
+              ],
+              "results": [
+                {
+                  "resultText": "some result",
+                  "cjsResultCode": "cjscode"
+                }
+              ],
+              "prosecutionCounsels": [
+                {
+                  "name": "prosecution Counsel Name",
+                  "status": "status"
+                }
+              ]
+            }
+          ],
+          "aliases": [
+            {
+              "middleName": "Duncan",
+              "firstName": "John",
+              "title": "Mr",
+              "lastName": "Smith"
+            }
+          ],
+          "defendantResults": [
+            {
+              "resultText": "some result",
+              "cjsResultCode": "cjscode"
+            }
+          ],
+          "defenceCounsels": [
+            {
+              "name": "prosecution Counsel Name",
+              "status": "status"
+            }
+          ]
+        }
+      ],
+      "hearingVenue": {
+        "ljaName": "Mersey Courts",
+        "courtHouse": "liverpool crown court"
+      }
+    }
+  ]
+}

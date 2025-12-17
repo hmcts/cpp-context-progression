@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-defence-association-access-history" author="cpp.context.progression">
+
+       <createTable tableName="defence_association_access_history">
+            <column name="id" type="UUID"/>
+            <column name="defendant_id" type="UUID"/>
+            <column name="grantee_user_id" type="UUID"/>
+            <column name="grantee_org_id" type="UUID"/>
+            <column name="grantor_user_id" type="UUID"/>
+            <column name="grantor_org_id" type="UUID"/>
+            <column name="description" type="TEXT"/>
+            <column name="start_date" type="date"/>
+           <column name="end_date" type="date"/>
+           <column name="agent_flag" type="BPCHAR(1)"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="id" constraintName="pk_defence_association_access_history"
+                       tableName="defence_association_access_history"/>
+        <addForeignKeyConstraint baseColumnNames="defendant_id" baseTableName="defence_association_access_history"
+                                 constraintName="fk_defence_association_access_history_defendant_id" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="defendant_id"
+                                 referencedTableName="defence_association"/>
+
+
+    </changeSet>
+
+</databaseChangeLog>

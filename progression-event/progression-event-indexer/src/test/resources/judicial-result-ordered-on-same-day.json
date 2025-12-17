@@ -1,0 +1,574 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "The Law Courts",
+        "address2": "Armada Way",
+        "address3": "Plymouth",
+        "address4": "",
+        "address5": "",
+        "postcode": "PL1 2ER"
+      },
+      "code": "C50PL00",
+      "courtLocationCode": "0446",
+      "id": "d78d470e-ad3d-3699-b30d-4b53c6cb6512",
+      "lja": {
+        "ljaCode": "1302",
+        "ljaName": "South and West Devon Magistrates' Court"
+      },
+      "name": "Plymouth Crown Court",
+      "roomId": "3e0a5ddf-7d5b-3e08-9b93-011c83330038",
+      "roomName": "Courtroom 04"
+    },
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "d78d470e-ad3d-3699-b30d-4b53c6cb6512",
+        "courtRoomId": "3e0a5ddf-7d5b-3e08-9b93-011c83330038",
+        "isCancelled": false,
+        "listedDurationMinutes": 60,
+        "listingSequence": 0,
+        "sittingDay": "2022-03-31T10:45:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "54bf3bcd-cec8-45c0-be42-abae721b16c5",
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2021-11-24T16:39:25.595Z",
+            "id": "f10d3b30-530e-431b-86a5-ef603b9d2ece",
+            "isYouth": false,
+            "masterDefendantId": "f10d3b30-530e-431b-86a5-ef603b9d2ece",
+            "offences": [
+              {
+                "arrestDate": "2016-01-01",
+                "chargeDate": "2016-01-01",
+                "count": 1,
+                "endorsableFlag": false,
+                "id": "6da3ab5a-e478-4cd3-847f-03fa798e89a8",
+                "isDisposed": false,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": true,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "39d09635-abed-487a-a665-3b8f0f4bbf1f",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4630968a-0e3f-42a6-bde0-55a0c4f2e92e",
+                        "label": "Grounds for warrant",
+                        "promptReference": "groundsForWarrant",
+                        "promptSequence": 100,
+                        "qualifier": "LE",
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "first instance",
+                        "welshValue": "first instance"
+                      }
+                    ],
+                    "judicialResultTypeId": "73242763-44db-4d57-a855-44a6cf4f6226",
+                    "label": "Warrant for arrest without bail executed on day of issue",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2022-03-31",
+                    "orderedHearingId": "54bf3bcd-cec8-45c0-be42-abae721b16c5",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "LE",
+                    "rank": 69900,
+                    "resultDefinitionGroup": "WOAEXTEND",
+                    "resultText": "Warrant for arrest without bail executed on day of issue\nGrounds for warrant first instance",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "39d09635-abed-487a-a665-3b8f0f4bbf1f",
+                    "rootJudicialResultTypeId": "73242763-44db-4d57-a855-44a6cf4f6226",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "0a1ef6dc-38b8-450e-9735-e02f1c19ed0a",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "0fb06cff-f3a7-4229-b149-8e222f05f253",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Fixed Date:01/04/2022\nTime of hearing:11:45\nCourthouse organisation name:Maidstone Crown Court\nCourthouse address line 1:Maidstone Combined Court Centre\nCourthouse address line 2:The Law Courts\nCourthouse address line 3:Barker Road\nCourthouse address line 4:Maidstone\nCourthouse address line 5:Kent\nCourthouse post code:ME16 8EQ\nCourthouse email address 1:SE.CrownCourt@cps.gov.uk\nCourthouse email address 2:PECSMaidstoneCrown@serco.com\nCourtroom:Courtroom 03\nHearing type:Sentence\nEstimated duration:1 Hours\nRemand Status:Unconditional Bail",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "16fc9004-6bd3-4251-85a3-0d37aac77adc",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "529ab63f-ba11-432d-9155-305dff006e19",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "Maidstone Combined Court Centre",
+                          "address2": "The Law Courts",
+                          "address3": "Barker Road",
+                          "address4": "Maidstone",
+                          "address5": "Kent",
+                          "postcode": "ME16 8EQ"
+                        },
+                        "courtHearingLocation": "C46MA00",
+                        "id": "f491ac8a-ecb0-3d89-8106-0059a481b070",
+                        "name": "Maidstone Crown Court",
+                        "psaCode": 1960,
+                        "roomId": "41227647-8f07-35a3-abd6-7de263ca11da",
+                        "roomName": "Courtroom 03",
+                        "welshName": "Llys Y Goron Maidstone"
+                      },
+                      "estimatedMinutes": 60,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2022-04-01T10:45:00.000Z",
+                      "type": {
+                        "description": "Sentence",
+                        "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+                      }
+                    },
+                    "orderedDate": "2022-03-31",
+                    "orderedHearingId": "54bf3bcd-cec8-45c0-be42-abae721b16c5",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 76400,
+                    "resultText": "Adjournment\nNext hearing in Crown Court Fixed Date:01/04/2022\nTime of hearing:11:45\nCourthouse organisation name:Maidstone Crown Court\nCourthouse address line 1:Maidstone Combined Court Centre\nCourthouse address line 2:The Law Courts\nCourthouse address line 3:Barker Road\nCourthouse address line 4:Maidstone\nCourthouse address line 5:Kent\nCourthouse post code:ME16 8EQ\nCourthouse email address 1:SE.CrownCourt@cps.gov.uk\nCourthouse email address 2:PECSMaidstoneCrown@serco.com\nCourtroom:Courtroom 03\nHearing type:Sentence\nEstimated duration:1 Hours\nRemand Status:Unconditional Bail\nDefendant to attend the next hearing true\nTo attend or a warrant to issue \nAdjournment reasons ",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "0a1ef6dc-38b8-450e-9735-e02f1c19ed0a",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "16fc9004-6bd3-4251-85a3-0d37aac77adc",
+                    "judicialResultTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2022-03-31",
+                    "orderedHearingId": "54bf3bcd-cec8-45c0-be42-abae721b16c5",
+                    "parentJudicialResultId": "529ab63f-ba11-432d-9155-305dff006e19",
+                    "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 11500,
+                    "resultDefinitionGroup": "Adjournment reasons",
+                    "resultText": "To attend or a warrant to issue\n",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "0a1ef6dc-38b8-450e-9735-e02f1c19ed0a",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  },
+                  {
+                    "alwaysPublished": false,
+                    "category": "ANCILLARY",
+                    "courtClerk": {
+                      "firstName": "Emma",
+                      "lastName": "Cleaner",
+                      "userId": "2781b565-4514-4805-8744-a3e827f0f611"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "0fb06cff-f3a7-4229-b149-8e222f05f253",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "aea2ee79-47b4-4023-9a95-1b327e6e03d5",
+                        "label": "Fixed Date",
+                        "promptReference": "fixedDate",
+                        "promptSequence": 200,
+                        "type": "DATE",
+                        "usergroups": [],
+                        "value": "01/04/2022",
+                        "welshLabel": "Dyddiad Penodol",
+                        "welshValue": "01/04/2022"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                        "label": "Time of hearing",
+                        "promptReference": "timeOfHearing",
+                        "promptSequence": 400,
+                        "type": "TIME",
+                        "usergroups": [],
+                        "value": "11:45",
+                        "welshLabel": "Amser y gwrandawiad",
+                        "welshValue": "11:45"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse organisation name",
+                        "promptReference": "hCHOUSEOrganisationName",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Maidstone Crown Court",
+                        "welshValue": "Maidstone Crown Court"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 1",
+                        "promptReference": "hCHOUSEAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Maidstone Combined Court Centre",
+                        "welshValue": "Maidstone Combined Court Centre"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 2",
+                        "promptReference": "hCHOUSEAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "The Law Courts",
+                        "welshValue": "The Law Courts"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 3",
+                        "promptReference": "hCHOUSEAddress3",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Barker Road",
+                        "welshValue": "Barker Road"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 4",
+                        "promptReference": "hCHOUSEAddress4",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Maidstone",
+                        "welshValue": "Maidstone"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse address line 5",
+                        "promptReference": "hCHOUSEAddress5",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Kent",
+                        "welshValue": "Kent"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse post code",
+                        "promptReference": "hCHOUSEPostCode",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "ME16 8EQ",
+                        "welshValue": "ME16 8EQ"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 1",
+                        "promptReference": "hCHOUSEEmailAddress1",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "SE.CrownCourt@cps.gov.uk",
+                        "welshValue": "SE.CrownCourt@cps.gov.uk"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                        "label": "Courthouse email address 2",
+                        "promptReference": "hCHOUSEEmailAddress2",
+                        "promptSequence": 500,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "PECSMaidstoneCrown@serco.com",
+                        "welshValue": "PECSMaidstoneCrown@serco.com"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                        "label": "Courtroom",
+                        "promptReference": "HCROOM",
+                        "promptSequence": 600,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "Courtroom 03",
+                        "welshLabel": "Ystafell Llys",
+                        "welshValue": "Courtroom 03"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                        "label": "Hearing type",
+                        "promptReference": "HTYPE",
+                        "promptSequence": 700,
+                        "type": "TXT",
+                        "usergroups": [],
+                        "value": "Sentence",
+                        "welshLabel": "Math o wrandawiad",
+                        "welshValue": "Sentence"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 800,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "1 Hours",
+                        "welshLabel": "Amcangyfrif amser",
+                        "welshValue": "1 Hours"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "9403f0d7-90b5-4377-84b4-f06a77811362",
+                        "label": "Remand Status",
+                        "promptReference": "remandStatus",
+                        "promptSequence": 900,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "Unconditional Bail",
+                        "welshLabel": "Statws remand",
+                        "welshValue": "Mechnïaeth Ddiamod"
+                      }
+                    ],
+                    "judicialResultTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "lastSharedDateTime": "2021-11-24",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2022-03-31",
+                    "orderedHearingId": "54bf3bcd-cec8-45c0-be42-abae721b16c5",
+                    "parentJudicialResultId": "f1021175-db63-4fb1-9ea6-7fd2773a2765",
+                    "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": true,
+                    "publishedForNows": true,
+                    "rank": 8100,
+                    "resultDefinitionGroup": "Next hearing",
+                    "resultText": "Next hearing in Crown Court\nFixed Date 2022-04-01\nTime of hearing 11:45\nCourthouse organisation name Maidstone Crown Court\nCourthouse address line 1 Maidstone Combined Court Centre\nCourthouse address line 2 The Law Courts\nCourthouse address line 3 Barker Road\nCourthouse address line 4 Maidstone\nCourthouse address line 5 Kent\nCourthouse post code ME16 8EQ\nCourthouse email address 1 SE.CrownCourt@cps.gov.uk\nCourthouse email address 2 PECSMaidstoneCrown@serco.com\nCourtroom Courtroom 03\nHearing type Sentence\nEstimated duration 1 Hours\nRemand Status Unconditional Bail",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "0a1ef6dc-38b8-450e-9735-e02f1c19ed0a",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  }
+                ],
+                "lastAdjournDate": "2022-03-31",
+                "lastAdjournedHearingType": "To attend or a warrant to issue",
+                "listingNumber": 4,
+                "modeOfTrial": "Summary",
+                "offenceCode": "CA03014",
+                "offenceDefinitionId": "d6bd72ad-37bf-330d-bcc6-215728949d3e",
+                "offenceLegislation": "Section 18 - attempt    wounding with intent Legislation",
+                "offenceTitle": "Fail / refuse give assistance to person executing Communications Act search warrant",
+                "orderIndex": 1,
+                "proceedingsConcluded": false,
+                "startDate": "2015-07-02",
+                "wording": "Some offence wording"
+              }
+            ],
+            "personDefendant": {
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "personDetails": {
+                "additionalNationalityCode": "POL",
+                "additionalNationalityDescription": "Pole",
+                "additionalNationalityId": "e3baf6cc-1711-43cd-8aad-80ca6e89c946",
+                "address": {
+                  "address1": "Snce5hhI3d"
+                },
+                "dateOfBirth": "1975-05-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Nakia",
+                "gender": "NOT_SPECIFIED",
+                "lastName": "Runolfsson",
+                "nationalityCode": "GBR",
+                "nationalityDescription": "British",
+                "nationalityId": "49433158-3542-49c8-a9af-581a0e746152",
+                "title": "MR"
+              },
+              "policeBailConditions": "Some bail conditions",
+              "policeBailStatus": {
+                "code": "B",
+                "description": "Conditional Bail",
+                "id": "dd4073b6-22be-3875-9d63-5da286bb3ece"
+              }
+            },
+            "prosecutionAuthorityReference": "26GD3392620",
+            "prosecutionCaseId": "223025b5-06b2-4de8-be5e-fedee4609a6f"
+          }
+        ],
+        "id": "223025b5-06b2-4de8-be5e-fedee4609a6f",
+        "initiationCode": "C",
+        "originatingOrganisation": "GAEAA01",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Barton House",
+            "address2": "Bond Street",
+            "address3": "Bristol",
+            "postcode": "BS98 1TL"
+          },
+          "contact": {
+            "primaryEmail": "court.results@tvl.cjsm.net"
+          },
+          "majorCreditorCode": "TVL3",
+          "prosecutionAuthorityCode": "TVL",
+          "prosecutionAuthorityId": "6b7b9adc-ccee-4b13-b2c7-499c28e98962",
+          "prosecutionAuthorityName": "TV Licensing",
+          "prosecutionAuthorityOUCode": "GAEAA01",
+          "caseURN": "16GD8863721"
+        }
+      }
+    ],
+    "shadowListedOffences": [],
+    "type": {
+      "description": "Sentence",
+      "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+    }
+  },
+  "hearingListingStatus": "HEARING_RESULTED",
+  "notifyNCES": false
+}

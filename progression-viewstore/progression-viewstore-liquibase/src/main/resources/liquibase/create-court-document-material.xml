@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="create-court-document-material" author="cpp.context.progression">
+
+       <createTable tableName="court_document_material">
+            <column name="court_document_id" type="UUID"/>
+            <column name="material_id" type="UUID"/>
+        </createTable>
+
+        <createTable tableName="material_usergroup">
+            <column name="material_id" type="UUID"/>
+            <column name="user_groups" type="TEXT"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="material_id" constraintName="court_document_material_primary_key"
+                       tableName="court_document_material"/>
+
+        <addForeignKeyConstraint baseColumnNames="court_document_id" baseTableName="court_document_material"
+                                 constraintName="fk_court_document_id" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="court_document"/>
+
+        <addForeignKeyConstraint baseColumnNames="material_id" baseTableName="material_usergroup"
+                                 constraintName="fk_material_id" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="material_id"
+                                 referencedTableName="court_document_material"/>
+
+    </changeSet>
+
+</databaseChangeLog>

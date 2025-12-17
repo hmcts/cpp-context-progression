@@ -1,0 +1,105 @@
+{
+  "courtApplication": {
+    "type": {
+      "id": "79fd3711-f603-3782-96bd-e7a1df265ccd",
+      "code": "SX03531",
+      "type": "Application for a sexual offences prevention order",
+      "legislation": "In accordance with section 104(5) of the Sexual Offences Act 2003.",
+      "categoryCode": "VP",
+      "applicantAppellantFlag": false,
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType" : "GENERIC_APPLICATION",
+      "breachType" : "GENERIC_BREACH",
+      "appealFlag" : false,
+      "pleaApplicableFlag" : false,
+      "commrOfOathFlag" : false,
+      "courtOfAppealFlag" : false,
+      "courtExtractAvlFlag" : false,
+      "prosecutorThirdPartyFlag" : false,
+      "spiOutApplicableFlag" : false,
+      "offenceActiveOrder" : "OFFENCE"
+    },
+    "id": "RANDOM_APPLICATION_ID",
+    "applicationStatus": "DRAFT",
+    "applicationReceivedDate": "2020-03-03",
+    "applicant": {
+      "id": "f0953efd-a0cf-45bc-b8d9-1d9887c817bd",
+      "personDetails": {
+        "firstName": "RANDOM_INDIVIDUAL_FIRST_NAME",
+        "lastName": "RANDOM_INDIVIDUAL_LAST_NAME",
+        "address": {
+          "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+          "postcode": "CR0 7QP"
+        },
+        "gender": "NOT_SPECIFIED"
+      },
+      "summonsRequired" : false,
+      "notificationRequired" : false
+    },
+    "respondents": [
+      {
+          "id": "dfe3affc-ebda-4ff6-ad9b-846d0b967b73",
+          "organisation": {
+            "name": "RANDOM_RESPONDENT_ORGANISATION_NAME",
+            "address": {
+              "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+              "address2": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS2",
+              "postcode": "CR0 7QP"
+            },
+            "isProbationBreach": true
+          },
+          "organisationPersons": [
+            {
+              "person": {
+                "firstName": "RANDOM_RESPONDENT_REPRESENTATIVE_FIRST_NAME",
+                "lastName": "RANDOM_RESPONDENT_REPRESENTATIVE_LAST_NAME",
+                "gender": "NOT_SPECIFIED"
+              },
+              "role": "RANDOM_RESPONDENT_REPRESENTATIVE_POSITION"
+            }
+          ],
+        "summonsRequired" : false,
+        "notificationRequired" : false
+      },
+      {
+          "id": "adce7ec1-9be1-4506-be25-9724b19f44f6",
+          "personDetails": {
+            "firstName": "RANDOM_INDIVIDUAL_FIRST_NAME",
+            "lastName": "RANDOM_INDIVIDUAL_LAST_NAME",
+            "address": {
+              "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+              "address2": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS2",
+              "postcode": "CR0 7QP"
+            },
+            "gender": "NOT_SPECIFIED"
+          },
+          "representationOrganisation": {
+            "name": "RANDOM_INDIVIDUAL_ORG_NAME",
+            "address": {
+              "address1": "RANDOM_INDIVIDUAL_ORG_ADDRESS"
+            },
+            "contact": {
+              "primaryEmail": "RANDOM_REP_EMAIL@hmcts.net"
+            }
+          },
+        "summonsRequired" : false,
+        "notificationRequired" : false
+      }
+    ],
+    "subject": {
+      "id": "f0953efd-a0cf-45bc-b8d9-1d9887c817bd",
+      "personDetails": {
+        "firstName": "RANDOM_INDIVIDUAL_FIRST_NAME",
+        "lastName": "RANDOM_INDIVIDUAL_LAST_NAME",
+        "address": {
+          "address1": "RANDOM_RESPONDENT_ORGANISATION_ADDRESS1",
+          "postcode": "CR0 7QP"
+        },
+        "gender": "NOT_SPECIFIED"
+      },
+      "summonsRequired" : false,
+      "notificationRequired" : false
+    }
+  }
+}

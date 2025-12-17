@@ -1,0 +1,11 @@
+{
+  "prosecutionCaseId": "f2444e0e-3070-4bcc-a820-0d1959655762",
+  "prosecutionCaseUrn": "CN23521341",
+  "cases": [
+    {
+      "caseId": "aa254ae6-78cc-11ea-bc55-0242ac130003",
+      "caseUrn": "CN5235234",
+      "linkGroupId": "8b6295e6-78cc-11ea-bc55-0242ac130003"
+    }
+  ]
+}

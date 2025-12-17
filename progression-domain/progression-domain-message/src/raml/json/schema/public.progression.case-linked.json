@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public.progression.case-linked.json",
+  "type": "object",
+  "properties": {
+    "linkActionType": {
+      "type": "string",
+      "enum": [
+        "LINK",
+        "UNLINK"
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "hearingId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseUrn": {
+            "type": "string"
+          },
+          "linkedToCases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "caseId": {
+                "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+              },
+              "caseUrn": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "caseId",
+              "caseUrn"
+            ],
+            "additionalProperties": false
+          }
+        }
+        },
+        "required": [
+          "caseId",
+          "caseUrn",
+          "linkedToCases"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "linkActionType",
+    "cases"
+  ]
+}

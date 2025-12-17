@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.email-requested.json",
+  "type": "object",
+  "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "notifications": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/notification"
+      }
+    }
+  },
+  "definitions": {
+    "notification": {
+      "properties": {
+        "notificationId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "templateId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "sendToAddress": {
+          "type": "string"
+        },
+        "replyToAddress": {
+          "type": "string"
+        },
+        "personalisation": {
+          "type": "object",
+          "properties": {
+          },
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "notificationId",
+        "templateId",
+        "sendToAddress"
+      ]
+    }
+  },
+  "required": [
+    "notifications"
+  ]
+}

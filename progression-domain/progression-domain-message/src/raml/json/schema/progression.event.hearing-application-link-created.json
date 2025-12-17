@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-application-link-created.json",
+  "type": "object",
+  "description": "Create a link between hearing and application",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    },
+    "applicationId": {
+      "description": "Application Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingListingStatus": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/hearingListingStatus"
+    }
+  },
+  "required": [
+    "hearing",
+    "applicationId",
+    "hearingListingStatus"
+  ],
+  "additionalProperties": false
+}

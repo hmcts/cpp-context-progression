@@ -1,0 +1,20 @@
+{
+  "hearingId" : "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+  "prosecutionCases": [
+    {
+      "defendants": [
+        {
+          "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+          "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+        }
+      ],
+      "id": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
+      "initiationCode": "S",
+      "prosecutionCaseIdentifier": {
+        "prosecutionAuthorityCode": "4ZKOPhuyh5",
+        "prosecutionAuthorityId": "e677b61a-3360-48b0-8eee-649911475106",
+        "caseURN": "qriGUBZKR5"
+      }
+    }
+  ]
+}

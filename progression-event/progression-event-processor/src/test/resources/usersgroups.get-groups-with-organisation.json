@@ -1,0 +1,355 @@
+{
+  "groupsWithOrganisation": [
+    {
+      "groupName": "Genesis",
+      "roleIds": [],
+      "groupId": "402e9c9c-c3bf-4530-bc88-a4b7dce22d9d"
+    },
+    {
+      "groupName": "System administrators",
+      "roleIds": [
+        "3f5b67bc-6a8b-11ea-bc55-0242ac130003"
+      ],
+      "groupId": "46b9eab0-6a8b-11ea-bc55-0242ac130003"
+    },
+    {
+      "groupName": "System Users",
+      "prosecutingAuthority": "ALL",
+      "roleIds": [],
+      "groupId": "2a2d7e9e-0c60-11e6-a148-3e1d05defe78"
+    },
+    {
+      "groupName": "IDAM",
+      "roleIds": [],
+      "groupId": "a9d98c26-30c7-4cc1-b499-65fac20a39de"
+    },
+    {
+      "groupName": "CMS",
+      "roleIds": [],
+      "groupId": "7dfc236b-314e-4bcb-92e3-f28d8a9c80ac"
+    },
+    {
+      "groupName": "FTPS",
+      "roleIds": [],
+      "groupId": "180ab044-5413-4159-970d-1d64af9fb83b"
+    },
+    {
+      "groupName": "Online Plea System Users",
+      "prosecutingAuthority": "ALL",
+      "roleIds": [],
+      "groupId": "ff2fcd92-0e13-4e5f-8b61-2e3ddabebe39"
+    },
+    {
+      "groupName": "CPPI Consumers",
+      "roleIds": [],
+      "groupId": "b5010f22-514e-4691-a5f5-577728f90a94"
+    },
+    {
+      "groupName": "Second Line Support",
+      "roleIds": [],
+      "groupId": "85a02c4c-7eda-4e45-ac8a-023888041b16"
+    },
+    {
+      "groupName": "CJSE",
+      "roleIds": [],
+      "groupId": "fb3ef3ab-903b-456d-8faf-3dee7609a467"
+    },
+    {
+      "groupName": "Organisation administrator",
+      "category": "speciality",
+      "organisationId": "7d732ea8-655f-4446-b908-d44b76fc0bee",
+      "roleIds": [
+        "a005e51a-0ea5-462b-af7c-9ffb4f5514a8"
+      ],
+      "groupId": "138f745c-5e0d-4628-9bf4-f0459f5db9bf"
+    },
+    {
+      "groupName": "Deputies",
+      "category": "speciality",
+      "organisationId": "7d732ea8-655f-4446-b908-d44b76fc0bee",
+      "roleIds": [],
+      "groupId": "577c4d3d-c112-4a21-b74a-dd4a12809be0"
+    },
+    {
+      "groupName": "Advocates",
+      "category": "speciality",
+      "organisationId": "7d732ea8-655f-4446-b908-d44b76fc0bee",
+      "roleIds": [],
+      "groupId": "8446ee47-3d6c-4c30-a8cf-bd40dc581681"
+    },
+    {
+      "groupName": "Witness Care Officer",
+      "category": "speciality",
+      "organisationId": "7d732ea8-655f-4446-b908-d44b76fc0bee",
+      "roleIds": [
+        "3659dbb1-e242-447d-85d6-37cf951cd313"
+      ],
+      "groupId": "63724321-c7f8-4ecf-bf85-9f54a3814e48"
+    },
+    {
+      "groupName": "Court Clerks",
+      "category": "speciality",
+      "roleIds": [
+        "f863d2f8-e1ec-4dcf-abd1-909cdea50208"
+      ],
+      "groupId": "b6a117cb-c284-4103-958d-34ffcf200b24"
+    },
+    {
+      "groupName": "District Judge",
+      "category": "speciality",
+      "roleIds": [
+        "b469b197-2eb0-44dc-9b31-89959d6a2470"
+      ],
+      "groupId": "341ca32a-daa9-4bc9-b491-33e04ca950f2"
+    },
+    {
+      "groupName": "Charging Lawyers",
+      "roleIds": [],
+      "groupId": "b0b58d4f-4855-4f3e-bd83-e25d2fd6b4f3"
+    },
+    {
+      "groupName": "London (Metropolitan) Police Prosecutors",
+      "prosecutingAuthority": "METPF",
+      "roleIds": [],
+      "groupId": "adef46ed-e8ae-4cd5-888c-46c1ed5dd77f"
+    },
+    {
+      "groupName": "Warwickshire Police Prosecutors",
+      "prosecutingAuthority": "WARPF",
+      "roleIds": [],
+      "groupId": "ea5cc0f3-e8da-49cc-8b4e-891dc7f0171c"
+    },
+    {
+      "groupName": "Judiciary",
+      "roleIds": [],
+      "groupId": "78e7f119-5778-43ff-8f99-97164b17700d"
+    },
+    {
+      "groupName": "Prison Admin",
+      "roleIds": [],
+      "groupId": "40078079-f31c-4e0f-8c4f-a4e5815f4d38"
+    },
+    {
+      "groupName": "Eject Case Group",
+      "roleIds": [],
+      "groupId": "dd8dcdcf-58d1-4e45-8450-40b0f569a6a9"
+    },
+    {
+      "groupName": "HMCTS Analytics and Performance",
+      "roleIds": [],
+      "groupId": "cd16d0bb-c078-4b19-8db5-5f1e77c95291"
+    },
+    {
+      "groupName": "NCES",
+      "roleIds": [
+        "0284b649-f32a-4c5f-abef-50aa94e24eed"
+      ],
+      "resultsReferenceDataGroup": "NCES",
+      "groupId": "08fadc52-df7d-4a09-ba0d-58ed25bf7c1d"
+    },
+    {
+      "groupName": "SJP Prosecutors",
+      "roleIds": [],
+      "resultsReferenceDataGroup": "Prosecuting Authorities",
+      "groupId": "0921da5b-e495-430c-8cb7-17b17da3246f"
+    },
+    {
+      "groupName": "TFL Prosecutors",
+      "prosecutingAuthority": "TFL",
+      "roleIds": [],
+      "resultsReferenceDataGroup": "Prosecuting Authorities",
+      "groupId": "09cd6665-d6b3-49d4-b776-63c701387dc0"
+    },
+    {
+      "groupName": "Magistrates",
+      "roleIds": [],
+      "resultsReferenceDataGroup": "Judiciary",
+      "documentsReferenceDataGroup": "Magistrates",
+      "groupId": "1c8deffd-15cb-40dc-9f5f-af72a01f3c75"
+    },
+    {
+      "groupName": "Chambers Clerk",
+      "roleIds": [
+        "73e9ac17-7e7d-4df9-bb06-f86228ce547b"
+      ],
+      "resultsReferenceDataGroup": "Defence",
+      "groupId": "37967f34-2c5b-49b2-b019-82b4eafa3517"
+    },
+    {
+      "groupName": "Listing Officers",
+      "roleIds": [
+        "914e6787-8322-42d0-9836-94f643d7b9da"
+      ],
+      "resultsReferenceDataGroup": "HMCTS",
+      "documentsReferenceDataGroup": "Listing Officers",
+      "groupId": "38e3f119-5998-43ff-8f99-97164b18400d"
+    },
+    {
+      "groupName": "Police Admin",
+      "roleIds": [
+        "9210e484-1cda-462f-b28b-2170a5a900f9"
+      ],
+      "resultsReferenceDataGroup": "Police",
+      "groupId": "3b956811-e4e1-431d-b56a-7fd6ee6d49d2"
+    },
+    {
+      "groupName": "Victims & Witness Care Admin",
+      "roleIds": [
+        "9210e484-1cda-462f-b28b-2170a5a900f9"
+      ],
+      "resultsReferenceDataGroup": "Police",
+      "groupId": "3c05b169-57bc-44f0-9cd7-2806f84a1a0f"
+    },
+    {
+      "groupName": "Chambers Admin",
+      "roleIds": [
+        "3910f0e1-0802-4d0f-a988-a4ca0542ef92"
+      ],
+      "resultsReferenceDataGroup": "Defence",
+      "groupId": "4f067e3e-b563-46f6-a780-fafbaff081db"
+    },
+    {
+      "groupName": "Court Administrators",
+      "prosecutingAuthority": "ALL",
+      "roleIds": [
+        "5b7cfea3-923c-4b0f-a2f2-656d119c9432"
+      ],
+      "resultsReferenceDataGroup": "HMCTS",
+      "documentsReferenceDataGroup": "Court Administrators",
+      "groupId": "53292fc8-d164-4a6c-8722-cdbc795cf83a"
+    },
+    {
+      "groupName": "Legal Advisers",
+      "prosecutingAuthority": "ALL",
+      "roleIds": [
+        "1b9d110a-ad06-4e47-a5af-b986d969c6bf"
+      ],
+      "resultsReferenceDataGroup": "HMCTS",
+      "documentsReferenceDataGroup": "Legal Advisers",
+      "groupId": "63cae459-0e51-4d60-bcf8-c5324be50ba4"
+    },
+    {
+      "groupName": "Defence Lawyers",
+      "roleIds": [
+        "3659dbb1-e242-447d-85d6-37cf951cd313"
+      ],
+      "resultsReferenceDataGroup": "Defence",
+      "documentsReferenceDataGroup": "Defence Users",
+      "groupId": "693e08e2-e1b3-4919-b7a5-9a69c3ba250d"
+    },
+    {
+      "groupName": "Non CPS Prosecutors",
+      "roleIds": [],
+      "resultsReferenceDataGroup": "Prosecuting authorities",
+      "groupId": "7487eff6-c8e7-4af7-98c3-5fb41d8e7200"
+    },
+    {
+      "groupName": "Crown Court Admin",
+      "roleIds": [
+        "301a4590-dc62-46cc-8318-3089a606b0b2"
+      ],
+      "resultsReferenceDataGroup": "HMCTS",
+      "documentsReferenceDataGroup": "Crown Court Admin",
+      "groupId": "78e7f119-5778-43ff-8f99-97164b17700e"
+    },
+    {
+      "groupName": "DJMC",
+      "roleIds": [
+        "b469b197-2eb0-44dc-9b31-89959d6a2470"
+      ],
+      "resultsReferenceDataGroup": "Judiciary",
+      "documentsReferenceDataGroup": "District Judge",
+      "groupId": "81d4ac7d-6841-4af4-8bb4-917a62239f64"
+    },
+    {
+      "groupName": "TVL Prosecutors",
+      "prosecutingAuthority": "TVL",
+      "roleIds": [],
+      "resultsReferenceDataGroup": "Prosecuting Authorities",
+      "groupId": "8310193e-46ce-472b-be4b-d79b9bf8604c"
+    },
+    {
+      "groupName": "Advocates",
+      "roleIds": [
+        "3659dbb1-e242-447d-85d6-37cf951cd313"
+      ],
+      "resultsReferenceDataGroup": "Defence",
+      "documentsReferenceDataGroup": "Defence Users",
+      "groupId": "8d365984-0643-4b1a-81c6-3a0f7b750ddf"
+    },
+    {
+      "groupName": "Deputies",
+      "roleIds": [
+        "b469b197-2eb0-44dc-9b31-89959d6a2470"
+      ],
+      "resultsReferenceDataGroup": "Judiciary",
+      "documentsReferenceDataGroup": "District Judge",
+      "groupId": "ab55768a-865d-4f69-b0d1-bb090b9745df"
+    },
+    {
+      "groupName": "CPS",
+      "roleIds": [
+        "e809bb5c-f338-4eaf-b8e5-05bdac9372c1"
+      ],
+      "resultsReferenceDataGroup": "CPS",
+      "groupId": "af6af4d6-dc7b-4881-9613-3508fba98f83"
+    },
+    {
+      "groupName": "Youth Offending Service Admin",
+      "roleIds": [
+        "39cc06a2-7418-4a0f-ba12-38b644202559"
+      ],
+      "resultsReferenceDataGroup": "YOTs",
+      "documentsReferenceDataGroup": "Youth Offending Service Admin",
+      "groupId": "b4ab816b-5714-4c7a-b59f-eb980e3c8946"
+    },
+    {
+      "groupName": "Probation Admin",
+      "roleIds": [
+        "5cab60aa-d5fa-463f-ba5d-fc859d19b260"
+      ],
+      "resultsReferenceDataGroup": "Probation",
+      "documentsReferenceDataGroup": "Probation Admin",
+      "groupId": "d231b119-d748-46da-89fc-293edf114e16"
+    },
+    {
+      "groupName": "DVLA Prosecutors",
+      "prosecutingAuthority": "DVLA",
+      "roleIds": [],
+      "resultsReferenceDataGroup": "Prosecuting Authorities",
+      "groupId": "d71ab753-76e4-4c39-88ce-c9511d14f1a6"
+    },
+    {
+      "groupName": "Defence Users",
+      "roleIds": [],
+      "resultsReferenceDataGroup": "Defence",
+      "documentsReferenceDataGroup": "Defence Users",
+      "groupId": "d8241d10-1567-4d73-8444-80107980b401"
+    },
+    {
+      "groupName": "Recorders",
+      "roleIds": [
+        "4a68dcdf-1b98-4e87-bb62-332cb6d4eb0c"
+      ],
+      "resultsReferenceDataGroup": "Judiciary",
+      "groupId": "e5419808-1fea-4564-b273-29834f6b95a2"
+    },
+    {
+      "groupName": "Judge",
+      "roleIds": [
+        "4a68dcdf-1b98-4e87-bb62-332cb6d4eb0c"
+      ],
+      "resultsReferenceDataGroup": "Judiciary",
+      "groupId": "e54c087a-ff26-4088-ad2b-040a0182cd1a"
+    },
+    {
+      "groupName": "Court Associate",
+      "roleIds": [
+        "3e573eed-8762-4be3-9080-f12923521292"
+      ],
+      "resultsReferenceDataGroup": "HMCTS",
+      "documentsReferenceDataGroup": "Court Associate",
+      "groupId": "ebcfdd9c-9605-4fbf-b9f3-85f8cfdd11bb"
+    }
+  ]
+}

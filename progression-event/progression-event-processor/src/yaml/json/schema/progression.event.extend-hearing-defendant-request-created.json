@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/extend-hearing-defendant-request-created.json",
+  "type": "object",
+  "properties": {
+    "defendantRequests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/listDefendantRequest.json#"
+      }
+    },
+    "confirmedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/confirmedHearing.json"
+    }
+  },
+  "required": [
+    "defendantRequests",
+    "confirmedHearing"
+  ],
+  "additionalProperties": false
+}

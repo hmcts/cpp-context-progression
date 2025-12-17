@@ -1,0 +1,1605 @@
+#%RAML 0.8
+title: Progression Query API
+baseUri: http://localhost:8080/progression-query-api/query/api/rest/progression
+protocols: [ HTTP, HTTPS ]
+
+/material/{materialId}/metadata:
+  description: get  material metadata
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.material-metadata+json
+          name: progression.query.material-metadata
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.material-metadata+json:
+            schema: !include json/schema/progression.query.material-metadata.json
+            example: !include json/progression.query.material-metadata.json
+
+/material/{materialId}/content:
+  description: get material content
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.material-content+json
+          name: progression.query.material-content
+      (mapping):
+          responseType: application/vnd.progression.query.material-content-for-defence+json
+          name: progression.query.material-content-for-defence
+      (mapping):
+          responseType: application/vnd.progression.query.material-content-for-prosecution+json
+          name: progression.query.material-content-for-prosecution
+      ...
+      queryParameters:
+          defendantId:
+            type: string
+            example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374
+            required: false
+          caseId:
+            type: string
+            example: 995f6482-ff86-4c3d-a9a0-f610ca34bd1c
+            required: false
+          applicationId:
+            type: string
+            example: 995f6482-ff86-4c3d-a9a0-f610ca34bd1c
+            required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.material-content+json:
+          application/vnd.progression.query.material-content-for-defence+json:
+          application/vnd.progression.query.material-content-for-prosecution+json:
+
+/prosecutioncases/{caseId}/defendants/{defendantId}/extract/{template}:
+  description: get court extract content as pdf
+  uriParameters:
+    caseId:
+      description: ID of prosecution case
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+    template:
+      description: template name to pass to docmosis api(CrownCourtExtract, CertificateOfConviction or CertificateOfAcquittal, RecordSheet)
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.court-extract+json
+          name: progression.query.court-extract
+      ...
+    queryParameters:
+        hearingIds:
+          description: comma separated list of hearingIds, only expected when template value is CrownCourtExtract
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.court-extract+json:
+
+/prosecutioncases/{caseId}/defendants/{defendantId}/record-sheet:
+  description: get record sheet content as pdf
+  uriParameters:
+    caseId:
+      description: ID of prosecution case
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.record-sheet+json
+          name: progression.query.record-sheet
+      ...
+    queryParameters:
+        hearingIds:
+          description: comma separated list of hearingIds
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.record-sheet+json:
+
+/prosecutioncases/{caseId}/record-sheet-for-application:
+  description: get record sheet content as pdf
+  uriParameters:
+    caseId:
+      description: ID of prosecution case
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.record-sheet-for-application+json
+          name: progression.query.record-sheet-for-application
+      ...
+    queryParameters:
+      offenceIds:
+        description: comma separated list of offenceIds
+        type: string
+        example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+        required: true
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.record-sheet-for-application+json:
+
+/prosecutioncases/{caseId}:
+  uriParameters:
+        caseId:
+          description: ID of prosecution case to get
+          type: string
+  get:
+      description: |
+        Return the case progression details for the prosecution case Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.case+json
+            name: progression.query.case
+        (mapping):
+            responseType: application/vnd.progression.query.prosecutioncase+json
+            name: progression.query.prosecutioncase
+        (mapping):
+                    responseType: application/vnd.progression.query.prosecutioncase-v2+json
+                    name: progression.query.prosecutioncase-v2
+        (mapping):
+            responseType: application/vnd.progression.query.prosecutioncase.caag+json
+            name: progression.query.prosecutioncase.caag
+        (mapping):
+            responseType: application/vnd.progression.query.casehearings+json
+            name: progression.query.casehearings
+        (mapping):
+            responseType: application/vnd.progression.query.case.hearingtypes+json
+            name: progression.query.case.hearingtypes
+        (mapping):
+            responseType: application/vnd.progression.query.case.allhearingtypes+json
+            name: progression.query.case.allhearingtypes
+        (mapping):
+            responseType: application/vnd.progression.query.case.allhearings+json
+            name: progression.query.case.allhearings
+        (mapping):
+            responseType: application/vnd.progression.query.prosecutioncase-details+json
+            name: progression.query.prosecutioncase-details
+        (mapping):
+            responseType: application/vnd.progression.query.related-references+json
+            name: progression.query.related-references
+        ...
+      queryParameters:
+        orderDate:
+          description: Order Date
+          type: string
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.case+json:
+                    example:  !include json/progression.query.case.json
+                    schema:  !include json/schema/progression.query.case.json
+                  application/vnd.progression.query.prosecutioncase+json:
+                    example:  !include json/progression.query.prosecutioncase.json
+                    schema:  !include json/schema/progression.query.prosecutioncase.json
+                  application/vnd.progression.query.prosecutioncase-v2+json:
+                    example:  !include json/progression.query.prosecutioncase.json
+                    schema:  !include json/schema/progression.query.prosecutioncase.json
+                  application/vnd.progression.query.prosecutioncase.caag+json:
+                    example:  !include json/progression.query.prosecutioncase.caag.json
+                    schema:  !include json/schema/progression.query.prosecutioncase.caag.json
+                  application/vnd.progression.query.casehearings+json:
+                    example:  !include json/progression.query.casehearings.json
+                    schema:  !include json/schema/progression.query.casehearings.json
+                  application/vnd.progression.query.case.hearingtypes+json:
+                    example:  !include json/progression.query.case.hearingtypes.json
+                    schema:  !include json/schema/progression.query.case.hearingtypes.json
+                  application/vnd.progression.query.case.allhearingtypes+json:
+                    example:  !include json/progression.query.case.allhearingtypes.json
+                    schema:  !include json/schema/progression.query.case.allhearingtypes.json
+                  application/vnd.progression.query.case.allhearings+json:
+                    example: !include json/progression.query.case.allhearings.json
+                    schema: !include json/schema/progression.query.case.allhearings.json
+                  application/vnd.progression.query.prosecutioncase-details+json:
+                    example:  !include json/progression.query.prosecutioncase-details.json
+                    schema:  !include json/schema/progression.query.prosecutioncase-details.json
+                  application/vnd.progression.query.related-references+json:
+                    schema:  !include json/schema/progression.query.related-references.json
+
+/prosecutioncases/{caseId}/defendants/{defendantId}/:
+  uriParameters:
+        caseId:
+          description: ID of prosecution case to get
+          type: string
+        defendantId:
+          description: ID of defendant
+          type: string
+  get:
+      description: |
+        Return the case progression details for the case Id and defendant Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.case-defendant-hearings+json
+            name: progression.query.case-defendant-hearings
+        (mapping):
+            responseType: application/vnd.progression.query.case-hearings-for-court-extract+json
+            name: progression.query.case-hearings-for-court-extract
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.case-defendant-hearings+json:
+                    example:  !include json/progression.query.case-defendant-hearings.json
+                    schema:  !include json/schema/progression.query.case-defendant-hearings.json
+                  application/vnd.progression.query.case-hearings-for-court-extract+json:
+                    example:  !include json/progression.query.case-hearings-for-court-extract.json
+                    schema:  !include json/schema/progression.query.case-hearings-for-court-extract.json
+
+/prosecutioncases/group/{groupId}:
+  uriParameters:
+        groupId:
+          description: ID of group cases
+          type: string
+  description: get member cases for group
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.group-member-cases+json
+          name: progression.query.group-member-cases
+      (mapping):
+          responseType: application/vnd.progression.query.mastercase-details+json
+          name: progression.query.mastercase-details
+
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.group-member-cases+json:
+             example:  !include json/progression.query.group-member-cases.json
+             schema:  !include json/schema/progression.query.group-member-cases.json
+          application/vnd.progression.query.mastercase-details+json:
+             example:  !include json/progression.query.mastercase-details.json
+             schema:  !include json/schema/progression.query.mastercase-details.json
+
+/defendant-requests/{defendantId}:
+  uriParameters:
+        defendantId:
+          description: ID of defendant to get request details
+          type: string
+  get:
+      description: |
+        Return the defendant request details that is originally part of court referral request.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.defendant-request+json
+            name: progression.query.defendant-request
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.defendant-request+json:
+                    example:  !include json/progression.query.defendant-request.json
+                    schema:  !include json/schema/progression.query.defendant-request.json
+
+/courtdocuments/{courtDocumentId}:
+  uriParameters:
+        courtDocumentId:
+          description: ID of court document to get
+          type: string
+  get:
+      description: |
+        Return the court document details for the  Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocument+json
+            name: progression.query.courtdocument
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.courtdocument+json:
+                    example:  !include json/progression.query.courtdocument.json
+                    schema:  !include json/schema/progression.query.courtdocument.json
+
+/courtdocumentsearch:
+  get:
+      description: |
+        Search for court documentIndices.UserDetailsLoaderTest
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments+json
+            name: progression.query.courtdocuments
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments-all+json
+            name: progression.query.courtdocuments-all
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments-all+json
+            name: progression.query.courtdocuments-all
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments.for.defence+json
+            name: progression.query.courtdocuments.for.defence
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments.for.prosecution+json
+            name: progression.query.courtdocuments.for.prosecution
+        (mapping):
+            responseType: application/vnd.progression.query.courtdocuments.with.pagination+json
+            name: progression.query.courtdocuments.with.pagination
+        ...
+      queryParameters:
+              caseId:
+                description: caseId(s) - comma separated to be searched
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+                required: false
+              defendantId:
+                description: defendant id to be searched
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+                required: false
+              applicationId:
+                description: application id (s) - comma separated to be searched
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+                required: false
+              hearingId:
+                description: Hearing id
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374
+                required: false
+              documentName:
+                description: name of the material
+                type: string
+                example: indictment-v1
+                required: false
+              sectionId:
+                description: sectionId of the material
+                type: string
+                example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374
+                required: false
+              sortField:
+                description:  the name of the field that sorting will be applied
+                enum: [date,section]
+                example: section
+                type: string
+                required: false
+              sortOrder:
+                description: sort direction
+                enum: [asc, desc]
+                example: asc
+                type: string
+                required: false
+              page:
+                description: page
+                example: 2
+                type: integer
+                required: false
+              pageSize:
+                description: size
+                example: 20
+                type: integer
+                required: false
+              prosecutingCase:
+                description: only applicable for standard courtlist. Set true to get restricted standard court list
+                type: boolean
+                required: false
+                default: false
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.courtdocuments+json:
+                    example:  !include json/progression.query.courtdocuments.json
+                    schema:  !include json/schema/progression.query.courtdocuments.json
+                  application/vnd.progression.query.courtdocuments-all+json:
+                    example: !include json/progression.query.courtdocuments-all.json
+                    schema: !include json/schema/progression.query.courtdocuments-all.json
+                  application/vnd.progression.query.courtdocuments.for.defence+json:
+                    example:  !include json/progression.query.courtdocuments.json
+                    schema:  !include json/schema/progression.query.courtdocuments.json
+                  application/vnd.progression.query.courtdocuments.for.prosecution+json:
+                    example:  !include json/progression.query.courtdocuments.json
+                    schema:  !include json/schema/progression.query.courtdocuments.json
+                  application/vnd.progression.query.courtdocuments.with.pagination+json:
+                    example:  !include json/progression.query.courtdocuments.with.pagination.json
+                    schema:  !include json/schema/progression.query.courtdocuments.with.pagination.json
+
+/search:
+  get:
+      description: |
+        Search for cases
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.search-cases+json
+            name: progression.query.search-cases
+        (mapping):
+            responseType: application/vnd.progression.query.search-cases-by-caseurn+json
+            name: progression.query.search-cases-by-caseurn
+        (mapping):
+            responseType: application/vnd.progression.query.case-exists-by-caseurn+json
+            name: progression.query.case-exist-by-caseurn
+        (mapping):
+            responseType: application/vnd.progression.query.cases-search-by-material-id+json
+            name: progression.query.cases-search-by-material-id
+        (mapping):
+            responseType: application/vnd.progression.query.usergroups-by-material-id+json
+            name: progression.query.usergroups-by-material-id
+        (mapping):
+            responseType: application/vnd.progression.query.search-prosecution-authority-id+json
+            name: progression.query.prosecutionauthorityid-by-case-id
+        (mapping):
+            responseType: application/vnd.progression.query.search-prosecutorid-prosecutionauthorityid+json
+            name: progression.query.prosecutorid-prosecutionauthorityid-by-case-id
+        ...
+      queryParameters:
+        q:
+          description: space separated list of search parameters
+          type: string
+          example: first name last name
+          required: false
+        caseIds:
+          description: caseId(s) - comma separated to be searched
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: false
+        caseUrn:
+          description: caseurn to search for
+          type: string
+          example: 39GD1116822
+          required: false
+
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.search-cases+json:
+                    example: !include json/progression.query.search-cases.json
+                    schema: !include json/schema/progression.query.search-cases.json
+                  application/vnd.progression.query.search-cases-by-caseurn+json:
+                    example: !include json/progression.query.search-cases-by-caseurn.json
+                    schema: !include json/schema/progression.query.search-cases-by-caseurn.json
+                  application/vnd.progression.query.case-exists-by-caseurn+json:
+                    example: !include json/progression.query.case-exists-by-caseurn.json
+                    schema: !include json/schema/progression.query.case-exists-by-caseurn.json
+                  application/vnd.progression.query.cases-search-by-material-id+json:
+                    example: !include json/progression.query.cases-search-by-material-id.json
+                    schema: !include json/schema/progression.query.cases-search-by-material-id.json
+                  application/vnd.progression.query.usergroups-by-material-id+json:
+                    example: !include json/progression.query.usergroups-by-material-id.json
+                    schema: !include  json/schema/progression.query.usergroups-by-material-id.json
+                  application/vnd.progression.query.search-prosecution-authority-id+json:
+                    example: !include json/progression.query.prosecution-authority-id.json
+                    schema: !include json/schema/progression.query.prosecution-authority-id.json
+                  application/vnd.progression.query.search-prosecutorid-prosecutionauthorityid+json:
+                    example: !include json/progression.query.prosecutorid-prosecutionauthorityid.json
+                    schema: !include json/schema/progression.query.prosecutorid-prosecutionauthorityid.json
+
+/material/nows/{materialId}/content:
+  description: get material content nows
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.material-nows-content+json
+          name: progression.query.material-nows-content
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.material-nows-content+json:
+
+
+/applications/{applicationId}:
+  uriParameters:
+        applicationId:
+          description: primary key of court application to get
+          type: string
+  get:
+      description: |
+        Return the application details for the  Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.application-laa+json
+            name: progression.query.application-laa
+        (mapping):
+            responseType: application/vnd.progression.query.application+json
+            name: progression.query.application
+        (mapping):
+            responseType: application/vnd.progression.query.application-only+json
+            name: progression.query.application-only
+        (mapping):
+            responseType: application/vnd.progression.query.application.summary+json
+            name: progression.query.application.summary
+        (mapping):
+            responseType: application/vnd.progression.query.application.aaag+json
+            name: progression.query.application.aaag
+        (mapping):
+            responseType: application/vnd.progression.query.application.aaag-for-defence+json
+            name: progression.query.application.aaag-for-defence
+        (mapping):
+            responseType: application/vnd.progression.query.application.aaag-for-defence+json
+            name: progression.query.application.aaag-for-defence
+        (mapping):
+            responseType: application/vnd.progression.query.application.aaag-for-defence+json
+            name: progression.query.application.aaag-for-defence
+        (mapping):
+            responseType: application/vnd.progression.query.applicationhearings+json
+            name: progression.query.applicationhearings
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.application-laa+json:
+                    example: !include json/progression.query.application-laa.json
+                    schema: !include json/schema/progression.query.application-laa.json
+                  application/vnd.progression.query.application+json:
+                    example:  !include json/progression.query.application.json
+                    schema:  !include json/schema/progression.query.application.json
+                  application/vnd.progression.query.application-only+json:
+                    example:  !include json/progression.query.application-only.json
+                    schema:  !include json/schema/progression.query.application-only.json
+                  application/vnd.progression.query.application.summary+json:
+                    example:  !include json/progression.query.application.summary.json
+                    schema:  !include json/schema/progression.query.application.summary.json
+                  application/vnd.progression.query.application.aaag+json:
+                    example:  !include json/progression.query.application.aaag.json
+                    schema:  !include json/schema/progression.query.application.aaag.json
+                  application/vnd.progression.query.application.aaag-for-defence+json:
+                    example:  !include json/progression.query.application.aaag.json
+                    schema:  !include json/schema/progression.query.application.aaag.json
+                  application/vnd.progression.query.applicationhearings+json:
+                    example:  !include json/progression.query.applicationhearings.json
+                    schema:  !include json/schema/progression.query.applicationhearings.json
+
+/applications/{applicationId}/case/{caseId}:
+  uriParameters:
+        applicationId:
+          description: primary key of court application to get
+          type: string
+        caseId:
+          description: Case Id
+          type: string
+  get:
+      description: |
+        Return the application details for the applicationId and caseId.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.case.status-for-application+json
+            name: progression.query.case.status-for-application
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.case.status-for-application+json:
+                    example:  !include json/progression.query.case.status-for-application.json
+                    schema:  !include json/schema/progression.query.case.status-for-application.json
+
+/applications/{prosecutionCaseId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  get:
+    description: |
+      Return the application ids of the applications linked with prosecutioncaseid.
+      ...
+      (mapping):
+            responseType: application/vnd.progression.query.active-applications-on-case+json
+            name: progression.query.active-applications-on-case
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.active-applications-on-case+json:
+            example: !include json/progression.query.active-applications-on-case.json
+            schema: !include json/schema/progression.query.active-applications-on-case.json
+
+
+/applications/{applicationId}/extract:
+  description: get court application extract content as pdf
+  uriParameters:
+    applicationId:
+      description: ID of parent application to be extracted
+      type: string
+
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.court-extract-application+json
+          name: progression.query.court-extract-application
+      ...
+    queryParameters:
+        hearingIds:
+          description: comma separated list of application hearingIds
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.court-extract-application+json:
+
+/applications/{applicationId}/defendants/{defendantId}:
+  uriParameters:
+    applicationId:
+      description: ID of linked application
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      Return the application details for the  Id.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.linked-application-hearings-for-court-extract+json
+          name: progression.query.linked-application-hearings-for-court-extract
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.linked-application-hearings-for-court-extract+json:
+            example:  !include json/progression.query.linked-application-hearings-for-court-extract.json
+            schema:  !include json/schema/progression.query.linked-application-hearings-for-court-extract.json
+
+
+/applications/{applicationId}/defendants/{defendantId}/extract:
+  description: get court linked application extract content as pdf
+  uriParameters:
+    applicationId:
+      description: ID of linked application
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.linked-application-extract+json
+          name: progression.query.linked-application-extract
+      ...
+    queryParameters:
+      hearingIds:
+        description: comma separated list of hearingIds, only expected when template value is CrownCourtExtract
+        type: string
+        example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+        required: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.linked-application-extract+json:
+
+/applications/application-status:
+  description: get application status for a given list of comma separated applicationIds
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application-status+json
+          name: progression.query.application-status
+      ...
+    queryParameters:
+        applicationIds:
+          description: comma separated list of application Ids
+          type: string
+          example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+          required: true
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.application-status+json:
+
+
+/applications/{applicationId}/notification-status:
+  description: get notification status for application Id
+  uriParameters:
+    applicationId:
+      description: application Id
+      type: string
+
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application.notification-status+json
+          name: progression.query.application.notification-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.application.notification-status+json:
+            schema: !include json/schema/progression.query.application.notification-status.json
+            example: !include json/progression.query.application.notification-status.json
+
+/applications/{applicationId}/hearings/{hearingId}:
+  uriParameters:
+    applicationId:
+      type: string
+    hearingId:
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application.shared-court-documents-links+json
+          name: progression.query.application.shared-court-documents-links
+       (mapping):
+          responseType: application/vnd.progression.query.application-hearing-case-details+json
+          name: progression.query.application-hearing-case-details
+
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.application.shared-court-documents-links+json:
+            example: !include json/progression.query.application.shared-court-documents-links.json
+            schema: !include json/schema/progression.query.application.shared-court-documents-links.json
+          application/vnd.progression.query.application-hearing-case-details+json:
+            example: !include json/progression.query.application-hearing-case-details.json
+            schema: !include json/schema/progression.query.application-hearing-case-details.json
+
+/hearingSearch/{hearingId}:
+  uriParameters:
+        hearingId:
+          description: ID of hearing to get
+          type: string
+  get:
+      description: |
+        Return the hearing details for the  Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.hearing+json
+            name: progression.query.hearing
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.hearing+json:
+                    example:  !include json/progression.query.hearing.json
+                    schema:  !include json/schema/progression.query.hearing.json
+
+/prosecutioncases/{caseId}/notification-status:
+  description: get notification status for Case Id
+  uriParameters:
+    caseId:
+      description: Case Id
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.prosecution.notification-status+json
+          name: progression.query.prosecution.notification-status
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.prosecution.notification-status+json:
+            schema: !include json/schema/progression.query.prosecution.notification-status.json
+            example: !include json/progression.query.prosecution.notification-status.json
+
+
+/prosecutioncases/{caseId}/defendants/{defendantId}/ejectcase/:
+  description: Extract case contents for a selected defendant as pdf
+  uriParameters:
+    caseId:
+      description: ID of prosecution case
+      type: string
+    defendantId:
+      description: ID of the defendant
+      type: string
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.eject-case+json
+          name: progression.query.eject-case
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.eject-case+json:
+
+/cases/{caseId}/notes:
+  uriParameters:
+        caseId:
+          description: ID of case notes to get
+          type: string
+  get:
+      description: |
+        Return the case notes for the case Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.case-notes+json
+            name: progression.query.case-notes
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.case-notes+json:
+                    example:  !include json/progression.query.case-notes.json
+                    schema:  !include json/schema/progression.query.case-notes.json
+
+/applications/{applicationId}/notes:
+  uriParameters:
+    applicationId:
+      description: ID of application notes to get
+      type: string
+  get:
+    description: |
+      Return the application notes for the application Id.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.application-notes+json
+          name: progression.query.application-notes
+      ...
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.application-notes+json:
+            example:  !include json/progression.query.application-notes.json
+            schema:  !include json/schema/progression.query.application-notes.json
+
+/defendants/{laaContractNumber}:
+  description: get defendants matching with LAA Contract Number
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.defendants-by-laacontractnumber+json
+          name: progression.query.defendants-by-laacontractnumber
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.defendants-by-laacontractnumber+json:
+            example:  !include json/progression.query.defendants-by-laacontractnumber.json
+            schema:  !include json/schema/progression.query.defendants-by-laacontractnumber.json
+
+/prosecutioncases/{caseId}/lsm-info:
+  uriParameters:
+        caseId:
+          description: ID of case notes to get
+          type: string
+  description: get cases match with given masterDefendantIds
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.case-lsm-info+json
+          name: progression.query.case-lsm-info
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.case-lsm-info+json:
+
+/nows/request/{requestId}:
+  uriParameters:
+        requestId:
+          description: ID of gob request Id to get
+          type: string
+  get:
+      description: |
+        Return the now document requests for the request Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.now-document-requests-by-request-id+json
+            name: progression.query.now-document-requests-by-request-id
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.now-document-requests-by-request-id+json:
+                    example:  !include json/progression.query.now-document-requests-by-request-id.json
+                    schema:  !include json/schema/progression.query.now-document-requests-by-request-id.json
+
+/nows/hearing/{hearingId}:
+  uriParameters:
+        hearingId:
+          description: hearing Id
+          type: string
+  get:
+      description: |
+        Return the now document requests for the hearing Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.now-document-request-by-hearing+json
+            name: progression.query.now-document-request-by-hearing
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.now-document-request-by-hearing+json:
+                    example:  !include json/progression.query.now-document-request-by-hearing.json
+                    schema:  !include json/schema/progression.query.now-document-request-by-hearing.json
+
+/court-register/request/{requestStatus}:
+  uriParameters:
+        requestStatus:
+          description: court register request status
+          type: string
+  get:
+      description: |
+        Return all the court register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-register-document-request+json
+            name: progression.query.court-register-document-request
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-register-document-request+json:
+                    example:  !include json/progression.query.court-register-document-request.json
+                    schema:  !include json/schema/progression.query.court-register-document-request.json
+
+/court-register/material/{materialId}:
+  uriParameters:
+        materialId:
+          description: material id for particular court center
+          type: string
+  get:
+      description: |
+        Return all the court register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-register-document-by-material+json
+            name: progression.query.court-register-document-by-material
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-register-document-by-material+json:
+                    example:  !include json/progression.query.court-register-document-by-material.json
+                    schema:  !include json/schema/progression.query.court-register-document-by-material.json
+
+/court-register/requestByDate:
+  get:
+      description: |
+        Return all the court register document generation requests
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-register-document-by-request-date+json
+            name: progression.query.court-register-document-by-request-date
+        ...
+
+      queryParameters:
+            registerDate:
+              description: registerDate
+              type: string
+              required: true
+            courtHouse:
+              description: comma seperated court house names
+              type: string
+              required: false
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-register-document-by-request-date+json:
+                    example:  !include json/progression.query.court-register-document-by-request-date.json
+                    schema:  !include json/schema/progression.query.court-register-document-by-request-date.json
+
+/prison-court-register/request/{courtCentreId}:
+  uriParameters:
+        courtCentreId:
+          description: court centre id for particular court centre
+          type: string
+  get:
+      description: |
+        Return all the prison court register document requests by court centre Id
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.prison-court-register-document-by-court-centre+json
+            name: progression.query.prison-court-register-document-by-court-centre
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.prison-court-register-document-by-court-centre+json:
+                    example: !include json/progression.query.prison-court-register-document-by-court-centre.json
+                    schema: !include json/schema/progression.query.prison-court-register-document-by-court-centre.json
+
+
+/court-proceedings/application/{applicationId}:
+  uriParameters:
+        applicationId:
+          description: application id for the particular court application
+          type: string
+  get:
+      description: |
+        Return the application for the application id
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.court-proceedings-for-application+json
+            name: progression.query.court-proceedings-for-application
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.court-proceedings-for-application+json:
+                    example: !include json/progression.query.court-proceedings-for-application.json
+                    schema: !include json/schema/progression.query.court-proceedings-for-application.json
+
+/prosecutioncases/{caseId}/pet:
+  uriParameters:
+        caseId:
+          description: ID of case to retrieve pets
+          type: string
+  get:
+    description: |
+      Gets the pets by caseId
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pets-for-case+json
+        name: progression.query.pets-for-case
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pets-for-case+json:
+              example:  !include json/progression.query.pets-for-case.json
+              schema:  !include json/schema/progression.query.pets-for-case.json
+
+
+/pet/{petId}:
+  uriParameters:
+        petId:
+          description: ID of pet to get
+          type: string
+  get:
+    description: |
+      Gets the pet by urn
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pet+json
+        name: progression.query.pet
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pet+json:
+              example:  !include json/progression.query.pet.json
+              schema:  !include json/schema/progression.query.pet.json
+
+/pet/{petId}/history:
+  uriParameters:
+        petId:
+          description: ID of pet to get history
+          type: string
+  get:
+    description: |
+      Gets the pet update history by urn
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pet-change-history+json
+        name: progression.query.pet-change-history
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pet-change-history+json:
+              example:  !include json/progression.query.pet-change-history.json
+              schema:  !include json/schema/progression.query.pet-change-history.json
+
+
+/prosecutioncases/{caseId}/defendant/{defendantId}/pet:
+  uriParameters:
+        caseId:
+          description: ID of case to retrieve pets
+          type: string
+        defendantId:
+          description: ID of defendant
+          type: string
+  get:
+    description: |
+      Get the defendant user
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.pet-for-defendant+json
+        name: progression.query.pet-for-defendant
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.pet-for-defendant+json:
+              example:  !include json/progression.query.pet-for-defendant.json
+              schema:  !include json/schema/progression.query.pet-for-defendant.json
+
+/prosecutioncases/{caseId}/form:
+  uriParameters:
+        caseId:
+          description: Retrieve all forms for caseId
+          type: string
+  get:
+    description: |
+      Gets the forms by caseId
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.forms-for-case+json
+        name: progression.query.forms-for-case
+      ...
+    queryParameters:
+      formType:
+        description: Type of the form
+        type: string
+        required: false
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.forms-for-case+json:
+              example: !include json/progression.query.forms-for-case.json
+              schema:  !include json/schema/progression.query.forms-for-case.json
+
+/prosecutioncases/{caseId}/form/{courtFormId}:
+  uriParameters:
+        caseId:
+          description: Retrieves form for given specified formId
+          type: string
+        courtFormId:
+          description: ID of form
+          type: string
+  get:
+    description: |
+      Retrieves the form by courtFormId for the specified case
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.form+json
+        name: progression.query.form
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.form+json:
+              example: !include json/progression.query.form.json
+              schema:  !include json/schema/progression.query.form.json
+
+/prosecutioncases/{caseId}/form/{courtFormId}/history:
+  uriParameters:
+        caseId:
+          description: ID of case to retrieve forms
+          type: string
+        courtFormId:
+          description: ID of form to get history
+          type: string
+  get:
+    description: |
+      Retrieves the form history by courtFormId for the specified case
+      ...
+      (mapping):
+        responseType: application/vnd.progression.query.form-change-history+json
+        name: progression.query.form-change-history
+      ...
+    responses:
+        200:
+          description: OK
+          body:
+            application/vnd.progression.query.form-change-history+json:
+              example:  !include json/progression.query.form-change-history.json
+              schema:  !include json/schema/progression.query.form-change-history.json
+
+/prosecutioncases/{prosecutionCaseId}/cotr-trial-hearings:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get trial hearings for given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-trial-hearings+json
+          name: progression.query.cotr-trial-hearings
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-trial-hearings+json:
+            example:  !include json/progression.query.cotr-trial-hearings.json
+            schema:  !include json/schema/progression.query.cotr-trial-hearings.json
+
+/prosecutioncases/{prosecutionCaseId}/cotr-details:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get cotr details for given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-details+json
+          name: progression.query.cotr-details
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-details+json:
+            example:  !include json/progression.query.cotr-details.json
+            schema:  !include json/schema/progression.query.cotr-details.json
+
+/prosecutioncases/{prosecutionCaseId}/cotr/{cotrId}:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+    cotrId:
+      description: cotr id
+      type: string
+  description: get cotr form for given cotr
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr-form+json
+          name: progression.query.cotr-form
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr-form+json:
+            example:  !include json/progression.query.cotr-form.json
+            schema:  !include json/schema/progression.query.cotr-form.json
+
+/search-trial-readiness:
+  get:
+      description: |
+        Return all the trial hearings for a given search criteria
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.search-trial-readiness+json
+            name: progression.query.search-trial-readiness
+        ...
+
+      queryParameters:
+            courtCentreId:
+              description: court certre id
+              type: string
+              required: true
+            startDate:
+              description: hearing start date
+              type: date
+              required: true
+            endDate:
+              description: hearing end date
+              type: date
+              required: true
+            remandStatus:
+              description: remand status
+              type: string
+              required: false
+            trailWithOverdueDirection:
+              description: trail with overdue direction (Y/N)
+              type: string
+              required: true
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.search-trial-readiness+json:
+                    example:  !include json/progression.query.search-trial-readiness.json
+                    schema:  !include json/schema/progression.query.search-trial-readiness.json
+
+/trial-readiness-hearings/{hearingId}:
+  uriParameters:
+    hearingId:
+      description: hearing Id
+      type: string
+  description: get trial rediness hearing
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.trial-readiness-details+json
+          name: progression.query.trial-readiness-details
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.trial-readiness-details+json:
+            example:  !include json/progression.query.trial-readiness-hearing-details.json
+            schema:  !include json/schema/progression.query.trial-readiness-hearing-details.json
+
+/opa-notice:
+   description: get list of all opa notices
+   get:
+     description: |
+       Fetch Opa notices
+       ...
+       (mapping):
+           responseType: application/vnd.progression.query.public-list-opa-notices+json
+           name: progression.query.public-list-opa-notices
+       (mapping):
+           responseType: application/vnd.progression.query.press-list-opa-notices+json
+           name: progression.query.press-list-opa-notices
+       (mapping):
+           responseType: application/vnd.progression.query.result-list-opa-notices+json
+           name: progression.query.result-list-opa-notices
+       ...
+     responses:
+         200:
+           description: OK
+           body:
+             application/vnd.progression.query.public-list-opa-notices+json:
+               schema: !include json/schema/progression.query.opa-notices.json
+               example: !include json/progression.query.opa-notices.json
+             application/vnd.progression.query.press-list-opa-notices+json:
+               schema: !include json/schema/progression.query.opa-notices.json
+               example: !include json/progression.query.opa-notices.json
+             application/vnd.progression.query.result-list-opa-notices+json:
+               schema: !include json/schema/progression.query.opa-notices.json
+               example: !include json/progression.query.opa-notices.json
+
+/cases/{caseId}:
+  uriParameters:
+        caseId:
+          description: ID of case to get
+          type: string
+  get:
+      description: |
+        Return the case progression details for the case Id.
+        ...
+        (mapping):
+            responseType: application/vnd.progression.query.caseprogressiondetail+json
+            name: progression.query.caseprogressiondetail
+        ...
+      responses:
+            200:
+                description: OK
+                body:
+                  application/vnd.progression.query.caseprogressiondetail+json:
+                    example:  !include json/progression.query.caseprogressiondetail.json
+                    schema:  !include json/schema/progression.query.caseprogressiondetail.json
+
+/partial-match-defendants:
+  get:
+    description: |
+      Return partial match data
+      ...
+      (mapping):
+      responseType: application/vnd.progression.query.partial-match-defendant+json
+      name: progression.query.partial-match-defendants
+      ...
+    queryParameters:
+      sortField:
+        description: defendantName and caseReceivedDate are acceptable fields
+        example: defendantName
+        type: string
+        required: false
+      sortOrder:
+        description: sort direction
+        example: ASC, DESC
+        type: string
+        required: false
+      page:
+        description: page
+        example: 2
+        type: integer
+        required: false
+      pageSize:
+        description: size
+        example: 20
+        type: integer
+        required: false
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.partial-match-defendant+json:
+            example: !include json/progression.query.partial-match-defendant.json
+            schema: !include json/schema/progression.query.partial-match-defendant.json
+
+
+/courtlist:
+  description: get court list document
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.search.court.list+json
+          name: progression.search.court.list
+      (mapping):
+          responseType: application/vnd.progression.search.prison.court.list+json
+          name: progression.search.prison.court.list
+      ...
+    queryParameters:
+        courtCentreId:
+          description: reference data id for the court centre
+          type: string
+          required: true
+        courtRoomId:
+          description: reference data id for the court room
+          type: string
+          required: false
+        listId:
+          description: court list name to generate ( e.g. PUBLIC, STANDARD, ALPHABETICAL, USHERS_CROWN, USHERS_MAGISTRATE, ONLINE_PUBLIC)
+          type: string
+          required: true
+        startDate:
+          description: hearing start date in format 'YYYY-MM-DD'.
+          type: date
+          required: true
+        endDate:
+          description: hearing end date in format 'YYYY-MM-DD'
+          type: date
+          required: true
+        restricted:
+          description: only applicable for standard courtlist. Set true to get restricted standard court list
+          type: boolean
+          required: false
+          default: false
+    responses:
+      200:
+        body:
+          application/vnd.progression.search.court.list+json:
+
+/prosecutioncases/{prosecutionCaseId}/cotr-details-prosecutioncase:
+  uriParameters:
+    prosecutionCaseId:
+      description: Prosecution Case Id
+      type: string
+  description: get cotr details for a given prosecution case id
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.cotr.details.prosecutioncase+json
+          name: progression.query.cotr.details.prosecutioncase
+      ...
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.cotr.details.prosecutioncase+json:
+            example:  !include json/progression.query.cotr.details.prosecutioncase.json
+            schema:  !include json/schema/progression.query.cotr.details.prosecutioncase.json
+
+
+/directions/{caseId}/courtform/{formId}:
+  uriParameters:
+    caseId:
+      description: Case Id
+      type: string
+      required: true
+    formId:
+      description: Form Id
+      type: string
+      required: true
+  get:
+    description: |
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.form-directions+json
+          name: progression.query.form-directions
+      ...
+    queryParameters:
+      categories:
+        description: Comma separated string of categories
+        type: string
+        required: false
+      formType:
+        description: Form type e.g (PET, PTPH)
+        type: string
+        required: true
+      defendantIds:
+        description: Comma separated string of defendantIds
+        type: string
+        required: false
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.form-directions+json:
+            example: !include json/progression.query.form-directions.json
+            schema:  !include json/schema/progression.query.form-directions.json
+
+/hearings/{hearingId}/childResults:
+  uriParameters:
+    hearingId:
+      type: string
+  get:
+    description: |
+      Return child results
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.judicial-child-results+json
+          name: progression.query.judicial-child-results
+      ...
+
+    queryParameters:
+      masterDefendantId:
+        type: string
+        required: true
+      judicialResultTypeId:
+        type: string
+        required: true
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.judicial-child-results+json:
+            example: !include json/progression.query.judicial-child-results.json
+            schema: !include json/schema/progression.query.judicial-child-results.json
+
+/hearings/{hearingId}/v2/childResults:
+  uriParameters:
+    hearingId:
+      type: string
+  get:
+    description: |
+      Return child results
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.judicial-child-results-v2+json
+          name: progression.query.judicial-child-results-v2
+      ...
+
+    queryParameters:
+      masterDefendantId:
+        type: string
+        required: true
+      judicialResultTypeId:
+        type: string
+        required: true
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.progression.query.judicial-child-results-v2+json:
+            example: !include json/progression.query.judicial-child-results-v2.json
+            schema: !include json/schema/progression.query.judicial-child-results-v2.json
+
+/civilfees:
+  get:
+    description: |
+      Return the civil fee details for the prosecution case fee id.
+      ...
+      (mapping):
+          responseType: application/vnd.progression.query.civil-fee-details+json
+          name: progression.query.civil-fee-details
+      ...
+    queryParameters:
+      feeIds:
+        description: comma separated prosecution case civil fees IDs
+        type: string
+        example: b44fa9bb-dc36-4375-83a9-ff1bc4cd4374,1f1fba3c-34ee-454e-b3be-5fb845b2de4a
+        required: true
+    responses:
+      200:
+        body:
+          application/vnd.progression.query.civil-fee-details+json:
+            example: !include json/progression.query.civil-fee-details.json
+            schema: !include json/schema/progression.query.civil-fee-details.json

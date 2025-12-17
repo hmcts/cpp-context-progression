@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/request-edit-form.json",
+  "type": "object",
+  "properties": {
+    "courtFormId": {
+      "description": "Court Form Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "extend": {
+      "type": "boolean"
+    },
+    "extendTime": {
+      "type": "integer"
+    },
+    "section" : {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "courtFormId"
+  ],
+  "additionalProperties": false
+}

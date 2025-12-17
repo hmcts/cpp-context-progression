@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/add-case-note.json",
+  "type": "object",
+  "properties": {
+    "note": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "isPinned": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "note"
+  ]
+}

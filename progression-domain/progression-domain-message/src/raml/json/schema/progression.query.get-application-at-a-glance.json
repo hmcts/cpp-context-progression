@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/getApplicationAtAGlance.json",
+  "type": "object",
+  "properties": {
+    "getApplicationAtAGlance": {
+      "description": "Describes the application at a glance",
+      "type": "object",
+      "properties": {
+        "applicationDetails": {
+          "description": "Describes the application details",
+          "type": "object",
+          "properties": {
+            "applicationReference": {
+              "type": "string"
+            },
+            "applicationType": {
+              "type": "string"
+            },
+            "appeal": {
+              "type": "boolean"
+            },
+            "applicationReceivedDate": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+            },
+            "applicationParticulars": {
+              "type": "string"
+            },
+            "feePayable": {
+              "type": "boolean"
+            },
+            "paymentReference": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "applicantDetails": {
+          "type": "object",
+          "properties": {
+            "applicantSynonym": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "isProbationBreach": {
+              "type": "boolean"
+            },
+            "address": {
+              "$ref": "http://justice.gov.uk/core/courts/address.json#"
+            },
+            "interpreterLanguageNeeds": {
+              "type": "string"
+            },
+            "remandStatus": {
+              "type": "string"
+            },
+            "representation": {
+              "type": "string"
+            },
+            "isSubject": {
+              "type": "boolean"
+            },
+            "updatedOn": {
+              "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+            }
+          },
+          "additionalProperties": false
+        },
+        "respondentDetails": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/respondentDetail"
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  },
+  "definitions": {
+    "respondentDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "isProbationBreach": {
+          "type": "boolean"
+        },
+        "address": {
+          "$ref": "http://justice.gov.uk/core/courts/address.json#"
+        },
+        "respondentRepresentatives": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/respondentRepresentative"
+          }
+        },
+        "representation": {
+          "description": "when the respondent is subject, this is filled with subject.associatedDefenceOrganisation",
+          "type": "string"
+        },
+        "isSubject": {
+          "type": "boolean"
+        },
+        "dateOfBirth": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        },
+        "updatedOn": {
+          "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+        }
+      },
+      "additionalProperties": false
+    },
+    "respondentRepresentative": {
+      "type": "object",
+      "properties": {
+        "representativeName": {
+          "type": "string"
+        },
+        "representativePosition": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

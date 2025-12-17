@@ -1,0 +1,9 @@
+{
+  "applicationId":"cca197ad-2a4c-4cb2-acf9-d4c5e114e3d1",
+  "courtApplicationPayment": {
+    "feeStatus":"OUTSTANDING",
+    "paymentReference":"Reference001",
+    "contestedFeeStatus":"OUTSTANDING",
+    "contestedPaymentReference":"Reference001"
+  }
+}

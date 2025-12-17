@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.command.handler.update-application-rep-order-for-hearing.json",
+  "type": "object",
+  "description": "Representation Order for Hearing",
+  "properties": {
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "subjectId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "associatedDefenceOrganisation": {
+      "description": "The associated defence representation details",
+      "$ref": "http://justice.gov.uk/core/courts/associatedDefenceOrganisation.json"
+    }
+  },
+  "required": [
+    "applicationId",
+    "subjectId",
+    "hearingId"
+  ],
+  "additionalProperties": false
+}

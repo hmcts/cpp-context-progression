@@ -1,0 +1,2582 @@
+{
+  "courtApplications": [
+    {
+      "applicant": {
+        "id": "e154b256-f1c2-43ed-b599-d6793ca469eb",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae",
+              "caseReference": "90GDAPP5054",
+              "defendantId": "993a5be3-96e1-4695-8dbd-17990121237f"
+            }
+          ],
+          "isYouth": false,
+          "masterDefendantId": "993a5be3-96e1-4695-8dbd-17990121237f",
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1990-01-01",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Kallie",
+              "gender": "MALE",
+              "lastName": "Schaden",
+              "title": "Mr"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "applicationParticulars": "test 21.11",
+      "applicationReceivedDate": "2021-05-18",
+      "applicationReference": "90GDAPP5054",
+      "applicationStatus": "LISTED",
+      "commissionerOfOath": false,
+      "courtApplicationCases": [
+        {
+          "caseStatus": "ACTIVE",
+          "isSJP": false,
+          "prosecutionCaseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Criminal Justice Department",
+              "address2": "Derbyshire Constabulary",
+              "address3": "Butterley Hall",
+              "postcode": "DE5 3RS"
+            },
+            "majorCreditorCode": "PO30",
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "prosecutionAuthorityName": "Derbyshire Police",
+            "prosecutionAuthorityOUCode": "0300000",
+            "caseURN": "90GDAPP5054"
+          }
+        }
+      ],
+      "id": "82b2daed-5052-4f69-8af8-d8c4f72adb01",
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4506",
+          "courtClerk": {
+            "firstName": "Evan",
+            "lastName": "Roberts",
+            "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+              "label": "Next hearing in magistrates' court",
+              "promptReference": "60107c16-2507-46c2-9d9a-b4d1e62556d2",
+              "promptSequence": 0,
+              "usergroups": [],
+              "value": "Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD",
+              "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+              "label": "Case part heard",
+              "promptReference": "5a8da13c-09d4-454b-ba64-3c42f5d60196",
+              "promptSequence": 200,
+              "usergroups": [],
+              "value": "",
+              "welshLabel": "Gwrandawyd yr achos yn rhannol"
+            },
+            {
+              "courtExtract": "N",
+              "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+              "label": "Adjournment reasons",
+              "promptReference": "9a09522e-e8ac-45bc-8d5e-ee7ae778c8ea",
+              "promptSequence": 300,
+              "usergroups": [],
+              "value": "",
+              "welshLabel": "Rheswm dros ohirio:"
+            }
+          ],
+          "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "label": "Adjournment",
+          "lastSharedDateTime": "2021-05-18",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "Case part heard",
+            "bookingReference": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+            "courtCentre": {
+              "address": {
+                "address1": "The Court House",
+                "address2": "Green Man Lane",
+                "address3": "Ealing",
+                "address4": "London",
+                "postcode": "W13 0SD"
+              },
+              "courtHearingLocation": "B01FA02",
+              "id": "b6a48a7e-8eb8-435d-8f93-1ef86a6daee2",
+              "name": "Ealing Magistrates' Court",
+              "psaCode": 2578,
+              "roomId": "43905d65-ed3e-386c-82df-817f34b61798",
+              "roomName": "Courtroom 02",
+              "welshName": "Llys Ynadon Ealing"
+            },
+            "estimatedMinutes": 360,
+            "jurisdictionType": "MAGISTRATES",
+            "listedStartDateTime": "2021-05-20T09:00:00.000Z",
+            "type": {
+              "description": "Trial - no witnesses",
+              "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+            }
+          },
+          "orderedDate": "2021-05-18",
+          "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 76400,
+          "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD\nDefendant to attend the next hearing true\nCase part heard \nAdjournment reasons ",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Gohiriad"
+        },
+        {
+          "alwaysPublished": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Evan",
+            "lastName": "Roberts",
+            "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "5a8da13c-09d4-454b-ba64-3c42f5d60196",
+          "judicialResultTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+          "label": "Case part heard",
+          "lastSharedDateTime": "2021-05-18",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2021-05-18",
+          "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+          "parentJudicialResultId": "9a09522e-e8ac-45bc-8d5e-ee7ae778c8ea",
+          "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": true,
+          "publishedForNows": true,
+          "rank": 9900,
+          "resultDefinitionGroup": "Adjournment reasons",
+          "resultText": "Case part heard\n",
+          "rollUpPrompts": false,
+          "rootJudicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Gwrandawyd yr achos yn rhannol"
+        },
+        {
+          "alwaysPublished": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Evan",
+            "lastName": "Roberts",
+            "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "60107c16-2507-46c2-9d9a-b4d1e62556d2",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+              "label": "Date of hearing",
+              "promptReference": "HDATE",
+              "promptSequence": 100,
+              "type": "DATE",
+              "usergroups": [],
+              "value": "20/05/2021",
+              "welshLabel": "Dyddiad y gwrandawiad",
+              "welshValue": "20/05/2021"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+              "label": "Time of hearing",
+              "promptReference": "timeOfHearing",
+              "promptSequence": 200,
+              "type": "TIME",
+              "usergroups": [],
+              "value": "10:00",
+              "welshLabel": "Amser y gwrandawiad",
+              "welshValue": "10:00"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+              "label": "Courtroom",
+              "promptReference": "HCROOM",
+              "promptSequence": 400,
+              "type": "INT",
+              "usergroups": [],
+              "value": "Courtroom 02",
+              "welshLabel": "Ystafell Llys",
+              "welshValue": "Courtroom 02"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+              "label": "Hearing type",
+              "promptReference": "HTYPE",
+              "promptSequence": 500,
+              "type": "TXT",
+              "usergroups": [],
+              "value": "Trial - no witnesses",
+              "welshLabel": "Math o wrandawiad",
+              "welshValue": "Trial - no witnesses"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+              "label": "Estimated duration",
+              "promptReference": "HEST",
+              "promptSequence": 600,
+              "type": "INT",
+              "usergroups": [],
+              "value": "6 HOURS",
+              "welshLabel": "Amcangyfrif amser",
+              "welshValue": "6"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+              "label": "Booking reference",
+              "promptReference": "bookingReference",
+              "promptSequence": 700,
+              "type": "TXT",
+              "usergroups": [],
+              "value": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+              "welshLabel": "Cyfeirnod archebu",
+              "welshValue": "e42fc616-be2f-41a1-81ce-c04d8c0454a1"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse organisation name",
+              "promptReference": "hCHOUSEOrganisationName",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Ealing Magistrates' Court",
+              "welshValue": "Ealing Magistrates' Court"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 1",
+              "promptReference": "hCHOUSEAddress1",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "The Court House",
+              "welshValue": "The Court House"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 2",
+              "promptReference": "hCHOUSEAddress2",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Green Man Lane",
+              "welshValue": "Green Man Lane"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 3",
+              "promptReference": "hCHOUSEAddress3",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Ealing",
+              "welshValue": "Ealing"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 4",
+              "promptReference": "hCHOUSEAddress4",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "London",
+              "welshValue": "London"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse post code",
+              "promptReference": "hCHOUSEPostCode",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "W13 0SD",
+              "welshValue": "W13 0SD"
+            }
+          ],
+          "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+          "label": "Next hearing in magistrates' court",
+          "lastSharedDateTime": "2021-05-18",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2021-05-18",
+          "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+          "parentJudicialResultId": "e970a3c4-71bb-49e6-b0f3-659e04275721",
+          "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": true,
+          "publishedForNows": true,
+          "rank": 1000,
+          "resultDefinitionGroup": "Next hearing",
+          "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-05-20\nTime of hearing 10:00\nCourthouse organisation name Ealing Magistrates' Court\nCourthouse address line 1 The Court House\nCourthouse address line 2 Green Man Lane\nCourthouse address line 3 Ealing\nCourthouse address line 4 London\nCourthouse post code W13 0SD\nCourtroom Courtroom 02\nHearing type Trial - no witnesses\nEstimated duration 6 HOURS",
+          "rollUpPrompts": false,
+          "rootJudicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+        }
+      ],
+      "respondents": [
+        {
+          "id": "d44408ab-0ff7-4662-8e31-c2d81772de40",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Criminal Justice Department",
+              "address2": "Derbyshire Constabulary",
+              "address3": "Butterley Hall",
+              "postcode": "DE5 3RS"
+            },
+            "contact": {
+              "primaryEmail": "CCSU@derbyshire.pnn.police.uk"
+            },
+            "majorCreditorCode": "PO30",
+            "name": "Derbyshire Police",
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "prosecutionAuthorityOUCode": "0300000",
+            "welshName": "Heddlu Derbyshire"
+          },
+          "summonsRequired": false
+        }
+      ],
+      "subject": {
+        "id": "e154b256-f1c2-43ed-b599-d6793ca469eb",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae",
+              "caseReference": "90GDAPP5054",
+              "defendantId": "993a5be3-96e1-4695-8dbd-17990121237f"
+            }
+          ],
+          "isYouth": false,
+          "masterDefendantId": "993a5be3-96e1-4695-8dbd-17990121237f",
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1990-01-01",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Kallie",
+              "gender": "MALE",
+              "lastName": "Schaden",
+              "title": "Mr"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "type": {
+        "appealFlag": false,
+        "applicantAppellantFlag": false,
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "CO",
+        "code": "BA76504",
+        "commrOfOathFlag": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "hearingCode": "BVA",
+        "id": "26c7e337-5697-3448-9b9b-f71a6a6e6b1f",
+        "jurisdiction": "EITHER",
+        "legislation": "In accordance with section 3(8) of the Bail Act 1976.",
+        "linkType": "LINKED",
+        "listingNotifTemplate": "POSTAL_NOTIFICATION",
+        "offenceActiveOrder": "OFFENCE",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": false,
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "Application to vary conditions of bail"
+      }
+    },
+    {
+      "applicant": {
+        "id": "e154b256-f1c2-43ed-b599-d6793ca469eb",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae",
+              "caseReference": "90GDAPP5054",
+              "defendantId": "993a5be3-96e1-4695-8dbd-17990121237f"
+            }
+          ],
+          "isYouth": false,
+          "masterDefendantId": "993a5be3-96e1-4695-8dbd-17990121237f",
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1990-01-01",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Kallie",
+              "gender": "MALE",
+              "lastName": "Schaden",
+              "title": "Mr"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "applicationParticulars": "test 21.11",
+      "applicationReceivedDate": "2021-05-18",
+      "applicationReference": "90GDAPP5054",
+      "applicationStatus": "LISTED",
+      "commissionerOfOath": false,
+      "courtApplicationCases": [
+        {
+          "caseStatus": "ACTIVE",
+          "isSJP": false,
+          "prosecutionCaseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Criminal Justice Department",
+              "address2": "Derbyshire Constabulary",
+              "address3": "Butterley Hall",
+              "postcode": "DE5 3RS"
+            },
+            "majorCreditorCode": "PO30",
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "prosecutionAuthorityName": "Derbyshire Police",
+            "prosecutionAuthorityOUCode": "0300000",
+            "caseURN": "90GDAPP5054"
+          }
+        }
+      ],
+      "id": "92b2daed-5052-4f69-8af8-d8c4f72adb01",
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "category": "INTERMEDIARY",
+          "cjsCode": "4506",
+          "courtClerk": {
+            "firstName": "Evan",
+            "lastName": "Roberts",
+            "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+              "label": "Next hearing in magistrates' court",
+              "promptReference": "60107c16-2507-46c2-9d9a-b4d1e62556d2",
+              "promptSequence": 0,
+              "usergroups": [],
+              "value": "Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD",
+              "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+              "label": "Defendant to attend the next hearing",
+              "promptReference": "defendantToAttendTheNextHearing",
+              "promptSequence": 100,
+              "type": "BOOLEAN",
+              "usergroups": [],
+              "value": "true",
+              "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+              "welshValue": "true"
+            },
+            {
+              "courtExtract": "Y",
+              "judicialResultPromptTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+              "label": "Case part heard",
+              "promptReference": "5a8da13c-09d4-454b-ba64-3c42f5d60196",
+              "promptSequence": 200,
+              "usergroups": [],
+              "value": "",
+              "welshLabel": "Gwrandawyd yr achos yn rhannol"
+            },
+            {
+              "courtExtract": "N",
+              "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+              "label": "Adjournment reasons",
+              "promptReference": "9a09522e-e8ac-45bc-8d5e-ee7ae778c8ea",
+              "promptSequence": 300,
+              "usergroups": [],
+              "value": "",
+              "welshLabel": "Rheswm dros ohirio:"
+            }
+          ],
+          "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "label": "Adjournment",
+          "lastSharedDateTime": "2021-05-18",
+          "level": "O",
+          "lifeDuration": false,
+          "nextHearing": {
+            "adjournmentReason": "Case part heard",
+            "bookingReference": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+            "courtCentre": {
+              "address": {
+                "address1": "The Court House",
+                "address2": "Green Man Lane",
+                "address3": "Ealing",
+                "address4": "London",
+                "postcode": "W13 0SD"
+              },
+              "courtHearingLocation": "B01FA02",
+              "id": "b6a48a7e-8eb8-435d-8f93-1ef86a6daee2",
+              "name": "Ealing Magistrates' Court",
+              "psaCode": 2578,
+              "roomId": "43905d65-ed3e-386c-82df-817f34b61798",
+              "roomName": "Courtroom 02",
+              "welshName": "Llys Ynadon Ealing"
+            },
+            "estimatedMinutes": 360,
+            "jurisdictionType": "MAGISTRATES",
+            "listedStartDateTime": "2021-05-20T09:00:00.000Z",
+            "type": {
+              "description": "Trial - no witnesses",
+              "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+            }
+          },
+          "orderedDate": "2021-05-18",
+          "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 76400,
+          "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD\nDefendant to attend the next hearing true\nCase part heard \nAdjournment reasons ",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Gohiriad"
+        },
+        {
+          "alwaysPublished": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Evan",
+            "lastName": "Roberts",
+            "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "5a8da13c-09d4-454b-ba64-3c42f5d60196",
+          "judicialResultTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+          "label": "Case part heard",
+          "lastSharedDateTime": "2021-05-18",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2021-05-18",
+          "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+          "parentJudicialResultId": "9a09522e-e8ac-45bc-8d5e-ee7ae778c8ea",
+          "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": true,
+          "publishedForNows": true,
+          "rank": 9900,
+          "resultDefinitionGroup": "Adjournment reasons",
+          "resultText": "Case part heard\n",
+          "rollUpPrompts": false,
+          "rootJudicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Gwrandawyd yr achos yn rhannol"
+        },
+        {
+          "alwaysPublished": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Evan",
+            "lastName": "Roberts",
+            "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "60107c16-2507-46c2-9d9a-b4d1e62556d2",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+              "label": "Date of hearing",
+              "promptReference": "HDATE",
+              "promptSequence": 100,
+              "type": "DATE",
+              "usergroups": [],
+              "value": "20/05/2021",
+              "welshLabel": "Dyddiad y gwrandawiad",
+              "welshValue": "20/05/2021"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+              "label": "Time of hearing",
+              "promptReference": "timeOfHearing",
+              "promptSequence": 200,
+              "type": "TIME",
+              "usergroups": [],
+              "value": "10:00",
+              "welshLabel": "Amser y gwrandawiad",
+              "welshValue": "10:00"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+              "label": "Courtroom",
+              "promptReference": "HCROOM",
+              "promptSequence": 400,
+              "type": "INT",
+              "usergroups": [],
+              "value": "Courtroom 02",
+              "welshLabel": "Ystafell Llys",
+              "welshValue": "Courtroom 02"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+              "label": "Hearing type",
+              "promptReference": "HTYPE",
+              "promptSequence": 500,
+              "type": "TXT",
+              "usergroups": [],
+              "value": "Trial - no witnesses",
+              "welshLabel": "Math o wrandawiad",
+              "welshValue": "Trial - no witnesses"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+              "label": "Estimated duration",
+              "promptReference": "HEST",
+              "promptSequence": 600,
+              "type": "INT",
+              "usergroups": [],
+              "value": "6 HOURS",
+              "welshLabel": "Amcangyfrif amser",
+              "welshValue": "6"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+              "label": "Booking reference",
+              "promptReference": "bookingReference",
+              "promptSequence": 700,
+              "type": "TXT",
+              "usergroups": [],
+              "value": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+              "welshLabel": "Cyfeirnod archebu",
+              "welshValue": "e42fc616-be2f-41a1-81ce-c04d8c0454a1"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse organisation name",
+              "promptReference": "hCHOUSEOrganisationName",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Ealing Magistrates' Court",
+              "welshValue": "Ealing Magistrates' Court"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 1",
+              "promptReference": "hCHOUSEAddress1",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "The Court House",
+              "welshValue": "The Court House"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 2",
+              "promptReference": "hCHOUSEAddress2",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Green Man Lane",
+              "welshValue": "Green Man Lane"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 3",
+              "promptReference": "hCHOUSEAddress3",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Ealing",
+              "welshValue": "Ealing"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse address line 4",
+              "promptReference": "hCHOUSEAddress4",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "London",
+              "welshValue": "London"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+              "label": "Courthouse post code",
+              "promptReference": "hCHOUSEPostCode",
+              "promptSequence": 300,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "W13 0SD",
+              "welshValue": "W13 0SD"
+            }
+          ],
+          "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+          "label": "Next hearing in magistrates' court",
+          "lastSharedDateTime": "2021-05-18",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2021-05-18",
+          "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+          "parentJudicialResultId": "e970a3c4-71bb-49e6-b0f3-659e04275721",
+          "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": true,
+          "publishedForNows": true,
+          "rank": 1000,
+          "resultDefinitionGroup": "Next hearing",
+          "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-05-20\nTime of hearing 10:00\nCourthouse organisation name Ealing Magistrates' Court\nCourthouse address line 1 The Court House\nCourthouse address line 2 Green Man Lane\nCourthouse address line 3 Ealing\nCourthouse address line 4 London\nCourthouse post code W13 0SD\nCourtroom Courtroom 02\nHearing type Trial - no witnesses\nEstimated duration 6 HOURS",
+          "rollUpPrompts": false,
+          "rootJudicialResultId": "0db345e5-fd11-4d77-9f82-cd8ba481061e",
+          "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+        }
+      ],
+      "respondents": [
+        {
+          "id": "d44408ab-0ff7-4662-8e31-c2d81772de40",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Criminal Justice Department",
+              "address2": "Derbyshire Constabulary",
+              "address3": "Butterley Hall",
+              "postcode": "DE5 3RS"
+            },
+            "contact": {
+              "primaryEmail": "CCSU@derbyshire.pnn.police.uk"
+            },
+            "majorCreditorCode": "PO30",
+            "name": "Derbyshire Police",
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "prosecutionAuthorityOUCode": "0300000",
+            "welshName": "Heddlu Derbyshire"
+          },
+          "summonsRequired": false
+        }
+      ],
+      "subject": {
+        "id": "e154b256-f1c2-43ed-b599-d6793ca469eb",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae",
+              "caseReference": "90GDAPP5054",
+              "defendantId": "993a5be3-96e1-4695-8dbd-17990121237f"
+            }
+          ],
+          "isYouth": false,
+          "masterDefendantId": "993a5be3-96e1-4695-8dbd-17990121237f",
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1990-01-01",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Kallie",
+              "gender": "MALE",
+              "lastName": "Schaden",
+              "title": "Mr"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false
+      },
+      "type": {
+        "appealFlag": false,
+        "applicantAppellantFlag": false,
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "CO",
+        "code": "BA76504",
+        "commrOfOathFlag": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "hearingCode": "BVA",
+        "id": "26c7e337-5697-3448-9b9b-f71a6a6e6b1f",
+        "jurisdiction": "EITHER",
+        "legislation": "In accordance with section 3(8) of the Bail Act 1976.",
+        "linkType": "LINKED",
+        "listingNotifTemplate": "POSTAL_NOTIFICATION",
+        "offenceActiveOrder": "OFFENCE",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": false,
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "Application to vary conditions of bail"
+      }
+    }
+  ],
+  "courtCentre": {
+    "address": {
+      "address1": "176A Lavender Hill",
+      "address2": "London",
+      "address3": "",
+      "address4": "",
+      "address5": "",
+      "postcode": "SW11 1JU"
+    },
+    "code": "B01LY00",
+    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+    "lja": {
+      "ljaCode": "2577",
+      "ljaName": "South West London Magistrates' Court"
+    },
+    "name": "Lavender Hill Magistrates' Court",
+    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+    "roomName": "Courtroom 01"
+  },
+  "hasSharedResults": true,
+  "hearingDays": [
+    {
+      "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "isCancelled": false,
+      "listedDurationMinutes": 20,
+      "listingSequence": 0,
+      "sittingDay": "2021-05-18T09:01:01.001Z"
+    }
+  ],
+  "hearingLanguage": "ENGLISH",
+  "id": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+  "jurisdictionType": "MAGISTRATES",
+  "prosecutionCases": [
+    {
+      "caseStatus": "ACTIVE",
+      "cpsOrganisation": "A30AB00",
+      "defendants": [
+        {
+          "courtProceedingsInitiated": "2021-05-18T16:52:18.789Z",
+          "id": "993a5be3-96e1-4695-8dbd-17990121237f",
+          "isYouth": false,
+          "masterDefendantId": "993a5be3-96e1-4695-8dbd-17990121237f",
+          "offences": [
+            {
+              "arrestDate": "2020-02-09",
+              "chargeDate": "2020-02-09",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "ba04ac62-e7d6-4664-accf-eec0234ef851",
+              "isDisposed": false,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "INTERMEDIARY",
+                  "cjsCode": "4506",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "9b183f29-413b-42c8-8b92-08c07cab0cf0",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                      "label": "Next hearing in magistrates' court",
+                      "promptReference": "d1330c95-3427-490d-a683-ca43f2f6a9e4",
+                      "promptSequence": 0,
+                      "usergroups": [],
+                      "value": "Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD",
+                      "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                      "label": "Defendant to attend the next hearing",
+                      "promptReference": "defendantToAttendTheNextHearing",
+                      "promptSequence": 100,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "true",
+                      "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                      "welshValue": "true"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                      "label": "Case part heard",
+                      "promptReference": "228aaac7-1bf5-4092-a35f-2c085af40e63",
+                      "promptSequence": 200,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                      "label": "Adjournment reasons",
+                      "promptReference": "1c9e937f-d83c-42a8-b2fa-597a5b9abb0b",
+                      "promptSequence": 300,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Rheswm dros ohirio:"
+                    }
+                  ],
+                  "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "label": "Adjournment",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "nextHearing": {
+                    "adjournmentReason": "Case part heard",
+                    "bookingReference": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                    "courtCentre": {
+                      "address": {
+                        "address1": "The Court House",
+                        "address2": "Green Man Lane",
+                        "address3": "Ealing",
+                        "address4": "London",
+                        "postcode": "W13 0SD"
+                      },
+                      "courtHearingLocation": "B01FA02",
+                      "id": "b6a48a7e-8eb8-435d-8f93-1ef86a6daee2",
+                      "name": "Ealing Magistrates' Court",
+                      "psaCode": 2578,
+                      "roomId": "43905d65-ed3e-386c-82df-817f34b61798",
+                      "roomName": "Courtroom 02",
+                      "welshName": "Llys Ynadon Ealing"
+                    },
+                    "estimatedMinutes": 360,
+                    "jurisdictionType": "MAGISTRATES",
+                    "listedStartDateTime": "2021-05-20T09:00:00.000Z",
+                    "type": {
+                      "description": "Trial - no witnesses",
+                      "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                    }
+                  },
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 76400,
+                  "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD\nDefendant to attend the next hearing true\nCase part heard \nAdjournment reasons ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "9b183f29-413b-42c8-8b92-08c07cab0cf0",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gohiriad"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "d1330c95-3427-490d-a683-ca43f2f6a9e4",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                      "label": "Date of hearing",
+                      "promptReference": "HDATE",
+                      "promptSequence": 100,
+                      "type": "DATE",
+                      "usergroups": [],
+                      "value": "20/05/2021",
+                      "welshLabel": "Dyddiad y gwrandawiad",
+                      "welshValue": "20/05/2021"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                      "label": "Time of hearing",
+                      "promptReference": "timeOfHearing",
+                      "promptSequence": 200,
+                      "type": "TIME",
+                      "usergroups": [],
+                      "value": "10:00",
+                      "welshLabel": "Amser y gwrandawiad",
+                      "welshValue": "10:00"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                      "label": "Courtroom",
+                      "promptReference": "HCROOM",
+                      "promptSequence": 400,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "Courtroom 02",
+                      "welshLabel": "Ystafell Llys",
+                      "welshValue": "Courtroom 02"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                      "label": "Hearing type",
+                      "promptReference": "HTYPE",
+                      "promptSequence": 500,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "Trial - no witnesses",
+                      "welshLabel": "Math o wrandawiad",
+                      "welshValue": "Trial - no witnesses"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                      "label": "Estimated duration",
+                      "promptReference": "HEST",
+                      "promptSequence": 600,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "6 HOURS",
+                      "welshLabel": "Amcangyfrif amser",
+                      "welshValue": "6"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                      "label": "Booking reference",
+                      "promptReference": "bookingReference",
+                      "promptSequence": 700,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                      "welshLabel": "Cyfeirnod archebu",
+                      "welshValue": "e42fc616-be2f-41a1-81ce-c04d8c0454a1"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse organisation name",
+                      "promptReference": "hCHOUSEOrganisationName",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing Magistrates' Court",
+                      "welshValue": "Ealing Magistrates' Court"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 1",
+                      "promptReference": "hCHOUSEAddress1",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "The Court House",
+                      "welshValue": "The Court House"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 2",
+                      "promptReference": "hCHOUSEAddress2",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Green Man Lane",
+                      "welshValue": "Green Man Lane"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 3",
+                      "promptReference": "hCHOUSEAddress3",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing",
+                      "welshValue": "Ealing"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 4",
+                      "promptReference": "hCHOUSEAddress4",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "London",
+                      "welshValue": "London"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse post code",
+                      "promptReference": "hCHOUSEPostCode",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "W13 0SD",
+                      "welshValue": "W13 0SD"
+                    }
+                  ],
+                  "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                  "label": "Next hearing in magistrates' court",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "6684d27b-d621-4585-8b6f-13915dcb6ff4",
+                  "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 1000,
+                  "resultDefinitionGroup": "Next hearing",
+                  "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-05-20\nTime of hearing 10:00\nCourthouse organisation name Ealing Magistrates' Court\nCourthouse address line 1 The Court House\nCourthouse address line 2 Green Man Lane\nCourthouse address line 3 Ealing\nCourthouse address line 4 London\nCourthouse post code W13 0SD\nCourtroom Courtroom 02\nHearing type Trial - no witnesses\nEstimated duration 6 HOURS",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "9b183f29-413b-42c8-8b92-08c07cab0cf0",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "228aaac7-1bf5-4092-a35f-2c085af40e63",
+                  "judicialResultTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                  "label": "Case part heard",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "1c9e937f-d83c-42a8-b2fa-597a5b9abb0b",
+                  "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 9900,
+                  "resultDefinitionGroup": "Adjournment reasons",
+                  "resultText": "Case part heard\n",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "9b183f29-413b-42c8-8b92-08c07cab0cf0",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                }
+              ],
+              "modeOfTrial": "Summary",
+              "offenceCode": "CA03010",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "d7443546-2e12-4d34-bde1-33dee7aebb23",
+              "offenceLegislation": "Contrary to section 363(2) and (4) of the Communications Act 2003.",
+              "offenceTitle": "Use / install a television set without a licence",
+              "orderIndex": 1,
+              "startDate": "2020-02-09",
+              "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+            },
+            {
+              "arrestDate": "2020-02-09",
+              "chargeDate": "2020-02-09",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "f4b3ccc1-90c8-467d-8454-295d29d20c40",
+              "isDisposed": false,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "INTERMEDIARY",
+                  "cjsCode": "4506",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "afceb92d-764c-4e0c-9200-7ba63360c7d5",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                      "label": "Next hearing in magistrates' court",
+                      "promptReference": "7c605b58-56a6-4408-bcda-f8a5b55029d8",
+                      "promptSequence": 0,
+                      "usergroups": [],
+                      "value": "Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD",
+                      "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                      "label": "Defendant to attend the next hearing",
+                      "promptReference": "defendantToAttendTheNextHearing",
+                      "promptSequence": 100,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "true",
+                      "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                      "welshValue": "true"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                      "label": "Case part heard",
+                      "promptReference": "138268e4-5752-461c-a594-572a5d4179d3",
+                      "promptSequence": 200,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                      "label": "Adjournment reasons",
+                      "promptReference": "44030159-721f-4d40-adb0-6a8e8bde876d",
+                      "promptSequence": 300,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Rheswm dros ohirio:"
+                    }
+                  ],
+                  "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "label": "Adjournment",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "nextHearing": {
+                    "adjournmentReason": "Case part heard",
+                    "bookingReference": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                    "courtCentre": {
+                      "address": {
+                        "address1": "The Court House",
+                        "address2": "Green Man Lane",
+                        "address3": "Ealing",
+                        "address4": "London",
+                        "postcode": "W13 0SD"
+                      },
+                      "courtHearingLocation": "B01FA02",
+                      "id": "b6a48a7e-8eb8-435d-8f93-1ef86a6daee2",
+                      "name": "Ealing Magistrates' Court",
+                      "psaCode": 2578,
+                      "roomId": "43905d65-ed3e-386c-82df-817f34b61798",
+                      "roomName": "Courtroom 02",
+                      "welshName": "Llys Ynadon Ealing"
+                    },
+                    "estimatedMinutes": 360,
+                    "jurisdictionType": "MAGISTRATES",
+                    "listedStartDateTime": "2021-05-20T09:00:00.000Z",
+                    "type": {
+                      "description": "Trial - no witnesses",
+                      "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                    }
+                  },
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 76400,
+                  "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD\nDefendant to attend the next hearing true\nCase part heard \nAdjournment reasons ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "afceb92d-764c-4e0c-9200-7ba63360c7d5",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gohiriad"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "138268e4-5752-461c-a594-572a5d4179d3",
+                  "judicialResultTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                  "label": "Case part heard",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "44030159-721f-4d40-adb0-6a8e8bde876d",
+                  "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 9900,
+                  "resultDefinitionGroup": "Adjournment reasons",
+                  "resultText": "Case part heard\n",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "afceb92d-764c-4e0c-9200-7ba63360c7d5",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "7c605b58-56a6-4408-bcda-f8a5b55029d8",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                      "label": "Date of hearing",
+                      "promptReference": "HDATE",
+                      "promptSequence": 100,
+                      "type": "DATE",
+                      "usergroups": [],
+                      "value": "20/05/2021",
+                      "welshLabel": "Dyddiad y gwrandawiad",
+                      "welshValue": "20/05/2021"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                      "label": "Time of hearing",
+                      "promptReference": "timeOfHearing",
+                      "promptSequence": 200,
+                      "type": "TIME",
+                      "usergroups": [],
+                      "value": "10:00",
+                      "welshLabel": "Amser y gwrandawiad",
+                      "welshValue": "10:00"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                      "label": "Courtroom",
+                      "promptReference": "HCROOM",
+                      "promptSequence": 400,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "Courtroom 02",
+                      "welshLabel": "Ystafell Llys",
+                      "welshValue": "Courtroom 02"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                      "label": "Hearing type",
+                      "promptReference": "HTYPE",
+                      "promptSequence": 500,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "Trial - no witnesses",
+                      "welshLabel": "Math o wrandawiad",
+                      "welshValue": "Trial - no witnesses"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                      "label": "Estimated duration",
+                      "promptReference": "HEST",
+                      "promptSequence": 600,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "6 HOURS",
+                      "welshLabel": "Amcangyfrif amser",
+                      "welshValue": "6"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                      "label": "Booking reference",
+                      "promptReference": "bookingReference",
+                      "promptSequence": 700,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                      "welshLabel": "Cyfeirnod archebu",
+                      "welshValue": "e42fc616-be2f-41a1-81ce-c04d8c0454a1"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse organisation name",
+                      "promptReference": "hCHOUSEOrganisationName",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing Magistrates' Court",
+                      "welshValue": "Ealing Magistrates' Court"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 1",
+                      "promptReference": "hCHOUSEAddress1",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "The Court House",
+                      "welshValue": "The Court House"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 2",
+                      "promptReference": "hCHOUSEAddress2",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Green Man Lane",
+                      "welshValue": "Green Man Lane"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 3",
+                      "promptReference": "hCHOUSEAddress3",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing",
+                      "welshValue": "Ealing"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 4",
+                      "promptReference": "hCHOUSEAddress4",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "London",
+                      "welshValue": "London"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse post code",
+                      "promptReference": "hCHOUSEPostCode",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "W13 0SD",
+                      "welshValue": "W13 0SD"
+                    }
+                  ],
+                  "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                  "label": "Next hearing in magistrates' court",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "86f90001-1a83-4f48-8e34-0bfa37ccc048",
+                  "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 1000,
+                  "resultDefinitionGroup": "Next hearing",
+                  "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-05-20\nTime of hearing 10:00\nCourthouse organisation name Ealing Magistrates' Court\nCourthouse address line 1 The Court House\nCourthouse address line 2 Green Man Lane\nCourthouse address line 3 Ealing\nCourthouse address line 4 London\nCourthouse post code W13 0SD\nCourtroom Courtroom 02\nHearing type Trial - no witnesses\nEstimated duration 6 HOURS",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "afceb92d-764c-4e0c-9200-7ba63360c7d5",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                }
+              ],
+              "modeOfTrial": "Summary",
+              "offenceCode": "CA03011",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "8144e0b3-52dd-42f6-b615-271ed4301c22",
+              "offenceLegislation": "Contrary to section 363(3)(a) and (4) of the Communications Act 2003.",
+              "offenceTitle": "Possess a    television set with intent to install / use without a licence",
+              "orderIndex": 2,
+              "startDate": "2020-02-09",
+              "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1990-01-01",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Kallie",
+              "gender": "MALE",
+              "lastName": "Schaden",
+              "title": "Mr"
+            }
+          },
+          "prosecutionAuthorityReference": "TFL",
+          "prosecutionCaseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae"
+        },
+        {
+          "courtProceedingsInitiated": "2021-05-18T16:52:18.789Z",
+          "id": "441bb5bb-231b-4144-8bd8-c848e56f612d",
+          "isYouth": false,
+          "masterDefendantId": "441bb5bb-231b-4144-8bd8-c848e56f612d",
+          "offences": [
+            {
+              "arrestDate": "2020-02-09",
+              "chargeDate": "2020-02-09",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "1c241fd1-1822-44d5-ba4a-1a83024b404d",
+              "isDisposed": false,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "INTERMEDIARY",
+                  "cjsCode": "4506",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "df7d51a2-4f9b-46a2-922f-8c085fd641bf",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                      "label": "Next hearing in magistrates' court",
+                      "promptReference": "6e87fff8-0457-4f99-b635-a934c1c119a0",
+                      "promptSequence": 0,
+                      "usergroups": [],
+                      "value": "Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD",
+                      "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                      "label": "Defendant to attend the next hearing",
+                      "promptReference": "defendantToAttendTheNextHearing",
+                      "promptSequence": 100,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "true",
+                      "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                      "welshValue": "true"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                      "label": "Case part heard",
+                      "promptReference": "25ec9d38-17f1-4da0-a007-c90c99b695cd",
+                      "promptSequence": 200,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                      "label": "Adjournment reasons",
+                      "promptReference": "4ed586f7-faaf-4f99-b016-b3c55999c82e",
+                      "promptSequence": 300,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Rheswm dros ohirio:"
+                    }
+                  ],
+                  "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "label": "Adjournment",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "nextHearing": {
+                    "adjournmentReason": "Case part heard",
+                    "bookingReference": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                    "courtCentre": {
+                      "address": {
+                        "address1": "The Court House",
+                        "address2": "Green Man Lane",
+                        "address3": "Ealing",
+                        "address4": "London",
+                        "postcode": "W13 0SD"
+                      },
+                      "courtHearingLocation": "B01FA02",
+                      "id": "b6a48a7e-8eb8-435d-8f93-1ef86a6daee2",
+                      "name": "Ealing Magistrates' Court",
+                      "psaCode": 2578,
+                      "roomId": "43905d65-ed3e-386c-82df-817f34b61798",
+                      "roomName": "Courtroom 02",
+                      "welshName": "Llys Ynadon Ealing"
+                    },
+                    "estimatedMinutes": 360,
+                    "jurisdictionType": "MAGISTRATES",
+                    "listedStartDateTime": "2021-05-20T09:00:00.000Z",
+                    "type": {
+                      "description": "Trial - no witnesses",
+                      "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                    }
+                  },
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 76400,
+                  "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD\nDefendant to attend the next hearing true\nCase part heard \nAdjournment reasons ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "df7d51a2-4f9b-46a2-922f-8c085fd641bf",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gohiriad"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "6e87fff8-0457-4f99-b635-a934c1c119a0",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                      "label": "Date of hearing",
+                      "promptReference": "HDATE",
+                      "promptSequence": 100,
+                      "type": "DATE",
+                      "usergroups": [],
+                      "value": "20/05/2021",
+                      "welshLabel": "Dyddiad y gwrandawiad",
+                      "welshValue": "20/05/2021"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                      "label": "Time of hearing",
+                      "promptReference": "timeOfHearing",
+                      "promptSequence": 200,
+                      "type": "TIME",
+                      "usergroups": [],
+                      "value": "10:00",
+                      "welshLabel": "Amser y gwrandawiad",
+                      "welshValue": "10:00"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                      "label": "Courtroom",
+                      "promptReference": "HCROOM",
+                      "promptSequence": 400,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "Courtroom 02",
+                      "welshLabel": "Ystafell Llys",
+                      "welshValue": "Courtroom 02"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                      "label": "Hearing type",
+                      "promptReference": "HTYPE",
+                      "promptSequence": 500,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "Trial - no witnesses",
+                      "welshLabel": "Math o wrandawiad",
+                      "welshValue": "Trial - no witnesses"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                      "label": "Estimated duration",
+                      "promptReference": "HEST",
+                      "promptSequence": 600,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "6 HOURS",
+                      "welshLabel": "Amcangyfrif amser",
+                      "welshValue": "6"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                      "label": "Booking reference",
+                      "promptReference": "bookingReference",
+                      "promptSequence": 700,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                      "welshLabel": "Cyfeirnod archebu",
+                      "welshValue": "e42fc616-be2f-41a1-81ce-c04d8c0454a1"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse organisation name",
+                      "promptReference": "hCHOUSEOrganisationName",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing Magistrates' Court",
+                      "welshValue": "Ealing Magistrates' Court"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 1",
+                      "promptReference": "hCHOUSEAddress1",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "The Court House",
+                      "welshValue": "The Court House"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 2",
+                      "promptReference": "hCHOUSEAddress2",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Green Man Lane",
+                      "welshValue": "Green Man Lane"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 3",
+                      "promptReference": "hCHOUSEAddress3",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing",
+                      "welshValue": "Ealing"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 4",
+                      "promptReference": "hCHOUSEAddress4",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "London",
+                      "welshValue": "London"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse post code",
+                      "promptReference": "hCHOUSEPostCode",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "W13 0SD",
+                      "welshValue": "W13 0SD"
+                    }
+                  ],
+                  "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                  "label": "Next hearing in magistrates' court",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "de15f5a0-31ff-4b91-b403-a03f6fa3d769",
+                  "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 1000,
+                  "resultDefinitionGroup": "Next hearing",
+                  "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-05-20\nTime of hearing 10:00\nCourthouse organisation name Ealing Magistrates' Court\nCourthouse address line 1 The Court House\nCourthouse address line 2 Green Man Lane\nCourthouse address line 3 Ealing\nCourthouse address line 4 London\nCourthouse post code W13 0SD\nCourtroom Courtroom 02\nHearing type Trial - no witnesses\nEstimated duration 6 HOURS",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "df7d51a2-4f9b-46a2-922f-8c085fd641bf",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "25ec9d38-17f1-4da0-a007-c90c99b695cd",
+                  "judicialResultTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                  "label": "Case part heard",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "4ed586f7-faaf-4f99-b016-b3c55999c82e",
+                  "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 9900,
+                  "resultDefinitionGroup": "Adjournment reasons",
+                  "resultText": "Case part heard\n",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "df7d51a2-4f9b-46a2-922f-8c085fd641bf",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                }
+              ],
+              "modeOfTrial": "Summary",
+              "offenceCode": "CA03012",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "51ed3322-499a-4430-94cc-d52964f108db",
+              "offenceLegislation": "Contrary to section 363(3)(b) and (4) of the    Communications Act 2003.",
+              "offenceTitle": "Possess /    control TV set with intent another use install without a licence",
+              "orderIndex": 1,
+              "startDate": "2020-02-09",
+              "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+            },
+            {
+              "arrestDate": "2020-02-09",
+              "chargeDate": "2020-02-09",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "c13cd15d-48a9-4460-b7bc-9b97b53b2f3e",
+              "isDisposed": false,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "category": "INTERMEDIARY",
+                  "cjsCode": "4506",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "a59bcbe8-ac32-4ff3-b6e4-3c4c5ea69c94",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                      "label": "Next hearing in magistrates' court",
+                      "promptReference": "d4c5b474-e118-41fb-85da-72e5c19ed451",
+                      "promptSequence": 0,
+                      "usergroups": [],
+                      "value": "Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD",
+                      "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                      "label": "Defendant to attend the next hearing",
+                      "promptReference": "defendantToAttendTheNextHearing",
+                      "promptSequence": 100,
+                      "type": "BOOLEAN",
+                      "usergroups": [],
+                      "value": "true",
+                      "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                      "welshValue": "true"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "judicialResultPromptTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                      "label": "Case part heard",
+                      "promptReference": "02613238-fb5f-43b9-9bc1-d4a5de1bcbff",
+                      "promptSequence": 200,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                      "label": "Adjournment reasons",
+                      "promptReference": "ede792d4-cd9a-4b76-9f98-b3f42920c952",
+                      "promptSequence": 300,
+                      "usergroups": [],
+                      "value": "",
+                      "welshLabel": "Rheswm dros ohirio:"
+                    }
+                  ],
+                  "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "label": "Adjournment",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "nextHearing": {
+                    "adjournmentReason": "Case part heard",
+                    "bookingReference": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                    "courtCentre": {
+                      "address": {
+                        "address1": "The Court House",
+                        "address2": "Green Man Lane",
+                        "address3": "Ealing",
+                        "address4": "London",
+                        "postcode": "W13 0SD"
+                      },
+                      "courtHearingLocation": "B01FA02",
+                      "id": "b6a48a7e-8eb8-435d-8f93-1ef86a6daee2",
+                      "name": "Ealing Magistrates' Court",
+                      "psaCode": 2578,
+                      "roomId": "43905d65-ed3e-386c-82df-817f34b61798",
+                      "roomName": "Courtroom 02",
+                      "welshName": "Llys Ynadon Ealing"
+                    },
+                    "estimatedMinutes": 360,
+                    "jurisdictionType": "MAGISTRATES",
+                    "listedStartDateTime": "2021-05-20T09:00:00.000Z",
+                    "type": {
+                      "description": "Trial - no witnesses",
+                      "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                    }
+                  },
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 76400,
+                  "resultText": "Adjournment\nNext hearing in magistrates' court Date of hearing:20/05/2021\nTime of hearing:10:00\nCourtroom:Courtroom 02\nHearing type:Trial - no witnesses\nEstimated duration:6 HOURS\nBooking reference:e42fc616-be2f-41a1-81ce-c04d8c0454a1\nCourthouse organisation name:Ealing Magistrates' Court\nCourthouse address line 1:The Court House\nCourthouse address line 2:Green Man Lane\nCourthouse address line 3:Ealing\nCourthouse address line 4:London\nCourthouse post code:W13 0SD\nDefendant to attend the next hearing true\nCase part heard \nAdjournment reasons ",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "a59bcbe8-ac32-4ff3-b6e4-3c4c5ea69c94",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gohiriad"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "d4c5b474-e118-41fb-85da-72e5c19ed451",
+                  "judicialResultPrompts": [
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d27a5d86-d51f-4c6e-914b-cb4b0abc4283",
+                      "label": "Date of hearing",
+                      "promptReference": "HDATE",
+                      "promptSequence": 100,
+                      "type": "DATE",
+                      "usergroups": [],
+                      "value": "20/05/2021",
+                      "welshLabel": "Dyddiad y gwrandawiad",
+                      "welshValue": "20/05/2021"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "4d125a5a-acbc-461d-a657-ba5643af85a6",
+                      "label": "Time of hearing",
+                      "promptReference": "timeOfHearing",
+                      "promptSequence": 200,
+                      "type": "TIME",
+                      "usergroups": [],
+                      "value": "10:00",
+                      "welshLabel": "Amser y gwrandawiad",
+                      "welshValue": "10:00"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "49ec9b26-dd63-4637-b2e9-55ba9948a90f",
+                      "label": "Courtroom",
+                      "promptReference": "HCROOM",
+                      "promptSequence": 400,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "Courtroom 02",
+                      "welshLabel": "Ystafell Llys",
+                      "welshValue": "Courtroom 02"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "c1116d12-dd35-4171-807a-2cb845357d22",
+                      "label": "Hearing type",
+                      "promptReference": "HTYPE",
+                      "promptSequence": 500,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "Trial - no witnesses",
+                      "welshLabel": "Math o wrandawiad",
+                      "welshValue": "Trial - no witnesses"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                      "label": "Estimated duration",
+                      "promptReference": "HEST",
+                      "promptSequence": 600,
+                      "type": "INT",
+                      "usergroups": [],
+                      "value": "6 HOURS",
+                      "welshLabel": "Amcangyfrif amser",
+                      "welshValue": "6"
+                    },
+                    {
+                      "courtExtract": "N",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "e73e6ab8-9bfe-4135-9fe6-f526544584d6",
+                      "label": "Booking reference",
+                      "promptReference": "bookingReference",
+                      "promptSequence": 700,
+                      "type": "TXT",
+                      "usergroups": [],
+                      "value": "e42fc616-be2f-41a1-81ce-c04d8c0454a1",
+                      "welshLabel": "Cyfeirnod archebu",
+                      "welshValue": "e42fc616-be2f-41a1-81ce-c04d8c0454a1"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse organisation name",
+                      "promptReference": "hCHOUSEOrganisationName",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing Magistrates' Court",
+                      "welshValue": "Ealing Magistrates' Court"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 1",
+                      "promptReference": "hCHOUSEAddress1",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "The Court House",
+                      "welshValue": "The Court House"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 2",
+                      "promptReference": "hCHOUSEAddress2",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Green Man Lane",
+                      "welshValue": "Green Man Lane"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 3",
+                      "promptReference": "hCHOUSEAddress3",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "Ealing",
+                      "welshValue": "Ealing"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse address line 4",
+                      "promptReference": "hCHOUSEAddress4",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "London",
+                      "welshValue": "London"
+                    },
+                    {
+                      "courtExtract": "Y",
+                      "isFinancialImposition": false,
+                      "judicialResultPromptTypeId": "66868c04-72c4-46d9-a4fc-860a82107475",
+                      "label": "Courthouse post code",
+                      "promptReference": "hCHOUSEPostCode",
+                      "promptSequence": 300,
+                      "type": "NAMEADDRESS",
+                      "usergroups": [],
+                      "value": "W13 0SD",
+                      "welshValue": "W13 0SD"
+                    }
+                  ],
+                  "judicialResultTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                  "label": "Next hearing in magistrates' court",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "01a45ba1-24e8-4f31-a470-f020653db4cf",
+                  "parentJudicialResultTypeId": "f00359b5-7303-403b-b59e-0b1a1daa89bc",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 1000,
+                  "resultDefinitionGroup": "Next hearing",
+                  "resultText": "Next hearing in magistrates' court\nDate of hearing 2021-05-20\nTime of hearing 10:00\nCourthouse organisation name Ealing Magistrates' Court\nCourthouse address line 1 The Court House\nCourthouse address line 2 Green Man Lane\nCourthouse address line 3 Ealing\nCourthouse address line 4 London\nCourthouse post code W13 0SD\nCourtroom Courtroom 02\nHearing type Trial - no witnesses\nEstimated duration 6 HOURS",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "a59bcbe8-ac32-4ff3-b6e4-3c4c5ea69c94",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                },
+                {
+                  "alwaysPublished": false,
+                  "category": "ANCILLARY",
+                  "courtClerk": {
+                    "firstName": "Evan",
+                    "lastName": "Roberts",
+                    "userId": "9a84122a-c561-4229-b8ed-01bf089a877c"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "02613238-fb5f-43b9-9bc1-d4a5de1bcbff",
+                  "judicialResultTypeId": "a0bdcc1b-fd72-4515-91ba-01807dfdf880",
+                  "label": "Case part heard",
+                  "lastSharedDateTime": "2021-05-18",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2021-05-18",
+                  "orderedHearingId": "b1bc6d3d-623c-4c06-9761-4c2addc08cf4",
+                  "parentJudicialResultId": "ede792d4-cd9a-4b76-9f98-b3f42920c952",
+                  "parentJudicialResultTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "postHearingCustodyStatus": "A",
+                  "publishedAsAPrompt": true,
+                  "publishedForNows": true,
+                  "rank": 9900,
+                  "resultDefinitionGroup": "Adjournment reasons",
+                  "resultText": "Case part heard\n",
+                  "rollUpPrompts": false,
+                  "rootJudicialResultId": "a59bcbe8-ac32-4ff3-b6e4-3c4c5ea69c94",
+                  "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": [],
+                  "welshLabel": "Gwrandawyd yr achos yn rhannol"
+                }
+              ],
+              "modeOfTrial": "Summary",
+              "offenceCode": "CA03013",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "062cedf4-b495-3a6c-9148-cec6bef362ed",
+              "offenceLegislation": "Contrary to section 366(8)(a) and    (9) of the Communications Act 2003.",
+              "offenceTitle": "Obstruct person executing search warrant for TV receiver",
+              "orderIndex": 2,
+              "startDate": "2020-02-09",
+              "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+            }
+          ],
+          "personDefendant": {
+            "arrestSummonsNumber": "TFL1",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "personDetails": {
+              "address": {
+                "address1": "1234",
+                "address2": "StreetDescription",
+                "address3": "Locality2O"
+              },
+              "dateOfBirth": "1990-01-01",
+              "documentationLanguageNeeds": "ENGLISH",
+              "firstName": "Solon",
+              "gender": "MALE",
+              "lastName": "BoehmHessel",
+              "title": "Mr"
+            }
+          },
+          "prosecutionAuthorityReference": "TFL1",
+          "prosecutionCaseId": "d9d9527f-79b4-437e-87c0-58fb616f15ae"
+        }
+      ],
+      "id": "d9d9527f-79b4-437e-87c0-58fb616f15ae",
+      "initiationCode": "C",
+      "originatingOrganisation": "0300000",
+      "prosecutionCaseIdentifier": {
+        "address": {
+          "address1": "Criminal Justice Department",
+          "address2": "Derbyshire Constabulary",
+          "address3": "Butterley Hall",
+          "postcode": "DE5 3RS"
+        },
+        "majorCreditorCode": "PO30",
+        "prosecutionAuthorityCode": "DERPF",
+        "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+        "prosecutionAuthorityName": "Derbyshire Police",
+        "prosecutionAuthorityOUCode": "0300000",
+        "caseURN": "90GDAPP5054"
+      }
+    }
+  ],
+  "type": {
+    "description": "First hearing",
+    "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "caseId": "6ec1c56-d5d9-4293-8fc9-ab874fb3ee02",
+  "resolvedConvictingInformation": [
+    {
+      "convictionDate": "2022-01-20T13:22:03.862Z",
+      "convictingCourt": {
+        "courtHouseCode": "B01OK",
+        "ljaCode": "2572"
+      },
+      "sessionId": "36c982c5-692a-4c2e-bd2f-d9a0b2d62054",
+      "offenceId": "fa038719-9205-48b2-9c47-9439bc5f4c37"
+    }
+  ]
+}

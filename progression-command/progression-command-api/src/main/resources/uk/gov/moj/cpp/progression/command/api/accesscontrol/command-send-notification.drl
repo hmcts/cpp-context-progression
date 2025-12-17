@@ -1,0 +1,33 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.progression.command.api.accesscontrol.PermissionConstants;
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Send Email"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.send.email");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Send Print"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.send.print");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "progression.update-send-to-cps-flag"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-send-to-cps-flag");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action,"System Users"));
+  then
+    $outcome.setSuccess(true);
+end

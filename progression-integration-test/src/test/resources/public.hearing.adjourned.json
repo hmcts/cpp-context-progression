@@ -1,0 +1,34 @@
+{
+  "adjournedHearing": "1d30ba85-b806-4278-ad87-efa9ec75be50",
+  "nextHearings": [
+    {
+      "type": {
+        "id": "2d30ba85-b806-4278-ad87-efa9ec75be50",
+        "description": "SENTENCING"
+      },
+      "jurisdictionType": "MAGISTRATES",
+      "courtCentre": {
+        "id": "3d30ba85-b806-4278-ad87-efa9ec75be50",
+        "name": "CROYDON"
+      },
+      "hearingLanguage" : "ENGLISH",
+      "listedStartDateTime": "2018-11-12T09:27:12Z",
+      "estimatedMinutes": 7200,
+      "nextHearingProsecutionCases": [
+        {
+            "id": "PROSECUTION_CASE_ID",
+            "defendants": [
+              {
+                "id": "DEFENDANT_ID",
+                "offences": [
+                  {
+                    "id": "OFFENCE_ID"
+                  }
+                ]
+              }
+            ]
+        }
+      ]
+    }
+  ]
+}

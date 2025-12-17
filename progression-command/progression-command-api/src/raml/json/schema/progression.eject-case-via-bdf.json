@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/courts/progression.eject-case-via-bdf.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "removalReason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "prosecutionCaseId",
+    "removalReason"
+  ],
+  "additionalProperties": false
+}

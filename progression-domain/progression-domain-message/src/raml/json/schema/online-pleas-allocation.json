@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/online-pleas-allocation.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "$ref": "http://moj.gov.uk/cpp/progression/plea/json/schemas/offence-plea-details.json"
+
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "defenceId",
+    "hearingId",
+    "offences"
+  ],
+  "additionalProperties": false
+}

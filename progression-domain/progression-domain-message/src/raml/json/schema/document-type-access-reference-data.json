@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/document-type-access-reference-data.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "section": {
+      "type": "string"
+    },
+    "documentCategory": {
+      "type": "string"
+    },
+    "sectionCode": {
+      "type": "string"
+    },
+    "actionRequired": {
+      "type": "boolean"
+    },
+    "validFrom": {
+      "$ref": "#/definitions/isoDate"
+    },
+    "validTo": {
+      "$ref": "#/definitions/isoDate"
+    },
+    "defenceOnly": {
+      "type": "boolean"
+    },
+    "courtDocumentTypeRBAC": {
+      "type": "object",
+      "properties": {
+        "readUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        },
+        "uploadUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        },
+        "downloadUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        },
+        "deleteUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "documentCategory"
+  ],
+  "definitions": {
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-[01]\\d-[0-3]\\d$"
+    },
+    "userGroup": {
+      "type": "object",
+      "properties": {
+        "cppGroup": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            },
+            "groupName": {
+              "type": "string"
+            }
+          }
+        },
+        "validFrom": {
+          "$ref": "#/definitions/isoDate"
+        },
+        "validTo": {
+          "$ref": "#/definitions/isoDate"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "cppGroup"
+      ]
+    }
+  }
+}

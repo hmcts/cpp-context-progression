@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/request-edit-form.json",
+  "description": "Edit information for Forms",
+  "properties": {
+    "extend": {
+      "type": "boolean"
+    },
+    "extendTime": {
+      "type": "integer"
+    },
+    "section" : {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/now-document-requested.json",
+  "type": "object",
+  "properties": {
+    "materialId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "nowDocumentRequest": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-document-request.json#"
+    },
+    "cpsProsecutionCase": {
+      "type": "boolean"
+    },
+    "fileName": {
+      "description": "The file name",
+      "type": "string"
+    },
+    "templateName": {
+      "description": "The template name",
+      "type": "string"
+    },
+    "userId" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "materialId",
+    "nowDocumentRequest"
+  ],
+  "additionalProperties": false
+}

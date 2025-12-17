@@ -1,0 +1,28 @@
+{
+  "offences": [
+    {
+      "offenceId": "04c099cc-eba2-4c80-9eed-7c1ef21d706a",
+      "cjsOffenceCode": "OFFENCE_CODE",
+      "modeOfTrial": "SNONIMP",
+      "validFrom": "2017-10-10",
+      "validTo": "2017-12-10",
+      "offenceStartDate": "2019-01-19",
+      "offenceEndDate": "2019-01-25",
+      "cppDateOfLastUpdate": "2017-12-10",
+      "pnldDateOfLastUpdate": "2017-06-10",
+      "drugsOrAlcoholRelated": "Y",
+      "locationRequired": "N",
+      "prosecutionTimeLimit": "6 months",
+      "sentencing": "Yes",
+      "penaltyType": "Excise penalty",
+      "modeOfTrialDerived": "Either Way",
+      "backDuty": true,
+      "endorsableFlag": true,
+      "reportRestrictResultCode": "YES",
+      "title": "title",
+      "legislation": "legislation",
+      "titleWelsh": "titleWelsh",
+      "legislationWelsh": "legislationWelsh"
+    }
+  ]
+}

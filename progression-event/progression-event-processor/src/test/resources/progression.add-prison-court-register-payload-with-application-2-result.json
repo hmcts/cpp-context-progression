@@ -1,0 +1,105 @@
+{
+  "courtCentreId": "c133d0de-c989-48b9-bd20-0431943e347e",
+  "prisonCourtRegister": {
+    "courtCentreId": "c133d0de-c989-48b9-bd20-0431943e347e",
+    "defendant": {
+      "address": {
+        "address1": "9999A9999AAAA",
+        "address2": "Woodlane",
+        "address3": "Bristol",
+        "address4": "Avon"
+      },
+      "dateOfBirth": "1964-12-03",
+      "gender": "MALE",
+      "hearing": {
+        "defendantPresent": false,
+        "hearingType": "First hearing",
+        "jurisdiction": "MAGISTRATES"
+      },
+      "masterDefendantId": "10380b80-1774-4d69-8564-b72e6c2ce4d7",
+      "name": "sushma test2",
+      "postHearingCustodyStatus": "Not Applicable",
+      "prosecutionCasesOrApplications": [
+        {
+          "arrestSummonsNumber": "2010DD0100000000503B",
+          "caseOrApplicationReference": "69GD8085622",
+          "offences": [
+            {
+              "allocationDecision": "Summary-only offence",
+              "convictionDate": "2022-05-05",
+              "offenceCode": "RT88339",
+              "offenceTitle": "Drive whilst unfit through drink",
+              "orderIndex": 1,
+              "pleaDate": "2022-05-05",
+              "pleaValue": "GUILTY",
+              "results": [
+                {
+                  "cjsResultCode": "1002",
+                  "resultText": "Imprisonment\nTotal custodial period 8 Weeks\nPrison organisation name HMP/YOI Eastwood Park\nPrison email address 1 Custody.Eastwoodpark@justice.gov.uk\nPrison email address 2 Reception.EastwoodPark@justice.gov.uk\nConveyor / custodian name organisation name City of London Magistrates' Court: PECS\nConveyor / custodian name email address 1 PECSCityofLondonMags@serco.com\nProbation team to be notified organisation name South West and Central Division NPS\nProbation team to be notified email address 1 SWSCNPS.Court@justice.gov.uk\nImprisonment Period 4 Weeks\nBail remand days to count (tagged days) 0"
+                }
+              ],
+              "wording": "ON TUESDAY 10-OCTOBER-2019 AT JACKSON STREET DISHONESTLY\n                        RECEIVED STOLEN GOODS NAMELY WATCH OF A VALUE UNKNOWN BELONGING TO HILDA\n                        ROBERTS KNOWING OR BELIEVING THE SAME TO BE STOLEN GOODS. CONTRARY TO\n                        SECTION 22(1) OF THE THEFT ACT 1968.####Contrary to section 4(1) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988."
+            }
+          ],
+          "prosecutorName": "Northumbria Police"
+        },
+        {
+          "applicationType": "Conviction of an offence while a community order is in force",
+          "arrestSummonsNumber": "2010DD0100000000503B",
+          "caseOrApplicationReference": "69GD8785622",
+          "offences": [
+            {
+              "allocationDecision": "Summary-only offence",
+              "convictionDate": "2022-05-03",
+              "offenceCode": "CJ03522",
+              "offenceTitle": "Drive whilst unfit through drink",
+              "orderIndex": 1,
+              "pleaDate": "2022-05-03",
+              "pleaValue": "GUILTY",
+              "results": [
+                {
+                  "cjsResultCode": "1002",
+                  "resultText": "Imprisonment\nImprisonment Period 4 Weeks\nBail remand days to count (tagged days) 0"
+                }
+              ],
+              "wording": "Resentenced Original code : RT88339, Original details: ON TUESDAY 10-OCTOBER-2019 AT JACKSON STREET DISHONESTLY\n                        RECEIVED STOLEN GOODS NAMELY WATCH OF A VALUE UNKNOWN BELONGING TO HILDA\n                        ROBERTS KNOWING OR BELIEVING THE SAME TO BE STOLEN GOODS. CONTRARY TO\n                        SECTION 22(1) OF THE THEFT ACT 1968.####Contrary to section 4(1) of the Road Traffic Act 1988 and Schedule 2 to the Road Traffic Offenders Act 1988."
+            }
+          ],
+          "results": [
+            {
+              "cjsResultCode": "3501",
+              "resultText": "No adjudication - dealt with for original offence\n"
+            },
+            {
+              "cjsResultCode": "1029",
+              "resultText": "Order revoked\nDate original order made 03/05/2022\nOrder revoked community order\nCourt that made the original order City of London Magistrates' Court"
+            }
+          ]
+        }
+      ]
+    },
+    "hearingDate": "2022-05-05T10:00:00.000Z",
+    "hearingId": "f86adeb2-ba5a-4323-a215-8d62c01bc0a9",
+    "hearingVenue": {
+      "address": {
+        "address1": "1 Queen Victoria Street",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postCode": "EC4N 4XY"
+      },
+      "courtHouse": "City of London Magistrates' Court",
+      "ljaName": "Central London Magistrates' Court"
+    },
+    "recipients": [
+      {
+        "emailAddress1": "Custody.Eastwoodpark@justice.gov.uk",
+        "emailAddress2": "Reception.EastwoodPark@justice.gov.uk",
+        "emailTemplateName": "pcr_standard",
+        "recipientName": "HMP/YOI Eastwood Park"
+      }
+    ]
+  },
+  "defendantType": "Applicant"
+}

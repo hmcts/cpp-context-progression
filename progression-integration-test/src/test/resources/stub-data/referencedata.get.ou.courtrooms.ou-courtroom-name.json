@@ -1,0 +1,15 @@
+{
+  "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+  "oucode": "B01LY00",
+  "oucodeL1Code": "B",
+  "oucodeL1Name": "Magistrates' Courts",
+  "oucodeL3Code": "LY",
+  "oucodeL3Name": "Lavender Hill Magistrates' Court",
+  "address1": "176A Lavender Hill",
+  "address2": "London",
+  "postcode": "SW11 1JU",
+  "isWelsh": false,
+  "oucodeL3WelshName": "Llys Ynadon Lavender Hill",
+  "defaultStartTime": "10:00:00",
+  "defaultDurationHrs": "07:00:00"
+}

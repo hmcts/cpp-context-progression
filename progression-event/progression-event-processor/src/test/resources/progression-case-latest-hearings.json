@@ -1,0 +1,45 @@
+{
+  "hearings": [
+    {
+      "hearingId": "31640ba6-32e1-42d6-967a-91543da764bb",
+      "id": "31640ba6-32e1-42d6-967a-91543da764bb",
+      "jurisdictionType" : "CROWN",
+      "courtCentre": {
+        "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "name": "Lavender Hill Magistrate's Court",
+        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "hearingDays": [
+        {
+          "sittingDay": "2019-05-30T18:32:04.238Z[UTC]"
+        }
+      ]
+    },
+    {
+      "hearingId": "21640ba6-32e1-42d6-967a-91543da764bb",
+      "id": "21640ba6-32e1-42d6-967a-91543da764bb",
+      "jurisdictionType" : "CROWN",
+      "courtCentre": {
+        "id": "99cdf36e-93e4-41b0-8277-17d9dba7f06f",
+        "name": "Croydon Hill Magistrate's Court",
+        "roomId": "8e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "roomName": "Courtroom 01"
+      },
+      "hearingDays": [
+        {
+          "sittingDay": "2019-05-30T18:32:04.238Z[UTC]"
+        },
+        {
+          "sittingDay": "2018-05-30T18:32:04.238Z[UTC]"
+        },
+        {
+          "sittingDay": "2022-08-30T18:32:04.238Z[UTC]"
+        },
+        {
+          "sittingDay": "2019-07-30T18:32:04.238Z[UTC]"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+{
+  "laaDefendantProceedingConcludedChanged": {
+    "defendants": [
+      {
+        "associatedDefenceOrganisation": {
+          "applicationReference": "LAA-ref-GRM-2",
+          "associationEndDate": "2022-12-12",
+          "associationStartDate": "2022-09-12",
+          "defenceOrganisation": {
+            "laaContractNumber": "22221111",
+            "organisation": {
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "SW11 5TQ"
+              },
+              "contact": {
+                "fax": "a",
+                "home": " ",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "work": "a"
+              },
+              "incorporationNumber": "a",
+              "name": "Alan & Co LLP",
+              "registeredCharityNumber": "a"
+            }
+          },
+          "fundingType": "REPRESENTATION_ORDER",
+          "isAssociatedByLAA": true
+        },
+        "courtProceedingsInitiated": "2023-03-17T15:02:13.152Z",
+        "id": "0ab98a89-eda8-4783-b94a-8b6b62ba40f3",
+        "legalAidStatus": "Granted",
+        "masterDefendantId": "0ab98a89-eda8-4783-b94a-8b6b62ba40f3",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2023-03-17",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "9b06561b-087a-41ce-bb44-494866a88f4e",
+              "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+              "sequenceNumber": 90
+            },
+            "arrestDate": "2022-10-02",
+            "chargeDate": "2022-10-02",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2023-03-17",
+            "count": 0,
+            "dvlaOffenceCode": "SP50",
+            "endorsableFlag": true,
+            "id": "9b06561b-087a-41ce-bb44-494866a88f4e",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "category": "FINAL",
+                "cjsCode": "1017",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "dvlaCode": "J",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "35bcd164-7ee2-4930-9449-2925be27429a",
+                "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "label": "Absolute discharge",
+                "lastSharedDateTime": "2023-03-17",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2023-03-17",
+                "orderedHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+                "postHearingCustodyStatus": "A",
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 34600,
+                "resultText": "Absolute discharge\n",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "35bcd164-7ee2-4930-9449-2925be27429a",
+                "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad diamod"
+              }
+            ],
+            "listingNumber": 1,
+            "modeOfTrial": "Summary",
+            "offenceCode": "RR84169",
+            "offenceDateCode": 4,
+            "offenceDefinitionId": "d4429c9f-e53f-431d-9efe-94baf2db981f",
+            "offenceFacts": {
+              "alcoholReadingAmount": 500,
+              "alcoholReadingMethodCode": "A",
+              "alcoholReadingMethodDescription": "Blood"
+            },
+            "offenceLegislation": "Contrary to the above regulations and section 17(2), (3) and (4) of the Road Traffic Regulation Act 1984 and Schedule 2 to the Road Traffic Offenders Act 1988.",
+            "offenceTitle": "Speeding - exceed 60 mph special road / motorway limit - ACD",
+            "orderIndex": 502,
+            "plea": {
+              "offenceId": "9b06561b-087a-41ce-bb44-494866a88f4e",
+              "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+              "pleaDate": "2023-03-17",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-10-01",
+            "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+          },
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2023-03-17",
+              "motReasonCode": "02",
+              "motReasonDescription": "Indictable-only offence",
+              "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+              "offenceId": "a29624ea-d824-467a-acc6-6c52ee711ca0",
+              "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+              "sequenceNumber": 100
+            },
+            "arrestDate": "2022-10-02",
+            "chargeDate": "2022-10-02",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2023-03-17",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "a29624ea-d824-467a-acc6-6c52ee711ca0",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "category": "FINAL",
+                "cjsCode": "1017",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "dvlaCode": "J",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "5c2d0ae5-ec52-4632-9e91-d4105cf5c697",
+                "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "label": "Absolute discharge",
+                "lastSharedDateTime": "2023-03-17",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2023-03-17",
+                "orderedHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+                "postHearingCustodyStatus": "A",
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 34600,
+                "resultText": "Absolute discharge\n",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "5c2d0ae5-ec52-4632-9e91-d4105cf5c697",
+                "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad diamod"
+              }
+            ],
+            "laaApplnReference": {
+              "applicationReference": "LAA-ref-GRM-2",
+              "effectiveEndDate": "2022-12-12",
+              "effectiveStartDate": "2022-09-12",
+              "laaContractNumber": "22221111",
+              "offenceLevelStatus": "Granted",
+              "statusCode": "GR",
+              "statusDate": "2022-12-16",
+              "statusDescription": "Granted (One Advocate)",
+              "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+            },
+            "modeOfTrial": "Indictable",
+            "offenceCode": "PJ11012",
+            "offenceDateCode": 4,
+            "offenceDefinitionId": "cc957f34-3d53-4cad-8fdf-cf2891912567",
+            "offenceFacts": {
+              "alcoholReadingAmount": 500,
+              "alcoholReadingMethodCode": "A",
+              "alcoholReadingMethodDescription": "Blood"
+            },
+            "offenceLegislation": "Contrary to section 1(1) of the Perjury Act 1911.",
+            "offenceTitle": "Wilfully made a false statement in judicial proceedings - witness / interpreter",
+            "orderIndex": 501,
+            "plea": {
+              "offenceId": "a29624ea-d824-467a-acc6-6c52ee711ca0",
+              "originatingHearingId": "80233669-6cad-4ccc-9c29-d9d765c9d761",
+              "pleaDate": "2023-03-17",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2022-10-01",
+            "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "Q9TFLWA",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "799",
+              "address2": "StreetDescription",
+              "address3": "Locality2O",
+              "postcode": "TW14 9XA"
+            },
+            "dateOfBirth": "1988-12-02",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "Joey",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Pant",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "Q9TFLWA",
+        "prosecutionCaseId": "ca28b8ce-eeef-424a-be91-5ae93b48b144"
+      }
+    ],
+    "hearingId": "HEARING_ID",
+    "prosecutionCaseId": "ca28b8ce-eeef-424a-be91-5ae93b48b144"
+  }
+}

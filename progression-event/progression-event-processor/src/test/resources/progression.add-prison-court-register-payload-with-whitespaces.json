@@ -1,0 +1,203 @@
+{
+  "prisonCourtRegister": {
+    "hearingDate": "2020-07-10T09:00:00.000Z",
+    "courtCentreId": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+    "custodyLocation": {
+      "custodyAddress": {
+        "email": "omu.theverne@justice.gov.uk"
+      },
+      "name": "HMIRC The Verne"
+    },
+    "defendant": {
+      "address": {
+        "address1": "56saon",
+        "address2": "56Police House",
+        "address3": "StreetDescription1",
+        "address4": "Locality1",
+        "address5": "Town2",
+        "postCode": "TW14 9XD"
+      },
+      "aliases": [
+        {
+          "firstName": "PersonGivenName1",
+          "lastName": "PersonFamilyName1"
+        },
+        {
+          "firstName": "PersonGivenName2",
+          "lastName": "PersonFamilyName2"
+        }
+      ],
+      "dateOfBirth": "2008-08-08",
+      "defenceCounsels": [
+        {
+          "name": "Mrs Doris Horseferry",
+          "status": "QC"
+        },
+        {
+          "name": "Mrs Doris Horseferry2",
+          "status": "QC2"
+        }
+      ],
+      "gender": "MALE",
+      "hearing": {
+        "attendingSolicitorName": "Test defence Organisation",
+        "hearingType": "Plea and Trial Preparation",
+        "jurisdiction": "CROWN",
+        "defendantAppearanceDetails": "Not Present"
+      },
+      "masterDefendantId": "7df47dd4-2f57-4a76-be04-5483a84fb285",
+      "name": "Robert PersonGivenName20A PersonGivenName30A Ormsby",
+      "nationality": "Pole",
+      "postHearingCustodyStatus": "Not Applicable",
+      "prosecutionCasesOrApplications": [
+        {
+          "caseOrApplicationReference": "56GD5080720",
+          "offences": [
+            {
+              "allocationDecision": "Summary-only offence",
+              "convictionDate": "2020-01-01",
+              "offenceCode": "PS90010",
+              "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+              "orderIndex": 500,
+              "indicatedPleaValue": "IND GUILTY",
+              "pleaValue": "GUILTY",
+              "results": [
+                {
+                  "cjsResultCode": "O1017",
+                  "resultText": "IMP - description\nAbsolute\f discharge\n O10\f17"
+                },
+                {
+                  "cjsResultCode": "O1018",
+                  "resultText": "Absolute discharge O1018"
+                }
+              ],
+              "verdictCode": "test verdict Code",
+              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+            },
+            {
+              "allocationDecision": "Summary-only offence",
+              "offenceCode": "PS90011",
+              "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+              "orderIndex": 500,
+              "pleaDate": "2020-05-29",
+              "pleaValue": "GUILTY",
+              "indicatedPleaValue": "IND GUILTY2",
+              "results": [
+                {
+                  "resultText": "Absolute discharge O2"
+                }
+              ],
+              "verdictCode": "test verdict Code",
+              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+            }
+          ],
+          "prosecutionCounsels": [
+            {
+              "name": "Mrs Doris Riddlestone-Horseferry",
+              "status": "QC"
+            }
+          ],
+          "prosecutorName": "SPI-TEST",
+          "applicationType": "App Type",
+          "applicationDecision": "Application Decision",
+          "applicationDecisionDate": "2020-05-30",
+          "applicationResponse": "Application Response",
+          "applicationResponseDate": "2020-05-31",
+          "applicationResult": "App result",
+          "results": [
+            {
+              "cjsResultCode": "C1017",
+              "resultText": "Case Absolute discharge C1017"
+            },
+            {
+              "cjsResultCode": "A1018",
+              "resultText": "App Absolute discharge A1018"
+            }
+          ],
+          "arrestSummonsNumber": "TFL"
+        },
+        {
+          "caseOrApplicationReference": "56GD5080721",
+          "offences": [
+            {
+              "allocationDecision": "Summary-only offence",
+              "convictionDate": "2020-05-29",
+              "offenceCode": "PS90012",
+              "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+              "orderIndex": 500,
+              "pleaDate": "2020-05-29",
+              "pleaValue": "GUILTY",
+              "results": [
+                {
+                  "cjsResultCode": "O2017",
+                  "resultText": "Absolute discharge O2017 "
+                },
+                {
+                  "resultText": "Absolute discharge O4"
+                }
+              ],
+              "verdictCode": "test verdict Code",
+              "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+            },
+            {
+              "allocationDecision": "Summary-only offence",
+              "convictionDate": "2020-05-29",
+              "offenceCode": "PS90013",
+              "offenceTitle": "Public service vehicle - passenger use altered / defaced   ticket",
+              "orderIndex": 500,
+              "pleaDate": "2020-05-29",
+              "pleaValue": "GUILTY",
+              "verdictCode": "test verdict Code",
+              "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003."
+            }
+          ],
+          "results": [
+            {
+              "cjsResultCode": "C3017",
+              "resultText": "Case Absolute discharge C3017"
+            }
+          ],
+          "prosecutionCounsels": [
+            {
+              "name": "Mrs Doris Riddlestone",
+              "status": "QC"
+            },
+            {
+              "name": "Mrs Doris Riddlestone2",
+              "status": "QC2"
+            }
+          ],
+          "prosecutorName": "SPI-TEST2"
+        }
+      ],
+      "defendantResults": [
+        {
+          "cjsResultCode": "D1017",
+          "resultText": "Def Absolute discharge 1017\n"
+        },
+        {
+          "cjsResultCode": "D1018",
+          "resultText": "Def Absolute discharge 1018\n"
+        }
+      ]
+    },
+    "hearingVenue": {
+      "courtHouse": "Liverpool Crown Court",
+      "ljaName": "Merseyside Magistrates' Court",
+      "address": {
+        "address1": "Shire Hall",
+        "address2": "Tindal Square",
+        "address3": "Chelmsford",
+        "address4": "Essex"
+      }
+    },
+    "recipients": [
+      {
+        "emailAddress1": "omu.theverne@justice.gov.uk",
+        "emailTemplateName": "pcr_standard",
+        "recipientName": "HMIRC The Verne"
+      }
+    ]
+  },
+  "defendantType": "Applicant"
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/adjourn-hearing-defendant-request.json",
+  "type": "object",
+  "properties": {
+    "currentHearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid",
+      "description": "The current hearing which is being resulted"
+    },
+    "adjournedHearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid",
+      "description": "The new hearing to where cases, defendants and offences moved to from current hearing"
+    }
+  },
+  "required": [
+    "currentHearingId",
+    "adjournedHearingId"
+  ],
+  "additionalProperties": false
+}

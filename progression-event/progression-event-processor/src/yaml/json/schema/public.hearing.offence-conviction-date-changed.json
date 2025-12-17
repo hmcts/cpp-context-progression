@@ -1,0 +1,31 @@
+{
+  "$schema":"http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/conviction-date-added.json",
+  "type":"object",
+  "properties":{
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offenceId":{
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "convictionDate":{
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "courtApplicationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "additionalProperties":false,
+  "oneOf": [{
+    "required": [
+      "caseId",
+      "offenceId",
+      "convictionDate"
+    ]},{
+    "required": [
+      "courtApplicationId",
+      "convictionDate"
+    ]
+  }]
+}

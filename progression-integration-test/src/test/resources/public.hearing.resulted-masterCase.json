@@ -1,0 +1,469 @@
+{
+  "hearing": {
+    "id": "HEARING_ID",
+    "type": {
+      "id": "01234567-1234-1234-1234-123456789123",
+      "description": "Sentence"
+    },
+    "jurisdictionType": "MAGISTRATES",
+    "reportingRestrictionReason": "a",
+    "hearingLanguage": "ENGLISH",
+    "hearingDays": [
+      {
+        "sittingDay": "2015-01-12T05:27:17.210Z",
+        "listingSequence": 0,
+        "listedDurationMinutes": 0
+      }
+    ],
+    "courtCentre": {
+      "id": "COURT_CENTRE_ID",
+      "name": "COURT_CENTRE_NAME",
+      "welshName": "a",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "a",
+      "welshRoomName": "a"
+    },
+    "judiciary": [
+      {
+        "judicialId": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "433a9f33-12fd-455c-bc2f-a1cb4c5692cb",
+          "judiciaryType": "RECORDER"
+        },
+        "isDeputy": true,
+        "isBenchChairman": true
+      }
+    ],
+    "prosecutionCases": [
+      {
+        "id": "CASE_ID",
+        "isCivil": true,
+        "groupId" : "GROUP_ID",
+        "isGroupMember": true,
+        "isGroupMaster": true,
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityReference": "RANDOM_REFERENCE"
+        },
+        "originatingOrganisation": "a",
+        "initiationCode": "J",
+        "caseStatus": "a",
+        "statementOfFacts": "a",
+        "statementOfFactsWelsh": "a",
+        "defendants": [
+          {
+            "id": "DEFENDANT_ID",
+            "masterDefendantId": "DEFENDANT_ID",
+            "prosecutionCaseId": "CASE_ID",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+            "numberOfPreviousConvictionsCited": 0,
+            "prosecutionAuthorityReference": "a",
+            "witnessStatement": "a",
+            "witnessStatementWelsh": "a",
+            "mitigation": "a",
+            "mitigationWelsh": "a",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                "offenceCode": "a",
+                "offenceTitle": "a",
+                "offenceTitleWelsh": "a",
+                "offenceLegislation": "a",
+                "offenceLegislationWelsh": "a",
+                "modeOfTrial": "a",
+                "wording": "a",
+                "wordingWelsh": "a",
+                "startDate": "2018-01-01",
+                "endDate": "2018-01-01",
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "dateOfInformation": "2018-01-01",
+                "orderIndex": 0,
+                "count": 0,
+                "convictionDate": "2018-01-01",
+                "notifiedPlea": {
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "notifiedPleaDate": "2018-01-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY"
+                },
+                "custodyTimeLimit": {
+                  "timeLimit": "2018-09-14",
+                  "daysSpent": 55
+                },
+                "indicatedPlea": {
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "indicatedPleaDate": "2018-01-01",
+                  "indicatedPleaValue": "INDICATED_GUILTY",
+                  "source": "ONLINE"
+                },
+                "allocationDecision": {
+                  "allocationDecisionDate": "2019-10-08",
+                  "motReasonCode": "4",
+                  "motReasonDescription": "Defendant chooses trial by jury",
+                  "motReasonId": "f8eb278a-8bce-373e-b365-b45e939da38a",
+                  "offenceId": "0500e8f7-d1a4-439f-accf-7e4fd3eefe42",
+                  "originatingHearingId": "25ab493c-92b9-4735-ae9a-d04ef946ef5e",
+                  "sequenceNumber": 40
+                },
+                "plea": {
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "delegatedPowers": {
+                    "userId": "00000000-0000-0000-0000-000000000000",
+                    "firstName": "a",
+                    "lastName": "a"
+                  },
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "pleaDate": "2018-01-01",
+                  "pleaValue": "GUILTY"
+                },
+                "verdict": {
+                  "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+                  "offenceId": "00000000-0000-0000-0000-000000000000",
+                  "verdictDate": "2018-01-01",
+                  "verdictType": {
+                    "id": "00000000-0000-0000-0000-000000000000",
+                    "sequence": 0,
+                    "description": "a",
+                    "category": "a",
+                    "categoryType": "a"
+                  },
+                  "jurors": {
+                    "numberOfJurors": 1,
+                    "numberOfSplitJurors": 1,
+                    "unanimous": true
+                  },
+                  "lesserOrAlternativeOffence": {
+                    "offenceDefinitionId": "00000000-0000-0000-0000-000000000000",
+                    "offenceCode": "a",
+                    "offenceTitle": "a",
+                    "offenceTitleWelsh": "a",
+                    "offenceLegislation": "a",
+                    "offenceLegislationWelsh": "a"
+                  }
+                },
+                "offenceFacts": {
+                  "vehicleRegistration": "a",
+                  "alcoholReadingAmount": 123
+                },
+                "judicialResults": [
+                  {
+                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "judicialResultId": "94d6e18a-4114-11ea-b77f-2e728ce88125",
+                    "judicialResultTypeId": "94d6e432-4114-11ea-b77f-2e728ce88125",
+                    "label": "a",
+                    "welshLabel": "a",
+                    "isAdjournmentResult": true,
+                    "isFinancialResult": true,
+                    "isConvictedResult": true,
+                    "isAvailableForCourtExtract": true,
+                    "amendmentDate": "1000-01-01",
+                    "amendmentReason": "a",
+                    "cjsCode": "a",
+                    "rank": 0.1,
+                    "orderedDate": "1000-01-01",
+                    "lastSharedDateTime": "a",
+                    "courtClerk": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "delegatedPowers": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "fourEyesApproval": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "approvedDate": "1000-01-01",
+                    "usergroups": [
+                      "a"
+                    ],
+                    "category": "FINAL",
+                    "terminatesOffenceProceedings": false,
+                    "lifeDuration" : false,
+                    "rollUpPrompts": false,
+                    "publishedForNows" : false,
+                    "publishedAsAPrompt" : false,
+                    "excludedFromResults" : false,
+                    "alwaysPublished" : false,
+                    "urgent" : false,
+                    "d20" : false,
+                    "resultText" : "resultText",
+                    "judicialResultPrompts": [
+                      {
+                        "judicialResultPromptTypeId": "e5d8792c-4114-11ea-b77f-2e728ce88125",
+                        "label": "a",
+                        "welshLabel": "a",
+                        "value": "a",
+                        "promptSequence": 0.1,
+                        "promptReference": "a",
+                        "courtExtract": "Y"
+                      }
+                    ]
+                  }
+                ],
+                "reportingRestrictions": [
+                  {
+                    "id": "REPORTING_RESTRICTION_ID",
+                    "judicialResultId": "0f5b8757-e588-4b7f-806a-44dc0eb0e75e",
+                    "label": "Reporting Restriction Label",
+                    "orderedDate": "2020-10-20"
+                  }
+                ],
+                "previousDaysHeldInCustody": 5,
+                "dateHeldInCustodySince": "2018-08-10"
+
+              }
+            ],
+            "associatedPersons": [
+              {
+                "person": {
+                  "title": "DR",
+                  "firstName": "a",
+                  "middleName": "a",
+                  "lastName": "a",
+                  "dateOfBirth": "2018-01-01",
+                  "nationalityId": "00000000-0000-0000-0000-000000000000",
+                  "nationalityCode": "a",
+                  "nationalityDescription": "a",
+                  "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                  "additionalNationalityCode": "a",
+                  "additionalNationalityDescription": "a",
+                  "disabilityStatus": "a",
+                  "gender": "MALE",
+                  "interpreterLanguageNeeds": "a",
+                  "documentationLanguageNeeds": "ENGLISH",
+                  "nationalInsuranceNumber": "NH182858B",
+                  "occupation": "a",
+                  "occupationCode": "a",
+                  "specificRequirements": "a",
+                  "address": {
+                    "address1": "a",
+                    "address2": "a",
+                    "address3": "a",
+                    "address4": "a",
+                    "address5": "a",
+                    "postcode": "GIR0AA"
+                  },
+                  "contact": {
+                    "home": " ",
+                    "work": "a",
+                    "mobile": " ",
+                    "primaryEmail": "!.!@00.00",
+                    "secondaryEmail": "!.!@00.00",
+                    "fax": "a"
+                  }
+                },
+                "role": "a"
+              }
+            ],
+            "defenceOrganisation": {
+              "name": "a",
+              "incorporationNumber": "a",
+              "registeredCharityNumber": "a",
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "GIR0AA"
+              },
+              "contact": {
+                "home": " ",
+                "work": "a",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "fax": "a"
+              }
+            },
+            "personDefendant": {
+              "personDetails": {
+                "title": "DR",
+                "firstName": "a",
+                "middleName": "a",
+                "lastName": "a",
+                "dateOfBirth": "2018-01-01",
+                "nationalityId": "00000000-0000-0000-0000-000000000000",
+                "nationalityCode": "a",
+                "nationalityDescription": "a",
+                "additionalNationalityId": "00000000-0000-0000-0000-000000000000",
+                "additionalNationalityCode": "a",
+                "additionalNationalityDescription": "a",
+                "disabilityStatus": "a",
+                "gender": "MALE",
+                "interpreterLanguageNeeds": "a",
+                "documentationLanguageNeeds": "ENGLISH",
+                "nationalInsuranceNumber": "NH171717B",
+                "occupation": "a",
+                "occupationCode": "a",
+                "specificRequirements": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              },
+              "bailStatus": {
+                "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+                "code": "B",
+                "description": "Conditional Bail",
+                "custodyTimeLimit": {
+                  "timeLimit": "2018-09-10",
+                  "daysSpent": 44
+                }
+              },
+              "custodyTimeLimit": "2018-01-01",
+              "perceivedBirthYear": 0,
+              "driverNumber": "a",
+              "arrestSummonsNumber": "a",
+              "employerOrganisation": {
+                "name": "a",
+                "incorporationNumber": "a",
+                "registeredCharityNumber": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              },
+              "employerPayrollReference": "a"
+            },
+            "legalEntityDefendant": {
+              "organisation": {
+                "name": "a",
+                "incorporationNumber": "a",
+                "registeredCharityNumber": "a",
+                "address": {
+                  "address1": "a",
+                  "address2": "a",
+                  "address3": "a",
+                  "address4": "a",
+                  "address5": "a",
+                  "postcode": "GIR0AA"
+                },
+                "contact": {
+                  "home": " ",
+                  "work": "a",
+                  "mobile": " ",
+                  "primaryEmail": "!.!@00.00",
+                  "secondaryEmail": "!.!@00.00",
+                  "fax": "a"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "hasSharedResults": true,
+    "defendantReferralReasons": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "description": "a",
+        "defendantId": "00000000-0000-0000-0000-000000000000"
+      }
+    ],
+    "prosecutionCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defenceCounsels": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "title": "a",
+        "firstName": "a",
+        "middleName": "a",
+        "lastName": "a",
+        "status": "a",
+        "defendants": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "attendanceDays": [
+          "2018-01-01"
+        ]
+      }
+    ],
+    "defendantAttendance": [
+      {
+        "defendantId": "00000000-0000-0000-0000-000000000000",
+        "attendanceDays": [
+          {
+            "day": "2018-01-01",
+            "attendanceType": "IN_PERSON"
+          }
+        ]
+      }
+    ],
+    "hearingCaseNotes": [
+      {
+        "id": "a4cd3c1d-be10-410d-a50d-e260cdaf6d19",
+        "originatingHearingId": "00000000-0000-0000-0000-000000000000",
+        "courtClerk": {
+          "userId": "00000000-0000-0000-0000-000000000000",
+          "firstName": "a",
+          "lastName": "a"
+        },
+        "prosecutionCases": [
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "noteDateTime": "2016-06-01T10:00:00Z",
+        "noteType": "HMCTS",
+        "note": "a"
+      }
+    ],
+    "youthCourtDefendantIds" : [
+      "DEFENDANT_ID"
+    ],
+    "youthCourt" : {
+      "name" :"Derby Youth Court",
+      "courtCode" :5647,
+      "youthCourtId" :"a4cd3c1d-be10-410d-a50d-e260cdbf6d19"
+    }
+  },
+  "sharedTime": "2016-06-01T10:00:00Z"
+}

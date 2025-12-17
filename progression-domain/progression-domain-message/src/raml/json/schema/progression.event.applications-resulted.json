@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.event.applications-resulted.json",
+  "type": "object",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json"
+    },
+    "shadowListedOffences": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+      }
+    },
+    "committingCourt": {
+      "description": "Sending court details",
+      "$ref": "http://justice.gov.uk/core/courts/committingCourt.json"
+    }
+  },
+  "required": [
+    "hearing"
+  ],
+  "additionalProperties": false
+}

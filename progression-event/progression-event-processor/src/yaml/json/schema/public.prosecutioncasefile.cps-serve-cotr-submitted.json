@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cps/prosecutioncasefile/domain/event/cps-serve-cotr-submitted.json",
+  "properties": {
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseUrn": {
+      "type": "string"
+    },
+    "formDefendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "cpsDefendantId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "defendantId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "defendantSubject": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/defendant"
+      },
+      "minItems": 1
+    },
+    "tag": {
+      "type": "string"
+    },
+    "trialDate": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date",
+      "description": "The date of the trial"
+    },
+    "lastRecordedTimeEstimate": {
+      "type": "integer",
+      "description": "The latest time estimate for the Trial in days (for Crown) or hours (for Mags)"
+    },
+    "hasAllEvidenceToBeReliedOnBeenServed": {
+      "type": "string"
+    },
+    "hasAllEvidenceToBeReliedOnBeenServedDetails": {
+      "type": "string"
+    },
+    "hasAllDisclosureBeenProvided": {
+      "type": "string"
+    },
+    "hasAllDisclosureBeenProvidedDetails": {
+      "type": "string"
+    },
+    "haveOtherDirectionsBeenCompliedWith": {
+      "type": "string"
+    },
+    "haveOtherDirectionsBeenCompliedWithDetails": {
+      "type": "string"
+    },
+    "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttend": {
+      "type": "string"
+    },
+    "haveTheProsecutionWitnessesRequiredToAttendAcknowledgedThatTheyWillAttendDetails": {
+      "type": "string"
+    },
+    "haveAnyWitnessSummonsesRequiredBeenReceivedAndServed": {
+      "type": "string"
+    },
+    "haveAnyWitnessSummonsesRequiredBeenReceivedAndServedDetails": {
+      "type": "string"
+    },
+    "haveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolved": {
+      "type": "string"
+    },
+    "haveSpecialMeasuresOrRemoteAttendanceIssuesForWitnessesBeenResolvedDetails": {
+      "type": "string"
+    },
+    "haveInterpretersForWitnessesBeenArranged": {
+      "type": "string"
+    },
+    "haveInterpretersForWitnessesBeenArrangedDetails": {
+      "type": "string"
+    },
+    "haveEditedAbeInterviewsBeenPreparedAndAgreed": {
+      "type": "string"
+    },
+    "haveEditedAbeInterviewsBeenPreparedAndAgreedDetails": {
+      "type": "string"
+    },
+    "haveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreement": {
+      "type": "string"
+    },
+    "haveArrangementsBeenMadeForStatementOfPointsOfAgreementAndDisagreementDetails": {
+      "type": "string"
+    },
+    "isTheCaseReadyToProceedWithoutDelayBeforeTheJury": {
+      "type": "string"
+    },
+    "isTheCaseReadyToProceedWithoutDelayBeforeTheJuryDetails": {
+      "type": "string"
+    },
+    "isTheTimeEstimateCorrect": {
+      "type": "string"
+    },
+    "isTheTimeEstimateCorrectDetails": {
+      "type": "string"
+    },
+    "furtherInformationToAssistTheCourt": {
+      "type": "string"
+    },
+    "certifyThatTheProsecutionIsTrialReady": {
+      "type": "string"
+    },
+    "certifyThatTheProsecutionIsTrialReadyDetails": {
+      "type": "string"
+    },
+    "applyForThePtrToBeVacated": {
+      "type": "string"
+    },
+    "applyForThePtrToBeVacatedDetails": {
+      "type": "string"
+    },
+    "formCompletedOnBehalfOfTheProsecutionBy": {
+      "type": "string"
+    },
+    "certificationDate": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/date",
+      "description": "The certification date"
+    }
+  },
+  "definitions": {
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "prosecutorDefendantId": {
+          "description": "A unique reference to a defendant within a prosecution. Provided by the prosecuting authority e.g. DWP",
+          "type": "string",
+          "maxLength": 36
+        },
+        "cpsDefendantId": {
+          "description": "A unique reference to a defendant within a prosecution. Provided by cps when CPS are prosecuting the case",
+          "type": "string",
+          "maxLength": 36
+        },
+        "asn": {
+          "description": "A unique reference to a defendant within a prosecution. Provided by the police force and requested from the police by a non police prosecutor e.g. DWP requests from the police",
+          "type": "string",
+          "maxLength": 21
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

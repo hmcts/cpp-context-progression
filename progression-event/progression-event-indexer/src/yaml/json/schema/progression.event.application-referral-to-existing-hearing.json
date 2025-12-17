@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/application-referred-to-existing-hearing.json",
+  "type": "object",
+  "properties": {
+    "application": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+    },
+    "courtHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json"
+    }
+  },
+  "required": [
+    "application",
+    "courtHearing"
+  ],
+  "additionalProperties": false
+}

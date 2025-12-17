@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/update-listing-number.json",
+  "type": "object",
+  "properties": {
+    "offenceListingNumbers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "offenceId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "listingNumber": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "offenceId",
+          "listingNumber"
+        ]
+      }
+    }
+  },
+  "required": [
+    "offenceListingNumbers"
+  ],
+  "additionalProperties": false
+}

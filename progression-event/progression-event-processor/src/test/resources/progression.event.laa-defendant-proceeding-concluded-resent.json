@@ -1,0 +1,188 @@
+{
+  "laaDefendantProceedingConcludedChanged": {
+    "defendants": [
+      {
+        "associatedDefenceOrganisation": {
+          "applicationReference": "LAA-ref-GRM-2",
+          "associationEndDate": "2022-12-12",
+          "associationStartDate": "2022-09-12",
+          "defenceOrganisation": {
+            "laaContractNumber": "22221111",
+            "organisation": {
+              "address": {
+                "address1": "a",
+                "address2": "a",
+                "address3": "a",
+                "address4": "a",
+                "address5": "a",
+                "postcode": "SW11 5TQ"
+              },
+              "contact": {
+                "fax": "a",
+                "home": " ",
+                "mobile": " ",
+                "primaryEmail": "!.!@00.00",
+                "secondaryEmail": "!.!@00.00",
+                "work": "a"
+              },
+              "incorporationNumber": "a",
+              "name": "Alan & Co LLP",
+              "registeredCharityNumber": "a"
+            }
+          },
+          "fundingType": "REPRESENTATION_ORDER",
+          "isAssociatedByLAA": true
+        },
+        "courtProceedingsInitiated": "2023-03-10T08:46:32.544Z",
+        "id": "548870b0-df5a-479e-bd99-20fc83fdace9",
+        "legalAidStatus": "Granted",
+        "masterDefendantId": "548870b0-df5a-479e-bd99-20fc83fdace9",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2023-03-10",
+              "motReasonCode": "02",
+              "motReasonDescription": "Indictable-only offence",
+              "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+              "offenceId": "9f7a1dcc-ae6e-413f-89ea-42c6e132389a",
+              "originatingHearingId": "04930cb4-66d1-4be3-8036-bbf776f9cc02",
+              "sequenceNumber": 100
+            },
+            "arrestDate": "2004-12-09",
+            "chargeDate": "2004-12-09",
+            "convictingCourt": {
+              "code": "B01LY00",
+              "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+              "lja": {
+                "ljaCode": "2577",
+                "ljaName": "South West London Magistrates' Court"
+              },
+              "name": "Lavender Hill Magistrates' Court",
+              "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+            },
+            "convictionDate": "2023-03-10",
+            "count": 0,
+            "endorsableFlag": false,
+            "id": "9f7a1dcc-ae6e-413f-89ea-42c6e132389a",
+            "isDisposed": true,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "category": "FINAL",
+                "cjsCode": "1017",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "dvlaCode": "J",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "dcad3c45-cee9-400a-98e6-26da0873a687",
+                "judicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "label": "Absolute discharge",
+                "lastSharedDateTime": "2023-03-10",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2023-03-10",
+                "orderedHearingId": "04930cb4-66d1-4be3-8036-bbf776f9cc02",
+                "postHearingCustodyStatus": "A",
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 23500,
+                "resultText": "Absolute discharge\n",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "dcad3c45-cee9-400a-98e6-26da0873a687",
+                "rootJudicialResultTypeId": "b9c6047b-fb84-4b12-97a1-2175e4b8bbac",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad diamod"
+              }
+            ],
+            "laaApplnReference": {
+              "applicationReference": "LAA-ref-GRM-2",
+              "effectiveEndDate": "2022-12-12",
+              "effectiveStartDate": "2022-09-12",
+              "laaContractNumber": "22221111",
+              "offenceLevelStatus": "Granted",
+              "statusCode": "GRM",
+              "statusDate": "2022-12-16",
+              "statusDescription": "Granted (One Advocate)(Magistrates court jurisdiction)",
+              "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+            },
+            "modeOfTrial": "Indictable",
+            "offenceCode": "TH68023",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "18affe3a-82be-4a4f-9a13-27f4a23c9a2f",
+            "offenceLegislation": "Contrary to section 8(1) of the Theft Act 1968.",
+            "offenceLegislationWelsh": "Yn groes i adran 8(1) Deddf Dwyn 1968.",
+            "offenceTitle": "Robbery",
+            "offenceTitleWelsh": "Ysbeilio/Lladrad",
+            "orderIndex": 500,
+            "plea": {
+              "offenceId": "9f7a1dcc-ae6e-413f-89ea-42c6e132389a",
+              "originatingHearingId": "04930cb4-66d1-4be3-8036-bbf776f9cc02",
+              "pleaDate": "2023-03-10",
+              "pleaValue": "GUILTY"
+            },
+            "proceedingsConcluded": true,
+            "startDate": "2004-12-09",
+            "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "DTFL",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "A",
+            "description": "Not applicable",
+            "id": "86009c70-759d-3308-8de4-194886ff9a77"
+          },
+          "personDetails": {
+            "address": {
+              "address1": "IgmlUr7Iq5",
+              "address2": "56Police House",
+              "address3": "StreetDescription",
+              "address4": "Locality2O",
+              "address5": "TownD",
+              "postcode": "TW14 9XD"
+            },
+            "contact": {
+              "home": "09998021888",
+              "mobile": "09998021889",
+              "primaryEmail": "robert@gmail.com",
+              "secondaryEmail": "ormsby@gmail.com",
+              "work": "0917894278022"
+            },
+            "dateOfBirth": "2001-03-12",
+            "documentationLanguageNeeds": "ENGLISH",
+            "firstName": "John",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Moore"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody or remanded into custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": true,
+        "prosecutionAuthorityReference": "DTFL",
+        "prosecutionCaseId": "80f11f4c-8a83-4e42-b0b1-7dc8172debfb"
+      }
+    ],
+    "hearingId": "04930cb4-66d1-4be3-8036-bbf776f9cc02",
+    "prosecutionCaseId": "80f11f4c-8a83-4e42-b0b1-7dc8172debfb"
+  }
+}

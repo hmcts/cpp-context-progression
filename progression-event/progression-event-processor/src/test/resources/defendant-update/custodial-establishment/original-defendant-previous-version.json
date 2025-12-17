@@ -1,0 +1,51 @@
+{
+  "id": "13ea40ea-e407-4050-bfe5-efd66d9dd281",
+  "isYouth": true,
+  "personDefendant": {
+    "employerOrganisation": {
+      "address": {
+        "address1": "employer-address1-1",
+        "address2": "employer-address2-1"
+      },
+      "contact": {
+        "home": "employer-contact-1",
+        "mobile": "employer-mobile-1",
+        "fax": "employer-fax-1"
+      },
+      "name": "employer-name-1"
+    },
+    "personDetails": {
+      "address": {
+        "address1": "person-address1-2",
+        "address2": "person-address2-2",
+        "postcode": "person-postcode-1"
+      },
+      "contact": {
+        "work": "person-work-1",
+        "primaryEmail": "person-primaryEmail-1",
+        "secondaryEmail": "person-secondaryEmail-1"
+      },
+      "dateOfBirth": "2008-09-01",
+      "documentationLanguageNeeds": "ENGLISH",
+      "ethnicity": {
+        "selfDefinedEthnicityCode": "W1",
+        "selfDefinedEthnicityDescription": "British",
+        "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+      },
+      "firstName": "person-firstName-1",
+      "gender": "MALE",
+      "interpreterLanguageNeeds": "ENGLISH-1",
+      "lastName": "person-lastName-1",
+      "nationalInsuranceNumber": "person-ni-1",
+      "nationalityCode": "person-nicode-1",
+      "nationalityDescription": "person-nidesc-1",
+      "nationalityId": "609a8551-3e4e-49c7-855c-2b2336344a09",
+      "additionalNationalityCode": "person-nicode-4",
+      "additionalNationalityDescription": "person-nidesc-4",
+      "additionalNationalityId": "000a8551-3e4e-49c7-855c-2b2336344a09",
+      "specificRequirements": "person-specificRequirements-1",
+      "title": "person-title-1"
+    }
+  },
+  "prosecutionCaseId": "c837104e-1bc4-4996-97b7-de5fbcc6c5fb"
+}

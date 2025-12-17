@@ -1,0 +1,104 @@
+{
+  "courtReferral": {
+    "sjpReferral": {
+      "noticeDate": "2018-01-01",
+      "referralDate": "2018-02-15",
+      "referringJudicialDecision": {
+        "location": "Lavender Hill Magistrates' Court",
+        "judiciary": [
+          {
+            "judicialName": "Mrs Theresa Mary May",
+            "judicialRoleTypeSJP":"MAGISTRATE"
+          }
+        ]
+      }
+    },
+    "prosecutionCases": [
+      {
+        "id": "RANDOM_CASE_ID",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+          "prosecutionAuthorityCode": "TFL",
+          "prosecutionAuthorityReference": "RANDOM_REFERENCE"
+        },
+        "initiationCode": "J",
+        "defendants": [
+          {
+            "id": "RANDOM_DEFENDANT_ID",
+            "prosecutionCaseId": "RANDOM_CASE_ID",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "490dce00-8591-49af-b2d0-1e161e7d0c36",
+                "startDate": "2018-01-01",
+                "wording":"wording sample",
+                "reportingRestrictions": [
+                  {
+                    "id": "RANDOM_RR_ID",
+                    "label": "Complainant's anonymity protected by virtue of Section 1 of the Sexual Offences Amendment Act 1992",
+                    "orderedDate": "2020-11-11"
+                  }
+                ]
+              }
+            ],
+            "associatedPersons": [
+              {
+                "person": {
+                  "title": "DR",
+                  "lastName": "Kane",
+                  "gender": "MALE"
+                },
+                "role": "parent"
+              }
+            ],
+
+            "personDefendant": {
+              "personDetails": {
+                "title": "DR",
+                "lastName": "Kane Junior",
+                "gender": "MALE",
+                "address": {
+                  "address1": "22",
+                  "postcode": "CR7 0AA"
+                }
+              }
+            }
+
+          }
+        ]
+      }
+    ],
+    "listHearingRequests": [
+      {
+        "hearingType": {
+          "id": "2daefec3-2f76-8109-82d9-2e60544a6c02"
+        },
+        "jurisdictionType": "MAGISTRATES",
+        "estimateMinutes": 20,
+        "reportingRestrictionReason": "Automatic anonymity under the Sexual Offences (Amendment) Act 1992",
+        "courtCentre": {
+          "id": "88cdf36e-93e4-41b0-8277-17d9dba7f06f"
+        },
+        "prosecutorDatesToAvoid": "wednesdays",
+        "listingDirections": "tricky defendant",
+        "listDefendantRequests": [
+          {
+            "prosecutionCaseId": "RANDOM_CASE_ID",
+            "referralReason": {
+              "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+              "description": "forTrial",
+              "defendantId": "RANDOM_DEFENDANT_ID"
+            },
+            "datesToAvoid": "thursdays",
+            "summonsRequired": "SJP_REFERRAL",
+            "hearingLanguageNeeds": "WELSH",
+            "defendantOffences": [
+              "3789ab16-0bb7-4ef1-87ef-c936bf0364f1"
+            ]
+          }
+        ]
+      }
+    ]
+
+  }
+}

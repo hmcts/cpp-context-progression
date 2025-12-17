@@ -1,0 +1,77 @@
+{
+  "containsFinancialMeans": false,
+  "courtDocumentId": "%COURT_DOCUMENT_ID%",
+  "documentCategory": {
+    "nowDocument": {
+      "defendantId": "1fe8b8d9-e755-4b7d-b376-a6b7ffe7c86f",
+      "orderHearingId": "a2518cf8-c87b-46c2-8181-bdf749f5b9c4",
+      "prosecutionCases": [
+        "%CASE_ID%"
+      ]
+    }
+  },
+  "documentTypeDescription": "Court Final orders",
+  "documentTypeId": "460fbc00-c002-11e8-a355-529269fb1459",
+  "documentTypeRBAC": {
+    "downloadUserGroups": [
+      "Deputies",
+      "Crown Court Admin",
+      "Youth Offending Service Admin",
+      "Magistrates",
+      "Court Administrators",
+      "Court Associate",
+      "Police Admin",
+      "Defence Users",
+      "Legal Advisers",
+      "Victims & Witness Care Admin",
+      "Non CPS Prosecutors",
+      "Probation Admin",
+      "DJMC",
+      "Listing Officers"
+    ],
+    "readUserGroups": [
+      "Deputies",
+      "Crown Court Admin",
+      "Youth Offending Service Admin",
+      "Magistrates",
+      "Court Administrators",
+      "Court Associate",
+      "Police Admin",
+      "Defence Users",
+      "Legal Advisers",
+      "Victims & Witness Care Admin",
+      "Non CPS Prosecutors",
+      "Probation Admin",
+      "DJMC",
+      "Listing Officers"
+    ]
+  },
+  "materials": [
+    {
+      "generationStatus": "Generated",
+      "id": "5e1cc18c-76dc-47dd-99c1-d6f87385edf1",
+      "name": "TestPDF",
+      "uploadDateTime": "2025-07-25T15:33:01.299Z",
+      "userGroups": [
+        "Deputies",
+        "Crown Court Admin",
+        "Youth Offending Service Admin",
+        "Magistrates",
+        "Court Administrators",
+        "Court Associate",
+        "Police Admin",
+        "Defence Users",
+        "Legal Advisers",
+        "Victims & Witness Care Admin",
+        "Non CPS Prosecutors",
+        "Probation Admin",
+        "DJMC",
+        "Listing Officers"
+      ]
+    }
+  ],
+  "mimeType": "application/pdf",
+  "name": "TestPDF",
+  "sendToCps": false,
+  "seqNum": 270
+}

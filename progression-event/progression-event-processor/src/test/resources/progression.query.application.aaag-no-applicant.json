@@ -1,0 +1,31 @@
+{
+  "applicationId": "7270191a-54c2-11ea-a2e3-2e728ce88125",
+  "applicationDetails": {
+    "applicationParticulars": "CM5utj87vq",
+    "applicationReceivedDate": "2020-02-21",
+    "applicationReference": "HQSYNXLYGE",
+    "applicationType": "CCRf34AxaE",
+    "appeal": false,
+    "feePayable": false,
+    "paymentReference": "W5IL3h5nxx"
+  },
+  "respondentDetails": [
+    {
+      "address": {
+        "address1": "XElJOz22qs",
+        "address2": "vu2A9SzdQy",
+        "address3": "F1qcZd34sT",
+        "address4": "2RjKYgk268",
+        "address5": "A75uQ5jk0m",
+        "postcode": "C4A 3NY"
+      },
+      "name": "WBHE1n0bUr",
+      "respondentRepresentatives": [
+        {
+          "representativeName": "3ZvjBrWA3M EUvFhyL03I",
+          "representativePosition": "jHNg1aywpg"
+        }
+      ]
+    }
+  ]
+}

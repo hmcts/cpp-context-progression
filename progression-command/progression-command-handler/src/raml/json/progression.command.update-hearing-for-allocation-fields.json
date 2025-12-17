@@ -1,0 +1,23 @@
+{
+  "courtCentre": {
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+    "name": "00ObpXuu51",
+    "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+    "roomName": "JK2Y7hu0Tc",
+    "welshName": "3IpJDfdfhS",
+    "welshRoomName": "hm60SAXokc"
+  },
+  "hearingDays": [
+    {
+      "listedDurationMinutes": 1531791578,
+      "listingSequence": 810249414,
+      "sittingDay": "2015-01-12T05:27:17.210Z"
+    }
+  ],
+  "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+  "type": {
+    "description": "qm1rJUZb0f",
+    "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
+  },
+  "hearingLanguage": "ENGLISH"
+}

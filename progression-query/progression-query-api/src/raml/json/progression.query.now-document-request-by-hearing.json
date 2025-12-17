@@ -1,0 +1,153 @@
+{
+  "nowDocumentRequests": [
+    {
+      "materialId": "08744ce7-5684-4137-a896-67ccf94a1720",
+      "requestId": "08744ce7-5684-4137-a896-67ccf94a1720",
+      "hearingId": "08744ce7-5684-4137-a896-67ccf94a1720",
+      "payload": {
+        "hearingId": "1828f356-f746-4f2d-932b-79ef2df95c80",
+        "nowTypeId": "b4b55110-1d50-11e8-accf-0ed5f89f718b",
+        "materialId": "b4b55110-1d50-11e8-accf-0ed5f89f719b",
+        "masterDefendantId": "ded76309-c912-436b-a21b-a4c4450bc052",
+        "visibleToUserGroups": [
+          "courtClerk",
+          "Listing Officers"
+        ],
+        "nowDistribution": {
+          "firstClassLetter": true,
+          "email": false,
+          "emailContent": null,
+          "secondClassLetter": false
+        },
+        "nowContent": {
+          "ljaCode": "1800",
+          "ljaName": "East Hampshire Magistrates' Court",
+          "welshLjaName": "East Hampshire Magistrates' Court",
+          "welshCourtCentreName": "Lavender Hill",
+          "amendmentDate": "2019-03-25",
+          "defendant": {
+            "dateOfBirth": "1965-12-27",
+            "pncId": "123456",
+            "nationality": "British",
+            "prosecutingAuthorityReference": "TFL4359536",
+            "mobileNumber": "0712345678",
+            "landLineNumber": "044-012345566",
+            "nino": "SG12345DC",
+            "ethnicity": "AAAA",
+            "gender": "MALE",
+            "driverNumber": "ABCD1234",
+            "defendantResults": [
+              {
+                "nowRequirementText": [
+                  {
+                    "label": "collOrd",
+                    "value": "<h4>COLLECTION ORDER</h4> <p><strong>A collection order has been made, which means the court has powers to collect the money</strong></p> <p><strong>See above for how to pay</strong></p> <p>If you don&rsquo;t pay, we may:</p> <ul> <li>take money from your earnings or benefits</li> <li>increase your fine</li> <li>issue a warrant to seize your possessions which will mean extra costs</li> <li>log this in the Register of Judgements, Orders and Fines, making it harder for you to get credit</li> <li>apply to the court for a warrant for your arrest to bring you to court</li> </ul> <p><strong>If you still don’t pay, you could be sent to prison for non-payment.</strong></p>",
+                    "welshValue": "<h4>GORCHYMYN CASGLU</h4><p><strong>Mae gorchymyn casglu wedi&rsquo;i wneud, sy&rsquo;n golygu fod gan y llys bwerau i gasglu&rsquo;r arian.</strong></p><p><strong>Gweler drosodd am sut i dalu</strong></p><p>Os na fyddwch yn talu, efallai y byddwn yn:</p><ul><li>cymryd arian o&rsquo;ch enillion neu fudd-daliadau</li><li>cynyddu eich dirwy</li><li>codi gwarant i atafaelu eich eiddo fydd yn golygu costau ychwanegol</li><li>cofnodi hwn ar y Gofrestr Dyfarniadau, Gorchmynion a Dirwyon, a fydd yn ei gwneud yn anoddach i chi gael credyd</li><li>gwneud cais i&rsquo;r llys am warant i&rsquo;ch arestio er mwyn eich cludo i&rsquo;r llys</li></ul><p><strong>Os byddwch dal ddim yn talu, gallech gael eich anfon i&rsquo;r carchar am beidio &acirc; thalu.</strong></p><p><strong>&nbsp;</strong></p>"
+                  }
+                ],
+                "label": "Imprisonment"
+              }
+            ],
+            "solicitor": {
+              "address": {
+                "line1": "Flat 1",
+                "line2": "1 Old Road",
+                "line3": "London",
+                "line4": "Merton",
+                "postCode": "SW99 1AA",
+                "emailAddress1": "abc@test.com",
+                "emailAddress2": "xyz@test.com"
+              },
+              "name": "DEFENCE ORGANISATION"
+            },
+            "name": "Fred Smith",
+            "address": {
+              "line1": "Flat 1",
+              "line2": "1 Old Road",
+              "line3": "London",
+              "line4": "Merton",
+              "postCode": "SW99 1AA",
+              "emailAddress1": "abc@test.com",
+              "emailAddress2": "xyz@test.com"
+            }
+          },
+          "applicant": {
+            "name": "Fred Smith",
+            "address": {
+              "line1": "Flat 1",
+              "line2": "1 Old Road",
+              "line3": "London",
+              "line4": "Merton",
+              "postCode": "SW99 1AA",
+              "emailAddress1": "abc@test.com",
+              "emailAddress2": "xyz@test.com"
+            }
+          },
+          "courtApplicationRespondent": {
+            "address": {
+              "line1": "Flat 1",
+              "line2": "1 Old Road",
+              "line3": "London",
+              "line4": "Merton",
+              "postCode": "SW99 1AA",
+              "emailAddress1": "abc@test.com",
+              "emailAddress2": "xyz@test.com"
+            },
+            "name": "Fred Smith"
+          },
+          "financialOrderDetails": {
+            "paymentTerms": null,
+            "requestId": "9137025b-aba3-41fa-b761-9ba78eb47982"
+          },
+          "nextHearingCourtDetails": {
+            "hearingDate": "2018-03-20T16:14:29.000Z",
+            "courtAddress": {
+              "line1": "Flat 1",
+              "line2": "1 Old Road",
+              "line3": "London",
+              "line4": "Merton",
+              "postCode": "SW99 1AA"
+            },
+            "courtName": "Lavender Hill",
+            "welshCourtName": "Lavender Hill"
+          },
+          "civilNow": true,
+          "cases": [
+          ],
+          "caseApplicationReferences": [
+          ],
+          "nowText": [
+            {
+              "label": "orderText",
+              "value": "<p><strong>Direction</strong></p><p>The authorised officers of the prisoner escort contractors shall take the defendant to the nominated prison establishment and deliver the defendant to the Governor who shall detain the defendant for the overall length of the sentence shown.</p><p><strong>Note: Prisoner Voting Rights</strong></p> <p><span>Convicted offenders sentenced to imprisonment lose the right to vote while they are detained in custody</span></p> <p><strong>Additional Note</strong></p> <p>Previous Convictions and Pre-Sentence Report available separately <span>&nbsp;</span></p>"
+            },
+            {
+              "label": "orderText1",
+              "value": "<p><strong>Direction</strong></p><p>The authorised officers of the prisoner escort contractors shall take the defendant to the nominated prison establishment and deliver the defendant to the Governor who shall detain the defendant for the overall length of the sentence shown.</p><p><strong>Note: Prisoner Voting Rights</strong></p> <p><span>Convicted offenders sentenced to imprisonment lose the right to vote while they are detained in custody</span></p> <p><strong>Additional Note</strong></p> <p>Previous Convictions and Pre-Sentence Report available separately <span>&nbsp;</span></p>"
+            }
+          ],
+          "orderName": "Warrant for custodial sentence",
+          "courtCentreName": "Lavender Hill",
+          "orderDate": "2019-03-21",
+          "orderAddressee": {
+            "name": "Fred Smith",
+            "address": {
+              "line1": "Flat 1",
+              "line2": "1 Old Road",
+              "line3": "London",
+              "line4": "Merton",
+              "postCode": "SW99 1AA",
+              "emailAddress1": "abc@test.com",
+              "emailAddress2": "xyz@test.com"
+            }
+          }
+        },
+        "bilingualTemplateName": "BilingualNoticeOrderWarrants",
+        "storageRequired": false,
+        "templateName": "NoticeOrderWarrants",
+        "subscriberName": "Defendant Subscription",
+        "welshCourtCentre": false
+      }
+    }
+  ]
+}

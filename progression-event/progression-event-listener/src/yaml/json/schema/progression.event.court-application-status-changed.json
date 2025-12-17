@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-application-status-changed.json",
+  "type": "object",
+  "description": "Update status of court application",
+  "properties": {
+    "id": {
+      "description": "The id of the application to be updated",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "applicationStatus": {
+      "description": "Indicates if the application is draft, listed or finalised",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/courtApplicationStatus"
+    }
+  },
+  "required": [
+    "id",
+    "applicationStatus"
+  ],
+  "additionalProperties": false
+}

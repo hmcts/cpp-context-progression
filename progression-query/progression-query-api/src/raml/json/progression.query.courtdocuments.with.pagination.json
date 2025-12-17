@@ -1,0 +1,38 @@
+{
+  "paginationData": {
+    "totalRecordCount": 15,
+    "page": 1,
+    "pageSize": 10,
+    "sortField": "section",
+    "sortOrder": "asc"
+  },
+  "courtDocuments": [
+    {
+      "name": "Plea submission A",
+      "courtDocumentId": "6aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+      "documentTypeDescription ": "Basis of Plea",
+      "documentTypeId": "8aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+      "isRemoved": "false",
+      "mimeType": "pdf",
+      "documentCategory": {
+        "defendantDocument": {
+          "defendants": [
+            "4aa6d35d-70c3-45fb-a05e-bfedbce1641a",
+            "5aa6d35d-70c3-45fb-a05e-bfedbce1641b"
+          ],
+          "prosecutionCaseId": "3aa6d35d-70c3-45fb-a05e-bfedbce16412"
+        }
+      },
+      "material": {
+        "id": "generated",
+        "generationStatus": "1aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+        "name": "Plea submission A",
+        "uploadDateTime": "2018-07-12",
+        "userGroups": [
+          "courtAdmin",
+          "defenceCounsel"
+        ]
+      }
+    }
+  ]
+}

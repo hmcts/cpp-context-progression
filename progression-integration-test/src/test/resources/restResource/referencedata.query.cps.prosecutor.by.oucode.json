@@ -1,0 +1,21 @@
+{
+  "id": "2daefec3-2f76-8109-82d9-2e60544a6c02",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "TFL2",
+  "shortName": "CPS_NE",
+  "fullName": "Transport for London",
+  "nameWelsh": "Transport for London",
+  "oucode": "GAFTL00",
+  "region": "London",
+  "stackType": "Regional",
+  "informantEmailAddress": "tfl.enforcement@tfl.cjsm.net",
+  "sjpFlag": true,
+  "cpsFlag": true,
+  "policeFlag": false,
+  "address": {
+    "address1": "6th Floor Windsor House",
+    "address2": "42-50 Victoria Street",
+    "address3": "London",
+    "postcode": "SW1H 0TL"
+  }
+}

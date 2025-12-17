@@ -1,0 +1,21 @@
+{
+  "courtDocument": {
+    "courtDocumentId": "%RANDOM_DOCUMENT_ID%",
+    "documentCategory": {
+      "caseDocument": {
+        "prosecutionCaseId": "%RANDOM_CASE_ID%"
+      }
+    },
+    "name": "HearingEventLog.pdf",
+    "documentTypeId": "460fbe94-c002-11e8-a355-529269fb1459",
+    "documentTypeDescription": "Private section - Judges & HMCTS",
+    "mimeType": "application/pdf",
+    "materials": [
+      {
+        "id": "%RANDOM_MATERIAL_ID%",
+        "receivedDateTime": "2019-12-07T07:16:26.661Z"
+      }
+    ],
+    "containsFinancialMeans": false
+  }
+}

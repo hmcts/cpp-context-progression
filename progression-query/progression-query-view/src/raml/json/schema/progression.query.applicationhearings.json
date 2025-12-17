@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "hearings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hearingId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "courtCentre": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "roomId": {
+                  "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+                },
+                "roomName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "roomId",
+                "roomName"
+              ]
+            }
+          }
+        },
+        "required": [
+          "hearingId",
+          "courtCentre"
+        ]
+      }
+    }
+  },
+  "required": [
+    "hearings"
+  ]
+}

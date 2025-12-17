@@ -1,0 +1,6 @@
+{
+  "hearingId": "HEARING_ID",
+  "vacatedTrialReasonId": "REASON_ID",
+  "allocated": true,
+  "isVacated": true
+}

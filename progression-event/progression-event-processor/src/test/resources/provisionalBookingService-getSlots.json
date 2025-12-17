@@ -1,0 +1,130 @@
+{
+  "provisionalSlots": [
+    {
+      "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+      "bookingId": "00e17481-18d3-4eda-9214-75bdb15abd25",
+      "listingProfileId": "ITCS2130334",
+      "ouCode": "B01KR00",
+      "courtRoomId": "e082fc9c-0087-3272-8e94-4e25e9f716be",
+      "courtRoomNumber": 2035,
+      "courtHouseName": "Cheltenham County Court",
+      "courtRoomName": "Courtroom 01",
+      "operationalUnit": "01",
+      "businessType": "COU",
+      "panel": "ADULT",
+      "courtSession": "AD",
+      "sessionDate": "2019-10-11",
+      "maxSlots": 0,
+      "maxDuration": 24,
+      "availableSlots": 0,
+      "availableDuration": 24,
+      "judiciaries": [
+        {
+          "judiciaryId": "MA4034",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": true,
+          "benchChairman": false
+        },
+        {
+          "judiciaryId": "MA15757",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": false,
+          "benchChairman": true
+        },
+        {
+          "judiciaryId": "MA15754",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": true,
+          "benchChairman": false
+        }
+      ]
+    },
+    {
+      "courtScheduleId": "08420555-727e-47d8-9b06-ffe18d248467",
+      "bookingId": "d977f709-05c7-44d2-a053-404d493454d2",
+      "listingProfileId": "ITCS2130334",
+      "ouCode": "B01KR00",
+      "courtRoomId": "e082fc9c-0087-3272-8e94-4e25e9f716be",
+      "courtRoomNumber": 2035,
+      "courtHouseName": "Cheltenham County Court",
+      "courtRoomName": "Courtroom 01",
+      "operationalUnit": "01",
+      "businessType": "COU",
+      "panel": "ADULT",
+      "courtSession": "AD",
+      "sessionDate": "2019-10-11",
+      "maxSlots": 0,
+      "maxDuration": 24,
+      "availableSlots": 0,
+      "availableDuration": 24,
+      "judiciaries": [
+        {
+          "judiciaryId": "MA4034",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": true,
+          "benchChairman": false
+        },
+        {
+          "judiciaryId": "MA15757",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": false,
+          "benchChairman": true
+        },
+        {
+          "judiciaryId": "MA15754",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": true,
+          "benchChairman": false
+        }
+      ]
+    },
+    {
+      "courtScheduleId": "faa612f0-932c-4690-ba20-4272ec037ec5",
+      "bookingId": "00e17481-18d3-4eda-9214-75bdb15abd25",
+      "listingProfileId": "ITCS2130334",
+      "ouCode": "B01KR00",
+      "courtRoomId": "e082fc9c-0087-3272-8e94-4e25e9f716be",
+      "courtRoomNumber": 2035,
+      "courtHouseName": "Cheltenham County Court",
+      "courtRoomName": "Courtroom 01",
+      "operationalUnit": "01",
+      "businessType": "COU",
+      "panel": "ADULT",
+      "courtSession": "AD",
+      "sessionDate": "2019-10-11",
+      "maxSlots": 0,
+      "maxDuration": 24,
+      "availableSlots": 0,
+      "availableDuration": 24,
+      "judiciaries": [
+        {
+          "judiciaryId": "MA4034",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": true,
+          "benchChairman": false
+        },
+        {
+          "judiciaryId": "MA15757",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": false,
+          "benchChairman": true
+        },
+        {
+          "judiciaryId": "MA15754",
+          "courtScheduleId": "9e12bb19-da11-4437-b1a7-5169899f2d26",
+          "courtListingProfileId": "ITCS2130334",
+          "deputy": true,
+          "benchChairman": false
+        }
+      ]
+    }
+  ]
+}

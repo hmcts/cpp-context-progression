@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.command.process-hearing-updated.json",
+  "type": "object",
+  "properties": {
+    "confirmedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/confirmedHearing.json"
+    },
+    "updatedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    }
+  },
+  "required": [
+    "confirmedHearing"
+  ]
+}

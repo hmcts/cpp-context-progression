@@ -1,0 +1,45 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+      "name": "00ObpXuu51",
+      "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+      "roomName": "JK2Y7hu0Tc",
+      "welshName": "3IpJDfdfhS",
+      "welshRoomName": "hm60SAXokc"
+    },
+    "hearingDays": [
+      {
+        "listedDurationMinutes": 1531791578,
+        "listingSequence": 810249414,
+        "sittingDay": "2015-01-12T05:27:17.210Z"
+      }
+    ],
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+    "jurisdictionType": "CROWN",
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+          }
+        ],
+        "id": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
+        "initiationCode": "S",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "4ZKOPhuyh5",
+          "prosecutionAuthorityId": "e677b61a-3360-48b0-8eee-649911475106",
+          "caseURN": "qriGUBZKR5"
+        }
+      }
+    ],
+    "type": {
+      "description": "qm1rJUZb0f",
+      "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
+    },
+    "isBoxHearing": true
+  },
+  "hearingListingStatus": "HEARING_INITIALISED",
+  "notifyNCES":false
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/notification-sent-for-defendant-document.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "templateType": {
+      "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/template-type.json",
+      "type": "string",
+      "enum": [
+        "onlineGuiltyPleaCourtHearing",
+        "onlineGuiltyPleaNoCourtHearing",
+        "onlineNotGuiltyPlea"
+      ]
+    },
+    "notificationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "caseId",
+    "email",
+    "urn",
+    "templateType",
+    "notificationId"
+  ],
+  "additionalProperties": false
+}

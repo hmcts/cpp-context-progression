@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+				   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+	<changeSet author="cpp.context.progression" id="create-defendant-partial-match">
+		<createTable tableName="defendant_partial_match">
+			<column name="defendant_id" type="UUID">
+				<constraints nullable="false" />
+			</column>
+			<column name="prosecution_case_id" type="UUID">
+				<constraints nullable="false" />
+            </column>
+			<column name="defendant_name" type="VARCHAR(200)">
+				<constraints nullable="false" />
+			</column>
+			<column name="case_reference" type="VARCHAR(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="payload" type="TEXT">
+				<constraints nullable="false" />
+			</column>
+			<column name="case_received_datetime" type="datetime">
+				<constraints nullable="false" />
+			</column>
+			<column name="created_datetime" type="datetime" defaultValueComputed="NOW()"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="add-defendant-partial-match-key-constraints" author="cpp.context.progression">
+		<addPrimaryKey columnNames="defendant_id" constraintName="defendant_partial_match_primary_key"
+					   tableName="defendant_partial_match"/>
+	</changeSet>
+
+</databaseChangeLog>

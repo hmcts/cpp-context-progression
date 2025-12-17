@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/command/update-pet-form.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "petFormData": {
+      "description": "Pet Form Data",
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "petFormData"
+  ],
+  "additionalProperties": false
+}

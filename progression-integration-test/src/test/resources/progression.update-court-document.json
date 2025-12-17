@@ -1,0 +1,12 @@
+{
+  "courtDocumentId": "%RANDOM_DOCUMENT_ID%",
+  "prosecutionCaseId" : "%CASE_ID%",
+  "name": "SJP Updated Notice",
+  "documentTypeId": "a4e50dad-9e21-4b2b-903f-94176a443fda",
+  "receivedDateTime": "2019-12-07T07:16:26.661Z",
+  "containsFinancialMeans": true,
+  "defendants": [
+    "%DEFENDENT-ID2%"
+  ],
+  "sendToCps": true
+}

@@ -1,0 +1,81 @@
+{
+  "courtApplication": {
+    "id": "APPLICATION_ID",
+    "applicationReceivedDate": "2020-11-01",
+    "type": {
+      "id": "e857c8ea-cd95-47d1-842f-2d618e77a9b5",
+      "code": "TS12345",
+      "type": "Application for an order of reimbursement in relation to a closure order",
+      "legislation": "In accordance with section 16E of the Magistrates' Courts Act 1980.",
+      "categoryCode": "VP",
+      "linkType": "STANDALONE",
+      "jurisdiction": "MAGISTRATES",
+      "summonsTemplateType": "NOT_APPLICABLE",
+      "breachType" : "NOT_APPLICABLE",
+      "appealFlag": false,
+      "applicantAppellantFlag" : false,
+      "pleaApplicableFlag" : false,
+      "commrOfOathFlag" : false,
+      "courtOfAppealFlag" : false,
+      "courtExtractAvlFlag" : false,
+      "prosecutorThirdPartyFlag" : false,
+      "spiOutApplicableFlag" : false,
+      "offenceActiveOrder" : "NOT_APPLICABLE"
+    },
+    "applicationStatus": "DRAFT",
+    "courtApplicationPayment": {
+      "feeStatus":"OUTSTANDING",
+      "paymentReference": "Some reference provided"
+    },
+    "applicant": {
+      "id": "87d8611b-50ee-4ae5-852f-52b0300ff83f",
+      "personDetails": {
+        "firstName": "Test First Name",
+        "lastName": "Surname",
+        "gender": "NOT_SPECIFIED"
+      },
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "subject": {
+      "id": "87d8611b-50ee-4ae5-852f-52b0300ff83f",
+      "personDetails": {
+        "firstName": "Test First Name",
+        "lastName": "Surname",
+        "gender": "NOT_SPECIFIED"
+      },
+      "summonsRequired": false,
+      "notificationRequired": false
+    },
+    "outOfTimeReasons" : "b"
+  },
+  "courtHearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "estimatedMinutes": 20,
+    "hearingType": {
+      "description": "Sentence",
+      "id": "8cdfd3da-8900-42ca-9835-9f29d1e03cd6"
+    },
+    "id": "HEARING_ID",
+    "jurisdictionType": "MAGISTRATES",
+    "listedStartDateTime": "2015-01-12T05:27:17.210Z"
+  }
+}

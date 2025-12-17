@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/associate-defence-organisation.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "organisationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "laaContractNumber": {
+      "type": "string"
+    },
+    "representationType": {
+      "type": "string",
+      "enum": [
+        "REPRESENTATION_ORDER",
+        "REPRESENTATION_ORDER_APPLIED_FOR",
+        "COURT_APPOINTED",
+        "PRO_BONO",
+        "PRIVATE"
+      ]
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "organisationName": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "organisationId",
+    "representationType",
+    "startDate",
+    "organisationName"
+  ],
+  "additionalProperties": true
+}

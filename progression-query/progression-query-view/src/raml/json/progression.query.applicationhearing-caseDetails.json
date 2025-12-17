@@ -1,0 +1,18 @@
+{
+  "hearingId": "18a2165c-848f-46d6-9472-9a15e81eb300",
+  "applicationId": "ab746921-d839-4867-bcf9-b41db8ebc852",
+  "hearingType": {
+    "description": "Application",
+    "id": "6a7e9f2b-db71-4a78-b688-244f4d611b70"
+  },
+  "isBoxHearing": "false",
+  "masterDefendantId": "2fd9592d-f01f-45f3-9b6e-83bc117c65b7",
+  "masterDefendantName": "Bennett Bailey",
+  "courtApplicationCasesSummary": [
+    {
+      "caseStatus": "ACTIVE",
+      "caseURN": "90GD8989122",
+      "caseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f"
+    }
+  ]
+}

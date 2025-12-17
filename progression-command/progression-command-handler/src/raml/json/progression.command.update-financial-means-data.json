@@ -1,0 +1,24 @@
+{
+  "courtDocument": {
+    "courtDocumentId": "3aa6d35d-70c3-45fb-a05e-bfedbce16412",
+    "documentCategory": {
+      "defendantDocument": {
+        "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+        "defendants": [
+          "e1d32d9d-29ec-4934-a932-22a50f223966"
+        ]
+      }
+    },
+    "name": "SJP Notice",
+    "documentTypeId": "0bb7b276-9dc0-4af2-83b9-f4acef0c7898",
+    "documentTypeDescription": "SJP Notice",
+    "materials": [
+      {
+        "mimeType": "pdf",
+        "isRemoved": false,
+        "id": "5e1cc18c-76dc-47dd-99c1-d6f87385edf1"
+      }
+    ],
+    "containsFinancialMeans": false
+  }
+}

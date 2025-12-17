@@ -1,0 +1,171 @@
+{
+  "registerDate": "%CURRENT_DATE%",
+  "ljaName": "Merseyside Magistrates' Court",
+  "courtHouse": "Liverpool Crown Court",
+  "courtHouseAddress": "Shire Hall, Tindal Square, Chelmsford, Essex",
+  "custodyLocation": "HMIRC The Verne",
+  "cases": [
+    {
+      "name": "Robert PersonGivenName20A PersonGivenName30A Ormsby",
+      "address1": "56saon",
+      "address2": "56Police House",
+      "address3": "StreetDescription1",
+      "address4": "Locality1",
+      "address5": "Town2",
+      "postCode": "TW14 9XD",
+      "jurisdiction": "CROWN",
+      "hearingType": "Plea and Trial Preparation",
+      "defendantAppearanceDetails": "Not Present",
+      "attendingSolicitorName": "Test defence Organisation",
+      "defenceCounselName": "Mrs Doris Horseferry, Mrs Doris Horseferry2",
+      "defenceCounselStatus": "QC, QC2",
+      "defendantType": "Applicant",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "-",
+      "parentGuardianAddress1": "-",
+      "dateOfBirth": "08/08/2008",
+      "age": "%AGE%",
+      "gender": "MALE",
+      "nationality": "Pole",
+      "aliases": "PersonGivenName1 PersonFamilyName1, PersonGivenName2 PersonFamilyName2",
+      "caseReference": "56GD5080720",
+      "dateOfHearing": "10/07/2020",
+      "prosecutorName": "SPI-TEST",
+      "arrestSummonsNumber": "TFL",
+      "prosecutionCounselName": "Mrs Doris Riddlestone-Horseferry",
+      "prosecutionCounselStatus": "QC",
+      "defendantResults": [
+        {
+          "resultCode": "D1017",
+          "resultText": "Def Absolute discharge 1017"
+        },
+        {
+          "resultCode": "D1018",
+          "resultText": "Def Absolute discharge 1018"
+        }
+      ],
+      "offences": [
+        {
+          "offenceCode": "PS90010",
+          "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
+          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "allocationDecision": "Summary-only offence",
+          "convictionDate": "01/01/2020",
+          "verdictCode": "test verdict Code",
+          "results": [
+            {
+              "resultCode": "O1017",
+              "resultText": "Absolute discharge O1017"
+            },
+            {
+              "resultCode": "O1018",
+              "resultText": "Absolute discharge O1018"
+            }
+          ],
+          "pleaValue": "GUILTY",
+          "indicatedPleaValue": "IND GUILTY, 01/01/2020"
+        },
+        {
+          "offenceCode": "PS90011",
+          "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
+          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "allocationDecision": "Summary-only offence",
+          "convictionDate": "-",
+          "verdictCode": "test verdict Code",
+          "results": [
+            {
+              "resultCode": "-",
+              "resultText": "Absolute discharge O2"
+            }
+          ],
+          "pleaValue": "GUILTY, 29/05/2020",
+          "indicatedPleaValue": "IND GUILTY2"
+        }
+      ],
+      "applications": [
+        {
+          "type": "App Type",
+          "result": [
+            "Case Absolute discharge C1017",
+            "App Absolute discharge A1018"
+          ],
+          "decision": "Application Decision",
+          "decisionDate": "30/05/2020",
+          "response": "Application Response",
+          "responseDate": "31/05/2020"
+        }
+      ]
+    },
+    {
+      "name": "Robert PersonGivenName20A PersonGivenName30A Ormsby",
+      "address1": "56saon",
+      "address2": "56Police House",
+      "address3": "StreetDescription1",
+      "address4": "Locality1",
+      "address5": "Town2",
+      "postCode": "TW14 9XD",
+      "jurisdiction": "CROWN",
+      "hearingType": "Plea and Trial Preparation",
+      "defendantAppearanceDetails": "Not Present",
+      "attendingSolicitorName": "Test defence Organisation",
+      "defenceCounselName": "Mrs Doris Horseferry, Mrs Doris Horseferry2",
+      "defenceCounselStatus": "QC, QC2",
+      "defendantType": "Applicant",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "-",
+      "parentGuardianAddress1": "-",
+      "dateOfBirth": "08/08/2008",
+      "age": "%AGE%",
+      "gender": "MALE",
+      "nationality": "Pole",
+      "aliases": "PersonGivenName1 PersonFamilyName1, PersonGivenName2 PersonFamilyName2",
+      "caseReference": "56GD5080721",
+      "dateOfHearing": "10/07/2020",
+      "prosecutorName": "SPI-TEST2",
+      "arrestSummonsNumber": "-",
+      "prosecutionCounselName": "Mrs Doris Riddlestone, Mrs Doris Riddlestone2",
+      "prosecutionCounselStatus": "QC, QC2",
+      "defendantResults": [
+        {
+          "resultCode": "D1017",
+          "resultText": "Def Absolute discharge 1017"
+        },
+        {
+          "resultCode": "D1018",
+          "resultText": "Def Absolute discharge 1018"
+        }
+      ],
+      "caseResults": [
+        {
+          "resultCode": "C3017",
+          "resultText": "Case Absolute discharge C3017"
+        }
+      ],
+      "offences": [
+        {
+          "offenceCode": "PS90012",
+          "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
+          "wording": "Has a violent past and fear that he will commit further offences and interfere with witnesse.Contrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "allocationDecision": "Summary-only offence",
+          "convictionDate": "29/05/2020",
+          "verdictCode": "test verdict Code",
+          "results": [
+            {
+              "resultCode": "O2017",
+              "resultText": "Absolute discharge O2017"
+            },
+            {
+              "resultCode": "-",
+              "resultText": "Absolute discharge O4"
+            }
+          ],
+          "pleaValue": "GUILTY, 29/05/2020",
+          "indicatedPleaValue": "-"
+        }
+
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "publishCourtListType": "FINAL",
+  "issueDate": "2023-02-15",
+  "listDate": "2023-02-20",
+  "ljaCode": "MERS",
+  "ljaName": "Merseyside LJA",
+  "weekCommencing": false,
+  "courtName": "Croydon Crown Court",
+  "courtAddress": {
+    "line1": "The Law Courts",
+    "line2": "Altyre Road",
+    "line3": "Croydon",
+    "postCode": "CR9 5AB",
+    "isWelsh": false
+  },
+  "addressee": {
+    "name": "contactPersonName",
+    "address": {
+      "line1": "address1",
+      "line2": "address2",
+      "postCode": "postcode"
+    }
+  },
+  "hearingByDates": [
+    {
+      "hearingDate": "2023-02-20",
+      "hearingByCourtrooms": [
+        {
+          "courtroomName": "Courtroom 01",
+          "hearingByTimes": [
+            {
+              "hearingTime": "10:00 am",
+              "hearings": [
+                {
+                  "caseReference": "91GD6403223",
+                  "hearingType": "First hearing",
+                  "defendants": [
+                    {
+                      "defendantName": "Sweet And Jones Associates"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/application-referred-ignored.json",
+  "type": "object",
+  "properties": {
+    "application": {
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+    },
+    "applicationReference": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicationId",
+    "applicationReference"
+  ],
+  "additionalProperties": false
+}

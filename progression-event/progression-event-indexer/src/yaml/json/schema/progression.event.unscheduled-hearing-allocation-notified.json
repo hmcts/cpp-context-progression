@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Event schema for notifying NCES when an unscheduled hearing with WCPU or WCPN result codes is allocated",
+  "id": "http://justice.gov.uk/progression/courts/unscheduled-hearing-allocation-notified.json",
+  "type": "object",
+  "properties": {
+    "hearing": {
+      "$ref": "http://justice.gov.uk/core/courts/hearing.json#"
+    }
+  },
+  "additionalProperties": false
+}

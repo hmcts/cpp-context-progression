@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/listing/events/public.listing.hearing-requested-for-listing.json",
+  "type": "object",
+  "properties": {
+    "listNewHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/courtHearingRequest.json#"
+    }
+  },
+  "required": [
+    "listNewHearing"
+  ],
+  "additionalProperties": false
+}

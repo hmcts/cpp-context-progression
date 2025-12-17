@@ -1,0 +1,121 @@
+{
+  "application":{
+    "applicant":{
+      "id":"97078dd8-787c-4970-874d-4d0c6853a5ad",
+      "notificationRequired":true,
+      "prosecutingAuthority":{
+        "address":{
+          "address1":"Criminal Justice Department",
+          "address2":"Derbyshire Constabulary",
+          "address3":"Butterley Hall",
+          "address4":"Ripley",
+          "address5":"Derby",
+          "postcode":"DE5 3RS"
+        },
+        "contact":{
+          "primaryEmail":"CCSU@derbyshire.pnn.police.uk"
+        },
+        "majorCreditorCode":"PF30",
+        "name":"Derbyshire Police",
+        "prosecutionAuthorityCode":"DERPF",
+        "prosecutionAuthorityId":"bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+        "prosecutionAuthorityOUCode":"0300000",
+        "welshName":"Heddlu Derbyshire"
+      },
+      "summonsRequired":false
+    },
+    "applicationReceivedDate":"2022-03-10",
+    "applicationReference":"45GD2376922",
+    "applicationStatus":"LISTED",
+    "commissionerOfOath":false,
+    "courtApplicationCases":[
+      {
+        "caseStatus":"ACTIVE",
+        "isSJP":false,
+        "prosecutionCaseId":"e8acfc94-f3b3-4da5-bdcd-1b97bbedbc96",
+        "prosecutionCaseIdentifier":{
+          "address":{
+            "address1":"Criminal Justice Department",
+            "address2":"Derbyshire Constabulary",
+            "address3":"Butterley Hall",
+            "address4":"Ripley",
+            "address5":"Derby",
+            "postcode":"DE5 3RS"
+          },
+          "contact":{
+            "primaryEmail":"CCSU@derbyshire.pnn.police.uk"
+          },
+          "majorCreditorCode":"PF30",
+          "prosecutionAuthorityCode":"DERPF",
+          "prosecutionAuthorityId":"bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName":"Derbyshire Police",
+          "prosecutionAuthorityOUCode":"0300000",
+          "caseURN":"45GD2376922"
+        }
+      }
+    ],
+    "id":"a3546589-36e1-4a73-8414-d097642594d9",
+    "subject":{
+      "id":"97078dd8-787c-4970-874d-4d0c6853a5ad",
+      "notificationRequired":true,
+      "prosecutingAuthority":{
+        "address":{
+          "address1":"Criminal Justice Department",
+          "address2":"Derbyshire Constabulary",
+          "address3":"Butterley Hall",
+          "address4":"Ripley",
+          "address5":"Derby",
+          "postcode":"DE5 3RS"
+        },
+        "contact":{
+          "primaryEmail":"CCSU@derbyshire.pnn.police.uk"
+        },
+        "majorCreditorCode":"PF30",
+        "name":"Derbyshire Police",
+        "prosecutionAuthorityCode":"DERPF",
+        "prosecutionAuthorityId":"bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+        "prosecutionAuthorityOUCode":"0300000",
+        "welshName":"Heddlu Derbyshire"
+      },
+      "summonsRequired":false
+    },
+    "type":{
+      "appealFlag":false,
+      "applicantAppellantFlag":false,
+      "boxworkNotifTemplate":"NOT_APPLICABLE",
+      "breachType":"NOT_APPLICABLE",
+      "categoryCode":"CO",
+      "code":"CJ03521",
+      "commrOfOathFlag":false,
+      "courtExtractAvlFlag":true,
+      "courtOfAppealFlag":false,
+      "hearingCode":"REV",
+      "id":"2650cec5-a28d-370e-b2fd-3070cb74592c",
+      "jurisdiction":"EITHER",
+      "legislation":"In accordance with section 178 of the Criminal Justice Act 2003.",
+      "linkType":"LINKED",
+      "listingNotifTemplate":"POSTAL_NOTIFICATION",
+      "offenceActiveOrder":"NOT_APPLICABLE",
+      "pleaApplicableFlag":false,
+      "prosecutorThirdPartyFlag":false,
+      "spiOutApplicableFlag":true,
+      "summonsTemplateType":"NOT_APPLICABLE",
+      "type":"Review of community order"
+    }
+  },
+  "courtHearing":{
+    "courtCentre":{
+      "id":"9b583616-049b-30f9-a14f-028a53b7cfe8",
+      "name":"Liverpool Crown Court"
+    },
+    "earliestStartDateTime":"2022-03-26T12:12:00.000Z",
+    "estimatedMinutes":732,
+    "hearingType":{
+      "description":"Review",
+      "id":"bd4dab38-ea91-434b-8e73-e0d50ef0cbdf"
+    },
+    "id":"0e94a3df-5868-4113-87f9-03cb7ee79486",
+    "jurisdictionType":"CROWN",
+    "listingDirections":""
+  }
+}

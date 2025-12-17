@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/initiate-court-proceedings.json",
+  "type": "object",
+  "properties": {
+    "initiateCourtProceedings": {
+      "$ref": "http://justice.gov.uk/core/courts/courtReferral.json#"
+    },
+    "id" : {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "initiateCourtProceedings"
+  ],
+  "additionalProperties": false
+}

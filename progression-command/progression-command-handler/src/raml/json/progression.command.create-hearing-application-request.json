@@ -1,0 +1,14 @@
+{
+  "hearingId": "ab746921-d839-4867-bcf9-b41db8ebc852",
+  "applicationRequests": [
+    {
+      "courtApplicationId": "ab746921-d839-4867-bcf9-b41db8ebc852",
+      "courtApplicationPartyId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+      "courtApplicationPartyType": "SUBJECT",
+      "prosecutorCost": "£300.00",
+      "summonsRequired": "BREACH",
+      "summonsSuppressed": true,
+      "personalService": false
+    }
+  ]
+}

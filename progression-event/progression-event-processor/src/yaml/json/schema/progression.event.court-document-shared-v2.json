@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/court-document-shared-v2.json",
+  "type": "object",
+  "properties": {
+    "sharedCourtDocument": {
+      "$ref": "http://justice.gov.uk/core/courts/shared-court-document.json"
+    }
+  },
+  "additionalProperties": false
+}

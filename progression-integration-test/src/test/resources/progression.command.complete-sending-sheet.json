@@ -1,0 +1,68 @@
+{
+  "hearing": {
+    "courtCentreName": "Warwick Justice Centre",
+    "courtCentreId": "courtCentreId",
+    "type": "MAGS Sending Hearing",
+    "sendingCommittalDate": "2017-05-19",
+    "caseId": "RANDOM_CASE_ID",
+    "caseUrn": "87GD9945217",
+    "defendants": [
+      {
+        "id": "0baecac5-222b-402d-9047-84803679edac",
+        "personId": "0baecac5-222b-402d-9047-84803689edad",
+        "title":"Mr",
+        "firstName": "David",
+        "lastName": "Lloyd",
+        "nationality": "British",
+        "gender": "Male",
+        "address": {
+          "address1": "222 Furze Road",
+          "address2": "Exeter",
+          "address3": "England",
+          "address4": "UK",
+          "postcode": "W1T 1JY"
+        },
+        "dateOfBirth": "1995-03-23",
+        "bailStatus": {
+          "id": "2593cf09-ace0-4b7d-a746-0703a29f33b5",
+          "code": "C",
+          "description": "Remanded into Custody"
+        },
+        "custodyTimeLimitDate": "2018-01-30",
+        "defenceOrganisation": "Solicitor XYZ",
+        "interpreter": {
+          "needed": false,
+          "language": "English"
+        },
+        "offences": [
+          {
+            "id": "0baecac5-222b-402d-9047-84803679edad",
+            "offenceCode": "OF61131",
+            "count": 0,
+            "offenceTitle": "offence title",
+            "offenceTitleWelsh": "offence title Welsh",
+            "convictionDate": "2017-08-01",
+            "plea":
+            {
+              "id": "0baecac5-222b-402d-9047-84803679edae",
+              "value" : "GUILTY",
+              "pleaDate" : "2017-02-02"
+            },
+            "section": "Section 51",
+            "wording": "On 19/01/2016 At wandsworth bridge rd SW6 Being a passenger on a Public Service Vehicle operated on behalf of London Bus Services Limited being used for the carriage of passengers at separate fares did use in relation to the journey you were taking a ticket which had been issued for use by another person on terms that it is not transferable",
+            "reason": "xyz reason",
+            "description": "description",
+            "category": "category",
+            "startDate": "2016-06-21",
+            "endDate": "2017-08-01"
+          }
+        ]
+      }
+    ]
+  },
+  "crownCourtHearing": {
+    "ccHearingDate": "2017-07-19",
+    "courtCentreName": "Liverpool Crown Court",
+    "courtCentreId": "e8821a38-546d-4b56-9992-ebdd772a561f"
+  }
+}

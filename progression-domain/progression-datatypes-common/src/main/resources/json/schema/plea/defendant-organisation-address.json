@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "id": "http://moj.gov.uk/cpp/progression/plea/json/schemas/defendant-organisation-address.json",
+  "type": "object",
+  "properties": {
+    "address1": {
+      "type": "string"
+    },
+    "address2": {
+      "type": "string"
+    },
+    "address3": {
+      "type": "string"
+    },
+    "address4": {
+      "type": "string"
+    },
+    "addressPostcode": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "address1"
+  ]
+}

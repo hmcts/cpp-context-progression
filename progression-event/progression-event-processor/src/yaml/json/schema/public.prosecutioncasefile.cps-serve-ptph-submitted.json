@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cps/prosecutioncasefile/domain/event/public.prosecutioncasefile.cps-serve-ptph-submitted.json",
+  "properties": {
+    "submissionId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "formDefendants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "defendantId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "cpsDefendantId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "defendantId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "formData": {
+      "type": "string",
+      "description": "Form Data"
+    },
+    "userName" : {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 175
+    }
+  },
+  "required": [
+    "caseId",
+    "formDefendants",
+    "formData",
+    "userName"
+  ],
+  "additionalProperties": false
+}

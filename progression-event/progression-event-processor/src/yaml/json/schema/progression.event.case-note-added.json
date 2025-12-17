@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.case-note-added.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "note": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "isPinned": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "caseId",
+    "note",
+    "firstName",
+    "lastName",
+    "createdDateTime"
+  ]
+}

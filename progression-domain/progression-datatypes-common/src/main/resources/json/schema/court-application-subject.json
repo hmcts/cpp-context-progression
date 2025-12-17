@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/prosecution/casefile/json/schemas/court-application-subject.json",
+  "type": "object",
+  "description": "The court application meta data for material relating to a court application",
+  "properties": {
+    "courtApplicationId": {
+      "description": "The unique indentifier for the court application",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "courtApplicationId"
+  ],
+  "additionalProperties": false
+}

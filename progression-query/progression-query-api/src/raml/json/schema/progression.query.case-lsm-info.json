@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.case-lsm-info",
+  "type": "object",
+  "properties": {
+    "matchedDefendantCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/matchedDefendantCaseInfo"
+      }
+    },
+    "linkedCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/relatedCaseInfo"
+      }
+    },
+    "mergedCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/relatedCaseInfo"
+      }
+    },
+    "splitCases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/relatedCaseInfo"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "matchedDefendantCaseInfo": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "caseUrn": {
+          "type": "string"
+        },
+        "matchedMasterDefendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "defendants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/defendant"
+          }
+        }
+      },
+      "required": [
+        "caseId",
+        "caseUrn",
+        "matchedMasterDefendantId",
+        "defendants"
+      ],
+      "additionalProperties": false
+    },
+    "relatedCaseInfo": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "caseUrn": {
+          "type": "string"
+        },
+        "linkGroupId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "defendants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/defendant"
+          }
+        }
+      },
+      "required": [
+        "caseId",
+        "caseUrn",
+        "linkGroupId",
+        "defendants"
+      ],
+      "additionalProperties": false
+    },
+    "defendant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "masterDefendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "hasBeenResulted": {
+          "type": "boolean"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "middleName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "organisationName": {
+          "type": "string"
+        },
+        "offences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/offence"
+          }
+        },
+        "nextHearing": {
+          "$ref": "#/definitions/hearing"
+        }
+      },
+      "required": [
+        "id",
+        "masterDefendantId",
+        "offences"
+      ],
+      "additionalProperties": false
+    },
+    "offence": {
+      "type": "object",
+      "properties": {
+        "offenceTitle": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "offenceTitle"
+      ],
+      "additionalProperties": false
+    },
+    "hearing": {
+      "type": "object",
+      "properties": {
+        "hearingId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "type": {
+          "type": "string"
+        },
+        "hearingDay": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "type",
+        "hearingDay"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

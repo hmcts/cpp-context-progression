@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.defendant-request",
+  "type": "object",
+  "properties": {
+    "defendantRequest": {
+      "$ref":"#/definitions/defendantRequest"
+    }
+  },
+  "required": [
+    "defendantRequest"
+  ],
+  "definitions":{
+    "defendantRequest":{
+      "properties": {
+        "defendantId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "prosecutionCaseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "referralReasonId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "summonsType": {
+          "type": "string",
+          "enum": [
+            "FIRST_HEARING",
+            "SJP_REFERRAL",
+            "BREACH",
+            "APPLICATION"
+          ]
+        }
+      },
+      "required": [
+        "defendantId",
+        "prosecutionCaseId",
+        "referralReasonId",
+        "summonsType"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

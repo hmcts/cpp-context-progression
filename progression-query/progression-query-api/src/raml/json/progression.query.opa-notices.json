@@ -1,0 +1,16 @@
+{
+  "opaNotices": [
+    {
+      "allocationId": "5bfeaccf-5082-42e7-a1a3-00f136196edd",
+      "caseId": "cebbd000-caaf-4b81-8495-8b2f485f3df0",
+      "defendantId": "938bab83-09c4-49f1-b59b-11315ca2c158",
+      "hearingId": "c3d27286-218d-409e-901f-956821f6fe8c"
+    },
+    {
+      "allocationId": "48fa8a96-0b3d-4643-9215-23cae2e1330e",
+      "caseId": "a9a1e685-5d8f-473c-8bca-2d1d185658d7",
+      "defendantId": "bc3da68b-0521-474a-ba83-9589c0e1030f",
+      "hearingId": "e6be22f9-8ceb-4f6e-97ee-d18b38259530"
+    }
+  ]
+}

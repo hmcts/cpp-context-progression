@@ -1,0 +1,319 @@
+{
+  "applicationId": "bd7a0967-376a-4f86-a073-f298a852e046",
+  "caseId": "74e48408-a2fb-4d36-9a6f-1eed7d33df9a",
+  "defendantId": "d77e3d63-9340-4bd2-a17d-7528d2939f86",
+  "emailNotifications": [
+    {
+      "personalisation": {
+        "R3LvDC89Fn": "ps6YMG8WW3"
+      },
+      "replyToAddress": "Sample of Reply to Address",
+      "sendToAddress": "Sample of the send to address",
+      "templateId": "4650e16e-3fb7-474a-a7eb-e0d084f31386"
+    },
+    {
+      "personalisation": {
+        "710gX3GUd9": "IOjErjUGko"
+      },
+      "replyToAddress": "Sample of Reply to Address",
+      "sendToAddress": "Sample of the send to address",
+      "templateId": "bf547ca1-47fa-47b6-a991-151fa1758303"
+    }
+  ],
+  "hearingId": "f15854e3-8368-4b67-903d-96a3528b01fa",
+  "isRemotePrintingRequired": false,
+  "materialId": "c77a6195-ea72-45d8-8357-d560aecb619a",
+  "nowContent": {
+    "caseUrns": [
+      "URN_1",
+      "URN_2"
+    ],
+    "cases": [
+      {
+        "defendantCaseOffences": [
+          {
+            "convictionDate": "2019-03-21",
+            "results": [
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_1",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              },
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_2",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              }
+            ],
+            "startDate": "2019-03-25",
+            "wording": "DefendantCaseOffence_Wordings_1"
+          },
+          {
+            "convictionDate": "2019-03-21",
+            "results": [
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_1",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              },
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_2",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              }
+            ],
+            "startDate": "2019-03-25",
+            "wording": "DefendantCaseOffence_Wordings_2"
+          }
+        ],
+        "defendantCaseResults": [
+          {
+            "Additional_Property": false,
+            "label": "Result_Label_1",
+            "prompts": [
+              {
+                "label": "Test_Label_1",
+                "value": "Test_value_1"
+              },
+              {
+                "label": "Test_Label_2",
+                "value": "Test_value_2"
+              }
+            ]
+          },
+          {
+            "Additional_Property": false,
+            "label": "Result_Label_2",
+            "prompts": [
+              {
+                "label": "Test_Label_1",
+                "value": "Test_value_1"
+              },
+              {
+                "label": "Test_Label_2",
+                "value": "Test_value_2"
+              }
+            ]
+          }
+        ],
+        "urn": "URN_1"
+      },
+      {
+        "defendantCaseOffences": [
+          {
+            "convictionDate": "2019-03-21",
+            "results": [
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_1",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              },
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_2",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              }
+            ],
+            "startDate": "2019-03-25",
+            "wording": "DefendantCaseOffence_Wordings_1"
+          },
+          {
+            "convictionDate": "2019-03-21",
+            "results": [
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_1",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              },
+              {
+                "Additional_Property": false,
+                "label": "Result_Label_2",
+                "prompts": [
+                  {
+                    "label": "Test_Label_1",
+                    "value": "Test_value_1"
+                  },
+                  {
+                    "label": "Test_Label_2",
+                    "value": "Test_value_2"
+                  }
+                ]
+              }
+            ],
+            "startDate": "2019-03-25",
+            "wording": "DefendantCaseOffence_Wordings_2"
+          }
+        ],
+        "defendantCaseResults": [
+          {
+            "Additional_Property": false,
+            "label": "Result_Label_1",
+            "prompts": [
+              {
+                "label": "Test_Label_1",
+                "value": "Test_value_1"
+              },
+              {
+                "label": "Test_Label_2",
+                "value": "Test_value_2"
+              }
+            ]
+          },
+          {
+            "Additional_Property": false,
+            "label": "Result_Label_2",
+            "prompts": [
+              {
+                "label": "Test_Label_1",
+                "value": "Test_value_1"
+              },
+              {
+                "label": "Test_Label_2",
+                "value": "Test_value_2"
+              }
+            ]
+          }
+        ],
+        "urn": "URN_2"
+      }
+    ],
+    "courtCentreName": "Sample Court Centre",
+    "courtClerkName": "Sample Court Clerk",
+    "defendant": {
+      "Additional_Property": false,
+      "address": {
+        "line1": "Line_1",
+        "line2": "Line_2",
+        "line3": "Line_3",
+        "line4": "Line_4",
+        "line5": "Line_5",
+        "postCode": "AB CD4"
+      },
+      "dateOfBirth": "1970-01-01",
+      "name": "Defendant_Name"
+    },
+    "financialOrderDetails": {
+      "accountPaymentReference": "Sample_Account_Payment_Reference",
+      "accountingDivisionCode": "Sample_Accounting_Division_Code",
+      "bacsAccountNumber": "BACS1234567",
+      "bacsBankName": "45615975",
+      "bacsSortCode": "12-34-56",
+      "enforcementAddress": {
+        "line1": "Line_1",
+        "line2": "Line_2",
+        "line3": "Line_3",
+        "line4": "Line_4",
+        "line5": "Line_5",
+        "postCode": "AB CD4"
+      },
+      "enforcementEmail": "sample@sample.com",
+      "enforcementPhoneNumber": "1234567890",
+      "isCrownCourt": true,
+      "totalAmountImposed": "95.00",
+      "totalBalance": "100.00"
+    },
+    "ljaCode": "Sample LJA Code",
+    "ljaName": "Sample LJA Name",
+    "nextHearingCourtDetails": {
+      "courtAddress": {
+        "line1": "Line_1",
+        "line2": "Line_2",
+        "line3": "Line_3",
+        "line4": "Line_4",
+        "line5": "Line_5",
+        "postCode": "AB CD4"
+      },
+      "courtName": "Next_Hearing_Sample_Court_Name",
+      "hearingDate": "2019-03-25",
+      "hearingTime": "11:00"
+    },
+    "nowResultDefinitionsText": {
+      "Additional_Property": false
+    },
+    "nowText": "Sample NOW Text",
+    "orderAddressee": {
+      "address": {
+        "line1": "Line_1",
+        "line2": "Line_2",
+        "line3": "Line_3",
+        "line4": "Line_4",
+        "line5": "Line_5",
+        "postCode": "AB CD4"
+      },
+      "name": "Order_Addresse_Template"
+    },
+    "orderDate": "2019-03-21",
+    "orderName": "Now_Content_Template_Order_Name",
+    "subTemplateName": "Now_Content_SubTemplate_Name"
+  },
+  "nowTypeId": "77cf6f66-60ed-41a6-838b-0ce3e2b479b7",
+  "priority": "0.5 hours",
+  "usergroups": [
+    "UserGroup1",
+    "UserGroup2",
+    "Listing Officers"
+  ]
+}

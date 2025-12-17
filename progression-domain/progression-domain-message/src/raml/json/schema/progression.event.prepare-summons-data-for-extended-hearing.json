@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/prepare-summons-data-for-extended-hearing.json",
+  "type": "object",
+  "properties": {
+    "confirmedHearing": {
+      "$ref": "http://justice.gov.uk/core/courts/confirmedHearing.json"
+    }
+  },
+  "required": [
+    "confirmedHearing"
+  ],
+  "additionalProperties": false
+}

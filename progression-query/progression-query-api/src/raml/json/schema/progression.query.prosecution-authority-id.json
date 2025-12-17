@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/prosecution-authority-id.json",
+  "type": "object",
+  "properties": {
+    "prosecutors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/prosecutor"
+      }
+    }
+  },
+  "definitions": {
+    "prosecutor": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        },
+        "prosecutionAuthorityId": {
+          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+        }
+      },
+      "required": [
+        "caseId",
+        "prosecutionAuthorityId"
+      ]
+    }
+  }
+}

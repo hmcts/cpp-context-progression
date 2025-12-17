@@ -1,0 +1,56 @@
+{
+  "publishCourtListType": "FINAL",
+  "issueDate": "2023-02-15",
+  "listDate": "2023-02-20",
+  "ljaCode": "MERS",
+  "ljaName": "Merseyside LJA",
+  "weekCommencing": false,
+  "courtName": "Croydon Crown Court",
+  "courtAddress": {
+    "line1": "The Law Courts",
+    "line2": "Altyre Road",
+    "line3": "Croydon",
+    "postCode": "CR9 5AB",
+    "isWelsh": false
+  },
+  "addressee": {
+    "name": "Robert Stone LLP",
+    "address": {
+      "line1": "349",
+      "line2": "Sipes Square",
+      "line3": "Lake Gertrudeview",
+      "line4": "Mauritius",
+      "postCode": "Z7W 9NL"
+    }
+  },
+  "hearingByDatesNoCourtroom": [
+    {
+      "hearingDate": "2023-02-20",
+      "hearingByCourtrooms": [
+        {
+          "hearingByTimes": [
+            {
+              "hearingTime": "10:00 am",
+              "hearings": [
+                {
+                  "caseReference": "91GD6403223",
+                  "hearingType": "Trial",
+                  "defendants": [
+                    {
+                      "defendantName": "Yousuf Aguirre",
+                      "defendantDateOfBirth": "1979-05-02"
+                    },
+                    {
+                      "defendantName": "Freddie Smith",
+                      "defendantDateOfBirth": "1970-01-01"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

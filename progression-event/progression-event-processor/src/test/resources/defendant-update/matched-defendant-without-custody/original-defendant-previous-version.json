@@ -1,0 +1,206 @@
+{
+  "aliases": [
+    {
+      "firstName": "MAX",
+      "lastName": "parker"
+    }
+  ],
+  "associatedDefenceOrganisation": {
+    "applicationReference": "7999149",
+    "associationEndDate": "2024-09-23",
+    "associationStartDate": "2024-09-23",
+    "defenceOrganisation": {
+      "laaContractNumber": "2P475X",
+      "organisation": {
+        "address": {
+          "address1": "THIRD FLOOR OFFICE",
+          "address2": "10 CHURCH SQUARE",
+          "address4": "LEIGHTON BUZZARD",
+          "address5": "BEDFORDSHIRE",
+          "postcode": "LU7 1AE"
+        },
+        "contact": {
+          "primaryEmail": "o.qadri@reeds.co.uk",
+          "secondaryEmail": "o.qadri@reeds.co.uk",
+          "work": "01525 308 630"
+        },
+        "name": "REEDS SOLICITORS LLP"
+      }
+    },
+    "fundingType": "REPRESENTATION_ORDER",
+    "isAssociatedByLAA": true
+  },
+  "courtProceedingsInitiated": "2024-06-04T06:39:45.195Z",
+  "croNumber": "29094/78G",
+  "id": "9ec9d81f-5946-4071-8b22-5eff665f00bb",
+  "masterDefendantId": "9ec9d81f-5946-4071-8b22-5eff665f00bb",
+  "offences": [
+    {
+      "arrestDate": "2024-06-02",
+      "chargeDate": "2024-06-03",
+      "convictingCourt": {
+        "code": "B43JC00",
+        "id": "8de240ea-8e6f-33fb-89b4-31af7be3e85a",
+        "lja": {
+          "ljaCode": "1921",
+          "ljaName": "Buckinghamshire Magistrates' Court"
+        },
+        "name": "Milton Keynes Magistrates' Court",
+        "roomId": "0c367d89-b254-3018-9001-0e4b69d4effd"
+      },
+      "convictionDate": "2024-06-04",
+      "count": 0,
+      "endorsableFlag": false,
+      "id": "287ac0e8-c2dc-4ba6-8b0d-4c3a10d46570",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2024-06-04",
+        "indicatedPleaValue": "INDICATED_GUILTY",
+        "offenceId": "287ac0e8-c2dc-4ba6-8b0d-4c3a10d46570",
+        "originatingHearingId": "8f8be5b2-210b-471f-9ab2-18929a655ad0",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "laaApplnReference": {
+        "applicationReference": "7999149",
+        "effectiveEndDate": "2024-09-23",
+        "effectiveStartDate": "2024-09-23",
+        "laaContractNumber": "2P475X",
+        "offenceLevelStatus": "Granted",
+        "statusCode": "GR",
+        "statusDate": "2024-09-23",
+        "statusDescription": "Granted (One Advocate)",
+        "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+      },
+      "lastAdjournDate": "2025-03-06",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 2,
+      "maxPenalty": "EW:6M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "PK78008",
+      "offenceDateCode": 5,
+      "offenceDefinitionId": "98a2cc1e-09dc-3308-bb05-acfff026bdbf",
+      "offenceLegislation": "Contrary to sections 1(1)(a) and 6 of the Protection of Children Act 1978.",
+      "offenceLegislationWelsh": "Yn groes i adrannau 1(1)(a) a 6 Deddf Amddiffyn Plant 1978.",
+      "offenceTitle": "Make indecent photograph / pseudo-photograph of a child",
+      "offenceTitleWelsh": "Gwneud ffotograff/ffug-ffotograff anweddus o blentyn",
+      "orderIndex": 1,
+      "proceedingsConcluded": false,
+      "seedingHearing": {
+        "jurisdictionType": "CROWN",
+        "seedingHearingId": "49f42787-b6b7-4c63-a0a2-6197996f62f8",
+        "sittingDay": "2025-03-06"
+      },
+      "startDate": "2024-05-20",
+      "wording": "Make indecent photograph / pseudo-photograph of a child (recordable), \n\nOn 20/05/2024 at Milton Keynes in the County of Buckinghamshire made an indecent photograph, namely Type three movies at cat A, of a child\n\n'Contrary to sections 1(1)(a) and 6 of the Protection of Children Act 1978.'"
+    },
+    {
+      "arrestDate": "2024-06-03",
+      "chargeDate": "2024-06-03",
+      "convictingCourt": {
+        "code": "B43JC00",
+        "id": "8de240ea-8e6f-33fb-89b4-31af7be3e85a",
+        "lja": {
+          "ljaCode": "1921",
+          "ljaName": "Buckinghamshire Magistrates' Court"
+        },
+        "name": "Milton Keynes Magistrates' Court",
+        "roomId": "0c367d89-b254-3018-9001-0e4b69d4effd"
+      },
+      "convictionDate": "2024-06-04",
+      "count": 0,
+      "endorsableFlag": false,
+      "id": "56bcbf82-cc59-40bf-982e-93e2977c253f",
+      "indicatedPlea": {
+        "indicatedPleaDate": "2024-06-04",
+        "indicatedPleaValue": "INDICATED_GUILTY",
+        "offenceId": "56bcbf82-cc59-40bf-982e-93e2977c253f",
+        "originatingHearingId": "8f8be5b2-210b-471f-9ab2-18929a655ad0",
+        "source": "IN_COURT"
+      },
+      "isDisposed": false,
+      "laaApplnReference": {
+        "applicationReference": "7999149",
+        "effectiveEndDate": "2024-09-23",
+        "effectiveStartDate": "2024-09-23",
+        "laaContractNumber": "2P475X",
+        "offenceLevelStatus": "Granted",
+        "statusCode": "GR",
+        "statusDate": "2024-09-23",
+        "statusDescription": "Granted (One Advocate)",
+        "statusId": "98e86937-9652-32a3-a9fb-dbd01eda86a5"
+      },
+      "lastAdjournDate": "2025-03-06",
+      "lastAdjournedHearingType": "",
+      "listingNumber": 2,
+      "maxPenalty": "EW:6M &/or Ultd Fine",
+      "modeOfTrial": "Either Way",
+      "offenceCode": "SX03204",
+      "offenceDateCode": 5,
+      "offenceDefinitionId": "49c880df-e7b3-34d1-a09b-3397910ccea8",
+      "offenceLegislation": "Contrary to section 91(1)(a) and (2) of the Sexual Offences Act 2003.",
+      "offenceLegislationWelsh": "Yn groes i adran 91(1)(a) a (2) Deddf Troseddau Rhywiol 2003.",
+      "offenceTitle": "Sex offenders register - fail comply with notification requirements - SOA 2003",
+      "offenceTitleWelsh": "Cofrestr troseddwyr rhyw – methu cydymffurfio â gofynion hysbysu - Deddf Troseddau Rhywiol 2003",
+      "orderIndex": 2,
+      "proceedingsConcluded": false,
+      "seedingHearing": {
+        "jurisdictionType": "CROWN",
+        "seedingHearingId": "49f42787-b6b7-4c63-a0a2-6197996f62f8",
+        "sittingDay": "2025-03-06"
+      },
+      "startDate": "2024-06-02",
+      "wording": "Sex offenders register - fail comply with notification requirements - SOA 2003 (recordable),\n\nOn 02/06/2024 at Milton Keynes in the County of Buckinghamshire, being a relevant offender within the terms of section 80 of the Sexual Offences Act 2003, failed without reasonable excuse to comply with the notification requirements as provided by Part 2 of that Act in that you failed to notify three credit cards/ accounts\n\n'Contrary to section 91(1)(a) and (2) of the Sexual Offences Act 2003.'"
+    }
+  ],
+  "personDefendant": {
+    "arrestSummonsNumber": "2400000000000699314X",
+    "bailConditions": "",
+    "bailStatus": {
+      "code": "C",
+      "description": "Custody",
+      "id": "12e69486-4d01-3403-a50a-7419ca040635"
+    },
+    "custodialEstablishment": {
+      "custody": "Prison",
+      "id": "816cee64-ed56-3885-835b-8a1f8c25e0a6",
+      "name": "HMP/YOI Bullingdon"
+    },
+    "driverNumber": "DRAPE607283P98YR",
+    "personDetails": {
+      "address": {
+        "address1": "19 ULVERSCROFT",
+        "address2": "MONKSTON",
+        "address3": "MILTON KEYNES",
+        "postcode": "MK10 9DD"
+      },
+      "contact": {
+        "home": "07460756916",
+        "primaryEmail": "pparkercfc@gmail.com"
+      },
+      "dateOfBirth": "1963-07-28",
+      "documentationLanguageNeeds": "ENGLISH",
+      "ethnicity": {
+        "observedEthnicityCode": "1",
+        "observedEthnicityDescription": "1",
+        "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+        "selfDefinedEthnicityCode": "W1",
+        "selfDefinedEthnicityDescription": "British",
+        "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+      },
+      "firstName": "MAX",
+      "gender": "MALE",
+      "hearingLanguageNeeds": "ENGLISH",
+      "lastName": "parker",
+      "occupation": "Warehouseman",
+      "title": "Mr"
+    },
+    "policeBailStatus": {
+      "code": "C",
+      "description": "Custody",
+      "id": "12e69486-4d01-3403-a50a-7419ca040635"
+    }
+  },
+  "pncId": "19780029094K",
+  "prosecutionAuthorityReference": "2400000000000699314X",
+  "prosecutionCaseId": "54a0417b-bc24-4307-9907-b22b05491038"
+}

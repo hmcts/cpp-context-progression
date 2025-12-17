@@ -1,0 +1,22 @@
+{
+  "id": "31af405e-7b60-4dd8-a244-c24c2d3fa595",
+  "sequenceNumber": 1,
+  "majorCreditorCode": "TFL2",
+  "shortName": "TFL",
+  "fullName": "Transport for London",
+  "nameWelsh": "Transport for London",
+  "oucode": "GAFTL00",
+  "spiInFlag": false,
+  "spiOutFlag": true,
+  "contactEmailAddress": "contact@email.com",
+  "informantEmailAddress": "informant@email.com",
+  "cpsMcEmailAddress": "lancashirecumbria.mc@cps.gov.uk",
+  "cpsCcEmailAddress": "lancashireCumbria.cc@cps.gov.uk",
+  "address": {
+    "address1": "6th Floor Windsor House",
+    "address2": "42-50 Victoria Street",
+    "address3": "London",
+    "postcode": "SW1H 0TL"
+  },
+  "standard": true
+}

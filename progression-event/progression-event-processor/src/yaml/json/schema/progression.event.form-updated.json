@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/form-updated.json",
+  "type": "object",
+  "properties": {
+    "courtFormId": {
+      "description": "Court Form Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "formData": {
+      "description": "Form Data",
+      "type": "string"
+    },
+    "userId": {
+      "description": "Logged In User Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "userName": {
+      "type": "string"
+    },
+    "formType": {
+      "description": "Form Type",
+      "$ref": "http://justice.gov.uk/core/courts/formType.json"
+    }
+  },
+  "required": [
+    "caseId",
+    "courtFormId",
+    "formData"
+  ],
+  "anyOf": [
+    {
+      "required": ["userId"]
+    },
+    {
+      "required": ["userName"]
+    }
+  ],
+  "additionalProperties": false
+}

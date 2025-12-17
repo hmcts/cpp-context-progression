@@ -1,0 +1,13 @@
+{
+  "organisationId": "%ORGANISATION_ID%",
+  "organisationType": "LEGAL_ORGANISATION",
+  "organisationName": "%ORGANISATION_NAME%",
+  "addressLine1": "Legal House",
+  "addressLine2": "15 Sewell Street",
+  "addressLine3": "Hammersmith",
+  "addressLine4": "London",
+  "addressPostcode": "SE14 2AB",
+  "phoneNumber": "080012345678",
+  "email": "joe@example.com",
+  "laaContractNumber" :"%LAA_CONTRACT_NUMBER%"
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/directionmanagement/query/direction-management-cases-direction-list.json",
+  "type": "object",
+  "properties": {
+    "caseDirections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assignee": {
+            "type": "object",
+            "properties": {
+              "assigneePersonId": {
+                "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+              },
+              "assigneeOrganisationText": {
+                "type": "string"
+              }
+            },
+            "anyOf": [
+              {
+                "required": [
+                  "assigneePersonId"
+                ]
+              },
+              {
+                "required": [
+                  "assigneeOrganisationText"
+                ]
+              }
+            ]
+          },
+          "caseId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "caseURN": {
+            "type": "string"
+          },
+          "defaultDirection": {
+            "type": "boolean"
+          },
+          "directionTypeId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "displayText": {
+            "type": "string"
+          },
+          "orderDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "trialDate": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "formId": {
+            "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+          },
+          "hearingType": {
+            "type": "string"
+          },
+          "id": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "sendReminder": {
+            "type": "boolean"
+          },
+          "introductoryNote": {
+            "type": "string"
+          },
+          "refData": {
+            "type": "object",
+            "properties": {
+              "directionRefDataId": {
+                "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+              },
+              "directionRefDataType": {
+                "type": "string"
+              },
+              "directionRefDataName": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

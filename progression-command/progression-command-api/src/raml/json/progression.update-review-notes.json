@@ -1,0 +1,17 @@
+{
+  "cotrNotes": [
+    {
+      "reviewNoteType": "CASE_PROGRESSION",
+      "reviewNotes": [
+        {
+          "id": "384756539-2a7c-4bc8-bca3-A1e5a225471a",
+          "comment": "value 1"
+        },
+        {
+          "id": "4c4e94af-ae87-47eb-9dc6-6cac8abcf8d8",
+          "comment": "value 2"
+        }
+      ]
+    }
+  ]
+}

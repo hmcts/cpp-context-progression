@@ -1,0 +1,11 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.3.xsd">
+
+    <changeSet id="remove-column-form-case-defendant-offence" author="sudhi">
+        <dropColumn tableName="form_case_defendant_offence">
+            <column name="offence_id" />
+        </dropColumn>
+    </changeSet>
+</databaseChangeLog>

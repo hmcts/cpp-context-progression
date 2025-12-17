@@ -1,0 +1,29 @@
+{
+  "courtDocument": {
+    "containsFinancialMeans": false,
+    "sendToCps": false,
+    "courtDocumentId": "COURT-DOCUMENT-ID",
+    "documentCategory": {
+      "applicationDocument": {
+        "applicationId": "%RANDOM_APPLICATION_ID%"
+      }
+    },
+    "documentTypeDescription": "Applications",
+    "documentTypeId": "a4e50dad-9e21-4b2b-903f-94176a443fca",
+    "documentTypeRBAC": {
+      "deleteUserGroups": ["Crown Court"],
+      "downloadUserGroups": ["Listing Officers", "Legal advisors", "Magistrates"],
+      "readUserGroups": ["Listing Officers", "Legal advisors", "Magistrates"],
+      "uploadUserGroups": ["Listing Officers", "Legal advisors"]
+    },
+    "materials": [{
+      "id": "5e1cc18c-76dc-47dd-99c1-d6f87385edf1",
+      "receivedDateTime": "2019-12-07T07:16:26.661Z",
+      "uploadDateTime": "2020-04-07T10:30:25.827Z",
+      "userGroups": ["Listing Officers", "Legal advisors", "Magistrates"]
+    }],
+    "mimeType": "pdf",
+    "name": "Application Updated Notice",
+    "seqNum": 10
+  }
+}

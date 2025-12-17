@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/hearing-resulted-update-case.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCase": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+    },
+    "courtApplications": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtApplication.json"
+      }
+    },
+    "courtCentre": {
+      "description": "The court centre venue for the hearing",
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingType": {
+      "type": "string"
+    },
+    "jurisdictionType": {
+      "$ref": "http://justice.gov.uk/core/courts/jurisdictionType.json"
+    },
+    "isBoxHearing": {
+      "type": "boolean"
+    },
+    "remitResultIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "defendantJudicialResults": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/defendantJudicialResult.json"
+       }
+    }
+  },
+  "required": [
+    "prosecutionCase"
+  ],
+  "additionalProperties": false
+}

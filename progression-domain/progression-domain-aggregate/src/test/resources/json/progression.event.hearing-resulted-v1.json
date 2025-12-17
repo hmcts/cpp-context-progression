@@ -1,0 +1,505 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "address": {
+        "address1": "Fitzalan Place",
+        "address2": "Cardiff",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "CF24 0RZ"
+      },
+      "code": "B62DC00",
+      "courtHearingLocation": "B62DC01",
+      "id": "153ac9f3-bf7a-3616-8749-bf44a749a470",
+      "lja": {
+        "ljaCode": "3190",
+        "ljaName": "Cardiff Magistrates' Court",
+        "welshLjaName": "Llys Ynadon Caerdydd"
+      },
+      "name": "Cardiff Magistrates' Court",
+      "roomId": "e274c87f-fc9d-355b-a439-a221f2ab1063",
+      "roomName": "Courtroom 01",
+      "welshAddress": {
+        "address1": "Plas Fitzalan",
+        "address2": "Caerdydd",
+        "postcode": "CF24 0RZ"
+      },
+      "welshCourtCentre": true,
+      "welshName": "Llys Ynadon Caerdydd"
+    },
+    "defendantAttendance": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "IN_PERSON",
+            "day": "2024-08-05"
+          }
+        ],
+        "defendantId": "f12653e9-21e2-4872-9d96-ac8f0e87b813"
+      }
+    ],
+    "defendantJudicialResults": [
+      {
+        "judicialResult": {
+          "alwaysPublished": false,
+          "amendmentDate": "2024-08-07",
+          "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+          "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "category": "ANCILLARY",
+          "courtClerk": {
+            "firstName": "Erica",
+            "lastName": "Wilson",
+            "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": true,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "2f74a5bf-59d1-4879-9298-1ab6c6a72d34",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+              "label": "Total custodial period",
+              "promptReference": "totalCustodialPeriod",
+              "promptSequence": 100,
+              "type": "INTM",
+              "usergroups": [],
+              "value": "4 Years",
+              "welshValue": "4 Years"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "fcff158b-aa4b-4111-afd8-6d536895fc20",
+              "label": "Supervision period",
+              "promptReference": "supervisionPeriod",
+              "promptSequence": 400,
+              "type": "INT",
+              "usergroups": [],
+              "value": "20 Months",
+              "welshLabel": "Cyfnod Goruchwylio",
+              "welshValue": "20 Months"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified organisation name",
+              "promptReference": "probationteamtobenotifiedOrganisationName",
+              "promptSequence": 600,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "Wales Division NPS",
+              "welshValue": "Wales Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified email address 1",
+              "promptReference": "probationteamtobenotifiedEmailAddress1",
+              "promptSequence": 600,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "walesnps.court@justice.gov.uk",
+              "welshValue": "walesnps.court@justice.gov.uk"
+            }
+          ],
+          "judicialResultTypeId": "b65fb5f1-b11d-4a95-a198-3b81333c7cf9",
+          "label": "Total suspended custodial period",
+          "lastSharedDateTime": "2024-08-07",
+          "level": "D",
+          "lifeDuration": false,
+          "offenceId": "1c9d4b8f-3e9e-43db-829f-514af18a55ca",
+          "orderedDate": "2024-08-05",
+          "orderedHearingId": "ccb3caf0-1480-4beb-b9f2-bdc5add39c10",
+          "parentJudicialResultId": "b7b1fc4f-d9dc-4219-b1fc-6225eb3fdc16",
+          "parentJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+          "postHearingCustodyStatus": "A",
+          "publishedAsAPrompt": false,
+          "publishedForNows": true,
+          "rank": 62700,
+          "resultText": "Total custodial period 4 Years. Supervision period: 20 Months.",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "b7b1fc4f-d9dc-4219-b1fc-6225eb3fdc16",
+          "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": [],
+          "welshLabel": "Cyfanswm y cyfnod gohiriedig yn y ddalfa"
+        },
+        "masterDefendantId": "f12653e9-21e2-4872-9d96-ac8f0e87b813"
+      }
+    ],
+    "hasSharedResults": true,
+    "hearingDays": [
+      {
+        "courtCentreId": "153ac9f3-bf7a-3616-8749-bf44a749a470",
+        "courtRoomId": "e274c87f-fc9d-355b-a439-a221f2ab1063",
+        "hasSharedResults": true,
+        "isCancelled": false,
+        "listedDurationMinutes": 20,
+        "listingSequence": 0,
+        "sittingDay": "2024-08-05T09:30:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "ccb3caf0-1480-4beb-b9f2-bdc5add39c10",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "INACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2024-08-05T10:23:57.393Z",
+            "id": "f12653e9-21e2-4872-9d96-ac8f0e87b813",
+            "isYouth": false,
+            "masterDefendantId": "f12653e9-21e2-4872-9d96-ac8f0e87b813",
+            "offences": [
+              {
+                "arrestDate": "2024-07-21",
+                "chargeDate": "2024-07-26",
+                "count": 0,
+                "dvlaOffenceCode": "NE99",
+                "endorsableFlag": false,
+                "id": "1c9d4b8f-3e9e-43db-829f-514af18a55ca",
+                "isDisposed": true,
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "amendmentDate": "2024-08-07",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": true,
+                    "category": "FINAL",
+                    "cjsCode": "1115",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "Y",
+                      "primaryDurationValue": 4,
+                      "secondaryDurationUnit": "M",
+                      "secondaryDurationValue": 20
+                    },
+                    "dvlaCode": "C",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "b7b1fc4f-d9dc-4219-b1fc-6225eb3fdc16",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "b2cf5a1e-8539-45a1-a287-4be5094a0e73",
+                        "label": "Total custodial period",
+                        "promptReference": "totalCustodialPeriod",
+                        "promptSequence": 100,
+                        "type": "INTM",
+                        "usergroups": [],
+                        "value": "4 Years",
+                        "welshValue": "4 Years"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "fcff158b-aa4b-4111-afd8-6d536895fc20",
+                        "label": "Supervision period",
+                        "promptReference": "supervisionPeriod",
+                        "promptSequence": 400,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "20 Months",
+                        "welshLabel": "Cyfnod Goruchwylio",
+                        "welshValue": "20 Months"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified organisation name",
+                        "promptReference": "probationteamtobenotifiedOrganisationName",
+                        "promptSequence": 600,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "Wales Division NPS",
+                        "welshValue": "Wales Division NPS"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+                        "label": "Probation team to be notified email address 1",
+                        "promptReference": "probationteamtobenotifiedEmailAddress1",
+                        "promptSequence": 600,
+                        "type": "NAMEADDRESS",
+                        "usergroups": [],
+                        "value": "walesnps.court@justice.gov.uk",
+                        "welshValue": "walesnps.court@justice.gov.uk"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "76f15753-1706-42fb-b922-0d56d01e5706",
+                        "label": "Imprisonment Period",
+                        "promptReference": "imprisonmentPeriod",
+                        "promptSequence": 100,
+                        "type": "INTM",
+                        "usergroups": [],
+                        "value": "4 Years",
+                        "welshLabel": "Cyfnod Carcharu",
+                        "welshValue": "4 Years"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 2,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "95618691-0742-417e-82b9-c4d4bff94585",
+                        "label": "Suspended period",
+                        "promptReference": "suspendedPeriod",
+                        "promptSequence": 110,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "20 Months",
+                        "welshLabel": "Cyfnod Gohiriedig",
+                        "welshValue": "20 Months"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "ea957761-0813-4a92-9e7c-b536654325f0",
+                        "label": "Imprisonment reasons",
+                        "promptReference": "imprisonmentReasons",
+                        "promptSequence": 200,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "the offence(s) are so serious that only a custodial sentence can be justified",
+                        "welshLabel": "Rhesymau dros garcharu",
+                        "welshValue": "mae'r drosedd/troseddau mor ddifrifol fel mai dim ond dedfryd o garchar y gellir ei chyfiawnhau"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+                        "label": "Supervising Court",
+                        "promptReference": "supervisingCourt",
+                        "promptSequence": 360,
+                        "type": "FIXL",
+                        "usergroups": [],
+                        "value": "South East London Youth Court",
+                        "welshLabel": "Llys sy’n Goruchwylio",
+                        "welshValue": "South East London Youth Court"
+                      },
+                      {
+                        "courtExtract": "N",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "4d10cd4b-fb39-40dd-88e1-2397832bc914",
+                        "label": "Bail remand days to count (tagged days)",
+                        "promptReference": "bailRemandDaysToCountTaggedDays",
+                        "promptSequence": 700,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "5",
+                        "welshLabel": "Dyddiau mechnïaeth ar remand i’w cyfrif (dyddiad gyda tag)",
+                        "welshValue": "5"
+                      }
+                    ],
+                    "judicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "label": "Suspended sentence order - imprisonment",
+                    "lastSharedDateTime": "2024-08-07",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-05",
+                    "orderedHearingId": "ccb3caf0-1480-4beb-b9f2-bdc5add39c10",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 66000,
+                    "resultText": "SUSPS - Suspended sentence order - imprisonment\nCommitted to prison for 4 Years suspended for 20 Months. Reason: the offence(s) are so serious that only a custodial sentence can be justified. The defendant must comply with the requirements within the supervision period.  In the event of activation of sentence: 5 bail remand days to count. Total custodial period 4 Years. Supervision period: 20 Months.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "b7b1fc4f-d9dc-4219-b1fc-6225eb3fdc16",
+                    "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gorchymyn dedfryd ohiriedig - carcharu"
+                  },
+                  {
+                    "alwaysPublished": true,
+                    "amendmentDate": "2024-08-07",
+                    "amendmentReason": "Error or Omission in result announced in court (Amendment under the Slip rule)",
+                    "amendmentReasonId": "a02018a1-915c-3343-95ad-abc5f99b339a",
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "category": "ANCILLARY",
+                    "cjsCode": "3101",
+                    "courtClerk": {
+                      "firstName": "Robert",
+                      "lastName": "Barnes",
+                      "userId": "8959b8b5-92bd-4ada-96f4-7ac9d482671a"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "c5537bbd-589a-4436-8a76-622aebb001de",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+                        "label": "Number of hours",
+                        "promptReference": "numberOfHours",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "40 Hours",
+                        "welshLabel": "Nifer yr oriau",
+                        "welshValue": "40 Hours"
+                      }
+                    ],
+                    "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+                    "label": "Unpaid work. Requirement to be completed within 12 months.",
+                    "lastSharedDateTime": "2024-08-07",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2024-08-05",
+                    "orderedHearingId": "ccb3caf0-1480-4beb-b9f2-bdc5add39c10",
+                    "parentJudicialResultId": "bdcbcf8f-42b1-4d7b-be17-18b33d20f386",
+                    "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+                    "postHearingCustodyStatus": "A",
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 68500,
+                    "resultDefinitionGroup": "Community Requirement",
+                    "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 40 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+                    "rollUpPrompts": false,
+                    "rootJudicialResultId": "b7b1fc4f-d9dc-4219-b1fc-6225eb3fdc16",
+                    "rootJudicialResultTypeId": "8b1cff00-a456-40da-9ce4-f11c20959084",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": []
+                  }
+                ],
+                "listingNumber": 1,
+                "maxPenalty": "EW:6M &/or Ultd Fine",
+                "modeOfTrial": "Either Way",
+                "offenceCode": "TH68013A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "ce94a77f-182e-3dcd-91e2-fdde31b74844",
+                "offenceLegislation": "Contrary to section 1(1)    of the Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt theft of motor vehicle",
+                "offenceTitleWelsh": "Ymgais i ddwyn cerbyd modur",
+                "orderIndex": 1,
+                "proceedingsConcluded": true,
+                "startDate": "2024-05-07",
+                "wording": "Attempt theft to vehicle"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "2391NX000044664228",
+              "bailConditions": "",
+              "bailStatus": {
+                "code": "A",
+                "description": "Not applicable",
+                "id": "86009c70-759d-3308-8de4-194886ff9a77"
+              },
+              "driverNumber": "VANFL002222OW9PH",
+              "personDetails": {
+                "address": {
+                  "address1": "15 Station Road",
+                  "address2": "Station Road",
+                  "address3": "Manchester",
+                  "address4": "Greater Manchester",
+                  "postcode": "M1 3FH"
+                },
+                "contact": {
+                  "home": "0569825495",
+                  "mobile": "01917874359",
+                  "primaryEmail": "geoffrey.abernathy@yahoo.com"
+                },
+                "dateOfBirth": "1986-08-05",
+                "documentationLanguageNeeds": "ENGLISH",
+                "ethnicity": {
+                  "observedEthnicityCode": "1",
+                  "observedEthnicityDescription": "White",
+                  "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "selfDefinedEthnicityCode": "W1",
+                  "selfDefinedEthnicityDescription": "British",
+                  "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                },
+                "firstName": "Kerrie",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Heidenreich",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "proceedingsConcluded": true,
+            "prosecutionAuthorityReference": "2391NX000044664228",
+            "prosecutionCaseId": "c540668d-3a90-4a6a-a1fd-8d66b79bd0d6"
+          }
+        ],
+        "id": "c540668d-3a90-4a6a-a1fd-8d66b79bd0d6",
+        "initiationCode": "C",
+        "originatingOrganisation": "0480000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Bishopsgate police station",
+            "address2": "182, Bishopsgate",
+            "address5": "London",
+            "postcode": "EC2M 4NP"
+          },
+          "contact": {
+            "primaryEmail": "casebuilderscpsmemos@cityoflondon.police.uk"
+          },
+          "majorCreditorCode": "COLP",
+          "prosecutionAuthorityCode": "CITYPF",
+          "prosecutionAuthorityId": "baa2ec52-296b-3f38-922a-9e641c1f94d3",
+          "prosecutionAuthorityName": "City of London Police",
+          "prosecutionAuthorityOUCode": "0480000",
+          "caseURN": "RQ584180089"
+        }
+      }
+    ],
+    "type": {
+      "description": "First hearing",
+      "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+    }
+  },
+  "hearingDay": "2024-08-05",
+  "sharedTime": "2024-08-07T07:22:06.805Z"
+}

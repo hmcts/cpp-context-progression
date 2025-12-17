@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/list-court-hearing.json",
+  "type": "object",
+  "properties": {
+    "hearings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/hearingListingNeeds.json#"
+      }
+    },
+    "adjournedFromDate" : {
+      "description": "hearing adjournment date",
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+    },
+    "isUnscheduled" : {
+      "description": "Indicates if a result cause Listing Unscheduled",
+      "type": "boolean"
+    },
+    "shadowListedOffences": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    }
+  },
+  "required": [
+    "hearings"
+  ],
+  "additionalProperties": false
+}

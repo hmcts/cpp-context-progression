@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/progression/json/schemas/event/public-defendant-offences-does-not-have-required-modeoftrial.json",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId"
+  ]
+}
+

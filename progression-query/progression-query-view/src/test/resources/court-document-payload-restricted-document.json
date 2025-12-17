@@ -1,0 +1,81 @@
+{
+  "containsFinancialMeans": false,
+  "courtDocumentId": "00068954-2d12-4b39-b917-228ec2cd380c",
+  "documentCategory": {
+    "nowDocument": {
+      "defendantId": "ee0b35b8-7fa5-49f8-a75b-8a163b841268",
+      "orderHearingId": "33aafe22-0797-43f5-b71a-cc4b1cea5a39",
+      "prosecutionCases": [
+        "1378a6d7-23b5-48d0-94f7-35c1dee27f8e"
+      ]
+    }
+  },
+  "documentTypeDescription": "TYPE_DESCRIPTION",
+  "documentTypeId": "460fbc00-c002-11e8-a355-529269fb1459",
+  "documentTypeRBAC": {
+    "downloadUserGroups": [
+      "Deputies",
+      "Court Clerks",
+      "Crown Court Admin",
+      "Youth Offending Service Admin",
+      "Magistrates",
+      "Court Administrators",
+      "Court Associate",
+      "Police Admin",
+      "Defence Users",
+      "Defence Lawyers",
+      "Advocates",
+      "Legal Advisers",
+      "Victims & Witness Care Admin",
+      "Probation Admin",
+      "DJMC",
+      "Listing Officers"
+    ],
+    "readUserGroups": [
+      "Deputies",
+      "Court Clerks",
+      "Crown Court Admin",
+      "Youth Offending Service Admin",
+      "Magistrates",
+      "Court Administrators",
+      "Court Associate",
+      "Police Admin",
+      "Defence Users",
+      "Defence Lawyers",
+      "Advocates",
+      "Legal Advisers",
+      "Victims & Witness Care Admin",
+      "Probation Admin",
+      "DJMC",
+      "Listing Officers"
+    ]
+  },
+  "materials": [
+    {
+      "generationStatus": "generated",
+      "id": "f1763f9f-c46f-4ca7-a84e-371c145e1532",
+      "name": "Defendant - Notice of New Date of Hearing",
+      "uploadDateTime": "UPLOAD_DATE",
+      "userGroups": [
+        "Deputies",
+        "Crown Court Admin",
+        "Youth Offending Service Admin",
+        "Magistrates",
+        "Court Administrators",
+        "Court Associate",
+        "Police Admin",
+        "Defence Users",
+        "Defence Lawyers",
+        "Advocates",
+        "Legal Advisers",
+        "Victims & Witness Care Admin",
+        "Probation Admin",
+        "DJMC",
+        "Listing Officers"
+      ]
+    }
+  ],
+  "mimeType": "application/pdf",
+  "name": "Defendant - Notice of New Date of Hearing",
+  "seqNum": 270
+}

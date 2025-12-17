@@ -1,0 +1,43 @@
+package uk.gov.moj.cpp.progression.command.api.accesscontrol;
+
+import uk.gov.moj.cpp.accesscontrol.drools.Outcome;
+import uk.gov.moj.cpp.accesscontrol.drools.Action;
+import uk.gov.moj.cpp.progression.command.api.accesscontrol.RuleConstants;
+
+global uk.gov.moj.cpp.accesscontrol.common.providers.UserAndGroupProvider userAndGroupProvider;
+
+rule "Command - Rule for add hearing defence counsel action"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.add-hearing-defence-counsel");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for update hearing defence counsel action"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-hearing-defence-counsel");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for remove hearing defence counsel action"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.remove-hearing-defence-counsel");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end
+
+rule "Command - Rule for Update Index"
+  when
+    $outcome: Outcome();
+    $action: Action(name == "progression.update-index-for-bdf");
+    eval(userAndGroupProvider.isMemberOfAnyOfTheSuppliedGroups($action, "System Users" ));
+  then
+    $outcome.setSuccess(true);
+end

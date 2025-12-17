@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/progression.command.insert-case-bdf.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "prosecutionCase": {
+      "$ref": "http://justice.gov.uk/core/courts/prosecutionCase.json#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "prosecutionCaseId",
+    "prosecutionCase"
+  ]
+}

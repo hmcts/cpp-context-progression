@@ -1,0 +1,131 @@
+{
+  "registerDate": "01/02/2019",
+  "ljaName": "Mersey Courts",
+  "courtHouse": "liverpool crown court",
+  "cases": [
+    {
+      "name": "Fred  Smith",
+      "address1": "Flat 1",
+      "address2": "1 Old Road",
+      "address3": "London",
+      "address4": "Merton",
+      "address5": "",
+      "postCode": "",
+      "jurisdiction": "MAGISTRATES",
+      "hearingType": "Sentence",
+      "defendantAppearanceDetails": "In Person",
+      "attendingSolicitorName": "Harold Benjamin Solicitors",
+      "defenceCounselName": "prosecution Counsel Name",
+      "defenceCounselStatus": "status",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "Father - Fred  Father - Smith",
+      "parentGuardianAddress1": "Father - Flat 1",
+      "parentGuardianAddress2": "Father - 1 Old Road",
+      "parentGuardianAddress3": "Father - London",
+      "parentGuardianAddress4": "Father - Merton",
+      "parentGuardianAddress5": "",
+      "parentGuardianPostCode": "Father - SW99 1AA",
+      "dateOfBirth": "27/12/2001",
+      "age": "%AGE%",
+      "gender": "MALE",
+      "nationality": "-",
+      "aliases": "Mr John Duncan Smith",
+      "caseReference": "TFL4359536",
+      "dateOfHearing": "10/07/2020",
+      "prosecutorName": "-",
+      "arrestSummonsNumber": "-",
+      "prosecutionCounselName": "prosecution Counsel Name",
+      "prosecutionCounselStatus": "status",
+      "defendantResults": [
+        {
+          "resultCode": "cjscode",
+          "resultText": "some result"
+        }
+      ],
+      "caseResults": [
+        {
+          "resultCode": "cjscode",
+          "resultText": "some result"
+        }
+      ],
+      "offences": [
+        {
+          "offenceCode": "PS90010",
+          "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
+          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.\nContrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "allocationDecision": "",
+          "convictionDate": "14/11/2019",
+          "verdictCode": "Guilty",
+          "results": [
+            {
+              "resultCode": "cjscode",
+              "resultText": "some result"
+            }
+          ],
+          "pleaValue": "NOT_GUILTY, 14/11/2019",
+          "indicatedPleaValue": "-"
+        }
+      ]
+    },
+    {
+      "name": "Fred  Smith 2",
+      "address1": "Flat 1",
+      "address2": "1 Old Road",
+      "address3": "London",
+      "address4": "Merton",
+      "address5": "",
+      "postCode": "",
+      "jurisdiction": "MAGISTRATES",
+      "hearingType": "Sentence",
+      "defendantAppearanceDetails": "In Person",
+      "attendingSolicitorName": "Harold Benjamin Solicitors",
+      "defenceCounselName": "prosecution Counsel Name",
+      "defenceCounselStatus": "status",
+      "postHearingCustodyStatus": "Not Applicable",
+      "officerInCase": "-",
+      "parentGuardianName": "Father - Fred  Father - Smith",
+      "parentGuardianAddress1": "Father - Flat 1",
+      "parentGuardianAddress2": "Father - 1 Old Road",
+      "parentGuardianAddress3": "Father - London",
+      "parentGuardianAddress4": "Father - Merton",
+      "parentGuardianAddress5": "",
+      "parentGuardianPostCode": "Father - SW99 1AA",
+      "dateOfBirth": "27/12/2001",
+      "age": "%AGE%",
+      "gender": "MALE",
+      "nationality": "-",
+      "aliases": "Mr John Duncan Smith",
+      "caseReference": "TFL4359536",
+      "dateOfHearing": "10/07/2020",
+      "prosecutorName": "-",
+      "arrestSummonsNumber": "-",
+      "prosecutionCounselName": "prosecution Counsel Name",
+      "prosecutionCounselStatus": "status",
+      "defendantResults": [
+        {
+          "resultCode": "cjscode",
+          "resultText": "some result"
+        }
+      ],
+      "caseResults": [
+        {
+          "resultCode": "cjscode",
+          "resultText": "some result"
+        }
+      ],
+      "offences": [
+        {
+          "offenceCode": "PS90010 X",
+          "offenceTitle": "Public service vehicle - passenger use altered / defaced ticket",
+          "wording": "Used or threatened unlawful violence towards another and your conduct was such as would cause a person of reasonable firmness present at the scene to fear for his personal safety.\nContrary to section 366(8)(b) and (9) of the Communications Act 2003.",
+          "allocationDecision": "",
+          "convictionDate": "14/11/2019",
+          "verdictCode": "Guilty",
+          "pleaValue": "NOT_GUILTY, 14/11/2019",
+          "indicatedPleaValue": "-"
+        }
+      ]
+    }
+  ]
+}

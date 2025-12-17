@@ -1,0 +1,18 @@
+{
+  "hearingId": "1d6323b0-a708-4e7f-a37f-8864ec0621d2",
+  "prosecutionCasesToRemove": [
+    {
+      "caseId": "6def96e4-9095-4ee4-a3ca-81e270c55a80",
+      "defendantsToRemove": [
+        {
+          "defendantId": "97ad5e0e-f4b9-47a4-a0c4-ee5815b75126",
+          "offencesToRemove": [
+            {
+              "offenceId": "1f3ff61e-48dc-44e2-b828-6e80d350954c"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

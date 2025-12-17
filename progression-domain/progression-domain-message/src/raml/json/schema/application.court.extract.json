@@ -1,0 +1,465 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/courts/exract/application-court-extract-requested.json",
+  "description": "Payload for standalone court application extract",
+  "type": "object",
+  "properties": {
+    "publishingCourt": {
+      "$ref": "http://justice.gov.uk/core/courts/courtCentre.json"
+    },
+    "reference": {
+      "description": "The reference of the parent application being extracted",
+      "type": "string"
+    },
+    "extractType": {
+      "description": "Should be 'StandaloneApplication' for application extract",
+      "type": "string"
+    },
+    "isAppealPending" :{
+      "description": "The flag to indicate if any appeal against any defendant is pending",
+      "type": "boolean"
+    },
+    "parentGuardian": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "address1": {
+              "type": "string"
+            },
+            "address2": {
+              "type": "string"
+            },
+            "address3": {
+              "type": "string"
+            },
+            "postCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "address1",
+            "address2",
+            "address3",
+            "postCode"
+          ]
+        }
+      }
+    },
+    "applicant": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "synonym": {
+          "type": "string"
+        },
+        "address": {
+          "type": "object",
+          "properties": {
+            "address1": {
+              "type": "string"
+            },
+            "address2": {
+              "type": "string"
+            },
+            "address3": {
+              "type": "string"
+            },
+            "postCode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "address1",
+            "address2",
+            "address3",
+            "postCode"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ]
+    },
+    "respondent": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "synonym": {
+              "type": "string"
+            },
+            "address": {
+              "type": "object",
+              "properties": {
+                "address1": {
+                  "type": "string"
+                },
+                "address2": {
+                  "type": "string"
+                },
+                "address3": {
+                  "type": "string"
+                },
+                "postCode": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "address1",
+                "address2",
+                "address3",
+                "postCode"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "address"
+          ]
+        }
+      ]
+    },
+
+    "hearings": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "jurisdictionType": {
+              "type": "string"
+            },
+            "reportingRestrictionReason": {
+              "type": "string"
+            },
+            "hearingDays": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "day": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "day"
+                  ]
+                }
+              ]
+            },
+            "courtCentre": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "welshName": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "object",
+                  "properties": {
+                    "address1": {
+                      "type": "string"
+                    },
+                    "address2": {
+                      "type": "string"
+                    },
+                    "postcode": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "address1",
+                    "address2",
+                    "postcode"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "address"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "type",
+            "hearingDays",
+            "courtCentre"
+          ]
+        }
+      ]
+    },
+
+    "courtApplications": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "applicationType": {
+              "type": "string"
+            },
+            "decision": {
+              "type": "string"
+            },
+            "decisionDate": {
+              "type": "string"
+            },
+            "response": {
+              "type": "string"
+            },
+            "isAppeal": {
+              "type": "boolean"
+            },
+            "results": {
+              "description": "Application level judicial result",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "http://justice.gov.uk/core/courts/judicialResult.json"
+              }
+            },
+            "representation": {
+              "type": "object",
+              "properties": {
+                "applicantRepresentation": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "synonym": {
+                      "type": "string"
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "address1": {
+                          "type": "string"
+                        },
+                        "address2": {
+                          "type": "string"
+                        },
+                        "postcode": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "address1",
+                        "address2",
+                        "postcode"
+                      ]
+                    },
+                    "contact": {
+                      "type": "object",
+                      "properties": {
+                        "work": {
+                          "type": "string"
+                        },
+                        "primaryEmail": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "work",
+                        "primaryEmail"
+                      ]
+                    },
+                    "applicantCounsels": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "$ref": "http://justice.gov.uk/core/courts/applicantCounsel.json"
+                      }
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "synonym",
+                    "address",
+                    "applicantCounsels"
+                  ]
+                },
+                "respondentRepresentation": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "synonym": {
+                          "type": "string"
+                        },
+                        "address": {
+                          "type": "object",
+                          "properties": {
+                            "address1": {
+                              "type": "string"
+                            },
+                            "address2": {
+                              "type": "string"
+                            },
+                            "postcode": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "address1",
+                            "address2",
+                            "postcode"
+                          ]
+                        },
+                        "contact": {
+                          "type": "object",
+                          "properties": {
+                            "work": {
+                              "type": "string"
+                            },
+                            "primaryEmail": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "work",
+                            "primaryEmail"
+                          ]
+                        },
+                        "respondentCounsels": {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "$ref": "http://justice.gov.uk/core/courts/respondentCounsel.json"
+                          }
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "synonym",
+                        "address",
+                        "respondentCounsels"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "applicantRepresentation",
+                "respondentRepresentation"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "results",
+            "representation"
+          ]
+        }
+      ]
+    },
+    "courtDecisions": {
+      "type": "array",
+      "items": [
+        {
+          "$ref": "#/definitions/courtDecision"
+        }
+      ]
+    }
+  },
+  "required": [
+    "publishingCourt",
+    "reference",
+    "extractType",
+    "courtApplications"
+  ],
+  "definitions": {
+    "courtDecision": {
+      "type": "object",
+      "properties": {
+        "judiciary": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/judicialRole"
+          }
+        },
+        "judicialDisplayName": {
+          "type": "string"
+        },
+        "roleDisplayName": {
+          "type": "string"
+        },
+        "dates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "day": {
+                "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/datePattern"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "dates",
+        "judiciary",
+        "judicialDisplayName",
+        "roleDisplayName"
+      ],
+      "additionalProperties": false
+    },
+    "judicialRole": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "description": "A transformation of the enumerated types to a simple string for rendering purposes e.g. MAGISTRATE -> Magistrate, CIRCUIT_JUDGE -> Circuit Judge",
+          "type": "string"
+        },
+        "isDeputy": {
+          "description": "Indicates if the judiciary acts as a deputy.  This is applicable to circuit and district judges",
+          "type": "boolean"
+        },
+        "isBenchChairman": {
+          "description": "Indicates if the magistrate acts as a bench chairman.  This is only applicable to magistrate roles",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "role"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

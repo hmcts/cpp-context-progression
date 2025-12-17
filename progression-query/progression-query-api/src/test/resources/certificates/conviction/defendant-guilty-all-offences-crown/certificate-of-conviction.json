@@ -1,0 +1,1070 @@
+{
+  "caseReference": "28DI4192771",
+  "companyRepresentatives": [],
+  "defendant": {
+    "address": {
+      "address1": "9999A9999AAAA",
+      "address2": "Woodlane",
+      "address3": "addressline 3",
+      "address4": "Bristol",
+      "address5": "Avon",
+      "postcode": "SW11 3TQ"
+    },
+    "age": "19",
+    "arrestSummonsNumber": "D28GC01124192771",
+    "attendanceDays": [
+      {
+        "attendanceType": "Present - in person",
+        "day": "2025-03-31"
+      }
+    ],
+    "dateOfBirth": "2005-11-11",
+    "defenceOrganisations": [
+      {}
+    ],
+    "hearings": [
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "Present - in person",
+            "day": "2025-03-31"
+          }
+        ],
+        "authorisedLegalAdvisors": [],
+        "convictedOffencesDetails": [
+          {
+            "convictionDate": "2025-03-31",
+            "dataVariation": "After trial on indictment",
+            "location": "Liverpool Crown Court",
+            "sentenceLocation": "Croydon Crown Court",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-03-31",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                  "originatingHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+                  "sequenceNumber": 90
+                },
+                "convictionDate": "2025-03-31",
+                "count": 2,
+                "id": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                "indictmentParticular": "test Indictment particulars second offence",
+                "offenceCode": "PS90015",
+                "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+                "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+                "offenceTitle": "Public service vehicles - passenger failing to pay fare",
+                "orderIndex": 2,
+                "pleas": [
+                  {
+                    "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                    "originatingHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+                    "pleaDate": "2025-03-31",
+                    "pleaValue": "NOT_GUILTY"
+                  }
+                ],
+                "results": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1015",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": true,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "b63081bb-2b7a-46f9-bc89-7a34294fefdb",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": true,
+                        "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                        "label": "Amount of fine",
+                        "promptReference": "AOF",
+                        "promptSequence": 100,
+                        "type": "CURR",
+                        "usergroups": [],
+                        "value": "£456.00",
+                        "welshLabel": "Swm y ddirwy",
+                        "welshValue": "£456.00"
+                      }
+                    ],
+                    "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "label": "Fine",
+                    "lastSharedDateTime": "2025-03-31",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-03-31",
+                    "orderedHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 72100,
+                    "resultDefinitionGroup": "Imposition",
+                    "resultText": "FO - Fine\nFined £456.00",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "b63081bb-2b7a-46f9-bc89-7a34294fefdb",
+                    "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Dirwy"
+                  }
+                ],
+                "startDate": "2022-11-28",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "PS90015",
+                      "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+                      "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+                      "offenceTitle": "Public service vehicles - passenger failing to pay fare"
+                    },
+                    "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                    "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                    "verdictDate": "2025-03-31",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Found guilty",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                      "sequence": 10,
+                      "verdictCode": "G"
+                    }
+                  }
+                ],
+                "wording": "Public service vehicles - passenger failing to pay fare"
+              }
+            ]
+          }
+        ],
+        "courtCentre": {
+          "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+          "name": "Liverpool Crown Court"
+        },
+        "defendantResults": [
+          {
+            "alwaysPublished": true,
+            "canBeSubjectOfBreach": false,
+            "canBeSubjectOfVariation": false,
+            "canExtendActiveOrder": false,
+            "category": "FINAL",
+            "courtClerk": {
+              "firstName": "Erica",
+              "lastName": "Wilson",
+              "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+            },
+            "d20": false,
+            "excludedFromResults": false,
+            "isAdjournmentResult": false,
+            "isAvailableForCourtExtract": true,
+            "isConvictedResult": false,
+            "isDeleted": false,
+            "isFinancialResult": false,
+            "isNewAmendment": true,
+            "isUnscheduled": false,
+            "judicialResultId": "4188aa42-ae35-4d02-a584-3f7d46f55ba3",
+            "judicialResultPrompts": [
+              {
+                "courtExtract": "Y",
+                "isFinancialImposition": false,
+                "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+                "label": "Date to pay in full by",
+                "promptReference": "PBD",
+                "promptSequence": 100,
+                "type": "DATE",
+                "usergroups": [],
+                "value": "24/12/2025",
+                "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+                "welshValue": "24/12/2025"
+              }
+            ],
+            "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+            "label": "Pay by date",
+            "lastSharedDateTime": "2025-03-31",
+            "level": "D",
+            "lifeDuration": false,
+            "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+            "orderedDate": "2025-03-31",
+            "orderedHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+            "parentJudicialResultId": "d1570e74-db4f-471b-92cf-27208f36b0f1",
+            "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+            "postHearingCustodyStatus": "A",
+            "preserveActiveOrder": false,
+            "publishedAsAPrompt": false,
+            "publishedForNows": false,
+            "rank": 120500,
+            "resultDefinitionGroup": "Payment terms",
+            "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 24/12/2025.",
+            "rollUpPrompts": false,
+            "rootJudicialResultId": "b63081bb-2b7a-46f9-bc89-7a34294fefdb",
+            "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+            "terminatesOffenceProceedings": false,
+            "urgent": false,
+            "usergroups": [],
+            "welshLabel": "Dyddiad terfyn ar gyfer talu"
+          }
+        ],
+        "hearingDays": [
+          {
+            "day": "2025-03-31",
+            "time": "14:20"
+          }
+        ],
+        "id": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+        "jurisdictionType": "CROWN",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-03-31",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+              "originatingHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+              "sequenceNumber": 90
+            },
+            "convictionDate": "2025-03-31",
+            "count": 2,
+            "id": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+            "indictmentParticular": "test Indictment particulars second offence",
+            "offenceCode": "PS90015",
+            "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+            "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+            "offenceTitle": "Public service vehicles - passenger failing to pay fare",
+            "orderIndex": 2,
+            "pleas": [
+              {
+                "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                "originatingHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+                "pleaDate": "2025-03-31",
+                "pleaValue": "NOT_GUILTY"
+              }
+            ],
+            "results": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1015",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": true,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "b63081bb-2b7a-46f9-bc89-7a34294fefdb",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": true,
+                    "judicialResultPromptTypeId": "7cd1472f-2379-4f5b-9e67-98a43d86e122",
+                    "label": "Amount of fine",
+                    "promptReference": "AOF",
+                    "promptSequence": 100,
+                    "type": "CURR",
+                    "usergroups": [],
+                    "value": "£456.00",
+                    "welshLabel": "Swm y ddirwy",
+                    "welshValue": "£456.00"
+                  }
+                ],
+                "judicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "label": "Fine",
+                "lastSharedDateTime": "2025-03-31",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-03-31",
+                "orderedHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 72100,
+                "resultDefinitionGroup": "Imposition",
+                "resultText": "FO - Fine\nFined £456.00",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "b63081bb-2b7a-46f9-bc89-7a34294fefdb",
+                "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Dirwy"
+              }
+            ],
+            "startDate": "2022-11-28",
+            "verdicts": [
+              {
+                "jurors": {
+                  "numberOfJurors": 12,
+                  "numberOfSplitJurors": 0,
+                  "unanimous": true
+                },
+                "lesserOrAlternativeOffence": {
+                  "offenceCode": "PS90015",
+                  "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+                  "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+                  "offenceTitle": "Public service vehicles - passenger failing to pay fare"
+                },
+                "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                "verdictDate": "2025-03-31",
+                "verdictType": {
+                  "category": "Guilty",
+                  "categoryType": "GUILTY",
+                  "cjsVerdictCode": "G",
+                  "description": "Found guilty",
+                  "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "sequence": 10,
+                  "verdictCode": "G"
+                }
+              }
+            ],
+            "wording": "Public service vehicles - passenger failing to pay fare"
+          }
+        ],
+        "type": "Plea"
+      },
+      {
+        "attendanceDays": [
+          {
+            "attendanceType": "Present - in person",
+            "day": "2025-03-31"
+          }
+        ],
+        "authorisedLegalAdvisors": [],
+        "convictedOffencesDetails": [
+          {
+            "convictionDate": "2025-03-31",
+            "dataVariation": "After trial on indictment",
+            "location": "Lavender Hill Magistrates' Court",
+            "offences": [
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-03-31",
+                  "motReasonCode": "02",
+                  "motReasonDescription": "Indictable-only offence",
+                  "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+                  "offenceId": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+                  "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                  "sequenceNumber": 100
+                },
+                "convictionDate": "2025-03-31",
+                "count": 0,
+                "id": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+                "offenceCode": "OF61102C",
+                "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+                "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+                "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+                    "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                    "pleaDate": "2025-03-31",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "results": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": true,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "FINAL",
+                    "cjsCode": "1018",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "durationElement": {
+                      "primaryDurationUnit": "M",
+                      "primaryDurationValue": 5
+                    },
+                    "dvlaCode": "E",
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": true,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "b5970213-a4e1-4ab5-a4a9-ffeac6393420",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "durationSequence": 1,
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                        "label": "Period of conditional discharge",
+                        "promptReference": "periodofConditionalDischarge",
+                        "promptSequence": 100,
+                        "type": "INT",
+                        "usergroups": [],
+                        "value": "5 Months",
+                        "welshLabel": "Cyfnod o ryddhad amodol",
+                        "welshValue": "5 Months"
+                      }
+                    ],
+                    "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "label": "Conditional discharge",
+                    "lastSharedDateTime": "2025-03-31",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "orderedDate": "2025-03-31",
+                    "orderedHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                    "policeSubjectLineTitle": "Final Sentence",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "rank": 73800,
+                    "resultText": "CD - Conditional discharge\nDischarged conditionally for 5 Months.",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "b5970213-a4e1-4ab5-a4a9-ffeac6393420",
+                    "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Rhyddhad Amodol"
+                  }
+                ],
+                "startDate": "2022-12-12",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "OF61102C",
+                      "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                      "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                      "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm"
+                    },
+                    "offenceId": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+                    "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                    "verdictDate": "2025-03-31",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Found guilty",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                      "sequence": 10,
+                      "verdictCode": "G"
+                    }
+                  }
+                ],
+                "wording": "Rafaela Kautzer at Jennifer Forge, conspired together with Guillermo Kerluke to assault Michael Baumbach, thereby occasioning actual bodily harm."
+              },
+              {
+                "allocationDecision": {
+                  "allocationDecisionDate": "2025-03-31",
+                  "motReasonCode": "01",
+                  "motReasonDescription": "Summary-only offence",
+                  "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+                  "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                  "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                  "sequenceNumber": 90
+                },
+                "convictionDate": "2025-03-31",
+                "count": 0,
+                "id": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                "offenceCode": "PS90015",
+                "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+                "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+                "offenceTitle": "Public service vehicles - passenger failing to pay fare",
+                "orderIndex": 2,
+                "pleas": [
+                  {
+                    "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                    "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                    "pleaDate": "2025-03-31",
+                    "pleaValue": "NOT_GUILTY"
+                  }
+                ],
+                "results": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "7c123875-dd37-494a-a9d5-0b447666632d",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                        "label": "Next hearing in Crown Court",
+                        "promptReference": "b25cb39f-de77-4d47-8f67-ece548e8ff65",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Fixed Date:31/03/2025\nTime of hearing:15:20\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourtroom:Crown Court 3-1\nHearing type:Plea\nEstimated duration:2 HOURS",
+                        "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "646fe0d6-ddb2-43ae-a8e8-0314a00fbc7b",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "b8990614-997a-4f24-83e3-b31655a995d5",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-03-31",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "code": "C05LV00",
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                        "roomName": "Crown Court 3-1",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedDuration": "2 HOURS",
+                      "estimatedMinutes": 120,
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2025-03-31T14:20:00.000Z",
+                      "type": {
+                        "description": "Plea",
+                        "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+                      }
+                    },
+                    "orderedDate": "2025-03-31",
+                    "orderedHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 31/03/2025 at 15:20 in Crown Court 3-1, Liverpool Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "7c123875-dd37-494a-a9d5-0b447666632d",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "startDate": "2022-11-28",
+                "verdicts": [
+                  {
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "PS90015",
+                      "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+                      "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+                      "offenceTitle": "Public service vehicles - passenger failing to pay fare"
+                    },
+                    "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                    "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                    "verdictDate": "2025-03-31",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "cjsVerdictCode": "G",
+                      "description": "Found guilty",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                      "sequence": 10,
+                      "verdictCode": "G"
+                    }
+                  }
+                ],
+                "wording": "Public service vehicles - passenger failing to pay fare"
+              }
+            ]
+          }
+        ],
+        "courtCentre": {
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "name": "Lavender Hill Magistrates' Court"
+        },
+        "defendantResults": [],
+        "hearingDays": [
+          {
+            "day": "2025-03-31",
+            "time": "22:30"
+          }
+        ],
+        "id": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+        "jurisdictionType": "MAGISTRATES",
+        "offences": [
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-03-31",
+              "motReasonCode": "02",
+              "motReasonDescription": "Indictable-only offence",
+              "motReasonId": "4ba29b9f-9e57-32ed-b376-1840f4ba6c53",
+              "offenceId": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+              "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+              "sequenceNumber": 100
+            },
+            "convictionDate": "2025-03-31",
+            "count": 0,
+            "id": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+            "offenceCode": "OF61102C",
+            "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+            "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+            "offenceLegislationWelsh": "Yn groes i adran 1, 1A a 3 Deddf Cyfraith Trosedd 1977.",
+            "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm",
+            "offenceTitleWelsh": "Cynllwynio i ymosod ar unigolyn a thrwy hynny beri gwir niwed corfforol iddynt",
+            "orderIndex": 1,
+            "pleas": [
+              {
+                "offenceId": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+                "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                "pleaDate": "2025-03-31",
+                "pleaValue": "GUILTY"
+              }
+            ],
+            "results": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": true,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "FINAL",
+                "cjsCode": "1018",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "durationElement": {
+                  "primaryDurationUnit": "M",
+                  "primaryDurationValue": 5
+                },
+                "dvlaCode": "E",
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": true,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "b5970213-a4e1-4ab5-a4a9-ffeac6393420",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "durationSequence": 1,
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "d3205319-84cf-4c5b-9d7a-7e4bb1865054",
+                    "label": "Period of conditional discharge",
+                    "promptReference": "periodofConditionalDischarge",
+                    "promptSequence": 100,
+                    "type": "INT",
+                    "usergroups": [],
+                    "value": "5 Months",
+                    "welshLabel": "Cyfnod o ryddhad amodol",
+                    "welshValue": "5 Months"
+                  }
+                ],
+                "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "label": "Conditional discharge",
+                "lastSharedDateTime": "2025-03-31",
+                "level": "O",
+                "lifeDuration": false,
+                "orderedDate": "2025-03-31",
+                "orderedHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                "policeSubjectLineTitle": "Final Sentence",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "rank": 73800,
+                "resultText": "CD - Conditional discharge\nDischarged conditionally for 5 Months.",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "b5970213-a4e1-4ab5-a4a9-ffeac6393420",
+                "rootJudicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Rhyddhad Amodol"
+              }
+            ],
+            "startDate": "2022-12-12",
+            "verdicts": [
+              {
+                "jurors": {
+                  "numberOfJurors": 12,
+                  "numberOfSplitJurors": 0,
+                  "unanimous": true
+                },
+                "lesserOrAlternativeOffence": {
+                  "offenceCode": "OF61102C",
+                  "offenceDefinitionId": "3acf5ee8-6ba0-3b95-8c80-4a4b7dc84d7c",
+                  "offenceLegislation": "Contrary to sections 1,1A and 3 of the Criminal Law Act 1977.",
+                  "offenceTitle": "Conspire to assault a person thereby occasioning them actual bodily harm"
+                },
+                "offenceId": "cb2d741e-ac9e-4419-b515-8572194a9fd0",
+                "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                "verdictDate": "2025-03-31",
+                "verdictType": {
+                  "category": "Guilty",
+                  "categoryType": "GUILTY",
+                  "cjsVerdictCode": "G",
+                  "description": "Found guilty",
+                  "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "sequence": 10,
+                  "verdictCode": "G"
+                }
+              }
+            ],
+            "wording": "Rafaela Kautzer at Jennifer Forge, conspired together with Guillermo Kerluke to assault Michael Baumbach, thereby occasioning actual bodily harm."
+          },
+          {
+            "allocationDecision": {
+              "allocationDecisionDate": "2025-03-31",
+              "motReasonCode": "01",
+              "motReasonDescription": "Summary-only offence",
+              "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+              "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+              "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+              "sequenceNumber": 90
+            },
+            "convictionDate": "2025-03-31",
+            "count": 0,
+            "id": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+            "offenceCode": "PS90015",
+            "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+            "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+            "offenceTitle": "Public service vehicles - passenger failing to pay fare",
+            "orderIndex": 2,
+            "pleas": [
+              {
+                "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                "pleaDate": "2025-03-31",
+                "pleaValue": "NOT_GUILTY"
+              }
+            ],
+            "results": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "INTERMEDIARY",
+                "cjsCode": "4506",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "7c123875-dd37-494a-a9d5-0b447666632d",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                    "label": "Next hearing in Crown Court",
+                    "promptReference": "b25cb39f-de77-4d47-8f67-ece548e8ff65",
+                    "promptSequence": 0,
+                    "usergroups": [],
+                    "value": "Fixed Date:31/03/2025\nTime of hearing:15:20\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourtroom:Crown Court 3-1\nHearing type:Plea\nEstimated duration:2 HOURS",
+                    "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                    "label": "Defendant to attend the next hearing",
+                    "promptReference": "defendantToAttendTheNextHearing",
+                    "promptSequence": 100,
+                    "type": "BOOLEAN",
+                    "usergroups": [],
+                    "value": "true",
+                    "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                    "welshValue": "true"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "promptReference": "646fe0d6-ddb2-43ae-a8e8-0314a00fbc7b",
+                    "promptSequence": 200,
+                    "qualifier": "GE",
+                    "usergroups": [],
+                    "value": "",
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "label": "Adjournment reasons",
+                    "promptReference": "b8990614-997a-4f24-83e3-b31655a995d5",
+                    "promptSequence": 300,
+                    "usergroups": [],
+                    "value": "",
+                    "welshLabel": "Rheswm dros ohirio:"
+                  }
+                ],
+                "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "label": "Adjournment",
+                "lastSharedDateTime": "2025-03-31",
+                "level": "O",
+                "lifeDuration": false,
+                "nextHearing": {
+                  "adjournmentReason": "To attend or a warrant to issue",
+                  "courtCentre": {
+                    "address": {
+                      "address1": "QEII Law Courts",
+                      "address2": "Derby Square",
+                      "address3": "Liverpool",
+                      "postcode": "L2 1XA"
+                    },
+                    "code": "C05LV00",
+                    "courtHearingLocation": "C05LV00",
+                    "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                    "name": "Liverpool Crown Court",
+                    "psaCode": 1810,
+                    "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                    "roomName": "Crown Court 3-1",
+                    "welshName": "Llys Y Goron Lerpwl"
+                  },
+                  "estimatedDuration": "2 HOURS",
+                  "estimatedMinutes": 120,
+                  "jurisdictionType": "CROWN",
+                  "listedStartDateTime": "2025-03-31T14:20:00.000Z",
+                  "type": {
+                    "description": "Plea",
+                    "id": "511fe0a3-1391-4954-8158-6b10eed0dad9"
+                  }
+                },
+                "orderedDate": "2025-03-31",
+                "orderedHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                "policeSubjectLineTitle": "Adjourned",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "qualifier": "GE",
+                "rank": 194200,
+                "resultText": "A - Adjournment\nAdjourned for hearing on 31/03/2025 at 15:20 in Crown Court 3-1, Liverpool Crown Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "7c123875-dd37-494a-a9d5-0b447666632d",
+                "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Gohiriad"
+              }
+            ],
+            "startDate": "2022-11-28",
+            "verdicts": [
+              {
+                "jurors": {
+                  "numberOfJurors": 12,
+                  "numberOfSplitJurors": 0,
+                  "unanimous": true
+                },
+                "lesserOrAlternativeOffence": {
+                  "offenceCode": "PS90015",
+                  "offenceDefinitionId": "e5c489f1-d2b4-3e59-9b3c-50ae9bbdaa9d",
+                  "offenceLegislation": "Contrary to regulation 7(2)(b)(i) of the Public Service Vehicles (Conduct of Drivers, Inspectors, Conductors and Passengers) Regulations 1990 and section 25 of the Public Passengers Vehicles Act 1981.",
+                  "offenceTitle": "Public service vehicles - passenger failing to pay fare"
+                },
+                "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+                "originatingHearingId": "b4df43e2-37ff-4119-bb98-2bf983aeb92d",
+                "verdictDate": "2025-03-31",
+                "verdictType": {
+                  "category": "Guilty",
+                  "categoryType": "GUILTY",
+                  "cjsVerdictCode": "G",
+                  "description": "Found guilty",
+                  "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                  "sequence": 10,
+                  "verdictCode": "G"
+                }
+              }
+            ],
+            "wording": "Public service vehicles - passenger failing to pay fare"
+          }
+        ],
+        "type": "First hearing"
+      }
+    ],
+    "id": "877bebaa-0b9a-4059-a3bc-dacaa78130c0",
+    "name": "Rafaela Kautzer",
+    "results": [
+      {
+        "alwaysPublished": true,
+        "canBeSubjectOfBreach": false,
+        "canBeSubjectOfVariation": false,
+        "canExtendActiveOrder": false,
+        "category": "FINAL",
+        "courtClerk": {
+          "firstName": "Erica",
+          "lastName": "Wilson",
+          "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+        },
+        "d20": false,
+        "excludedFromResults": false,
+        "isAdjournmentResult": false,
+        "isAvailableForCourtExtract": true,
+        "isConvictedResult": false,
+        "isDeleted": false,
+        "isFinancialResult": false,
+        "isNewAmendment": true,
+        "isUnscheduled": false,
+        "judicialResultId": "4188aa42-ae35-4d02-a584-3f7d46f55ba3",
+        "judicialResultPrompts": [
+          {
+            "courtExtract": "Y",
+            "isFinancialImposition": false,
+            "judicialResultPromptTypeId": "ee7d253a-c629-11e8-a355-529269fb1459",
+            "label": "Date to pay in full by",
+            "promptReference": "PBD",
+            "promptSequence": 100,
+            "type": "DATE",
+            "usergroups": [],
+            "value": "24/12/2025",
+            "welshLabel": "Dyddiad terfyn ar gyfer talu'r swm llawn",
+            "welshValue": "24/12/2025"
+          }
+        ],
+        "judicialResultTypeId": "bcb5a496-f7cf-11e8-8eb2-f2801f1b9fd1",
+        "label": "Pay by date",
+        "lastSharedDateTime": "2025-03-31",
+        "level": "D",
+        "lifeDuration": false,
+        "offenceId": "afbe5435-3f06-4c0f-aea3-b4a4c6246f14",
+        "orderedDate": "2025-03-31",
+        "orderedHearingId": "19f9daf8-27a0-46b8-bc81-ceb8dbfff43c",
+        "parentJudicialResultId": "d1570e74-db4f-471b-92cf-27208f36b0f1",
+        "parentJudicialResultTypeId": "4fdd9548-c521-48c9-baa3-1bd2f13a4fcc",
+        "postHearingCustodyStatus": "A",
+        "preserveActiveOrder": false,
+        "publishedAsAPrompt": false,
+        "publishedForNows": false,
+        "rank": 120500,
+        "resultDefinitionGroup": "Payment terms",
+        "resultText": "PDATE - Pay by date\nPay by date. Date to pay in full by: 24/12/2025.",
+        "rollUpPrompts": false,
+        "rootJudicialResultId": "b63081bb-2b7a-46f9-bc89-7a34294fefdb",
+        "rootJudicialResultTypeId": "969f150c-cd05-46b0-9dd9-30891efcc766",
+        "terminatesOffenceProceedings": false,
+        "urgent": false,
+        "usergroups": [],
+        "welshLabel": "Dyddiad terfyn ar gyfer talu"
+      }
+    ]
+  },
+  "extractType": "CertificateOfConviction",
+  "publishingCourt": {
+    "name": "Lavender Hill Magistrates' Court"
+  }
+}

@@ -1,0 +1,9 @@
+{
+    "bailStatus": {
+        "id": "2593cf09-ace0-4b7d-a746-0703a29f33b6",
+        "code": "B",
+        "description": "Conditional Bail"
+    },
+    "documentId": "documentMaterialId",
+    "custodyTimeLimitDate": "2016-11-11"
+}

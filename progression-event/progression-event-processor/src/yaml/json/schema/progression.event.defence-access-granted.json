@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.defence-access-granted.json",
+  "type": "object",
+  "properties": {
+    "requesterUserId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "requesterOrganisationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "granteeEmail": {
+      "type": "string",
+      "format": "email"
+    },
+    "granteeUserId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "granteeOrganisationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isAgent": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "requesterUserId",
+    "requesterOrganisationId",
+    "defendantId",
+    "granteeEmail",
+    "granteeUserId",
+    "granteeOrganisationId",
+    "isAgent"
+  ]
+}

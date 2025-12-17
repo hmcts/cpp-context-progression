@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/polar-question.json",
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    },
+    "attentionRequired": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,41 @@
+{
+  "courtDocument": {
+    "courtDocumentId": "3498c4b4-cab8-44e8-8e06-66d92e95cb17",
+    "documentCategory": {
+      "defendantDocument": {
+        "defendants": [
+          "e1d32d9d-29ec-4934-a932-22a50f223966"
+        ],
+        "prosecutionCaseId": "f1b6d387-74f1-4f45-8031-6fbd6e84ca1d"
+      }
+    },
+    "documentTypeId": "1b7e6a7a-a571-4ab9-8895-4b1a58424d78",
+    "isRemoved": false,
+    "materials": [
+      {
+        "id": "4bcbbacd-5f31-49df-addc-dc398d0833cc",
+        "name": "BankStatment.pdf",
+        "uploadDateTime": "2018-03-20T16:14:29.000Z",
+        "userGroups": [
+          "defence",
+          "prosecution",
+          "courtClerk",
+          "Listing Officers"
+        ]
+      },
+      {
+        "id": "2e6a51e5-8b77-4cd7-aacc-08244d460ff0",
+        "name": "Fine.pdf",
+        "uploadDateTime": "2018-03-20T16:14:29.000Z",
+        "userGroups": [
+          "defence",
+          "prosecution",
+          "Legal Advisers",
+          "Listing Officers"
+        ]
+      }
+    ],
+    "mimeType": "pdf",
+    "name": "Bank Statement"
+  }
+}

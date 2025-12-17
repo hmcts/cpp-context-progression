@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/public.notificationnotify.events.notification-failed.json",
+  "type": "object",
+  "properties": {
+    "notificationId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "failedTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "errorMessage": {
+      "type": "string"
+    },
+    "statusCode": {
+      "type": "integer"
+     },
+    "clientContext": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "notificationId",
+    "failedTime",
+    "errorMessage"
+  ],
+  "additionalProperties": false
+}
+

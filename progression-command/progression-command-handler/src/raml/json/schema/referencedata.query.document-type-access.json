@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://cpp.moj.gov.uk/referencedata/json/schemas/document-type-access.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "section": {
+      "type": "string"
+    },
+    "sectionCode": {
+      "type": "string"
+    },
+    "documentCategory": {
+      "type": "string"
+    },
+    "actionRequired": {
+      "type": "boolean"
+    },
+    "seqNum": {
+      "type": "integer"
+    },
+    "validFrom": {
+      "$ref": "#/definitions/isoDate"
+    },
+    "validTo": {
+      "$ref": "#/definitions/isoDate"
+    },
+    "jurisdiction": {
+      "type": "string"
+    },
+    "sentToCps": {
+      "type": "boolean"
+    },
+    "courtDocumentTypeRBAC": {
+      "type": "object",
+      "properties": {
+        "readUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        },
+        "uploadUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        },
+        "downloadUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        },
+        "deleteUserGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/userGroup"
+          },
+          "minItems": 0
+        }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "documentCategory",
+    "seqNum",
+    "jurisdiction",
+    "sentToCps"
+  ],
+  "definitions": {
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-[01]\\d-[0-3]\\d$"
+    },
+    "userGroup": {
+      "type": "object",
+      "properties": {
+        "cppGroup": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+            },
+            "groupName": {
+              "type": "string"
+            }
+          }
+        },
+        "validFrom": {
+          "$ref": "#/definitions/isoDate"
+        },
+        "validTo": {
+          "$ref": "#/definitions/isoDate"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "cppGroup"
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/progression/query/cotr-detail.json",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingDay": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "isProsecutionServed": {
+      "type": "boolean"
+    },
+    "cotrDefendants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "http://justice.gov.uk/progression/query/cotr-defendant.json"
+      }
+    },
+    "isArchived" : {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "hearingId",
+    "hearingDay",
+    "cotrDefendants",
+    "isArchived"
+  ],
+  "additionalProperties": false
+}

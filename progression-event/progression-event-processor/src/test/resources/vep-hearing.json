@@ -1,0 +1,282 @@
+{
+  "hearing": {
+    "id": "3449743b-95d6-4836-8941-57f588b52068",
+    "courtApplications": [
+      {
+        "applicant": {
+          "id": "c660e86c-9aa8-485b-b9df-9a14371dea09",
+          "masterDefendant": {
+            "defendantCase": [
+              {
+                "caseId": "666d4cc2-be8e-4b4a-82e7-369241daf185",
+                "caseReference": "15XL1000011",
+                "defendantId": "2fd20f6d-1768-40f1-9b9a-28614421a25b"
+              }
+            ],
+            "masterDefendantId": "2fd20f6d-1768-40f1-9b9a-28614421a25b",
+            "personDefendant": {
+              "arrestSummonsNumber": "Peter",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "799",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "2001-02-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Deborah",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Kassulke",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            }
+          },
+          "notificationRequired": true,
+          "summonsRequired": false
+        },
+        "applicationReceivedDate": "2022-06-17",
+        "applicationReference": "15XL1000011",
+        "applicationStatus": "UN_ALLOCATED",
+        "commissionerOfOath": false,
+        "courtApplicationCases": [
+          {
+            "caseStatus": "ACTIVE",
+            "isSJP": false,
+            "prosecutionCaseId": "666d4cc2-be8e-4b4a-82e7-369241daf185",
+            "prosecutionCaseIdentifier": {
+              "address": {
+                "address1": "Criminal Justice Department",
+                "address2": "Derbyshire Constabulary",
+                "address3": "Butterley Hall",
+                "address4": "Ripley",
+                "address5": "Derby",
+                "postcode": "DE5 3RS"
+              },
+              "contact": {
+                "primaryEmail": "CCSU@derbyshire.pnn.police.uk"
+              },
+              "majorCreditorCode": "PO30",
+              "prosecutionAuthorityCode": "DERPF",
+              "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+              "prosecutionAuthorityName": "Derbyshire Police",
+              "prosecutionAuthorityOUCode": "0300000",
+              "caseURN": "15XL1000011"
+            }
+          }
+        ],
+        "id": "9444b32a-f6b0-49e5-8bae-1a5912d723e3",
+        "respondents": [
+          {
+            "id": "1ac7412b-9a6c-4160-a37b-f2f4bf55de7f",
+            "notificationRequired": true,
+            "prosecutingAuthority": {
+              "address": {
+                "address1": "Criminal Justice Department",
+                "address2": "Derbyshire Constabulary",
+                "address3": "Butterley Hall",
+                "address4": "Ripley",
+                "address5": "Derby",
+                "postcode": "DE5 3RS"
+              },
+              "contact": {
+                "primaryEmail": "CCSU@derbyshire.pnn.police.uk"
+              },
+              "majorCreditorCode": "PO30",
+              "name": "Derbyshire Police",
+              "prosecutionAuthorityCode": "DERPF",
+              "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+              "prosecutionAuthorityOUCode": "0300000",
+              "welshName": "Heddlu Derbyshire"
+            },
+            "summonsRequired": false
+          }
+        ],
+        "subject": {
+          "id": "1ac7412b-9a6c-4160-a37b-f2f4bf55de7f",
+          "notificationRequired": true,
+          "prosecutingAuthority": {
+            "address": {
+              "address1": "Criminal Justice Department",
+              "address2": "Derbyshire Constabulary",
+              "address3": "Butterley Hall",
+              "address4": "Ripley",
+              "address5": "Derby",
+              "postcode": "DE5 3RS"
+            },
+            "contact": {
+              "primaryEmail": "CCSU@derbyshire.pnn.police.uk"
+            },
+            "majorCreditorCode": "PO30",
+            "name": "Derbyshire Police",
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "prosecutionAuthorityOUCode": "0300000",
+            "welshName": "Heddlu Derbyshire"
+          },
+          "summonsRequired": false
+        },
+        "type": {
+          "appealFlag": false,
+          "applicantAppellantFlag": false,
+          "boxworkNotifTemplate": "NOT_APPLICABLE",
+          "breachType": "NOT_APPLICABLE",
+          "categoryCode": "CO",
+          "code": "LA12507",
+          "commrOfOathFlag": false,
+          "courtExtractAvlFlag": true,
+          "courtOfAppealFlag": false,
+          "hearingCode": "APN",
+          "id": "097dbf28-12ce-34bf-a782-83036d0c24c2",
+          "jurisdiction": "EITHER",
+          "legislation": "Pursuant to Regulation 16 and 17 of the Criminal Legal Aid (Determinations by a Court and Choice of Representative) Regulations 2013.",
+          "legislationWelsh": "Yn unol â Rheoliadau 16 ac 17 o Reoliadau Cymorth Cyfreithiol Troseddol (Penderfyniadau gan Lys a Dewis Cynrychiolydd) 2013.",
+          "linkType": "LINKED",
+          "listingNotifTemplate": "POSTAL_NOTIFICATION",
+          "offenceActiveOrder": "NOT_APPLICABLE",
+          "pleaApplicableFlag": false,
+          "prosecutorThirdPartyFlag": false,
+          "spiOutApplicableFlag": true,
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "type": "Application to assign Advocate/QC",
+          "typeWelsh": "Cais i neilltuo Adfocad/CF"
+        }
+      }
+    ],
+    "courtCentre": {
+      "address": {
+        "address1": "176A Lavender Hill",
+        "address2": "London",
+        "address3": "",
+        "address4": "",
+        "address5": "",
+        "postcode": "SW11 1JU"
+      },
+      "code": "B01LY00",
+      "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+      "lja": {
+        "ljaCode": "2577",
+        "ljaName": "South West London Magistrates' Court"
+      },
+      "name": "Lavender Hill Magistrates' Court",
+      "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+      "roomName": "Courtroom 01"
+    },
+    "hasSharedResults": false,
+    "hearingDays": [
+      {
+        "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+        "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+        "isCancelled": false,
+        "listedDurationMinutes": 1,
+        "listingSequence": 0,
+        "sittingDay": "2022-11-26T10:00:00.000Z"
+      }
+    ],
+    "hearingLanguage": "ENGLISH",
+    "id": "c138fea6-8896-42a5-bb7a-61cfb0feecae",
+    "jurisdictionType": "MAGISTRATES",
+    "prosecutionCases": [
+      {
+        "caseStatus": "ACTIVE",
+        "cpsOrganisation": "A30AB00",
+        "defendants": [
+          {
+            "courtProceedingsInitiated": "2022-06-23T17:22:08.845Z",
+            "id": "2fd20f6d-1768-40f1-9b9a-28614421a25b",
+            "isYouth": false,
+            "masterDefendantId": "2fd20f6d-1768-40f1-9b9a-28614421a25b",
+            "offences": [
+              {
+                "arrestDate": "2005-11-19",
+                "chargeDate": "2004-12-09",
+                "count": 0,
+                "endorsableFlag": false,
+                "id": "bc712334-c389-4336-8649-dfbded52688e",
+                "listingNumber": 2,
+                "modeOfTrial": "Indictable",
+                "offenceCode": "TH68023A",
+                "offenceDateCode": 1,
+                "offenceDefinitionId": "9abe3e81-1de0-4c42-b0d2-2dc38f5c44c0",
+                "offenceLegislation": "Contrary to section 1(1) of the    Criminal Attempts Act 1981.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) Deddf Ymgeisiau i Droseddu 1981.",
+                "offenceTitle": "Attempt robbery",
+                "offenceTitleWelsh": "Ymgais i ysbeilio (robbery)",
+                "orderIndex": 500,
+                "startDate": "2004-12-09",
+                "wording": "Before 10 October 2020 at croydon drove a mechanically propelled vehicle, namely moj2478 on a road, namely Croydon whilst unfit to drive through drugs"
+              }
+            ],
+            "personDefendant": {
+              "arrestSummonsNumber": "Peter",
+              "bailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              },
+              "personDetails": {
+                "address": {
+                  "address1": "799",
+                  "address2": "StreetDescription",
+                  "address3": "Locality2O"
+                },
+                "dateOfBirth": "2001-02-01",
+                "documentationLanguageNeeds": "ENGLISH",
+                "firstName": "Deborah",
+                "gender": "MALE",
+                "hearingLanguageNeeds": "ENGLISH",
+                "lastName": "Kassulke",
+                "title": "Mr"
+              },
+              "policeBailStatus": {
+                "code": "C",
+                "description": "Custody",
+                "id": "12e69486-4d01-3403-a50a-7419ca040635"
+              }
+            },
+            "prosecutionAuthorityReference": "Peter",
+            "prosecutionCaseId": "666d4cc2-be8e-4b4a-82e7-369241daf185"
+          }
+        ],
+        "id": "666d4cc2-be8e-4b4a-82e7-369241daf185",
+        "initiationCode": "C",
+        "originatingOrganisation": "0300000",
+        "prosecutionCaseIdentifier": {
+          "address": {
+            "address1": "Criminal Justice Department",
+            "address2": "Derbyshire Constabulary",
+            "address3": "Butterley Hall",
+            "address4": "Ripley",
+            "address5": "Derby",
+            "postcode": "DE5 3RS"
+          },
+          "contact": {
+            "primaryEmail": "CCSU@derbyshire.pnn.police.uk"
+          },
+          "majorCreditorCode": "PO30",
+          "prosecutionAuthorityCode": "DERPF",
+          "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+          "prosecutionAuthorityName": "Derbyshire Police",
+          "prosecutionAuthorityOUCode": "0300000",
+          "caseURN": "15XL1000011"
+        }
+      }
+    ],
+    "shadowListedOffences": [
+    ],
+    "type": {
+      "description": "Application",
+      "id": "3449743b-95d6-4836-8941-57f588b52068"
+    }
+  }
+}

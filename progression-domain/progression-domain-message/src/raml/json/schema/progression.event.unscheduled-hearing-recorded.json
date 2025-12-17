@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/unscheduled-hearing-recorded.json",
+  "type": "object",
+  "properties": {
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "unscheduledHearingIds": {
+      "type": "array",
+      "additionalItems": false,
+      "items": {
+        "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+      }
+    }
+  },
+  "required": [
+    "hearingId",
+    "unscheduledHearingIds"
+  ],
+  "additionalProperties": false
+}

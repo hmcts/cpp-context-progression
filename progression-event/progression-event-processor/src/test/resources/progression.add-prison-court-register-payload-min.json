@@ -1,0 +1,18 @@
+{
+  "prisonCourtRegister": {
+    "hearingDate": "2020-07-10T09:00:00.000Z",
+    "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+    "defendant": {
+      "address": {
+        "address1": "Flat 1, Armageddon House"
+      },
+      "name": "Rikki Rikki Rikki Smith",
+      "prosecutionCasesOrApplications": [
+        {
+          "caseOrApplicationReference": "TVL53615C8RQ3"
+        }
+      ]
+    }
+  },
+  "defendantType": "Applicant"
+}

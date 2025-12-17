@@ -1,0 +1,181 @@
+{
+  "publishingCourt": {
+    "id": "4aa72ffc-c0c3-4750-93fa-d3dfe91b47c7",
+    "name": "Bristol Crown Court",
+    "welshName": "Llys y Goron Bryste",
+    "address": {
+      "address1": "9 Small Street",
+      "address2": "Bristol",
+      "postcode": "BS1 1DB"
+    }
+  },
+  "reference": "9012467",
+  "extractType": "StandaloneApplication",
+  "parentGuardian": {
+    "name": "John Harrison",
+    "address": {
+      "address1": "22 Acacia Avenue",
+      "address2": "Acacia Town",
+      "address3": "Acacia City",
+      "postCode": "AC1 4AC"
+    }
+  },
+  "applicant": {
+    "name": "John Harrison",
+    "synonym": "appellant",
+    "address": {
+      "address1": "22 Acacia Avenue",
+      "address2": "Acacia Town",
+      "address3": "Acacia City",
+      "postCode": "AC1 4AC"
+    }
+  },
+  "respondent": [
+    {
+      "name": "John Harrison",
+      "synonym": "respondent synonym",
+      "address": {
+        "address1": "22 Acacia Avenue",
+        "address2": "Acacia Town",
+        "address3": "Acacia City",
+        "postCode": "AC1 4AC"
+      }
+    },
+    {
+      "name": "Kevin Jackson",
+      "synonym": "respondent synonym",
+      "address": {
+        "address1": "22 Acacia Avenue",
+        "address2": "Acacia Town",
+        "address3": "Acacia City",
+        "postCode": "AC1 5AC"
+      }
+    }
+  ],
+  "hearings": [
+    {
+      "id": "14eba0d4-bd69-4b0b-b3f9-c4560c3e89a1",
+      "type": "PTP",
+      "jurisdictionType": "MAGISTRATES",
+      "reportingRestrictionReason": "Section 12 of the Human Rights Act 1998. Injunction granted",
+      "hearingDays": [
+        {
+          "day": "2018-08-24"
+        }
+      ],
+      "courtCentre": {
+        "id": "8f773ad7-c68f-4c00-a65f-c9810809214b",
+        "name": "Swansea Magistrates Court",
+        "welshName": "Llys Ynadon Abertawe",
+        "address": {
+          "address1": "Grove Place",
+          "address2": "Swansea",
+          "postcode": "SA1 5DB"
+        }
+      }
+    }
+  ],
+  "courtApplications":[
+    {
+      "applicationType":"Application to remove reporting restriction",
+      "decision":"Granted",
+      "decisionDate":"2018-08-24",
+      "response":"Proved",
+      "results":[
+        {
+          "isAvailableForCourtExtract":true,
+          "label":"Imprisonment",
+          "orderedDate":"2018-08-29",
+          "delegatedPowers":{
+            "firstName":"John",
+            "lastName":"K"
+          },
+          "judicialResultPrompts":[
+            {
+              "id":"2d6330a2-1f12-45fb-bb72-65f4c1215e9c",
+              "isAvailableForCourtExtract":true,
+              "label":"Prison",
+              "value":"HM Wormwood Scrubs"
+            },
+            {
+              "isAvailableForCourtExtract":true,
+              "label":"Period",
+              "value":"10"
+            }
+          ]
+        }
+      ],
+      "representation":
+        {
+          "applicantRepresentation":{
+            "name":"GT Stewart Solicitors & Advocates",
+            "synonym": "Solicitor",
+            "address":{
+              "address1":"13 Oxford Street",
+              "address2":"East Malling",
+              "postcode":"EM19 5UJ"
+            },
+            "contact":{
+              "work":"02085436798",
+              "primaryEmail":"info@gtstewart.co.uk"
+            },
+            "applicantCounsel":[
+              {
+                "name":"Mrs Margaret Janet Cell",
+                "role":"Leading Q.C.",
+                "attendanceDays":[
+                  {
+                    "day":"2018-08-24"
+                  },
+                  {
+                    "day":"2018-08-29"
+                  }
+                ]
+              }
+            ]
+          },
+          "respondentRepresentation":[ {
+            "name":"GT Stewart Solicitors & Advocates",
+            "synonym": "Solicitor",
+            "address":{
+              "address1":"13 Oxford Street",
+              "address2":"East Malling",
+              "postcode":"EM19 5UJ"
+            },
+            "contact":{
+              "work":"02085436798",
+              "primaryEmail":"info@gtstewart.co.uk"
+            },
+            "respondentCounsel":[
+              {
+                "name":"Mrs Margaret Janet Cell",
+                "role":"Leading Q.C.",
+                "attendanceDays":[
+                  {
+                    "day":"2018-08-24"
+                  },
+                  {
+                    "day":"2018-08-29"
+                  }
+                ]
+              }
+            ]
+          }]
+        }
+    }
+  ],
+  "courtDecisions": [
+    {
+      "judicialDisplayName": "Chair: Elizabeth Cole, Winger1: Sharon Reed-Jones, Winger2: Greg Walsh",
+      "roleDisplayName": "Magistrate",
+      "dates": [
+        {
+          "day": "2018-08-24"
+        },
+        {
+          "day": "2018-08-29"
+        }
+      ]
+    }
+  ]
+}

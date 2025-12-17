@@ -1,0 +1,53 @@
+{
+  "id": "df2c2845-5db8-4241-bb94-62d821bc02ae",
+  "section": "HEARING",
+  "documentCategory": "documentCategory",
+  "actionRequired": true,
+  "seqNum" : 10,
+  "validFrom":"1980-05-13",
+  "validTo":"1999-05-13",
+  "jurisdiction":"CROWN",
+  "sentToCps":true,
+  "courtDocumentTypeRBAC": {
+    "readUserGroups": [
+      {
+        "cppGroup": {
+          "id": "ff9fb2c8-2738-4d77-87e5-56b5781b4111",
+          "groupName": "Crown Court"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "1983-05-14"
+      }
+    ],
+    "uploadUserGroups": [
+      {
+        "cppGroup": {
+          "id": "ff9fb2c8-2738-4d77-87e5-56b5781b4112",
+          "groupName": "Aromatherapists"
+        },
+        "validFrom": "1983-05-15",
+        "validTo": "1983-05-16"
+      }
+    ],
+    "downloadUserGroups": [
+      {
+        "cppGroup": {
+          "id": "ff9fb2c8-2738-4d77-87e5-56b5781b4113",
+          "groupName": "People called Gerald"
+        },
+        "validFrom": "1983-05-17",
+        "validTo": "1983-05-18"
+      }
+    ],
+    "deleteUserGroups": [
+      {
+        "cppGroup": {
+          "id": "ff9fb2c8-2738-4d77-87e5-56b5781b4114",
+          "groupName": "Punk Rockers"
+        },
+        "validFrom": "1983-05-19",
+        "validTo": "1983-05-20"
+      }
+    ]
+  }
+}

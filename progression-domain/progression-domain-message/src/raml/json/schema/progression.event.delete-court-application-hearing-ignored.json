@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/progression.event.delete-court-application-hearing-ignored.json",
+  "type": "object",
+  "properties": {
+    "seedingHearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "applicationId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "seedingHearingId",
+    "applicationId",
+    "hearingId"
+  ],
+  "additionalProperties": false
+}

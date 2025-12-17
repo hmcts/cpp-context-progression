@@ -1,0 +1,296 @@
+{
+  "hearing": {
+    "courtCentre": {
+      "id": "COURT_ID",
+      "name": "00ObpXuu51",
+      "roomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+      "roomName": "JK2Y7hu0Tc",
+      "welshName": "3IpJDfdfhS",
+      "welshRoomName": "hm60SAXokc",
+      "code": "CODE 1"
+    },
+    "hearingDays": [
+      {
+        "courtCentreId": "COURT_ID",
+        "courtRoomId": "d7020fe0-cd97-4ce0-84c2-fd00ff0bc48a",
+        "listedDurationMinutes": 1531791578,
+        "listingSequence": 810249414,
+        "sittingDay": "2015-01-12T05:27:17.210Z"
+      }
+    ],
+    "courtApplications": [
+      {
+        "id": "CASE_ID_1",
+        "type": {
+          "id": "edbeaf31-2129-48e5-b372-3a592bbacc13",
+          "code": "AS14518",
+          "type": "Application for an order of reimbursement in relation to a closure order",
+          "legislation": "In accordance with section 16E of the Magistrates Courts Act 1980.",
+          "categoryCode": "VP",
+          "linkType": "STANDALONE",
+          "jurisdiction": "MAGISTRATES",
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "breachType" : "GENERIC_BREACH",
+          "appealFlag": false,
+          "applicantAppellantFlag" : false,
+          "pleaApplicableFlag" : false,
+          "commrOfOathFlag" : false,
+          "courtOfAppealFlag" : false,
+          "courtExtractAvlFlag" : false,
+          "prosecutorThirdPartyFlag" : false,
+          "spiOutApplicableFlag" : false,
+          "offenceActiveOrder" : "NOT_APPLICABLE"
+        },
+        "applicationReceivedDate": "2019-06-23",
+        "applicationReference": "Ref 1",
+        "applicationDecisionSoughtByDate": "2019-06-25",
+        "applicant": {
+          "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45",
+          "summonsRequired": false,
+          "notificationRequired": true
+        },
+        "applicationStatus": "LISTED",
+        "subject": {
+          "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+          "summonsRequired": false,
+          "notificationRequired": true,
+          "personDetails":{
+            "firstName": "M",
+            "lastName": "G",
+            "gender": "NOT_SPECIFIED"
+          }
+        }
+      },
+      {
+        "id": "CASE_ID_2",
+        "type": {
+          "id": "50c2e2c8-5c56-4d29-bb67-686511059a69",
+          "code": "AS14518",
+          "type": "Application for an order of reimbursement in relation to a closure order",
+          "legislation": "In accordance with section 16E of the Magistrates Courts Act 1980.",
+          "categoryCode": "VP",
+          "linkType": "STANDALONE",
+          "jurisdiction": "CROWN",
+          "summonsTemplateType": "NOT_APPLICABLE",
+          "breachType" : "GENERIC_BREACH",
+          "appealFlag": false,
+          "applicantAppellantFlag" : false,
+          "pleaApplicableFlag" : false,
+          "commrOfOathFlag" : false,
+          "courtOfAppealFlag" : false,
+          "courtExtractAvlFlag" : false,
+          "prosecutorThirdPartyFlag" : false,
+          "spiOutApplicableFlag" : false,
+          "offenceActiveOrder" : "NOT_APPLICABLE"
+        },
+        "applicationReceivedDate": "2019-06-28",
+        "applicationReference": "Ref 1",
+        "applicationDecisionSoughtByDate": "2019-06-26",
+        "applicant": {
+          "id": "e5f59a16-5e0c-4732-b59c-ca1092ed9f45",
+          "summonsRequired": false,
+          "notificationRequired": true
+        },
+        "applicationStatus": "LISTED",
+        "subject": {
+          "id": "cd3b251d-20e8-44ad-b95e-2f81afde56a4",
+          "summonsRequired": false,
+          "notificationRequired": true,
+          "personDetails":{
+            "firstName": "M",
+            "lastName": "G",
+            "gender": "NOT_SPECIFIED"
+          }
+        }
+      }
+    ],
+    "judiciary": [
+      {
+        "judicialId": "66e93f60-5a48-40d5-b406-37a53ed6d5c2",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder1"
+        }
+      },
+      {
+        "judicialId": "79a91058-2235-42ec-a339-860d8f46ab58",
+        "judicialRoleType": {
+          "judicialRoleTypeId": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+          "judiciaryType": "Recorder"
+        }
+      }
+    ],
+    "id": "cf73207f-3ced-488a-82a0-3fba79c2ce04",
+    "jurisdictionType": "CROWN",
+    "estimatedDuration": "20 Minutes",
+    "prosecutionCases": [
+      {
+        "defendants": [
+          {
+            "id": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "masterDefendantId": "5bdab12c-dfa5-4a7a-b302-21ca74652a96",
+            "prosecutionCaseId": "4dfb3d1b-3d55-4953-bee0-a7a4f30cae1f",
+            "courtProceedingsInitiated": "2020-01-12T05:27:17.210Z",
+            "offences": [
+              {
+                "id": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                "offenceDefinitionId": "e1d32d9d-29ec-4934-a932-22a50f223966",
+                "offenceTitle": "bad behavior",
+                "wording": "No Travel Card",
+                "wordingWelsh": "No Travel Card In Welsh",
+                "startDate": "2018-01-01",
+                "endDate": "2018-01-01",
+                "arrestDate": "2018-01-01",
+                "chargeDate": "2018-01-01",
+                "orderIndex": 1,
+                "offenceCode": "TTH105HY",
+                "count": 0,
+                "notifiedPlea": {
+                  "offenceId": "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "notifiedPleaDate": "2018-04-01",
+                  "notifiedPleaValue": "NOTIFIED_GUILTY"
+                },
+                "offenceFacts": {
+                  "vehicleRegistration": "AA12345",
+                  "alcoholReadingAmount": 111,
+                  "alcoholReadingMethodCode": "2222"
+                },
+                "judicialResults": [
+                  {
+                    "orderedHearingId": "00000000-0000-0000-0000-000000000000",
+                    "label": "a",
+                    "welshLabel": "a",
+                    "isAdjournmentResult": true,
+                    "isFinancialResult": true,
+                    "isConvictedResult": true,
+                    "isAvailableForCourtExtract": true,
+                    "amendmentDate": "1000-01-01",
+                    "amendmentReason": "a",
+                    "cjsCode": "a",
+                    "rank": 0.1,
+                    "orderedDate": "1000-01-01",
+                    "lastSharedDateTime": "a",
+                    "alwaysPublished": false,
+                    "publishedAsAPrompt": false,
+                    "excludedFromResults":false,
+                    "judicialResultId": "7c19b67e-78e3-4ca6-8c9f-cf095ad7615b",
+                    "judicialResultTypeId": "554c2622-c1cc-459e-a98d-b7f317ab065c",
+                    "lifeDuration": false,
+                    "terminatesOffenceProceedings": false,
+                    "publishedForNows": false,
+                    "d20": false,
+                    "urgent": false,
+                    "resultText": "Adjournment reason: At request of the prosecution\n",
+                    "rollUpPrompts": false,
+                    "courtClerk": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "delegatedPowers": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "fourEyesApproval": {
+                      "userId": "00000000-0000-0000-0000-000000000000",
+                      "firstName": "a",
+                      "lastName": "a"
+                    },
+                    "approvedDate": "1000-01-01",
+                    "usergroups": [
+                      "a"
+                    ],
+                    "category": "FINAL",
+                    "nextHearing": {
+                      "adjournmentReason": "adjournmentReason",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "QEII Law Courts",
+                          "address2": "Derby Square",
+                          "address3": "Liverpool",
+                          "postcode": "L2 1XA"
+                        },
+                        "courtHearingLocation": "C05LV00",
+                        "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                        "name": "Liverpool Crown Court",
+                        "psaCode": 1810,
+                        "roomId": "fbe3ca1a-6be6-3bd5-86e8-fc879aa5e3e7",
+                        "roomName": "Crown Court 5-3",
+                        "welshName": "Llys Y Goron Lerpwl"
+                      },
+                      "estimatedMinutes": 20,
+                      "estimatedDuration": "20 Minutes",
+                      "jurisdictionType": "CROWN",
+                      "listedStartDateTime": "2020-07-02T14:07:00.000Z",
+                      "type": {
+                        "description": "Sentence",
+                        "id": "5ae4c090-0f70-4694-b4fc-707633d2b430"
+                      }
+                    },
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "d85cc2d7-66c8-471e-b6ff-c1bc60c6cdac",
+                        "label": "Estimated duration",
+                        "promptReference": "HEST",
+                        "promptSequence": 700,
+                        "type": "INT",
+                        "usergroups": [
+                          "Court Clerks",
+                          "Legal Advisers"
+                        ],
+                        "value": "20 Minutes",
+                        "welshLabel": ""
+                      }
+                    ]
+                  }
+                ],
+                "verdict" : {
+                  "offenceId" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f1",
+                  "verdictDate" : "2019-01-01",
+                  "verdictType" : {
+                    "id" : "3789ab16-0bb7-4ef1-87ef-c936bf0364f2",
+                    "category" : "category",
+                    "categoryType" : "categoryType"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "id": "CASE_ID_3",
+        "initiationCode": "S",
+        "prosecutionCaseIdentifier": {
+          "prosecutionAuthorityCode": "4ZKOPhuyh5",
+          "prosecutionAuthorityId": "e677b61a-3360-48b0-8eee-649911475106",
+          "caseURN": "qriGUBZKR5"
+        }
+      }
+    ],
+    "type": {
+      "description": "qm1rJUZb0f",
+      "id": "9623a7ac-25bb-43f8-b219-2ae4cd8b05db"
+    },
+    "isBoxHearing": true,
+    "isVirtualBoxHearing": true,
+    "defenceCounsels" : [
+      {
+        "attendanceDays": [
+          "2020-01-02"
+        ],
+        "defendants": [
+          "9c52f847-4125-4438-b855-9c264695ad33"
+        ],
+        "firstName": "acsc",
+        "id": "dba138e9-4ba9-4ff5-82e8-c646e8916d44",
+        "lastName": "CZCXz",
+        "middleName": "",
+        "status": "zczc",
+        "title": ""
+      }
+    ]
+  },
+  "hearingListingStatus": "SENT_FOR_LISTING"
+}

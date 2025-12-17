@@ -1,0 +1,36 @@
+{
+  "hearingId": "ab746921-d839-4867-bcf9-b41db8ebc852",
+  "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a",
+  "defendants": [
+    {
+      "offences": [
+        {
+          "offenceCode": "TFL123",
+          "offenceTitle": "TFL Ticket Dodger",
+          "count": 0,
+          "id": "fe261841-4f77-49a3-b916-ff403cc40a77",
+          "wording": "TFL ticket dodged",
+          "offenceDefinitionId": "bfd0a307-7c59-43f9-8713-d568fa4e4fff",
+          "startDate": "2019-05-01"
+        }
+      ],
+      "id": "a7fc1cf1-7729-4839-aa4b-ed76d2fabacc",
+      "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+    },
+    {
+      "offences": [
+        {
+          "offenceCode": "TFL123",
+          "offenceTitle": "TFL Ticket Dodger",
+          "count": 0,
+          "id": "fe261841-4f77-49a3-b916-ff403cc40a77",
+          "wording": "TFL ticket dodged",
+          "offenceDefinitionId": "bfd0a307-7c59-43f9-8713-d568fa4e4fff",
+          "startDate": "2019-05-01"
+        }
+      ],
+      "id": "ff9fb1f4-b8d3-4052-b02c-77521bc3b14c",
+      "prosecutionCaseId": "2d49475d-0b81-42e4-b32e-3cc6a090825a"
+    }
+  ]
+}

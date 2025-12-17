@@ -1,0 +1,43 @@
+{
+  "_metadata": {
+    "id": "c866cbba-2a63-11e6-b67b-9e71128cae77",
+    "name": "public.progression.events.sentence-hearing-date-added",
+    "correlation": {
+      "client": "correlationId"
+    }
+  },
+  "caseId": "CASE_ID",
+  "urn": "87GD9945217",
+  "hearings": [
+    {
+      "id": "0baecac5-222b-402d-9047-84803679edaf",
+      "courtCentreId": "Liverpool Crown Court",
+      "type": "TRIAL",
+      "startDate": "2018-06-01",
+      "estimateMinutes": 7200,
+      "defendants": [
+        {
+          "id": "0baecac5-222b-402d-9047-84803679edac",
+          "personId": "0baecac5-222b-402d-9047-84803679edad",
+          "firstName": "David",
+          "lastName": "Lloyd",
+          "dateOfBirth": "1995-03-23",
+          "bailStatus": "IN_CUSTODY",
+          "defenceOrganisation": "Solicitor XYZ",
+          "offences": [
+            {
+              "id": "0baecac5-222b-402d-9047-84803679edad",
+              "offenceCode": "OF61131",
+              "startDate": "2016-06-21",
+              "endDate": "2017-08-01",
+              "statementOfOffence": {
+                "title": "Wounding with intent",
+                "legislation": "legislation"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

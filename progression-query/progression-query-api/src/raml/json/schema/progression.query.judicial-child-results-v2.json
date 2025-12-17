@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/courts/progression/query/progression.query.judicial-child-results-v2.json",
+  "type": "object",
+  "properties": {
+    "latestEndDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "judicialChildResults": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/judicialChildResult"
+      }
+    },
+    "definitions": {
+      "judicialChildResult": {
+        "type": "object",
+        "properties": {
+          "judicialResultId": {
+            "$ref": "courtsDefinitions.json#/definitions/uuid"
+          },
+          "judicialResultTypeId": {
+            "$ref": "courtsDefinitions.json#/definitions/uuid"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "judicialResultId",
+          "judicialResultTypeId",
+          "label"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "judicialChildResults",
+    "latestEndDate"
+  ],
+  "additionalProperties": false
+}

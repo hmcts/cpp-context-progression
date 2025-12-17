@@ -1,0 +1,51 @@
+{
+  "aliases": [
+    {
+      "firstName": "MAX",
+      "lastName": "parker"
+    }
+  ],
+  "id": "9ec9d81f-5946-4071-8b22-5eff665f00bb",
+  "masterDefendantId": "9ec9d81f-5946-4071-8b22-5eff665f00bb",
+  "personDefendant": {
+    "arrestSummonsNumber": "2400000000000699314X",
+    "bailStatus": {
+      "code": "C",
+      "description": "Custody",
+      "id": "12e69486-4d01-3403-a50a-7419ca040635"
+    },
+    "custodialEstablishment": {
+      "custody": "Prison",
+      "id": "816cee64-ed56-3885-835b-8a1f8c25e0a6",
+      "name": "HMP/YOI Bullingdon"
+    },
+    "driverNumber": "DRAPE607283P98YR",
+    "personDetails": {
+      "address": {
+        "address1": "NFA NFA",
+        "address4": "Oxford",
+        "address5": "Oxfordshire",
+        "postcode": "ox5 1nz"
+      },
+      "contact": {
+        "home": "07460756916",
+        "primaryEmail": "pparkercfc@gmail.com"
+      },
+      "dateOfBirth": "1963-07-28",
+      "documentationLanguageNeeds": "ENGLISH",
+      "ethnicity": {
+        "selfDefinedEthnicityCode": "W1",
+        "selfDefinedEthnicityDescription": "British",
+        "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+      },
+      "firstName": "MAX",
+      "gender": "MALE",
+      "hearingLanguageNeeds": "ENGLISH",
+      "lastName": "parker",
+      "nationalityDescription": "Unknown",
+      "nationalityId": "22ef7a73-df50-4349-8c72-ca3b9ace6363"
+    }
+  },
+  "pncId": "19780029094K",
+  "prosecutionCaseId": "54a0417b-bc24-4307-9907-b22b05491038"
+}

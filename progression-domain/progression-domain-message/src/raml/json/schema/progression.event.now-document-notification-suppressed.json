@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://moj.gov.uk/cpp/progression/events/progression.event.now-document-notification-suppressed.json",
+  "description": "public event from hearing for each now document that is required to be generated and processed",
+  "type": "object",
+  "properties": {
+    "nowDocumentNotificationSuppressed": {
+      "$ref": "http://justice.gov.uk/core/courts/nowdocument/now-notification-suppressed.json#"
+    }
+  },
+
+  "required": [
+    "nowDocumentNotificationSuppressed"
+  ],
+  "additionalProperties": false
+}

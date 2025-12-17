@@ -1,0 +1,91 @@
+{
+  "publishCourtListType": "FIRM",
+  "issueDate": "2023-02-15",
+  "weekCommencing": true,
+  "ljaCode": "MERS",
+  "ljaName": "Merseyside LJA",
+  "courtName": "Croydon Crown Court",
+  "courtAddress": {
+    "line1": "The Law Courts",
+    "line2": "Altyre Road",
+    "line3": "Croydon",
+    "postCode": "CR9 5AB",
+    "isWelsh": false
+  },
+  "weekCommencingStartDate": "2023-02-20",
+  "weekCommencingEndDate": "2023-02-24",
+  "addressee": {
+    "name": "Premier Solicitor LLP",
+    "address": {
+      "line1": "45 Church Road",
+      "line4": "Liverpool",
+      "postCode": "L3 1SK",
+      "isWelsh": false
+    }
+  },
+  "hearingByDates": [
+    {
+      "hearingDate": "2023-02-20",
+      "hearingByCourtrooms": [
+        {
+          "courtroomName": "Courtroom 01",
+          "hearingByTimes": [
+            {
+              "hearingTime": "10:00 am",
+              "hearings": [
+                {
+                  "caseReference": "91GD6403223",
+                  "hearingType": "First hearing",
+                  "defendants": [
+                    {
+                      "defendantName": "Sweet And Jones Associates"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "hearingByWeekCommencingDate": {
+    "weekCommencingStartDate": "2023-02-20",
+    "weekCommencingEndDate": "2023-02-24",
+    "hearingByCourtrooms": [
+      {
+        "courtroomName": "Courtroom 03",
+        "hearings": [
+          {
+            "caseReference": "CVJVHKJGJC",
+            "hearingType": "Further Case Management",
+            "defendants": [
+              {
+                "defendantName": "Walt Milk Product"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "hearingByWeekCommencingDateNoCourtroom": {
+    "weekCommencingStartDate": "2023-02-20",
+    "weekCommencingEndDate": "2023-02-24",
+    "hearingByCourtrooms": [
+      {
+        "hearings": [
+          {
+            "caseReference": "92GD4165920",
+            "hearingType": "Sentence",
+            "defendants": [
+              {
+                "defendantName": "Sam And Jones Associates"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

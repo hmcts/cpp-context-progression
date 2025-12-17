@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "isPSROrdered": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "caseId",
+    "isPSROrdered"
+  ]
+
+}

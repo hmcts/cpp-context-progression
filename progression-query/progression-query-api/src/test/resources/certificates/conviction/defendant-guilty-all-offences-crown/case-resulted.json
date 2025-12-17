@@ -1,0 +1,594 @@
+{
+  "prosecutionCase": {
+    "caseStatus": "ACTIVE",
+    "cpsOrganisation": "A30AB00",
+    "defendants": [
+      {
+        "courtProceedingsInitiated": "2025-03-31T12:49:24.822Z",
+        "id": "{{defendantId}}",
+        "masterDefendantId": "{{defendantId}}",
+        "offences": [
+          {
+            "arrestDate": "2021-01-01",
+            "chargeDate": "2020-12-28",
+            "convictionDate": "2025-04-01",
+            "count": 0,
+            "dateHeldInCustodySince": "2025-04-01",
+            "endorsableFlag": false,
+            "id": "363cc82c-9871-46e5-865d-ae06f95733ac",
+            "isDisposed": false,
+            "judicialResults": [
+              {
+                "alwaysPublished": false,
+                "canBeSubjectOfBreach": false,
+                "canBeSubjectOfVariation": false,
+                "canExtendActiveOrder": false,
+                "category": "INTERMEDIARY",
+                "cjsCode": "4506",
+                "courtClerk": {
+                  "firstName": "Erica",
+                  "lastName": "Wilson",
+                  "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                },
+                "d20": false,
+                "excludedFromResults": false,
+                "isAdjournmentResult": false,
+                "isAvailableForCourtExtract": true,
+                "isConvictedResult": false,
+                "isDeleted": false,
+                "isFinancialResult": false,
+                "isNewAmendment": true,
+                "isUnscheduled": false,
+                "judicialResultId": "f01d9dff-8999-4822-80be-8b992baac71d",
+                "judicialResultPrompts": [
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                    "label": "Next hearing in magistrates' court",
+                    "promptReference": "6aefb258-22a8-42c1-a85c-a6c5fa8f1fc9",
+                    "promptSequence": 0,
+                    "usergroups": [],
+                    "value": "Date of hearing:01/04/2025\nTime of hearing:10:00\nCourthouse organisation name:Lavender Hill Magistrates' Court\nCourthouse address line 1:176A Lavender Hill\nCourthouse address line 2:London\nCourthouse post code:SW11 1JU\nCourtroom:Courtroom 01\nHearing type:Trial - no witnesses\nEstimated duration:20 MINUTES\nBooking reference:58de45d4-47a2-4c61-9bd7-18c04a7630a3",
+                    "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "isFinancialImposition": false,
+                    "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                    "label": "Defendant to attend the next hearing",
+                    "promptReference": "defendantToAttendTheNextHearing",
+                    "promptSequence": 100,
+                    "type": "BOOLEAN",
+                    "usergroups": [],
+                    "value": "true",
+                    "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                    "welshValue": "true"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                    "label": "To attend or a warrant to issue",
+                    "promptReference": "bf65836b-218a-4efe-abef-b2fbd62f5213",
+                    "promptSequence": 200,
+                    "qualifier": "GE",
+                    "usergroups": [],
+                    "value": "",
+                    "welshLabel": "Codi neu gyhoeddi gwarant"
+                  },
+                  {
+                    "courtExtract": "Y",
+                    "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                    "label": "Adjournment reasons",
+                    "promptReference": "03e78990-d6f1-4b6c-a5a7-53c19eb0c70c",
+                    "promptSequence": 300,
+                    "usergroups": [],
+                    "value": "",
+                    "welshLabel": "Rheswm dros ohirio:"
+                  }
+                ],
+                "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "label": "Adjournment",
+                "lastSharedDateTime": "2025-03-31",
+                "level": "O",
+                "lifeDuration": false,
+                "nextHearing": {
+                  "adjournmentReason": "To attend or a warrant to issue",
+                  "bookingReference": "58de45d4-47a2-4c61-9bd7-18c04a7630a3",
+                  "courtCentre": {
+                    "address": {
+                      "address1": "176A Lavender Hill",
+                      "address2": "London",
+                      "postcode": "SW11 1JU"
+                    },
+                    "code": "B01LY00",
+                    "courtHearingLocation": "B01LY01",
+                    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                    "name": "Lavender Hill Magistrates' Court",
+                    "psaCode": 2577,
+                    "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                    "roomName": "Courtroom 01",
+                    "welshName": "Llys Ynadon Lavender Hill"
+                  },
+                  "estimatedDuration": "20 MINUTES",
+                  "estimatedMinutes": 20,
+                  "jurisdictionType": "MAGISTRATES",
+                  "listedStartDateTime": "2025-04-01T09:00:00.000Z",
+                  "type": {
+                    "description": "Trial - no witnesses",
+                    "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                  }
+                },
+                "orderedDate": "2025-04-01",
+                "orderedHearingId": "{{hearingId}}",
+                "policeSubjectLineTitle": "Adjourned",
+                "postHearingCustodyStatus": "A",
+                "preserveActiveOrder": false,
+                "publishedAsAPrompt": false,
+                "publishedForNows": false,
+                "qualifier": "GE",
+                "rank": 194200,
+                "resultText": "A - Adjournment\nAdjourned for hearing on 01/04/2025 at 10:00 in Courtroom 01, Lavender Hill Magistrates' Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                "resultWording": "",
+                "rollUpPrompts": true,
+                "rootJudicialResultId": "f01d9dff-8999-4822-80be-8b992baac71d",
+                "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                "terminatesOffenceProceedings": false,
+                "urgent": false,
+                "usergroups": [],
+                "welshLabel": "Gohiriad"
+              }
+            ],
+            "lastAdjournDate": "2025-04-01",
+            "lastAdjournedHearingType": "To attend or a warrant to issue",
+            "listingNumber": 2,
+            "maxPenalty": "EW:6M &/or Ultd Fine",
+            "modeOfTrial": "Either Way",
+            "offenceCode": "TH68010",
+            "offenceDateCode": 1,
+            "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+            "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+            "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+            "offenceTitle": "Theft from a shop",
+            "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+            "orderIndex": 1,
+            "proceedingsConcluded": false,
+            "startDate": "2019-11-28",
+            "wording": "Theft of pedal cycle."
+          }
+        ],
+        "personDefendant": {
+          "arrestSummonsNumber": "D28GC01127655557",
+          "bailConditions": "",
+          "bailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          },
+          "driverNumber": "VANFL002222OW9PH",
+          "personDetails": {
+            "address": {
+              "address1": "9999A9899AAAA",
+              "address2": "Woodlane4",
+              "address3": "addressline 3",
+              "address4": "Bristol",
+              "address5": "Avon",
+              "postcode": "BS1 1JQ"
+            },
+            "contact": {
+              "home": "0207655557",
+              "mobile": "07777655557",
+              "primaryEmail": "firstName.lastName7655557@gmail.com"
+            },
+            "dateOfBirth": "1972-11-01",
+            "documentationLanguageNeeds": "ENGLISH",
+            "ethnicity": {
+              "observedEthnicityCode": "1",
+              "observedEthnicityDescription": "White",
+              "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "selfDefinedEthnicityCode": "W1",
+              "selfDefinedEthnicityDescription": "British",
+              "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+            },
+            "firstName": "Kallie",
+            "gender": "MALE",
+            "hearingLanguageNeeds": "ENGLISH",
+            "lastName": "Kerluke",
+            "title": "Mr"
+          },
+          "policeBailStatus": {
+            "code": "C",
+            "description": "Custody",
+            "id": "12e69486-4d01-3403-a50a-7419ca040635"
+          }
+        },
+        "proceedingsConcluded": false,
+        "prosecutionAuthorityReference": "D28GC01127655557",
+        "prosecutionCaseId": "{{caseId}}"
+      }
+    ],
+    "id": "{{caseId}}",
+    "initiationCode": "C",
+    "originatingOrganisation": "G94DV00",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Finance Operations",
+        "address2": "C3 East",
+        "address3": "DVLA",
+        "address4": "Longview Road",
+        "address5": "Swansea",
+        "postcode": "SA6 7JL"
+      },
+      "contact": {
+        "primaryEmail": "sjp@dvla.gov.uk"
+      },
+      "majorCreditorCode": "DVL2",
+      "prosecutionAuthorityCode": "DVLA",
+      "prosecutionAuthorityId": "6ae4b163-658b-3ae2-a66d-43401cac2f96",
+      "prosecutionAuthorityName": "Driver and Vehicle Licensing Agency",
+      "prosecutionAuthorityOUCode": "G94DV00",
+      "caseURN": "28DI7655557"
+    }
+  },
+  "hearingsAtAGlance": {
+    "courtApplications": [],
+    "defendantHearings": [
+      {
+        "defendantId": "{{defendantId}}",
+        "defendantName": "Kallie Kerluke",
+        "hearingIds": [
+          "{{hearingId}}",
+          "8bd86722-e4d2-4aa4-8b00-da3ba9684920"
+        ]
+      }
+    ],
+    "hearings": [
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendantAttendance": [
+          {
+            "attendanceDays": [
+              {
+                "attendanceType": "IN_PERSON",
+                "day": "2025-04-01"
+              }
+            ],
+            "defendantId": "{{defendantId}}"
+          }
+        ],
+        "defendants": [
+          {
+            "address": {
+              "address1": "9999A9899AAAA",
+              "address2": "Woodlane4",
+              "address3": "addressline 3",
+              "address4": "Bristol",
+              "address5": "Avon",
+              "postcode": "BS1 1JQ"
+            },
+            "age": "52",
+            "courtApplications": [],
+            "dateOfBirth": "1972-11-01",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "{{defendantId}}"
+            },
+            "id": "{{defendantId}}",
+            "judicialResults": [],
+            "name": "Kallie Kerluke",
+            "offences": [
+              {
+                "count": 0,
+                "id": "363cc82c-9871-46e5-865d-ae06f95733ac",
+                "judicialResults": [
+                  {
+                    "alwaysPublished": false,
+                    "canBeSubjectOfBreach": false,
+                    "canBeSubjectOfVariation": false,
+                    "canExtendActiveOrder": false,
+                    "category": "INTERMEDIARY",
+                    "cjsCode": "4506",
+                    "courtClerk": {
+                      "firstName": "Erica",
+                      "lastName": "Wilson",
+                      "userId": "a085e359-6069-4694-8820-7810e7dfe762"
+                    },
+                    "d20": false,
+                    "excludedFromResults": false,
+                    "isAdjournmentResult": false,
+                    "isAvailableForCourtExtract": true,
+                    "isConvictedResult": false,
+                    "isDeleted": false,
+                    "isFinancialResult": false,
+                    "isNewAmendment": true,
+                    "isUnscheduled": false,
+                    "judicialResultId": "f01d9dff-8999-4822-80be-8b992baac71d",
+                    "judicialResultPrompts": [
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "70c98fa6-804d-11e8-adc0-fa7ae01bbebc",
+                        "label": "Next hearing in magistrates' court",
+                        "promptReference": "6aefb258-22a8-42c1-a85c-a6c5fa8f1fc9",
+                        "promptSequence": 0,
+                        "usergroups": [],
+                        "value": "Date of hearing:01/04/2025\nTime of hearing:10:00\nCourthouse organisation name:Lavender Hill Magistrates' Court\nCourthouse address line 1:176A Lavender Hill\nCourthouse address line 2:London\nCourthouse post code:SW11 1JU\nCourtroom:Courtroom 01\nHearing type:Trial - no witnesses\nEstimated duration:20 MINUTES\nBooking reference:58de45d4-47a2-4c61-9bd7-18c04a7630a3",
+                        "welshLabel": "Ni wnaeth y Llys barhau â’r treial yn absenoldeb y diffynnydd"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "isFinancialImposition": false,
+                        "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                        "label": "Defendant to attend the next hearing",
+                        "promptReference": "defendantToAttendTheNextHearing",
+                        "promptSequence": 100,
+                        "type": "BOOLEAN",
+                        "usergroups": [],
+                        "value": "true",
+                        "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                        "welshValue": "true"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "69ff04d5-84e8-4a61-8478-82c2999c1969",
+                        "label": "To attend or a warrant to issue",
+                        "promptReference": "bf65836b-218a-4efe-abef-b2fbd62f5213",
+                        "promptSequence": 200,
+                        "qualifier": "GE",
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Codi neu gyhoeddi gwarant"
+                      },
+                      {
+                        "courtExtract": "Y",
+                        "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                        "label": "Adjournment reasons",
+                        "promptReference": "03e78990-d6f1-4b6c-a5a7-53c19eb0c70c",
+                        "promptSequence": 300,
+                        "usergroups": [],
+                        "value": "",
+                        "welshLabel": "Rheswm dros ohirio:"
+                      }
+                    ],
+                    "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "label": "Adjournment",
+                    "lastSharedDateTime": "2025-03-31",
+                    "level": "O",
+                    "lifeDuration": false,
+                    "nextHearing": {
+                      "adjournmentReason": "To attend or a warrant to issue",
+                      "bookingReference": "58de45d4-47a2-4c61-9bd7-18c04a7630a3",
+                      "courtCentre": {
+                        "address": {
+                          "address1": "176A Lavender Hill",
+                          "address2": "London",
+                          "postcode": "SW11 1JU"
+                        },
+                        "code": "B01LY00",
+                        "courtHearingLocation": "B01LY01",
+                        "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+                        "name": "Lavender Hill Magistrates' Court",
+                        "psaCode": 2577,
+                        "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+                        "roomName": "Courtroom 01",
+                        "welshName": "Llys Ynadon Lavender Hill"
+                      },
+                      "estimatedDuration": "20 MINUTES",
+                      "estimatedMinutes": 20,
+                      "jurisdictionType": "MAGISTRATES",
+                      "listedStartDateTime": "2025-04-01T09:00:00.000Z",
+                      "type": {
+                        "description": "Trial - no witnesses",
+                        "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+                      }
+                    },
+                    "orderedDate": "2025-04-01",
+                    "orderedHearingId": "{{hearingId}}",
+                    "policeSubjectLineTitle": "Adjourned",
+                    "postHearingCustodyStatus": "A",
+                    "preserveActiveOrder": false,
+                    "publishedAsAPrompt": false,
+                    "publishedForNows": false,
+                    "qualifier": "GE",
+                    "rank": 194200,
+                    "resultText": "A - Adjournment\nAdjourned for hearing on 01/04/2025 at 10:00 in Courtroom 01, Lavender Hill Magistrates' Court. Reason: To attend or a warrant to issue. Defendant to attend the next hearing.",
+                    "resultWording": "",
+                    "rollUpPrompts": true,
+                    "rootJudicialResultId": "f01d9dff-8999-4822-80be-8b992baac71d",
+                    "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+                    "terminatesOffenceProceedings": false,
+                    "urgent": false,
+                    "usergroups": [],
+                    "welshLabel": "Gohiriad"
+                  }
+                ],
+                "offenceCode": "TH68010",
+                "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "pleas": [],
+                "proceedingsConcluded": false,
+                "startDate": "2019-11-28",
+                "verdicts": [],
+                "wording": "Theft of pedal cycle."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "hasSharedResults": false,
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-03-31T23:30:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_RESULTED",
+        "id": "{{hearingId}}",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "First hearing",
+          "id": "4a0e892d-c0c5-3c51-95b8-704d8c781776"
+        }
+      },
+      {
+        "courtCentre": {
+          "address": {
+            "address1": "176A Lavender Hill",
+            "address2": "London",
+            "address3": "",
+            "address4": "",
+            "address5": "",
+            "postcode": "SW11 1JU"
+          },
+          "code": "B01LY00",
+          "courtHearingLocation": "B01LY01",
+          "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+          "lja": {
+            "ljaCode": "2577",
+            "ljaName": "South West London Magistrates' Court"
+          },
+          "name": "Lavender Hill Magistrates' Court",
+          "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+          "roomName": "Courtroom 01"
+        },
+        "defendants": [
+          {
+            "address": {
+              "address1": "9999A9899AAAA",
+              "address2": "Woodlane4",
+              "address3": "addressline 3",
+              "address4": "Bristol",
+              "address5": "Avon",
+              "postcode": "BS1 1JQ"
+            },
+            "age": "52",
+            "courtApplications": [],
+            "dateOfBirth": "1972-11-01",
+            "defenceOrganisation": {
+              "defenceCounsels": [],
+              "defendantId": "{{defendantId}}"
+            },
+            "id": "{{defendantId}}",
+            "judicialResults": [],
+            "name": "Kallie Kerluke",
+            "offences": [
+              {
+                "count": 0,
+                "id": "363cc82c-9871-46e5-865d-ae06f95733ac",
+                "judicialResults": [],
+                "offenceCode": "TH68010",
+                "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+                "offenceTitle": "Theft from a shop",
+                "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+                "orderIndex": 1,
+                "pleas": [
+                  {
+                    "offenceId": "363cc82c-9871-46e5-865d-ae06f95733ac",
+                    "originatingHearingId": "8bd86722-e4d2-4aa4-8b00-da3ba9684920",
+                    "pleaDate": "2025-04-01",
+                    "pleaValue": "GUILTY"
+                  }
+                ],
+                "startDate": "2019-11-28",
+                "verdicts": [
+                  {
+                    "isDeleted": false,
+                    "jurors": {
+                      "numberOfJurors": 12,
+                      "numberOfSplitJurors": 0,
+                      "unanimous": true
+                    },
+                    "lesserOrAlternativeOffence": {
+                      "offenceCode": "TH68010",
+                      "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+                      "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+                      "offenceTitle": "Theft from a shop"
+                    },
+                    "offenceId": "363cc82c-9871-46e5-865d-ae06f95733ac",
+                    "originatingHearingId": "8bd86722-e4d2-4aa4-8b00-da3ba9684920",
+                    "verdictDate": "2025-04-01",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                    }
+                  }
+                ],
+                "wording": "Theft of pedal cycle."
+              }
+            ]
+          }
+        ],
+        "hasResultAmended": false,
+        "hearingDays": [
+          {
+            "courtCentreId": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "courtRoomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8",
+            "isCancelled": false,
+            "listedDurationMinutes": 20,
+            "listingSequence": 0,
+            "sittingDay": "2025-04-01T09:00:00.000Z"
+          }
+        ],
+        "hearingListingStatus": "HEARING_INITIALISED",
+        "id": "8bd86722-e4d2-4aa4-8b00-da3ba9684920",
+        "jurisdictionType": "MAGISTRATES",
+        "type": {
+          "description": "Trial - no witnesses",
+          "id": "fb90d7d1-a591-4deb-92a0-4e3d0d469bce"
+        }
+      }
+    ],
+    "id": "{{caseId}}",
+    "latestHearingJurisdictionType": "MAGISTRATES",
+    "prosecutionCaseIdentifier": {
+      "address": {
+        "address1": "Finance Operations",
+        "address2": "C3 East",
+        "address3": "DVLA",
+        "address4": "Longview Road",
+        "address5": "Swansea",
+        "postcode": "SA6 7JL"
+      },
+      "contact": {
+        "primaryEmail": "sjp@dvla.gov.uk"
+      },
+      "majorCreditorCode": "DVL2",
+      "prosecutionAuthorityCode": "DVLA",
+      "prosecutionAuthorityId": "6ae4b163-658b-3ae2-a66d-43401cac2f96",
+      "prosecutionAuthorityName": "Driver and Vehicle Licensing Agency",
+      "prosecutionAuthorityOUCode": "G94DV00",
+      "caseURN": "28DI7655557"
+    }
+  },
+  "appealsLodgedInfo": {
+    "appealsLodged": false
+  }
+}

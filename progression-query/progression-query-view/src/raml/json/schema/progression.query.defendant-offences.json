@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string"
+    },
+    "defendantId": {
+      "type": "string"
+    },
+    "offences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "offenceCode": {
+            "type": "string"
+          },
+          "convictionDate": {
+            "type": "string"
+          },
+          "plea": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string",
+                "enum": ["GUILTY"]
+              },
+              "pleaDate": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "value",
+              "pleaDate"
+            ]
+          },
+          "indicatedPlea": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string",
+                "enum": ["NO_INDICATION", "INDICATED_GUILTY", "INDICATED_NOT_GUILTY"]
+              },
+              "allocationDecision": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "value"
+            ]
+          },
+          "section": {
+            "type": "string"
+          },
+          "offenceSequenceNumber": {
+            "type": "integer"
+          },
+          "pleaMitigation": {
+            "type": "string"
+          },
+          "wording": {
+            "type": "string"
+          },
+          "policeOffenceId": {
+            "type": "string"
+          },
+          "cprDefendantOffenderYear": {
+            "type": "string"
+          },
+          "cprDefendantOffenderOrganisationUnit": {
+            "type": "string"
+          },
+          "cprDefendantOffenderNumber": {
+            "type": "string"
+          },
+          "cprDefendantOffenderCheckDigit": {
+            "type": "string"
+          },
+          "cjsCode": {
+            "type": "string"
+          },
+          "sequenceNumber": {
+            "type": "integer"
+          },
+          "asnSequenceNumber": {
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "arrestDate": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "chargeDate": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "offenceCode",
+          "plea",
+          "indicatedPlea",
+          "offenceSequenceNumber",
+          "pleaMitigation",
+          "wording",
+          "policeOffenceId",
+          "cprDefendantOffenderYear",
+          "cprDefendantOffenderOrganisationUnit",
+          "cprDefendantOffenderNumber",
+          "cprDefendantOffenderCheckDigit",
+          "cjsCode",
+          "sequenceNumber",
+          "asnSequenceNumber",
+          "reason",
+          "description",
+          "category",
+          "arrestDate",
+          "startDate",
+          "chargeDate"
+        ]
+      }
+    }
+  },
+  "required": [
+    "caseId",
+    "defendantId",
+    "offences"
+  ]
+}

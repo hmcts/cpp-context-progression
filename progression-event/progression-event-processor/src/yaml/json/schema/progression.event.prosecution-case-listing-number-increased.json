@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/prosecution-case-listing-number-increased.json",
+  "type": "object",
+  "properties": {
+    "prosecutionCaseId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "hearingId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "offenceListingNumbers": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "properties": {
+          "offenceId": {
+            "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+          },
+          "listingNumber": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "offenceId",
+          "listingNumber"
+        ]
+      }
+    }
+  },
+  "required": [
+    "prosecutionCaseId",
+    "hearingId"
+  ],
+  "additionalProperties": false
+}

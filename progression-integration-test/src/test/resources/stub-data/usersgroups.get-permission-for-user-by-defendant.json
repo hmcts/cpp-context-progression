@@ -1,0 +1,22 @@
+{
+  "permissions": [
+    {
+      "permissionId": "5b6f843e-d639-40b3-8611-8015f3a34758",
+      "description": "a test 1 permission",
+      "object" :"defenceClientId",
+      "action" : "View",
+      "source": "%ORGANISATION_ID%",
+      "target": "%DEFENDANT_ID%",
+      "active": "true"
+    },
+    {
+      "permissionId": "5b6f843e-d639-40b3-8611-8015f3a34758",
+      "description": "a test 1 permission",
+      "object" :"defenceClientId",
+      "action" : "View",
+      "source": "%USER_ID%",
+      "target": "%DEFENDANT_ID%",
+      "active": "true"
+    }
+  ]
+}

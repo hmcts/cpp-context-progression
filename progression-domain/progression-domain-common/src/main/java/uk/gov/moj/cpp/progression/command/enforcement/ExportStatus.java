@@ -1,0 +1,26 @@
+package uk.gov.moj.cpp.progression.command.enforcement;
+
+public enum ExportStatus {
+  ENFORCEMENT_EXPORT_FAILED("ENFORCEMENT_EXPORT_FAILED"),
+
+  ENFORCEMENT_ACKNOWLEDGED("ENFORCEMENT_ACKNOWLEDGED"),
+
+  ENFORCEMENT_ACKNOWLEDGEMENT_FAILED("ENFORCEMENT_ACKNOWLEDGEMENT_FAILED"),
+
+  ENFORCEMENT_EXPORTED("ENFORCEMENT_EXPORTED"),
+
+  ENFORCEMENT_REQUEST_SELECTED("ENFORCEMENT_REQUEST_SELECTED"),
+
+  AWAITING_EXPORT_TO_ENFORCEMENT("AWAITING_EXPORT_TO_ENFORCEMENT");
+
+  private final String value;
+
+  ExportStatus(String value) {
+    this.value = value;
+  }
+
+  @Override
+  public String toString() {
+    return value;
+  }
+}

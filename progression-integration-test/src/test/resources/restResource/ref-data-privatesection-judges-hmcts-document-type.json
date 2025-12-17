@@ -1,0 +1,147 @@
+{
+  "uuid": "460fae22-c002-11e8-a355-529269fb1459",
+  "section": "Private section - Judges & HMCTS",
+  "actionRequired": false,
+  "documentCategory": "Defendant level",
+  "courtDocumentTypeRBAC": {
+    "readUserGroups": [
+      {
+        "cppGroup": {
+          "id": "341ca32a-daa9-4bc9-b491-33e04ca950f2",
+          "groupName": "District Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "81d4ac7d-6841-4af4-8bb4-917a62239f64",
+          "groupName": "DJMC"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e5419808-1fea-4564-b273-29834f6b95a2",
+          "groupName": "Recorders"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e54c087a-ff26-4088-ad2b-040a0182cd1a",
+          "groupName": "Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      }
+    ],
+    "uploadUserGroups": [
+
+      {
+        "cppGroup": {
+          "id": "341ca32a-daa9-4bc9-b491-33e04ca950f2",
+          "groupName": "District Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "81d4ac7d-6841-4af4-8bb4-917a62239f64",
+          "groupName": "DJMC"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e5419808-1fea-4564-b273-29834f6b95a2",
+          "groupName": "Recorders"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e54c087a-ff26-4088-ad2b-040a0182cd1a",
+          "groupName": "Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      }
+    ],
+    "downloadUserGroups": [
+      {
+        "cppGroup": {
+          "id": "341ca32a-daa9-4bc9-b491-33e04ca950f2",
+          "groupName": "District Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "81d4ac7d-6841-4af4-8bb4-917a62239f64",
+          "groupName": "DJMC"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e5419808-1fea-4564-b273-29834f6b95a2",
+          "groupName": "Recorders"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e54c087a-ff26-4088-ad2b-040a0182cd1a",
+          "groupName": "Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      }
+    ],
+    "deleteUserGroups": [
+
+      {
+        "cppGroup": {
+          "id": "341ca32a-daa9-4bc9-b491-33e04ca950f2",
+          "groupName": "District Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "81d4ac7d-6841-4af4-8bb4-917a62239f64",
+          "groupName": "DJMC"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e5419808-1fea-4564-b273-29834f6b95a2",
+          "groupName": "Recorders"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      },
+      {
+        "cppGroup": {
+          "id": "e54c087a-ff26-4088-ad2b-040a0182cd1a",
+          "groupName": "Judge"
+        },
+        "validFrom": "1983-05-13",
+        "validTo": "2083-05-13"
+      }
+    ]
+  },
+  "seqNum": 10
+}

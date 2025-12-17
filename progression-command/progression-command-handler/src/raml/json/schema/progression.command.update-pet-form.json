@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/update-pet-form.json",
+  "type": "object",
+  "properties": {
+    "petId": {
+      "description": "Pet Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "caseId": {
+      "description": "Case Id",
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "petFormData": {
+      "description": "Pet Form Data",
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "petId",
+    "petFormData"
+  ],
+  "additionalProperties": false
+}

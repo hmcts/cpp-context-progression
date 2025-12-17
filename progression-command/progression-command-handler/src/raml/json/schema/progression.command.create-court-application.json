@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/create-court-application.json",
+  "properties": {
+    "courtApplication": {
+      "description": "The details of the court application for which proceedings are required",
+      "$ref": "http://justice.gov.uk/core/courts/courtApplication.json#"
+    },
+    "oldApplicationId" : {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    }
+  },
+  "required": [
+    "courtApplication"
+  ],
+  "additionalProperties": false
+}

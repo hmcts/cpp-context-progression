@@ -1,0 +1,96 @@
+{
+  "publishCourtListType": "FIRM",
+  "issueDate": "2023-02-15",
+  "ljaCode": "MERS",
+  "ljaName": "Merseyside LJA",
+  "courtName": "Croydon Crown Court",
+  "courtAddress": {
+    "line1": "The Law Courts",
+    "line2": "Altyre Road",
+    "line3": "Croydon",
+    "postCode": "CR9 5AB",
+    "isWelsh": false
+  },
+  "weekCommencing": true,
+  "weekCommencingStartDate": "2023-02-20",
+  "weekCommencingEndDate": "2023-02-24",
+  "addressee": {
+    "name": "DVLA",
+    "address": {
+      "line1": "1th Floor Windsor House",
+      "line2": "42-50 Victoria Street",
+      "line3": "London",
+      "postCode": "SW1H 0TL",
+      "isWelsh": false
+    }
+  },
+  "hearingByDates": [
+    {
+      "hearingDate": "2023-02-20",
+      "hearingByCourtrooms": [
+        {
+          "courtroomName": "Courtroom 01",
+          "hearingByTimes": [
+            {
+              "hearingTime": "9:00 am",
+              "hearings": [
+                {
+                  "caseReference": "CTZH5HVZIF",
+                  "hearingType": "First hearing",
+                  "defendants": [
+                    {
+                      "defendantName": "Yousuf Aguirre",
+                      "defendantLastName": "Aguirre",
+                      "defendantDateOfBirth": "1979-05-02"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "hearingByWeekCommencingDate": {
+    "weekCommencingStartDate": "2023-02-20",
+    "weekCommencingEndDate": "2023-02-24",
+    "hearingByCourtrooms": [
+      {
+        "courtroomName": "Courtroom 03",
+        "hearings": [
+          {
+            "caseReference": "CVJVHKJGJC",
+            "hearingType": "Further Case Management",
+            "defendants": [
+              {
+                "defendantName": "Walt Milk Product"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "hearingByWeekCommencingDateNoCourtroom": {
+    "weekCommencingStartDate": "2023-02-20",
+    "weekCommencingEndDate": "2023-02-24",
+    "hearingByCourtrooms": [
+      {
+        "hearings": [
+          {
+            "caseReference": "90GD9173LAA",
+            "hearingType": "Trial",
+            "defendants": [
+              {
+                "defendantName": "Daniel Lloyd",
+                "defendantLastName": "Lloyd",
+                "defendantDateOfBirth": "1990-01-01"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

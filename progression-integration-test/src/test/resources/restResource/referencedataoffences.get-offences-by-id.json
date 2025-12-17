@@ -1,0 +1,199 @@
+{
+  "offenceId": "CcFBECED-CdE0-A99B-FD8B-DC1eA41CC4BC",
+  "dvlaCode": "ABC123",
+  "cjsOffenceCode": "TTH105HY",
+  "modeOfTrialDerived": "Summary",
+  "validFrom": "4936!80b-09-30",
+  "cppDateOfLastUpdate": "1688!72b-12-15",
+  "pnldDateOfLastUpdate": "5228-02-29",
+  "details": {
+    "document": {
+      "pnldref": "ABCDEFGHIJK",
+      "english": {
+        "title": "ABCDE",
+        "additionalkeywords": {
+          "additionalkeyword": [
+            "ABCDEFGHIJKLMN"
+          ]
+        },
+        "standardoffencewording": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "legislation": "ABCDE",
+        "pointstoprove": "ABCDE",
+        "investigatoractions": {
+          "investigatoraction": [
+            {
+              "code": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+              "description": "ABCDEFGHIJKLMNO"
+            },
+            {
+              "code": "ABCDEFGHIJKLMNOP",
+              "description": "ABCDEFGHIJKLMNOPQRSTUVWX"
+            },
+            {
+              "code": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+              "description": "ABCDEFGHIJ"
+            },
+            {
+              "code": "ABCDEFGHIJKL",
+              "description": "ABCD"
+            }
+          ]
+        },
+        "policeandcpschargingresponsibilities": "ABCDE",
+        "notes": "ABCDEFGHIJ",
+        "standardstatementoffacts": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
+      },
+      "indictment": {
+        "indictmentindicator": {
+          "code": "N",
+          "description": "YES"
+        },
+        "structuredindictmentindicator": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "indictmenttitle": "ABCDEFGHIJKLMNOPQRSTUVWX",
+        "welshindictmenttitle": "ABCDEFGHIJKLMNOPQRSTU",
+        "indictmentcountcode": "ABCDEFGHIJKLMNOPQRSTUV",
+        "unstructuredindictmentstandardwording": "ABCDEFGHIJK",
+        "structuredindictmentstandardwording": "ABCDEFGHIJKLMN",
+        "welshunstructuredindictmentstandardwording": "ABCDEFGHIJKLMN",
+        "welshstructuredindictmentstandardwording": "ABCDEFGHIJKLMNOPQR"
+      },
+      "welsh": {
+        "welshoffencetitle": "ABCDEFGHIJKLMNOP",
+        "welshstandardoffencewording": "ABCDEFGHIJKLMNOPQRS",
+        "welshstandardstatementoffacts": "ABCDEFG",
+        "welshlegislation": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+      },
+      "other": {
+        "powersofarrest": "ABCDEFGHIJKLMNOPQRSTUVW",
+        "modeoftrial": {
+          "code": "ABCDE",
+          "description": "ABCDEFGHIJKLMNOPQRSTUVW"
+        },
+        "consents": {
+          "consent": [
+            {
+              "code": "ABCDEFGHIJKLM",
+              "description": "ABCDEFGHIJKLMNOPQRSTU"
+            }
+          ]
+        },
+        "timelimitforprosecutions": "ABCDEFGHIJKLMNOPQRSTUVWX",
+        "penalty": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+        "geographicregion": {
+          "code": "ABCDEFGHIJKLMNOPQR",
+          "description": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+        }
+      },
+      "codes": {
+        "cjsoffencecode": "TTH105HY",
+        "previouscjsoffencecode": "ABCDEFGHIJKLMNOP",
+        "recordableonpncindicator": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "pncacpooffencecode": "ABCDEFGHIJKLMNOPQ",
+        "notifiabletomoj": {
+          "code": "N",
+          "description": "YES"
+        },
+        "mojstatscode": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "mopireviewgroup": {
+          "code": "ABCDEFGHIJKLMNOPQRSTUV",
+          "description": "ABCDEFGHIJKLMNOPQRS"
+        },
+        "mopinoteslink": "ABCDEFGHIJ",
+        "disqualificationclass": {
+          "code": "ABCDEFGHI",
+          "description": "ABCDEFGHIJKLMNOPQ"
+        },
+        "dvlacode": {
+          "code": "ABCDEFGHIJKLMNOPQRSTUV",
+          "description": "ABCDEFGHIJKLMNOPQRSTUVWX"
+        },
+        "maxpenaltypoints": 891,
+        "minpenaltypoints": -17,
+        "maxPenalty": "Max Penalty",
+        "seatbeltoffence": {
+          "code": "ABCDEFGHIJKLMNOPQ",
+          "description": "ABCDE"
+        },
+        "fptissuedbypolice": 594.5,
+        "fptgraduated": 59.5,
+        "fptgraduatedhigh": 626.25,
+        "pndissuedbypolice": 37.0,
+        "pndissuedbylocalauthorities": -51.5,
+        "pndissuedbyothers": 75.75,
+        "roadsidedeposits": {
+          "code": "ABCDEF",
+          "description": "ABCDEFGHIJKLMNOPQRST"
+        }
+      },
+      "libra": {
+        "libracategory": {
+          "code": "ABCDEFGH",
+          "description": "ABCDEFGHIJKLMNOP"
+        },
+        "fineindicator": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "maxfinetypemagct": {
+          "code": "ABCDEFGHIJK",
+          "description": "ABCDEFGHIJKLMNOPQ"
+        },
+        "maxfinemagct": 677.0,
+        "maxfinetypecrownct": {
+          "code": "ABCDEFGHIJKLM",
+          "description": "ABCDEFGH"
+        },
+        "maxfinecrownct": 603.5,
+        "custodialindicator": {
+          "code": "Y",
+          "description": "YES"
+        },
+        "maxcustodialsentenceunitmagct": {
+          "code": "ABCDEFGHIJKLMNOPQRST",
+          "description": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
+        },
+        "maxcustodialsentencelengthmagct": 338,
+        "maxcustodialsentenceunitcrownct": {
+          "code": "ABCDEFGH",
+          "description": "ABCDEFGHIJKLMNOPQRSTUVWX"
+        },
+        "maxcustodialsentencelengthcrownct": 230,
+        "complexpenaltydetails": "ABCDEFGHIJKLMNOPQRSTUVW",
+        "miscode": {
+          "code": "ABCDEFGHI",
+          "description": "ABCDEFGHIJ"
+        },
+        "hoproceedingscode": "ABCDEFGHIJKLMNOPQRSTUVW"
+      },
+      "ancillary": {
+        "offencestartdate": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "offenceenddate": "ABCDEFGHIJKLMNOPQRST",
+        "datecreated": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "auditofamendments": "ABCDEFGHI",
+        "legislationcode": {
+          "link": "ABCDEFG"
+        },
+        "lastupdate": "ABCDEFGHIJKLMNOPQRS",
+        "dateoflastupdate": "ABCDEFGHIJKLMN",
+        "fptupdatedate": "ABCDEFGHIJKLMNOPQRSTUV",
+        "offencewordinggroup": "ABCDEFGHIJKLMNOPQRS",
+        "groups": {
+          "code": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+          "description": "ABCDEFGHIJKLMNOPQRSTU"
+        }
+      },
+      "type": "ABCDEFGHIJKLMNOPQR"
+    }
+  },
+  "validTo": "3354!67b-07-30",
+  "drugsOrAlcoholRelated": "N",
+  "locationRequired": "Y",
+  "prosecutionTimeLimit": "ABCDEFGHIJKLM",
+  "endorsableFlag" : true
+}

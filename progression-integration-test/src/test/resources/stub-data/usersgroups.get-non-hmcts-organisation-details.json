@@ -1,0 +1,13 @@
+{
+  "organisationId": "%ORGANISATION_ID%",
+  "organisationType": "NON HMCTS",
+  "organisationName": "NON HMCTS",
+  "addressLine1": "Croydon County Cour",
+  "addressLine2": "2-8 Altyre Road",
+  "addressLine3": "Croydon",
+  "addressLine4": "England",
+  "addressPostcode": "CR0 5LA",
+  "phoneNumber": "03001235577",
+  "email": "support@test.hmcts.net",
+  "laaContractNumbers": []
+}

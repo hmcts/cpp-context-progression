@@ -1,0 +1,928 @@
+{
+  "courtApplications": [
+    {
+      "applicant": {
+        "id": "b9561021-d747-457b-aa7b-373f9aa1c4f9",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "30603b5f-03d9-453c-a6e3-f29bf6bfc9a6",
+              "caseReference": "RQ811115993",
+              "defendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b"
+            }
+          ],
+          "masterDefendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b",
+          "personDefendant": {
+            "arrestSummonsNumber": "2391NX0000415625649D",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "driverNumber": "VANFL002222OW9PH",
+            "personDetails": {
+              "address": {
+                "address1": "1, Strand",
+                "address2": "Test Street",
+                "address3": "Test Locality",
+                "address4": "Test Town",
+                "address5": "Test Area",
+                "postcode": "TA1 1AT"
+              },
+              "contact": {
+                "home": "0739835919",
+                "mobile": "05734877479",
+                "primaryEmail": "shawn.carter@example.com"
+              },
+              "dateOfBirth": "1989-07-02",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Shawn",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Carter",
+              "title": "Mr"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false,
+        "updatedOn": "2025-07-02"
+      },
+      "applicationReceivedDate": "2025-07-02",
+      "applicationReference": "RQ811115993",
+      "applicationResultCodeForLaa": "UNKNOWN_RESULT",
+      "applicationStatus": "IN_PROGRESS",
+      "commissionerOfOath": false,
+      "courtApplicationCases": [
+        {
+          "caseStatus": "INACTIVE",
+          "isSJP": false,
+          "offences": [
+            {
+              "arrestDate": "2025-06-17",
+              "chargeDate": "2025-06-22",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "160132ac-3526-4aac-aadb-bdabbf95c98c",
+              "isDisposed": true,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "canExtendActiveOrder": false,
+                  "category": "FINAL",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "ae45d360-fde0-4402-9c5b-a3f397c59255",
+                  "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                  "label": "Granted",
+                  "lastSharedDateTime": "2025-07-02",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-07-02",
+                  "orderedHearingId": "5ad33538-d02e-405b-aff2-d681483afdf4",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 98500,
+                  "resultText": "G - Granted",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "ae45d360-fde0-4402-9c5b-a3f397c59255",
+                  "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": []
+                }
+              ],
+              "listingNumber": 1,
+              "maxPenalty": "EW:6M &/or Ultd Fine",
+              "modeOfTrial": "Either Way",
+              "offenceCode": "TH68010",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+              "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+              "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+              "offenceTitle": "Theft from a shop",
+              "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+              "orderIndex": 1,
+              "proceedingsConcluded": true,
+              "startDate": "2025-04-03",
+              "wording": "Attempt theft from a shop"
+            }
+          ],
+          "prosecutionCaseId": "30603b5f-03d9-453c-a6e3-f29bf6bfc9a6",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Criminal Justice Department",
+              "address2": "Derbyshire Constabulary",
+              "address3": "Butterley Hall",
+              "address4": "Ripley",
+              "address5": "Derby",
+              "postcode": "DE5 3RS"
+            },
+            "contact": {
+              "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+            },
+            "majorCreditorCode": "PO30",
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "prosecutionAuthorityName": "Derbyshire Police",
+            "prosecutionAuthorityOUCode": "0300000",
+            "caseURN": "RQ811115993"
+          }
+        }
+      ],
+      "id": "63160239-1dc8-43a4-94de-dada6ac919a6",
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": true,
+          "canBeSubjectOfVariation": true,
+          "canExtendActiveOrder": false,
+          "category": "FINAL",
+          "cjsCode": "1116",
+          "courtClerk": {
+            "firstName": "Erica",
+            "lastName": "Wilson",
+            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+          },
+          "d20": false,
+          "durationElement": {
+            "durationEndDate": "01/08/2025"
+          },
+          "dvlaCode": "M",
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": true,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "ddb16de2-bd44-4cc4-9725-234fee727ca2",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isDurationEndDate": true,
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+              "label": "End Date",
+              "promptReference": "endDate",
+              "promptSequence": 100,
+              "type": "DATE",
+              "usergroups": [],
+              "value": "01/08/2025",
+              "welshLabel": "Dyddiad terfyn",
+              "welshValue": "01/08/2025"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+              "label": "Responsible officer",
+              "promptReference": "responsibleOfficer",
+              "promptSequence": 200,
+              "type": "FIXL",
+              "usergroups": [],
+              "value": "a probation officer",
+              "welshLabel": "Swyddog cyfrifol",
+              "welshValue": "swyddog prawf"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+              "label": "Supervising Court",
+              "promptReference": "supervisingCourt",
+              "promptSequence": 300,
+              "type": "FIXL",
+              "usergroups": [],
+              "value": "North East London Youth Court",
+              "welshLabel": "Llys sy’n Goruchwylio",
+              "welshValue": "North East London Youth Court"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified organisation name",
+              "promptReference": "probationteamtobenotifiedOrganisationName",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "London Division NPS",
+              "welshValue": "London Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified email address 1",
+              "promptReference": "probationteamtobenotifiedEmailAddress1",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "londonnps.court@justice.gov.uk",
+              "welshValue": "londonnps.court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "N",
+              "judicialResultPromptTypeId": "dada120c-160a-49a9-b040-e8b6b7128d67",
+              "label": "Notification of electronic monitoring order (requirement)",
+              "promptReference": "8408b788-41bb-4365-9c4a-bd13d9674c02",
+              "promptSequence": 800,
+              "usergroups": [],
+              "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
+              "welshLabel": "Hysbysiad o orchymyn monitro electronig (gofyniad)"
+            }
+          ],
+          "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "label": "Community order England / Wales",
+          "lastSharedDateTime": "2025-07-02",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2025-07-02",
+          "orderedHearingId": "5ad33538-d02e-405b-aff2-d681483afdf4",
+          "policeSubjectLineTitle": "Final Sentence",
+          "postHearingCustodyStatus": "A",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 64000,
+          "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 01/08/2025. ",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "ddb16de2-bd44-4cc4-9725-234fee727ca2",
+          "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": []
+        },
+        {
+          "alwaysPublished": true,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "ANCILLARY",
+          "cjsCode": "3101",
+          "courtClerk": {
+            "firstName": "Erica",
+            "lastName": "Wilson",
+            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "c52b2860-a5a5-490b-93b4-f00c7f287d88",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+              "label": "Number of hours",
+              "promptReference": "numberOfHours",
+              "promptSequence": 100,
+              "type": "INT",
+              "usergroups": [],
+              "value": "5 Hours",
+              "welshLabel": "Nifer yr oriau",
+              "welshValue": "5 Hours"
+            }
+          ],
+          "judicialResultTypeId": "9bec5977-1796-4645-9b9e-687d4f23d37d",
+          "label": "Unpaid work. Requirement to be completed within 12 months.",
+          "lastSharedDateTime": "2025-07-02",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2025-07-02",
+          "orderedHearingId": "5ad33538-d02e-405b-aff2-d681483afdf4",
+          "parentJudicialResultId": "f5cecc5f-0d6f-403b-ba52-9cb504585216",
+          "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+          "postHearingCustodyStatus": "A",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 68500,
+          "resultDefinitionGroup": "Community Requirement",
+          "resultText": "UPWR - Unpaid work. Requirement to be completed within 12 months.\nUnpaid Work Requirement: Carry out unpaid work for 5 Hours within the next twelve months. This work will be supervised by the responsible officer.",
+          "rollUpPrompts": false,
+          "rootJudicialResultId": "ddb16de2-bd44-4cc4-9725-234fee727ca2",
+          "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": []
+        }
+      ],
+      "proceedingsConcluded": false,
+      "subject": {
+        "id": "b9561021-d747-457b-aa7b-373f9aa1c4f9",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "30603b5f-03d9-453c-a6e3-f29bf6bfc9a6",
+              "caseReference": "RQ811115993",
+              "defendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b"
+            }
+          ],
+          "masterDefendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b",
+          "personDefendant": {
+            "arrestSummonsNumber": "2391NX0000415625649D",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "driverNumber": "VANFL002222OW9PH",
+            "personDetails": {
+              "address": {
+                "address1": "1, Strand",
+                "address2": "Test Street",
+                "address3": "Test Locality",
+                "address4": "Test Town",
+                "address5": "Test Area",
+                "postcode": "TA1 1AT"
+              },
+              "contact": {
+                "home": "0739835919",
+                "mobile": "05734877479",
+                "primaryEmail": "shawn.carter@example.com"
+              },
+              "dateOfBirth": "1989-07-02",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Shawn",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Carter",
+              "title": "Mr"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false,
+        "updatedOn": "2025-07-02"
+      },
+      "type": {
+        "appealFlag": true,
+        "applicantAppellantFlag": true,
+        "applicationWording": "Appeal against conviction by a Magistrates' Court on {1} at {2} to the Crown Court",
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "CR",
+        "changeDate": "2022-10-09T14:12:09",
+        "code": "MC80802",
+        "commrOfOathFlag": false,
+        "contestedFeeApplicable": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "exParte": false,
+        "hearingCode": "APL",
+        "id": "3fca31f0-7b30-47e8-8f3f-90601ad26b50",
+        "initialFeeApplicable": false,
+        "jurisdiction": "CROWN",
+        "lastModified": "2025-02-24T18:19:04.990Z",
+        "legislation": "In accordance with section 108 of the Magistrates' Courts Act 1980.",
+        "legislationWelsh": "adran 108 Deddf Llysoedd Ynadon 1980",
+        "linkType": "SJP",
+        "listingNotifTemplate": "POSTAL_NOTIFICATION",
+        "offenceActiveOrder": "OFFENCE",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": false,
+        "pssId": 587579,
+        "sowRef": "APPS",
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "Appeal against conviction by a Magistrates' Court to the Crown Court",
+        "typeWelsh": "Apelio i Lys y Goron yn erbyn euogfarn gan Lys Ynadon",
+        "validFrom": "1980-01-01"
+      }
+    },
+    {
+      "applicant": {
+        "id": "b9561021-d747-457b-aa7b-373f9aa1c4f9",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "30603b5f-03d9-453c-a6e3-f29bf6bfc9a6",
+              "caseReference": "RQ811115993",
+              "defendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b"
+            }
+          ],
+          "masterDefendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b",
+          "personDefendant": {
+            "arrestSummonsNumber": "2391NX0000415625649D",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "driverNumber": "VANFL002222OW9PH",
+            "personDetails": {
+              "address": {
+                "address1": "1, Strand",
+                "address2": "Test Street",
+                "address3": "Test Locality",
+                "address4": "Test Town",
+                "address5": "Test Area",
+                "postcode": "TA1 1AT"
+              },
+              "contact": {
+                "home": "0739835919",
+                "mobile": "05734877479",
+                "primaryEmail": "shawn.carter@example.com"
+              },
+              "dateOfBirth": "1989-07-02",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Shawn",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Carter",
+              "title": "Mr"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false,
+        "updatedOn": "2025-07-02"
+      },
+      "applicationReceivedDate": "2025-07-02",
+      "applicationReference": "RQ811115993",
+      "applicationResultCodeForLaa": "UNKNOWN_RESULT",
+      "applicationStatus": "IN_PROGRESS",
+      "commissionerOfOath": false,
+      "courtApplicationCases": [
+        {
+          "caseStatus": "INACTIVE",
+          "isSJP": false,
+          "offences": [
+            {
+              "arrestDate": "2025-06-17",
+              "chargeDate": "2025-06-22",
+              "count": 0,
+              "endorsableFlag": false,
+              "id": "160132ac-3526-4aac-aadb-bdabbf95c98c",
+              "isDisposed": true,
+              "judicialResults": [
+                {
+                  "alwaysPublished": false,
+                  "canBeSubjectOfBreach": false,
+                  "canBeSubjectOfVariation": false,
+                  "canExtendActiveOrder": false,
+                  "category": "FINAL",
+                  "courtClerk": {
+                    "firstName": "Erica",
+                    "lastName": "Wilson",
+                    "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+                  },
+                  "d20": false,
+                  "excludedFromResults": false,
+                  "isAdjournmentResult": false,
+                  "isAvailableForCourtExtract": true,
+                  "isConvictedResult": false,
+                  "isDeleted": false,
+                  "isFinancialResult": false,
+                  "isNewAmendment": true,
+                  "isUnscheduled": false,
+                  "judicialResultId": "ae45d360-fde0-4402-9c5b-a3f397c59255",
+                  "judicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                  "label": "Granted",
+                  "lastSharedDateTime": "2025-07-02",
+                  "level": "O",
+                  "lifeDuration": false,
+                  "orderedDate": "2025-07-02",
+                  "orderedHearingId": "5ad33538-d02e-405b-aff2-d681483afdf4",
+                  "postHearingCustodyStatus": "A",
+                  "preserveActiveOrder": false,
+                  "publishedAsAPrompt": false,
+                  "publishedForNows": false,
+                  "rank": 98500,
+                  "resultText": "G - Granted",
+                  "rollUpPrompts": true,
+                  "rootJudicialResultId": "ae45d360-fde0-4402-9c5b-a3f397c59255",
+                  "rootJudicialResultTypeId": "2b3f7c20-8fc1-4fad-9076-df196c24b27e",
+                  "terminatesOffenceProceedings": false,
+                  "urgent": false,
+                  "usergroups": []
+                }
+              ],
+              "listingNumber": 1,
+              "maxPenalty": "EW:6M &/or Ultd Fine",
+              "modeOfTrial": "Either Way",
+              "offenceCode": "TH68010",
+              "offenceDateCode": 1,
+              "offenceDefinitionId": "c8b42f54-833a-37de-982e-e62fca7540dd",
+              "offenceLegislation": "Contrary to section 1(1) and 7 of the Theft    Act 1968.",
+              "offenceLegislationWelsh": "Yn groes i adran 1(1) a 7 Deddf Dwyn 1968.",
+              "offenceTitle": "Theft from a shop",
+              "offenceTitleWelsh": "Dwyn o siop - siop-ladrad",
+              "orderIndex": 1,
+              "proceedingsConcluded": true,
+              "startDate": "2025-04-03",
+              "wording": "Attempt theft from a shop"
+            }
+          ],
+          "prosecutionCaseId": "30603b5f-03d9-453c-a6e3-f29bf6bfc9a6",
+          "prosecutionCaseIdentifier": {
+            "address": {
+              "address1": "Criminal Justice Department",
+              "address2": "Derbyshire Constabulary",
+              "address3": "Butterley Hall",
+              "address4": "Ripley",
+              "address5": "Derby",
+              "postcode": "DE5 3RS"
+            },
+            "contact": {
+              "primaryEmail": "criminaldataderbyshire@derbyshire.police.uk"
+            },
+            "majorCreditorCode": "PO30",
+            "prosecutionAuthorityCode": "DERPF",
+            "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+            "prosecutionAuthorityName": "Derbyshire Police",
+            "prosecutionAuthorityOUCode": "0300000",
+            "caseURN": "RQ811115993"
+          }
+        }
+      ],
+      "id": "b3d4c1e9-d1fb-4a26-94be-f9ace8655e4f",
+      "judicialResults": [
+        {
+          "alwaysPublished": false,
+          "canBeSubjectOfBreach": true,
+          "canBeSubjectOfVariation": true,
+          "canExtendActiveOrder": false,
+          "category": "FINAL",
+          "cjsCode": "1116",
+          "courtClerk": {
+            "firstName": "Erica",
+            "lastName": "Wilson",
+            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+          },
+          "d20": false,
+          "durationElement": {
+            "durationEndDate": "01/08/2027"
+          },
+          "dvlaCode": "M",
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": true,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "a88f29d7-886e-4fc3-a5f2-539bfa64141e",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isDurationEndDate": true,
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "d6caa3c4-ec9d-41ec-8f86-2c617ef0d5d9",
+              "label": "End Date",
+              "promptReference": "endDate",
+              "promptSequence": 100,
+              "type": "DATE",
+              "usergroups": [],
+              "value": "01/08/2025",
+              "welshLabel": "Dyddiad terfyn",
+              "welshValue": "01/08/2025"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "29f5b3c7-8d15-4606-9dcf-23f32a21b5ef",
+              "label": "Responsible officer",
+              "promptReference": "responsibleOfficer",
+              "promptSequence": 200,
+              "type": "FIXL",
+              "usergroups": [],
+              "value": "a probation officer",
+              "welshLabel": "Swyddog cyfrifol",
+              "welshValue": "swyddog prawf"
+            },
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "f4a4f159-779e-4f35-822a-b559a2415ecb",
+              "label": "Supervising Court",
+              "promptReference": "supervisingCourt",
+              "promptSequence": 300,
+              "type": "FIXL",
+              "usergroups": [],
+              "value": "North East London Youth Court",
+              "welshLabel": "Llys sy’n Goruchwylio",
+              "welshValue": "North East London Youth Court"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified organisation name",
+              "promptReference": "probationteamtobenotifiedOrganisationName",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "London Division NPS",
+              "welshValue": "London Division NPS"
+            },
+            {
+              "courtExtract": "N",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "68c92035-27fd-4ee6-b03c-fe18ea6dbcb0",
+              "label": "Probation team to be notified email address 1",
+              "promptReference": "probationteamtobenotifiedEmailAddress1",
+              "promptSequence": 700,
+              "type": "NAMEADDRESS",
+              "usergroups": [],
+              "value": "londonnps.court@justice.gov.uk",
+              "welshValue": "londonnps.court@justice.gov.uk"
+            },
+            {
+              "courtExtract": "N",
+              "judicialResultPromptTypeId": "dada120c-160a-49a9-b040-e8b6b7128d67",
+              "label": "Notification of electronic monitoring order (requirement)",
+              "promptReference": "8408b788-41bb-4365-9c4a-bd13d9674c02",
+              "promptSequence": 800,
+              "usergroups": [],
+              "value": "Electronic monitoring contractor organisation name:Electronic Monitoring Contractor\nElectronic monitoring contractor email address 1:LPadmin@ems.co.uk\nFirst notification of electronic monitoring:Yes\nAre there any additional requirements as well?:No\nWas an interpreter used?:No\nDoes the offender have any special needs?:No",
+              "welshLabel": "Hysbysiad o orchymyn monitro electronig (gofyniad)"
+            }
+          ],
+          "judicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "label": "Community order England / Wales",
+          "lastSharedDateTime": "2025-07-02",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2025-07-02",
+          "orderedHearingId": "5ad33538-d02e-405b-aff2-d681483afdf4",
+          "policeSubjectLineTitle": "Final Sentence",
+          "postHearingCustodyStatus": "A",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 64000,
+          "resultText": "COEW - Community order England / Wales\nCommunity order made. The defendant must comply with the requirements (shown below) by 01/08/2025. ",
+          "rollUpPrompts": true,
+          "rootJudicialResultId": "a88f29d7-886e-4fc3-a5f2-539bfa64141e",
+          "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": []
+        },
+        {
+          "alwaysPublished": true,
+          "canBeSubjectOfBreach": false,
+          "canBeSubjectOfVariation": false,
+          "canExtendActiveOrder": false,
+          "category": "ANCILLARY",
+          "cjsCode": "3101",
+          "courtClerk": {
+            "firstName": "Erica",
+            "lastName": "Wilson",
+            "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+          },
+          "d20": false,
+          "excludedFromResults": false,
+          "isAdjournmentResult": false,
+          "isAvailableForCourtExtract": true,
+          "isConvictedResult": false,
+          "isDeleted": false,
+          "isFinancialResult": false,
+          "isNewAmendment": true,
+          "isUnscheduled": false,
+          "judicialResultId": "c52b2860-a5a5-490b-93b4-f00c7f287d88",
+          "judicialResultPrompts": [
+            {
+              "courtExtract": "Y",
+              "isFinancialImposition": false,
+              "judicialResultPromptTypeId": "72413aef-ecb9-4e9b-a143-31d1e9c11584",
+              "label": "Number of hours",
+              "promptReference": "numberOfHours",
+              "promptSequence": 100,
+              "type": "INT",
+              "usergroups": [],
+              "value": "5 Hours",
+              "welshLabel": "Nifer yr oriau",
+              "welshValue": "5 Hours"
+            }
+          ],
+          "judicialResultTypeId": "f9eac601-a1e7-4d45-99ee-c49e2c4ca85b",
+          "label": "Attendance centre",
+          "lastSharedDateTime": "2025-07-02",
+          "level": "O",
+          "lifeDuration": false,
+          "orderedDate": "2025-07-02",
+          "orderedHearingId": "5ad33538-d02e-405b-aff2-d681483afdf4",
+          "parentJudicialResultId": "f5cecc5f-0d6f-403b-ba52-9cb504585216",
+          "parentJudicialResultTypeId": "b2dab2b7-3edd-4223-b1be-3819173ec54d",
+          "postHearingCustodyStatus": "A",
+          "preserveActiveOrder": false,
+          "publishedAsAPrompt": false,
+          "publishedForNows": false,
+          "rank": 68500,
+          "resultDefinitionGroup": "Community Requirement",
+          "resultText": "ACR - Attendance centre Attendance Centre Requirement: Attend for 67 Hours.",
+          "rollUpPrompts": false,
+          "rootJudicialResultId": "a88f29d7-886e-4fc3-a5f2-539bfa64141e",
+          "rootJudicialResultTypeId": "418b3aa7-65ab-4a4a-bab9-2f96b698118c",
+          "terminatesOffenceProceedings": false,
+          "urgent": false,
+          "usergroups": []
+        }
+      ],
+      "proceedingsConcluded": false,
+      "subject": {
+        "id": "b9561021-d747-457b-aa7b-373f9aa1c4f9",
+        "masterDefendant": {
+          "defendantCase": [
+            {
+              "caseId": "30603b5f-03d9-453c-a6e3-f29bf6bfc9a6",
+              "caseReference": "RQ811115993",
+              "defendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b"
+            }
+          ],
+          "masterDefendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b",
+          "personDefendant": {
+            "arrestSummonsNumber": "2391NX0000415625649D",
+            "bailConditions": "",
+            "bailStatus": {
+              "code": "A",
+              "description": "Not applicable",
+              "id": "86009c70-759d-3308-8de4-194886ff9a77"
+            },
+            "driverNumber": "VANFL002222OW9PH",
+            "personDetails": {
+              "address": {
+                "address1": "1, Strand",
+                "address2": "Test Street",
+                "address3": "Test Locality",
+                "address4": "Test Town",
+                "address5": "Test Area",
+                "postcode": "TA1 1AT"
+              },
+              "contact": {
+                "home": "0739835919",
+                "mobile": "05734877479",
+                "primaryEmail": "shawn.carter@example.com"
+              },
+              "dateOfBirth": "1989-07-02",
+              "documentationLanguageNeeds": "ENGLISH",
+              "ethnicity": {
+                "observedEthnicityCode": "1",
+                "observedEthnicityDescription": "White",
+                "observedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+                "selfDefinedEthnicityCode": "W1",
+                "selfDefinedEthnicityDescription": "British",
+                "selfDefinedEthnicityId": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+              },
+              "firstName": "Shawn",
+              "gender": "MALE",
+              "hearingLanguageNeeds": "ENGLISH",
+              "lastName": "Carter",
+              "title": "Mr"
+            },
+            "policeBailStatus": {
+              "code": "C",
+              "description": "Custody",
+              "id": "12e69486-4d01-3403-a50a-7419ca040635"
+            }
+          }
+        },
+        "notificationRequired": true,
+        "summonsRequired": false,
+        "updatedOn": "2025-07-02"
+      },
+      "type": {
+        "appealFlag": true,
+        "applicantAppellantFlag": true,
+        "applicationWording": "Appeal against conviction by a Magistrates' Court on {1} at {2} to the Crown Court",
+        "boxworkNotifTemplate": "NOT_APPLICABLE",
+        "breachType": "NOT_APPLICABLE",
+        "categoryCode": "CR",
+        "changeDate": "2022-10-09T14:12:09",
+        "code": "MC80802",
+        "commrOfOathFlag": false,
+        "contestedFeeApplicable": false,
+        "courtExtractAvlFlag": true,
+        "courtOfAppealFlag": false,
+        "exParte": false,
+        "hearingCode": "APL",
+        "id": "3fca31f0-7b30-47e8-8f3f-90601ad26b50",
+        "initialFeeApplicable": false,
+        "jurisdiction": "CROWN",
+        "lastModified": "2025-02-24T18:19:04.990Z",
+        "legislation": "In accordance with section 108 of the Magistrates' Courts Act 1980.",
+        "legislationWelsh": "adran 108 Deddf Llysoedd Ynadon 1980",
+        "linkType": "SJP",
+        "listingNotifTemplate": "POSTAL_NOTIFICATION",
+        "offenceActiveOrder": "OFFENCE",
+        "pleaApplicableFlag": false,
+        "prosecutorThirdPartyFlag": false,
+        "pssId": 587579,
+        "sowRef": "APPS",
+        "spiOutApplicableFlag": true,
+        "summonsTemplateType": "NOT_APPLICABLE",
+        "type": "Appeal against conviction by a Magistrates' Court to the Crown Court",
+        "typeWelsh": "Apelio i Lys y Goron yn erbyn euogfarn gan Lys Ynadon",
+        "validFrom": "1980-01-01"
+      }
+    }
+  ],
+  "courtCentre": {
+    "address": {
+      "address1": "176A Lavender Hill",
+      "address2": "London",
+      "postcode": "SW11 1JU"
+    },
+    "code": "B01LY00",
+    "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+    "lja": {
+      "ljaCode": "2577",
+      "ljaName": "South West London Magistrates' Court"
+    },
+    "name": "Lavender Hill Magistrates' Court"
+  },
+  "defendantAttendance": [
+    {
+      "attendanceDays": [
+        {
+          "attendanceType": "IN_PERSON",
+          "day": "2025-07-02"
+        }
+      ],
+      "defendantId": "72e601f0-bd44-416f-a076-b37808ebfd6b"
+    }
+  ],
+  "hasSharedResults": true,
+  "hearingDays": [
+    {
+      "hasSharedResults": true,
+      "listedDurationMinutes": 10,
+      "sittingDay": "2025-07-02T00:00:00.000Z"
+    }
+  ],
+  "id": "5ad33538-d02e-405b-aff2-d681483afdf4",
+  "isBoxHearing": true,
+  "jurisdictionType": "MAGISTRATES",
+  "type": {
+    "description": "Application",
+    "id": "3449743b-95d6-4836-8941-57f588b52068"
+  }
+}

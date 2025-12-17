@@ -1,0 +1,105 @@
+{
+  "documentIndices": [
+    {
+      "caseIds": [
+        "3aa6d35d-70c3-45fb-a05e-bfedbce16412"
+      ],
+      "hearingIds": [],
+      "defendantIds": [
+        "4aa6d35d-70c3-45fb-a05e-bfedbce1641a",
+        "5aa6d35d-70c3-45fb-a05e-bfedbce1641b"
+      ],
+      "type": "Basis of Plea",
+      "category": "Defendant level",
+      "document": {
+        "name": "Plea submission A",
+        "courtDocumentId": "6aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+        "documentTypeDescription ": "Basis of Plea",
+        "documentTypeId": "8aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+        "isRemoved": "false",
+        "mimeType": "pdf",
+        "documentCategory": {
+          "defendantDocument": {
+            "defendants": [
+              "4aa6d35d-70c3-45fb-a05e-bfedbce1641a",
+              "5aa6d35d-70c3-45fb-a05e-bfedbce1641b"
+            ],
+            "prosecutionCaseId": "3aa6d35d-70c3-45fb-a05e-bfedbce16412"
+          }
+        },
+        "materials": [
+          {
+            "id": "generated",
+            "generationStatus": "1aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+            "name": "Plea submission A",
+            "uploadDateTime": "2018-07-12",
+            "userGroups": [
+              "courtAdmin",
+              "defenceCounsel"
+            ]
+          },
+          {
+            "id": "2aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+            "generationStatus": "generated",
+            "name": "Plea submission A",
+            "uploadDateTime": "2018-08-12",
+            "userGroups": [
+              "prosecutionCousel"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "caseIds": [
+        "3aa6d35d-70c3-45fb-a05e-bfedbce16412"
+      ],
+      "hearingIds": [
+        "8aa6d35d-70c3-45fb-a05e-bfedbce1641a"
+      ],
+      "defendantIds": [
+        "4aa6d35d-70c3-45fb-a05e-bfedbce1641a"
+      ],
+      "type": "Notice Order Warrant",
+      "Category": "Defendant level",
+      "document": {
+        "name": "Imprisonment Order",
+        "courtDocumentId": "6aa6d35d-70c3-45fb-a05e-bfedbce1641c",
+        "documentTypeDescription": "Notice Order Warrant",
+        "documentTypeId": "99a6d35d-70c3-45fb-a05e-bfedbce1641c",
+        "isRemoved": "false",
+        "mimeType": "pdf",
+        "documentCategory": {
+          "nowDocument": {
+            "prosecutionCases": [
+              "3aa6d35d-70c3-45fb-a05e-bfedbce16412"
+            ],
+            "defendantId": "4aa6d35d-70c3-45fb-a05e-bfedbce1641a",
+            "orderHearingId": "8aa6d35d-70c3-45fb-a05e-bfedbce1641a"
+          }
+        },
+        "materials": [
+          {
+            "id": "6ba6d35d-70c3-45fb-a05e-bfedbce1641d",
+            "generationStatus": "generated",
+            "name": "Imprisonment Order",
+            "uploadDateTime": "2018-07-12",
+            "userGroups": [
+              "courtAdmin",
+              "defenceCounsel"
+            ]
+          },
+          {
+            "id": "9ba6d35d-70c3-45fb-a05e-bfedbce1641d",
+            "generationStatus": "generated",
+            "name": "Plea submission A",
+            "uploadDateTime": "2018-08-12",
+            "userGroups": [
+              "Imprisonment Order"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

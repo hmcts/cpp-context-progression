@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/cpp/progression/event/serve-defendant-cotr.json",
+  "type": "object",
+  "properties": {
+    "cotrId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "defendantId": {
+      "$ref": "http://justice.gov.uk/core/courts/courtsDefinitions.json#/definitions/uuid"
+    },
+    "defendantFormData": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cotrId",
+    "defendantId",
+    "defendantFormData"
+  ],
+  "additionalProperties": false
+}

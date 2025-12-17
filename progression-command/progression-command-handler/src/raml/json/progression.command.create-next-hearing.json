@@ -1,0 +1,75 @@
+{
+  "createNextHearing": {
+    "hearing": {
+      "id": "b4830828-5334-4524-a4eb-685e698314be",
+      "jurisdictionType": "CROWN",
+      "courtCentre": {
+        "id": "d2ca6c3b-6c47-400f-acfb-6eea9cb45705",
+        "name": "Crown Court at Birmingham"
+      },
+      "prosecutionCases": [
+        {
+          "id": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+          "prosecutionCaseIdentifier": {
+            "prosecutionAuthorityId": "cf73207f-3ced-488a-82a0-3fba79c2ce85",
+            "prosecutionAuthorityCode": "TFL",
+            "prosecutionAuthorityReference": "TFL12345"
+          },
+          "statementOfFacts": "You did it",
+          "statementOfFactsWelsh": "You did it in Welsh",
+          "originatingOrganisation": "G01FT01AB",
+          "initiationCode": "J",
+          "caseStatus": "SJP Referral",
+          "defendants": [
+            {
+              "courtProceedingsInitiated": "2022-03-09T09:27:28.857Z",
+              "id": "36e43e49-f644-4884-9261-8485537fe9ab",
+              "masterDefendantId": "36e43e49-f644-4884-9261-8485537fe9ab",
+              "prosecutionCaseId": "2279b2c3-b0d3-4889-ae8e-1ecc20c39e27",
+              "offences": [
+                {
+                  "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+                  "count": 0,
+                  "endDate": "2018-10-10",
+                  "id": "dc8db1b4-5bac-4e68-8f3a-245adca0c79d",
+                  "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+                  "offenceCode": "RT88009",
+                  "offenceDateCode": 1,
+                  "offenceFacts": {
+                    "alcoholReadingAmount": 100,
+                    "alcoholReadingMethodCode": "A",
+                    "alcoholReadingMethodDescription": "Blood",
+                    "vehicleCode": "OTHER",
+                    "vehicleRegistration": "AA11 ABC"
+                  },
+                  "orderIndex": 1,
+                  "plea": {
+                    "offenceId": "79a1a4d7-d466-4bc3-af49-390bc5d18661",
+                    "pleaDate": "2018-09-11",
+                    "pleaValue": "GUILTY"
+                  },
+                  "startDate": "2018-09-10",
+                  "verdict": {
+                    "offenceId": "79a1a4d7-d466-4bc3-af49-390bc5d18661",
+                    "verdictDate": "2018-09-12",
+                    "verdictType": {
+                      "category": "Guilty",
+                      "categoryType": "GUILTY",
+                      "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b"
+                    }
+                  },
+                  "wording": "TV Licence not paid"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "seedingHearing": {
+      "seedingHearingId": "ffd7ef7e-1e85-4582-8c8b-f96f22221e5c",
+      "sittingDay": "2025-01-26",
+      "jurisdictionType": "CROWN"
+    }
+  }
+}

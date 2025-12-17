@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://justice.gov.uk/core/courts/enforcement-acknowledgment-error.json",
+  "type": "object",
+  "properties": {
+    "requestId": {
+      "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
+    },
+    "errorCode": {
+      "type": "string"
+    },
+    "errorMessage": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "requestId",
+    "errorCode",
+    "errorMessage"
+  ],
+  "additionalProperties": false
+}
+
