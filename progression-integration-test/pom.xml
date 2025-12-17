@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-parent</artifactId>
-        <version>17.0.218-DD-40133-SNAPSHOT</version>
+        <version>17.0.219-DD-40133-SNAPSHOT</version>
     </parent>
     <properties>
         <skip.schema.pojo.generation>false</skip.schema.pojo.generation>
