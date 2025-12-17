@@ -1,0 +1,39 @@
+name: CPP Context Verify & Validation
+
+# Need to update this for actual migration
+trigger: none
+
+pr:
+  - '*'
+
+parameters:
+  - name: RUN_RELEASE
+    type: boolean
+    default: false
+
+resources:
+  repositories:
+    - repository: cppAzureDevOpsTemplates
+      type: github
+      name: hmcts/cpp-azure-devops-templates
+      endpoint: 'hmcts'
+      ref: 'main'
+
+pool:
+  name: "MDV-ADO-AGENT-AKS-01"
+  demands:
+    - identifier -equals centos8-j17
+
+variables:
+  sonarqubeProject: "uk.gov.moj.cpp.common:common-bom"
+
+stages:
+  - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+      - template: pipelines/platform-verify.yaml@cppAzureDevOpsTemplates
+
+  - ${{ if eq(variables['Build.Reason'], 'Manual') }}:
+      - template: pipelines/library-validation.yaml@cppAzureDevOpsTemplates
+        parameters:
+          serviceName: 'commonbom'
+          RUN_RELEASE: ${{ parameters.RUN_RELEASE }}
+          JOB_TYPE: 'library'
