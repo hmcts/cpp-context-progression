@@ -168,11 +168,6 @@ public class ProsecutionCaseQueryApi {
         return prosecutionCaseQuery.getCaseHearings(query);
     }
 
-    @Handles("progression.query.case-hearings-for-court-extract")
-    public JsonEnvelope getCaseHearingsForCourtExtract(final JsonEnvelope query) {
-        return prosecutionCaseQuery.getCaseHearingsForCourtExtract(query);
-    }
-
     @Handles("progression.query.case-defendant-hearings")
     public JsonEnvelope getCaseDefendantHearings(final JsonEnvelope query) {
         return prosecutionCaseQuery.getCaseDefendantHearings(query);

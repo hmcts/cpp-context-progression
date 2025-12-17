@@ -48,6 +48,7 @@ public class ApplicationQueryApi {
     public static final String GROUP_NAME = "groupName";
     private static final String APPLICATION_ID = "applicationId";
     public static final String PROGRESSION_QUERY_APPLICATION_LAA = "progression.query.application-laa";
+    private static final String IS_DEFENCE_QUERY = "isDefenceQuery";
 
     @Inject
     private Requester requester;
@@ -160,8 +161,9 @@ public class ApplicationQueryApi {
         final boolean isNonCPSUserWithValidProsecutingAuthority =  usersGroupQueryService.getUserGroups(metadata, userId).getJsonArray(GROUPS).getValuesAs(JsonObject.class).stream()
                 .anyMatch(userGroup -> NON_CPS_PROSECUTORS.equals(userGroup.getString(GROUP_NAME)));
 
+        final JsonEnvelope applicationAaagEnvelope = envelopeFrom(metadata,
+                createObjectBuilder(query.payloadAsJsonObject()).add(IS_DEFENCE_QUERY, true).build());
 
-        final JsonEnvelope applicationAaagEnvelope = envelopeFrom(metadata, query.payload());
         final JsonEnvelope jsonEnvelope = applicationQueryView.getCourtApplicationForApplicationAtAGlance(applicationAaagEnvelope);
         if (!jsonEnvelope.payloadAsJsonObject().containsKey(LINKED_CASES)) {
             throw new ForbiddenRequestException("Cannot view application details, no linked cases found for the application");
@@ -188,10 +190,6 @@ public class ApplicationQueryApi {
     public JsonEnvelope getApplicationHearings(final JsonEnvelope query) {
         return applicationQueryView.getApplicationHearings(query);
     }
-    @Handles("progression.query.linked-application-hearings-for-court-extract")
-    public JsonEnvelope getLinkedApplicationHearingsForCourtExtract(final JsonEnvelope query) {
-        return applicationQueryView.getApplicationHearingsForCourtExtract(query);
-    }
 
     @Handles("progression.query.court-proceedings-for-application")
     public JsonEnvelope getCourtProceedingsForApplication(final JsonEnvelope query) {
@@ -209,8 +207,4 @@ public class ApplicationQueryApi {
 
     }
 
-    @Handles("progression.query.linked-application-extract")
-    public JsonEnvelope getLinkedApplicationExtract(final JsonEnvelope query) {
-        return query;
-    }
 }

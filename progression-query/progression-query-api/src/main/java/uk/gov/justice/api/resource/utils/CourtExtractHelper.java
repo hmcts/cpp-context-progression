@@ -2,7 +2,6 @@ package uk.gov.justice.api.resource.utils;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.nonNull;
-import static uk.gov.justice.progression.courts.exract.Results.results;
 
 import uk.gov.justice.api.resource.dto.ResultDefinition;
 import uk.gov.justice.api.resource.service.UsersAndGroupsService;
@@ -10,12 +9,7 @@ import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.progression.courts.Hearings;
 import uk.gov.justice.progression.courts.Offences;
-import uk.gov.justice.progression.courts.exract.ApplicationResults;
 import uk.gov.justice.progression.courts.exract.CommittedForSentence;
-import uk.gov.justice.progression.courts.exract.CourtApplicationCases;
-import uk.gov.justice.progression.courts.exract.CourtApplications;
-import uk.gov.justice.progression.courts.exract.CourtOrderOffences;
-import uk.gov.justice.progression.courts.exract.CourtOrders;
 import uk.gov.justice.progression.courts.exract.Results;
 import uk.gov.moj.cpp.listing.domain.Hearing;
 import uk.gov.moj.cpp.listing.domain.JurisdictionType;
@@ -24,7 +18,6 @@ import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,64 +117,7 @@ public class CourtExtractHelper {
                 .collect(Collectors.toSet())
                 .stream()
                 .filter(delegatedPowers -> isLegalAdvisor(delegatedPowers.getUserId()))
-                .toList();
-    }
-
-    public List<DelegatedPowers> getApplicationAuthorisedLegalAdvisors(final List<CourtApplications> courtApplications) {
-        return  courtApplications.stream()
-                .filter(courtApplication -> nonNull(courtApplication.getApplicationResults()))
-                .flatMap(courtApplication -> courtApplication.getApplicationResults().stream())
-                .map(ApplicationResults::getResult)
-                .map(JudicialResult::getDelegatedPowers)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet())
-                .stream()
-                .filter(dp -> isLegalAdvisor(dp.getUserId()))
-                .toList();
-    }
-
-    public List<DelegatedPowers> getApplicationAuthorisedLegalAdvisorsForLinkedApplication(final List<CourtApplications> courtApplications, final List<JudicialResult> defendantLevelJudicialResults) {
-        final List<JudicialResult> results = new ArrayList<>(courtApplications.stream()
-                .filter(courtApplication -> nonNull(courtApplication.getApplicationResults()))
-                .flatMap(courtApplication -> courtApplication.getApplicationResults().stream())
-                .map(ApplicationResults::getResult).toList());
-
-        results.addAll(courtApplications.stream()
-                .map(CourtApplications::getCourtOrders)
-                .filter(Objects::nonNull)
-                .map(CourtOrders::getCourtOrderOffences)
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .map(CourtOrderOffences::getCourtOrderOffencesOffenceLevelResults)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .map(offencesOffenceLevelResults -> offencesOffenceLevelResults.getResult())
-                .toList());
-
-        results.addAll(courtApplications.stream()
-                .map(CourtApplications::getCourtApplicationCases)
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .map(CourtApplicationCases::getOffences)
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .map(uk.gov.justice.progression.courts.exract.Offences::getResults)
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .map(Results::getResult)
-                .toList());
-
-        results.addAll(defendantLevelJudicialResults);
-
-        return  results.stream()
-                .map(JudicialResult::getDelegatedPowers)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet())
-                .stream()
-                .filter(dp -> isLegalAdvisor(dp.getUserId()))
-                .toList();
-
-
+                .collect(Collectors.toList());
     }
 
     private List<Offences> getOffencesFromHearingForMatchingSeedingHearing(final UUID seedingHearingId, final UUID defendantId, final UUID offenceIdFromSeedingHearing, final List<Hearings> hearingsList) {

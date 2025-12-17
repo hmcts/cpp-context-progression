@@ -6,6 +6,10 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.ORGANISATION;
+import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PERSON;
+import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PERSON_DEFENDANT;
+import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PROSECUTING_AUTHORITY;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.ApplicationDocument;
@@ -26,6 +30,8 @@ import uk.gov.justice.services.core.enveloper.Enveloper;
 import uk.gov.justice.services.core.requester.Requester;
 import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
+import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
 import uk.gov.moj.cpp.progression.domain.PostalAddress;
 import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalDefendant;
@@ -43,6 +49,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,7 +244,7 @@ public class PostalService {
         return applicant;
     }
 
-    public void sendPostalNotification(final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification, final UUID linkedCaseId) {
+    public void sendPostalNotification(final JsonEnvelope envelope, final UUID applicationId, final PostalNotification postalNotification, final UUID linkedCaseId, final CourtDocumentMetadata courtDocumentMetadata) {
 
         final JsonObject postalNotificationPayload = objectToJsonObjectConverter.convert(postalNotification);
 
@@ -247,7 +254,13 @@ public class PostalService {
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = Json.createObjectBuilder()
+                .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
+                .add("courtDocumentMetadata",
+                        courtDocumentMetadata != null
+                                ? objectToJsonObjectConverter.convert(courtDocumentMetadata)
+                                : JsonValue.NULL)
+                .build();
 
         LOGGER.info("creating court document payload - {}", courtDocumentPayload);
 
@@ -255,11 +268,17 @@ public class PostalService {
 
     }
 
-    public void sendPostalNotificationAaag(final JsonEnvelope envelope, final UUID applicationId, final UUID linkedCaseId, final UUID materialId) {
+    public void sendPostalNotificationAaag(final JsonEnvelope envelope, final UUID applicationId, final UUID linkedCaseId, final UUID materialId, final CourtDocumentMetadata courtDocumentMetadata) {
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = Json.createObjectBuilder()
+                .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
+                .add("courtDocumentMetadata",
+                        courtDocumentMetadata != null
+                                ? objectToJsonObjectConverter.convert(courtDocumentMetadata)
+                                : JsonValue.NULL)
+                .build();
 
         LOGGER.info("creating court document payload - {}", courtDocumentPayload);
 
@@ -340,6 +359,20 @@ public class PostalService {
         return builder.build();
     }
 
+
+    private CourtApplicationPartyType getApplicationPartyType(final CourtApplicationParty courtApplicationParty) {
+        if (ofNullable(courtApplicationParty.getPersonDetails()).isPresent()) {
+            return PERSON;
+        } else if (ofNullable(courtApplicationParty.getOrganisation()).isPresent()) {
+            return ORGANISATION;
+        } else if (ofNullable(courtApplicationParty.getProsecutingAuthority()).isPresent()) {
+            return PROSECUTING_AUTHORITY;
+        }
+
+        return PERSON_DEFENDANT;
+
+    }
+
     private PostalAddressee getPostalAddressee(final JsonEnvelope envelope, final CourtApplicationParty courtApplicationParty) {
 
         final Optional<AssociatedDefenceOrganisation> associatedDefenceOrganisation = getAssociatedDefenceOrganisation(envelope, courtApplicationParty.getMasterDefendant());
@@ -358,8 +391,10 @@ public class PostalService {
                     .build();
         } else {
             return PostalAddressee.builder()
+                    .withCourtApplicationPartyId(courtApplicationParty.getId())
                     .withName(getName(courtApplicationParty))
                     .withAddress(getAddress(courtApplicationParty))
+                    .withCourtApplicationPartyType(getApplicationPartyType(courtApplicationParty))
                     .build();
         }
     }

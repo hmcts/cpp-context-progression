@@ -22,6 +22,7 @@ import uk.gov.justice.services.core.annotation.Handles;
 import uk.gov.justice.services.core.annotation.ServiceComponent;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
 import uk.gov.moj.cpp.progression.events.CourtApplicationDocumentUpdated;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtDocumentEntity;
@@ -80,8 +81,8 @@ public class CourtDocumentEventListener {
     public void processCourtDocumentCreated(final JsonEnvelope event) {
         final CourtsDocumentCreated courtsDocumentCreated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtsDocumentCreated.class);
         final CourtDocument courtDocument = courtsDocumentCreated.getCourtDocument();
-
-        repository.save(getCourtDocumentEntity(courtDocument));
+        final CourtDocumentMetadata courtDocumentMetadata = courtsDocumentCreated.getCourtDocumentMetadata();
+        repository.save(getCourtDocumentEntity(courtDocument, courtDocumentMetadata));
 
         final List<Material> materials = courtDocument.getMaterials();
         if (materials != null && !materials.isEmpty()) {
@@ -106,7 +107,8 @@ public class CourtDocumentEventListener {
     @Handles("progression.event.court-document-updated")
     public void processCourtDocumentUpdated(final JsonEnvelope event) {
         final CourtDocumentUpdated courtDocumentUpdated = jsonObjectConverter.convert(event.payloadAsJsonObject(), CourtDocumentUpdated.class);
-        repository.save(getCourtDocumentEntity(courtDocumentUpdated.getCourtDocument()));
+        final CourtDocumentMetadata courtDocumentMetadata = courtDocumentUpdated.getCourtDocumentMetadata();
+        repository.save(getCourtDocumentEntity(courtDocumentUpdated.getCourtDocument(), courtDocumentMetadata));
     }
 
     @Handles("progression.event.court-document-print-time-updated")
@@ -137,10 +139,14 @@ public class CourtDocumentEventListener {
        courtDocumentIndexRepository.updateApplicationIdByApplicationId(courtApplicationDocumentUpdated.getApplicationId(), courtApplicationDocumentUpdated.getOldApplicationId());
     }
 
-    private CourtDocumentEntity getCourtDocumentEntity(final CourtDocument courtDocument) {
+    private CourtDocumentEntity getCourtDocumentEntity(final CourtDocument courtDocument, final CourtDocumentMetadata courtDocumentMetadata) {
         final CourtDocumentEntity courtDocumentEntity = new CourtDocumentEntity();
         courtDocumentEntity.setCourtDocumentId(courtDocument.getCourtDocumentId());
         courtDocumentEntity.setIndices(new HashSet<>());
+        if (nonNull(courtDocumentMetadata)) {
+            courtDocumentEntity.setDocumentMetadata(objectToJsonObjectConverter.convert(courtDocumentMetadata).toString());
+        }
+
         final DocumentCategory documentCategory = courtDocument.getDocumentCategory();
         final List<UUID> linkedCaseIds = getLinkedCaseIds(documentCategory);
         if (!linkedCaseIds.isEmpty()) {

@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.gov.justice.api.resource.service.HearingQueryService.RESULT_LINES;
@@ -58,14 +59,14 @@ import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCentre;
+import uk.gov.justice.core.courts.CourtOrder;
+import uk.gov.justice.core.courts.CourtOrderOffence;
 import uk.gov.justice.core.courts.DefenceCounsel;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.DefendantAttendance;
-import uk.gov.justice.core.courts.DefendantCase;
 import uk.gov.justice.core.courts.DefendantJudicialResult;
 import uk.gov.justice.core.courts.DelegatedPowers;
 import uk.gov.justice.core.courts.HearingDay;
-import uk.gov.justice.core.courts.HearingListingStatus;
 import uk.gov.justice.core.courts.HearingType;
 import uk.gov.justice.core.courts.IndicatedPlea;
 import uk.gov.justice.core.courts.IndicatedPleaValue;
@@ -76,6 +77,7 @@ import uk.gov.justice.core.courts.JudicialRoleType;
 import uk.gov.justice.core.courts.Jurors;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.MasterDefendant;
+import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Organisation;
 import uk.gov.justice.core.courts.Person;
 import uk.gov.justice.core.courts.PersonDefendant;
@@ -116,9 +118,6 @@ import uk.gov.moj.cpp.listing.domain.JurisdictionType;
 import uk.gov.moj.cpp.listing.domain.ListedCase;
 import uk.gov.moj.cpp.listing.domain.SeedingHearing;
 import uk.gov.moj.cpp.progression.query.view.UserGroupsDetails;
-import uk.gov.moj.cpp.progression.query.view.service.HearingService;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -154,6 +153,7 @@ public class CourtExtractTransformerTest {
     private static final String GUILTY = "Guilty";
     private static final String PLEA_GUILTY_DESCRIPTION = "plea guilty description";
     private static final String COUNSELS_STATUS = "counsels status";
+    private static final String FULL_NAME = "Jack Denial";
     private static final String ORGANISATION_NAME = "Liverpool defence";
     private static final String ASSOCIATED_ORGANISATION_NAME = "Associated Defence Org";
     private static final String DESCRIPTION = "Dodged TFL tickets with passion";
@@ -163,11 +163,12 @@ public class CourtExtractTransformerTest {
     private static final UUID DEFENDANT_ID = randomUUID();
     private static final UUID DEFENDANT_ID_2ND = randomUUID();
     private static final UUID MASTER_DEFENDANT_ID = randomUUID();
-    private static final UUID MASTER_DEFENDANT_ID_2ND = randomUUID();
     private static final UUID HEARING_ID = randomUUID();
     private static final UUID HEARING_ID_2 = randomUUID();
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID OFFENCE_ID = randomUUID();
+    private static final UUID OFFENCE_ID1 = randomUUID();
+    private static final UUID OFFENCE_ID2 = randomUUID();
 
     private static final LocalDate DOB = LocalDate.of(LocalDate.now().getYear() - 30, 01, 01);
 
@@ -258,12 +259,6 @@ public class CourtExtractTransformerTest {
     private PleaValueDescriptionBuilder pleaValueDescriptionBuilder;
 
     @Mock
-    private HearingRepository hearingRepository;
-
-    @Mock
-    private HearingService hearingService;
-
-    @Mock
     private ResultTextFlagBuilder resultTextFlagBuilder;
     private ObjectToJsonObjectConverter objectToJsonObjectConverter = new ObjectToJsonObjectConverter(new ObjectMapperProducer().objectMapper());
 
@@ -284,9 +279,6 @@ public class CourtExtractTransformerTest {
         setField(this.target, "resultTextFlagBuilder", resultTextFlagBuilder);
         setField(this.target, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
         setField(this.target, "objectToJsonObjectConverter", objectToJsonObjectConverter);
-        setField(this.target, "hearingRepository", hearingRepository);
-        setField(this.target, "hearingService", hearingService);
-        setField(this.target, "stringToJsonObjectConverter", stringToJsonObjectConverter);
         setField(this.courtExtractHelper, "usersAndGroupsService", usersAndGroupsService);
     }
 
@@ -294,7 +286,7 @@ public class CourtExtractTransformerTest {
     public void getTransformToRecordSheetPayload_WhenMultipleDefendantsPresent() throws IOException {
         String defendantId = "5c75653a-e264-4b59-a419-66221b725a58";
 
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-multiple-defendants.json"));
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-multiple-defendants.json"));
         final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
         final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
         GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
@@ -314,7 +306,7 @@ public class CourtExtractTransformerTest {
     void shouldTransformToRecordSheetPayload_WhenOneOfHearingDaysIsNull() throws IOException {
         String defendantId = "a7b845dc-5dfe-484c-8d1c-65197121885a";
 
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-oneof-hearingDays-is-null.json"));
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-oneof-hearingDays-is-null.json"));
         final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
         final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
         GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
@@ -333,7 +325,7 @@ public class CourtExtractTransformerTest {
     void shouldTransformToRecordSheetPayload_WhenmasterDefendantRelatedWithOtherHearings()  {
         final String defendantId = "b17b37ba-acd7-4c58-ac63-85324dd6b545";
 
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-multiple-defendants-and-hearings-and-different-masterDefendantId.json"));
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-multiple-defendants-and-hearings-and-different-masterDefendantId.json"));
         final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
         final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
         GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
@@ -353,7 +345,7 @@ public class CourtExtractTransformerTest {
     public void getTransformToRecordSheetPayload_WhenOneDefendantPresent() throws IOException {
         String defendantId = "e6dc2886-72b6-43c6-a93b-4fae77ee8e41";
 
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-one-defendant.json"));
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-one-defendant.json"));
         final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
         final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
         GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
@@ -372,7 +364,7 @@ public class CourtExtractTransformerTest {
     public void getTransformToRecordSheetPayload_WhenBreachApplicationPresent() throws IOException {
         String defendantId = "d0cea893-2bed-4b80-8e9a-63b5e2c84309";
 
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-breach-application.json"));
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-with-breach-application.json"));
         final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
         final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
         GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
@@ -389,7 +381,7 @@ public class CourtExtractTransformerTest {
     public void getTransformToRecordSheetPayload_WhenMultipleDefendantsAndHearingsPresent() throws IOException {
         String defendantId = "42df5ca0-0cd6-47a7-b777-ab1a5e822666";
 
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-multiple-defendants-and-hearings.json"));
+        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-multiple-defendants-and-hearings.json"));
         final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
         final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
         GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
@@ -414,18 +406,6 @@ public class CourtExtractTransformerTest {
 
         final String extractType = "CrownCourtExtract";
         final GetHearingsAtAGlance hearingsAtAGlance = createHearingsAtGlance();
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(APPLICATION_ID)
-                                .withType(CourtApplicationType.courtApplicationType().withType(APPLICATION_TYPE).build())
-                                .withRespondents(hearingsAtAGlance.getCourtApplications().get(0).getRespondents())
-                                .withApplicant(hearingsAtAGlance.getCourtApplications().get(0).getApplicant())
-
-                        .build()))
-                .build()).toString());
-
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
 
         final List<String> selectedHearingIds = asList(HEARING_ID.toString(), HEARING_ID_2.toString());
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
@@ -463,21 +443,8 @@ public class CourtExtractTransformerTest {
     @Test
     public void testTransformToCourtExtract_shouldUseSelectedHearing_whenExtractTypeIsCrownCourtExtractAndOneHearingsSelected() {
         final String extractType = "CrownCourtExtract";
-        final GetHearingsAtAGlance hearingsAtGlance = createHearingsAtGlance();
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(APPLICATION_ID)
-                                .withApplicant(hearingsAtGlance.getCourtApplications().get(0).getApplicant())
-                                .withRespondents(hearingsAtGlance.getCourtApplications().get(0).getRespondents())
-                        .build()))
-                .build()).toString());
-
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
-
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createHearingsAtGlance(), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is((1)));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId().toString(), is((selectedHearingIds.get(0))));
@@ -492,15 +459,7 @@ public class CourtExtractTransformerTest {
     public void testTransformToCourtExtract_whenExtractTypeIsCrownCourtWithAPendingApplication_expectAppealPendingFlagAsTrue() {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
-        final GetHearingsAtAGlance caseAtAGlanceWithCourtApplicationParty = createCaseAtAGlanceWithCourtApplicationParty();
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                        .withCourtApplications(List.of(CourtApplication.courtApplication()
-                                        .withId(APPLICATION_ID)
-                                .build()))
-                .build()).toString());
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(caseAtAGlanceWithCourtApplicationParty, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createCaseAtAGlanceWithCourtApplicationParty(), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is((1)));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId().toString(), is((selectedHearingIds.get(0))));
@@ -513,17 +472,6 @@ public class CourtExtractTransformerTest {
         final UUID breachApplicationHearing = randomUUID();
         final List<String> selectedHearingIds = asList(HEARING_ID.toString(), breachApplicationHearing.toString());
         final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithBreachTypeApplication(DEFENDANT_ID.toString(), HEARING_ID.toString(), breachApplicationHearing.toString());
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(fromString("97b2170c-cbfa-4bc9-bc63-d5b3d4cc5f11"))
-                                .withCourtOrder(hearingAtAGlance.getCourtApplications().get(0).getCourtOrder())
-                        .build()))
-                .build()).toString());
-        when(hearingRepository.findBy(breachApplicationHearing)).thenReturn(applicationHearingEntity);
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing().build()).toString());
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((2)));
@@ -539,8 +487,6 @@ public class CourtExtractTransformerTest {
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getOffenceTitle(), is(("Possess / control TV set with intent another use install without a licence")));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getWording(), is(("Original CaseURN: 28DI8505400, Re-sentenced Original code : CA03012, Original details: Micaela Marks have set up a TV cable without a valid license.")));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getResultTextList().size(), is((2)));
-        assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getCourtOrderOffencesOffenceLevelResults().size(), is((1)));
-        assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getCourtOrderOffencesOffenceLevelResults().get(0).getResult().getResultText(), is(("FO - Fine\nFined £100.00")));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getPlea().getPleaValue(), is(("GUILTY")));
         assertThat(breachApplication.getCourtOrders().getCourtOrderOffences().get(0).getIndicatedPlea().getIndicatedPleaValue().name(), is(("INDICATED_GUILTY")));
         assertThat(breachApplication.getConvictionDate().toString(), is("2025-05-21"));
@@ -567,41 +513,28 @@ public class CourtExtractTransformerTest {
         final List<String> selectedHearingIds = asList(HEARING_ID.toString(), breachApplicationHearing.toString());
         final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithBreachTypeApplication(DEFENDANT_ID.toString(), HEARING_ID.toString(), breachApplicationHearing.toString());
         when(usersAndGroupsService.getUserGroups(any())).thenReturn(List.of(new UserGroupsDetails(randomUUID(), "Legal Advisers")));
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                        .withCourtApplications(hearingAtAGlance.getCourtApplications())
-                .build()).toString());
 
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-
-        when(hearingRepository.findBy(breachApplicationHearing)).thenReturn(applicationHearingEntity);
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((2)));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getAuthorisedLegalAdvisors().get(0).getFirstName(), is(("Erica")));
         assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getAuthorisedLegalAdvisors().get(0).getLastName(), is(("Wilson")));
-
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getAuthorisedLegalAdvisors().get(0).getFirstName(), is(("Evan")));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getAuthorisedLegalAdvisors().get(0).getLastName(), is(("Roberts")));
     }
 
     @Test
     public void testTransformToCourtExtract_whenResultAmendedWithSlipRule() {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
-        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "court-extract/progression.query.prosecutioncase-result-sliprule-amended.json");
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "progression.query.prosecutioncase-result-sliprule-amended.json");
         final UUID applicationId = hearingAtAGlance.getCourtApplications().get(0).getId();
-        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "court-extract/hearing.query.hearing.get-draft-result-v2.json");
+        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing.query.hearing.get-draft-result-v2.json");
         final LocalDate hearingDay = LocalDate.parse("2025-02-13");
         final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, defendantResultlines, null);
 
 
         when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
         when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
-        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("court-extract/referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
 
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
@@ -635,15 +568,15 @@ public class CourtExtractTransformerTest {
     public void testTransformToCourtExtract_whenResultDeletedWithSlipRule() {
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
-        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "court-extract/progression.query.prosecutioncase-result-sliprule-amended-deleted.json");
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "progression.query.prosecutioncase-result-sliprule-amended-deleted.json");
         final UUID applicationId = randomUUID();
-        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "court-extract/hearing.query.hearing.get-draft-result-v2-deleted.json");
+        final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing.query.hearing.get-draft-result-v2-deleted.json");
         final LocalDate hearingDay = LocalDate.parse("2025-02-28");
         final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, defendantResultlines, null);
 
         when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
         when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
-        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("court-extract/referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
 
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
@@ -660,7 +593,7 @@ public class CourtExtractTransformerTest {
 
         final String extractType = "CrownCourtExtract";
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
-        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "court-extract/progression.query.prosecutioncase-result-sliprule-prompt-amended.json");
+        final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithSlipRuleAmendment(DEFENDANT_ID.toString(), HEARING_ID.toString(), "progression.query.prosecutioncase-result-sliprule-prompt-amended.json");
         final UUID applicationId = randomUUID();
         final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing-results/hearing.query.hearing.get-draft-result-v2-amended.json");
         final LocalDate hearingDay = LocalDate.parse("2025-02-28");
@@ -687,16 +620,6 @@ public class CourtExtractTransformerTest {
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
         final GetHearingsAtAGlance hearingAtAGlance = createHearingAtAGlanceWithDefendantAndCourtApplicationSlipRuleAmendments(DEFENDANT_ID.toString(), MASTER_DEFENDANT_ID.toString(), HEARING_ID.toString());
         final UUID applicationId = hearingAtAGlance.getCourtApplications().get(0).getId();
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(applicationId)
-                        .withJudicialResults(List.of(hearingAtAGlance.getCourtApplications().get(0).getJudicialResults().get(1),
-                                hearingAtAGlance.getCourtApplications().get(0).getJudicialResults().get(0)))
-                        .build()))
-                .build()).toString());
-
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
 
         final List<ResultLine> defendantResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing-results/hearing.query.hearing.get-defendant-draft-result-v2.json");
         final LocalDate hearingDay = LocalDate.parse("2025-02-24");
@@ -704,15 +627,15 @@ public class CourtExtractTransformerTest {
 
         when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
         when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
-        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("court-extract/referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
 
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         final uk.gov.justice.progression.courts.exract.Hearings hearings = courtExtractRequested.getDefendant().getHearings().get(0);
         assertThat(courtExtractRequested.getDefendant().getHearings().size(), is((1)));
-        assertThat(hearings.getDefendantResults().size(), is((6)));
+        assertThat(hearings.getDefendantResults().size(), is((4)));
         assertThat(hearings.getDefendantResults().stream().filter(dr -> nonNull(dr.getAmendments()))
-                .allMatch(dr -> DEFENDANT_ID.equals(dr.getAmendments().get(0).getDefendantId()) || applicationId.equals(dr.getAmendments().get(0).getApplicationId())), is(true));
+                .allMatch(dr -> dr.getAmendments().get(0).getDefendantId().equals(DEFENDANT_ID)), is(true));
 
         assertThat(hearings.getDefendantResults().get(0).getAmendments().size(), is((1)));
         assertThat(hearings.getDefendantResults().get(0).getAmendments().get(0).getResultText(), is(("Fined and detained in default of payment until court rises\nType of detention . Detention deemed served by reason of time already spent in custody\nTotal amount enforced 1500.00")));
@@ -725,14 +648,6 @@ public class CourtExtractTransformerTest {
         assertThat(hearings.getDefendantResults().get(3).getAmendments().size(), is((1)));
         assertThat(hearings.getDefendantResults().get(3).getAmendments().get(0).getResultText(), is(("Reserve Terms Instalments only\nPayment frequency weekly")));
         assertThat(hearings.getDefendantResults().get(3).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
-
-        assertThat(hearings.getDefendantResults().get(4).getAmendments().size(), is((1)));
-        assertThat(hearings.getDefendantResults().get(4).getAmendments().get(0).getResultText(), is(("Reserve Terms Instalments only\nPayment frequency weekly\nInstalment start date 2025-04-01")));
-        assertThat(hearings.getDefendantResults().get(4).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
-
-        assertThat(hearings.getDefendantResults().get(5).getAmendments().size(), is((1)));
-        assertThat(hearings.getDefendantResults().get(5).getAmendments().get(0).getResultText(), is(("Surcharge\nAmount of surcharge 120.00")));
-        assertThat(hearings.getDefendantResults().get(5).getAmendments().get(0).getAmendmentType(), is(("ADDED")));
     }
 
     @Test
@@ -745,18 +660,10 @@ public class CourtExtractTransformerTest {
         final List<ResultLine> mockResultlines = getMockResultlines(DEFENDANT_ID, applicationId, "hearing-results/hearing.query.hearing.get-defendant-draft-result-v2.json");
         final LocalDate hearingDay = LocalDate.parse("2025-02-24");
         final DraftResultsWrapper draftResultsWrapper = new DraftResultsWrapper(HEARING_ID, hearingDay, mockResultlines, null);
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(applicationId)
-                        .withJudicialResults(hearingAtAGlance.getHearings().get(0).getDefendants().get(0).getCourtApplications().get(0).getJudicialResults())
-                        .build()))
-                .build()).toString());
 
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
         when(hearingQueryService.getDraftResultsWithAmendments(any(), any(), any())).thenReturn(List.of(draftResultsWrapper));
         when(referenceDataService.getAmendmentReasonId(any(), any())).thenReturn(SLIP_RULE_AMENDMENT_REASON_ID);
-        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("court-extract/referencedata.query.referencedata.query-result-definitions-by-ids.json"));
+        when(referenceDataService.getResultDefinitionsByIds(any(), any())).thenReturn(getResultDefinitions("referencedata.query.referencedata.query-result-definitions-by-ids.json"));
 
         final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
@@ -765,17 +672,15 @@ public class CourtExtractTransformerTest {
         assertThat(hearings.getCourtApplications().size(), is((1)));
 
         final List<ApplicationResults> applicationResults = hearings.getCourtApplications().get(0).getApplicationResults();
-        assertThat(applicationResults.isEmpty(), is(true));
+        assertThat(applicationResults.size(), is(2));
 
+        assertThat(applicationResults.get(0).getAmendments().size(), is((1)));
+        assertThat(applicationResults.get(0).getAmendments().get(0).getResultText(), is(("Reserve Terms Instalments only\nPayment frequency weekly\nInstalment start date 2025-04-01")));
+        assertThat(applicationResults.get(0).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
 
-        final List<DefendantResults> defendantResults = hearings.getDefendantResults();
-        assertThat(defendantResults.get(4).getAmendments().size(), is((1)));
-        assertThat(defendantResults.get(4).getAmendments().get(0).getResultText(), is(("Reserve Terms Instalments only\nPayment frequency weekly\nInstalment start date 2025-04-01")));
-        assertThat(defendantResults.get(4).getAmendments().get(0).getAmendmentType(), is(("AMENDED")));
-
-        assertThat(defendantResults.get(5).getAmendments().size(), is((1)));
-        assertThat(defendantResults.get(5).getAmendments().get(0).getResultText(), is(("Surcharge\nAmount of surcharge 120.00")));
-        assertThat(defendantResults.get(5).getAmendments().get(0).getAmendmentType(), is(("ADDED")));
+        assertThat(applicationResults.get(1).getAmendments().size(), is((1)));
+        assertThat(applicationResults.get(1).getAmendments().get(0).getResultText(), is(("Surcharge\nAmount of surcharge 120.00")));
+        assertThat(applicationResults.get(1).getAmendments().get(0).getAmendmentType(), is(("ADDED")));
     }
 
     private List<ResultDefinition> getResultDefinitions(final String pathToJson) {
@@ -823,7 +728,6 @@ public class CourtExtractTransformerTest {
     @Test
     public void testTransformToCourtExtract_shouldIncludeAdditionalAttributes() {
         final String extractType = "CrownCourtExtract";
-        final GetHearingsAtAGlance hearingsAtGlance = createCaseAtAGlanceDefendant2(null);
         final List<String> selectedHearingIds = singletonList(HEARING_ID.toString());
         when(defenceQueryService.getAllAssociatedOrganisations(any(), eq(DEFENDANT_ID_2ND.toString()))).thenReturn(List.of(AssociatedDefenceOrganisation.associatedDefenceOrganisation()
                 .withAssociationStartDate(ASSOCIATION_START_DATE)
@@ -834,14 +738,7 @@ public class CourtExtractTransformerTest {
                                 .build()).build())
                 .build()));
 
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(hearingsAtGlance.getCourtApplications())
-                .build()).toString());
-
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtGlance, DEFENDANT_ID_2ND.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(createHearingsAtGlance(), DEFENDANT_ID_2ND.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         final List<uk.gov.justice.progression.courts.exract.Offences> offenceList = courtExtractRequested.getDefendant().getHearings().get(0).getOffences();
 
@@ -865,23 +762,9 @@ public class CourtExtractTransformerTest {
         final List<String> selectedHearingIds = asList(HEARING_ID.toString());
         final List<Hearings> judicialResultsByRandomId = createHearingsWithJudicialResults(randomUUID());
         final List<Hearings> judicialResultsByMasterDefendantId = createHearingsWithJudicialResults(MASTER_DEFENDANT_ID);
-        final GetHearingsAtAGlance caseAtAGlance = createCaseAtAGlance(judicialResultsByRandomId);
-        final GetHearingsAtAGlance caseAtAGlance2 = createCaseAtAGlance(judicialResultsByMasterDefendantId);
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(APPLICATION_ID)
-                        .withType(CourtApplicationType.courtApplicationType().withType(APPLICATION_TYPE).build())
-                        .withRespondents(caseAtAGlance.getCourtApplications().get(0).getRespondents())
-                        .withApplicant(caseAtAGlance.getCourtApplications().get(0).getApplicant())
-                        .withJudicialResults(List.of(JudicialResult.judicialResult().withJudicialResultId(randomUUID()).build()))
-                        .build()))
-                .build()).toString());
 
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
-        final CourtExtractRequested extractRequestedByRandomId = target.getCourtExtractRequested(caseAtAGlance, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
-
-        final CourtExtractRequested extractRequestedByMasterDefendantId = target.getCourtExtractRequested(caseAtAGlance2, DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested extractRequestedByRandomId = target.getCourtExtractRequested(createCaseAtAGlance(judicialResultsByRandomId), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
+        final CourtExtractRequested extractRequestedByMasterDefendantId = target.getCourtExtractRequested(createCaseAtAGlance(judicialResultsByMasterDefendantId), DEFENDANT_ID.toString(), extractType, selectedHearingIds, randomUUID(), prosecutionCase);
 
         assertGetCourtExtractRequested(extractRequestedByRandomId, extractType, 1);
         assertGetCourtExtractRequested(extractRequestedByMasterDefendantId, extractType, 2);
@@ -893,18 +776,7 @@ public class CourtExtractTransformerTest {
         final String extractType = "CrownCourtExtract";
         final GetHearingsAtAGlance hearingsAtAGlance = createHearingsAtGlance();
         when(referenceDataService.getProsecutor(argThat(Matchers.any(JsonEnvelope.class)), argThat(Matchers.any(ProsecutionCaseIdentifier.class)))).thenReturn(new uk.gov.justice.progression.courts.exract.ProsecutingAuthority(null, null, null));
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(APPLICATION_ID)
-                        .withType(CourtApplicationType.courtApplicationType().withType(APPLICATION_TYPE).build())
-                        .withRespondents(hearingsAtAGlance.getCourtApplications().get(0).getRespondents())
-                        .withApplicant(hearingsAtAGlance.getCourtApplications().get(0).getApplicant())
-                        .withJudicialResults(List.of(JudicialResult.judicialResult().withJudicialResultId(randomUUID()).build()))
-                        .build()))
-                .build()).toString());
 
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
         final CourtExtractRequested courtExtractRequested = target.ejectCase(prosecutionCase, hearingsAtAGlance, DEFENDANT_ID.toString(), randomUUID());
 
         //then
@@ -921,16 +793,6 @@ public class CourtExtractTransformerTest {
         final String extractType = "CrownCourtExtract";
         final GetHearingsAtAGlance hearingsAtAGlance = createHearingsAtGlance();
         when(referenceDataService.getProsecutor(argThat(Matchers.any(JsonEnvelope.class)), argThat(Matchers.any(ProsecutionCaseIdentifier.class)))).thenReturn(new uk.gov.justice.progression.courts.exract.ProsecutingAuthority(null, null, null));
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(APPLICATION_ID)
-                        .withApplicant(hearingsAtAGlance.getCourtApplications().get(0).getApplicant())
-                        .withRespondents(hearingsAtAGlance.getCourtApplications().get(0).getRespondents())
-                        .build()))
-                .build()).toString());
-
-        when(hearingRepository.findBy(HEARING_ID)).thenReturn(hearingEntity);
         final CourtExtractRequested courtExtractRequested = target.ejectCase(getProsecutionCaseForLegalEntityDefendant(), hearingsAtAGlance, DEFENDANT_ID.toString(), randomUUID());
 
         assertNotNull(courtExtractRequested.getProsecutingAuthority());
@@ -1061,454 +923,6 @@ public class CourtExtractTransformerTest {
         assertThat(offencesMags.get(2).getOffenceTitle(), is("o3"));
         assertThat(offencesMags.get(3).getOffenceTitle(), is("o4"));
     }
-
-    @Test
-    void shouldAddCourtApplicationHearingIntoCourtExtractWhenCourtApplicationHearingIsNotInHearingAtAGlance() {
-        final String defendantId = "f64a0d1f-9031-49d9-beb0-3a8b301e18c3";
-        final String hearingId = "6b332c05-ea71-49a3-83f9-3d0829569efa";
-        final String applicationHearingId = "657a947b-0c4c-4024-8202-c65e64a1b221";
-        final String applicationId = "89c51450-7c8f-43a6-8f05-1e8358f394b6";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        applicationHearingEntity.setPayload(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-hearing.json"));
-        when(hearingService.getApplicationHearings(UUID.fromString(applicationId))).thenReturn(List.of(UUID.fromString(applicationHearingId)));
-        when(hearingRepository.findBy(fromString(applicationHearingId))).thenReturn(applicationHearingEntity);
-
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity);
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().stream().anyMatch(h -> hearingId.equals(h.getId().toString())), is(true));
-
-        final uk.gov.justice.progression.courts.exract.Hearings hearings = courtExtractRequested.getDefendant().getHearings().stream()
-                .filter(h -> applicationHearingId.equals(h.getId().toString()))
-                .findFirst().get();
-
-        assertThat(hearings.getCourtApplications().size(), is(1));
-        assertThat(hearings.getCourtApplications().get(0).getCourtOrders().getId().toString(), is("f48398e3-0b4e-4804-884a-b7a7f5241af9"));
-
-        assertThat(objectToJsonObjectConverter.convert(courtExtractRequested), is(stringToJsonObjectConverter.convert(getPayload("court-extract/progression.court-extract-for-application-hearing-not-exists-hearing-at-a-glance.json"))));
-
-    }
-
-    @Test
-    void shouldAddCourtApplicationHearingIntoCourtExtractAndReturnOnlyRelatedDefendantResultsWhenCourtApplicationHearingIsNotInHearingAtAGlance() {
-        final String defendantId = "5b05cafa-d175-4816-868b-61ab027ea75e";
-        final String hearingId = "454829c0-1dc0-4f6f-8ba7-a785af6b946d";
-        final String applicationHearingId = "6c567954-1901-4292-b7ff-e7d77f5742ad";
-        final String applicationId = "829b0b83-b73a-4307-adc7-eab6198bb41b";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications3.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        applicationHearingEntity.setPayload(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-hearing3.json"));
-        when(hearingService.getApplicationHearings(UUID.fromString(applicationId))).thenReturn(List.of(UUID.fromString(applicationHearingId)));
-        when(hearingRepository.findBy(fromString(applicationHearingId))).thenReturn(applicationHearingEntity);
-
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity);
-        when(usersAndGroupsService.getUserGroups(any())).thenReturn(List.of(new UserGroupsDetails(randomUUID(), "Legal Advisers")));
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().stream().anyMatch(h -> hearingId.equals(h.getId().toString())), is(true));
-
-        assertThat(objectToJsonObjectConverter.convert(courtExtractRequested), is(stringToJsonObjectConverter.convert(getPayload("court-extract/progression.court-extract-for-application-hearing-not-exists-hearing-at-a-glance3.json"))));
-
-    }
-
-    @Test
-    void shouldNotAddCourtApplicationHearingIntoCourtExtractWhenCourtApplicationHearingIsInHearingAtAGlance() {
-        final String defendantId="553cd1f2-62d7-4208-a8a8-cc50db1e0404";
-        final String hearingId="657a947b-0c4c-4024-8202-c65e64a1b221";
-        final String applicationHearingId="657a947b-0c4c-4024-8202-c65e64a1b221";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications2.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setPayload(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-hearing2.json"));
-        applicationHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        when(hearingRepository.findBy(fromString(applicationHearingId))).thenReturn(applicationHearingEntity);
-
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(hearingsAtAGlance.getCourtApplications())
-                .build()).toString());
-
-        when(hearingRepository.findBy(fromString(hearingId))).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getCourtOrders().getId().toString(), is("f48398e3-0b4e-4804-884a-b7a7f5241af9"));
-
-        assertThat(objectToJsonObjectConverter.convert(courtExtractRequested), is(stringToJsonObjectConverter.convert(getPayload("court-extract/progression.court-extract-for-application-hearing-exists-hearing-at-a-glance.json"))));
-    }
-
-    @Test
-    void shouldNotAddRelatedCourtApplicationHearingIntoCourtExtractWhenOnlyCourtApplicationHearingSelected() {
-        final String defendantId="53a5bc8f-1065-4551-bd17-4886cd9ff816";
-        final String applicationId="14b3a3e1-699e-4350-9831-e57332f8cf6d";
-        final String selectedApplicationHearingId="b9f89412-ed94-475a-a745-20db503daeae";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-multiple-courtApplications-hearings.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(UUID.fromString(applicationId))
-                        .build()))
-                .build()).toString());
-        when(hearingRepository.findBy(UUID.fromString(selectedApplicationHearingId))).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(selectedApplicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId().toString(), is(selectedApplicationHearingId));
-    }
-
-    @Test
-    void shouldAddOnlyResultedAndNonBoxWorkCourtApplicationHearingIntoCourtExtractWhenCourtApplicationHearingIsInHearingAtAGlance() {
-        final String defendantId = "9ce71c06-5dbd-4f8c-8729-69c4a1bbf1ed";
-        final String hearingId = "657a947b-0c4c-4024-8202-c65e64a1b221";
-        final String applicationHearingIdResulted = "13914ee8-a838-4cf8-85f6-ef6c0d713ab2";
-        final String applicationHearingIdNotResulted = "e95f9594-0e8f-473b-9477-d5cd4fe83751";
-        final String boxWorkApplicationHearing = "9582ec58-0a41-4a21-a8a8-3c540acabd3e";
-        final String applicationId = "f1aaf8e6-22fb-4bc1-915a-f298b8880971";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-has-unresulted-hearing.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-breach-hearing.json"));
-        hearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        when(hearingRepository.findBy(fromString(applicationHearingIdResulted))).thenReturn(hearingEntity);
-        final HearingEntity hearingEntity2 = new HearingEntity();
-        hearingEntity2.setListingStatus(HearingListingStatus.SENT_FOR_LISTING);
-        when(hearingRepository.findBy(fromString(applicationHearingIdNotResulted))).thenReturn(hearingEntity2);
-        final HearingEntity hearingEntity3 = new HearingEntity();
-        hearingEntity3.setPayload(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-boxwork-hearing.json"));
-        hearingEntity3.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        when(hearingRepository.findBy(fromString(boxWorkApplicationHearing))).thenReturn(hearingEntity3);
-        when(hearingService.getApplicationHearings(UUID.fromString(applicationId))).thenReturn(List.of(UUID.fromString(applicationHearingIdResulted), UUID.fromString(applicationHearingIdNotResulted), UUID.fromString(boxWorkApplicationHearing)));
-
-        HearingEntity hearingEntity4 = new HearingEntity();
-        hearingEntity4.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity4);
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(UUID.fromString(hearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getId(), is(UUID.fromString(applicationHearingIdResulted)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getCourtApplications().get(0).getApplicationResults().get(0).getResult().getLabel(), is("Next hearing"));
-
-    }
-
-
-    @Test
-    void shouldOnlyAddDefendantsApplicationWhenLinkedApplicationHearingIsAddedToCaseHearingCourtExtract() {
-        final String defendantId = "37c84f4c-bbbb-43c6-b5a8-69cece9028d9";
-        final String hearingId = "8c9bd525-3a56-462f-876e-3c1949dff4f7";
-        final String applicationHearingId = "54a0e27e-58c2-461c-8201-8dc2958130aa";
-        final String applicationIdForDef1 = "4449bfd8-61ca-4652-b10d-e41371f49af3";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-multiple-defendant.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setPayload(getPayload("court-extract/progression.query.hearing-with-courtApplications-multiple-defendant.json"));
-        applicationHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        when(hearingRepository.findBy(fromString(applicationHearingId))).thenReturn(applicationHearingEntity);
-        when(hearingService.getApplicationHearings(UUID.fromString(applicationIdForDef1))).thenReturn(List.of(UUID.fromString(applicationHearingId)));
-
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(UUID.fromString(hearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getId(), is(UUID.fromString(applicationHearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getCourtApplications().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getCourtApplications().get(0).getId(), is((UUID.fromString(applicationIdForDef1))));
-
-    }
-
-    @Test
-    void shouldAddClonedOffencesAndCourtOrdersToCourtApplication() {
-        final String defendantId = "e81f93ae-c75e-44ca-8ae7-d561d17ebd24";
-        final String hearingId = "91e97849-bc03-4a89-aa2d-fa2d3c781a0f";
-        final String applicationHearingId = "e0b6a698-11b9-4ce8-ac6b-0394f1942cf5";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-cloned-offences.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(hearingsAtAGlance.getCourtApplications())
-                .build()).toString());
-
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-
-        when(hearingRepository.findBy(UUID.fromString(applicationHearingId))).thenReturn(applicationHearingEntity);
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId,applicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(objectToJsonObjectConverter.convert(courtExtractRequested), is(stringToJsonObjectConverter.convert(getPayload("court-extract/progression.court-extract-for-application-has-cloned-offences.json"))));
-
-    }
-
-
-    @Test
-    void shouldCourtExtractHearingWhenOnlyLinkedApplicationHearingWithDifferentDefendantIdSelected() {
-        final String defendantId = "e39576da-3c37-4ab9-bda1-e56106284b76";
-        final String applicationHearingId = "5d89ab5d-b205-481a-915e-13a2b6dbc315";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-different_defendant_id-in-hearing.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(applicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(UUID.fromString(applicationHearingId)));
-
-    }
-
-    @Test
-    void shouldOnlyAddDefendantsApplication() {
-        final String defendantId = "09fc4a50-4667-4f2c-80f0-06f5f2d48e20";
-        final String applicationId = "0b95090c-b1ab-45d6-ac65-965a6e523422";
-        final String hearing1 = "02f3b253-5db0-4267-8ab8-db6283d12527";
-        final String hearing2 = "5ced2bfb-8aa9-469a-9079-201b18b2a7c3";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-two-defendants.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .withCourtApplications(List.of(CourtApplication.courtApplication()
-                        .withId(UUID.fromString(applicationId))
-                        .build()))
-                .build()).toString());
-        when(hearingRepository.findBy(UUID.fromString(hearing1))).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearing1,hearing2), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getCourtApplications().isEmpty(), is(true));
-
-    }
-
-    @Test
-    void shouldNotAddDuplicatedDefendantResultsForClonedOffences() {
-        final String defendantId = "35d1defc-1b0f-4a8a-9986-4d187d7f1b97";
-        final String hearingId = "7a5dcebc-9fe0-4b75-a6f2-fdcb9a4cbeef";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-duplicate-defendant-results.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getDefendantResults().get(0).getResult().getJudicialResultId().toString(), is("5e07020f-2813-4660-bf9d-77a3afc42432"));
-
-    }
-
-    @Test
-    void shouldCourtExtractWhenHearingHasDifferentDefendantId() {
-        final String defendantId = "ee0d60c5-8de5-4e60-93df-59c5d64cc6a9";
-        final String applicationHearingId = "93d57922-c03d-42cb-89e4-1e39fae44b2d";
-        final String hearingId = "7ab0a8c1-bd78-4b62-993b-b625988eb370";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-court-application-linked-case-different-defendantId.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(applicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getAttendanceDays().size(),is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getAttendanceDays().get(0).getAttendanceType(),is("Present - in person"));
-
-        final CourtExtractRequested courtExtractRequested2 = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId, applicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested2.getDefendant().getHearings().get(0).getAttendanceDays().size(),is(1));
-        assertThat(courtExtractRequested2.getDefendant().getHearings().get(0).getAttendanceDays().get(0).getAttendanceType(),is("Present - in person"));
-        assertThat(courtExtractRequested2.getDefendant().getHearings().get(1).getAttendanceDays().size(),is(1));
-        assertThat(courtExtractRequested2.getDefendant().getHearings().get(1).getAttendanceDays().get(0).getAttendanceType(),is("Present - in person"));
-
-    }
-
-    @Test
-    void shouldGetFirstHearingOffencesWhenReceiveDifferentMasterDefendant() {
-        final String defendantId = "50a1940f-7606-4e8d-a710-4aee0dec69fd";
-        final String applicationHearingId = "b054df08-9225-4b0e-9929-13fb878a2e77";
-        final String hearingId = "80aee3c3-931e-40fe-b49f-f1b179b65d51";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-court-application-first-hearing-different-master-defendant-id.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId,applicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().size(), is(1));
-
-    }
-
-    @Test
-    void shouldGetDefendantAttendanceAndLegalAdviserAndDefenceOrganisationFromLinkedApplication() {
-        final String defendantId = "011e700e-9616-4d8b-83e0-38a4a84a8e71";
-        final String hearingId = "50789456-84e8-474d-9ab0-02dc29ae4857";
-        final String applicationHearingId = "fdb36144-65ca-4570-8c94-abbf05a63449";
-        final String applicationId = "d914aa09-e72a-4dd7-b590-b1e0b988da23";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-linked-application.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setPayload(getPayload("court-extract/progression.query.hearing-with-courtApplications-linked-application.json"));
-        applicationHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        when(hearingRepository.findBy(fromString(applicationHearingId))).thenReturn(applicationHearingEntity);
-        when(hearingService.getApplicationHearings(UUID.fromString(applicationId))).thenReturn(List.of(UUID.fromString(applicationHearingId)));
-        when(usersAndGroupsService.getUserGroups(any())).thenReturn(List.of(new UserGroupsDetails(randomUUID(), "Legal Advisers")));
-        final HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(UUID.fromString(hearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getId(), is(UUID.fromString(applicationHearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getAttendanceDays().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getAttendanceDays().get(0).getDay().toString(), is("2025-10-13"));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getAuthorisedLegalAdvisors().get(0).getFirstName(), is("Erica"));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getAuthorisedLegalAdvisors().get(0).getLastName(), is("Wilson"));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getDefenceCounsels().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getDefenceCounsels().get(0).getName(), is("Attendee VK FirstName Attendee VK LastName"));
-    }
-
-    @Test
-    void shouldOnlyAddLinkedApplicationHearingThatHasClonedOffence() {
-        final String defendantId = "6e778e77-97b5-4ad6-9fb2-b62b9e6eb597";
-        final String hearingId = "4a4f0824-7cc5-4bb2-91ed-3da35f7c75f9";
-        final String applicationHearingId = "6c951752-a11b-4757-b739-cbcbc493c064";
-        final String applicationId = "ab4052f3-e26d-40f2-9078-d9f2dd418f70";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-linked-application-split-hearing.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        final HearingEntity applicationHearingEntity = new HearingEntity();
-        applicationHearingEntity.setPayload(getPayload("court-extract/progression.query.hearing-with-courtApplications-linked-application-split-hearing.json"));
-        applicationHearingEntity.setListingStatus(HearingListingStatus.HEARING_RESULTED);
-        when(hearingRepository.findBy(fromString(applicationHearingId))).thenReturn(applicationHearingEntity);
-        when(hearingService.getApplicationHearings(UUID.fromString(applicationId))).thenReturn(List.of(UUID.fromString(applicationHearingId)));
-        HearingEntity hearingEntity = new HearingEntity();
-        hearingEntity.setPayload(objectToJsonObjectConverter.convert(uk.gov.justice.core.courts.Hearing.hearing()
-                .build()).toString());
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(hearingEntity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(UUID.fromString(hearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getId(), is(UUID.fromString(applicationHearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getCourtApplications().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(1).getCourtApplications().get(0).getId().toString(), is(applicationId));
-
-    }
-
-    @Test
-    void shouldCourtExtractApplicationHearingWhenDefendantIsNullInHearing() {
-        final String defendantId = "bd9f766b-4300-4421-b977-79d51f02ce26";
-        final String applicationHearingId = "026bb969-1bd6-4f5d-978a-ccf67c4643a6";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-application-hearing-defendant-is-null.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(applicationHearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(UUID.fromString(applicationHearingId)));
-
-    }
-
-    @Test
-    void shouldCourtExtractForApplicationWhenMasterDefendantIsInApplicantButNotInSubject() {
-        final String defendantId = "ef7f4cbc-f6e0-4de2-9550-6bcb8ffc5c75";
-        final String hearingId = "d71f757a-f17d-40d9-b982-bccb0fa22dd0";
-        final String applicationId = "805aa326-1e28-4192-8d2b-dc8295af52c0";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-masterdefendant-in-applicant.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-        HearingEntity entity = new HearingEntity();
-        entity.setPayload(getPayload("court-extract/progression.query.hearing-with-courtApplications-applicant.json"));
-        when(hearingRepository.findBy(UUID.fromString(hearingId))).thenReturn(entity);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getId(), is(UUID.fromString(hearingId)));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getCourtApplications().get(0).getId(), is(UUID.fromString(applicationId)));
-
-    }
-
-    @Test
-    void shouldGetOffenceWhenHearingHasDifferentMasterAndDefendantId() {
-        final String defendantId = "d90ac10b-ef12-4ab3-91db-f9394b8f949d";
-        final String hearingId = "05e8031b-13f5-4646-a2e7-2cb21c6d8f8c";
-        final String applicationHearingId ="5a034d06-da60-4429-8f96-2ae68bdd6969";
-        final JsonObject prosecutionCasePayload = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-with-courtApplications-application-hearing-different-master-defendant-id.json"));
-        final JsonObject hearingsAtAGlanceJson = prosecutionCasePayload.getJsonObject("hearingsAtAGlance");
-        final JsonObject prosecutionCaseJson = prosecutionCasePayload.getJsonObject("prosecutionCase");
-        GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
-        ProsecutionCase prosecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-
-        final CourtExtractRequested courtExtractRequested = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId,applicationHearingId), randomUUID(), prosecutionCase);
-        final CourtExtractRequested courtExtractRequested2 = target.getCourtExtractRequested(hearingsAtAGlance, defendantId, "CrownCourtExtract", List.of(hearingId), randomUUID(), prosecutionCase);
-        assertThat(courtExtractRequested.getDefendant().getAge(), is(courtExtractRequested2.getDefendant().getAge()));
-        assertThat(courtExtractRequested.getDefendant().getHearings().size(), is(2));
-        assertThat(courtExtractRequested2.getDefendant().getHearings().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences().size(), is(1));
-        assertThat(courtExtractRequested2.getDefendant().getHearings().get(0).getOffences().size(), is(1));
-        assertThat(courtExtractRequested.getDefendant().getHearings().get(0).getOffences(), is(courtExtractRequested2.getDefendant().getHearings().get(0).getOffences()));
-
-    }
-
 
     private void verifyOffenceLevelResult(final CourtExtractRequested courtExtractRequested) {
         //Case Level Does Not Exist
@@ -1859,7 +1273,7 @@ public class CourtExtractTransformerTest {
                         .withAssociationEndDate(ASSOCIATION_END_DATE)
                         .build())
                 .withOffences(Collections.emptyList())
-                .withMasterDefendantId(MASTER_DEFENDANT_ID_2ND)
+                .withMasterDefendantId(DEFENDANT_ID_2ND)
                 .build();
         final List<Defendant> defendants = new ArrayList<Defendant>() {{
             add(defendant);
@@ -1901,15 +1315,6 @@ public class CourtExtractTransformerTest {
         return builder.build();
     }
 
-    private GetHearingsAtAGlance createCaseAtAGlanceDefendant2(final List<Hearings> hearingsList) {
-        GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
-        builder.withProsecutionCaseIdentifier(createPCIdentifier());
-        builder.withDefendantHearings(createDefendantHearing());
-        builder.withHearings(isNull(hearingsList) ? createHearingsWithJudicialResults(MASTER_DEFENDANT_ID_2ND) : hearingsList);
-        builder.withCourtApplications(asList(createCourtApplicationDefendant2()));
-        return builder.build();
-    }
-
     private GetHearingsAtAGlance createCaseAtAGlanceWithCourtApplicationParty() {
         GetHearingsAtAGlance.Builder builder = createCaseAtAGlanceBuilder();
         builder.withCourtApplications(asList(createCourtApplicationWithApplicationParty()));
@@ -1917,8 +1322,7 @@ public class CourtExtractTransformerTest {
     }
 
     private GetHearingsAtAGlance createHearingAtAGlanceWithBreachTypeApplication(final String defendantId, final String hearingId, final String breachApplicationHearingId) {
-        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-breach-type-application-for-court-extract.json")
-                .replaceAll("MASTER_DEFENDANT_ID", MASTER_DEFENDANT_ID.toString())
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-breach-type-application.json")
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("BREACH_H_ID", breachApplicationHearingId));
@@ -1927,14 +1331,14 @@ public class CourtExtractTransformerTest {
     }
 
     private GetHearingsAtAGlance createHearingAtAGlanceWithSJPCaseReferredToCC(final String defendantId) {
-        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-sjp-referred-to-cc.json")
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-sjp-referred-to-cc.json")
                 .replaceAll("DEFENDANT_ID", defendantId));
         final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
         return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
     }
 
     private GetHearingsAtAGlance createHearingAtAGlanceWithDefendantAndCourtApplicationSlipRuleAmendments(final String defendantId, final String masterDefendantId, final String hearingId) {
-        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-defendant-court-application-results-for-court-extract.json")
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-defendant-court-application-results.json")
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("MASTER_D_ID", masterDefendantId)
                 .replaceAll("HEARING_ID", hearingId));
@@ -1951,7 +1355,7 @@ public class CourtExtractTransformerTest {
     }
 
     private GetHearingsAtAGlance createHearingAtAGlanceWithMagistrateAndCrownCourtHearings(final String defendantId, final String hearingId, final String seedingHearingId) {
-        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("court-extract/progression.query.prosecutioncase-magistrate-and-crown-court.json")
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-magistrate-and-crown-court.json")
                 .replaceAll("DEFENDANT_ID", defendantId)
                 .replaceAll("HEARING_ID", hearingId)
                 .replaceAll("SEEDING_HR_ID", seedingHearingId));
@@ -1978,7 +1382,6 @@ public class CourtExtractTransformerTest {
                 .withApplicationReceivedDate(APPLICATION_DATE)
                 .withApplicationParticulars(APPLICATION_PARTICULARS)
                 .withRespondents(createCourtApplicationRespondents())
-                .withSubject(createApplicationParty())
                 .build();
     }
 
@@ -2021,6 +1424,50 @@ public class CourtExtractTransformerTest {
                         .build()
         );
     }
+
+
+    private List<Hearings> createHearingsCOC() {
+        final LocalDate CONVICTION_DATE1 = LocalDate.of(2020, 04, 04);
+        final LocalDate CONVICTION_DATE2 = LocalDate.of(2025, 05, 04);
+
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(CONVICTION_DATE1, asList(DEFENDANT_ID, DEFENDANT_ID_2ND), asList(randomUUID(), randomUUID(), randomUUID()), HEARING1, HEARING_ID, "CertificateOfConviction"))
+                        .withDefendantAttendance(createDefendantAttendance(asList(DEFENDANT_ID, DEFENDANT_ID_2ND)))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(CONVICTION_DATE2, asList(DEFENDANT_ID), asList(randomUUID(), randomUUID(), randomUUID()), HEARING2, HEARING_ID_2, "CertificateOfConviction"))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .build()
+        );
+    }
+
 
     private List<Hearings> createHearingsWithYouthCourtDetails(final List<UUID> defendandIds) {
         return asList(
@@ -2325,7 +1772,6 @@ public class CourtExtractTransformerTest {
         );
         return Defendants.defendants()
                 .withId(defendantId)
-                .withMasterDefendantId(defendantId)
                 .withAddress(createAddress())
                 .withDateOfBirth(DOB)
                 .withAge(DEFENDANT_AGE)
@@ -2351,7 +1797,6 @@ public class CourtExtractTransformerTest {
                 .withJudicialResultPrompts(prompts)
                 .withDelegatedPowers(createDelegatedPower())
                 .withResultText("resultText")
-                .withJudicialResultId(randomUUID())
                 .build();
     }
 
@@ -2419,7 +1864,7 @@ public class CourtExtractTransformerTest {
     private Defendants createDefendant(final UUID defendantId, final String hearing, final UUID hearingId) {
         return Defendants.defendants()
                 .withId(defendantId)
-                .withMasterDefendantId(defendantId.equals(DEFENDANT_ID_2ND) ? MASTER_DEFENDANT_ID_2ND : MASTER_DEFENDANT_ID)
+                .withMasterDefendantId(defendantId)
                 .withAddress(createAddress())
                 .withDateOfBirth(DOB)
                 .withAge(DEFENDANT_AGE)
@@ -2556,7 +2001,6 @@ public class CourtExtractTransformerTest {
                 .withOrderedHearingId(hearingId)
                 .withDelegatedPowers(createDelegatedPower())
                 .withResultText("resultText")
-                .withJudicialResultId(randomUUID())
                 .build();
     }
 
@@ -2616,11 +2060,23 @@ public class CourtExtractTransformerTest {
 
         return Stream.of(DEFENDANT_ID, DEFENDANT_ID_2ND).map(id -> DefendantHearings.defendantHearings()
                 .withDefendantId(id)
-                .withMasterDefendantId(MASTER_DEFENDANT_ID)
+                .withMasterDefendantId(id)
                 .withHearingIds(hearingIds)
                 .withDefendantName(DEFENDANT_NAME)
                 .build()).collect(toList());
 
+    }
+
+    private List<DefendantHearings> createDefendantHearingWithOutHearings() {
+        final List<DefendantHearings> defendantHearingsList = new ArrayList<>();
+        final List<UUID> hearingIds = new ArrayList<>();
+        final DefendantHearings defendantHearings = DefendantHearings.defendantHearings()
+                .withDefendantId(DEFENDANT_ID)
+                .withHearingIds(hearingIds)
+                .withDefendantName(DEFENDANT_NAME)
+                .build();
+        defendantHearingsList.add(defendantHearings);
+        return defendantHearingsList;
     }
 
     private ProsecutionCaseIdentifier createPCIdentifier() {
@@ -2727,6 +2183,20 @@ public class CourtExtractTransformerTest {
                 .build();
     }
 
+    private CourtApplication createBreachCourtOrder() {
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withApplicant(createApplicationParty())
+                .withType(createCourtApplicationType())
+                .withApplicationReceivedDate(APPLICATION_DATE)
+                .withApplicationParticulars(APPLICATION_PARTICULARS)
+                .withRespondents(createCourtApplicationRespondents())
+                .withCourtOrder(createCourtOrder())
+                .build();
+
+    }
+
     private CourtApplication createCourtApplication() {
         return CourtApplication.courtApplication()
                 .withId(APPLICATION_ID)
@@ -2736,23 +2206,8 @@ public class CourtExtractTransformerTest {
                 .withApplicationReceivedDate(APPLICATION_DATE)
                 .withApplicationParticulars(APPLICATION_PARTICULARS)
                 .withRespondents(createCourtApplicationRespondents())
-                .withSubject(createApplicationParty())
                 .build();
     }
-
-    private CourtApplication createCourtApplicationDefendant2() {
-        return CourtApplication.courtApplication()
-                .withId(APPLICATION_ID)
-                .withApplicationStatus(ApplicationStatus.LISTED)
-                .withApplicant(createApplicationParty())
-                .withType(createCourtApplicationType())
-                .withApplicationReceivedDate(APPLICATION_DATE)
-                .withApplicationParticulars(APPLICATION_PARTICULARS)
-                .withRespondents(createCourtApplicationRespondents())
-                .withSubject(createApplicationPartyDefendant2())
-                .build();
-    }
-
 
     private CourtApplications createCourtApplications() {
         return CourtApplications.courtApplications()
@@ -2775,7 +2230,25 @@ public class CourtExtractTransformerTest {
                 .build());
     }
 
-
+    private CourtOrder createCourtOrder() {
+        return CourtOrder.courtOrder().withCourtOrderOffences(
+                asList(CourtOrderOffence.courtOrderOffence()
+                        .withOffence(Offence.offence()
+                                .withId(randomUUID())
+                                .withOffenceTitle("Title")
+                                .withOrderIndex(5)
+                                .withCount(3)
+                                .withConvictionDate(CONVICTION_DATE.plusWeeks(3)).build())
+                        .build(),
+                        CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence()
+                                        .withId(randomUUID())
+                                        .withOffenceTitle("Title")
+                                        .withOrderIndex(5)
+                                        .withCount(3)
+                                        .withConvictionDate(CONVICTION_DATE.plusDays(3)).build())
+                                .build())).build();
+    }
 
     private List<Respondents> createRespondents() {
         return asList(Respondents.respondents()
@@ -2790,19 +2263,7 @@ public class CourtExtractTransformerTest {
                 .withId(randomUUID())
                 .withRepresentationOrganisation(createOrganisation())
                 .withMasterDefendant(MasterDefendant.masterDefendant()
-                        .withMasterDefendantId(MASTER_DEFENDANT_ID)
-                        .withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(DEFENDANT_ID).withCaseId(CASE_ID).build()))
-                        .build())
-                .build();
-    }
-
-    private CourtApplicationParty createApplicationPartyDefendant2() {
-        return CourtApplicationParty.courtApplicationParty()
-                .withId(randomUUID())
-                .withRepresentationOrganisation(createOrganisation())
-                .withMasterDefendant(MasterDefendant.masterDefendant()
-                        .withMasterDefendantId(MASTER_DEFENDANT_ID_2ND)
-                        .withDefendantCase(List.of(DefendantCase.defendantCase().withDefendantId(DEFENDANT_ID).withCaseId(CASE_ID).build()))
+                        .withMasterDefendantId(DEFENDANT_ID)
                         .build())
                 .build();
     }

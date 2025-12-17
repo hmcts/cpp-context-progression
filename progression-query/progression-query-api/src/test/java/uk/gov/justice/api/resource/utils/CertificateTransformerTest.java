@@ -2,6 +2,7 @@ package uk.gov.justice.api.resource.utils;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
@@ -9,6 +10,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.api.resource.utils.FileUtil.getPayload;
 import static uk.gov.justice.progression.courts.Offences.offences;
@@ -82,21 +84,31 @@ import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.converter.jackson.ObjectMapperProducer;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
+import uk.gov.moj.cpp.listing.domain.Hearing;
+import uk.gov.moj.cpp.listing.domain.JurisdictionType;
+import uk.gov.moj.cpp.listing.domain.ListedCase;
+import uk.gov.moj.cpp.listing.domain.SeedingHearing;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -144,6 +156,7 @@ public class CertificateTransformerTest {
     private static final UUID HEARING_ID_2 = randomUUID();
     private static final UUID APPLICATION_ID = randomUUID();
     private static final UUID OFFENCE_ID = randomUUID();
+    private static final String filePath = "src/test/resources/";
     private static final LocalDate DOB = LocalDate.of(LocalDate.now().getYear() - 30, 01, 01);
     private static final String HEARING_DATE_1 = "2018-06-01T10:00:00.000Z";
     private static final String HEARING_DATE_2 = "2018-06-04T10:00:00.000Z";
@@ -183,14 +196,18 @@ public class CertificateTransformerTest {
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
     private final ProsecutionCase prosecutionCase = createProsecutionCase();
     public static final String AFTER_TRIAL_ON_INDICTMENT = "After trial on indictment";
-
-    private ReportsTransformer target;
+    @Spy
+    private ObjectToJsonObjectConverter objectToJsonObjectConverter = new JsonObjectConvertersFactory().objectToJsonObjectConverter();
+    private CourtExtractTransformer target;
 
     @InjectMocks
     private TransformationHelper transformationHelper;
 
     @Mock
     private ReferenceDataService referenceDataService;
+
+    @Mock
+    private RequestedNameMapper requestedNameMapper;
 
     @Mock
     private UsersAndGroupsService usersAndGroupsService;
@@ -207,9 +224,32 @@ public class CertificateTransformerTest {
     @Mock
     private HearingQueryService hearingQueryService;
 
+    public static JsonObject readJsonFromFile(String filePath) throws IOException {
+        try (JsonReader jsonReader = Json.createReader(new FileReader(filePath))) {
+            return jsonReader.readObject();
+        }
+    }
+
+    private static Hearing getHearingFromListing(final UUID hearingId, final UUID seedingHearingId, final UUID defendantId, final UUID offenceId) {
+        return Hearing.hearing().withId(hearingId)
+                .withListedCases(singletonList(ListedCase.listedCase()
+                        .withDefendants(singletonList(uk.gov.moj.cpp.listing.domain.Defendant.defendant()
+                                .withId(defendantId)
+                                .withOffences(singletonList(uk.gov.moj.cpp.listing.domain.Offence.offence()
+                                        .withId(offenceId)
+                                        .withSeedingHearing(Optional.of(SeedingHearing.seedingHearing()
+                                                .withJurisdictionType(JurisdictionType.MAGISTRATES)
+                                                .withSittingDay(LocalDate.now().toString())
+                                                .withSeedingHearingId(seedingHearingId).build()))
+                                        .build()))
+                                .build()))
+                        .build()))
+                .build();
+    }
+
     @BeforeEach
     public void init() {
-        target = new ReportsTransformer();
+        target = new CourtExtractTransformer();
         setField(this.target, "transformationHelper", transformationHelper);
         setField(this.target, "courtExtractHelper", courtExtractHelper);
         setField(this.target, "listingQueryService", listingQueryService);
@@ -391,6 +431,34 @@ public class CertificateTransformerTest {
         return prosecutionCase;
     }
 
+    private GetHearingsAtAGlance createHearingsAtGlance() {
+        return createCaseAtAGlance(null);
+    }
+
+    private GetHearingsAtAGlance createCaseAtAGlanceWithDefendantHeardInYouthCourt() {
+        GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
+        builder.withProsecutionCaseIdentifier(createPCIdentifier());
+        builder.withDefendantHearings(createDefendantHearing());
+        builder.withHearings(createHearingsWithYouthCourtDetails(asList(DEFENDANT_ID, DEFENDANT_ID_2ND)));
+        builder.withCourtApplications(asList(createCourtApplication()));
+        return builder.build();
+    }
+
+    private GetHearingsAtAGlance createCaseAtAGlance(final List<Hearings> hearingsList) {
+        GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
+        builder.withProsecutionCaseIdentifier(createPCIdentifier());
+        builder.withDefendantHearings(createDefendantHearing());
+        builder.withHearings(isNull(hearingsList) ? createHearingsWithJudicialResults(MASTER_DEFENDANT_ID) : hearingsList);
+        builder.withCourtApplications(asList(createCourtApplication()));
+        return builder.build();
+    }
+
+    private GetHearingsAtAGlance createCaseAtAGlanceWithCourtApplicationParty() {
+        GetHearingsAtAGlance.Builder builder = createCaseAtAGlanceBuilder();
+        builder.withCourtApplications(asList(createCourtApplicationWithApplicationParty()));
+        return builder.build();
+    }
+
     private GetHearingsAtAGlance createHearingAtAGlanceWithBreachTypeApplication(final String defendantId, final String hearingId, final String breachApplicationHearingId) {
         final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-breach-type-application.json")
                 .replaceAll("DEFENDANT_ID", defendantId)
@@ -398,6 +466,83 @@ public class CertificateTransformerTest {
                 .replaceAll("BREACH_H_ID", breachApplicationHearingId));
         final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
         return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+    }
+
+    private GetHearingsAtAGlance createHearingAtAGlanceWithSJPCaseReferredToCC(final String defendantId) {
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-sjp-referred-to-cc.json")
+                .replaceAll("DEFENDANT_ID", defendantId));
+        final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
+        return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+    }
+
+    private GetHearingsAtAGlance createHearingAtAGlanceWithMagistrateAndCrownCourtHearings(final String defendantId, final String hearingId, final String seedingHearingId) {
+        final JsonObject inActiveCaseWithBreachTypeApplication = stringToJsonObjectConverter.convert(getPayload("progression.query.prosecutioncase-magistrate-and-crown-court.json")
+                .replaceAll("DEFENDANT_ID", defendantId)
+                .replaceAll("HEARING_ID", hearingId)
+                .replaceAll("SEEDING_HR_ID", seedingHearingId));
+        final JsonObject hearingsAtAGlanceJson = inActiveCaseWithBreachTypeApplication.getJsonObject("hearingsAtAGlance");
+        return jsonObjectToObjectConverter.convert(hearingsAtAGlanceJson, GetHearingsAtAGlance.class);
+    }
+
+    private GetHearingsAtAGlance.Builder createCaseAtAGlanceBuilder() {
+        GetHearingsAtAGlance.Builder builder = GetHearingsAtAGlance.getHearingsAtAGlance().withId(CASE_ID);
+        builder.withProsecutionCaseIdentifier(createPCIdentifier());
+        builder.withDefendantHearings(createDefendantHearing());
+        builder.withHearings(createHearings());
+        builder.withCourtApplications(asList(createCourtApplication()));
+        return builder;
+    }
+
+    private CourtApplication createCourtApplicationWithApplicationParty() {
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicant(createApplicationParty())
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withApplicant(createApplicationParty())
+                .withType(createCourtApplicationType())
+                .withApplicationReceivedDate(APPLICATION_DATE)
+                .withApplicationParticulars(APPLICATION_PARTICULARS)
+                .withRespondents(createCourtApplicationRespondents())
+                .build();
+    }
+
+    private List<Hearings> createHearings() {
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID, DEFENDANT_ID_2ND), HEARING1, HEARING_ID))
+                        .withDefendantAttendance(createDefendantAttendance(asList(DEFENDANT_ID, DEFENDANT_ID_2ND)))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID), HEARING2, HEARING_ID_2))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .build()
+        );
     }
 
     private List<Hearings> createHearingsCOC() {
@@ -439,6 +584,90 @@ public class CertificateTransformerTest {
                         .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
                         .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
                         .withHearingListingStatus(HearingListingStatus.HEARING_RESULTED)
+                        .build()
+        );
+    }
+
+    private List<Hearings> createHearingsWithYouthCourtDetails(final List<UUID> defendandIds) {
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID, DEFENDANT_ID_2ND), HEARING1, HEARING_ID))
+                        .withDefendantAttendance(createDefendantAttendance(asList(DEFENDANT_ID, DEFENDANT_ID_2ND)))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+                        .withYouthCourtDefendantIds(defendandIds)
+                        .withYouthCourt(YouthCourt.youthCourt()
+                                .withName("Youth Court Name")
+                                .withWelshName("Welsh Youth Court Name")
+                                .withCourtCode(2004)
+                                .withYouthCourtId(randomUUID())
+                                .build())
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(defendandIds, HEARING2, HEARING_ID_2))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .build());
+    }
+
+    private List<Hearings> createHearingsWithJudicialResults(final UUID masterDefendantId) {
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID, DEFENDANT_ID_2ND), HEARING1, HEARING_ID))
+                        .withDefendantAttendance(createDefendantAttendance(asList(DEFENDANT_ID, DEFENDANT_ID_2ND)))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+                        .withDefendantJudicialResults(createDefendantJudicialResults(masterDefendantId, HEARING_ID))
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendants(asList(DEFENDANT_ID, DEFENDANT_ID_2ND), HEARING2, HEARING_ID_2))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .withDefendantJudicialResults(createDefendantJudicialResults(masterDefendantId, HEARING_ID_2))
                         .build()
         );
     }
@@ -536,6 +765,185 @@ public class CertificateTransformerTest {
                 .build();
     }
 
+    private List<Hearings> createHearingsWithJudicialResultsWithCourtExtract(final UUID masterDefendantId) {
+        return asList(
+                Hearings.hearings()
+                        .withId(HEARING_ID)
+                        .withHearingDays(createHearingDays())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendantsWithCourtExtract(asList(DEFENDANT_ID, DEFENDANT_ID_2ND), HEARING1))
+                        .withDefendantAttendance(createDefendantAttendance(asList(DEFENDANT_ID, DEFENDANT_ID_2ND)))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING1))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING1))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING1))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING1))
+                        .withDefendantJudicialResults(createDefendantJudicialResultsWithCourtExtract(masterDefendantId))
+                        .build(),
+                Hearings.hearings()
+                        .withId(HEARING_ID_2)
+                        .withHearingDays(createHearingDays2())
+                        .withCourtCentre(createCourtCenter())
+                        .withJudiciary(createJudiciary())
+                        .withType(HearingType.hearingType()
+                                .withId(randomUUID())
+                                .withDescription(HEARING_TYPE)
+                                .build())
+                        .withDefendants(createDefendantsWithCourtExtract(asList(DEFENDANT_ID, DEFENDANT_ID_2ND), HEARING2))
+                        .withDefendantReferralReasons(createDefendantReferralReasons())
+                        .withApplicantCounsels(createApplicationCounsels(HEARING2))
+                        .withRespondentCounsels(createRespondentCounsels(HEARING2))
+                        .withCompanyRepresentatives(createCompanyRepresentatives(HEARING2))
+                        .withProsecutionCounsels(createProsecutionCounsels(HEARING2))
+                        .withDefendantJudicialResults(createDefendantJudicialResultsWithCourtExtract(masterDefendantId))
+                        .build()
+        );
+    }
+
+    private List<Offences> createOffenceCourtExtract(final UUID offenceId) {
+        final List<JudicialResultPrompt> prompts = asList(createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_NAME),
+                createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1),
+                createPrompt(COURT_EXTRACT, THIS_ORDER_IS_MADE_ON));
+
+        final List<JudicialResultPrompt> promptsForMinor = asList(createPrompt(NO_COURT_EXTRACT, MINOR_CREDITOR_FIRST_NAME),
+                createPrompt(COURT_EXTRACT, AMOUNT_OF_COMPENSATION));
+
+        final List<JudicialResultPrompt> legacyPrompts = asList(createLegacyPrompt(LEGACY_NAME));
+
+
+        final List<JudicialResult> results = asList(createJudicialResultWithCourtExtractFlag(true, prompts, RESTRAINING_ORDER),
+                createJudicialResultWithCourtExtractFlag(true, promptsForMinor, COMPENSATION),
+                createJudicialResultWithCourtExtractFlag(false, promptsForMinor, ORDERING),
+                createLegacyJudicialResultWithCourtExtractFlag(legacyPrompts, LEGACY_RESULT)
+        );
+        return asList(
+                offences()
+                        .withId(offenceId)
+                        .withOrderIndex(Integer.valueOf(randomNumeric(2)))
+                        .withConvictionDate(CONVICTION_DATE)
+                        .withJudicialResults(results)
+                        .withPleas(createPlea())
+                        .withIndicatedPlea(createIndicatedPlea())
+                        .withAllocationDecision(createAllocationDecision())
+                        .withVerdicts(createVerdicts())
+                        .build()
+        );
+    }
+
+    private List<DefendantJudicialResult> createDefendantJudicialResultsWithCourtExtract(final UUID masterDefendantId) {
+        final List<JudicialResultPrompt> prompts = asList(createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_NAME),
+                createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1),
+                createPrompt(COURT_EXTRACT, THIS_ORDER_IS_MADE_ON));
+
+        final List<JudicialResultPrompt> promptsForMinor = asList(createPrompt(NO_COURT_EXTRACT, MINOR_CREDITOR_FIRST_NAME),
+                createPrompt(COURT_EXTRACT, AMOUNT_OF_COMPENSATION));
+
+        final List<JudicialResultPrompt> legacyPrompts = asList(createLegacyPrompt(LEGACY_NAME));
+
+        return asList(
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createJudicialResultWithCourtExtractFlag(true, prompts, RESTRAINING_ORDER_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build(),
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createJudicialResultWithCourtExtractFlag(true, promptsForMinor, COMPENSATION_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build(),
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createLegacyJudicialResultWithCourtExtractFlag(legacyPrompts, LEGACY_COMPENSATION_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build(),
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createJudicialResultWithCourtExtractFlag(false, promptsForMinor, ORDERING_DEFENDANT_LEVEL))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build()
+        );
+    }
+
+    private List<Defendants> createDefendantsWithCourtExtract(final List<UUID> defendantIdList, final String hearing) {
+        return defendantIdList.stream().map(id -> createDefendantWithCourtExtract(id, hearing)).collect(toList());
+    }
+
+    private Defendants createDefendantWithCourtExtract(final UUID defendantId, final String hearing) {
+        final List<JudicialResultPrompt> prompts = asList(createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_NAME),
+                createPrompt(NO_COURT_EXTRACT, PROTECTED_PERSON_S_ADDRESS_ADDRESS_LINE_1),
+                createPrompt(COURT_EXTRACT, THIS_ORDER_IS_MADE_ON));
+
+        final List<JudicialResultPrompt> promptsForMinor = asList(createPrompt(NO_COURT_EXTRACT, MINOR_CREDITOR_FIRST_NAME),
+                createPrompt(COURT_EXTRACT, AMOUNT_OF_COMPENSATION));
+
+        final List<JudicialResultPrompt> legacyPrompts = asList(createLegacyPrompt(LEGACY_NAME));
+
+
+        final List<JudicialResult> results = asList(createJudicialResultWithCourtExtractFlag(true, prompts, RESTRAINING_ORDER),
+                createJudicialResultWithCourtExtractFlag(true, promptsForMinor, COMPENSATION),
+                createJudicialResultWithCourtExtractFlag(false, promptsForMinor, ORDERING),
+                createLegacyJudicialResultWithCourtExtractFlag(legacyPrompts, LEGACY_RESULT)
+        );
+        return Defendants.defendants()
+                .withId(defendantId)
+                .withAddress(createAddress())
+                .withDateOfBirth(DOB)
+                .withAge(DEFENDANT_AGE)
+                .withLegalAidStatus("legal aid")
+                .withJudicialResults(results)
+                .withOffences(createOffenceCourtExtract(OFFENCE_ID))
+                .withDefenceOrganisation(createDefenceOrganisation(hearing))
+                .withCourtApplications(asList(createCourtApplications()))
+                .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                        .withCustody(CUSTODY_TYPE)
+                        .withId(CUSTODY_ESTABLISHMENT_UUID)
+                        .withName(CUSTODY_ESTABLISHMENT_NAME)
+                        .build())
+                .build();
+    }
+
+    private JudicialResult createJudicialResultWithCourtExtractFlag(final boolean isAvailableForCourtExtract, final List<JudicialResultPrompt> prompts, final String resultLabel) {
+        return JudicialResult.judicialResult()
+                .withIsAvailableForCourtExtract(isAvailableForCourtExtract)
+                .withOrderedHearingId(HEARING_ID)
+                .withLabel(resultLabel)
+                .withJudicialResultPrompts(prompts)
+                .withDelegatedPowers(createDelegatedPower())
+                .withResultText("resultText")
+                .build();
+    }
+
+    private JudicialResultPrompt createPrompt(final String courtExtract, final String label) {
+        return
+                JudicialResultPrompt.judicialResultPrompt()
+                        .withLabel(label)
+                        .withCourtExtract(courtExtract)
+                        .withValue(PROMPT_VALUE)
+                        .build();
+    }
+
+    private JudicialResult createLegacyJudicialResultWithCourtExtractFlag(final List<JudicialResultPrompt> prompts, final String resultLabel) {
+        return JudicialResult.judicialResult()
+                .withLabel(resultLabel)
+                .withJudicialResultPrompts(prompts)
+                .withDelegatedPowers(createDelegatedPower())
+                .withResultText("resultText")
+                .build();
+    }
+
+    private JudicialResultPrompt createLegacyPrompt(final String label) {
+        return
+                JudicialResultPrompt.judicialResultPrompt()
+                        .withLabel(label)
+                        .withValue(PROMPT_VALUE)
+                        .build();
+    }
+
+    private List<Defendants> createDefendants(final List<UUID> defendantIdList, final String hearing, final UUID hearingId) {
+        return defendantIdList.stream().map(id -> createDefendant(id, hearing, hearingId)).collect(toList());
+    }
+
     private List<Defendants> createDefendants(final LocalDate convictionDate, final String courtHearingLocation, final List<UUID> defendantIdList, final List<UUID> offenceIdList, final String hearing, final UUID hearingId, final String extractType) {
         return defendantIdList.stream().map(id -> createDefendant(convictionDate, courtHearingLocation, id, offenceIdList, hearing, hearingId, extractType)).collect(toList());
     }
@@ -543,7 +951,6 @@ public class CertificateTransformerTest {
     private Defendants createDefendant(final LocalDate convictionDate, final String courtHearingLocation, final UUID defendantId, final List<UUID> offenceIdList, final String hearing, final UUID hearingId, final String extractType) {
         Defendants.Builder defendantBuilder = Defendants.defendants()
                 .withId(defendantId)
-                .withMasterDefendantId(defendantId)
                 .withAddress(createAddress())
                 .withDateOfBirth(DOB)
                 .withAge(DEFENDANT_AGE)
@@ -565,6 +972,24 @@ public class CertificateTransformerTest {
         }
 
         return defendantBuilder.build();
+    }
+
+    private Defendants createDefendant(final UUID defendantId, final String hearing, final UUID hearingId) {
+        return Defendants.defendants()
+                .withId(defendantId)
+                .withAddress(createAddress())
+                .withDateOfBirth(DOB)
+                .withAge(DEFENDANT_AGE)
+                .withLegalAidStatus("legal aid")
+                .withOffences(createOffence(OFFENCE_ID, hearingId))
+                .withJudicialResults(createResults(hearingId))
+                .withDefenceOrganisation(createDefenceOrganisation(hearing))
+                .withCourtApplications(asList(createCourtApplications()))
+                .withCustodialEstablishment(CustodialEstablishment.custodialEstablishment()
+                        .withCustody(CUSTODY_TYPE)
+                        .withId(CUSTODY_ESTABLISHMENT_UUID)
+                        .withName(CUSTODY_ESTABLISHMENT_NAME)
+                        .build()).build();
     }
 
     private PersonDefendant createPersonDefendant() {
@@ -653,6 +1078,15 @@ public class CertificateTransformerTest {
                 .build();
     }
 
+    private List<DefendantJudicialResult> createDefendantJudicialResults(final UUID masterDefendantId, final UUID hearingId) {
+        return asList(
+                DefendantJudicialResult.defendantJudicialResult()
+                        .withJudicialResult(createJudicialResult(hearingId))
+                        .withMasterDefendantId(masterDefendantId)
+                        .build()
+        );
+    }
+
     private List<JudicialResult> createResults(final UUID hearingId) {
         return asList(
                 JudicialResult.judicialResult()
@@ -665,6 +1099,17 @@ public class CertificateTransformerTest {
                         .withResultWording("resultWording")
                         .build()
         );
+    }
+
+    private JudicialResult createJudicialResult(final UUID hearingId) {
+        return JudicialResult.judicialResult()
+                .withIsAvailableForCourtExtract(true)
+                .withLabel(LABEL)
+                .withJudicialResultPrompts(createPrompts())
+                .withOrderedHearingId(hearingId)
+                .withDelegatedPowers(createDelegatedPower())
+                .withResultText("resultText")
+                .build();
     }
 
     private DelegatedPowers createDelegatedPower() {
@@ -723,11 +1168,22 @@ public class CertificateTransformerTest {
 
         return Stream.of(DEFENDANT_ID, DEFENDANT_ID_2ND).map(id -> DefendantHearings.defendantHearings()
                 .withDefendantId(id)
-                .withMasterDefendantId(id)
                 .withHearingIds(hearingIds)
                 .withDefendantName(DEFENDANT_NAME)
                 .build()).collect(toList());
 
+    }
+
+    private List<DefendantHearings> createDefendantHearingWithOutHearings() {
+        final List<DefendantHearings> defendantHearingsList = new ArrayList<>();
+        final List<UUID> hearingIds = new ArrayList<>();
+        final DefendantHearings defendantHearings = DefendantHearings.defendantHearings()
+                .withDefendantId(DEFENDANT_ID)
+                .withHearingIds(hearingIds)
+                .withDefendantName(DEFENDANT_NAME)
+                .build();
+        defendantHearingsList.add(defendantHearings);
+        return defendantHearingsList;
     }
 
     private ProsecutionCaseIdentifier createPCIdentifier() {
@@ -833,6 +1289,32 @@ public class CertificateTransformerTest {
                 .build();
     }
 
+    private CourtApplication createBreachCourtOrder() {
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withApplicant(createApplicationParty())
+                .withType(createCourtApplicationType())
+                .withApplicationReceivedDate(APPLICATION_DATE)
+                .withApplicationParticulars(APPLICATION_PARTICULARS)
+                .withRespondents(createCourtApplicationRespondents())
+                .withCourtOrder(createCourtOrder())
+                .build();
+
+    }
+
+    private CourtApplication createCourtApplication() {
+        return CourtApplication.courtApplication()
+                .withId(APPLICATION_ID)
+                .withApplicationStatus(ApplicationStatus.LISTED)
+                .withApplicant(createApplicationParty())
+                .withType(createCourtApplicationType())
+                .withApplicationReceivedDate(APPLICATION_DATE)
+                .withApplicationParticulars(APPLICATION_PARTICULARS)
+                .withRespondents(createCourtApplicationRespondents())
+                .build();
+    }
+
     private CourtApplications createCourtApplications() {
         return CourtApplications.courtApplications()
                 .withApplicationId(APPLICATION_ID)
@@ -844,10 +1326,120 @@ public class CertificateTransformerTest {
                 .build();
     }
 
+    private List<CourtApplicationParty> createCourtApplicationRespondents() {
+        return asList(CourtApplicationParty.courtApplicationParty()
+                .withId(UUID.randomUUID())
+                .withProsecutingAuthority(ProsecutingAuthority.prosecutingAuthority()
+                        .withProsecutionAuthorityId(UUID.randomUUID())
+                        .build())
+                .withRepresentationOrganisation(createOrganisation())
+                .build());
+    }
+
+    private CourtOrder createCourtOrder() {
+        return CourtOrder.courtOrder().withCourtOrderOffences(
+                asList(CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence()
+                                        .withId(randomUUID())
+                                        .withOffenceTitle("Title")
+                                        .withOrderIndex(5)
+                                        .withCount(3)
+                                        .withConvictionDate(CONVICTION_DATE.plusWeeks(3)).build())
+                                .build(),
+                        CourtOrderOffence.courtOrderOffence()
+                                .withOffence(Offence.offence()
+                                        .withId(randomUUID())
+                                        .withOffenceTitle("Title")
+                                        .withOrderIndex(5)
+                                        .withCount(3)
+                                        .withConvictionDate(CONVICTION_DATE.plusDays(3)).build())
+                                .build())).build();
+    }
+
     private List<Respondents> createRespondents() {
         return asList(Respondents.respondents()
                 .withApplicationResponse("Admitted")
                 .withResponseDate(RESPONSE_DATE)
                 .build());
     }
+
+    private CourtApplicationParty createApplicationParty() {
+        return CourtApplicationParty.courtApplicationParty()
+                .withId(randomUUID())
+                .withRepresentationOrganisation(createOrganisation())
+                .withMasterDefendant(MasterDefendant.masterDefendant()
+                        .withMasterDefendantId(DEFENDANT_ID)
+                        .build())
+                .build();
+    }
+
+    private CourtApplicationType createCourtApplicationType() {
+        return CourtApplicationType.courtApplicationType()
+                .withType(APPLICATION_TYPE)
+                .withAppealFlag(true)
+                //.withApplicantSynonym(SYNONYM)
+                //.withRespondentSynonym(SYNONYM + "R")
+                .build();
+    }
+
+    private Organisation createOrganisation() {
+        return Organisation.organisation()
+                .withAddress(createAddress())
+                .withName(FIRST_NAME)
+                .withContact(createContact())
+                .build();
+    }
+
+    private JsonObject createJudiciaryJsonObject() {
+        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        judiciaryBuilder.add("requestedNameValue", "requestedNameDesc");
+        return judiciaryBuilder.build();
+    }
+
+    private void compareConvictedOffenceDetails(JsonObject expected, JsonObject actual) {
+        JsonArray expectedHearings = expected.getJsonObject("defendant").getJsonArray("hearings");
+        JsonArray actualHearings = actual.getJsonObject("defendant").getJsonArray("hearings");
+
+        for (int i = 0; i < expectedHearings.size(); i++) {
+            JsonObject expectedHearing = expectedHearings.getJsonObject(i);
+            JsonObject actualHearing = actualHearings.getJsonObject(i);
+
+            JsonArray expectedConvictedOffenceDetails = expectedHearing.getJsonArray("convictedOffencesDetails");
+            JsonArray actualConvictedOffenceDetails = actualHearing.getJsonArray("convictedOffencesDetails");
+
+            for (int j = 0; j < expectedConvictedOffenceDetails.size(); j++) {
+                JsonObject expectedDetail = expectedConvictedOffenceDetails.getJsonObject(j);
+                JsonObject actualDetail = actualConvictedOffenceDetails.getJsonObject(j);
+                assertThat(actualDetail, is(expectedDetail));
+            }
+        }
+    }
+
+
+    private void writePayload(final JsonObject actualPayload, final String casesFolderPath) throws IOException {
+        Path folderPath = Paths.get(casesFolderPath);
+        Path filePath = folderPath.resolve("coc-payload.json");
+        // Create the folder if it doesn't exist
+        if (!Files.exists(folderPath)) {
+            Files.createDirectories(folderPath);
+        }
+        // Write the JSON string to the file
+        Files.write(filePath, actualPayload.toString().getBytes());
+    }
+
+    private JsonObject getJsonObject(final String defendantId, final String caseHearingsPayload) {
+        String caseId = randomUUID().toString();
+        String hearingId1 = randomUUID().toString();
+        String hearingId2 = randomUUID().toString();
+        String breachHearingId = randomUUID().toString();
+        final JsonObject caseResulted = stringToJsonObjectConverter.convert(getPayload(caseHearingsPayload)
+                .replace("{{caseId}}", caseId)
+                .replace("{{defendantId}}", defendantId)
+                .replace("{{hearingId1}}", hearingId1)
+                .replace("{{hearingId2}}", hearingId2)
+                .replace("{{breachHearingId}}", breachHearingId));
+        return caseResulted;
+    }
+
+
 }

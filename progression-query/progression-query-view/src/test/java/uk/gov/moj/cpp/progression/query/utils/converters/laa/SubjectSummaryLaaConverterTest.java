@@ -47,7 +47,6 @@ class SubjectSummaryLaaConverterTest {
     void shouldConvertSubjectSummaryWhenDefendantIsPerson() {
         final CourtApplication courtApplication = CourtApplication.courtApplication()
                 .withProceedingsConcluded(false)
-                .withDefendantASN("AppASN")
                 .withSubject(CourtApplicationParty.courtApplicationParty()
                         .withMasterDefendant(MasterDefendant.masterDefendant()
                                 .withPersonDefendant(PersonDefendant.personDefendant()
@@ -77,7 +76,6 @@ class SubjectSummaryLaaConverterTest {
         assertThat(result.getMasterDefendantId(), is(courtApplication.getSubject().getMasterDefendant().getMasterDefendantId()));
         assertThat(result.getProceedingsConcluded(), is(courtApplication.getProceedingsConcluded()));
         assertThat(result.getSubjectId(), is(courtApplication.getSubject().getId()));
-        assertThat(result.getDefendantASN(), is(courtApplication.getDefendantASN()));
     }
 
     @Test

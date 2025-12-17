@@ -40,6 +40,7 @@ import uk.gov.justice.core.courts.Material;
 import uk.gov.justice.core.courts.SharedCourtDocument;
 import uk.gov.justice.domain.aggregate.Aggregate;
 import uk.gov.justice.progression.event.SendToCpsFlagUpdated;
+import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -121,7 +122,8 @@ public class CourtDocumentAggregate implements Aggregate {
                                               final DocumentTypeRBAC documentTypeRBAC,
                                               final List<UUID> petFormFinalisedDocuments,
                                               final List<UUID> bcmFormFinalisedDocuments,
-                                              final List<UUID> ptphFormFinalisedDocuments) {
+                                              final List<UUID> ptphFormFinalisedDocuments,
+                                              final CourtDocumentMetadata courtDocumentMetadata) {
 
         if (this.isRemoved) {
             return updateCourtDocumentFailed(this.courtDocument.getCourtDocumentId(), format("Document is deleted. Could not update the given court document id: %s", courtDocument.getCourtDocumentId()));
@@ -151,7 +153,7 @@ public class CourtDocumentAggregate implements Aggregate {
                 .build();
         final Stream.Builder<Object> builder = builder();
 
-        builder.add(courtDocumentUpdated().withCourtDocument(updatedCourtDocument).build());
+        builder.add(courtDocumentUpdated().withCourtDocument(updatedCourtDocument).withCourtDocumentMetadata(courtDocumentMetadata).build());
 
         if (inputCourtDocumentDetails.getSendToCps()) {
             String notificationType = "defence-disclosure";
@@ -231,10 +233,14 @@ public class CourtDocumentAggregate implements Aggregate {
         }
     }
 
-    public Stream<Object> createCourtDocument(final CourtDocument courtDocument, final Boolean isCpsCase) {
+    public Stream<Object> createCourtDocument(final CourtDocument courtDocument, final Boolean isCpsCase, final CourtDocumentMetadata courtDocumentMetadata) {
         LOGGER.debug("court document is being created .");
         final Stream.Builder<Object> builder = builder();
-        builder.add(courtsDocumentCreated().withCourtDocument(courtDocument).build());
+        final CourtsDocumentCreated.Builder courtsDocumentCreated = courtsDocumentCreated().withCourtDocument(courtDocument);
+        if (nonNull(courtDocumentMetadata)) {
+            courtsDocumentCreated.withCourtDocumentMetadata(courtDocumentMetadata);
+        }
+        builder.add(courtsDocumentCreated.build());
         if (nonNull(courtDocument.getSendToCps()) && courtDocument.getSendToCps() && nonNull(isCpsCase) && isCpsCase) {
             builder.add(CourtDocumentSendToCps.courtDocumentSendToCps().withCourtDocument(courtDocument).build());
         }

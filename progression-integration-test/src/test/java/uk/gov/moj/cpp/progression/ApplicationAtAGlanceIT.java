@@ -8,8 +8,9 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.time.LocalDate;
 
 import javax.json.JsonObject;
-
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
+import static org.hamcrest.Matchers.not;
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.util.UUID.randomUUID;
@@ -17,8 +18,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.BOOLEAN;
@@ -26,6 +29,8 @@ import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.PAS
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.POST_CODE;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlance;
+import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForApplicationAtAGlanceForDefenceUser;
+import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addCourtApplicationForApplicationAtAGlance;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.getApplicationFor;
@@ -33,6 +38,7 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCa
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
+import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHelper.getProsecutionCaseMatchers;
 import static uk.gov.moj.cpp.progression.util.WireMockStubUtils.stubAdvocateRoleInCaseByCaseId;
@@ -92,6 +98,45 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         setupData();
     }
 
+
+    @Test
+     void shouldVerifyApplicationAtAGlanceWithAddressConfidentialFlag() throws Exception {
+
+        final String parentApplicationId = randomUUID().toString();
+        addProsecutionCaseToCrownCourt(caseId, defendantId);
+        doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, parentApplicationId, null);
+        String body = doAddCourtApplicationAndVerify(PROGRESSION_COMMAND_CREATE_COURT_APPLICATION_JSON, courtApplicationId, parentApplicationId);
+        verifyApplicationAtAGlance(courtApplicationId);
+
+        final String editBody = body.replace("\"isAddressConfidential\": false", "\"isAddressConfidential\": true");
+
+        postCommand(getWriteUrl("/initiate-application"),
+                "application/vnd.progression.edit-court-proceedings-for-application+json", editBody);
+
+        pollForApplicationAtAGlance(courtApplicationId,
+                withJsonPath("$.applicantDetails.isAddressConfidential", equalTo(true)),
+                withJsonPath("$.respondentDetails[2].isAddressConfidential", equalTo(true)),
+                withJsonPath("$.thirdParties[0].isAddressConfidential", equalTo(true)),
+                withJsonPath("$.thirdParties[1].isAddressConfidential", equalTo(true)));
+
+        final String userRoleInCase = getPayload("stub-data/defence.advocate.query.role-in-case-by-caseid.json")
+                .replace("%CASE_ID%", prosecutionCaseId)
+                .replace("%USER_ROLE_IN_CASE%", "defending");
+
+        stubAdvocateRoleInCaseByCaseId(prosecutionCaseId, userRoleInCase);
+
+        final String responseJson = pollForApplicationAtAGlanceForDefenceUser(courtApplicationId,
+                withJsonPath("$.applicantDetails.isAddressConfidential", equalTo(true)),
+                withJsonPath("$.respondentDetails[2].isAddressConfidential", equalTo(true)),
+                withJsonPath("$.thirdParties[0].isAddressConfidential", equalTo(true)),
+                withJsonPath("$.thirdParties[1].isAddressConfidential", equalTo(true)));
+
+            assertThat(responseJson, not(hasJsonPath("$.applicantDetails.address")));
+            assertThat(responseJson, not(hasJsonPath("$.respondentDetails[2].address")));
+            assertThat(responseJson, not(hasJsonPath("$.thirdParties[0].address")));
+            assertThat(responseJson, not(hasJsonPath("$.thirdParties[0].address")));
+
+    }
 
     @Test
     public void shouldVerifyLinkedApplicationsInApplicationAtAGlance() throws Exception {
@@ -155,8 +200,8 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
         return stringToJsonObjectConverter.convert(strPayload);
     }
 
-    private void doAddCourtApplicationAndVerify(final String filename, final String courtApplicationId, final String parentApplicationId) {
-        addCourtApplicationForApplicationAtAGlance(caseId,
+    private String doAddCourtApplicationAndVerify(final String filename, final String courtApplicationId, final String parentApplicationId) {
+        String body = addCourtApplicationForApplicationAtAGlance(caseId,
                 courtApplicationId,
                 particulars,
                 applicantReceivedDate,
@@ -199,6 +244,7 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
 
         final String caseResponse = getApplicationFor(courtApplicationId);
         assertThat(caseResponse, is(notNullValue()));
+         return body;
     }
 
     private void verifyApplicationAtAGlance(final String applicationId) {
@@ -229,11 +275,12 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.applicantDetails.address.address4", equalTo(applicantAddress4)),
                 withJsonPath("$.applicantDetails.address.address5", equalTo(applicantAddress5)),
                 withJsonPath("$.applicantDetails.address.postcode", equalTo(applicantPostCode)),
+                withJsonPath("$.applicantDetails.isAddressConfidential", equalTo(false)),
                 withJsonPath("$.applicantDetails.interpreterLanguageNeeds", equalTo(interpreterLanguageNeeds)),
                 withJsonPath("$.applicantDetails.name", equalTo(format("%s %s", applicantFirstName, applicantLastName))),
                 withJsonPath("$.applicantDetails.representation", equalTo(applicantRepresentation)),
                 withJsonPath("$.respondentDetails[0].name", equalTo(respondentOrganisationName)),
-                withJsonPath("$.respondentDetails.length()", equalTo(2)),
+                withJsonPath("$.respondentDetails.length()", equalTo(3)),
                 withJsonPath("$.respondentDetails[0].address.address1", equalTo(respondentOrganisationAddress1)),
                 withJsonPath("$.respondentDetails[0].address.address2", equalTo(respondentOrganisationAddress2)),
                 withJsonPath("$.respondentDetails[0].address.address3", equalTo(respondentOrganisationAddress3)),
@@ -244,6 +291,16 @@ public class ApplicationAtAGlanceIT extends AbstractIT {
                 withJsonPath("$.respondentDetails[0].respondentRepresentatives[0].representativePosition", equalTo(respondentRepresentativePosition)),
                 withJsonPath("$.respondentDetails[1].name", equalTo("David lloyd")),
                 withJsonPath("$.respondentDetails[1].address.address1", equalTo("44, Wilson Patten Street")),
+                withJsonPath("$.respondentDetails[2].name", equalTo("Dixon Covil")),
+                withJsonPath("$.respondentDetails[2].address.address1", equalTo("3, LakeSide Street")),
+                withJsonPath("$.respondentDetails[2].isAddressConfidential", equalTo(false)),
+                withJsonPath("$.thirdParties.length()", equalTo(2)),
+                withJsonPath("$.thirdParties[0].name", equalTo("S Water")),
+                withJsonPath("$.thirdParties[0].address.address1", equalTo("3001, random Street")),
+                withJsonPath("$.thirdParties[0].isAddressConfidential", equalTo(false)),
+                withJsonPath("$.thirdParties[1].name", equalTo("T Samsung")),
+                withJsonPath("$.thirdParties[1].address.address1", equalTo("9901, Silverdale Street")),
+                withJsonPath("$.thirdParties[1].isAddressConfidential", equalTo(false)),
                 withJsonPath("$.linkedCases[0].prosecutionCaseId", equalTo(prosecutionCaseId)),
                 withJsonPath("$.linkedCases[0].caseStatus", equalTo("ACTIVE")),
                 withJsonPath("$.linkedCases[0].prosecutionCaseIdentifier.prosecutionAuthorityId", equalTo(prosecutionAuthorityId)),

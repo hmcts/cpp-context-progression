@@ -1,21 +1,16 @@
 package uk.gov.moj.cpp.progression.query.view;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Comparator.comparing;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.core.courts.HearingListingStatus.HEARING_RESULTED;
 import static uk.gov.justice.courts.progression.query.AagResultPrompts.aagResultPrompts;
 import static uk.gov.justice.courts.progression.query.ThirdParties.thirdParties;
 import static uk.gov.justice.progression.courts.ApplicantDetails.applicantDetails;
 import static uk.gov.justice.progression.courts.RespondentDetails.respondentDetails;
 
-import uk.gov.justice.core.courts.AssociatedDefenceOrganisation;
 import uk.gov.justice.core.courts.AssociatedPerson;
 import uk.gov.justice.core.courts.BailStatus;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -24,7 +19,6 @@ import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtApplicationPayment;
 import uk.gov.justice.core.courts.CourtApplicationType;
 import uk.gov.justice.core.courts.CourtCivilApplication;
-import uk.gov.justice.core.courts.DefenceOrganisation;
 import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.JudicialResult;
 import uk.gov.justice.core.courts.LegalEntityDefendant;
@@ -47,20 +41,13 @@ import uk.gov.justice.progression.courts.RespondentRepresentatives;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.query.view.service.HearingService;
 import uk.gov.moj.cpp.progression.query.view.service.OrganisationService;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingApplicationRepository;
-import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -72,9 +59,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 @SuppressWarnings({"squid:CommentedOutCodeLine"})
 public class ApplicationAtAGlanceHelper {
@@ -89,19 +73,7 @@ public class ApplicationAtAGlanceHelper {
     private OrganisationService organisationService;
 
     @Inject
-    private HearingService hearingService;
-
-    @Inject
     private ProsecutionCaseRepository prosecutionCaseRepository;
-
-    @Inject
-    private HearingApplicationRepository hearingApplicationRepository;
-
-    @Inject
-    private HearingRepository hearingRepository;
-
-    @Inject
-    private CourtApplicationRepository courtApplicationRepository;
 
     @Inject
     private StringToJsonObjectConverter stringToJsonObjectConverter;
@@ -125,7 +97,7 @@ public class ApplicationAtAGlanceHelper {
         }
 
         final CourtCivilApplication courtCivilApplication = courtApplication.getCourtCivilApplication();
-        if (nonNull(courtCivilApplication)) {
+        if(nonNull(courtCivilApplication)){
             applicationBuilder.withIsCivil(courtCivilApplication.getIsCivil());
             applicationBuilder.withIsExParte(courtCivilApplication.getIsExParte());
         }
@@ -152,7 +124,7 @@ public class ApplicationAtAGlanceHelper {
     }
 
     @SuppressWarnings({"squid:MethodCyclomaticComplexity"})
-    public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication, final JsonEnvelope envelope) {
+    public ApplicantDetails getApplicantDetails(final CourtApplication courtApplication, final JsonEnvelope envelope, final boolean applyAddressConfidentialityCheck) {
         final ApplicantDetails.Builder applicantDetailsBuilder = applicantDetails();
         final CourtApplicationParty applicant = courtApplication.getApplicant();
         ofNullable(applicant.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(applicantDetailsBuilder::withName);
@@ -160,14 +132,15 @@ public class ApplicationAtAGlanceHelper {
         final Organisation organisation = applicant.getOrganisation();
         if (nonNull(person)) {
             applicantDetailsBuilder.withName(getName(person));
-            applicantDetailsBuilder.withAddress(person.getAddress());
+            populateAddressIfNotConfidential(applyAddressConfidentialityCheck, person, applicantDetailsBuilder);
+            applicantDetailsBuilder.withIsAddressConfidential(person.getIsAddressConfidential());
             applicantDetailsBuilder.withInterpreterLanguageNeeds(person.getInterpreterLanguageNeeds());
 
             final Optional<String> representationName = getRepresentationName(applicant);
             representationName.ifPresent(applicantDetailsBuilder::withRepresentation);
 
-            if (representationName.isEmpty()) {
-                createRepresentationForSubjectDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
+            if(representationName.isEmpty()){
+                createPresentationForSubjectDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
             }
 
             final Optional<String> remandStatus = getRemandStatus(applicant);
@@ -190,35 +163,32 @@ public class ApplicationAtAGlanceHelper {
                 applicantDetailsBuilder.withAddress(organisationDefendantDetails.get().getOrganisation().getAddress());
             }
 
-            createRepresentationForSubjectDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
+            createPresentationForSubjectDefendant(courtApplication, envelope, applicantDetailsBuilder, applicant);
         } else if (nonNull(applicant.getProsecutingAuthority())) {
             final ProsecutingAuthority prosecutingAuthority = applicant.getProsecutingAuthority();
             applicantDetailsBuilder.withName(prosecutingAuthority.getProsecutionAuthorityCode());
-            ofNullable(prosecutingAuthority.getAddress()).ifPresent(applicantDetailsBuilder::withAddress);
+            if(nonNull(prosecutingAuthority.getAddress())) {
+                applicantDetailsBuilder.withAddress(prosecutingAuthority.getAddress());
+            }
         }
-        final boolean isSubject = nonNull(courtApplication.getSubject()) && applicant.getId().equals(courtApplication.getSubject().getId());
-        if (isSubject) {
-            applicantDetailsBuilder.withRepresentation(prepareRepresentationForApplicant(applicantDetailsBuilder, courtApplication.getSubject()));
+        applicantDetailsBuilder.withIsSubject(courtApplication.getSubject() != null && applicant.getId().equals(courtApplication.getSubject().getId()));
+        if(nonNull(applicant.getUpdatedOn())){
+            applicantDetailsBuilder.withUpdatedOn(applicant.getUpdatedOn());
         }
-        applicantDetailsBuilder.withIsSubject(isSubject);
-        ofNullable(applicant.getUpdatedOn()).ifPresent(applicantDetailsBuilder::withUpdatedOn);
-
         return applicantDetailsBuilder.build();
     }
 
-    private String prepareRepresentationForApplicant(final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty subject) {
-        final ApplicantDetails applicantDetails = applicantDetailsBuilder.build();
-
-        if (isNull(applicantDetails.getRepresentation())) {
-            return prepareRepresentationFromSubject(subject);
-        } else {
-            return applicantDetails.getRepresentation();
+    private static void populateAddressIfNotConfidential(final boolean applyAddressConfidentialityCheck, final Person person, final ApplicantDetails.Builder applicantDetailsBuilder) {
+        if (!applyAddressConfidentialityCheck || !Boolean.TRUE.equals(person.getIsAddressConfidential())) {
+            applicantDetailsBuilder.withAddress(person.getAddress());
         }
     }
 
-    private void createRepresentationForSubjectDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
-                                                         final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
-        if (isSubject(courtApplication.getSubject(), applicant)) {
+    private void createPresentationForSubjectDefendant(final CourtApplication courtApplication, final JsonEnvelope envelope,
+                                                       final ApplicantDetails.Builder applicantDetailsBuilder, final CourtApplicationParty applicant) {
+        if(courtApplication.getSubject() != null &&
+                courtApplication.getSubject().getMasterDefendant() != null &&
+                applicant.getId().equals(courtApplication.getSubject().getId())){
 
             final UUID subjectMasterDefendantId = courtApplication.getSubject().getMasterDefendant().getMasterDefendantId();
 
@@ -245,20 +215,12 @@ public class ApplicationAtAGlanceHelper {
                 final Optional<JsonObject> matchingCaseDefendant = associatedDefendants.stream().map(x -> (JsonObject) x)
                         .filter(cd -> optionalMatchingDefendantId.get().toString().equals(cd.getString(DEFENDANT_ID))).findFirst();
 
-                if (isOrganisationAddressPresent(matchingCaseDefendant)) {
+                if (matchingCaseDefendant.isPresent() && nonNull(matchingCaseDefendant.get().getJsonObject(ORGANISATION_ADDRESS))) {
                     applicantDetailsBuilder.withRepresentation(createOrganisation(matchingCaseDefendant.get()));
                     break;
                 }
             }
         }
-    }
-
-    private static boolean isSubject(final CourtApplicationParty subject, final CourtApplicationParty applicant) {
-        return nonNull(subject) && nonNull(subject.getMasterDefendant()) && applicant.getId().equals(subject.getId());
-    }
-
-    private static boolean isOrganisationAddressPresent(final Optional<JsonObject> matchingCaseDefendant) {
-        return matchingCaseDefendant.isPresent() && nonNull(matchingCaseDefendant.get().getJsonObject(ORGANISATION_ADDRESS));
     }
 
     public ProsecutionCase getProsecutionCase(final UUID caseId) {
@@ -292,9 +254,9 @@ public class ApplicationAtAGlanceHelper {
                 .ifPresent(aagResultBuilder::withAmendedBy);
         ofNullable(judicialResult.getJudicialResultPrompts()).ifPresent(judicialResultPrompts -> {
             final List<AagResultPrompts> aagResultPrompts = judicialResultPrompts.stream().map(jrp -> aagResultPrompts()
-                            .withLabel(jrp.getLabel())
-                            .withValue(jrp.getValue())
-                            .build())
+                    .withLabel(jrp.getLabel())
+                    .withValue(jrp.getValue())
+                    .build())
                     .collect(toList());
             aagResultBuilder.withAagResultPrompts(aagResultPrompts);
         });
@@ -302,44 +264,17 @@ public class ApplicationAtAGlanceHelper {
         return aagResultBuilder.build();
     }
 
-    public List<RespondentDetails> getRespondentDetails(final CourtApplication courtApplication) {
+    public List<RespondentDetails> getRespondentDetails(final CourtApplication courtApplication, final boolean applyAddressConfidentialityCheck) {
         return ofNullable(courtApplication
                 .getRespondents())
                 .map(Collection::stream)
                 .orElseGet(Stream::empty)
-                .map(respondent -> getRespondentDetails(respondent, courtApplication.getSubject()))
+                .map(respondent -> getRespondentDetails(respondent, courtApplication.getSubject(), applyAddressConfidentialityCheck))
                 .collect(toList());
     }
 
-    public Pair<CourtApplication, List<JsonObject>> getLinkedApplicationHearingsForCourtExtract(final UUID applicationId, final UUID defendantId) {
-
-        final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
-        final JsonObject courtApplicationPayload = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
-        final CourtApplication courtApplication = jsonObjectToObjectConverter.convert(courtApplicationPayload, CourtApplication.class);
-
-        if (isApplicationSubjectDefendant(courtApplication, defendantId)){
-            final List<UUID> applicationHearingIds =  hearingService.getApplicationHearings(courtApplication.getId());
-            final List<HearingEntity> applicationHearingEntities = hearingRepository.findByHearingIds(applicationHearingIds);
-            final List<JsonObject> hearings = applicationHearingEntities.stream()
-                    .filter(hearing -> HEARING_RESULTED == hearing.getListingStatus()).distinct()
-                    .sorted(comparing(HearingEntity::getSharedTime, Comparator.nullsLast(Comparator.reverseOrder())))
-                    .map(hearingEntity -> stringToJsonObjectConverter.convert(hearingEntity.getPayload()))
-                    .toList();
-            return Pair.of(courtApplication, hearings);
-        }
-        return Pair.of(courtApplication, emptyList());
-    }
-
-    private boolean isApplicationSubjectDefendant(final CourtApplication courtApplication, final UUID defendantId) {
-        return nonNull(courtApplication) && nonNull(courtApplication.getSubject())
-                && nonNull(courtApplication.getSubject().getMasterDefendant())
-                && isNotEmpty(courtApplication.getSubject().getMasterDefendant().getDefendantCase())
-                && courtApplication.getSubject().getMasterDefendant().getDefendantCase().stream().anyMatch(
-                dc -> defendantId.equals(dc.getDefendantId()));
-    }
-
     @SuppressWarnings({"squid:MethodCyclomaticComplexity"})
-    private RespondentDetails getRespondentDetails(final CourtApplicationParty respondent, final CourtApplicationParty subject) {
+    private RespondentDetails getRespondentDetails(final CourtApplicationParty respondent, final CourtApplicationParty subject, final boolean applyAddressConfidentialityCheck) {
         final RespondentDetails.Builder respondentDetailsBuilder = respondentDetails();
         ofNullable(respondent.getProsecutingAuthority()).map(ProsecutingAuthority::getProsecutionAuthorityCode).ifPresent(respondentDetailsBuilder::withName);
         respondentDetailsBuilder.withId(respondent.getId());
@@ -348,15 +283,11 @@ public class ApplicationAtAGlanceHelper {
         if (nonNull(organisation)) {
             updateOrganisationDetails(respondent, respondentDetailsBuilder, organisation);
         } else if (nonNull(personDetails)) {
-            updatePersonDetails(respondent, respondentDetailsBuilder, personDetails);
+            updatePersonDetails(respondent, respondentDetailsBuilder, personDetails,applyAddressConfidentialityCheck);
         } else if (nonNull(respondent.getMasterDefendant())) {
             updateRespondentDetails(respondent, respondentDetailsBuilder);
         } else if (nonNull(respondent.getProsecutingAuthority())) {
             updateRespondentDetailsWithProsecutingAuthority(respondent, respondentDetailsBuilder);
-        }
-        final boolean isSubject = nonNull(subject) && nonNull(subject.getMasterDefendant()) && nonNull(respondent.getMasterDefendant()) && respondent.getMasterDefendant().getMasterDefendantId().equals(subject.getMasterDefendant().getMasterDefendantId());
-        if (isSubject) {
-            respondentDetailsBuilder.withRepresentation(prepareRepresentationFromSubject(subject));
         }
         if(nonNull(subject)) {
             updateIsSubjectFlag(respondent, subject, respondentDetailsBuilder);
@@ -379,9 +310,12 @@ public class ApplicationAtAGlanceHelper {
         }
     }
 
-    private void updatePersonDetails(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder, Person personDetails) {
+    private void updatePersonDetails(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder, Person personDetails, final boolean applyAddressConfidentialityCheck) {
         respondentDetailsBuilder.withName(getName(personDetails));
-        respondentDetailsBuilder.withAddress(personDetails.getAddress());
+        if (!applyAddressConfidentialityCheck || !Boolean.TRUE.equals(personDetails.getIsAddressConfidential())) {
+            respondentDetailsBuilder.withAddress(personDetails.getAddress());
+        }
+        respondentDetailsBuilder.withIsAddressConfidential(personDetails.getIsAddressConfidential());
         if(nonNull(personDetails.getDateOfBirth())){
             respondentDetailsBuilder.withDateOfBirth(personDetails.getDateOfBirth());
         }
@@ -413,32 +347,10 @@ public class ApplicationAtAGlanceHelper {
         }
     }
 
-    private String prepareRepresentationFromSubject(final CourtApplicationParty subject) {
-        return ofNullable(subject)
-                .map(CourtApplicationParty::getAssociatedDefenceOrganisation)
-                .map(AssociatedDefenceOrganisation::getDefenceOrganisation)
-                .map(DefenceOrganisation::getOrganisation)
-                .map(organisation -> {
-                    final List<String> organisationInfo = new ArrayList<>();
-                    organisationInfo.add(organisation.getName());
-                    ofNullable(organisation.getAddress()).ifPresent(address -> {
-                        organisationInfo.add(address.getAddress1());
-                        organisationInfo.add(address.getAddress2());
-                        organisationInfo.add(address.getAddress3());
-                        organisationInfo.add(address.getAddress4());
-                        organisationInfo.add(address.getPostcode());
-                    });
-                    return organisationInfo.stream()
-                            .filter(StringUtils::isNotEmpty)
-                            .collect(joining(","));
-                })
-                .orElse(null);
-    }
-
     private void updateRespondentDetailsWithProsecutingAuthority(CourtApplicationParty respondent, RespondentDetails.Builder respondentDetailsBuilder) {
         final ProsecutingAuthority prosecutingAuthority = respondent.getProsecutingAuthority();
         respondentDetailsBuilder.withName(prosecutingAuthority.getProsecutionAuthorityCode());
-        if (nonNull(prosecutingAuthority.getAddress())) {
+        if(nonNull(prosecutingAuthority.getAddress())) {
             respondentDetailsBuilder.withAddress(prosecutingAuthority.getAddress());
         }
     }
@@ -486,16 +398,16 @@ public class ApplicationAtAGlanceHelper {
                 .map(Organisation::getName);
     }
 
-    public List<ThirdParties> getThirdPartyDetails(final CourtApplication courtApplication) {
+    public List<ThirdParties> getThirdPartyDetails(final CourtApplication courtApplication, final boolean applyAddressConfidentialityCheck) {
         return ofNullable(courtApplication
                 .getThirdParties())
                 .map(Collection::stream)
                 .orElseGet(Stream::empty)
-                .map(this::getThirdPartyDetails)
+                .map(courtApplicationParty -> getThirdPartyDetails(courtApplicationParty, applyAddressConfidentialityCheck))
                 .collect(toList());
     }
 
-    private ThirdParties getThirdPartyDetails(final CourtApplicationParty courtApplicationParty) {
+    private ThirdParties getThirdPartyDetails(final CourtApplicationParty courtApplicationParty, final boolean applyAddressConfidentialityCheck) {
         final ThirdParties.Builder thirdPartiesDetailsBuilder = thirdParties();
         thirdPartiesDetailsBuilder.withId(courtApplicationParty.getId());
 
@@ -510,7 +422,10 @@ public class ApplicationAtAGlanceHelper {
 
         ofNullable(courtApplicationParty.getPersonDetails()).ifPresent(personDetails -> {
             thirdPartiesDetailsBuilder.withName(getName(personDetails));
-            thirdPartiesDetailsBuilder.withAddress(personDetails.getAddress());
+            if (!applyAddressConfidentialityCheck || !Boolean.TRUE.equals(personDetails.getIsAddressConfidential())) {
+                thirdPartiesDetailsBuilder.withAddress(personDetails.getAddress());
+            }
+            thirdPartiesDetailsBuilder.withIsAddressConfidential(personDetails.getIsAddressConfidential());
             final Organisation representationOrganisation = courtApplicationParty.getRepresentationOrganisation();
             if (nonNull(representationOrganisation)) {
                 thirdPartiesDetailsBuilder.withThirdPartyRepresentatives(getThirdPartyRepresentatives(representationOrganisation));
@@ -553,7 +468,7 @@ public class ApplicationAtAGlanceHelper {
         return thirdPartyRepresentatives;
     }
 
-    private boolean isUseResultText(final String resultText) {
+    private boolean isUseResultText(final String resultText){
         final String checkValue = Arrays.stream(resultText.split(" ")).limit(3).collect(Collectors.joining(" "));
         final Pattern pattern = Pattern.compile("\\w - \\w", Pattern.CASE_INSENSITIVE);
         final Matcher matcher = pattern.matcher(checkValue);
