@@ -1,8 +1,13 @@
 package uk.gov.moj.cpp.progression.handler;
 
-import static java.util.Optional.ofNullable;
-import static java.util.UUID.fromString;
-
+import java.util.UUID;
+import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
@@ -15,17 +20,11 @@ import uk.gov.justice.services.eventsourcing.source.core.EventStream;
 import uk.gov.justice.services.eventsourcing.source.core.exception.EventStreamException;
 import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
+import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.UUID.fromString;
 
 @ServiceComponent(Component.COMMAND_HANDLER)
 public class UpdateApplicationLaaReferenceToHearingHandler {
@@ -57,7 +56,7 @@ public class UpdateApplicationLaaReferenceToHearingHandler {
         final UUID hearingId = fromString(payload.getString(HEARING_ID));
         final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
         final UUID subjectId = fromString(payload.getString(SUBJECT_ID));
-        final UUID offenceId = ofNullable(payload.getString(OFFENCE_ID, null)).map(UUID::fromString).orElse(null);
+        final UUID offenceId = fromString(payload.getString(OFFENCE_ID));
         final JsonObject laaReferenceJson = payload.getJsonObject(LAA_REFERENCE);
         LaaReference laaReference = jsonObjectToObjectConverter.convert(laaReferenceJson, LaaReference.class);
         final EventStream eventStream = eventSource.getStreamById(hearingId);

@@ -179,10 +179,6 @@ public class ProsecutionCaseDefendantListingStatusChangedListener {
         }
         filterDuplicateOffencesByIdForHearing(hearing);
         hearingEntity.setListingStatus(hearingListingStatus);
-
-        if (HearingListingStatus.SENT_FOR_LISTING.equals(hearingListingStatus) && hearingEntity.getConfirmedDate() != null) {
-            hearingEntity.setConfirmedDate(null);
-        }
         removeNowsJudicialResultsFromApplication(hearing);
         removeNowsJudicialResultsFromCase(hearing);
         hearingEntity.setPayload(objectToJsonObjectConverter.convert(hearing).toString());

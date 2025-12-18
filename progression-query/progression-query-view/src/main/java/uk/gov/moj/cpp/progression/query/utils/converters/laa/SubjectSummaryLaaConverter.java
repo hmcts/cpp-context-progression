@@ -32,7 +32,7 @@ public class SubjectSummaryLaaConverter extends LAAConverter {
     public SubjectSummary convert(final CourtApplication courtApplication, final List<Hearing> hearingList) {
         final CourtApplicationParty subject = courtApplication.getSubject();
         return SubjectSummary.subjectSummary()
-                .withDefendantASN(courtApplication.getDefendantASN())
+                .withDefendantASN(defendantASNConverter.convert(subject))
                 .withDateOfNextHearing(dateOfNextHearingConverter.convert(hearingList))
                 .withDefendantDOB(ofNullable(subject.getMasterDefendant()).map(MasterDefendant::getPersonDefendant).map(PersonDefendant::getPersonDetails).map(Person::getDateOfBirth).map(Object::toString).orElse(null))
                 .withDefendantFirstName(getDefendantFirstName(subject))

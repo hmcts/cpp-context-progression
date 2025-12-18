@@ -110,7 +110,7 @@
                   },
                   "offenceId": "00000000-0000-0000-0000-000000000000",
                   "pleaDate": "2018-01-01",
-                  "pleaValue": "NOT_GUILTY"
+                  "pleaValue": "GUILTY"
                 },
                 "verdict": {
                   "originatingHearingId": "00000000-0000-0000-0000-000000000000",
@@ -154,7 +154,6 @@
                     "isAvailableForCourtExtract": true,
                     "amendmentDate": "1000-01-01",
                     "amendmentReason": "a",
-                    "isDeleted": false,
                     "cjsCode": "a",
                     "rank": 0.1,
                     "orderedDate": "1000-01-01",

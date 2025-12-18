@@ -12,8 +12,6 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
 import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelper.buildApplicationHearingResponse;
-import static uk.gov.moj.cpp.progression.query.utils.ApplicationHearingQueryHelper.linkedApplicationHearingsResponse;
-import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.LINKED_APPLICATION_HEARINGS;
 
 import uk.gov.justice.core.courts.AssignedUser;
 import uk.gov.justice.core.courts.CourtApplication;
@@ -29,7 +27,6 @@ import uk.gov.justice.courts.progression.query.ThirdParties;
 import uk.gov.justice.progression.courts.ApplicantDetails;
 import uk.gov.justice.progression.courts.RespondentDetails;
 import uk.gov.justice.progression.query.laa.ApplicationLaa;
-import uk.gov.justice.progression.query.laa.LaaApplnReference;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonValueConverter;
@@ -44,7 +41,6 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.moj.cpp.progression.query.utils.converters.laa.ApplicationLaaConverter;
-import uk.gov.moj.cpp.progression.query.utils.converters.laa.LaaApplnReferenceConverter;
 import uk.gov.moj.cpp.progression.query.view.ApplicationAtAGlanceHelper;
 import uk.gov.moj.cpp.progression.query.view.UserDetailsLoader;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
@@ -74,11 +70,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.persistence.NoResultException;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,8 +86,6 @@ import org.slf4j.LoggerFactory;
 public class ApplicationQueryView {
 
     public static final String APPLICATION_ID_SEARCH_PARAM = "applicationId";
-
-    static final String DEFENDANT_ID_PARAM = "defendantId";
     public static final String CASEID_SEARCH_PARAM = "caseId";
     private static final String APPLICATION_ID_NOT_FOUND = "### applicationId not found";
     private static final String NO_APPLICATION_FOUND_WITH_APPLICATION_ID = "### No application found with applicationId='{}'";
@@ -107,10 +104,6 @@ public class ApplicationQueryView {
     private static final String STATUS_CODE = "statusCode";
     private static final String UPDATED = "updated";
     private static final String TARGET_TYPE_APPLICATION = "APPLICATION_ID_LAA";
-    private static final String SUBJECT = "subject";
-    private static final String MASTER_DEFENDANT = "masterDefendant";
-    private static final String DEFENDANT_CASE = "defendantCase";
-    private static final String COURT_APPLICATIONS = "courtApplications";
 
     @Inject
     private CourtApplicationRepository courtApplicationRepository;
@@ -149,9 +142,6 @@ public class ApplicationQueryView {
     private ApplicationLaaConverter applicationLaaConverter;
 
     @Inject
-    private LaaApplnReferenceConverter laaApplnReferenceConverter;
-
-    @Inject
     private SystemUserProvider systemUserProvider;
 
     @Inject
@@ -175,12 +165,6 @@ public class ApplicationQueryView {
                 final ApplicationDetails applicationDetails = applicationAtAGlanceHelper.getApplicationDetails(courtApplication);
                 final JsonObject applicationDetailsJson = objectToJsonObjectConverter.convert(applicationDetails);
                 jsonObjectBuilder.add("applicationDetails", applicationDetailsJson);
-
-                final LaaApplnReference laaApplnReference = laaApplnReferenceConverter.convert(courtApplication.getLaaApplnReference());
-                if(nonNull(laaApplnReference)) {
-                    final JsonObject laaApplnReferenceJson = objectToJsonObjectConverter.convert(laaApplnReference);
-                    jsonObjectBuilder.add("laaApplnReference", laaApplnReferenceJson);
-                }
 
                 final ApplicantDetails applicantDetails = applicationAtAGlanceHelper.getApplicantDetails(courtApplication, envelope);
                 final JsonObject applicantDetailsJson = objectToJsonObjectConverter.convert(applicantDetails);
@@ -241,20 +225,12 @@ public class ApplicationQueryView {
 
     @Handles("progression.query.application-laa")
     public Envelope<ApplicationLaa> getApplicationForLaa(final JsonEnvelope envelope) {
-        final UUID applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID).get();
+        final UUID applicationId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID).get();
         try {
             final CourtApplication courtApplication = getCourtApplication(applicationId);
             final List<Hearing> hearingList = getHearingList(courtApplication.getId());
             final String laaApplicationShortId = retrieveLaaApplicationShortIdFromSystemIdMapper(applicationId);
-            final List<CourtApplicationEntity> linkedApplications = courtApplicationRepository.findByParentApplicationId(applicationId);
-
-            List<CourtApplicationSummary> childApplicationSummaries = new ArrayList<>();
-            if (CollectionUtils.isNotEmpty(linkedApplications)) {
-                childApplicationSummaries = linkedApplications.stream().map(courtApplicationEntity
-                        -> buildApplicationSummary(getCourtApplication(courtApplicationEntity.getApplicationId()), courtApplicationEntity.getAssignedUserId())).toList();
-            }
-
-            return Envelope.envelopeFrom(envelope.metadata(), applicationLaaConverter.convert(courtApplication, hearingList, laaApplicationShortId, childApplicationSummaries));
+            return Envelope.envelopeFrom(envelope.metadata(), applicationLaaConverter.convert(courtApplication, hearingList, laaApplicationShortId));
 
         } catch (final NoResultException e) {
             LOGGER.info(NO_APPLICATION_FOUND_WITH_APPLICATION_ID, applicationId, e);
@@ -298,8 +274,8 @@ public class ApplicationQueryView {
 
     @Handles("progression.query.application")
     public JsonEnvelope getApplication(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
-        final UUID applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID).get();
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final UUID applicationId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID).get();
         try {
             final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
             final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
@@ -340,9 +316,9 @@ public class ApplicationQueryView {
      */
     @Handles("progression.query.application-only")
     public JsonEnvelope getApplicationOnly(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
 
-        final UUID applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID).get();
+        final UUID applicationId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID).get();
 
         try {
             final CourtApplicationEntity courtApplicationEntity = courtApplicationRepository.findByApplicationId(applicationId);
@@ -385,18 +361,18 @@ public class ApplicationQueryView {
 
     @Handles("progression.query.application.summary")
     public JsonEnvelope getApplicationSummary(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
-        final Optional<UUID> applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final Optional<UUID> applicationId = JsonObjects.getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
         try {
             final List<CourtApplicationEntity> courtApplications = courtApplicationRepository.findByParentApplicationId(applicationId.get());
 
             if (!courtApplications.isEmpty()) {
-                final JsonArrayBuilder jsonApplicationBuilder = createArrayBuilder();
+                final JsonArrayBuilder jsonApplicationBuilder = Json.createArrayBuilder();
 
                 courtApplications.forEach(courtApplicationEntity ->
                         buildApplicationSummary(courtApplicationEntity, jsonApplicationBuilder));
 
-                jsonObjectBuilder.add(COURT_APPLICATIONS, jsonApplicationBuilder.build());
+                jsonObjectBuilder.add("courtApplications", jsonApplicationBuilder.build());
             }
 
 
@@ -431,20 +407,6 @@ public class ApplicationQueryView {
                 .map(hearingApplicationEntity -> stringToJsonObjectConverter.convert(hearingApplicationEntity.getHearing().getPayload()))
                 .collect(toList());
         final JsonObject responsePayload = buildApplicationHearingResponse(hearingPayloads);
-        return envelopeFrom(envelope.metadata(), responsePayload);
-    }
-
-    @Handles("progression.query.linked-application-hearings-for-court-extract")
-    public JsonEnvelope getApplicationHearingsForCourtExtract(final JsonEnvelope envelope) {
-        final Optional<UUID> applicationId = getUUID(envelope.payloadAsJsonObject(), APPLICATION_ID);
-        final Optional<UUID> defendantIdOpt = JsonObjects.getUUID(envelope.payloadAsJsonObject(), DEFENDANT_ID_PARAM);
-
-        final Pair<CourtApplication, List<JsonObject>> linkedApplicationHearings = applicationAtAGlanceHelper.getLinkedApplicationHearingsForCourtExtract(applicationId.get(), defendantIdOpt.get());
-
-        final JsonObject responsePayload = createObjectBuilder()
-                .add(LINKED_APPLICATION_HEARINGS, linkedApplicationHearingsResponse(linkedApplicationHearings.getLeft(), linkedApplicationHearings.getRight()))
-                .build();
-
         return JsonEnvelope.envelopeFrom(envelope.metadata(), responsePayload);
     }
 
@@ -494,29 +456,16 @@ public class ApplicationQueryView {
                 .build());
     }
 
-    private CourtApplicationSummary buildApplicationSummary(final CourtApplication courtApplication, final UUID assignedUserId) {
-
-        return CourtApplicationSummary.applicationSummary()
-                .withApplicationId(courtApplication.getId().toString())
-                .withApplicationReference(courtApplication.getApplicationReference())
-                .withApplicationStatus(courtApplication.getApplicationStatus())
-                .withApplicationTitle(courtApplication.getType())
-                .withApplicantDisplayName(courtApplication.getApplicant())
-                .withRespondentDisplayNames(courtApplication.getRespondents())
-                .withAssignedUserId(assignedUserId)
-                .build();
-    }
-
 
     private JsonArray buildCourtDocuments(final List<CourtDocumentEntity> courtDocuments) {
-        final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
         courtDocuments.forEach(courtDocumentEntity -> buildCourtDocument(courtDocumentEntity, jsonArrayBuilder));
         return jsonArrayBuilder.build();
     }
 
 
     private JsonObject buildAssignedUserJson(final AssignedUser assignedUser) {
-        final JsonObjectBuilder jsonObjectBuilder = createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("userId", assignedUser.getUserId().toString());
         if (nonNull(assignedUser.getFirstName())) {
             jsonObjectBuilder.add("firstName", assignedUser.getFirstName());

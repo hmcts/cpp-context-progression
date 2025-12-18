@@ -1,5 +1,6 @@
 package uk.gov.moj.cpp.progression;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -7,6 +8,7 @@ import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertTrue;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
+import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.generateUrn;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedings;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForPartialOrExactMatchDefendants;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsWithoutCourtDocument;
@@ -23,14 +25,15 @@ import static uk.gov.moj.cpp.progression.util.ReferProsecutionCaseToCrownCourtHe
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import com.jayway.jsonpath.ReadContext;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +42,7 @@ import org.junit.jupiter.api.Test;
 public class ACourtProceedingsInitiatedIT extends AbstractIT {
 
     private final JmsMessageConsumerClient publicEventConsumer = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-case-created").getMessageConsumerClient();
+    private static final String INITIAL_COURT_PROCEEDINGS_MIGRATION_STATUS_INACTIVE = "progression.command.initiate-court-proceedings-migration-inactive.json";
 
     private String caseId;
     private String materialIdActive;
@@ -62,7 +66,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingsWithDefendantAsYouth() throws IOException {
+    public void shouldInitiateCourtProceedingsWithDefendantAsYouth() {
         initiateCourtProceedings(caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, listedStartDateTime, earliestStartDateTime, defendantDOB);
         verifyPublicEventProsecutionCaseCreated();
         pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, emptyList()));
@@ -70,7 +74,25 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingWithPartialMatchDefendant() throws IOException, JSONException {
+    void shouldInitiateCourtProceedingsForInactiveMigratedCase() {
+        final String caseUrn = generateUrn();
+        //given
+        initiateCourtProceedings(INITIAL_COURT_PROCEEDINGS_MIGRATION_STATUS_INACTIVE, caseId, defendantId, materialIdActive, materialIdDeleted, referralReasonId, caseUrn, listedStartDateTime, earliestStartDateTime, defendantDOB);
+        verifyPublicEventProsecutionCaseCreated();
+        final String inactive = "INACTIVE";
+        final String xhibit = "XHIBIT";
+        final List<Matcher<? super ReadContext>> inactiveMigratedCaseMatchers = newArrayList(
+                withJsonPath("$.prosecutionCase.caseStatus", is(inactive)),
+                withJsonPath("$.prosecutionCase.migrationSourceSystem.migrationCaseStatus", is(inactive)),
+                withJsonPath("$.prosecutionCase.migrationSourceSystem.migrationSourceSystemName", is(xhibit))
+        );
+
+        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, inactiveMigratedCaseMatchers));
+
+    }
+
+    @Test
+    public void shouldInitiateCourtProceedingWithPartialMatchDefendant() throws JSONException {
         final String matchedCaseId_1 = randomUUID().toString();
         final String matchedDefendant_1 = randomUUID().toString();
         final String matchedCaseId_2 = randomUUID().toString();
@@ -95,7 +117,7 @@ public class ACourtProceedingsInitiatedIT extends AbstractIT {
     }
 
     @Test
-    public void shouldInitiateCourtProceedingWithExactMatchDefendant() throws IOException, JSONException {
+    public void shouldInitiateCourtProceedingWithExactMatchDefendant() throws JSONException {
 
         final String matchedCaseId_1 = randomUUID().toString();
         final String matchedDefendant_1 = randomUUID().toString();

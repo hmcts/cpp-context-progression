@@ -9,7 +9,6 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum.INACTIVE;
-import static uk.gov.moj.cpp.progression.helper.AbstractTestHelper.getWriteUrl;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.initiateCourtProceedingsForGroupCases;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
@@ -17,17 +16,13 @@ import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollPr
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.sendPublicEvent;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.assertThatRequestIsAccepted;
-import static uk.gov.moj.cpp.progression.helper.RestHelper.postCommand;
 import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
-import io.restassured.response.Response;
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.domain.constant.CaseStatusEnum;
 import uk.gov.moj.cpp.progression.util.Pair;
 
 import java.util.Map;
@@ -36,9 +31,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -125,30 +118,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
     }
 
 
-    @Test
-    public void shouldNotUpdateCaseAfterHearingIsResulted() throws Exception {
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-        ejectCase(caseId, "to eject the case");
-        final JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_HEARING_RESULTED_V2, userId), getHearingWithSingleCaseJsonObject(PUBLIC_HEARING_RESULTED_CASE_UPDATED_V2 + ".json", caseId,
-                hearingId, defendantId, newCourtCentreId, bailStatusCode, bailStatusDescription, bailStatusId));
-        messageProducerClientPublic.sendMessage(PUBLIC_HEARING_RESULTED_V2, publicEventEnvelope);
-        pollProsecutionCasesProgressionFor(caseId, getDefendantUpdatedMatchersWithCaseEjected());
-    }
-
-
-    private void ejectCase(final String prosecutionCaseId, final String removalReason) {
-        JsonObject payload = Json.createObjectBuilder()
-                .add("prosecutionCaseId", prosecutionCaseId)
-                .add("removalReason", removalReason)
-                .build();
-
-        final Response response = postCommand(getWriteUrl("/eject"),
-                "application/vnd.progression.eject-case-or-application+json",
-                payload.toString());
-        assertThatRequestIsAccepted(response);
-    }
-
     private Matcher[] getDefendantUpdatedMatchers() {
         return new Matcher[]{
                 withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
@@ -158,13 +127,6 @@ public class HearingResultedCaseUpdatedIT extends AbstractIT {
                 withJsonPath("$.prosecutionCase.caseStatus", equalTo(INACTIVE.getDescription())),
                 withJsonPath("$.prosecutionCase.defendants[0].proceedingsConcluded", equalTo(true)),
                 withJsonPath("$.prosecutionCase.defendants[0].offences[0].proceedingsConcluded", equalTo(true))
-        };
-    }
-
-    private Matcher[] getDefendantUpdatedMatchersWithCaseEjected() {
-        return new Matcher[]{
-                withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.prosecutionCase.caseStatus", equalTo("EJECTED"))
         };
     }
 

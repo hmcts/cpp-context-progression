@@ -151,7 +151,6 @@ public class PrisonCourtRegisterHandler extends AbstractCommandHandler {
         } else {
             if (courtApplication
                     .getRespondents().stream()
-                    .filter(respondent -> nonNull(respondent.getMasterDefendant()))
                     .anyMatch(respondent -> respondent.getMasterDefendant().getMasterDefendantId().equals(prisonCourtRegisterDocumentRequest.getDefendant().getMasterDefendantId()))) {
                 defendantType = "Respondent";
             }

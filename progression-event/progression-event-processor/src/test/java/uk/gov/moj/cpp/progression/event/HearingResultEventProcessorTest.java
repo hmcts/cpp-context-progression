@@ -83,8 +83,8 @@ import uk.gov.justice.services.messaging.spi.DefaultEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.converter.SeedingHearingConverter;
 import uk.gov.moj.cpp.progression.domain.pojo.PrisonCustodySuite;
-import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.helper.CustodialEstablishmentUpdateHelper;
+import uk.gov.moj.cpp.progression.exception.LaaAzureApimInvocationException;
 import uk.gov.moj.cpp.progression.helper.HearingResultHelper;
 import uk.gov.moj.cpp.progression.helper.HearingResultUnscheduledListingHelper;
 import uk.gov.moj.cpp.progression.helper.SummonsHelper;
@@ -112,10 +112,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.google.common.io.Resources;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -138,6 +140,7 @@ public class HearingResultEventProcessorTest {
 
     @Spy
     private final JsonObjectToObjectConverter jsonObjectToObjectConverter = new JsonObjectToObjectConverter(new ObjectMapperProducer().objectMapper());
+
 
 
     @Mock
@@ -472,7 +475,7 @@ public class HearingResultEventProcessorTest {
 
 
     @Test
-    public void shouldProcessHandleApplicationsResultedAndShouldCallLaaApiWhenProceedingsConcludedWithOffenceLevelLAAReference() {
+    public void shouldProcessHandleApplicationsResultedAndShouldCallLaaApiWhenProceedingsConcluded() {
         final ApplicationsResulted applicationsResulted = buildApplicationsResulted(true, true);
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
@@ -505,47 +508,13 @@ public class HearingResultEventProcessorTest {
 
         verify(progressionService, never()).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
         verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
+
+
     }
 
     @Test
-    public void shouldProcessHandleApplicationsResultedAndShouldCallLaaApiWhenProceedingsConcludedWithApplicationLevelLAAReference() {
+    public void shouldProcessHandleApplicationsResultedAndShouldNotCallLaaApiWhenOffencesNotThereForProsecutionCases() {
         final ApplicationsResulted applicationsResulted = buildApplicationsResulted(true, true, false);
-        final JsonEnvelope event = envelopeFrom(
-                metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
-                objectToJsonObjectConverter.convert(applicationsResulted));
-
-        final ProsecutionConcludedForLAA prosecutionConcludedForLAA = ProsecutionConcludedForLAA.prosecutionConcludedForLAA()
-                .withProsecutionConcluded(singletonList(ProsecutionConcluded.prosecutionConcluded()
-                        .withIsConcluded(true)
-                        .withApplicationConcluded(ApplicationConcluded.applicationConcluded()
-                                .withSubjectId(randomUUID())
-                                .withApplicationResultCode("APP_RESULT_CODE")
-                                .withApplicationId(randomUUID())
-                                .build())
-                        .build()))
-                .build();
-
-        when(proceedingConcludedConverter.getApplicationConcludedRequest(any(), any())).thenReturn(prosecutionConcludedForLAA);
-        when(azureFunctionService.concludeDefendantProceeding(anyString())).thenReturn(HttpStatus.SC_ACCEPTED);
-        when(applicationParameters.getRetryTimes()).thenReturn("3");
-        when(applicationParameters.getRetryInterval()).thenReturn("1000");
-
-        eventProcessor.processHandleApplicationsResulted(event);
-
-        verify(azureFunctionService).concludeDefendantProceeding(anyString());
-
-        verify(this.sender).send(this.envelopeArgumentCaptor2.capture());
-        final List<Envelope<?>> allValues = envelopeArgumentCaptor2.getAllValues();
-        assertThat(allValues.size(), is(1));
-        assertThat(allValues.get(0).metadata().name(), equalTo("progression.command.hearing-resulted-update-application"));
-
-        verify(progressionService, never()).updateCourtApplicationStatus(any(JsonEnvelope.class), any(UUID.class), any(ApplicationStatus.class));
-        verify(progressionService, never()).linkApplicationsToHearing(any(), any(), any(), any());
-    }
-
-    @Test
-    public void shouldProcessHandleApplicationsResultedAndShouldNotCallLaaApiWhenOffencesNotThereForProsecutionCasesAndNoApplicationLevelLAAReference() {
-        final ApplicationsResulted applicationsResulted = buildApplicationsResulted(true, false, false);
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.prosecution-applications-resulted"),
                 objectToJsonObjectConverter.convert(applicationsResulted));
@@ -580,20 +549,12 @@ public class HearingResultEventProcessorTest {
                                 .withOffences(getOffences(isWithLaaApplnReference, isWithOffences))
                                 .build()
                 ))
-                .withLaaApplnReference(getLaaApplnReferenceOnApplicationLevel(isWithLaaApplnReference, isWithOffences))
                 .withProceedingsConcluded(proceedingsConcluded)
                 .build())).build()).build();
     }
 
-    private static LaaReference getLaaApplnReferenceOnApplicationLevel(final boolean isWithLaaApplnReference, final boolean isWithOffences) {
-        if (!isWithOffences) {
-            return getLaaApplnReference(isWithLaaApplnReference);
-        }
-        return null;
-    }
-
     private static List<Offence> getOffences(final boolean isWithLaaApplnReference, final boolean isWithOffences) {
-        if (!isWithOffences) {
+        if(!isWithOffences){
             return null;
         }
         return asList(

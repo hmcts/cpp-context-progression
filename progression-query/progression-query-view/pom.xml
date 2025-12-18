@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-query</artifactId>
-        <version>17.0.224-SNAPSHOT</version>
+        <version>17.0.209-DLRM7-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-view</artifactId>
     <packaging>jar</packaging>
@@ -74,18 +74,6 @@
                         <groupId>uk.gov.moj.cpp.defence</groupId>
                         <artifactId>defence-query-api</artifactId>
                         <version>${defence.version}</version>
-                        <classifier>raml</classifier>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>uk.gov.moj.cpp.hearing</groupId>
-                        <artifactId>hearing-query-api</artifactId>
-                        <version>${hearing.version}</version>
                         <classifier>raml</classifier>
                         <exclusions>
                             <exclusion>

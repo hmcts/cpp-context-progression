@@ -5,8 +5,6 @@
   "applicationStatus": "FINALISED",
   "applicationTitle": "Appeal against conviction by a Magistrates' Court to the Crown Court",
   "applicationType": "MC80802",
-  "applicationTypeId": "4362f2bc-7aff-462a-a242-0db421aa6a96",
-  "allegationOrComplaintStartDate": "2025-02-07T10:00:00.000Z",
   "caseSummary": [
     {
       "caseStatus": "ACTIVE",
@@ -107,23 +105,5 @@
     "offenceSummary": [],
     "proceedingsConcluded": false,
     "subjectId": "4b463e6a-105b-433b-a88d-057d6e645bfb"
-  },
-  "linkedApplications": [
-    {
-      "applicationId": "982ef017-5b49-43a6-b04c-50751eb141b6",
-      "applicationTitle": "Failing to comply",
-      "applicationReference": "TFL1195954-2",
-      "applicationStatus": "DRAFT",
-      "applicantDisplayName": "Amazon",
-      "respondentDisplayNames": ["Adriel", "Shawna", "Armstrong", "John S Chivers","Rowe"]
-    },
-    {
-      "applicationId": "57457780-569f-42c1-beec-563ef26c3be0",
-      "applicationTitle": "Appearance to make",
-      "applicationReference": "TFL1195954-3",
-      "applicationStatus": "DRAFT",
-      "applicantDisplayName": "Bob K Kalis",
-      "respondentDisplayNames": ["Adriel", "Shawna", "Armstrong", "John S Chivers","Rowe"]
-    }
-  ]
+  }
 }

@@ -2,7 +2,6 @@ package uk.gov.justice.api.resource.utils;
 
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -122,23 +121,6 @@ public class JudicialResultTransformer {
         return emptyList();
     }
 
-    public static List<ApplicationResults> getApplicationResultsWithAmendmentsExcludingDefendantLevelResults(final List<JudicialResult> results, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
-
-        if (CollectionUtils.isNotEmpty(results)) {
-            return results.stream()
-                    .filter(result -> !DEFENDANT_LEVEL_RESULT.equals(result.getLevel()))
-                    .map(result -> {
-                        final ApplicationResults.Builder resultsBuilder = ApplicationResults.applicationResults().withResult(result);
-                        if (nonNull(resultIdSlipRuleAmendmentsMap) && resultIdSlipRuleAmendmentsMap.containsKey(result.getJudicialResultId())) {
-                            resultsBuilder.withAmendments(resultIdSlipRuleAmendmentsMap.get(result.getJudicialResultId()));
-                        }
-                        return resultsBuilder.build();
-                    }).collect(toList());
-        }
-
-        return emptyList();
-    }
-
     public static List<ApplicationResults> getApplicationResultsWithAmendments(final List<JudicialResult> results, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
 
         if (CollectionUtils.isNotEmpty(results)) {
@@ -155,14 +137,12 @@ public class JudicialResultTransformer {
         return emptyList();
     }
 
-    public static List<DeletedApplicationResults> getDeletedApplicationResultsWithAmendmentsExcludingDefendantLevelResults(final UUID applicationId, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
+    public static List<DeletedApplicationResults> getDeletedApplicationResultsWithAmendments(final UUID applicationId, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
         if (nonNull(resultIdSlipRuleAmendmentsMap)) {
             return resultIdSlipRuleAmendmentsMap.entrySet().stream()
                     .flatMap(amendmentList -> amendmentList.getValue().stream())
                     .filter(amendments -> AmendmentType.DELETED.name().equals(amendments.getAmendmentType()))
                     .filter(amendments -> applicationId.equals(amendments.getApplicationId()))
-                    .filter(amendments -> isNull(amendments.getOffenceId()))
-                    .filter(amendments -> !DEFENDANT_LEVEL_RESULT.equalsIgnoreCase(amendments.getResultLevel()))
                     .map(amendments -> DeletedApplicationResults.deletedApplicationResults()
                             .withDefendantId(amendments.getDefendantId())
                             .withJudicialResultId(amendments.getJudicialResultId())
@@ -221,28 +201,6 @@ public class JudicialResultTransformer {
 
     private static List<JudicialResultPrompt> filterOutPromptsNotToBeShownInCourtExtract(final JudicialResult result) {
         return CollectionUtils.isNotEmpty(result.getJudicialResultPrompts()) ? result.getJudicialResultPrompts().stream().filter(jrp -> "Y".equals(jrp.getCourtExtract())).toList() : result.getJudicialResultPrompts();
-    }
-
-    public static List<DeletedApplicationResults> getDeletedApplicationResultsWithAmendments(final UUID applicationId, final Map<UUID, List<Amendments>> resultIdSlipRuleAmendmentsMap) {
-        if (nonNull(resultIdSlipRuleAmendmentsMap)) {
-            return resultIdSlipRuleAmendmentsMap.entrySet().stream()
-                    .flatMap(amendmentList -> amendmentList.getValue().stream())
-                    .filter(amendments -> AmendmentType.DELETED.name().equals(amendments.getAmendmentType()))
-                    .filter(amendments -> applicationId.equals(amendments.getApplicationId()))
-                    .map(amendments -> DeletedApplicationResults.deletedApplicationResults()
-                            .withDefendantId(amendments.getDefendantId())
-                            .withJudicialResultId(amendments.getJudicialResultId())
-                            .withAmendmentDate(amendments.getAmendmentDate())
-                            .withAmendmentType(amendments.getAmendmentType())
-                            .withApplicationId(amendments.getApplicationId())
-                            .withResultText(amendments.getResultText())
-                            .withResultLevel(amendments.getResultLevel())
-                            .build())
-                    .distinct()
-                    .sorted(comparing(DeletedApplicationResults::getAmendmentDate).reversed())
-                    .toList();
-        }
-        return emptyList();
     }
 
 }

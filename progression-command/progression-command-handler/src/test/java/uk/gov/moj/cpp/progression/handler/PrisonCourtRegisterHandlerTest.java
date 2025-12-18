@@ -288,39 +288,6 @@ public class PrisonCourtRegisterHandlerTest {
     }
 
     @Test
-    public void shouldGetRecordedEventForRespondentOrganisation() throws Exception {
-        final JsonObject jsonObject = FileUtil.jsonFromString(FileUtil
-                .getPayload("json/progression.event.court-application-for-respondent-organisation.json")
-                .replaceAll("%APPLICATION_ID%", APPLICATION_ID.toString())
-                .replaceAll("%MASTER_DEFENDANT_ID%", MASTER_DEFENDANT_ID.toString()));
-
-        final CourtApplication courtApplication = jsonToObjectConverter.convert(jsonObject, CourtApplication.class);
-        when(applicationAggregate.getCourtApplication()).thenReturn(courtApplication);
-
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-
-        final CourtCentreAggregate courtCentreAggregate = new CourtCentreAggregate();
-        when(eventSource.getStreamById(getPrisonCourtRegisterStreamId(COURT_CENTRE_ID.toString(), HEARING_DATE.toLocalDate().toString()))).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(courtCentreAggregate);
-
-        prisonCourtRegisterHandler.handleAddPrisonCourtRegister(buildEnvelope(new PrisonCourtRegisterRecipient("emailAddress1", null, "emailTemplate", "recipientName")));
-
-        final Stream<JsonEnvelope> envelopeStream = verifyAppendAndGetArgumentFrom(eventStream);
-
-        assertThat(envelopeStream, streamContaining(
-                jsonEnvelope(
-                        metadata().withName("progression.event.prison-court-register-recorded"),
-                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
-                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.prisonCourtRegister", notNullValue()),
-                                withJsonPath("$.prisonCourtRegister.courtCentreId", is(COURT_CENTRE_ID.toString())),
-                                withJsonPath("$.prisonCourtRegister.defendant.prosecutionCasesOrApplications[0].courtApplicationId", is(APPLICATION_ID.toString())),
-                                withJsonPath("$.defendantType", is("Respondent"))
-                        )))));
-    }
-
-    @Test
     public void shouldGetRecordedWithoutRecipientsEvent() throws Exception {
         final JsonObject jsonObject = FileUtil.jsonFromString(FileUtil
                 .getPayload("json/progression.event.court-application-for-applicant.json")

@@ -35,11 +35,10 @@ import org.junit.jupiter.api.Test;
 public class InitiateHearingIT extends AbstractIT {
 
     private static final String PUBLIC_LISTING_HEARING_CONFIRMED = "public.listing.hearing-confirmed";
-    private static final String PUBLIC_LISTING_HEARING_UNALLOCATED_COURTROOM_REMOVED = "public.listing.hearing-unallocated-courtroom-removed";
+
     private final JmsMessageConsumerClient publicEventsConsumerForOffencesUpdated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.defendant-offences-changed").getMessageConsumerClient();
 
     private final JmsMessageConsumerClient messageConsumerClientPublicForReferToCourtOnHearingInitiated = newPublicJmsMessageConsumerClientProvider().withEventNames("public.progression.prosecution-cases-referred-to-court").getMessageConsumerClient();
-    private final JmsMessageConsumerClient messageConsumerClientPublicForHearingUnallocatedCourtroomRemoved = newPublicJmsMessageConsumerClientProvider().withEventNames("public.listing.hearing-unallocated-courtroom-removed").getMessageConsumerClient();
 
     @Test
     public void shouldInitiateHearing() throws Exception {
@@ -75,62 +74,6 @@ public class InitiateHearingIT extends AbstractIT {
         helper.verifyInMessagingQueueForOffencesUpdated(publicEventsConsumerForOffencesUpdated);
     }
 
-
-    @Test
-    public void shouldInitiateHearingForCrownCourt() throws Exception {
-
-        final String userId = randomUUID().toString();
-        final String caseId = randomUUID().toString();
-        final String defendantId = randomUUID().toString();
-        final String courtCentreId = UUID.randomUUID().toString();
-
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-
-        final String hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final Metadata metadata = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_CONFIRMED)
-                .withUserId(userId)
-                .build();
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject(caseId, hearingId, defendantId, courtCentreId, "CROWN");
-
-        sendPublicEvent(PUBLIC_LISTING_HEARING_CONFIRMED, metadata, hearingConfirmedJson);
-
-        verifyPublicEventForCasesReferredToCourts();
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].endorsableFlag", equalTo(true)),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].id", equalTo(hearingId)),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", equalTo("HEARING_INITIALISED")));
-
-
-        final Metadata metadata2 = metadataBuilder()
-                .withId(randomUUID())
-                .withName(PUBLIC_LISTING_HEARING_UNALLOCATED_COURTROOM_REMOVED)
-                .withUserId(userId)
-                .build();
-
-        final String  payloadString = """
-                {"hearingId":"%s", "estimatedMinutes": 30}
-                """.formatted(hearingId);
-        final JsonObject payload = new StringToJsonObjectConverter().convert(
-                payloadString);
-
-        sendPublicEvent(PUBLIC_LISTING_HEARING_UNALLOCATED_COURTROOM_REMOVED, metadata2, payload);
-
-        verifyPublicEventForHearingUnallocated();
-
-        pollProsecutionCasesProgressionFor(caseId, withJsonPath("$.prosecutionCase.id", equalTo(caseId)),
-                withJsonPath("$.prosecutionCase.defendants[0].isYouth", equalTo(true)),
-                withJsonPath("$.prosecutionCase.defendants[0].offences[0].endorsableFlag", equalTo(true)),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].id", equalTo(hearingId)),
-                withJsonPath("$.hearingsAtAGlance.hearings[0].hearingListingStatus", equalTo("SENT_FOR_LISTING"))
-                );
-    }
-
     private void sendPublicEvent(final String eventName, final Metadata metadata, final JsonObject hearingConfirmedJson) {
         final JmsMessageProducerClient publicMessageProducerClient = newPublicJmsMessageProducerClientProvider().getMessageProducerClient();
         publicMessageProducerClient.sendMessage(eventName, envelopeFrom(metadata, hearingConfirmedJson));
@@ -138,29 +81,17 @@ public class InitiateHearingIT extends AbstractIT {
 
     private JsonObject getHearingJsonObject(final String caseId, final String hearingId,
                                             final String defendantId, final String courtCentreId) {
-        return getHearingJsonObject(caseId, hearingId, defendantId, courtCentreId, "MAGISTRATES");
-    }
-
-    private JsonObject getHearingJsonObject(final String caseId, final String hearingId,
-                                            final String defendantId, final String courtCentreId,
-                                            final String jurisdictionType) {
         return new StringToJsonObjectConverter().convert(
                 getPayload("public.listing.hearing-confirmed.json")
                         .replaceAll("CASE_ID", caseId)
                         .replaceAll("HEARING_ID", hearingId)
                         .replaceAll("DEFENDANT_ID", defendantId)
                         .replaceAll("COURT_CENTRE_ID", courtCentreId)
-                        .replaceAll("\"jurisdictionType\": \"MAGISTRATES\"", "\"jurisdictionType\": \"" + jurisdictionType + "\"")
         );
     }
 
     private void verifyPublicEventForCasesReferredToCourts() {
         Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForReferToCourtOnHearingInitiated);
-        assertTrue(message.isPresent());
-    }
-
-    private void verifyPublicEventForHearingUnallocated() {
-        Optional<JsonObject> message = retrieveMessageBody(messageConsumerClientPublicForHearingUnallocatedCourtroomRemoved);
         assertTrue(message.isPresent());
     }
 
