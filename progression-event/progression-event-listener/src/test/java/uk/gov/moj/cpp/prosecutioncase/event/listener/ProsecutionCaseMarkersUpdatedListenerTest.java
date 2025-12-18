@@ -20,7 +20,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -72,16 +72,16 @@ public class ProsecutionCaseMarkersUpdatedListenerTest {
         final UUID prosecutionId = randomUUID();
 
         ProsecutionCaseEntity prosecutionCaseEntity = new ProsecutionCaseEntity();
-        final JsonObject caseMarker = Json.createObjectBuilder()
+        final JsonObject caseMarker = JsonObjects.createObjectBuilder()
                 .add("hearingId", randomUUID().toString()).build();
-        final JsonObject prosecutionCase = Json.createObjectBuilder()
+        final JsonObject prosecutionCase = JsonObjects.createObjectBuilder()
                 .add("cpsOrganisation", "A01")
                 .add("trialReceiptType", "Transfer")
                 .build();
         prosecutionCaseEntity.setPayload(prosecutionCase.toString());
         when(repository.findByCaseId(any())).thenReturn(prosecutionCaseEntity);
 
-        JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(), Json.createObjectBuilder().add("payload", caseMarker).build());
+        JsonEnvelope envelope = JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(UUID.randomUUID()).withName("referral").build(), JsonObjects.createObjectBuilder().add("payload", caseMarker).build());
         eventListener.processCaseMarkersUpdated(envelope);
         verify(repository).save(argumentCaptor.capture());
         ProsecutionCaseEntity prosecutionCaseEntitySaved = argumentCaptor.getValue();

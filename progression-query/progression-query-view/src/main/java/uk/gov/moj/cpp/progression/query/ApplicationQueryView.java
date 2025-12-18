@@ -6,8 +6,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
@@ -358,7 +358,7 @@ public class ApplicationQueryView {
 
     @Handles("progression.query.application-status")
     public JsonEnvelope getApplicationStatus(final JsonEnvelope envelope) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
 
         final List<UUID> applicationIdList = JsonObjects.getString(envelope.payloadAsJsonObject(), APPLICATION_IDS)
                 .map(applicationIdStr -> Arrays.stream(applicationIdStr.split(",")).map(UUID::fromString).toList())
@@ -369,7 +369,7 @@ public class ApplicationQueryView {
             final JsonArrayBuilder applicationStatusJsonArray = createArrayBuilder();
             courtApplicationEntityList.forEach(courtApplicationEntity -> {
                 final JsonObject application = stringToJsonObjectConverter.convert(courtApplicationEntity.getPayload());
-                applicationStatusJsonArray.add(Json.createObjectBuilder()
+                applicationStatusJsonArray.add(JsonObjects.createObjectBuilder()
                         .add(APPLICATION_ID, application.getString(ID))
                         .add(APPLICATION_STATUS, application.getString(APPLICATION_STATUS)));
             });
@@ -458,7 +458,7 @@ public class ApplicationQueryView {
         final List<CourtApplicationEntity> childApplications = courtApplicationRepository.findByParentApplicationId(UUID.fromString(applicationId));
         if (!childApplications.isEmpty()) {
             final JsonArray childApplicationsArray = buildApplicationSummaries(childApplications);
-            applicationObject = createObjectBuilder(applicationObject).add("linkedApplications", createArrayBuilder(childApplicationsArray)).build();
+            applicationObject = createObjectBuilder(applicationObject).add("linkedApplications", JsonObjects.getProvider().createArrayBuilder(childApplicationsArray)).build();
         }
 
         return envelopeFrom(query.metadata(), applicationObject);

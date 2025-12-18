@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.handler;
 
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -63,7 +63,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -152,12 +152,12 @@ public class CourtRegisterHandlerTest {
         final ZonedDateTime registerDate = ZonedDateTime.parse("2024-10-24T22:23:12.414Z");
         final JsonEnvelope queryEnvelope = mock(JsonEnvelope.class);
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest = getCourtRegisterDocumentRequest(courtCentreId, registerDate);
-        final JsonArray jsonValues = Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonArray jsonValues = JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
                 .add("courtCentreId", courtCentreId.toString())
                 .add("registerDate", registerDate.toLocalDate().toString())
                 .add("payload", objectToJsonObjectConverter.convert(courtRegisterDocumentRequest).toString())
                 .build()).build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
         when(queryEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.request(any(Envelope.class))).thenReturn(queryEnvelope);
 
@@ -176,19 +176,19 @@ public class CourtRegisterHandlerTest {
 
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest1 = getCourtRegisterDocumentRequest(courtCentreId, registerDate1);
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest2 = getCourtRegisterDocumentRequest(courtCentreId, registerDate2);
-        final JsonArray jsonValues = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        final JsonArray jsonValues = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("courtCentreId", courtCentreId.toString())
                         .add("registerDate", registerDate1.toLocalDate().toString())
                         .add("payload", objectToJsonObjectConverter.convert(courtRegisterDocumentRequest1).toString())
                         .build())
-                .add(Json.createObjectBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("courtCentreId", courtCentreId.toString())
                         .add("registerDate", registerDate2.toLocalDate().toString())
                         .add("payload", objectToJsonObjectConverter.convert(courtRegisterDocumentRequest2).toString())
                         .build())
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
 
         final JsonEnvelope queryEnvelope = mock(JsonEnvelope.class);
         when(queryEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
@@ -217,19 +217,19 @@ public class CourtRegisterHandlerTest {
 
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest1 = getCourtRegisterDocumentRequest(courtCentreId, registerDate);
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest2 = getCourtRegisterDocumentRequest(courtCentreId, registerDate);
-        final JsonArray jsonValues = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
+        final JsonArray jsonValues = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("courtCentreId", courtCentreId.toString())
                         .add("registerDate", registerDate.toLocalDate().toString())
                         .add("payload", objectToJsonObjectConverter.convert(courtRegisterDocumentRequest1).toString())
                         .build())
-                .add(Json.createObjectBuilder()
+                .add(JsonObjects.createObjectBuilder()
                         .add("courtCentreId", courtCentreId.toString())
                         .add("registerDate", registerDate.toLocalDate().toString())
                         .add("payload", objectToJsonObjectConverter.convert(courtRegisterDocumentRequest2).toString())
                         .build())
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
 
         final JsonEnvelope queryEnvelope = mock(JsonEnvelope.class);
         when(queryEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
@@ -290,12 +290,12 @@ public class CourtRegisterHandlerTest {
         final ZonedDateTime registerDate = ZonedDateTime.parse("2024-10-24T22:23:12.414Z");
         final JsonEnvelope queryEnvelope = mock(JsonEnvelope.class);
         final CourtRegisterDocumentRequest courtRegisterDocumentRequest = getCourtRegisterDocumentRequest(courtCentreId, registerDate);
-        final JsonArray jsonValues = Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonArray jsonValues = JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
                 .add("courtCentreId", courtCentreId.toString())
                 .add("registerDate", registerDate.toLocalDate().toString())
                 .add("payload", objectToJsonObjectConverter.convert(courtRegisterDocumentRequest).toString())
                 .build()).build();
-        final JsonObject jsonObject = Json.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("courtRegisterDocumentRequests", jsonValues).build();
         when(queryEnvelope.payloadAsJsonObject()).thenReturn(jsonObject);
         when(requester.request(any(Envelope.class))).thenReturn(queryEnvelope);
 

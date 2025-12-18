@@ -10,7 +10,7 @@ import uk.gov.moj.cpp.progression.command.service.DeleteNotificationInfoService;
 
 import java.time.ZonedDateTime;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,7 @@ public class DeleteNotificationInfoApiTest {
     public void shouldHandleDeleteNotificationInfo() {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(
                 metadataWithDefaults().withName("progression.delete-notification-info"),
-                Json.createObjectBuilder()
+                JsonObjects.createObjectBuilder()
                         .build()
         );
 

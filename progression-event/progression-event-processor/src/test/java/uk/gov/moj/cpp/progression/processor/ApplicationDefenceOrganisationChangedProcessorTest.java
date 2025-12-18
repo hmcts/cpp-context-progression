@@ -30,7 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -126,9 +126,9 @@ public class ApplicationDefenceOrganisationChangedProcessorTest {
                 .withId(prosecutionCaseId)
                 .withDefendants(getDefendants(defendantId, prosecutionCaseId, associatedDefenceOrganisation))
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+                .add("payload", JsonObjects.createObjectBuilder()
+                        .add("defendants", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
                                 .add("id", defendantId.toString()).build())
                                 .build())
                         .build()).build();

@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -174,7 +174,7 @@ public class MatchedDefendantHelperTest {
 
     @Test
     public void shouldAddToJsonObjectNullSafe() {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
 
         final String stringValue = null;
         matchedDefendantHelper.addToJsonObjectNullSafe(builder, "key", stringValue);

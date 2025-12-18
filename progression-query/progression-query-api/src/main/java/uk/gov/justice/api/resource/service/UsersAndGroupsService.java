@@ -1,7 +1,7 @@
 package uk.gov.justice.api.resource.service;
 
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.QUERY_API;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 
@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -38,7 +38,7 @@ public class UsersAndGroupsService {
 
     public JsonObject getOrganisationDetails(final JsonEnvelope envelope) {
 
-        final JsonObject organisationDetail = Json.createObjectBuilder().add("organisationId",
+        final JsonObject organisationDetail = JsonObjects.createObjectBuilder().add("organisationId",
                 envelope.payloadAsJsonObject().getJsonString("organisationId").getString()).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(organisationDetail)
                 .withName("usersgroups.get-organisation-details").withMetadataFrom(envelope);

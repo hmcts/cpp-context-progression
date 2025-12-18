@@ -24,7 +24,7 @@ import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.ws.rs.core.Response;
 
@@ -155,7 +155,7 @@ public class ProsecutionCaseDefendantUpdatedIngesterIT extends AbstractIT {
         final JsonObject commandJsonInputJson = jsonFromString(commandJson);
         final DocumentContext prosecutionCase = parse(commandJsonInputJson);
         final JsonObject prosecutionCaseJO = prosecutionCase.read("$.courtReferral.prosecutionCases[0]");
-        final JsonObject prosecutionCaseEvent = Json.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
+        final JsonObject prosecutionCaseEvent = JsonObjects.createObjectBuilder().add("prosecutionCase", prosecutionCaseJO).build();
         return parse(prosecutionCaseEvent);
     }
 

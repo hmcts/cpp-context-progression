@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.ingester.verificationHelpers;
 
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static uk.gov.moj.cpp.progression.ingester.verificationHelpers.PersonVerificationHelper.assertApplicantDetails;

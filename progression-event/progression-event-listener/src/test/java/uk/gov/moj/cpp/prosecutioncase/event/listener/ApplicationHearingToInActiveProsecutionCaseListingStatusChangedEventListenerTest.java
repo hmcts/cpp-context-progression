@@ -22,7 +22,7 @@ import uk.gov.moj.cpp.util.FileUtil;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,7 +110,7 @@ public class ApplicationHearingToInActiveProsecutionCaseListingStatusChangedEven
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.SENT_FOR_LISTING);
 
         when(hearingRepository.findBy(hearingId)).thenReturn(hearingEntity);

@@ -132,7 +132,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -2825,7 +2825,7 @@ public class CourtExtractTransformerTest {
     }
 
     private JsonObject createJudiciaryJsonObject() {
-        final JsonObjectBuilder judiciaryBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder judiciaryBuilder = JsonObjects.createObjectBuilder();
         judiciaryBuilder.add("requestedNameValue", "requestedNameDesc");
         return judiciaryBuilder.build();
     }

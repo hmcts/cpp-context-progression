@@ -84,7 +84,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -188,7 +188,7 @@ public class HearingResultedEventProcessorTest {
     @Test
     public void shouldIssueCommandToProcessHearingResultsWhenHearingResultedReceived() {
         final Hearing hearing = Hearing.hearing().withId(randomUUID()).build();
-        final JsonObject publicEventPayload = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
+        final JsonObject publicEventPayload = JsonObjects.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
                 .add("sharedTime", new UtcClock().now().toString())
                 .add("hearingDay", LocalDate.now().toString()).build();
 
@@ -231,7 +231,7 @@ public class HearingResultedEventProcessorTest {
                         .withApplicant(courtApplicationParty)
                         .withSubject(courtApplicationParty)
                         .build())).build();
-        final JsonObject publicEventPayload = Json.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
+        final JsonObject publicEventPayload = JsonObjects.createObjectBuilder().add("hearing", objectToJsonObjectConverter.convert(hearing))
                 .add("sharedTime", new UtcClock().now().toString())
                 .add("hearingDay", LocalDate.now().toString()).build();
 

@@ -63,7 +63,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -271,10 +271,10 @@ public class ProsecutionCaseEventListenerTest {
         when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
         when(jsonObjectToObjectConverter.convert(jsonObject, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
 
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder()
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(JsonObjects.createObjectBuilder()
                 .add("id", randomUUID().toString())
-                .add("prosecutionCases", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("prosecutionCases", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("id", randomUUID().toString())
                                 .add(CPS_ORGANISATION, CPS_ORGANISATION_VALUE)
                                 .add(TRIAL_RECEIPT_TYPE, "Transfer")
@@ -376,10 +376,10 @@ public class ProsecutionCaseEventListenerTest {
         when(initiateCourtApplicationRepository.findBy(any())).thenReturn(initiateCourtApplicationEntity);
         when(jsonObjectToObjectConverter.convert(jsonObject, InitiateCourtApplicationProceedings.class)).thenReturn(initiateCourtApplicationProceedings);
 
-        when(objectToJsonObjectConverter.convert(any())).thenReturn(Json.createObjectBuilder()
+        when(objectToJsonObjectConverter.convert(any())).thenReturn(JsonObjects.createObjectBuilder()
                 .add("id", randomUUID().toString())
-                .add("prosecutionCases", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("prosecutionCases", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("id", randomUUID().toString())
                                 .add(CPS_ORGANISATION, CPS_ORGANISATION_VALUE)
                                 .add(TRIAL_RECEIPT_TYPE, "Transfer")

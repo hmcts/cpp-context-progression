@@ -6,8 +6,8 @@ import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -50,7 +50,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -699,15 +699,15 @@ public class FormEventProcessor {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
 
-        final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
+        final JsonArrayBuilder defendantIdArray = JsonObjects.createArrayBuilder();
         final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
-        formDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
+        formDefendantList.forEach(defendant -> defendantIdArray.add(JsonObjects.createObjectBuilder()
                         .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
                         .build()
                 )
         );
 
-        final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+        final JsonObject createPetFormPayload = JsonObjects.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(COURT_FORM_ID, String.valueOf(randomUUID()))
                 .add(FORM_DEFENDANTS, defendantIdArray.build())
@@ -735,15 +735,15 @@ public class FormEventProcessor {
 
         final JsonObject payload = envelope.payloadAsJsonObject();
 
-        final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
+        final JsonArrayBuilder defendantIdArray = JsonObjects.createArrayBuilder();
         final List<JsonObject> formDefendantList = payload.getJsonArray(FORM_DEFENDANTS).getValuesAs(JsonObject.class);
-        formDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
+        formDefendantList.forEach(defendant -> defendantIdArray.add(JsonObjects.createObjectBuilder()
                         .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
                         .build()
                 )
         );
 
-        final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+        final JsonObject createPetFormPayload = JsonObjects.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(COURT_FORM_ID, String.valueOf(randomUUID()))
                 .add(FORM_DEFENDANTS, defendantIdArray.build())

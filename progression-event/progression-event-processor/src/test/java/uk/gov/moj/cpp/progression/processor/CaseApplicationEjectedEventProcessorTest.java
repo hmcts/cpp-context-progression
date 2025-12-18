@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -180,7 +180,7 @@ public class CaseApplicationEjectedEventProcessorTest {
         when(payload.getString("removalReason")).thenReturn(REMOVAL_REASON);
         when(progressionService.getCourtApplicationById(envelope,
                 applicationId)).thenReturn(of(applicationAtAGlance));
-        when(applicationAtAGlance.getJsonArray("hearings")).thenReturn(Json.createArrayBuilder().add(payload).build());
+        when(applicationAtAGlance.getJsonArray("hearings")).thenReturn(JsonObjects.createArrayBuilder().add(payload).build());
         when(payload.getString("id")).thenReturn(hearingId);
 
         //When

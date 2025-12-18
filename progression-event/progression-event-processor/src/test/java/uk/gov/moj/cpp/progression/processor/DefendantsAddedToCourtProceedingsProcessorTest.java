@@ -7,8 +7,8 @@ import static java.nio.charset.Charset.defaultCharset;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -76,7 +76,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.google.common.collect.Lists;
@@ -405,16 +405,16 @@ public class DefendantsAddedToCourtProceedingsProcessorTest {
         final JsonEnvelope event = envelopeFrom(
                 metadataWithRandomUUID("progression.event.defendants-and-listing-hearing-requests-added"),
                 createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(createObjectBuilder()
+                        .add("defendants", JsonObjects.createArrayBuilder().add(createObjectBuilder()
                                         .add("id", defendantId.toString())
-                                        .add("offences", Json.createArrayBuilder().add(createObjectBuilder()
+                                        .add("offences", JsonObjects.createArrayBuilder().add(createObjectBuilder()
                                                         .add("id", offenceId.toString())
                                                         .build())
                                                 .build())
                                         .build())
                                 .build())
-                        .add("listHearingRequests", Json.createArrayBuilder().add(createObjectBuilder()
-                                        .add("listDefendantRequests", Json.createArrayBuilder().add(createObjectBuilder()
+                        .add("listHearingRequests", JsonObjects.createArrayBuilder().add(createObjectBuilder()
+                                        .add("listDefendantRequests", JsonObjects.createArrayBuilder().add(createObjectBuilder()
                                                         .add("defendantId", defendantId.toString())
                                                         .build())
                                                 .build())

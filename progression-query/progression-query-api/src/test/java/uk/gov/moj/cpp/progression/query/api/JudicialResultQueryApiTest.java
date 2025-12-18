@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.query.JudicialResultQueryView;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class JudicialResultQueryApiTest {
 
     @Test
     void shouldGetJudicialChildResults() {
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("hearingId", randomUUID().toString())
                 .add("masterDefendantId", randomUUID().toString())
                 .add("judicialResultTypeId", randomUUID().toString())
@@ -50,7 +50,7 @@ class JudicialResultQueryApiTest {
 
     @Test
     void shouldGetJudicialChildResultsV2() {
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add("hearingId", randomUUID().toString())
                 .add("masterDefendantId", randomUUID().toString())
                 .add("judicialResultTypeId", randomUUID().toString())

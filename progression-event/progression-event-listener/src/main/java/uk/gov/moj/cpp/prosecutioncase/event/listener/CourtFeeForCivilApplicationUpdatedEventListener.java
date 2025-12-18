@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.prosecutioncase.event.listener;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
 
 import uk.gov.justice.core.courts.CourtFeeForCivilApplicationUpdated;

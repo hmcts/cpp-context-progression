@@ -2,7 +2,7 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.metadataFrom;

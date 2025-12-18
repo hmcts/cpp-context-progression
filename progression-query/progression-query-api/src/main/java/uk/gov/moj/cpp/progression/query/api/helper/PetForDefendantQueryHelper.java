@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.query.api.helper;
 
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.core.requester.Requester;
@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.progression.query.api.service.ProgressionService;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -95,7 +95,7 @@ public class PetForDefendantQueryHelper {
         final JsonObject defendantPetData = buildDefendantPetData(petData, defendantId);
 
         final JsonArray offences = getOffencesOfDefendant(petDefendantOffence, defendantId);
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         if (!defendantPetData.isEmpty()) {
             jsonObjectBuilder
                     .add(PET_ID, petId)

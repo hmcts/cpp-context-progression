@@ -6,7 +6,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -87,7 +87,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -188,7 +188,7 @@ public class CourtDocumentQueryViewTest {
 
     private String objectToString(final Object o) {
         final StringWriter sr = new StringWriter();
-        final JsonWriter jsonWriter = Json.createWriter(sr);
+        final JsonWriter jsonWriter = JsonObjects.createWriter(sr);
         jsonWriter.writeObject(objectToJsonObjectConverter.convert(o));
         return sr.toString();
     }
@@ -419,7 +419,7 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldFindDocumentById() throws Exception {
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(ID_PARAMETER, courtDocumentId.toString()).build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
@@ -442,7 +442,7 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldNotFindDocumentWhenIsRemoveIsTrue() throws Exception {
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(ID_PARAMETER, courtDocumentId.toString()).build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
                 JsonEnvelope.metadataBuilder().withId(randomUUID())
@@ -506,10 +506,10 @@ public class CourtDocumentQueryViewTest {
     public void shouldNotFindDocumentsByDefendantIdIfDocumentBelongsToOtherDefendant() throws IOException {
 
         final UUID defendantId = randomUUID();
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
-        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonBuilder = JsonObjects.createObjectBuilder();
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
         final UUID documentTypeId = DOCUMENT_TYPE_ID_1;
@@ -550,8 +550,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
@@ -601,8 +601,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, DESC, null);
@@ -652,8 +652,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, ASC, null);
@@ -708,8 +708,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, DESC, null);
@@ -763,8 +763,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, DESC, "Court Final orders1");
@@ -801,8 +801,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, DATE, DESC, "cd");
@@ -839,8 +839,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
@@ -875,8 +875,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
@@ -910,8 +910,8 @@ public class CourtDocumentQueryViewTest {
                 .withCaseId(caseId)
                 .build();
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final JsonEnvelope jsonEnvelopeIn = getJsonEnvelopeForQueryRequest(caseId, pageSize, 1, SECTION, ASC, null);
@@ -937,7 +937,7 @@ public class CourtDocumentQueryViewTest {
     }
 
     private JsonEnvelope getJsonEnvelopeForQueryRequest(final UUID caseId, final int pageSize, final int page, final String sortField, final String sortOrder, final String documentName) {
-        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonBuilder = JsonObjects.createObjectBuilder();
         jsonBuilder.add(SORT_FIELD, sortField);
         jsonBuilder.add(SORT_ORDER, sortOrder);
         jsonBuilder.add(CASE_ID, caseId.toString());
@@ -1048,11 +1048,11 @@ public class CourtDocumentQueryViewTest {
     }
 
     private void shouldFindDocuments(final boolean rbackReadPermitted, final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds, final String userGroup, final boolean isProsecuting, final boolean shouldStub) throws IOException {
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", userGroup).build())
                 .build();
 
-        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonBuilder = JsonObjects.createObjectBuilder();
         jsonBuilder.add("prosecutingCase", isProsecuting);
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
@@ -1132,11 +1132,11 @@ public class CourtDocumentQueryViewTest {
     }
 
     private void shouldFindDocumentsForProsecution(final boolean rbackReadPermitted, final boolean permitted, final List<UUID> caseIds, final UUID defendantId, final List<UUID> applicationIds, final String userGroup, final boolean isProsecuting, final boolean shouldStub) throws IOException {
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", userGroup).build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", userGroup).build())
                 .build();
 
-        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonBuilder = JsonObjects.createObjectBuilder();
         jsonBuilder.add("prosecutingCase", isProsecuting);
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
@@ -1219,7 +1219,7 @@ public class CourtDocumentQueryViewTest {
     public void shouldFindAllDocuments() {
 
         final UUID caseId = randomUUID();
-        final JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonBuilder = JsonObjects.createObjectBuilder();
         final Map<UUID, CourtDocumentIndex.Builder> id2ExpectedCourtDocumentIndex = new HashMap<>();
         final Map<UUID, UUID> courtDocumentId2Id = new HashMap<>();
         addId(singletonList(caseId), null, null, id2ExpectedCourtDocumentIndex, courtDocumentId2Id, DOCUMENT_TYPE_ID_1, null);
@@ -1274,7 +1274,7 @@ public class CourtDocumentQueryViewTest {
     }
 
     private JsonObject getJsonPayload(final String fileName) throws IOException {
-        return Json.createReader(
+        return JsonObjects.createReader(
                         new ByteArrayInputStream(getJsonPayloadAsString(fileName).getBytes()))
                 .readObject();
     }
@@ -1289,7 +1289,7 @@ public class CourtDocumentQueryViewTest {
         final boolean permitted = true;
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
@@ -1314,8 +1314,8 @@ public class CourtDocumentQueryViewTest {
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(true);
 
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
         mockUserGroups(userGroupArray, jsonEnvelopeIn);
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
@@ -1355,7 +1355,7 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldNotFindDocumentsByApplicationIdWhenUserNotAuthoriseToViewDocuments() throws IOException {
         final UUID applicationId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
@@ -1374,8 +1374,8 @@ public class CourtDocumentQueryViewTest {
         when(jsonObjectToObjectConverter.convert(applicationJsonObject, CourtApplication.class)).thenCallRealMethod();
         when(userDetailsLoader.isUserHasPermissionForApplicationTypeCode(any(), any())).thenReturn(false);
 
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
         mockUserGroups(userGroupArray, jsonEnvelopeIn);
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
@@ -1389,10 +1389,10 @@ public class CourtDocumentQueryViewTest {
         boolean permitted = true;
         final UUID applicationId = UUID.randomUUID();
         final UUID courtDocumentId = UUID.randomUUID();
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
@@ -1429,7 +1429,7 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldNotListDocumentsWithNoReadOnlyAccessAndListAllOther() throws IOException {
         final UUID applicationId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
@@ -1437,8 +1437,8 @@ public class CourtDocumentQueryViewTest {
                         .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
 
         final UUID nowCourtDocumentId = randomUUID();
@@ -1513,7 +1513,7 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldFindDocumentsIsFilterNonCpsProsecutorRelatedDocumentWhenUserHasExcludeNonCpsProsecutorRole() throws IOException {
         final UUID applicationId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
@@ -1521,9 +1521,9 @@ public class CourtDocumentQueryViewTest {
                         .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
-                .add(Json.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
                 .build();
 
         final UUID nowCourtDocumentId = randomUUID();
@@ -1564,9 +1564,9 @@ public class CourtDocumentQueryViewTest {
                 .thenReturn(courtDocumentIndexBuilder);
 
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
-        final JsonObject loggedInUserPermissions = Json.createObjectBuilder().add("permissions",
-                        Json.createArrayBuilder()
-                                .add(Json.createObjectBuilder().add("object", "CDES_EXCLUDE_NON_CPS_ROLE").build())
+        final JsonObject loggedInUserPermissions = JsonObjects.createObjectBuilder().add("permissions",
+                        JsonObjects.createArrayBuilder()
+                                .add(JsonObjects.createObjectBuilder().add("object", "CDES_EXCLUDE_NON_CPS_ROLE").build())
                                 .build())
                 .build();
         mockLoggedInUserPermissions(loggedInUserPermissions);
@@ -1590,7 +1590,7 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldApplicationTypeFilterDoesNotWorkWhenApplicationNotFound() throws IOException {
         final UUID applicationId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
@@ -1598,9 +1598,9 @@ public class CourtDocumentQueryViewTest {
                         .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
-                .add(Json.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
                 .build();
 
         final UUID nowCourtDocumentId = randomUUID();
@@ -1638,9 +1638,9 @@ public class CourtDocumentQueryViewTest {
                 .thenReturn(courtDocumentIndexBuilder);
 
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
-        final JsonObject loggedInUserPermissions = Json.createObjectBuilder().add("permissions",
-                        Json.createArrayBuilder()
-                                .add(Json.createObjectBuilder().add("object", "CDES_EXCLUDE_NON_CPS_ROLE").build())
+        final JsonObject loggedInUserPermissions = JsonObjects.createObjectBuilder().add("permissions",
+                        JsonObjects.createArrayBuilder()
+                                .add(JsonObjects.createObjectBuilder().add("object", "CDES_EXCLUDE_NON_CPS_ROLE").build())
                                 .build())
                 .build();
         mockLoggedInUserPermissions(loggedInUserPermissions);
@@ -1664,7 +1664,7 @@ public class CourtDocumentQueryViewTest {
     @Test
     public void shouldFindDocumentsIsNotFilterNonCpsProsecutorRelatedDocumentWhenUserHasNotExcludeNonCpsProsecutorRole() throws IOException {
         final UUID applicationId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(APPLICATION_ID, applicationId.toString())
                 .build();
         final JsonEnvelope jsonEnvelopeIn = JsonEnvelope.envelopeFrom(
@@ -1672,9 +1672,9 @@ public class CourtDocumentQueryViewTest {
                         .withName(COURT_DOCUMENTS_SEARCH_NAME)
                         .withUserId(randomUUID().toString()).build(),
                 jsonObject);
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
-                .add(Json.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
                 .build();
 
         final UUID nowCourtDocumentId = randomUUID();
@@ -1714,9 +1714,9 @@ public class CourtDocumentQueryViewTest {
                 .thenReturn(courtDocumentIndexBuilder);
 
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
-        final JsonObject loggedInUserPermissions = Json.createObjectBuilder().add("permissions",
-                        Json.createArrayBuilder()
-                                .add(Json.createObjectBuilder().add("object", "something else").build())
+        final JsonObject loggedInUserPermissions = JsonObjects.createObjectBuilder().add("permissions",
+                        JsonObjects.createArrayBuilder()
+                                .add(JsonObjects.createObjectBuilder().add("object", "something else").build())
                                 .build())
                 .build();
         mockLoggedInUserPermissions(loggedInUserPermissions);
@@ -1759,7 +1759,7 @@ public class CourtDocumentQueryViewTest {
         boolean permitted = false;
         final UUID hearingId = UUID.randomUUID();
         final UUID defendantId = UUID.randomUUID();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(DEFENDANT_ID_PARAMETER, defendantId.toString())
                 .add(HEARING_ID_PARAMETER, hearingId.toString())
                 .build();
@@ -1769,8 +1769,8 @@ public class CourtDocumentQueryViewTest {
                         .withUserId(randomUUID().toString())
                         .build(),
                 jsonObject);
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "Court Clerks").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "Court Clerks").build())
                 .build();
         mockReferenceData(jsonEnvelopeIn, userGroupArray);
         final CourtDocumentIndex.Builder courtDocumentIndexBuilder = CourtDocumentIndex.courtDocumentIndex()
@@ -1807,10 +1807,10 @@ public class CourtDocumentQueryViewTest {
         final UUID hearingId = randomUUID();
         final UUID defendantId = randomUUID();
         final UUID courtDocumentId = randomUUID();
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "group1").build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "group1").build())
                 .build();
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(DEFENDANT_ID_PARAMETER, defendantId.toString())
                 .add(HEARING_ID_PARAMETER, hearingId.toString())
                 .build();
@@ -1859,7 +1859,7 @@ public class CourtDocumentQueryViewTest {
     private void mockReferenceData(final JsonEnvelope jsonEnvelopeIn, final JsonArray userGroupArray) throws IOException {
 
         final JsonObject documentsAccess = getJsonPayload("get-all-document-type-access.json");
-        final JsonObject groups = Json.createObjectBuilder().add("groups", userGroupArray).build();
+        final JsonObject groups = JsonObjects.createObjectBuilder().add("groups", userGroupArray).build();
 
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenAnswer(invocationOnMock -> {
             final JsonEnvelope envelope = (JsonEnvelope) invocationOnMock.getArguments()[0];
@@ -1893,7 +1893,7 @@ public class CourtDocumentQueryViewTest {
         final UUID courtDocumentId = UUID.randomUUID();
         final UUID documentTypeId = DOCUMENT_TYPE_ID_1;
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                 .add(CASE_ID_SEARCH_PARAM, caseId.toString())
                 .build();
 

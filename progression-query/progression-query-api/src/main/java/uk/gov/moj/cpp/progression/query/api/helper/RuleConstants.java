@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.query.api.helper;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 public class RuleConstants {
 

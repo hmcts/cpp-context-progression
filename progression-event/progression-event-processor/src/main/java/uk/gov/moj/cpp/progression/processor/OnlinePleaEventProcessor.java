@@ -7,7 +7,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -182,7 +182,7 @@ public class OnlinePleaEventProcessor {
             final String fileName = fileMetaDataJsonObject.getJsonString(FILE_NAME).getString();
             materialService.uploadMaterial(uploadedAsCaseMaterial.getFileId(), uploadedAsCaseMaterial.getMaterialId(), contextSystemUserId.orElse(null));
 
-            final JsonObject jsonObject = Json.createObjectBuilder()
+            final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                     .add(MATERIAL_ID, uploadedAsCaseMaterial.getMaterialId().toString())
                     .add(COURT_DOCUMENT, objectToJsonObjectConverter
                             .convert(buildCourtDocument(uploadedAsCaseMaterial.getCaseId(), uploadedAsCaseMaterial.getMaterialId(), fileName, uploadedAsCaseMaterial.getDefendantId(), uploadedAsCaseMaterial.getPleaNotificationType()))).build();
@@ -244,7 +244,7 @@ public class OnlinePleaEventProcessor {
     }
 
     private JsonObject getIndividualFinanceDocGeneratorPayload(final JsonObject payload, final PleadOnline pleadOnline) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
         builder.add(URN, pleadOnline.getUrn())
                 .add(CASE_ID, pleadOnline.getCaseId().toString())
                 .add(DEFENDANT_ID, pleadOnline.getDefendantId().toString())
@@ -294,7 +294,7 @@ public class OnlinePleaEventProcessor {
     }
 
     private JsonObject getCompanyFinanceDocGeneratorPayload(final JsonObject payload, final PleadOnline pleadOnline) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
         builder.add(URN, pleadOnline.getUrn())
                 .add(CASE_ID, pleadOnline.getCaseId().toString())
                 .add(DEFENDANT_ID, pleadOnline.getDefendantId().toString())

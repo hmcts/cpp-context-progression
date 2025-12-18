@@ -7,7 +7,7 @@ import uk.gov.justice.core.courts.LegalEntityDefendant;
 import uk.gov.justice.core.courts.Offence;
 import uk.gov.justice.core.courts.Person;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import uk.gov.justice.services.common.util.UtcClock;
@@ -42,10 +42,10 @@ public class CaseLsmInfoConverter {
     }
 
     private JsonArrayBuilder convertDefendants(final List<Defendant> defendants, final Hearing hearing, final Optional<UUID> matchedMasterDefendantId) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
 
         for (final Defendant defendant : defendants) {
-            final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
                     .add(ID, defendant.getId().toString())
                     .add(MASTER_DEFENDANT_ID, defendant.getMasterDefendantId().toString());
 
@@ -107,17 +107,17 @@ public class CaseLsmInfoConverter {
             return null;
         }
 
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add(HEARING_ID, hearing.getId().toString())
                 .add(HEARING_TYPE, hearing.getType().getDescription())
                 .add(HEARING_DAY,  nextHearingDate.get().getSittingDay().format(DateTimeFormatter.ISO_INSTANT));
     }
 
     private JsonArrayBuilder convertOffences(List<Offence> offences) {
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
 
         for (final Offence offence : offences) {
-            final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder()
                     .add(OFFENCE_TITLE, offence.getOffenceTitle());
 
             jsonArrayBuilder.add(jsonObjectBuilder);

@@ -32,7 +32,7 @@ import java.util.UUID;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -107,7 +107,7 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
     }
 
     private Response getCourtListInternal(final String courtCentreId, final String courtRoomId, final String listId, final String startDate, final String endDate, final boolean restricted, final UUID userId, final String courtListAction) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder()
                 .add("courtCentreId", courtCentreId)
                 .add("listId", listId)
                 .add("startDate", startDate)
@@ -128,7 +128,7 @@ public class DefaultQueryApiCourtlistResource implements QueryApiCourtlistResour
 
         final JsonEnvelope document = interceptorChainProcessor.process(interceptorContextWithInput(documentQuery)).get();
 
-        final JsonObjectBuilder standardListJsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder standardListJsonObjectBuilder = JsonObjects.createObjectBuilder();
 
         document
                 .payloadAsJsonObject()

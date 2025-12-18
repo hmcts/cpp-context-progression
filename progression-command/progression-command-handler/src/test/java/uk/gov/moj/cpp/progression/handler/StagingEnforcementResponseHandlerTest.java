@@ -17,13 +17,13 @@ import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.MaterialAggregate;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -77,9 +77,9 @@ public class StagingEnforcementResponseHandlerTest {
 
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         final String accountNumber = "1234";
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", Json.createObjectBuilder().add("accountNumber", accountNumber)
+                .add("acknowledgement", JsonObjects.createObjectBuilder().add("accountNumber", accountNumber)
                         .build())
                 .add("requestId", requestId.toString())
                 .add("materialId", materialId.toString()).build();
@@ -100,9 +100,9 @@ public class StagingEnforcementResponseHandlerTest {
         when(eventSource.getStreamById(materialId)).thenReturn(eventStream);
         final String errorCode = "ERR1234";
         final String errorMessage = "post code is invalid";
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("originator", "courts")
-                .add("acknowledgement", Json.createObjectBuilder().add("errorCode", errorCode)
+                .add("acknowledgement", JsonObjects.createObjectBuilder().add("errorCode", errorCode)
                         .add("errorMessage", errorMessage)
                         .build())
                 .add("requestId", requestId.toString())

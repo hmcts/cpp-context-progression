@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.entity.SearchProsecutionCaseEn
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -267,7 +267,7 @@ public class SearchCaseBuilder {
         }
 
         public SearchCaseBuilder.CaseBuilder withResultPayload() {
-            resultPayload = Json.createObjectBuilder()
+            resultPayload = JsonObjects.createObjectBuilder()
                     .add(CASE_ID, this.caseId)
                     .add(REFERENCE, this.reference)
                     .add(DEFENDANT_NAME, defendantFullName)

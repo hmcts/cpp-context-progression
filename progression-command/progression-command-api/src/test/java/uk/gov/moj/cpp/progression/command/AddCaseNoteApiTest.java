@@ -15,7 +15,7 @@ import uk.gov.justice.services.messaging.spi.DefaultJsonEnvelopeProvider;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ public class AddCaseNoteApiTest {
     @Test
     public void shouldAddCaseNote() {
         //Given
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("note", "This is a new case note.")
                 .build();
 

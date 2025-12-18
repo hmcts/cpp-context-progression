@@ -17,7 +17,7 @@ import static uk.gov.moj.cpp.progression.util.FileUtil.getPayload;
 
 import java.util.List;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.apache.http.HttpHeaders;
 
@@ -130,7 +130,7 @@ public class UsersAndGroupsStub {
 
 
     public static void stubGetOrganisationDetailForLAAContractNumberAsEmpty(final String laaContractNumber) {
-        String body = Json.createObjectBuilder().build().toString();
+        String body = JsonObjects.createObjectBuilder().build().toString();
 
         stubFor(get(urlPathEqualTo(format(GET_ORGANISATION_DETAIL_QUERY, laaContractNumber)))
                 .willReturn(aResponse().withStatus(OK.getStatusCode())

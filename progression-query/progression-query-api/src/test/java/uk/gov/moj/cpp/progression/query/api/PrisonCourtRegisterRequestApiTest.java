@@ -4,7 +4,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory;
 import uk.gov.moj.cpp.progression.query.PrisonCourtRegisterDocumentRequestQueryView;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObjectBuilder;
 
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ public class PrisonCourtRegisterRequestApiTest {
 
     @Test
     public void getPrisonCourtRegisterDocumentRequestByCourtCentre() {
-        final JsonObjectBuilder prisonCourtRegisterDocumentPayload = Json.createObjectBuilder();
+        final JsonObjectBuilder prisonCourtRegisterDocumentPayload = JsonObjects.createObjectBuilder();
         final JsonEnvelope response = JsonEnvelope.envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.query.prison-court-register-document-by-court-centre"),
                 prisonCourtRegisterDocumentPayload);

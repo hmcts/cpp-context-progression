@@ -14,7 +14,7 @@ import uk.gov.moj.cpp.progression.events.RepresentationType;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ public class DefenceOrganisationAssociatedEventProcessorTest {
                 .withName("public.progression.defence-organisation-associated")
                 .withUserId(userId.toString());
 
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("defendantId", defendantId.toString())
                 .add("organisationId", organisationId.toString())
                 .add("organisationName", ORGANISATION_NAME)

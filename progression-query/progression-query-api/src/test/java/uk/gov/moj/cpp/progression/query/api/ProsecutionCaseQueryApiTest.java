@@ -1,7 +1,7 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,7 +26,7 @@ import uk.gov.moj.cpp.systemusers.ServiceContextSystemUserProvider;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -259,7 +259,7 @@ public class ProsecutionCaseQueryApiTest {
     @Test
     public void shouldHandleProsecutionCaseQueryWithEmptyCourtOrders() {
         final JsonObject prosecutionCasePayload = readJson(PROSECUTION_CASE_QUERY_VIEW_JSON, JsonObject.class);
-        final JsonObject courtOrdersPayload = createObjectBuilder().add("courtOrders", Json.createArrayBuilder().build()).build();
+        final JsonObject courtOrdersPayload = createObjectBuilder().add("courtOrders", JsonObjects.createArrayBuilder().build()).build();
 
         final Metadata metadata = QueryClientTestBase.metadataFor(PROSECUTION_CASE_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, prosecutionCasePayload);
@@ -300,7 +300,7 @@ public class ProsecutionCaseQueryApiTest {
     @Test
     public void shouldHandleProsecutionCaseAtAGlanceWithOutRepresentation() {
         final JsonObject caagResponse = readJson(JSON_CAAG_RESPONSE_JSON, JsonObject.class);
-        final JsonObject jsonObjectPayload = createObjectBuilder().add("defendants", Json.createArrayBuilder().build()).build();
+        final JsonObject jsonObjectPayload = createObjectBuilder().add("defendants", JsonObjects.createArrayBuilder().build()).build();
 
         final Metadata metadata = QueryClientTestBase.metadataFor(CAAG_PROSECUTION_QUERY, randomUUID());
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, caagResponse);

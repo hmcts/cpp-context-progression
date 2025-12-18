@@ -7,7 +7,7 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
@@ -26,7 +26,7 @@ public class OrganisationService {
 
     public JsonObject getAssociatedOrganisation(final Envelope<?> envelope, final String defendantId) {
 
-        final JsonObject getUserGroupsForUserRequest = Json.createObjectBuilder().add("defendantId", defendantId).build();
+        final JsonObject getUserGroupsForUserRequest = JsonObjects.createObjectBuilder().add("defendantId", defendantId).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getUserGroupsForUserRequest)
                 .withName(DEFENCE_ASSOCIATION_QUERY).withMetadataFrom(envelope);
         final JsonEnvelope response = requester.request(requestEnvelope);
@@ -35,7 +35,7 @@ public class OrganisationService {
 
     public JsonObject getAssociatedOrganisationForApplication(final Envelope<?> envelope, final String defendantId) {
 
-        final JsonObject getUserGroupsForUserRequest = Json.createObjectBuilder().add("defendantId", defendantId).build();
+        final JsonObject getUserGroupsForUserRequest = JsonObjects.createObjectBuilder().add("defendantId", defendantId).build();
         final Envelope<JsonObject> requestEnvelope = Enveloper.envelop(getUserGroupsForUserRequest)
                 .withName(DEFENCE_ASSOCIATION_ORGANISATION_QUERY).withMetadataFrom(envelope);
         final Envelope<JsonObject> response = requester.requestAsAdmin(requestEnvelope, JsonObject.class);

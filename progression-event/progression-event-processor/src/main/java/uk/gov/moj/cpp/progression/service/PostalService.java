@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -115,7 +115,7 @@ public class PostalService {
 
         final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
 
-        JsonObject localJusticeArea = Json.createObjectBuilder().build();
+        JsonObject localJusticeArea = JsonObjects.createObjectBuilder().build();
 
         localJusticeArea = getLja(envelope, courtCentre, orderingCourtOptional, localJusticeArea);
 
@@ -163,7 +163,7 @@ public class PostalService {
         final CourtCentre courtCentre = postalNotificationDetails.getCourtCentre();
         final Optional<CourtCentre> orderingCourtOptional = ofNullable(courtCentre);
 
-        JsonObject localJusticeArea = Json.createObjectBuilder().build();
+        JsonObject localJusticeArea = JsonObjects.createObjectBuilder().build();
 
         localJusticeArea = getLja(envelope, courtCentre, orderingCourtOptional, localJusticeArea);
 
@@ -247,7 +247,7 @@ public class PostalService {
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         LOGGER.info("creating court document payload - {}", courtDocumentPayload);
 
@@ -259,7 +259,7 @@ public class PostalService {
 
         final CourtDocument courtDocument = courtDocument(applicationId, materialId, envelope, linkedCaseId);
 
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         LOGGER.info("creating court document payload - {}", courtDocumentPayload);
 

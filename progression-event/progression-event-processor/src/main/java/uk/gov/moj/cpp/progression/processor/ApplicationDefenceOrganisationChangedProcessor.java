@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -93,7 +93,7 @@ public class ApplicationDefenceOrganisationChangedProcessor {
                 .filter(defendant -> defendant.getId().equals(defendantId))
                 .findFirst();
         if (optionalDefendant.isPresent()) {
-            final JsonObject publicEventPayload = Json.createObjectBuilder()
+            final JsonObject publicEventPayload = JsonObjects.createObjectBuilder()
                     .add("defendant", objectToJsonObjectConverter.convert(updateDefendant(caseId, defendantId, associatedDefenceOrganisation, optionalDefendant.get())))
                     .build();
 

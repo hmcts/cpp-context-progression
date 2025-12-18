@@ -3,7 +3,7 @@ package uk.gov.moj.cpp.progression.processor;
 import static com.jayway.jsonassert.JsonAssert.with;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -122,7 +122,7 @@ public class NowsRequestedEventProcessorTest {
     }
 
     private static JsonObjectBuilder buildUserGroup(final String userGroupName) {
-        return Json.createObjectBuilder().add("cppGroup", Json.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
+        return JsonObjects.createObjectBuilder().add("cppGroup", JsonObjects.createObjectBuilder().add("id", randomUUID().toString()).add("groupName", userGroupName));
     }
 
     @BeforeEach
@@ -358,11 +358,11 @@ public class NowsRequestedEventProcessorTest {
     }
 
     private void initReferenceData() {
-        final JsonObject docTypeData = Json.createObjectBuilder()
+        final JsonObject docTypeData = JsonObjects.createObjectBuilder()
                 .add("section", COURT_FINAL_ORDERS)
                 .add("seqNum", 3)
                 .add("courtDocumentTypeRBAC",
-                        Json.createObjectBuilder()
+                        JsonObjects.createObjectBuilder()
                                 .add("uploadUserGroups", createArrayBuilder().build())
                                 .add("readUserGroups", createArrayBuilder()
                                         .add(buildUserGroup(MAGISTRATES))

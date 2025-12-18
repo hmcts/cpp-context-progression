@@ -25,7 +25,7 @@ import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepo
 import java.util.Collections;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,9 +112,9 @@ public class DefendantsAddedToCourtProceedingsListenerTest {
 
         when(defendantsAddedToCourtProceedings.getDefendants()).thenReturn(Collections.singletonList(defendant));
 
-        final JsonObject jsonObject = Json.createObjectBuilder()
-                .add("payload", Json.createObjectBuilder()
-                        .add("defendants", Json.createArrayBuilder().add(Json.createObjectBuilder()
+        final JsonObject jsonObject = JsonObjects.createObjectBuilder()
+                .add("payload", JsonObjects.createObjectBuilder()
+                        .add("defendants", JsonObjects.createArrayBuilder().add(JsonObjects.createObjectBuilder()
                                         .add("id", defendant.getId().toString())
                                         .add("prosecutionCaseId", defendant.getProsecutionCaseId().toString()).build())
                                 .build())

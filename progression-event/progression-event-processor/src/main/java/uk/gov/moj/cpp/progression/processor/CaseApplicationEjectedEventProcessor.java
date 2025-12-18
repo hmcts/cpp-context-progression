@@ -19,7 +19,7 @@ import uk.gov.moj.cpp.progression.service.ProgressionService;
 import java.io.IOException;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -100,7 +100,7 @@ public class CaseApplicationEjectedEventProcessor {
 
     private JsonArray getHearingIdsForCaseAllApplications(final JsonEnvelope event) {
         final String prosecutionCaseId = event.payloadAsJsonObject().getString(PROSECUTION_CASE_ID);
-        final JsonArrayBuilder hearingIdsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder hearingIdsBuilder = JsonObjects.createArrayBuilder();
         progressionService.getProsecutionCaseDetailById(event, prosecutionCaseId).ifPresent(prosecutionCaseJsonObject -> {
             final GetHearingsAtAGlance hearingsAtAGlance = jsonObjectToObjectConverter.
                     convert(prosecutionCaseJsonObject.getJsonObject("hearingsAtAGlance"),
@@ -125,7 +125,7 @@ public class CaseApplicationEjectedEventProcessor {
                             ProsecutionCase.class);
 
             if (prosecutionCase != null && prosecutionCase.getProsecutionCaseIdentifier() != null) {
-                final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+                final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
                 final ProsecutionCaseIdentifier caseIdentifier = prosecutionCase.getProsecutionCaseIdentifier();
 
                 payloadBuilder.add("CaseId", prosecutionCaseId);
@@ -153,7 +153,7 @@ public class CaseApplicationEjectedEventProcessor {
     }
 
     private JsonArray getHearingIdsForAllApplications(final JsonEnvelope event, final String applicationId) {
-        final JsonArrayBuilder hearingIdsBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder hearingIdsBuilder = JsonObjects.createArrayBuilder();
         progressionService.getCourtApplicationById(event, applicationId).ifPresent(applicationAtAGlance -> {
             final JsonArray hearings = applicationAtAGlance.getJsonArray("hearings");
 
@@ -166,7 +166,7 @@ public class CaseApplicationEjectedEventProcessor {
     }
 
     public void sendPublicMessage(final JsonEnvelope event, final JsonArray hearingIds, final String id, final String idKey, final String removalReason) {
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
         payloadBuilder.add(idKey, id);
         payloadBuilder.add(REMOVAL_REASON, removalReason);
         addHearingIds(hearingIds, payloadBuilder);

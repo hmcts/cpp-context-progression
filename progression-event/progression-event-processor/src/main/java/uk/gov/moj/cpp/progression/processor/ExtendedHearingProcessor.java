@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.processor;
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.moj.cpp.progression.processor.HearingConfirmedEventProcessor.PUBLIC_PROGRESSION_EVENT_PROSECUTION_CASES_REFERRED_TO_COURT;
@@ -41,7 +41,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 
@@ -84,7 +84,7 @@ public class ExtendedHearingProcessor {
             hearingExtended.getShadowListedOffences().forEach(shadowListedOffence -> shadowListedOffencesBuilder.add(shadowListedOffence.toString()));
         }
 
-        final JsonObject commandPayload = Json.createObjectBuilder()
+        final JsonObject commandPayload = JsonObjects.createObjectBuilder()
                 .add("hearingRequest", objectToJsonObjectConverter.convert(hearingExtended.getHearingRequest()))
                 .add("shadowListedOffences", shadowListedOffencesBuilder.build())
                 .build();
@@ -108,7 +108,7 @@ public class ExtendedHearingProcessor {
         }
         if (nonNull(courtApplications)) {
             final CourtApplication courtApplication = courtApplications.get(0);
-            final JsonObject hearingCourtApplication = Json.createObjectBuilder()
+            final JsonObject hearingCourtApplication = JsonObjects.createObjectBuilder()
                     .add("hearingId", hearingId.toString())
                     .add("courtApplication", objectToJsonObjectConverter.convert(courtApplication))
                     .build();

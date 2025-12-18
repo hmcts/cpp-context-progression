@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -112,7 +112,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
@@ -164,7 +164,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();
@@ -613,7 +613,7 @@ public class ProsecutionCaseDefendantListingStatusChangedEventListenerTest {
 
         final HearingEntity hearingEntity = new HearingEntity();
         hearingEntity.setHearingId(hearingId);
-        hearingEntity.setPayload(Json.createObjectBuilder().build().toString());
+        hearingEntity.setPayload(JsonObjects.createObjectBuilder().build().toString());
         hearingEntity.setListingStatus(HearingListingStatus.HEARING_INITIALISED);
 
         final MatchDefendantCaseHearingEntity matchDefendantCaseHearingEntity = getMatchDefendantCaseHearingEntity();

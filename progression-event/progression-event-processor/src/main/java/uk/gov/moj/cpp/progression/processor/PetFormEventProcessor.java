@@ -2,8 +2,8 @@ package uk.gov.moj.cpp.progression.processor;
 
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -39,7 +39,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -351,15 +351,15 @@ public class PetFormEventProcessor {
         final Optional<JsonObject> petFormObject = referenceDataService.getPetForm(envelope, requester);
         final String formId = petFormObject.map(jsonObject -> jsonObject.getString(FORM_ID_SNAKE_CASE)).orElse(null);
 
-        final JsonArrayBuilder defendantIdArray = Json.createArrayBuilder();
+        final JsonArrayBuilder defendantIdArray = JsonObjects.createArrayBuilder();
         final List<JsonObject> petDefendantList = payload.getJsonArray(PET_DEFENDANTS).getValuesAs(JsonObject.class);
-        petDefendantList.forEach(defendant -> defendantIdArray.add(Json.createObjectBuilder()
+        petDefendantList.forEach(defendant -> defendantIdArray.add(JsonObjects.createObjectBuilder()
                                 .add(DEFENDANT_ID, defendant.getString(DEFENDANT_ID))
                                 .build()
                         )
                 );
 
-        final JsonObject createPetFormPayload = Json.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
+        final JsonObject createPetFormPayload = JsonObjects.createObjectBuilder().add(CASE_ID, payload.get(CASE_ID))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(PET_ID, String.valueOf(randomUUID()))
                 .add(FORM_ID, formId)
