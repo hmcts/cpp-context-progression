@@ -117,7 +117,7 @@ public class ReferenceDataOffenceService {
                         .collect(Collectors.joining(",")));
 
         if (sowRef != null) {
-            jsonObjectBuilder.add("sowRef", String.valueOf(sowRef));
+            sowRef.ifPresent(sowRefValue -> jsonObjectBuilder.add("sowRef", sowRefValue));
         }
 
         final JsonObject requestParameter = jsonObjectBuilder.build();

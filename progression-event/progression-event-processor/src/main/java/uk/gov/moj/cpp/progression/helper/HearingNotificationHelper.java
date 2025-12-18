@@ -186,14 +186,18 @@ public class HearingNotificationHelper {
         final UUID notificationId = randomUUID();
 
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
-        if (nonNull(defenceOrganisationVO)) {
-            sendNotificationToDefendantOrganisation(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO, materialId, materialUrl, notificationId);
-        } else if (nonNull(defendant.getPersonDefendant())) {
-            final PersonDefendant personDefendant = defendant.getPersonDefendant();
-            sendNotificationToPersonDefendant(hearingNotificationInputData, jsonEnvelope, caseId, personDefendant, materialId, materialUrl, notificationId);
-        } else if (nonNull(defendant.getLegalEntityDefendant())) {
-            final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
-            sendNotificationToLegalEntityDefendant(hearingNotificationInputData, jsonEnvelope, caseId, legalEntityDefendant, materialId, materialUrl, notificationId);
+        if(shouldSendTheNotifications(prosecutionCase, defendant)) {
+            if (nonNull(defenceOrganisationVO)) {
+                sendNotificationToDefendantOrganisation(hearingNotificationInputData, jsonEnvelope, caseId, defenceOrganisationVO, materialId, materialUrl, notificationId);
+            } else if (nonNull(defendant.getPersonDefendant())) {
+                final PersonDefendant personDefendant = defendant.getPersonDefendant();
+                sendNotificationToPersonDefendant(hearingNotificationInputData, jsonEnvelope, caseId, personDefendant, materialId, materialUrl, notificationId);
+            } else if (nonNull(defendant.getLegalEntityDefendant())) {
+                final LegalEntityDefendant legalEntityDefendant = defendant.getLegalEntityDefendant();
+                sendNotificationToLegalEntityDefendant(hearingNotificationInputData, jsonEnvelope, caseId, legalEntityDefendant, materialId, materialUrl, notificationId);
+            }else {
+                LOGGER.info("Notification entity is neither defence organisation not person or org defendant hence not sending any notification");
+            }
         }
     }
 
@@ -230,6 +234,17 @@ public class HearingNotificationHelper {
                 .withSendToCps(false)
                 .withContainsFinancialMeans(false)
                 .build();
+    }
+
+    private boolean shouldSendTheNotifications(final ProsecutionCase prosecutionCase, final Defendant defendant) {
+        if (nonNull(prosecutionCase.getIsCivil()) && prosecutionCase.getIsCivil()) {
+            boolean isExParteOffence = prosecutionCase.getDefendants().stream()
+                    .filter(def -> def.getId().equals(defendant.getId()))
+                    .anyMatch(def -> def.getOffences().stream()
+                            .anyMatch(offence -> nonNull(offence.getCivilOffence()) && offence.getCivilOffence().getIsExParte()));
+            return !isExParteOffence;
+        }
+        return true;
     }
 
     private void sendNotificationToDefendantOrganisation(final HearingNotificationInputData hearingNotificationInputData, JsonEnvelope jsonEnvelope, final UUID caseId, final DefenceOrganisationVO defenceOrganisationVO,
@@ -317,12 +332,14 @@ public class HearingNotificationHelper {
         final UUID notificationId = randomUUID();
         addCourtDocument(jsonEnvelope, caseId, materialId, fileName);
 
-        if (isNotEmpty(prosecutorEmail)) {
-            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.EMAIL.getType());
-            sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId);
-        } else {
-            saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.LETTER.getType());
-            notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
+        if(shouldSendTheNotifications(prosecutionCase, defendant)) {
+            if (isNotEmpty(prosecutorEmail)) {
+                saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.EMAIL.getType());
+                sendEmail(hearingNotificationInputData, jsonEnvelope, caseId, prosecutorEmail, materialId, materialUrl, notificationId);
+            } else {
+                saveNotificationInfo(notificationId, RecipientType.PROSECUTOR, CommunicationType.LETTER.getType());
+                notificationService.sendLetter(jsonEnvelope, notificationId, caseId, null, materialId, true);
+            }
         }
     }
 
@@ -343,6 +360,8 @@ public class HearingNotificationHelper {
             prosecutorId = prosecutionCase.getProsecutor().getProsecutorId();
         } else if (nonNull(prosecutionCase.getProsecutionCaseIdentifier()) && nonNull(prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId())) {
             prosecutorId = prosecutionCase.getProsecutionCaseIdentifier().getProsecutionAuthorityId();
+        } else {
+            LOGGER.info("Prosecutor id is null for caseId {}", prosecutionCase.getId());
         }
         return prosecutorId;
     }

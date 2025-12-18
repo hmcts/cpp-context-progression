@@ -1,0 +1,1331 @@
+{
+  "caseStatus": "ACTIVE",
+  "cpsOrganisation": "A30AB00",
+  "defendants": [
+    {
+      "associatedDefenceOrganisation": {
+        "applicationReference": "LAA-20191601",
+        "associationEndDate": "2021-12-12",
+        "associationStartDate": "2021-12-12",
+        "defenceOrganisation": {
+          "laaContractNumber": "99998888",
+          "organisation": {
+            "address": {
+              "address1": "address1",
+              "address2": "address2",
+              "address3": "address3",
+              "address4": "address4",
+              "address5": "address5",
+              "postcode": "GIR0AA"
+            },
+            "contact": {
+              "fax": "a",
+              "home": " ",
+              "mobile": " ",
+              "primaryEmail": "!.!@00.00",
+              "secondaryEmail": "!.!@00.00",
+              "work": "a"
+            },
+            "incorporationNumber": "a",
+            "name": "a",
+            "registeredCharityNumber": "a"
+          }
+        },
+        "fundingType": "REPRESENTATION_ORDER",
+        "isAssociatedByLAA": true
+      },
+      "associationLockedByRepOrder": true,
+      "courtProceedingsInitiated": "2022-02-01T13:43:01.460Z",
+      "id": "7f0ebbdd-dfd0-4470-9b88-f7de6cf364a9",
+      "legalAidStatus": "Granted",
+      "masterDefendantId": "7f0ebbdd-dfd0-4470-9b88-f7de6cf364a9",
+      "offences": [
+        {
+          "allocationDecision": {
+            "allocationDecisionDate": "2022-02-01",
+            "motReasonCode": "01",
+            "motReasonDescription": "Summary-only offence",
+            "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+            "offenceId": "fe42ea25-af49-48c6-a08e-b1af9d39fbb4",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "sequenceNumber": 90
+          },
+          "arrestDate": "2004-12-09",
+          "chargeDate": "2014-02-09",
+          "convictingCourt": {
+            "code": "B01LY00",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+          },
+          "convictionDate": "2022-02-01",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "fe42ea25-af49-48c6-a08e-b1af9d39fbb4",
+          "isDisposed": false,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "category": "INTERMEDIARY",
+              "cjsCode": "4506",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "ac7a0cc2-fc4b-4f6d-b296-8527a379c39e",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                  "label": "Next hearing in Crown Court",
+                  "promptReference": "e148d1c8-1f33-4ba9-ae8b-16f8a4266a3d",
+                  "promptSequence": 0,
+                  "usergroups": [],
+                  "value": "Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No",
+                  "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                },
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                  "label": "Defendant to attend the next hearing",
+                  "promptReference": "defendantToAttendTheNextHearing",
+                  "promptSequence": 100,
+                  "type": "BOOLEAN",
+                  "usergroups": [],
+                  "value": "true",
+                  "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                  "welshValue": "true"
+                },
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "4feef108-d1f9-4662-a065-39c77d677fff",
+                  "label": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                  "promptReference": "96693848-4488-4dfa-869d-1d32bc249caf",
+                  "promptSequence": 200,
+                  "qualifier": "DN",
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Ystyried a oes rhesymau arbennig dros beidio â gorchymyn ardystiad neu waharddiad"
+                },
+                {
+                  "courtExtract": "N",
+                  "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "label": "Adjournment reasons",
+                  "promptReference": "a40c313c-1dfa-4079-95df-0eca6cee6f76",
+                  "promptSequence": 300,
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Rheswm dros ohirio :"
+                }
+              ],
+              "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "label": "Adjournment",
+              "lastSharedDateTime": "2022-02-01",
+              "level": "O",
+              "lifeDuration": false,
+              "nextHearing": {
+                "adjournmentReason": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                "courtCentre": {
+                  "address": {
+                    "address1": "QEII Law Courts",
+                    "address2": "Derby Square",
+                    "address3": "Liverpool",
+                    "postcode": "L2 1XA"
+                  },
+                  "courtHearingLocation": "C05LV00",
+                  "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                  "name": "Liverpool Crown Court",
+                  "psaCode": 1810,
+                  "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                  "roomName": "Crown Court 3-1",
+                  "welshName": "Llys Y Goron Lerpwl"
+                },
+                "estimatedMinutes": 120,
+                "jurisdictionType": "CROWN",
+                "listedStartDateTime": "2022-03-01T10:30:00.000Z",
+                "reservedJudiciary": false,
+                "type": {
+                  "description": "Appeal",
+                  "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+                }
+              },
+              "orderedDate": "2022-02-01",
+              "orderedHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "qualifier": "DN",
+              "rank": 76400,
+              "resultText": "Adjournment\nNext hearing in Crown Court Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No\nDefendant to attend the next hearing true\nTo consider if there are special reasons for not ordering an endorsement or disqualification \nAdjournment reasons ",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "ac7a0cc2-fc4b-4f6d-b296-8527a379c39e",
+              "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gohiriad"
+            }
+          ],
+          "lastAdjournDate": "2022-02-01",
+          "lastAdjournedHearingType": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+          "listingNumber": 2,
+          "modeOfTrial": "Summary",
+          "offenceCode": "TW01046",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+          "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+          "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+          "orderIndex": 502,
+          "plea": {
+            "offenceId": "fe42ea25-af49-48c6-a08e-b1af9d39fbb4",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "pleaDate": "2022-02-01",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "proceedingsConcluded": false,
+          "startDate": "2014-02-09",
+          "verdict": {
+            "jurors": {
+              "numberOfJurors": 12,
+              "numberOfSplitJurors": 0,
+              "unanimous": true
+            },
+            "lesserOrAlternativeOffence": {
+              "offenceCode": "TW01046",
+              "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+              "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+              "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro"
+            },
+            "offenceId": "fe42ea25-af49-48c6-a08e-b1af9d39fbb4",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "verdictDate": "2022-02-01",
+            "verdictType": {
+              "category": "Guilty",
+              "categoryType": "GUILTY",
+              "cjsVerdictCode": "G",
+              "description": "Found guilty",
+              "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "sequence": 10,
+              "verdictCode": "G"
+            }
+          },
+          "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+        },
+        {
+          "allocationDecision": {
+            "allocationDecisionDate": "2022-02-01",
+            "motReasonCode": "01",
+            "motReasonDescription": "Summary-only offence",
+            "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+            "offenceId": "b2473042-77be-49ae-9c56-2117a12332c1",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "sequenceNumber": 90
+          },
+          "arrestDate": "2004-12-09",
+          "chargeDate": "2004-12-09",
+          "convictingCourt": {
+            "code": "B01LY00",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+          },
+          "convictionDate": "2022-02-01",
+          "count": 0,
+          "id": "b2473042-77be-49ae-9c56-2117a12332c1",
+          "isDisposed": false,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "category": "INTERMEDIARY",
+              "cjsCode": "4506",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "bd9d04ee-8cb9-4344-a09c-52237c3f29cd",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                  "label": "Next hearing in Crown Court",
+                  "promptReference": "fb5e44a5-fcb1-4e53-819f-bfa089ad9ee1",
+                  "promptSequence": 0,
+                  "usergroups": [],
+                  "value": "Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No",
+                  "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                },
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                  "label": "Defendant to attend the next hearing",
+                  "promptReference": "defendantToAttendTheNextHearing",
+                  "promptSequence": 100,
+                  "type": "BOOLEAN",
+                  "usergroups": [],
+                  "value": "true",
+                  "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                  "welshValue": "true"
+                },
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "4feef108-d1f9-4662-a065-39c77d677fff",
+                  "label": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                  "promptReference": "deeedb33-b220-40ad-a6eb-a27a64e3849d",
+                  "promptSequence": 200,
+                  "qualifier": "DN",
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Ystyried a oes rhesymau arbennig dros beidio â gorchymyn ardystiad neu waharddiad"
+                },
+                {
+                  "courtExtract": "N",
+                  "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "label": "Adjournment reasons",
+                  "promptReference": "06951616-b072-434f-884b-1757e6cf21f7",
+                  "promptSequence": 300,
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Rheswm dros ohirio:"
+                }
+              ],
+              "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "label": "Adjournment",
+              "lastSharedDateTime": "2022-02-01",
+              "level": "O",
+              "lifeDuration": false,
+              "nextHearing": {
+                "adjournmentReason": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                "courtCentre": {
+                  "address": {
+                    "address1": "QEII Law Courts",
+                    "address2": "Derby Square",
+                    "address3": "Liverpool",
+                    "postcode": "L2 1XA"
+                  },
+                  "courtHearingLocation": "C05LV00",
+                  "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                  "name": "Liverpool Crown Court",
+                  "psaCode": 1810,
+                  "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                  "roomName": "Crown Court 3-1",
+                  "welshName": "Llys Y Goron Lerpwl"
+                },
+                "estimatedMinutes": 120,
+                "jurisdictionType": "CROWN",
+                "listedStartDateTime": "2022-03-01T10:30:00.000Z",
+                "reservedJudiciary": false,
+                "type": {
+                  "description": "Appeal",
+                  "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+                }
+              },
+              "orderedDate": "2022-02-01",
+              "orderedHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "qualifier": "DN",
+              "rank": 76400,
+              "resultText": "Adjournment\nNext hearing in Crown Court Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No\nDefendant to attend the next hearing true\nTo consider if there are special reasons for not ordering an endorsement or disqualification \nAdjournment reasons ",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "bd9d04ee-8cb9-4344-a09c-52237c3f29cd",
+              "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gohiriad"
+            }
+          ],
+          "laaApplnReference": {
+            "applicationReference": "LAA-20191601",
+            "effectiveEndDate": "2021-12-12",
+            "effectiveStartDate": "2021-12-12",
+            "laaContractNumber": "99998888",
+            "offenceLevelStatus": "Granted",
+            "statusCode": "G2",
+            "statusDate": "2021-12-16",
+            "statusDescription": "Granted for Two Advocates",
+            "statusId": "58ebf081-2b7d-3b1d-8c47-149fe7dbd672"
+          },
+          "lastAdjournDate": "2022-02-01",
+          "lastAdjournedHearingType": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+          "listingNumber": 2,
+          "modeOfTrial": "Summary",
+          "offenceCode": "TW01040",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+          "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+          "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+          "orderIndex": 500,
+          "plea": {
+            "offenceId": "b2473042-77be-49ae-9c56-2117a12332c1",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "pleaDate": "2022-02-01",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "proceedingsConcluded": false,
+          "startDate": "2004-12-09",
+          "verdict": {
+            "jurors": {
+              "numberOfJurors": 12,
+              "numberOfSplitJurors": 0,
+              "unanimous": true
+            },
+            "lesserOrAlternativeOffence": {
+              "offenceCode": "TW01040",
+              "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+              "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+              "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro"
+            },
+            "offenceId": "b2473042-77be-49ae-9c56-2117a12332c1",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "verdictDate": "2022-02-01",
+            "verdictType": {
+              "category": "Guilty",
+              "categoryType": "GUILTY",
+              "cjsVerdictCode": "G",
+              "description": "Found guilty",
+              "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "sequence": 10,
+              "verdictCode": "G"
+            }
+          },
+          "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+        }
+      ],
+      "personDefendant": {
+        "arrestSummonsNumber": "DTFL",
+        "bailConditions": "",
+        "bailStatus": {
+          "code": "A",
+          "description": "Not applicable",
+          "id": "86009c70-759d-3308-8de4-194886ff9a77"
+        },
+        "personDetails": {
+          "address": {
+            "address1": "address1",
+            "address2": "address2",
+            "address3": "address3",
+            "address4": "address4",
+            "address5": "address5",
+            "postcode": "TW14 9XD"
+          },
+          "contact": {
+            "home": "09998021888",
+            "mobile": "09998021889",
+            "primaryEmail": "robert@gmail.com",
+            "secondaryEmail": "ormsby@gmail.com",
+            "work": "0917894278022"
+          },
+          "dateOfBirth": "1981-12-19",
+          "documentationLanguageNeeds": "ENGLISH",
+          "firstName": "John",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Smith"
+        },
+        "policeBailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        }
+      },
+      "proceedingsConcluded": false,
+      "prosecutionAuthorityReference": "DTFL",
+      "prosecutionCaseId": "93371607-ccef-4f52-9f22-d442c00adefd"
+    },
+    {
+      "courtProceedingsInitiated": "2022-02-01T13:43:01.460Z",
+      "id": "%DEFENDANT_ID%",
+      "masterDefendantId": "dcedb673-44b0-438d-aae0-71fb56656f65",
+      "offences": [
+        {
+          "civilOffence": {
+            "isExParte": true
+          },
+          "allocationDecision": {
+            "allocationDecisionDate": "2022-02-01",
+            "motReasonCode": "01",
+            "motReasonDescription": "Summary-only offence",
+            "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+            "offenceId": "316d9224-ef52-4393-82c0-54810af28102",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "sequenceNumber": 90
+          },
+          "arrestDate": "2004-12-09",
+          "chargeDate": "2004-12-09",
+          "convictingCourt": {
+            "code": "B01LY00",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+          },
+          "convictionDate": "2022-02-01",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "316d9224-ef52-4393-82c0-54810af28102",
+          "isDisposed": false,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "category": "INTERMEDIARY",
+              "cjsCode": "4506",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "38fe2dd4-12c8-48fe-afd8-6e3e803f1c03",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                  "label": "Next hearing in Crown Court",
+                  "promptReference": "42d8c3df-f1d6-41f9-a97d-10370a330980",
+                  "promptSequence": 0,
+                  "usergroups": [],
+                  "value": "Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No",
+                  "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                },
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                  "label": "Defendant to attend the next hearing",
+                  "promptReference": "defendantToAttendTheNextHearing",
+                  "promptSequence": 100,
+                  "type": "BOOLEAN",
+                  "usergroups": [],
+                  "value": "true",
+                  "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                  "welshValue": "true"
+                },
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "4feef108-d1f9-4662-a065-39c77d677fff",
+                  "label": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                  "promptReference": "26ba3e5c-f5eb-4c05-b062-d85ab68026e9",
+                  "promptSequence": 200,
+                  "qualifier": "DN",
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Ystyried a oes rhesymau arbennig dros beidio â gorchymyn ardystiad neu waharddiad"
+                },
+                {
+                  "courtExtract": "N",
+                  "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "label": "Adjournment reasons",
+                  "promptReference": "2c437b95-00e6-4025-95d8-d91914281739",
+                  "promptSequence": 300,
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Rheswm dros ohirio:"
+                }
+              ],
+              "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "label": "Adjournment",
+              "lastSharedDateTime": "2022-02-01",
+              "level": "O",
+              "lifeDuration": false,
+              "nextHearing": {
+                "adjournmentReason": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                "courtCentre": {
+                  "address": {
+                    "address1": "QEII Law Courts",
+                    "address2": "Derby Square",
+                    "address3": "Liverpool",
+                    "postcode": "L2 1XA"
+                  },
+                  "courtHearingLocation": "C05LV00",
+                  "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                  "name": "Liverpool Crown Court",
+                  "psaCode": 1810,
+                  "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                  "roomName": "Crown Court 3-1",
+                  "welshName": "Llys Y Goron Lerpwl"
+                },
+                "estimatedMinutes": 120,
+                "jurisdictionType": "CROWN",
+                "listedStartDateTime": "2022-03-01T10:30:00.000Z",
+                "reservedJudiciary": false,
+                "type": {
+                  "description": "Appeal",
+                  "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+                }
+              },
+              "orderedDate": "2022-02-01",
+              "orderedHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "qualifier": "DN",
+              "rank": 76400,
+              "resultText": "Adjournment\nNext hearing in Crown Court Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No\nDefendant to attend the next hearing true\nTo consider if there are special reasons for not ordering an endorsement or disqualification \nAdjournment reasons ",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "38fe2dd4-12c8-48fe-afd8-6e3e803f1c03",
+              "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gohiriad"
+            }
+          ],
+          "lastAdjournDate": "2022-02-01",
+          "lastAdjournedHearingType": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+          "listingNumber": 2,
+          "modeOfTrial": "Summary",
+          "offenceCode": "TW01040",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+          "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+          "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+          "orderIndex": 500,
+          "plea": {
+            "offenceId": "316d9224-ef52-4393-82c0-54810af28102",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "pleaDate": "2022-02-01",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "proceedingsConcluded": false,
+          "startDate": "2004-12-09",
+          "verdict": {
+            "jurors": {
+              "numberOfJurors": 12,
+              "numberOfSplitJurors": 0,
+              "unanimous": true
+            },
+            "lesserOrAlternativeOffence": {
+              "offenceCode": "TW01040",
+              "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+              "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+              "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro"
+            },
+            "offenceId": "316d9224-ef52-4393-82c0-54810af28102",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "verdictDate": "2022-02-01",
+            "verdictType": {
+              "category": "Guilty",
+              "categoryType": "GUILTY",
+              "cjsVerdictCode": "G",
+              "description": "Found guilty",
+              "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "sequence": 10,
+              "verdictCode": "G"
+            }
+          },
+          "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+        },
+        {
+          "allocationDecision": {
+            "allocationDecisionDate": "2022-02-01",
+            "motReasonCode": "01",
+            "motReasonDescription": "Summary-only offence",
+            "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+            "offenceId": "fa30e450-70e8-4f39-98fa-f9cde0f849c8",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "sequenceNumber": 90
+          },
+          "arrestDate": "2004-12-09",
+          "chargeDate": "2014-02-09",
+          "convictingCourt": {
+            "code": "B01LY00",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+          },
+          "convictionDate": "2022-02-01",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "fa30e450-70e8-4f39-98fa-f9cde0f849c8",
+          "isDisposed": false,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "category": "INTERMEDIARY",
+              "cjsCode": "4506",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "46f3b713-9814-4af6-ab60-b1c6bcbb3ecf",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                  "label": "Next hearing in Crown Court",
+                  "promptReference": "2e04ccde-e37c-4767-816f-6e686236d2a0",
+                  "promptSequence": 0,
+                  "usergroups": [],
+                  "value": "Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No",
+                  "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                },
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                  "label": "Defendant to attend the next hearing",
+                  "promptReference": "defendantToAttendTheNextHearing",
+                  "promptSequence": 100,
+                  "type": "BOOLEAN",
+                  "usergroups": [],
+                  "value": "true",
+                  "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                  "welshValue": "true"
+                },
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "4feef108-d1f9-4662-a065-39c77d677fff",
+                  "label": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                  "promptReference": "a2647871-6f22-4cf1-9ead-bf2d6ecddc2f",
+                  "promptSequence": 200,
+                  "qualifier": "DN",
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Ystyried a oes rhesymau arbennig dros beidio â gorchymyn ardystiad neu waharddiad"
+                },
+                {
+                  "courtExtract": "N",
+                  "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "label": "Adjournment reasons",
+                  "promptReference": "0cc98d08-80cc-42b5-9c4d-8cea7a16d8d7",
+                  "promptSequence": 300,
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Rheswm dros ohirio:"
+                }
+              ],
+              "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "label": "Adjournment",
+              "lastSharedDateTime": "2022-02-01",
+              "level": "O",
+              "lifeDuration": false,
+              "nextHearing": {
+                "adjournmentReason": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                "courtCentre": {
+                  "address": {
+                    "address1": "QEII Law Courts",
+                    "address2": "Derby Square",
+                    "address3": "Liverpool",
+                    "postcode": "L2 1XA"
+                  },
+                  "courtHearingLocation": "C05LV00",
+                  "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                  "name": "Liverpool Crown Court",
+                  "psaCode": 1810,
+                  "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                  "roomName": "Crown Court 3-1",
+                  "welshName": "Llys Y Goron Lerpwl"
+                },
+                "estimatedMinutes": 120,
+                "jurisdictionType": "CROWN",
+                "listedStartDateTime": "2022-03-01T10:30:00.000Z",
+                "reservedJudiciary": false,
+                "type": {
+                  "description": "Appeal",
+                  "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+                }
+              },
+              "orderedDate": "2022-02-01",
+              "orderedHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "qualifier": "DN",
+              "rank": 76400,
+              "resultText": "Adjournment\nNext hearing in Crown Court Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No\nDefendant to attend the next hearing true\nTo consider if there are special reasons for not ordering an endorsement or disqualification \nAdjournment reasons ",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "46f3b713-9814-4af6-ab60-b1c6bcbb3ecf",
+              "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gohiriad"
+            }
+          ],
+          "lastAdjournDate": "2022-02-01",
+          "lastAdjournedHearingType": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+          "listingNumber": 2,
+          "modeOfTrial": "Summary",
+          "offenceCode": "TW01046",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+          "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+          "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+          "orderIndex": 503,
+          "plea": {
+            "offenceId": "fa30e450-70e8-4f39-98fa-f9cde0f849c8",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "pleaDate": "2022-02-01",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "proceedingsConcluded": false,
+          "startDate": "2014-02-09",
+          "verdict": {
+            "jurors": {
+              "numberOfJurors": 12,
+              "numberOfSplitJurors": 0,
+              "unanimous": true
+            },
+            "lesserOrAlternativeOffence": {
+              "offenceCode": "TW01046",
+              "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+              "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+              "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro"
+            },
+            "offenceId": "fa30e450-70e8-4f39-98fa-f9cde0f849c8",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "verdictDate": "2022-02-01",
+            "verdictType": {
+              "category": "Guilty",
+              "categoryType": "GUILTY",
+              "cjsVerdictCode": "G",
+              "description": "Found guilty",
+              "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "sequence": 10,
+              "verdictCode": "G"
+            }
+          },
+          "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+        }
+      ],
+      "personDefendant": {
+        "arrestSummonsNumber": "DTFL1",
+        "bailConditions": "",
+        "bailStatus": {
+          "code": "A",
+          "description": "Not applicable",
+          "id": "86009c70-759d-3308-8de4-194886ff9a77"
+        },
+        "personDetails": {
+          "address": {
+            "address1": "address1",
+            "address2": "address2",
+            "address3": "address3",
+            "address4": "address4",
+            "address5": "address5",
+            "postcode": "TW14 9XD"
+          },
+          "contact": {
+            "home": "09998021888",
+            "mobile": "09998021889",
+            "primaryEmail": "defendant_email@email.com",
+            "secondaryEmail": "ormsby@gmail.com",
+            "work": "0917894278022"
+          },
+          "dateOfBirth": "1981-12-19",
+          "documentationLanguageNeeds": "ENGLISH",
+          "firstName": "John",
+          "gender": "MALE",
+          "hearingLanguageNeeds": "ENGLISH",
+          "lastName": "Smith"
+        },
+        "policeBailStatus": {
+          "code": "C",
+          "description": "Custody",
+          "id": "12e69486-4d01-3403-a50a-7419ca040635"
+        }
+      },
+      "proceedingsConcluded": false,
+      "prosecutionAuthorityReference": "DTFL1",
+      "prosecutionCaseId": "93371607-ccef-4f52-9f22-d442c00adefd"
+    },
+    {
+      "aliases": [
+        {
+          "legalEntityName": "Alias0"
+        }
+      ],
+      "courtProceedingsInitiated": "2022-02-01T13:43:01.460Z",
+      "croNumber": "ZhMKVpvvyztQ",
+      "id": "17a015e1-965c-4802-8c18-d4d5057b235e",
+      "legalEntityDefendant": {
+        "organisation": {
+          "address": {
+            "address1": "64mmOPKRQn",
+            "address2": "Southern House",
+            "address3": "Westmister  Street",
+            "address4": "Croydon",
+            "address5": "London",
+            "postcode": "W1 9XD"
+          },
+          "contact": {
+            "primaryEmail": "corp1@test.com",
+            "secondaryEmail": "corp2@test.com",
+            "work": "02012345675"
+          },
+          "name": "HMCTS"
+        }
+      },
+      "masterDefendantId": "17a015e1-965c-4802-8c18-d4d5057b235e",
+      "offences": [
+        {
+          "allocationDecision": {
+            "allocationDecisionDate": "2022-02-01",
+            "motReasonCode": "01",
+            "motReasonDescription": "Summary-only offence",
+            "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+            "offenceId": "476f912c-f18a-497f-adc7-1ceddf925a7b",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "sequenceNumber": 90
+          },
+          "arrestDate": "2015-11-19",
+          "chargeDate": "2006-05-30",
+          "convictingCourt": {
+            "code": "B01LY00",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+          },
+          "convictionDate": "2022-02-01",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "476f912c-f18a-497f-adc7-1ceddf925a7b",
+          "isDisposed": false,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "category": "INTERMEDIARY",
+              "cjsCode": "4506",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "7dddd0be-4236-48bf-9052-e247fc55a30a",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                  "label": "Next hearing in Crown Court",
+                  "promptReference": "4f9a8730-0595-4b6b-ac65-72035e9e92e2",
+                  "promptSequence": 0,
+                  "usergroups": [],
+                  "value": "Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No",
+                  "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                },
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                  "label": "Defendant to attend the next hearing",
+                  "promptReference": "defendantToAttendTheNextHearing",
+                  "promptSequence": 100,
+                  "type": "BOOLEAN",
+                  "usergroups": [],
+                  "value": "true",
+                  "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                  "welshValue": "true"
+                },
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "4feef108-d1f9-4662-a065-39c77d677fff",
+                  "label": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                  "promptReference": "7b1606f7-ea27-4f76-8499-2573019f8daf",
+                  "promptSequence": 200,
+                  "qualifier": "DN",
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Ystyried a oes rhesymau arbennig dros beidio â gorchymyn ardystiad neu waharddiad"
+                },
+                {
+                  "courtExtract": "N",
+                  "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "label": "Adjournment reasons",
+                  "promptReference": "d047a712-4916-480e-ad54-d4b46eca06e4",
+                  "promptSequence": 300,
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Rheswm dros ohirio:"
+                }
+              ],
+              "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "label": "Adjournment",
+              "lastSharedDateTime": "2022-02-01",
+              "level": "O",
+              "lifeDuration": false,
+              "nextHearing": {
+                "adjournmentReason": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                "courtCentre": {
+                  "address": {
+                    "address1": "QEII Law Courts",
+                    "address2": "Derby Square",
+                    "address3": "Liverpool",
+                    "postcode": "L2 1XA"
+                  },
+                  "courtHearingLocation": "C05LV00",
+                  "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                  "name": "Liverpool Crown Court",
+                  "psaCode": 1810,
+                  "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                  "roomName": "Crown Court 3-1",
+                  "welshName": "Llys Y Goron Lerpwl"
+                },
+                "estimatedMinutes": 120,
+                "jurisdictionType": "CROWN",
+                "listedStartDateTime": "2022-03-01T10:30:00.000Z",
+                "reservedJudiciary": false,
+                "type": {
+                  "description": "Appeal",
+                  "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+                }
+              },
+              "orderedDate": "2022-02-01",
+              "orderedHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "qualifier": "DN",
+              "rank": 76400,
+              "resultText": "Adjournment\nNext hearing in Crown Court Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No\nDefendant to attend the next hearing true\nTo consider if there are special reasons for not ordering an endorsement or disqualification \nAdjournment reasons ",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "7dddd0be-4236-48bf-9052-e247fc55a30a",
+              "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gohiriad"
+            }
+          ],
+          "lastAdjournDate": "2022-02-01",
+          "lastAdjournedHearingType": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+          "listingNumber": 2,
+          "modeOfTrial": "Summary",
+          "offenceCode": "TW01040",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+          "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+          "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro",
+          "orderIndex": 551,
+          "plea": {
+            "offenceId": "476f912c-f18a-497f-adc7-1ceddf925a7b",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "pleaDate": "2022-02-01",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "proceedingsConcluded": false,
+          "startDate": "2004-12-09",
+          "verdict": {
+            "jurors": {
+              "numberOfJurors": 12,
+              "numberOfSplitJurors": 0,
+              "unanimous": true
+            },
+            "lesserOrAlternativeOffence": {
+              "offenceCode": "TW01040",
+              "offenceDefinitionId": "14f241f3-5888-43e0-8f7e-535a84da164b",
+              "offenceLegislation": "Contrary to byelaw 16(6) and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+              "offenceTitle": "Fail to carry an animal on a moving escalator on the Tyne and Wear Metro"
+            },
+            "offenceId": "476f912c-f18a-497f-adc7-1ceddf925a7b",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "verdictDate": "2022-02-01",
+            "verdictType": {
+              "category": "Guilty",
+              "categoryType": "GUILTY",
+              "cjsVerdictCode": "G",
+              "description": "Found guilty",
+              "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "sequence": 10,
+              "verdictCode": "G"
+            }
+          },
+          "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+        },
+        {
+          "allocationDecision": {
+            "allocationDecisionDate": "2022-02-01",
+            "motReasonCode": "01",
+            "motReasonDescription": "Summary-only offence",
+            "motReasonId": "b8c37e33-defd-351c-b91e-1e03e51657da",
+            "offenceId": "5121ccad-6206-4e42-9814-32f76360e910",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "sequenceNumber": 90
+          },
+          "arrestDate": "2004-12-09",
+          "chargeDate": "2014-02-09",
+          "convictingCourt": {
+            "code": "B01LY00",
+            "id": "f8254db1-1683-483e-afb3-b87fde5a0a26",
+            "lja": {
+              "ljaCode": "2577",
+              "ljaName": "South West London Magistrates' Court"
+            },
+            "name": "Lavender Hill Magistrates' Court",
+            "roomId": "9e4932f7-97b2-3010-b942-ddd2624e4dd8"
+          },
+          "convictionDate": "2022-02-01",
+          "count": 0,
+          "endorsableFlag": false,
+          "id": "5121ccad-6206-4e42-9814-32f76360e910",
+          "isDisposed": false,
+          "judicialResults": [
+            {
+              "alwaysPublished": false,
+              "category": "INTERMEDIARY",
+              "cjsCode": "4506",
+              "courtClerk": {
+                "firstName": "Erica",
+                "lastName": "Wilson",
+                "userId": "31ec3a16-8721-498c-8da5-f099390ee254"
+              },
+              "d20": false,
+              "excludedFromResults": false,
+              "isAdjournmentResult": false,
+              "isAvailableForCourtExtract": true,
+              "isConvictedResult": false,
+              "isDeleted": false,
+              "isFinancialResult": false,
+              "isNewAmendment": true,
+              "isUnscheduled": false,
+              "judicialResultId": "6ffa2199-fe04-47ba-a40c-dc67d2939324",
+              "judicialResultPrompts": [
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "fbed768b-ee95-4434-87c8-e81cbc8d24c8",
+                  "label": "Next hearing in Crown Court",
+                  "promptReference": "1eb7c269-9eb5-494d-a649-96847752bb69",
+                  "promptSequence": 0,
+                  "usergroups": [],
+                  "value": "Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No",
+                  "welshLabel": "Bydd y gwrandawiad nesaf yn Llys y Goron"
+                },
+                {
+                  "courtExtract": "Y",
+                  "isFinancialImposition": false,
+                  "judicialResultPromptTypeId": "61f951c3-f18d-4a44-ae4a-0cad4efb4133",
+                  "label": "Defendant to attend the next hearing",
+                  "promptReference": "defendantToAttendTheNextHearing",
+                  "promptSequence": 100,
+                  "type": "BOOLEAN",
+                  "usergroups": [],
+                  "value": "true",
+                  "welshLabel": "Diffynnydd i fynychu’r gwrandawiad nesaf",
+                  "welshValue": "true"
+                },
+                {
+                  "courtExtract": "Y",
+                  "judicialResultPromptTypeId": "4feef108-d1f9-4662-a065-39c77d677fff",
+                  "label": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                  "promptReference": "4d07eff8-6c33-4cb5-9830-f16142f35621",
+                  "promptSequence": 200,
+                  "qualifier": "DN",
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Ystyried a oes rhesymau arbennig dros beidio â gorchymyn ardystiad neu waharddiad"
+                },
+                {
+                  "courtExtract": "N",
+                  "judicialResultPromptTypeId": "7fc17a01-2f5a-4433-aae9-28e0c959f73b",
+                  "label": "Adjournment reasons",
+                  "promptReference": "a1073e10-f553-42ae-8db4-1db00ac22fa8",
+                  "promptSequence": 300,
+                  "usergroups": [],
+                  "value": "",
+                  "welshLabel": "Rheswm dros ohirio:"
+                }
+              ],
+              "judicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "label": "Adjournment",
+              "lastSharedDateTime": "2022-02-01",
+              "level": "O",
+              "lifeDuration": false,
+              "nextHearing": {
+                "adjournmentReason": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+                "courtCentre": {
+                  "address": {
+                    "address1": "QEII Law Courts",
+                    "address2": "Derby Square",
+                    "address3": "Liverpool",
+                    "postcode": "L2 1XA"
+                  },
+                  "courtHearingLocation": "C05LV00",
+                  "id": "9b583616-049b-30f9-a14f-028a53b7cfe8",
+                  "name": "Liverpool Crown Court",
+                  "psaCode": 1810,
+                  "roomId": "7cb09222-49e1-3622-a5a6-ad253d2b3c39",
+                  "roomName": "Crown Court 3-1",
+                  "welshName": "Llys Y Goron Lerpwl"
+                },
+                "estimatedMinutes": 120,
+                "jurisdictionType": "CROWN",
+                "listedStartDateTime": "2022-03-01T10:30:00.000Z",
+                "reservedJudiciary": false,
+                "type": {
+                  "description": "Appeal",
+                  "id": "bd30a723-a375-3ae9-9332-871724cd8edd"
+                }
+              },
+              "orderedDate": "2022-02-01",
+              "orderedHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+              "postHearingCustodyStatus": "A",
+              "publishedAsAPrompt": false,
+              "publishedForNows": false,
+              "qualifier": "DN",
+              "rank": 76400,
+              "resultText": "Adjournment\nNext hearing in Crown Court Fixed Date:01/03/2022\nTime of hearing:10:30\nCourthouse organisation name:Liverpool Crown Court\nCourthouse address line 1:QEII Law Courts\nCourthouse address line 2:Derby Square\nCourthouse address line 3:Liverpool\nCourthouse post code:L2 1XA\nCourthouse email address 1:LiverpoolCrownCourt@cps.gov.uk\nCourthouse email address 2:liverpoolsjc@geoamey.co.uk\nCourtroom:Crown Court 3-1\nHearing type:Appeal\nEstimated duration:2 Hours\nRemand Status:Conditional Bail\nReserved Judiciary:No\nDefendant to attend the next hearing true\nTo consider if there are special reasons for not ordering an endorsement or disqualification \nAdjournment reasons ",
+              "rollUpPrompts": true,
+              "rootJudicialResultId": "6ffa2199-fe04-47ba-a40c-dc67d2939324",
+              "rootJudicialResultTypeId": "d278650c-e429-11e8-9f32-f2801f1b9fd1",
+              "terminatesOffenceProceedings": false,
+              "urgent": false,
+              "usergroups": [],
+              "welshLabel": "Gohiriad"
+            }
+          ],
+          "lastAdjournDate": "2022-02-01",
+          "lastAdjournedHearingType": "To consider if there are special reasons for not ordering an endorsement or disqualification",
+          "listingNumber": 2,
+          "modeOfTrial": "Summary",
+          "offenceCode": "TW01046",
+          "offenceDateCode": 1,
+          "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+          "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+          "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro",
+          "orderIndex": 502,
+          "plea": {
+            "offenceId": "5121ccad-6206-4e42-9814-32f76360e910",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "pleaDate": "2022-02-01",
+            "pleaValue": "NOT_GUILTY"
+          },
+          "proceedingsConcluded": false,
+          "startDate": "2014-02-10",
+          "verdict": {
+            "jurors": {
+              "numberOfJurors": 12,
+              "numberOfSplitJurors": 0,
+              "unanimous": true
+            },
+            "lesserOrAlternativeOffence": {
+              "offenceCode": "TW01046",
+              "offenceDefinitionId": "62fa56a4-3cea-41b7-a062-4d71e8ca74bc",
+              "offenceLegislation": "Contrary to byelaw 19 and 31(1) of the Tyne and Wear Metro Byelaws made under sections 58 and 62 of the Tyneside Metropolitan Railway Act 1973.",
+              "offenceTitle": "Occupy reserved seat / berth without a valid ticket on the Tyne and Wear Metro"
+            },
+            "offenceId": "5121ccad-6206-4e42-9814-32f76360e910",
+            "originatingHearingId": "ef8ddc05-1bf1-442d-b7b4-c0d2c7936297",
+            "verdictDate": "2022-02-01",
+            "verdictType": {
+              "category": "Guilty",
+              "categoryType": "GUILTY",
+              "cjsVerdictCode": "G",
+              "description": "Found guilty",
+              "id": "c4ca4238-a0b9-3382-8dcc-509a6f75849b",
+              "sequence": 10,
+              "verdictCode": "G"
+            }
+          },
+          "wording": "Has a violent past and fear that he will commit further offences and\n                interfere with witnesse"
+        }
+      ],
+      "pncId": "9219.2730418",
+      "proceedingsConcluded": false,
+      "prosecutionAuthorityReference": "CORPTFL",
+      "prosecutionCaseId": "93371607-ccef-4f52-9f22-d442c00adefd"
+    }
+  ],
+  "id": "%CASE_ID%",
+  "initiationCode": "O",
+  "isCivil": true,
+  "isCpsOrgVerifyError": false,
+  "originatingOrganisation": "0300000",
+  "prosecutionCaseIdentifier": {
+    "address": {
+      "address1": "Criminal Justice Department",
+      "address2": "Derbyshire Constabulary",
+      "address3": "Butterley Hall",
+      "address4": "Ripley",
+      "address5": "Derby",
+      "postcode": "DE5 3RS"
+    },
+    "contact": {
+      "primaryEmail": "CCSU@derbyshire.pnn.police.uk"
+    },
+    "majorCreditorCode": "PO30",
+    "prosecutionAuthorityCode": "DERPF",
+    "prosecutionAuthorityId": "bdc190e7-c939-37ca-be4b-9f615d6ef40e",
+    "prosecutionAuthorityName": "Derbyshire Police",
+    "prosecutionAuthorityOUCode": "0300000",
+    "caseURN": "53NP1722422"
+  },
+  "prosecutor": {
+    "address": {
+      "address1": "King Edward Court",
+      "address2": "Nottingham",
+      "postcode": "NG1 1ET"
+    },
+    "prosecutorCode": "CPS-EM",
+    "prosecutorId": "42880989-5d09-332e-a711-8797af06ecea",
+    "prosecutorName": "CPS East Midlands"
+  }
+}
