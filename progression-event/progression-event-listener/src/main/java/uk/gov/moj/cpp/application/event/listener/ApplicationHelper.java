@@ -33,7 +33,7 @@ public class ApplicationHelper {
         return jsonObjectToObjectConverter.convert(applicationJson, CourtApplication.class);
     }
 
-    public static List<UUID> getRelatedCaseIds(final UUID offenceId, final CourtApplication courtApplication) {
+    public static  List<UUID> getRelatedCaseIds(final UUID offenceId, final CourtApplication courtApplication) {
 
         if (isNull(courtApplication.getCourtApplicationCases())) {
             return emptyList();
@@ -95,37 +95,10 @@ public class ApplicationHelper {
                 });
     }
 
-    public static void updateCase(final List<UUID> caseIds,
-                                  final CourtApplication courtApplication,
-                                  final LaaReference laaReference,
-                                  final ProsecutionCaseRepository prosecutionCaseRepository,
-                                  final JsonObjectToObjectConverter jsonObjectToObjectConverter,
-                                  final StringToJsonObjectConverter stringToJsonObjectConverter,
-                                  final ObjectToJsonObjectConverter objectToJsonObjectConverter) {
-        caseIds
-                .forEach(caseId -> {
-                    var prosecutionCaseEntity = prosecutionCaseRepository.findByCaseId(caseId);
-                    final JsonObject prosecutionCaseJson = stringToJsonObjectConverter.convert(prosecutionCaseEntity.getPayload());
-                    final ProsecutionCase persistentProsecutionCase = jsonObjectToObjectConverter.convert(prosecutionCaseJson, ProsecutionCase.class);
-                    final ProsecutionCase updateProsecutionCase = updateProsecutionCase(persistentProsecutionCase, courtApplication.getSubject().getMasterDefendant().getMasterDefendantId(), laaReference);
-                    if (nonNull(updateProsecutionCase)) {
-                        prosecutionCaseRepository.save(getProsecutionCaseEntity(updateProsecutionCase, objectToJsonObjectConverter));
-                    }
-                });
-    }
 
 
     private static ProsecutionCase updateProsecutionCase(final ProsecutionCase persistentProsecutionCase, final UUID masterDefendantId, final UUID offenceId, final LaaReference laaReference) {
         final List<Defendant> defendants = updateDefendants(persistentProsecutionCase, masterDefendantId, offenceId, laaReference);
-
-        return ProsecutionCase.prosecutionCase()
-                .withValuesFrom(persistentProsecutionCase)
-                .withDefendants(defendants)
-                .build();
-    }
-
-    private static ProsecutionCase updateProsecutionCase(final ProsecutionCase persistentProsecutionCase, final UUID masterDefendantId, final LaaReference laaReference) {
-        final List<Defendant> defendants = updateDefendants(persistentProsecutionCase, masterDefendantId, laaReference);
 
         return ProsecutionCase.prosecutionCase()
                 .withValuesFrom(persistentProsecutionCase)
@@ -147,34 +120,9 @@ public class ApplicationHelper {
                 .collect(Collectors.toList());
     }
 
-    private static List<Defendant> updateDefendants(final ProsecutionCase persistentProsecutionCase, final UUID masterDefendantId, final LaaReference laaReference) {
-        return persistentProsecutionCase
-                .getDefendants()
-                .stream()
-                .map(defendant -> {
-                    if (masterDefendantId.equals(defendant.getMasterDefendantId())) {
-                        return updateDefendant(defendant, laaReference);
-                    } else {
-                        return defendant;
-                    }
-                }).toList();
-    }
-
     private static Defendant updateDefendant(final Defendant defendant, final UUID offenceId, final LaaReference laaReference) {
 
         final List<Offence> offences = updateOffences(defendant, offenceId, laaReference);
-
-        return Defendant.defendant()
-                .withValuesFrom(defendant)
-                .withLegalAidStatus(laaReference.getOffenceLevelStatus())
-                .withOffences(offences)
-                .build();
-
-    }
-
-    private static Defendant updateDefendant(final Defendant defendant, final LaaReference laaReference) {
-
-        final List<Offence> offences = updateOffences(defendant, laaReference);
 
         return Defendant.defendant()
                 .withValuesFrom(defendant)
@@ -198,16 +146,6 @@ public class ApplicationHelper {
                     }
                 })
                 .collect(Collectors.toList());
-    }
-
-    private static List<Offence> updateOffences(final Defendant defendant, final LaaReference laaReference) {
-        return defendant.getOffences()
-                .stream()
-                .map(offence -> offence()
-                        .withValuesFrom(offence)
-                        .withLaaApplnReference(laaReference)
-                        .build()
-                ).toList();
     }
 
 

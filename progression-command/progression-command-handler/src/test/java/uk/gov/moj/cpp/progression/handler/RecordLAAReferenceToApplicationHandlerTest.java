@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.json.JsonObject;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -50,23 +49,32 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.service.LegalStatusReferenceDataService;
 
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createArrayBuilder;
 import static javax.json.Json.createObjectBuilder;
 import static org.codehaus.groovy.runtime.InvokerHelper.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.BoxHearingRequest.boxHearingRequest;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
 import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationType;
+import static uk.gov.justice.core.courts.HearingListingStatus.SENT_FOR_LISTING;
 import static uk.gov.justice.core.courts.InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.test.utils.core.helper.EventStreamMockHelper.verifyAppendAndGetArgumentFrom;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMatcher.isHandler;
 import static uk.gov.justice.services.test.utils.core.matchers.HandlerMethodMatcher.method;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopePayloadMatcher.payload;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeStreamMatcher.streamContaining;
 import static uk.gov.justice.services.test.utils.core.random.RandomGenerator.STRING;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,6 +91,7 @@ public class RecordLAAReferenceToApplicationHandlerTest {
 
     @Mock
     private LegalStatusReferenceDataService legalStatusReferenceDataService;
+
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
@@ -105,14 +114,6 @@ public class RecordLAAReferenceToApplicationHandlerTest {
         assertThat(new RecordLAAReferenceToApplicationHandler(), isHandler(COMMAND_HANDLER)
                 .with(method("handle")
                         .thatHandles("progression.command.handler.record-laareference-for-application")
-                ));
-    }
-
-    @Test
-    public void shouldHandleOnApplication() {
-        assertThat(new RecordLAAReferenceToApplicationHandler(), isHandler(COMMAND_HANDLER)
-                .with(method("handleOnApplication")
-                        .thatHandles("progression.command.handler.record-laareference-for-application-on-application")
                 ));
     }
 
@@ -191,15 +192,6 @@ public class RecordLAAReferenceToApplicationHandlerTest {
                 .add("applicationReference", "AB746921")
                 .add("statusDate", "2019-07-01")
                 .add("defendantLevelStatus","Granted")
-                .build();
-    }
-
-    private static JsonObject generateRecordLAAReferenceForApplicationOnApplication() {
-        return createObjectBuilder()
-                .add("applicationId", APPLICATION_ID.toString())
-                .add("statusCode", "statusCode")
-                .add("applicationReference", "AB746921")
-                .add("statusDate", "2019-07-01")
                 .build();
     }
 

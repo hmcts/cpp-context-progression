@@ -77,34 +77,6 @@ public class RecordLAAReferenceToApplicationHandler {
         }
     }
 
-    @Handles("progression.command.handler.record-laareference-for-application-on-application")
-    public void handleOnApplication(final JsonEnvelope envelope) throws EventStreamException {
-        LOGGER.debug("progression.command.record-laareference-for-application-on-application {}", envelope.payload());
-        final JsonObject payload = envelope.payloadAsJsonObject();
-        final UUID applicationId = fromString(payload.getString(APPLICATION_ID));
-        final String statusCode = payload.getString("statusCode");
-        final Optional<JsonObject> optionalLegalStatus = legalStatusReferenceDataService.getLegalStatusByStatusIdAndStatusCode
-                (envelope,  statusCode);
-        if(optionalLegalStatus.isPresent()) {
-            final JsonObject legalStatus = optionalLegalStatus.get();
-            final LaaReference laaReference =  LaaReference.laaReference()
-                    .withStatusCode(statusCode)
-                    .withStatusId(fromString(legalStatus.getString("id")))
-                    .withStatusDescription(legalStatus.getString("statusDescription"))
-                    .withStatusDate(LocalDate.parse(payload.getString("statusDate")))
-                    .withApplicationReference(payload.getString("applicationReference"))
-                    .withOffenceLevelStatus(legalStatus.getString("defendantLevelStatus", null))
-                    .build();
-            final EventStream eventStream = eventSource.getStreamById(applicationId);
-            final ApplicationAggregate applicationAggregate = aggregateService.get(eventStream, ApplicationAggregate.class);
-            final Stream<Object> events = applicationAggregate.updateApplicationLaaReference(laaReference);
-            appendEventsToStream(envelope, eventStream, events);
-
-        } else {
-            LOGGER.error("Unable to get Ref Data for Legal Status by Status Code {}", statusCode);
-        }
-    }
-
     private void appendEventsToStream(final Envelope<?> envelope, final EventStream eventStream, final Stream<Object> events) throws EventStreamException {
         final JsonEnvelope jsonEnvelope = JsonEnvelope.envelopeFrom(envelope.metadata(), JsonValue.NULL);
         eventStream.append(events.map(enveloper.withMetadataFrom(jsonEnvelope)));

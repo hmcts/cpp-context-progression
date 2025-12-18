@@ -6,23 +6,6 @@
     "applicationId": {
       "$ref": "http://justice.gov.uk/core/courts/external/apiCourtsDefinitions.json#/definitions/uuid"
     },
-    "applicationTypeId": {
-      "$ref": "http://justice.gov.uk/core/courts/external/apiCourtsDefinitions.json#/definitions/uuid"
-    },
-    "allegationOrComplaintStartDate": {
-      "type": "string",
-      "format": "date"
-    },
-    "linkedApplications": {
-      "type": "array",
-      "minItems": 0,
-      "items": {
-        "$ref": "#/definitions/applicationSummary"
-      }
-    },
-    "laaApplnReference": {
-      "$ref": "http://justice.gov.uk/progression/query/laa/laa-appln-reference.json"
-    },
     "laaApplicationShortId": {
       "type": "string"
     },
@@ -367,7 +350,29 @@
                   "type": "string"
                 },
                 "laaApplnReference": {
-                  "$ref": "http://justice.gov.uk/progression/query/laa/laa-appln-reference.json"
+                  "id": "http://justice.gov.uk/progression/query/laa/laa-appln-reference.json",
+                  "type": "object",
+                  "properties": {
+                    "applicationReference": {
+                      "type": "string"
+                    },
+                    "statusId": {
+                      "$ref": "http://justice.gov.uk/core/courts/external/apiCourtsDefinitions.json#/definitions/uuid"
+                    },
+                    "statusCode": {
+                      "type": "string"
+                    },
+                    "statusDescription": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "applicationReference",
+                    "statusId",
+                    "statusCode",
+                    "statusDescription"
+                  ],
+                  "additionalProperties": true
                 }
               },
               "required": [
@@ -392,44 +397,5 @@
     "applicationReference",
     "applicationStatus"
   ],
-  "additionalProperties": true,
-  "definitions": {
-    "applicationSummary": {
-      "type": "object",
-      "properties": {
-        "applicationId": {
-          "$ref": "http://justice.gov.uk/domain/core/common/definitions.json#/definitions/uuid"
-        },
-        "applicationTitle": {
-          "type": "string"
-        },
-        "applicationReference": {
-          "description": "The human readable reference for the application.  For linked applications this will be the case urn or the prosecution authority reference suffixed with a numerical sequence",
-          "type": "string"
-        },
-        "applicationStatus": {
-          "description": "Indicates if the application is draft, listed or resulted",
-          "type": "string"
-        },
-        "removalReason": {
-          "description": "Removal reason if application is ejected",
-          "type": "string"
-        },
-        "applicantDisplayName": {
-          "type": "string"
-        },
-        "respondentDisplayNames": {
-          "type": "array",
-          "minItems": 0,
-          "items": {
-            "type": "string"
-          }
-        },
-        "isAppeal": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": true
 }

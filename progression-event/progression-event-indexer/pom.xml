@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-event</artifactId>
-        <version>17.0.224-SNAPSHOT</version>
+        <version>17.0.209-DLRM7-SNAPSHOT</version>
     </parent>
     <artifactId>progression-event-indexer</artifactId>
     <packaging>war</packaging>
@@ -107,6 +107,11 @@
             <groupId>uk.gov.justice.utils</groupId>
             <artifactId>test-utils-logging-simple</artifactId>
             <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

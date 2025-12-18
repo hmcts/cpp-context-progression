@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.BoxHearingRequest.boxHearingRequest;
 import static uk.gov.justice.core.courts.CourtApplication.courtApplication;
@@ -114,11 +113,9 @@ import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.justice.services.test.utils.framework.api.JsonObjectConvertersFactory;
 import uk.gov.moj.cpp.progression.aggregate.ApplicationAggregate;
 import uk.gov.moj.cpp.progression.aggregate.HearingAggregate;
-import uk.gov.moj.cpp.progression.command.helper.FileResourceObjectMapper;
 import uk.gov.moj.cpp.progression.service.ApplicationDetailsEnrichmentService;
 import uk.gov.moj.cpp.progression.service.ProsecutionCaseQueryService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
-import uk.gov.moj.cpp.progression.service.service.ProgressionService;
 import uk.gov.moj.cpp.progression.test.FileUtil;
 
 import java.time.LocalDate;
@@ -153,7 +150,6 @@ public class CourtApplicationHandlerTest {
     private static final String ACTIVATION_WORDING_CLONED_COURT_ORDER_OFFENCE = "Activation of a suspended sentence order. Original CaseURN: null, Original code : OFC0001, Original details: On 12/10/2020 at 10:100am on the corner of the hugh street outside the dog and duck in Croydon you did something wrong";
     private static final String WORDING_CLONED_COURT_ORDER_OFFENCE = "Original CaseURN: null, Re-sentenced Original code : OFC0001, Original details: On 12/10/2020 at 10:100am on the corner of the hugh street outside the dog and duck in Croydon you did something wrong";
 
-    private final FileResourceObjectMapper handlerTestHelper = new FileResourceObjectMapper();
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(CourtApplicationCreated.class,
             CourtApplicationAddedToCase.class,
@@ -195,8 +191,6 @@ public class CourtApplicationHandlerTest {
 
     @Mock
     private RefDataService referenceDataService;
-    @Mock
-    private ProgressionService progressionService;
     @Mock
     private ProsecutionCaseQueryService prosecutionCaseQueryService;
     @Mock
@@ -639,200 +633,6 @@ public class CourtApplicationHandlerTest {
                                 withJsonPath("$.courtApplication.courtApplicationCases", nullValue()))
                         )
                 )));
-    }
-
-    @Test
-    public void shouldProcessInitiateCourtProceedingsForApplicationCommandForChildApplicationWhereParentHasApplicationLevelLAAReference() throws Exception {
-        final UUID parentApplicationId = fromString("6fd2c3d9-3c5f-4404-88e0-c3f12e393753");
-        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
-                initiateCourtApplicationProceedings()
-                        .withCourtApplication(courtApplication()
-                                .withId(randomUUID())
-                                .withParentApplicationId(parentApplicationId)
-                                .withType(courtApplicationType()
-                                        .withProsecutorThirdPartyFlag(false)
-                                        .withSummonsTemplateType(NOT_APPLICABLE)
-                                        .build())
-                                .withApplicant(buildCourtApplicationParty(randomUUID()))
-                                .withSubject(buildCourtApplicationParty(randomUUID()))
-                                .withCourtApplicationCases(singletonList(courtApplicationCase()
-                                        .withIsSJP(false)
-                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
-                                        .withCaseStatus("ACTIVE")
-                                        .build()))
-                                .build())
-                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
-                        .build();
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.initiate-court-proceedings-for-application")
-                .withId(randomUUID())
-                .build();
-
-        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-
-        final EventStream eventStreamForChildApplication = mock(EventStream.class);
-        final EventStream eventStreamForParentApplication = mock(EventStream.class);
-
-        final ApplicationAggregate applicationAggregateChild = new ApplicationAggregate();
-        final ApplicationAggregate applicationAggregateParent = new ApplicationAggregate();
-
-        applicationAggregateChild.apply(new CourtApplicationProceedingsInitiated.Builder()
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
-
-        final JsonObject parentApplicationPayload = handlerTestHelper.convertFromFile("json/parent-application-payload-with-application-level-laa-reference.json", JsonObject.class);
-
-        final CourtApplication parentApplication = jsonObjectToObjectConverter.convert(parentApplicationPayload.getJsonObject("courtApplication"), CourtApplication.class);
-        applicationAggregateParent.apply(new CourtApplicationProceedingsInitiated.Builder()
-                .withCourtApplication(parentApplication)
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
-
-
-        when(eventSource.getStreamById(initiateCourtApplicationProceedings.getCourtApplication().getId())).thenReturn(eventStreamForChildApplication);
-        when(eventSource.getStreamById(initiateCourtApplicationProceedings.getCourtApplication().getParentApplicationId())).thenReturn(eventStreamForParentApplication);
-        when(aggregateService.get(eventStreamForChildApplication, ApplicationAggregate.class)).thenReturn(applicationAggregateChild);
-        when(aggregateService.get(eventStreamForParentApplication, ApplicationAggregate.class)).thenReturn(applicationAggregateParent);
-        when(progressionService.getApplication(any(), any())).thenReturn(of(parentApplicationPayload));
-
-        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
-
-
-        final List<JsonEnvelope> eventEnvelopes = verifyAppendAndGetArgumentFrom(eventStreamForChildApplication).toList();
-
-        assertThat(eventEnvelopes.size(), is(1));
-        assertThat(eventEnvelopes.get(0).metadata().name(), is("progression.event.court-application-proceedings-initiated"));
-        assertThat(eventEnvelopes.get(0).payload().asJsonObject().getJsonObject("courtApplication").getJsonObject("laaApplnReference"), is(objectToJsonObjectConverter.convert(parentApplication.getLaaApplnReference())));
-        assertThat(eventEnvelopes.get(0).payload().asJsonObject().getJsonObject("courtApplication").getJsonObject("subject").getJsonObject("associatedDefenceOrganisation"), is(objectToJsonObjectConverter.convert(parentApplication.getSubject().getAssociatedDefenceOrganisation())));
-
-    }
-
-    @Test
-    public void shouldProcessInitiateCourtProceedingsForApplicationCommandForChildApplicationWhereParentOffenceLevelLAAReference() throws Exception {
-        final UUID parentApplicationId = fromString("6fd2c3d9-3c5f-4404-88e0-c3f12e393753");
-        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
-                initiateCourtApplicationProceedings()
-                        .withCourtApplication(courtApplication()
-                                .withId(randomUUID())
-                                .withParentApplicationId(parentApplicationId)
-                                .withType(courtApplicationType()
-                                        .withProsecutorThirdPartyFlag(false)
-                                        .withSummonsTemplateType(NOT_APPLICABLE)
-                                        .build())
-                                .withApplicant(buildCourtApplicationParty(randomUUID()))
-                                .withSubject(buildCourtApplicationParty(randomUUID()))
-                                .withCourtApplicationCases(singletonList(courtApplicationCase()
-                                        .withIsSJP(false)
-                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
-                                        .withCaseStatus("ACTIVE")
-                                        .build()))
-                                .build())
-                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
-                        .build();
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.initiate-court-proceedings-for-application")
-                .withId(randomUUID())
-                .build();
-
-        final EventStream eventStreamForChildApplication = mock(EventStream.class);
-        final EventStream eventStreamForParentApplication = mock(EventStream.class);
-
-        final ApplicationAggregate applicationAggregateChild = new ApplicationAggregate();
-        final ApplicationAggregate applicationAggregateParent = new ApplicationAggregate();
-
-        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-
-
-
-        applicationAggregateChild.apply(new CourtApplicationProceedingsInitiated.Builder()
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
-
-        final JsonObject parentApplicationPayload = handlerTestHelper.convertFromFile("json/parent-application-payload-with-offence-level-laa-reference.json", JsonObject.class);
-
-        final CourtApplication parentApplication = jsonObjectToObjectConverter.convert(parentApplicationPayload.getJsonObject("courtApplication"), CourtApplication.class);
-        applicationAggregateParent.apply(new CourtApplicationProceedingsInitiated.Builder()
-                .withCourtApplication(parentApplication)
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
-
-
-
-        when(eventSource.getStreamById(initiateCourtApplicationProceedings.getCourtApplication().getId())).thenReturn(eventStreamForChildApplication);
-        when(eventSource.getStreamById(initiateCourtApplicationProceedings.getCourtApplication().getParentApplicationId())).thenReturn(eventStreamForParentApplication);
-        when(aggregateService.get(eventStreamForChildApplication, ApplicationAggregate.class)).thenReturn(applicationAggregateChild);
-        when(aggregateService.get(eventStreamForParentApplication, ApplicationAggregate.class)).thenReturn(applicationAggregateParent);
-        when(progressionService.getApplication(any(), any())).thenReturn(of(parentApplicationPayload));
-
-        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
-
-        final List<JsonEnvelope> eventEnvelopes = verifyAppendAndGetArgumentFrom(eventStreamForChildApplication).toList();
-
-        assertThat(eventEnvelopes.size(), is(1));
-        assertThat(eventEnvelopes.get(0).metadata().name(), is("progression.event.court-application-proceedings-initiated"));
-        assertThat(eventEnvelopes.get(0).payload().asJsonObject().getJsonObject("courtApplication").getJsonObject("laaApplnReference"), is(parentApplicationPayload.getJsonObject("courtApplication").getJsonArray("courtApplicationCases").getJsonObject(0).getJsonArray("offences").getJsonObject(1).getJsonObject("laaApplnReference")));
-        assertThat(eventEnvelopes.get(0).payload().asJsonObject().getJsonObject("courtApplication").getJsonObject("subject").getJsonObject("associatedDefenceOrganisation"), is(parentApplicationPayload.getJsonObject("courtApplication").getJsonObject("subject").getJsonObject("associatedDefenceOrganisation")));
-
-    }
-
-    @Test
-    public void shouldProcessInitiateCourtProceedingsForApplicationCommandForChildApplicationWhereParentHasNoLAAReference() throws Exception {
-        final UUID parentApplicationId = randomUUID();
-        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings =
-                initiateCourtApplicationProceedings()
-                        .withCourtApplication(courtApplication()
-                                .withId(randomUUID())
-                                .withParentApplicationId(parentApplicationId)
-                                .withType(courtApplicationType()
-                                        .withProsecutorThirdPartyFlag(false)
-                                        .withSummonsTemplateType(NOT_APPLICABLE)
-                                        .build())
-                                .withApplicant(buildCourtApplicationParty(randomUUID()))
-                                .withSubject(buildCourtApplicationParty(randomUUID()))
-                                .withCourtApplicationCases(singletonList(courtApplicationCase()
-                                        .withIsSJP(false)
-                                        .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
-                                        .withCaseStatus("ACTIVE")
-                                        .build()))
-                                .build())
-                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
-                        .build();
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.initiate-court-proceedings-for-application")
-                .withId(randomUUID())
-                .build();
-
-        final Envelope<InitiateCourtApplicationProceedings> envelope = envelopeFrom(metadata, initiateCourtApplicationProceedings);
-
-        final ApplicationAggregate applicationAggregate = new ApplicationAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, ApplicationAggregate.class)).thenReturn(applicationAggregate);
-        applicationAggregate.apply(new CourtApplicationProceedingsInitiated.Builder()
-                .withCourtHearing(new CourtHearingRequest.Builder().build())
-                .withBoxHearing(new BoxHearingRequest.Builder().build())
-                .build());
-        final JsonObject parentApplicationPayload = handlerTestHelper.convertFromFile("json/parent-application-payload-with-no-laa-reference.json", JsonObject.class);
-        when(progressionService.getApplication(any(), any())).thenReturn(of(parentApplicationPayload));
-
-        courtApplicationHandler.initiateCourtApplicationProceedings(envelope);
-
-        final List<JsonEnvelope> eventEnvelopes = verifyAppendAndGetArgumentFrom(eventStream).toList();
-
-        assertThat(eventEnvelopes.size(), is(1));
-        assertThat(eventEnvelopes.get(0).metadata().name(), is("progression.event.court-application-proceedings-initiated"));
-        assertThat(eventEnvelopes.get(0).payload().asJsonObject().getJsonObject("courtApplication").getJsonObject("laaApplnReference"), nullValue());
-        assertThat(eventEnvelopes.get(0).payload().asJsonObject().getJsonObject("courtApplication").getJsonObject("subject").getJsonObject("associatedDefenceOrganisation"), nullValue());
-
     }
 
     @Test
