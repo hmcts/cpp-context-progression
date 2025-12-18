@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
@@ -203,13 +204,11 @@ public class HearingNotificationHelperTest {
 
     }
 
-
     @Test
     public void sendHearingNotifications_EmailToAllRelevantParties() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
@@ -245,6 +244,89 @@ public class HearingNotificationHelperTest {
         verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
 
     }
+
+    @Test
+    public void sendHearingNotifications_EmailToAllRelevantParties_WhenCivilCaseExparteFalse() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase-civil-exparte-false.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
+                .withOrganisationId(randomUUID())
+                .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder()
+                        .withAddress1("addressLine1")
+                        .withAddress2("addressLine2")
+                        .withAddress3("addressLine3")
+                        .withAddress4("addressLine4")
+                        .withAddressPostcode("CR01JS")
+                        .build())
+                .withEmail("organisation@org.com")
+                .withOrganisationName("defence Organisation")
+                .build();
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verify(notificationService, times(2)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
+
+    }
+
+    @Test
+    public void shouldNotSendHearingNotifications_NoNotificationSentToAllRelevantParties_WhenCivilCaseExparteTrue() {
+
+        final UUID caseId = randomUUID();
+        final UUID defendantId = randomUUID();
+        final UUID hearingId = randomUUID();
+        final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
+        HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
+
+        final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase-civil-exparte-true.json")
+                .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
+
+        when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
+                add("prosecutionCase", prosecutionCase)
+                .build()
+        ));
+
+        when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
+        AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder()
+                .withOrganisationId(randomUUID())
+                .withAddress(DefenceOrganisationAddress.defenceOrganisationAddressBuilder()
+                        .withAddress1("addressLine1")
+                        .withAddress2("addressLine2")
+                        .withAddress3("addressLine3")
+                        .withAddress4("addressLine4")
+                        .withAddressPostcode("CR01JS")
+                        .build())
+                .withEmail("organisation@org.com")
+                .withOrganisationName("defence Organisation")
+                .build();
+        when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
+        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
+        hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
+
+        verifyNoInteractions(notificationService);
+        verify(documentGeneratorService, times(2)).generateNonNowDocument(any(), any(), any(), any(), any());
+
+    }
+
 
     @Test
     public void sendHearingNotifications_LetterToAllRelevantParties() {
