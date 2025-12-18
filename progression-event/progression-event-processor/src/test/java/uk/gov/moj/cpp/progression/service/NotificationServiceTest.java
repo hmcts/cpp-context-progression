@@ -79,6 +79,8 @@ import uk.gov.justice.services.messaging.Envelope;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.test.utils.core.enveloper.EnveloperFactory;
 import uk.gov.moj.cpp.material.url.MaterialUrlGenerator;
+import uk.gov.moj.cpp.progression.common.CourtApplicationPartyType;
+import uk.gov.moj.cpp.progression.domain.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.PostalNotification;
 import uk.gov.moj.cpp.progression.service.payloads.AssociatedDefenceOrganisation;
 import uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAddress;
@@ -194,7 +196,10 @@ public class NotificationServiceTest {
             .withAddress2("Test Address 2")
             .withAddress3("Test Address 3")
             .withPostcode("AS1 1DF").build()).build();
-    private final PostalNotification postalNotification = PostalNotification.builder().withApplicantName("test").build();
+    private final UUID courtApplicationPartyId = randomUUID();
+    private final PostalNotification postalNotification = PostalNotification.builder()
+            .withApplicantName("test")
+            .withAddressee(PostalAddressee.builder().withCourtApplicationPartyId(courtApplicationPartyId).withCourtApplicationPartyType(CourtApplicationPartyType.PERSON).build()).build();
 
     final ProsecutingAuthority prosecutingAuthority = createProsecutorAuthority(UUID.randomUUID(), "informant@test.com");
 
@@ -612,7 +617,7 @@ public class NotificationServiceTest {
                 eq(courtApplication.getApplicationReference()), eq(courtApplication.getType().getType()), eq(courtApplication.getType().getTypeWelsh()),
                 eq(courtApplication.getType().getLegislation()), eq(courtApplication.getType().getLegislationWelsh()), eq(courtCentre), eq(courtApplication.getApplicant()),
                 eq(JurisdictionType.CROWN), eq(courtApplication.getApplicationParticulars()), eq(courtApplication), anyString(), anyBoolean(), anyBoolean(), any(LocalDate.class));
-        verify(postalService).sendPostalNotification(eq(envelope), eq(courtApplication.getId()), any(PostalNotification.class), any());
+        verify(postalService).sendPostalNotification(eq(envelope), eq(courtApplication.getId()), any(PostalNotification.class), any(), any());
     }
 
     @Test
@@ -888,7 +893,7 @@ public class NotificationServiceTest {
                 eq(courtApplication.getApplicationReference()), eq(courtApplication.getType().getType()), eq(courtApplication.getType().getTypeWelsh()),
                 eq(courtApplication.getType().getLegislation()), eq(courtApplication.getType().getLegislationWelsh()), eq(courtCentre), eq(courtApplication.getRespondents().get(0)),
                 eq(JurisdictionType.CROWN), eq(courtApplication.getApplicationParticulars()), eq(courtApplication), anyString(), anyBoolean(), anyBoolean(), any(LocalDate.class));
-        verify(postalService).sendPostalNotification(eq(envelope), eq(courtApplication.getId()), any(PostalNotification.class), any());
+        verify(postalService).sendPostalNotification(eq(envelope), eq(courtApplication.getId()), any(PostalNotification.class), any(), any());
     }
 
     @Test
@@ -1539,6 +1544,12 @@ public class NotificationServiceTest {
                                 withJsonPath("$.applicationId", equalTo(applicationId.toString())),
                                 withJsonPath("$.notifications[0].sendToAddress", equalTo("applicant@test.com")))))));
 
+        verify(sender).send(argThat(jsonEnvelope(
+                withMetadataEnvelopedFrom(envelope).withName(PROGRESSION_COMMAND_COURT_DOCUMENT),
+                payloadIsJson(
+                        allOf(
+                                withJsonPath("$.courtDocumentMetadata.postalAddressee.courtApplicationPartyId", equalTo(courtApplicationPartyId.toString())),
+                                withJsonPath("$.courtDocumentMetadata.postalAddressee.courtApplicationPartyType", equalTo("PERSON")))))));
     }
 
     @Test

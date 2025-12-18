@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.json.JsonObject;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.justice.core.courts.BoxHearingRequest;
@@ -45,7 +43,6 @@ import uk.gov.justice.core.courts.ProsecutionCaseIdentifier;
 import uk.gov.justice.core.courts.ReferralReason;
 import uk.gov.justice.core.courts.ReportingRestriction;
 import uk.gov.justice.progression.courts.OffencesForDefendantChanged;
-import uk.gov.justice.progression.events.ApplicationLaaReferenceUpdatedForHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.core.aggregate.AggregateService;
 import uk.gov.justice.services.core.enveloper.Enveloper;
@@ -69,9 +66,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.core.courts.BoxHearingRequest.boxHearingRequest;
@@ -109,8 +104,7 @@ public class UpdateApplicationLaaReferenceToHearingHandlerTest {
 
     @Spy
     private final Enveloper enveloper = EnveloperFactory.createEnveloperWithEvents(
-            OffencesForDefendantChanged.class,
-            ApplicationLaaReferenceUpdatedForHearing.class);
+            OffencesForDefendantChanged.class);
 
     @InjectMocks
     private UpdateApplicationLaaReferenceToHearingHandler updateApplicationLaaReferenceToHearingHandler;
@@ -184,66 +178,6 @@ public class UpdateApplicationLaaReferenceToHearingHandlerTest {
 
         verifyAppendAndGetArgumentFrom(eventStream);
 
-
-    }
-
-    @Test
-    void shouldProcessCommandWhenOffenceIdIsNull() throws Exception {
-        final HearingAggregate aggregate = new HearingAggregate();
-        when(eventSource.getStreamById(any())).thenReturn(eventStream);
-        when(aggregateService.get(eventStream, HearingAggregate.class)).thenReturn(aggregate);
-        LaaReference laaReference= LaaReference.laaReference().withApplicationReference("AB746921")
-                .withStatusCode("statusCode").withStatusDate(LocalDate.now()).build();
-        JsonObject laaReferenceJson = createObjectBuilder()
-                .add("statusCode", laaReference.getStatusCode())
-                .add("applicationReference", laaReference.getApplicationReference())
-                .add("statusDate", laaReference.getStatusDate().toString())
-                .build();
-        JsonObject message = createObjectBuilder()
-                .add("hearingId", HEARING_ID.toString())
-                .add("applicationId", APPLICATION_ID.toString())
-                .add("subjectId", SUBJECT_ID.toString())
-                .add("laaReference", laaReferenceJson)
-                .build();
-
-        when(jsonObjectToObjectConverter.convert(laaReferenceJson, LaaReference.class)).thenReturn(laaReference);
-
-
-        final Hearing hearing = Hearing.hearing()
-                .withId(HEARING_ID)
-                .withJurisdictionType(JurisdictionType.CROWN)
-                .withCourtApplications(singletonList(courtApplication()
-                        .withId(APPLICATION_ID)
-                        .withSubject(CourtApplicationParty.courtApplicationParty().withId(SUBJECT_ID).build())
-                        .build()))
-                .build();
-
-        aggregate.apply(HearingInitiateEnriched.hearingInitiateEnriched().withHearing(hearing).build());
-
-        final Metadata metadata = Envelope
-                .metadataBuilder()
-                .withName("progression.command.update-application-laa-reference-for-hearing")
-                .withId(randomUUID())
-                .build();
-
-        final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, message);
-
-
-        updateApplicationLaaReferenceToHearingHandler.handleUpdateApplication(envelope);
-
-        final ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
-        (Mockito.verify(eventStream, times(1))).append(argumentCaptor.capture());
-        final List<Stream> streams2 = argumentCaptor.getAllValues();
-        final List<JsonEnvelope> eventsList = (List<JsonEnvelope>) (streams2.get(0).collect(Collectors.toList()));
-        Optional<JsonEnvelope> eventEnvelope = eventsList.stream().filter(x -> x.metadata().name().equalsIgnoreCase("progression.event.application-laa-reference-updated-for-hearing")).findFirst();
-        assertThat(eventEnvelope.isPresent(), is(true));
-        final JsonObject event = eventEnvelope.get().payloadAsJsonObject();
-        assertThat(event, notNullValue());
-        assertThat(event.getString("applicationId"), is(APPLICATION_ID.toString()));
-        assertThat(event.getString("subjectId"), is(SUBJECT_ID.toString()));
-        assertThat(event.getString("hearingId"), is(HEARING_ID.toString()));
-
-        assertThat(aggregate.getHearing().getCourtApplications().get(0).getLaaApplnReference().getStatusCode(), is(laaReference.getStatusCode()));
 
     }
 

@@ -127,12 +127,6 @@ public class PreAndPostConditionHelper {
                 getLAAReferenceForApplicationOffenceJsonBodyWithStatus(statusCode, statusDescription, applicationReference));
     }
 
-    public static Response recordApplicationLAAReferenceOnApplication(final String applicationId, final String statusCode, final String statusDescription, final String applicationReference){
-        return postCommand(getWriteUrl(String.format("/laaReference/applications/%s", applicationId)),
-                "application/vnd.progression.command.record-laareference-for-application-on-application+json",
-                getLAAReferenceForApplicationOffenceJsonBodyWithStatus(statusCode, statusDescription, applicationReference));
-    }
-
 
     public static javax.ws.rs.core.Response recordLAAReferenceWithUserId(final String caseId, final String defendantId, final String offenceId, final String statusCode, final String statusDescription, final String userId) {
         final RestClient restClient = new RestClient();
@@ -1401,7 +1395,7 @@ public class PreAndPostConditionHelper {
                 getShareAllCourtDocumentsJsonBody(caseId, defendantId, userGroup, fileName));
     }
 
-    public static Response addCourtApplicationForApplicationAtAGlance(final String caseId,
+    public static String addCourtApplicationForApplicationAtAGlance(final String caseId,
                                                                       final String applicationId,
                                                                       final String particulars,
                                                                       final String applicantReceivedDate,
@@ -1486,8 +1480,10 @@ public class PreAndPostConditionHelper {
             body = body.replace("RANDOM_PARENT_APPLICATION_ID", parentApplicationId);
         }
 
-        return postCommand(getWriteUrl("/initiate-application"),
+         postCommand(getWriteUrl("/initiate-application"),
                 "application/vnd.progression.initiate-court-proceedings-for-application+json", body);
+
+        return body;
 
     }
 

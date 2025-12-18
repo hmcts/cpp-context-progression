@@ -1,21 +1,32 @@
 package uk.gov.moj.cpp.application.event.listener;
 
+import java.io.StringReader;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.json.JsonObject;
+
+import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static javax.json.Json.createReader;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
-import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.getPersistedCourtApplication;
-import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.getRelatedCaseIds;
-import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.updateCase;
 
+import javax.json.JsonReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.core.courts.ApplicationOffencesUpdated;
+import uk.gov.justice.core.courts.ApplicationReporderOffencesUpdated;
 import uk.gov.justice.core.courts.CourtApplication;
 import uk.gov.justice.core.courts.CourtApplicationCase;
+import uk.gov.justice.core.courts.Defendant;
 import uk.gov.justice.core.courts.Hearing;
 import uk.gov.justice.core.courts.InitiateCourtApplicationProceedings;
 import uk.gov.justice.core.courts.LaaReference;
 import uk.gov.justice.core.courts.Offence;
+import uk.gov.justice.core.courts.ProsecutionCase;
 import uk.gov.justice.progression.events.ApplicationLaaReferenceUpdatedForHearing;
 import uk.gov.justice.services.common.converter.JsonObjectToObjectConverter;
 import uk.gov.justice.services.common.converter.ObjectToJsonObjectConverter;
@@ -26,22 +37,19 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.CourtApplicationEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.HearingEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.entity.InitiateCourtApplicationEntity;
+import uk.gov.moj.cpp.prosecutioncase.persistence.entity.ProsecutionCaseEntity;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CaseDefendantHearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.CourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.HearingRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.InitiateCourtApplicationRepository;
 import uk.gov.moj.cpp.prosecutioncase.persistence.repository.ProsecutionCaseRepository;
 
-import java.io.StringReader;
-import java.util.List;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.nonNull;
+import static uk.gov.justice.core.courts.Offence.offence;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.getPersistedCourtApplication;
+import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.getRelatedCaseIds;
+import static uk.gov.moj.cpp.application.event.listener.ApplicationHelper.updateCase;
 
 @SuppressWarnings("squid:S3655")
 @ServiceComponent(EVENT_LISTENER)
@@ -96,7 +104,7 @@ public class ApplicationOffencesUpdatedEventListener {
     }
 
     @Handles("progression.event.application-laa-reference-updated-for-hearing")
-    public void updateApplicationLaaReferenceForHearing(final JsonEnvelope event) {
+    public  void updateApplicationLaaReferenceForHearing(final JsonEnvelope event){
         final ApplicationLaaReferenceUpdatedForHearing applicationLaaReferenceUpdatedForHearing =
                 jsonObjectToObjectConverter.convert(event.payloadAsJsonObject(), ApplicationLaaReferenceUpdatedForHearing.class);
         HearingEntity hearingEntity = hearingRepository.findBy(applicationLaaReferenceUpdatedForHearing.getHearingId());
@@ -116,19 +124,11 @@ public class ApplicationOffencesUpdatedEventListener {
                     if (courtApplication.getId().equals(applicationLaaReferenceUpdatedForHearing.getApplicationId()) &&
                             !isNull(courtApplication.getSubject()) &&
                             courtApplication.getSubject().getId().equals(applicationLaaReferenceUpdatedForHearing.getSubjectId())) {
-                        if (nonNull(applicationLaaReferenceUpdatedForHearing.getOffenceId())) {
-                            List<CourtApplicationCase> updatedCases = getUpdatedCases(courtApplication, applicationLaaReferenceUpdatedForHearing.getOffenceId(), applicationLaaReferenceUpdatedForHearing.getLaaReference());
-                            return CourtApplication.courtApplication()
-                                    .withValuesFrom(courtApplication)
-                                    .withCourtApplicationCases(updatedCases)
-                                    .build();
-                        } else { //Breach and POCA applications has no offence. Attach the laa reference to the court application level
-                            return CourtApplication.courtApplication()
-                                    .withValuesFrom(courtApplication)
-                                    .withLaaApplnReference(applicationLaaReferenceUpdatedForHearing.getLaaReference())
-                                    .build();
-                        }
-
+                        List<CourtApplicationCase> updatedCases = getUpdatedCases(courtApplication, applicationLaaReferenceUpdatedForHearing.getOffenceId(), applicationLaaReferenceUpdatedForHearing.getLaaReference());
+                        return CourtApplication.courtApplication()
+                                .withValuesFrom(courtApplication)
+                                .withCourtApplicationCases(updatedCases)
+                                .build();
                     }
                     return courtApplication;
                 })
@@ -171,7 +171,7 @@ public class ApplicationOffencesUpdatedEventListener {
     }
 
     private void updateInitiateCourtApplication(InitiateCourtApplicationEntity initiateCourtApplicationEntity, ApplicationOffencesUpdated applicationOffencesUpdated) {
-        if (nonNull(initiateCourtApplicationEntity)) {
+        if(nonNull(initiateCourtApplicationEntity)){
             final JsonObject initiateCourtApplicationJson = stringToJsonObjectConverter.convert(initiateCourtApplicationEntity.getPayload());
             final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = jsonObjectToObjectConverter.convert(initiateCourtApplicationJson, InitiateCourtApplicationProceedings.class);
             final CourtApplication persistedInitiateCourtApplication = initiateCourtApplicationProceedings.getCourtApplication();

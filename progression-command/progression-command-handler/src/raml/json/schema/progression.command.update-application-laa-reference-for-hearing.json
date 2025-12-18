@@ -23,6 +23,7 @@
     "hearingId",
     "applicationId",
     "subjectId",
+    "offenceId",
     "laaReference"
   ],
   "additionalProperties": false

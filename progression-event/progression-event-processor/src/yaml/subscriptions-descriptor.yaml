@@ -235,9 +235,6 @@ subscriptions_descriptor:
         - name: progression.event.application-reporder-offences-updated
           schema_uri: http://justice.gov.uk/core/courts/application-reporder-offences-updated.json
 
-        - name: progression.event.application-rep-order-updated-for-application
-          schema_uri: http://moj.gov.uk/cpp/progression/event/progression.event.application-rep-order-updated-for-application.json
-
         - name: progression.event.defendant-defence-association-locked
           schema_uri: http://moj.gov.uk/cpp/progression/events/progression.event.defendant-defence-association-locked.json
 
@@ -674,9 +671,6 @@ subscriptions_descriptor:
 
         - name: progression.event.hearing-moved-to-unallocated
           schema_uri: http://justice.gov.uk/progression/courts/progression.event.hearing-moved-to-unallocated.json
-
-        - name: progression.event.hearing-application-laa-reference-update-received
-          schema_uri: http://moj.gov.uk/cpp/progression/events/hearing-application-laa-reference-update-received.json
 
 
           # Deprecated API  - End

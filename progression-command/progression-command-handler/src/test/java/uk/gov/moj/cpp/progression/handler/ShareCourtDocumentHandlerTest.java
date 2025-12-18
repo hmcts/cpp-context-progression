@@ -97,7 +97,7 @@ public class ShareCourtDocumentHandlerTest {
                         .withCaseDocument(CaseDocument.caseDocument().withProsecutionCaseId(caseId).build()).build())
                 .withSendToCps(false)
                 .build();
-        courtDocumentAggregate.createCourtDocument(courtDocument, true);
+        courtDocumentAggregate.createCourtDocument(courtDocument, true, null);
         when(eventSource.getStreamById(any())).thenReturn(eventStream);
         when(aggregateService.get(eventStream, CourtDocumentAggregate.class)).thenReturn(courtDocumentAggregate);
 

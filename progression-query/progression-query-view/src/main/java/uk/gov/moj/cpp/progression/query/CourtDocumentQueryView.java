@@ -17,8 +17,10 @@ import static uk.gov.justice.services.messaging.JsonEnvelope.metadataBuilder;
 import static uk.gov.justice.services.messaging.JsonObjects.getLong;
 import static uk.gov.justice.services.messaging.JsonObjects.getString;
 import static uk.gov.justice.services.messaging.JsonObjects.getUUID;
+import static uk.gov.moj.cpp.progression.common.CourtApplicationPartyType.PERSON;
 
 import uk.gov.justice.core.courts.CourtApplication;
+import uk.gov.justice.core.courts.CourtApplicationParty;
 import uk.gov.justice.core.courts.CourtDocument;
 import uk.gov.justice.core.courts.CourtDocumentIndex;
 import uk.gov.justice.core.courts.CourtDocumentSummary;
@@ -41,6 +43,8 @@ import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.messaging.Metadata;
 import uk.gov.moj.cpp.accesscontrol.drools.Action;
 import uk.gov.moj.cpp.progression.PaginationData;
+import uk.gov.moj.cpp.progression.common.CourtDocumentMetadata;
+import uk.gov.moj.cpp.progression.common.PostalAddressee;
 import uk.gov.moj.cpp.progression.domain.pojo.SearchCriteria;
 import uk.gov.moj.cpp.progression.enums.SortField;
 import uk.gov.moj.cpp.progression.enums.SortOrder;
@@ -148,6 +152,8 @@ public class CourtDocumentQueryView {
     private static final String CDES_EXCLUDE_NON_CPS_ROLE = "CDES_EXCLUDE_NON_CPS_ROLE";
     private static final String USERSGROUPS_GET_LOGGED_IN_USER_PERMISSIONS = "usersgroups.get-logged-in-user-permissions";
     private static final String OBJECT = "object";
+    private static final String POSTAL_NOTIFICATION = "PostalNotification";
+    private static final String IS_DEFENCE_QUERY = "isDefenceQuery";
 
 
     @Inject
@@ -182,7 +188,7 @@ public class CourtDocumentQueryView {
 
     @Inject
     private CpsSendNotificationRepository cpsSendNotificationRepository;
-    
+
     @Inject
     private UserDetailsLoader userDetailsLoader;
 
@@ -329,9 +335,12 @@ public class CourtDocumentQueryView {
 
         courtDocumentEntities.stream()
                 .filter(entity -> !entity.isRemoved())
+                .filter(entity -> !isPostalNotificationAddressConfidentialForDefenceUser(envelope, entity))
                 .map(this::courtDocument)
-                .filter(courtDocument -> isAllowedToAccessDocumentForGivenAction(documentTypeAccessReferenceDataList, courtDocument, userGroupsByUserId))
+                .filter(courtDocument -> isAllowedToAccessDocumentForGivenAction(
+                        documentTypeAccessReferenceDataList, courtDocument, userGroupsByUserId))
                 .forEach(courtDocument -> id2CourtDocument.put(courtDocument.getCourtDocumentId(), courtDocument));
+
 
         final Set<String> usergroupsInDocuments = id2CourtDocument.values().stream()
                 .flatMap(cd -> cd.getMaterials() == null ? Stream.empty()
@@ -395,6 +404,46 @@ public class CourtDocumentQueryView {
 
         return envelopeFrom(envelope.metadata(), resultJson);
     }
+
+
+    private boolean isPostalNotificationAddressConfidentialForDefenceUser(final JsonEnvelope envelope, final CourtDocumentEntity courtDocumentEntity) {
+        if(!envelope.payloadAsJsonObject().containsKey(IS_DEFENCE_QUERY) || Boolean.FALSE.equals(envelope.payloadAsJsonObject().getBoolean(IS_DEFENCE_QUERY))) {
+            return false;
+        }
+
+        final CourtDocument courtDocument = jsonObjectToObjectConverter.convert(jsonFromString(courtDocumentEntity.getPayload()), CourtDocument.class);
+        return POSTAL_NOTIFICATION.equalsIgnoreCase(courtDocument.getName()) && isAddressConfidential(courtDocumentEntity);
+    }
+
+    private boolean isAddressConfidential(final CourtDocumentEntity courtDocumentEntity) {
+        final Optional<UUID> applicationId = courtDocumentEntity.getIndices().stream()
+                .map(CourtDocumentIndexEntity::getApplicationId)
+                .filter(Objects::nonNull)
+                .findFirst();
+
+        if (isNull(courtDocumentEntity.getDocumentMetadata()) || applicationId.isEmpty()) {
+            return false;
+        }
+        final CourtDocumentMetadata courtDocumentMetadata = jsonObjectToObjectConverter.convert(stringToJsonObjectConverter.convert(courtDocumentEntity.getDocumentMetadata()), CourtDocumentMetadata.class);
+
+        final PostalAddressee postalAddressee = courtDocumentMetadata.getPostalAddressee();
+        if (isNull(postalAddressee) || isNull(postalAddressee.getCourtApplicationPartyId()) || !PERSON.equals(postalAddressee.getCourtApplicationPartyType())) {
+            return false;
+        }
+        final CourtApplication courtApplication = getCourtApplication(applicationId.get());
+
+        return Stream.of(
+                        Stream.ofNullable(courtApplication.getApplicant()),
+                        nonNull(courtApplication.getRespondents()) ? courtApplication.getRespondents().stream() : Stream.<CourtApplicationParty>empty(),
+                        nonNull(courtApplication.getThirdParties()) ? courtApplication.getThirdParties().stream() : Stream.<CourtApplicationParty>empty()
+                ).flatMap(s -> s)
+                .anyMatch(party ->
+                        postalAddressee.getCourtApplicationPartyId().equals(party.getId()) &&
+                                party.getPersonDetails() != null &&
+                                Boolean.TRUE.equals(party.getPersonDetails().getIsAddressConfidential())
+                );
+    }
+
 
     private boolean isNotAuthorisedToViewMaterials(final Metadata metadata, final List<UUID> applicationIds) {
         if(CollectionUtils.isEmpty(applicationIds)){

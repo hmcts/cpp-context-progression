@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.applications.applicationHelper;
 
 import static com.google.common.io.Resources.getResource;
-import static java.lang.String.join;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -123,15 +122,16 @@ public class ApplicationHelper {
                 matchers);
     }
 
-    public static String pollForApplicationStatus(final String applicationIds, final Matcher... matchers) {
-        return pollForResponse("/applications/application-status?applicationIds=" + applicationIds, "application/vnd.progression.query.application-status+json",
+    public static String pollForApplicationAtAGlanceForDefenceUser(final String applicationId, final Matcher... matchers) {
+        return pollForResponse("/applications/" + applicationId, "application/vnd.progression.query.application.aaag-for-defence+json",
                 randomUUID().toString(),
                 matchers);
     }
 
-    public static String getLinkedApplicationExtractPdf(final String applicationId, final String defendantId, final String hearingId) {
-        String queryParam = "?hearingIds=" + hearingId;
-        return pollForResponse(join("", "/applications/", applicationId, "/defendants/", defendantId, "/extract", queryParam), "application/vnd.progression.query.linked-application-extract+json");
+    public static String pollForApplicationStatus(final String applicationIds, final Matcher... matchers) {
+        return pollForResponse("/applications/application-status?applicationIds=" + applicationIds, "application/vnd.progression.query.application-status+json",
+                randomUUID().toString(),
+                matchers);
     }
 
     private static String getCourtApplicationJson(final String applicationId, final String caseId, final String hearingId, final String masterDefendantId, final String fileName) throws IOException {

@@ -1,7 +1,6 @@
 package uk.gov.moj.cpp.progression.query.utils;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static javax.json.Json.createArrayBuilder;
@@ -40,9 +39,6 @@ public class CaseHearingsQueryHelper {
     public static final DateTimeFormatter ZONE_DATETIME_FORMATTER = ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     public static final String JURISDICTION_TYPE = "jurisdictionType";
 
-    public static final String CASE_HEARINGS = "caseHearings";
-    public static final String LINKED_APPLICATION_HEARINGS = "linkedApplicationHearings";
-
     private CaseHearingsQueryHelper() {
     }
 
@@ -55,19 +51,6 @@ public class CaseHearingsQueryHelper {
         });
 
         return createObjectBuilder().add(HEARINGS, hearingsBuilder).build();
-    }
-
-    public static JsonArray getCaseHearingsJson(final List<Hearings> hearings) {
-        final JsonArrayBuilder hearingsBuilder = createArrayBuilder();
-
-        hearings.forEach(hearing -> {
-            if(isNull(hearing.getIsBoxHearing()) ||Boolean.FALSE.equals(hearing.getIsBoxHearing()) ) {
-                final JsonObject hearingJsonObject = buildHearing(hearing);
-                hearingsBuilder.add(hearingJsonObject);
-            }
-        });
-
-        return hearingsBuilder.build();
     }
 
     public static JsonObject buildCaseDefendantHearingsResponse(final List<Hearings> hearings, final UUID caseId, final UUID defendantId) {
@@ -99,19 +82,6 @@ public class CaseHearingsQueryHelper {
         }
 
         return builder.build();
-    }
-
-    static void addHearing(JsonObjectBuilder builder, final Hearings hearing) {
-        builder.add(HEARING_ID, hearing.getId().toString())
-                .add(JURISDICTION_TYPE, hearing.getJurisdictionType().toString());
-
-        if (nonNull(hearing.getCourtCentre())) {
-            builder.add(COURT_CENTRE, buildCourtCentre(hearing.getCourtCentre()));
-        }
-
-        if (nonNull(hearing.getHearingDays())) {
-            builder.add(HEARING_DAYS, buildHearingDays(hearing.getHearingDays()));
-        }
     }
 
     private static JsonObject buildHearingWithHearingDays(final Hearings hearing) {
@@ -163,7 +133,6 @@ public class CaseHearingsQueryHelper {
         }
         return builder.build();
     }
-
     public static JsonObject buildCaseHearingTypesResponse(final Map<UUID, String> hearingTypes) {
         final JsonArrayBuilder hearingTypesBuilder = createArrayBuilder();
         hearingTypes.entrySet().stream().forEach(hearingType ->

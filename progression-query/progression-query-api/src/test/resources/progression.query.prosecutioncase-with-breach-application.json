@@ -973,7 +973,6 @@
               "defendantId": "d0cea893-2bed-4b80-8e9a-63b5e2c84309"
             },
             "id": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
-            "masterDefendantId": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
             "judicialResults": [],
             "name": "Ivory Volkman",
             "offences": [
@@ -1404,7 +1403,6 @@
             ],
             "dateOfBirth": "2001-02-18",
             "id": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
-            "masterDefendantId": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
             "judicialResults": [],
             "name": "Ivory Volkman"
           }
@@ -1472,7 +1470,6 @@
               {
                 "applicant": "HIWPF",
                 "applicationId": "84711be3-2b11-4a6c-9c4d-cefc6b2ba2fd",
-                "id": "84711be3-2b11-4a6c-9c4d-cefc6b2ba2fd",
                 "applicationReceivedDate": "2025-05-07",
                 "applicationType": "Failing to comply with the requirements of a community order",
                 "isAppeal": false,
@@ -1528,7 +1525,6 @@
             ],
             "dateOfBirth": "2001-02-18",
             "id": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
-            "masterDefendantId": "d0cea893-2bed-4b80-8e9a-63b5e2c84309",
             "judicialResults": [],
             "name": "Ivory Volkman"
           }

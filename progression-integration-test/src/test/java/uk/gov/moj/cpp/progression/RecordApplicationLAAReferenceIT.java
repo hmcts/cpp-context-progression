@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.json.JsonObject;
-
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
@@ -15,13 +15,13 @@ import org.junit.jupiter.api.Test;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClient;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.moj.cpp.progression.util.ProsecutionCaseUpdateDefendantHelper;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.withJsonPath;
 import static java.util.UUID.randomUUID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,16 +29,13 @@ import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsum
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageConsumerClientProvider.newPublicJmsMessageConsumerClientProvider;
 import static uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClientProvider.newPublicJmsMessageProducerClientProvider;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
-import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplication;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.intiateCourtProceedingForApplicationUpdate;
 import static uk.gov.moj.cpp.progression.applications.applicationHelper.ApplicationHelper.pollForCourtApplicationOnly;
-import static uk.gov.moj.cpp.progression.helper.CaseHearingsQueryHelper.pollForHearing;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.addProsecutionCaseToCrownCourt;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollCaseAndGetHearingForDefendant;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollForApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollHearingWithStatusInitialised;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.pollProsecutionCasesProgressionFor;
-import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordApplicationLAAReferenceOnApplication;
 import static uk.gov.moj.cpp.progression.helper.PreAndPostConditionHelper.recordApplicationLAAReferenceWithDescription;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.buildMetadata;
 import static uk.gov.moj.cpp.progression.helper.QueueUtil.retrieveMessageBody;
@@ -134,60 +131,6 @@ public class RecordApplicationLAAReferenceIT extends AbstractIT {
         verifyInMessagingQueue(messageConsumerClientPrivateForLaaReferenceUpdatedForHearing);
     }
 
-    @Test
-    void shouldRaisePublicEventWhenApplicationIsFoundForRecordLAAReferenceForApplicationOnApplication() throws IOException, JSONException {
-        applicationId = randomUUID().toString();
-        subjectId = randomUUID().toString();
-        offenceId = "3789ab16-0bb7-4ef1-87ef-c936bf0364f1";
-        hearingId = randomUUID().toString();
-        statusCode = "G2";
-        userId = randomUUID().toString();
-        statusDescription = "Desc";
-        offenceLevelStatus = "Pending";
-        statusId = "2daefbc3-2f72-8109-82d9-2e60544a6c04";
-        applicationReference = "XX12345";
-        stubGetOrganisationDetails(organisationId, organisationName);
-        stubGetUsersAndGroupsQueryForSystemUsers(userId);
-        stubGetGroupsForLoggedInQuery(userId);
-        stubLegalStatusWithStatusDescription("/restResource/ref-data-legal-statuses.json", statusCode, statusDescription);
-        //Given
-        String caseId= randomUUID().toString();
-        String defendantId= randomUUID().toString();
-        String courtCentreId = UUID.fromString("111bdd2a-6b7a-4002-bc8c-5c6f93844f40").toString();
-        stubForAssociatedOrganisation("stub-data/defence.get-associated-organisation.json", defendantId);
-        addProsecutionCaseToCrownCourt(caseId, defendantId);
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId));
-
-        hearingId = pollCaseAndGetHearingForDefendant(caseId, defendantId);
-
-        final JsonObject hearingConfirmedJson = getHearingJsonObject("public.listing.hearing-confirmed.json", caseId, hearingId, defendantId,courtCentreId, "Lavender Hill Magistrate's Court");
-
-        JsonEnvelope publicEventEnvelope = envelopeFrom(buildMetadata(PUBLIC_LISTING_HEARING_CONFIRMED, userId), hearingConfirmedJson);
-        messageProducerClientPublic.sendMessage(PUBLIC_LISTING_HEARING_CONFIRMED, publicEventEnvelope);
-        pollHearingWithStatusInitialised(hearingId);
-
-
-        intiateCourtProceedingForApplication(applicationId, caseId, defendantId, subjectId, hearingId, "applications/progression.initiate-court-proceedings-for-application.json");
-        pollForApplication(applicationId);
-        //Record LAA reference
-        //When
-        recordApplicationLAAReferenceOnApplication(applicationId, statusCode, statusDescription, applicationReference);
-
-        //Then
-        pollForCourtApplicationOnly(applicationId, getApplicationOnApplicationMatchers());
-        pollProsecutionCasesProgressionFor(caseId, getProsecutionCaseMatchers(caseId, defendantId, List.of()));
-        verifyInitiateCourtProceedingsViewStoreUpdated(applicationId, getApplicationOnApplicationMatchers());
-        verifyInMessagingQueue(messageConsumerClientPrivateForLaaReferenceUpdatedForHearing);
-        //verify laaReference is updated on hearing
-        pollForHearing(hearingId, withJsonPath("$.hearing.courtApplications[0].laaApplnReference.applicationReference", is(applicationReference)));
-        //send an address update for the defendant
-        ProsecutionCaseUpdateDefendantHelper prosecutionCaseUpdateDefendantHelper = new ProsecutionCaseUpdateDefendantHelper(caseId, defendantId);
-        prosecutionCaseUpdateDefendantHelper.updateDefendantWithAddressInfo("NN7 7NN");
-        //verify laaReference not wiped out on hearing and application
-        pollForHearing(hearingId, withJsonPath("$.hearing.courtApplications[0].laaApplnReference.applicationReference", is(applicationReference)));
-        pollForCourtApplicationOnly(applicationId, getApplicationOnApplicationMatchers());
-    }
-
     private List<Matcher<? super ReadContext>> buildProsecutionCaseLaaMatchers() {
         return newArrayList(
                 withJsonPath("$.prosecutionCase.defendants[*].legalAidStatus", hasItem(equalTo(offenceLevelStatus))),
@@ -260,17 +203,6 @@ public class RecordApplicationLAAReferenceIT extends AbstractIT {
                 withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].laaApplnReference.offenceLevelStatus", is(offenceLevelStatus)),
                 withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].laaApplnReference.applicationReference", is(applicationReference)),
                 withJsonPath("$.courtApplication.courtApplicationCases[0].offences[0].laaApplnReference.statusId", is(statusId))
-        );
-        return matchers.toArray(new Matcher[0]);
-    }
-
-    private Matcher[] getApplicationOnApplicationMatchers() {
-        final List<Matcher> matchers = newArrayList(withJsonPath("$.courtApplication.id", is(applicationId)),
-                withJsonPath("$.courtApplication.laaApplnReference.statusCode", is(statusCode)),
-                withJsonPath("$.courtApplication.laaApplnReference.statusDescription", is(statusDescription)),
-                withJsonPath("$.courtApplication.laaApplnReference.offenceLevelStatus", is(offenceLevelStatus)),
-                withJsonPath("$.courtApplication.laaApplnReference.applicationReference", is(applicationReference)),
-                withJsonPath("$.courtApplication.laaApplnReference.statusId", is(statusId))
         );
         return matchers.toArray(new Matcher[0]);
     }

@@ -90,17 +90,6 @@ public class ProsecutionCaseUpdateDefendantHelper extends AbstractTestHelper {
         makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
     }
 
-    public void updateDefendantWithAddressInfo(final String newPostCode) throws JSONException {
-        final String jsonString = getPayload(TEMPLATE_UPDATE_DEFENDANT_PAYLOAD);
-        final JSONObject jsonObjectPayload = new JSONObject(jsonString);
-        jsonObjectPayload.getJSONObject("defendant").put("id", defendantId);
-        jsonObjectPayload.getJSONObject("defendant").put("prosecutionCaseId", caseId);
-        jsonObjectPayload.getJSONObject("defendant").getJSONObject("personDefendant").getJSONObject("personDetails").getJSONObject("address").put("postcode", newPostCode);
-
-        request = jsonObjectPayload.toString();
-        makePostCall(getWriteUrl("/prosecutioncases/" + caseId + "/defendants/" + defendantId), WRITE_MEDIA_TYPE, request);
-    }
-
     public void updateDefendant(final String jsonString) throws JSONException{
         updateDefendant(jsonString, Response.Status.ACCEPTED.getStatusCode());
     }

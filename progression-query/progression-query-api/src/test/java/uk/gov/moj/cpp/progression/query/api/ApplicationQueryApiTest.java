@@ -42,6 +42,7 @@ import javax.json.JsonObjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -236,7 +237,7 @@ public class ApplicationQueryApiTest {
 
     @Test
     public void shouldReturnApplicationDetailsWhenGetApplicationAtAGlanceForDefenceAndUserInAdvocateRoleForTheCase() {
-
+        ArgumentCaptor<JsonEnvelope> argumentCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
         String caseId = randomUUID().toString();
         final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
         final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
@@ -253,6 +254,8 @@ public class ApplicationQueryApiTest {
                 .build());
 
         JsonEnvelope response = applicationQueryApi.getCourtApplicationForApplicationAtAGlanceForDefence(envelope);
+        verify(applicationQueryView).getCourtApplicationForApplicationAtAGlance(argumentCaptor.capture());
+        assertThat(argumentCaptor.getValue().payloadAsJsonObject().getBoolean("isDefenceQuery"), equalTo(true));
 
         assertThat(response, equalTo(envelope));
     }
