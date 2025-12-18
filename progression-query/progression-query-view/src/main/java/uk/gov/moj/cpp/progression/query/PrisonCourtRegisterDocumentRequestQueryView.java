@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 
@@ -32,8 +32,8 @@ public class PrisonCourtRegisterDocumentRequestQueryView {
     @Handles("progression.query.prison-court-register-document-by-court-centre")
     public JsonEnvelope getPrisonCourtRegistersByCourtCentre(final JsonEnvelope envelope) {
         final UUID courtCentreId = UUID.fromString(envelope.payloadAsJsonObject().getString(FIELD_COURT_CENTRE_ID));
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
         final List<PrisonCourtRegisterEntity> prisonCourtRegisterEntities = prisonCourtRegisterRepository.findByCourtCentreId(courtCentreId);
         prisonCourtRegisterEntities.forEach(i -> jsonArrayBuilder.add(objectToJsonObjectConverter.convert(i)));
         return envelopeFrom(envelope.metadata(),

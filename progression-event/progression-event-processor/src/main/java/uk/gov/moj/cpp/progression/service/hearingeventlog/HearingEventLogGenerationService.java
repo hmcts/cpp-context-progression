@@ -34,7 +34,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -98,7 +98,7 @@ public class HearingEventLogGenerationService {
     private void generateCourtDocument(final JsonEnvelope event, final UUID caseId, final String filename, final UUID materialId, final Optional<String> applicationId) {
 
         final CourtDocument courtDocument = courtDocument(event, materialId, caseId, filename, applicationId);
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
         LOGGER.info("creating hearing event log court document payload - {}", courtDocumentPayload);
         sender.send(envelop(courtDocumentPayload).withName(PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).withMetadataFrom(event));

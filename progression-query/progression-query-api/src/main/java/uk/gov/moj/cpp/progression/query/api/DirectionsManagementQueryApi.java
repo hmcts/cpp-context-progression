@@ -21,7 +21,7 @@ import uk.gov.moj.cpp.progression.query.view.service.transformer.WitnessPtphTran
 import uk.gov.moj.cpp.progression.service.RefDataService;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
@@ -110,7 +110,7 @@ public class DirectionsManagementQueryApi {
                     .filter(d -> !Collections.disjoint(Arrays.asList(d.getCategory().split(",")), categories))
                     .collect(Collectors.toList());
         }
-        final JsonArrayBuilder refDataDirectionsInJson = Json.createArrayBuilder();
+        final JsonArrayBuilder refDataDirectionsInJson = JsonObjects.createArrayBuilder();
 
         if (!directionManagementTypes.isEmpty()) {
             final List<RefDataDirection> refDataDirections = transformDirection(envelope, directionManagementTypes);
@@ -128,7 +128,7 @@ public class DirectionsManagementQueryApi {
         }
 
         return envelopeFrom(envelope.metadata(),
-                Json.createObjectBuilder().add("directions", refDataDirectionsInJson.build()).build());
+                JsonObjects.createObjectBuilder().add("directions", refDataDirectionsInJson.build()).build());
     }
 
     private RefDataDirection buildRefDataDirection(final List<RefDataDirection> refDataDirectionsSortedOnSequence, final int idx, final String formType) {

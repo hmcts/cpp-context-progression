@@ -19,7 +19,7 @@ import uk.gov.justice.services.messaging.MetadataBuilder;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -46,10 +46,10 @@ class PatchUpdateApplicationsStatusApiTest {
     void shouldHandlePatchUpdateApplications() {
         final UUID application1Id = randomUUID();
         final UUID application2Id = randomUUID();
-        final JsonObject payload = Json.createObjectBuilder()
-                .add("applications", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("id", application1Id.toString()).add("applicationStatus", FINALISED.toString()).build())
-                        .add(Json.createObjectBuilder().add("id", application2Id.toString()).build())
+        final JsonObject payload = JsonObjects.createObjectBuilder()
+                .add("applications", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder().add("id", application1Id.toString()).add("applicationStatus", FINALISED.toString()).build())
+                        .add(JsonObjects.createObjectBuilder().add("id", application2Id.toString()).build())
                 )
                 .build();
         final MetadataBuilder metadataBuilder = metadataFrom(metadataWithRandomUUID("progression.patch-update-application-status").withUserId(randomUUID().toString()).build());

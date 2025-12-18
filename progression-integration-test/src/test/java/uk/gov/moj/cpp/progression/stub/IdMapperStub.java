@@ -10,7 +10,7 @@ import static java.util.UUID.randomUUID;
 
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpHeaders;
@@ -96,7 +96,7 @@ public class IdMapperStub {
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(mime))
                 .willReturn(aResponse()
                         .withStatus(status.getStatusCode())
-                        .withBody(Json.createObjectBuilder().add("id", id.toString()).build().toString())
+                        .withBody(JsonObjects.createObjectBuilder().add("id", id.toString()).build().toString())
                 )
         );
     }

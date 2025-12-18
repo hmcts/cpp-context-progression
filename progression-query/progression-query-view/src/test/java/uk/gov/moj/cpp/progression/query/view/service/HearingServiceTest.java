@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,10 +43,10 @@ class HearingServiceTest {
         final UUID hearingId1 = randomUUID();
         final UUID hearingId2 = randomUUID();
 
-        final JsonObject responsePayload = Json.createObjectBuilder()
-                .add("hearingSummaries",Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder().add("hearingId", hearingId1.toString()).build())
-                        .add(Json.createObjectBuilder().add("hearingId", hearingId2.toString()).build()))
+        final JsonObject responsePayload = JsonObjects.createObjectBuilder()
+                .add("hearingSummaries",JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder().add("hearingId", hearingId1.toString()).build())
+                        .add(JsonObjects.createObjectBuilder().add("hearingId", hearingId2.toString()).build()))
                 .build();
 
 

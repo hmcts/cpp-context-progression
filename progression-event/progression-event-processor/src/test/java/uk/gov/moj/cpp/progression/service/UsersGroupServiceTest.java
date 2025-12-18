@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.service;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.Test;
@@ -219,8 +219,8 @@ public class UsersGroupServiceTest {
 
     private JsonObject buildGetOrganisationsDetailsForIds() {
         return createObjectBuilder()
-                .add("organisations", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("organisations", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9a")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -233,7 +233,7 @@ public class UsersGroupServiceTest {
                                 .add("email", "joe@example.com")
                                 .add("laaContractNumber", "LAA3482374WER")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9b")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")
@@ -251,13 +251,13 @@ public class UsersGroupServiceTest {
 
     private JsonObject buildGetOrganisationsDetailsForIdsWithNullEmail() {
         return createObjectBuilder()
-                .add("organisations", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
+                .add("organisations", JsonObjects.createArrayBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9a")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")
                         )
-                        .add(Json.createObjectBuilder()
+                        .add(JsonObjects.createObjectBuilder()
                                 .add("organisationId", "1fc69990-bf59-4c4a-9489-d766b9abde9a")
                                 .add("organisationType", "LEGAL_ORGANISATION")
                                 .add("organisationName", "Bodgit and Scarper LLP")

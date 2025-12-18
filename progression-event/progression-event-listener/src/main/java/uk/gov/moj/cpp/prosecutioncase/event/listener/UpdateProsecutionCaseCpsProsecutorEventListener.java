@@ -9,7 +9,7 @@ import java.io.StringReader;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonReader;
 
 import uk.gov.justice.core.courts.CaseCpsProsecutorUpdated;
@@ -99,7 +99,7 @@ public class UpdateProsecutionCaseCpsProsecutorEventListener {
     }
 
     private static JsonObject jsonFromString(String jsonObjectStr) {
-        final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr));
+        final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr));
         final JsonObject object = jsonReader.readObject();
         jsonReader.close();
         return object;

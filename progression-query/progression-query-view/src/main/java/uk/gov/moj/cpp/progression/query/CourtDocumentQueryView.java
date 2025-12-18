@@ -6,7 +6,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
@@ -79,7 +79,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -190,7 +190,7 @@ public class CourtDocumentQueryView {
     public JsonEnvelope getCourtDocument(final JsonEnvelope envelope) {
         final Optional<UUID> id = JsonObjects.getUUID(envelope.payloadAsJsonObject(), ID_PARAMETER);
         CourtDocumentEntity courtDocumentEntity = null;
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
 
         JsonEnvelope jsonEnvelope = envelopeFrom(envelope.metadata(), JsonValue.NULL);
 
@@ -734,7 +734,7 @@ public class CourtDocumentQueryView {
     }
 
     private static JsonObject jsonFromString(final String jsonObjectStr) {
-        try (final JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+        try (final JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr))) {
             return jsonReader.readObject();
         }
     }
@@ -777,13 +777,13 @@ public class CourtDocumentQueryView {
     private JsonEnvelope createJsonEnvelope(final JsonEnvelope envelope,
                                             final Map<UUID, List<NotificationStatusEntity>> applicationNotificationMap) {
 
-        final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonArrayBuilder = JsonObjects.createArrayBuilder();
 
         applicationNotificationMap.forEach((k, v) -> applicationNotificationMap.get(k).forEach(
                 notificationStatusEntity -> prepareResponse(notificationStatusEntity,
                         jsonArrayBuilder)));
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
 
         jsonObjectBuilder.add(NOTIFICATION_STATUS, jsonArrayBuilder.build());
 
@@ -793,7 +793,7 @@ public class CourtDocumentQueryView {
     private void prepareResponse(final NotificationStatusEntity notificationStatusEntity,
                                  final JsonArrayBuilder jsonArrayBuilder) {
 
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
 
         jsonObjectBuilder.add(ID, notificationStatusEntity.getId().toString())
                 .add(NOTIFICATION_ID,
@@ -852,7 +852,7 @@ public class CourtDocumentQueryView {
             final Metadata metadata = metadataFrom(action.envelope().metadata())
                     .withName("usersgroups.get-groups-by-user").build();
             final JsonObject payload =
-                    Json.createObjectBuilder().add("userId", userId.get()).build();
+                    JsonObjects.createObjectBuilder().add("userId", userId.get()).build();
             final JsonEnvelope jsonEnvelope = envelopeFrom(metadata, payload);
 
             final Envelope<JsonObject> response =

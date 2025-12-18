@@ -2,6 +2,7 @@ package uk.gov.moj.cpp.progression.helper;
 
 import uk.gov.justice.services.common.converter.ZonedDateTimes;
 import uk.gov.justice.services.common.http.HeaderConstants;
+import uk.gov.justice.services.messaging.JsonObjects;
 import uk.gov.justice.services.test.utils.core.matchers.ResponseStatusMatcher;
 import uk.gov.justice.services.test.utils.core.rest.RestClient;
 import uk.gov.moj.cpp.progression.helper.CourtApplicationsHelper.CourtApplicationRandomValues;
@@ -18,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.ws.rs.core.MultivaluedMap;
@@ -36,7 +37,7 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.apache.commons.lang3.StringUtils;
 import static org.awaitility.Awaitility.await;
@@ -106,7 +107,7 @@ public class PreAndPostConditionHelper {
     public static Response addRemoveCourtDocument(final String courtDocumentId, final String materialId, final boolean isRemoved, final UUID userId) {
         return postCommandWithUserId(getWriteUrl(String.format("/courtdocument/%s/material/%s", courtDocumentId, materialId)),
                 "application/vnd.progression.remove-court-document+json",
-                Json.createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
+                JsonObjects.createObjectBuilder().add("isRemoved", isRemoved).build().toString(), userId.toString());
     }
 
     public static Response recordLAAReference(final String caseId, final String defendantId, final String offenceId, final String statusCode) {
@@ -384,7 +385,7 @@ public class PreAndPostConditionHelper {
     public static Response deleteRelatedReference(final String caseId, final String relatedReferenceId) {
         return postCommand(getWriteUrl("/prosecutioncases/" + caseId),
                 "application/vnd.progression.delete-related-reference+json",
-                Json.createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
+                JsonObjects.createObjectBuilder().add("relatedReferenceId", relatedReferenceId).build().toString());
 
     }
 

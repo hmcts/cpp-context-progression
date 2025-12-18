@@ -16,7 +16,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class HearingTrialVacatedEventProcessor {
         LOGGER.info("public.listing.vacated-trial-updated event received with metadata {} and payload {}",
                 jsonEnvelope.metadata(), jsonEnvelope.payloadAsJsonObject());
         final JsonObject payload = jsonEnvelope.payloadAsJsonObject();
-        final JsonObjectBuilder trialVacatedCommandBuilder = Json.createObjectBuilder()
+        final JsonObjectBuilder trialVacatedCommandBuilder = JsonObjects.createObjectBuilder()
                         .add("hearingId", payload.getString("hearingId"));
         if(payload.containsKey(VACATED_TRIAL_REASON_ID)) {
             trialVacatedCommandBuilder.add(VACATED_TRIAL_REASON_ID, payload.getString(VACATED_TRIAL_REASON_ID));

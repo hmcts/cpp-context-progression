@@ -14,7 +14,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -39,11 +39,11 @@ class UserServiceTest {
     void shouldGetUserGroupIdsByUserId() {
         final UUID group1 = UUID.randomUUID();
         final UUID group2 = UUID.randomUUID();
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "group1").add("groupId", group1.toString()).build())
-                .add(Json.createObjectBuilder().add("groupName", "group2").add("groupId", group2.toString()).build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "group1").add("groupId", group1.toString()).build())
+                .add(JsonObjects.createObjectBuilder().add("groupName", "group2").add("groupId", group2.toString()).build())
                 .build();
-        final JsonObject groups = Json.createObjectBuilder().add("groups", userGroupArray).build();
+        final JsonObject groups = JsonObjects.createObjectBuilder().add("groups", userGroupArray).build();
         final Envelope envelope = Envelope.envelopeFrom(Envelope.metadataBuilder().
                 withId(UUID.randomUUID()).
                 withUserId(randomUUID().toString())
@@ -53,7 +53,7 @@ class UserServiceTest {
                         .withId(randomUUID())
                         .withUserId(randomUUID().toString())
                         .withName("test").build(),
-                Json.createObjectBuilder().build());
+                JsonObjects.createObjectBuilder().build());
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenReturn(envelope);
 
         final List<UUID> groupIds = userService.getUserGroupIdsByUserId(jsonEnvelopeIn);
@@ -67,11 +67,11 @@ class UserServiceTest {
     void shouldGetUserGroupsByUserId() {
         final String group1 = UUID.randomUUID().toString();
         final String group2 = UUID.randomUUID().toString();
-        final JsonArray userGroupArray = Json.createArrayBuilder()
-                .add(Json.createObjectBuilder().add("groupName", "group1").add("groupId", group1).build())
-                .add(Json.createObjectBuilder().add("groupName", "group2").add("groupId", group2).build())
+        final JsonArray userGroupArray = JsonObjects.createArrayBuilder()
+                .add(JsonObjects.createObjectBuilder().add("groupName", "group1").add("groupId", group1).build())
+                .add(JsonObjects.createObjectBuilder().add("groupName", "group2").add("groupId", group2).build())
                 .build();
-        final JsonObject groups = Json.createObjectBuilder().add("groups", userGroupArray).build();
+        final JsonObject groups = JsonObjects.createObjectBuilder().add("groups", userGroupArray).build();
         final Envelope envelope = Envelope.envelopeFrom(Envelope.metadataBuilder().
                 withId(UUID.randomUUID()).
                 withUserId(randomUUID().toString())
@@ -81,7 +81,7 @@ class UserServiceTest {
                         .withId(randomUUID())
                         .withUserId(randomUUID().toString())
                         .withName("test").build(),
-                Json.createObjectBuilder().build());
+                JsonObjects.createObjectBuilder().build());
         when(requester.requestAsAdmin(any(JsonEnvelope.class), any())).thenReturn(envelope);
 
         final List<String> groupNames = userService.getUserGroupsByUserId(jsonEnvelopeIn);

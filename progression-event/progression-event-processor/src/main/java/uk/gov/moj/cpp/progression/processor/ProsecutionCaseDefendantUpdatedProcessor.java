@@ -4,7 +4,7 @@ import static java.util.Objects.nonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -155,7 +155,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
         activeApplicationsOnCaseOptional.get().getJsonArray(LINKED_APPLICATIONS).forEach(linkedApplicationJson->{
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationJson;
                     final String applicationId = linkedApplicationJsonObject.getString(APPLICATION_ID);
-                    final JsonObjectBuilder updateDefendantAddressOnApplicationBuilder = Json.createObjectBuilder();
+                    final JsonObjectBuilder updateDefendantAddressOnApplicationBuilder = JsonObjects.createObjectBuilder();
                     if(nonNull(applicationId) && nonNull(linkedApplicationJsonObject.getJsonArray(HEARING_IDS))){
                         updateDefendantAddressOnApplicationBuilder
                                 .add(APPLICATION_ID, applicationId)
@@ -176,7 +176,7 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
             if (prosecutionCaseJson.containsKey("linkedApplicationsSummary") && caseStatus.equalsIgnoreCase(CaseStatusEnum.ACTIVE.name())) {
                 prosecutionCaseJson.getJsonArray("linkedApplicationsSummary").forEach(linkedApplicationSummaryJson -> {
                     final JsonObject linkedApplicationJsonObject = (JsonObject) linkedApplicationSummaryJson;
-                    final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = Json.createObjectBuilder();
+                    final JsonObjectBuilder updateCustodialInformationForApplicationBuilder = JsonObjects.createObjectBuilder();
                     final String subjectId = linkedApplicationJsonObject.getString("subjectId", null);
                     if (nonNull(subjectId) && nonNull(defendant.getMasterDefendantId()) && subjectId.equalsIgnoreCase(defendant.getMasterDefendantId().toString())) {
                         updateCustodialInformationForApplicationBuilder.add(APPLICATION_ID, linkedApplicationJsonObject.getString(APPLICATION_ID));
@@ -425,14 +425,14 @@ public class ProsecutionCaseDefendantUpdatedProcessor {
     }
 
     private void updateMatchedDefendantCustodialInformation(final JsonEnvelope jsonEnvelope, final DefendantCustodialInformationUpdateRequested defendantCustodialInformationUpdateRequested, final JsonObject matchedCases) {
-        final JsonObjectBuilder updateMatchedDefendantCustodialInformationBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder updateMatchedDefendantCustodialInformationBuilder = JsonObjects.createObjectBuilder();
         final String matchedCaseIdString = matchedCases.getString(CASE_ID);
         updateMatchedDefendantCustodialInformationBuilder.add(CASE_ID, matchedCaseIdString);
         updateMatchedDefendantCustodialInformationBuilder.add(MASTER_DEFENDANT_ID, matchedCases.getString(MATCHED_MASTER_DEFENDANT_ID));
         if (nonNull(defendantCustodialInformationUpdateRequested.getCustodialEstablishment())) {
             updateMatchedDefendantCustodialInformationBuilder.add(CUSTODIAL_ESTABLISHMENT, objectToJsonObjectConverter.convert(defendantCustodialInformationUpdateRequested.getCustodialEstablishment()));
         }
-        final JsonArrayBuilder defendantsArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder defendantsArrayBuilder = JsonObjects.createArrayBuilder();
         matchedCases.getJsonArray(DEFENDANTS).getValuesAs(JsonObject.class).stream()
                 .filter(defendant -> defendantCustodialInformationUpdateRequested.getMasterDefendantId().toString().equalsIgnoreCase(defendant.getString(MASTER_DEFENDANT_ID)))
                 .filter(defendant -> shouldAvoidSameCaseSameDefendantId(matchedCaseIdString, defendant.getString("id"), defendantCustodialInformationUpdateRequested))

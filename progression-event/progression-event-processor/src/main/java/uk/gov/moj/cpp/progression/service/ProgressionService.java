@@ -10,8 +10,8 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.ApplicationStatus.FINALISED;
@@ -124,7 +124,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -436,7 +436,7 @@ public class ProgressionService {
     }
 
     public void updateListingNumber(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase) {
-        final JsonArrayBuilder offenceListingNumbersBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceListingNumbersBuilder = JsonObjects.createArrayBuilder();
         prosecutionCase.getDefendants().stream()
                 .flatMap(defendant -> defendant.getOffences().stream())
                 .forEach(offence -> offenceListingNumbersBuilder.add(createObjectBuilder()
@@ -452,7 +452,7 @@ public class ProgressionService {
     }
 
     public void increaseListingNumber(final JsonEnvelope jsonEnvelope, final ProsecutionCase prosecutionCase, final UUID hearingId) {
-        final JsonArrayBuilder offenceListingNumbersBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceListingNumbersBuilder = JsonObjects.createArrayBuilder();
         prosecutionCase.getDefendants().stream()
                 .flatMap(defendant -> defendant.getOffences().stream())
                 .forEach(offence -> offenceListingNumbersBuilder.add(offence.getId().toString()));
@@ -521,7 +521,7 @@ public class ProgressionService {
 
     public void createCourtDocument(final JsonEnvelope jsonEnvelope, final List<CourtDocument> courtDocuments) {
         courtDocuments.forEach(courtDocument -> {
-            final JsonObject jsonObject = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+            final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
             LOGGER.info("court document is being created '{}' ", courtDocument.getCourtDocumentId());
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_COURT_DOCUMENT).apply(jsonObject));
         });
@@ -529,7 +529,7 @@ public class ProgressionService {
 
     public void createProsecutionCases(final JsonEnvelope jsonEnvelope, final List<ProsecutionCase> prosecutionCases) {
         prosecutionCases.forEach(prosecutionCase -> {
-            final JsonObject jsonObject = Json.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build();
+            final JsonObject jsonObject = JsonObjects.createObjectBuilder().add("prosecutionCase", objectToJsonObjectConverter.convert(prosecutionCase)).build();
             LOGGER.info("prosecution case is being created '{}' ", prosecutionCase.getId());
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_COMMAND_CREATE_PROSECUTION_CASE).apply(jsonObject));
             relayCaseToCourtStore(prosecutionCase);
@@ -539,7 +539,7 @@ public class ProgressionService {
     private void relayCaseToCourtStore(final ProsecutionCase prosecutionCase) {
 
         if (prosecutionCase != null && prosecutionCase.getProsecutionCaseIdentifier() != null && prosecutionCase.getProsecutionCaseIdentifier().getCaseURN() != null) {
-            final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
             payloadBuilder.add("CaseReference", prosecutionCase.getProsecutionCaseIdentifier().getCaseURN());
             try {
                 this.azureFunctionService.relayCaseOnCPP(payloadBuilder.build().toString());
@@ -581,7 +581,7 @@ public class ProgressionService {
             return createArrayBuilder().build();
         }
 
-        return confirmedHearing.getCourtApplicationIds().stream().map(UUID::toString).collect(Json::createArrayBuilder, JsonArrayBuilder::add, JsonArrayBuilder::add).build();
+        return confirmedHearing.getCourtApplicationIds().stream().map(UUID::toString).collect(JsonObjects::createArrayBuilder, JsonArrayBuilder::add, JsonArrayBuilder::add).build();
     }
 
     public void updateDefendantYouthForProsecutionCase(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate, final List<ProsecutionCase> deltaProsecutionCases) {
@@ -827,7 +827,7 @@ public class ProgressionService {
 
     public Optional<JsonObject> getActiveApplicationsOnCase(final JsonEnvelope envelope, final String caseId){
         Optional<JsonObject> result = Optional.empty();
-        final JsonObject payload = Json.createObjectBuilder().add(PROSECUTION_CASE_ID, caseId).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add(PROSECUTION_CASE_ID, caseId).build();
         final JsonEnvelope activeLinkedApplications = requester.request(enveloper.withMetadataFrom(envelope, PROGRESSION_QUERY_ACTIVE_APPLICATIONS_ON_CASE).apply(payload));
         if (!activeLinkedApplications.payloadAsJsonObject().isEmpty()) {
             result = Optional.of(activeLinkedApplications.payloadAsJsonObject());
@@ -917,7 +917,7 @@ public class ProgressionService {
     }
 
     public Optional<JsonObject> getCaseHearings(final String caseId) {
-        final JsonObject payload = Json.createObjectBuilder().add(CASE_ID, caseId).build();
+        final JsonObject payload = JsonObjects.createObjectBuilder().add(CASE_ID, caseId).build();
         final UUID systemUser = nonNull(serviceContextSystemUserProvider.getContextSystemUserId()) && serviceContextSystemUserProvider.getContextSystemUserId().isPresent() ? serviceContextSystemUserProvider.getContextSystemUserId().get() : null;
 
         final MetadataBuilder metadataBuilder = metadataBuilder().withId(randomUUID())
@@ -946,7 +946,7 @@ public class ProgressionService {
     }
 
     public void updateHearingListingStatusToHearingInitiated(final JsonEnvelope jsonEnvelope, final Initiate hearingInitiate) {
-        final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+        final JsonObject hearingListingStatusCommand = JsonObjects.createObjectBuilder()
                 .add(HEARING_LISTING_STATUS, HEARING_INITIALISED)
                 .add(HEARING, objectToJsonObjectConverter.convert(hearingInitiate.getHearing()))
                 .build();
@@ -970,7 +970,7 @@ public class ProgressionService {
 
     private void updateHearingListingStatusToSentForListing(final JsonEnvelope jsonEnvelope, final List<ListHearingRequest> listHearingRequests, final Hearing hearing) {
         if (isNotEmpty(hearing.getProsecutionCases())) {
-            final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder hearingListingStatusCommandBuilder = JsonObjects.createObjectBuilder()
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                     .add(HEARING, objectToJsonObjectConverter.convert(hearing));
             if (isNotEmpty(listHearingRequests)) {
@@ -982,7 +982,7 @@ public class ProgressionService {
             sender.send(enveloper.withMetadataFrom(jsonEnvelope, PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND).apply(hearingListingStatusCommand));
         } else {
 
-            final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = Json.createObjectBuilder()
+            final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = JsonObjects.createObjectBuilder()
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                     .add(HEARING, objectToJsonObjectConverter.convert(hearing));
 
@@ -1034,7 +1034,7 @@ public class ProgressionService {
             final Hearing hearing = transformHearingListingNeeds(hearingListingNeeds, seedingHearing, false, null);
 
             if (isNotEmpty(hearing.getProsecutionCases())) {
-                final JsonObjectBuilder hearingListingStatusCommandBuilder = Json.createObjectBuilder()
+                final JsonObjectBuilder hearingListingStatusCommandBuilder = JsonObjects.createObjectBuilder()
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                         .add(HEARING, objectToJsonObjectConverter.convert(hearing));
 
@@ -1057,7 +1057,7 @@ public class ProgressionService {
                 sender.send(JsonEnvelope.envelopeFrom(JsonEnvelope.metadataFrom(jsonEnvelope.metadata()).withName(PROGRESSION_UPDATE_DEFENDANT_LISTING_STATUS_COMMAND_V3),
                         hearingListingStatusCommand));
             } else {
-                final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = Json.createObjectBuilder()
+                final JsonObjectBuilder hearingCreatedForApplicationCommandBuilder = JsonObjects.createObjectBuilder()
                         .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
                         .add(HEARING, objectToJsonObjectConverter.convert(hearing));
 
@@ -1098,7 +1098,7 @@ public class ProgressionService {
     }
 
     public void listUnscheduledHearings(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add(HEARING, objectToJsonObjectConverter.convert(hearing))
                 .build();
 
@@ -1107,7 +1107,7 @@ public class ProgressionService {
 
     public void sendUpdateDefendantListingStatusForUnscheduledListing(final JsonEnvelope jsonEnvelope, final List<Hearing> unscheduledHearings, final Set<UUID> hearingsToBeSentNotification) {
         unscheduledHearings.forEach(unscheduledHearing -> {
-            final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+            final JsonObject hearingListingStatusCommand = JsonObjects.createObjectBuilder()
                     .add(UNSCHEDULED, true)
                     .add(NOTIFY_NCES, hearingsToBeSentNotification.contains(unscheduledHearing.getId()))
                     .add(HEARING_LISTING_STATUS, SENT_FOR_LISTING)
@@ -1130,7 +1130,7 @@ public class ProgressionService {
         newHearingIds.stream().forEach(s -> newHearingIdArrays.add(s.getId().toString()));
 
 
-        final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+        final JsonObject hearingListingStatusCommand = JsonObjects.createObjectBuilder()
                 .add(HEARING_ID, originalHearingId.toString())
                 .add(UNSCHEDULED_HEARING_IDS, newHearingIdArrays.build())
                 .build();
@@ -1138,7 +1138,7 @@ public class ProgressionService {
     }
 
     public void updateHearingListingStatusToHearingUpdate(final JsonEnvelope jsonEnvelope, final Hearing hearing) {
-        final JsonObject hearingListingStatusCommand = Json.createObjectBuilder()
+        final JsonObject hearingListingStatusCommand = JsonObjects.createObjectBuilder()
                 .add(HEARING_LISTING_STATUS, "HEARING_INITIALISED")
                 .add(HEARING, objectToJsonObjectConverter.convert(hearing))
                 .build();
@@ -1147,7 +1147,7 @@ public class ProgressionService {
     }
 
     public void publishHearingDetailChangedPublicEvent(final JsonEnvelope jsonEnvelope, final ConfirmedHearing confirmedHearing) {
-        final JsonObject hearingDetailChangedPayload = Json.createObjectBuilder()
+        final JsonObject hearingDetailChangedPayload = JsonObjects.createObjectBuilder()
                 .add(HEARING, objectToJsonObjectConverter.convert(transformUpdatedHearing(confirmedHearing, jsonEnvelope)))
                 .build();
         LOGGER.info("publish public hearing details changed event with payload {}", hearingDetailChangedPayload);
@@ -1257,7 +1257,7 @@ public class ProgressionService {
     }
 
     public void updateCourtApplicationStatus(final JsonEnvelope jsonEnvelope, final UUID applicationId, final ApplicationStatus status) {
-        final JsonObject updateApplicationStatus = Json.createObjectBuilder()
+        final JsonObject updateApplicationStatus = JsonObjects.createObjectBuilder()
                 .add("id", applicationId.toString())
                 .add("applicationStatus", status.toString())
                 .build();
@@ -1809,7 +1809,7 @@ public class ProgressionService {
     }
 
     public void populateHearingToProbationCaseworker(final JsonEnvelope jsonEnvelope, final UUID hearingId) {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .build();
 
@@ -1819,7 +1819,7 @@ public class ProgressionService {
     }
 
     public void populateHearingToProbationCaseworker(final Metadata metadata, final UUID hearingId) {
-        final JsonObject payload = Json.createObjectBuilder()
+        final JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("hearingId", hearingId.toString())
                 .build();
 

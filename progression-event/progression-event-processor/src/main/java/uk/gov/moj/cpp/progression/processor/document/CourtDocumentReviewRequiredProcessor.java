@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -64,7 +64,7 @@ public class CourtDocumentReviewRequiredProcessor {
 
     private JsonObject enrich(final JsonObject source, final Map<String, String> keyValuePair) {
         if(MapUtils.isNotEmpty(keyValuePair)) {
-            final JsonObjectBuilder builder = Json.createObjectBuilder();
+            final JsonObjectBuilder builder = JsonObjects.createObjectBuilder();
             source.entrySet().
                     forEach(e -> builder.add(e.getKey(), e.getValue()));
 

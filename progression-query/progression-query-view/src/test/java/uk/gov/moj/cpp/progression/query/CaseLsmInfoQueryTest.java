@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -86,7 +86,7 @@ public class CaseLsmInfoQueryTest {
 
     @BeforeEach
     public void setUp() {
-        JsonObject payload = Json.createObjectBuilder()
+        JsonObject payload = JsonObjects.createObjectBuilder()
                 .add("caseId", randomUUID().toString())
                 .build();
 
@@ -115,7 +115,7 @@ public class CaseLsmInfoQueryTest {
                 .thenReturn(new ArrayList<>());
 
         when(caseLsmInfoConverter.convertMatchedCaseDefendants(any(),any(),any()))
-                .thenReturn(Json.createArrayBuilder());
+                .thenReturn(JsonObjects.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -169,7 +169,7 @@ public class CaseLsmInfoQueryTest {
                 .thenReturn(Arrays.asList(createCaseDefendantHearingEntity()));
 
         when(caseLsmInfoConverter.convertRelatedCaseDefendants(any(),any()))
-                .thenReturn(Json.createArrayBuilder());
+                .thenReturn(JsonObjects.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -197,7 +197,7 @@ public class CaseLsmInfoQueryTest {
         when(caseDefendantHearingRepository.findByCaseId(any()))
                 .thenReturn(Arrays.asList(createCaseDefendantHearingEntity()));
 
-        when(caseLsmInfoConverter.convertRelatedCaseDefendants(any(),any())).thenReturn(Json.createArrayBuilder());
+        when(caseLsmInfoConverter.convertRelatedCaseDefendants(any(),any())).thenReturn(JsonObjects.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -233,7 +233,7 @@ public class CaseLsmInfoQueryTest {
                 .thenReturn(new ArrayList<>());
 
         when(caseLsmInfoConverter.convertMatchedCaseDefendants(any(),any(),any()))
-                .thenReturn(Json.createArrayBuilder());
+                .thenReturn(JsonObjects.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();
@@ -261,7 +261,7 @@ public class CaseLsmInfoQueryTest {
                 .thenReturn(new ArrayList<>());
 
         when(caseLsmInfoConverter.convertMatchedCaseDefendants(any(),any(),any()))
-                .thenReturn(Json.createArrayBuilder());
+                .thenReturn(JsonObjects.createArrayBuilder());
 
         JsonEnvelope responseEnvelope = caseLsmInfoQuery.getCaseLsmInfo(envelope);
         JsonObject responsePayload = responseEnvelope.payloadAsJsonObject();

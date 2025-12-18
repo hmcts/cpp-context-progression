@@ -5,7 +5,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.justice.services.messaging.Envelope.envelopeFrom;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -46,7 +46,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -229,7 +229,7 @@ public class DefendantsAddedToCourtProceedingsProcessor {
     }
 
     private static JsonArray getDefendantOffences(final DefendantsAddedToCourtProceedings defendantsAddedToCourtProceedings) {
-        final JsonArrayBuilder offenceIdArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder offenceIdArrayBuilder = JsonObjects.createArrayBuilder();
         defendantsAddedToCourtProceedings.getDefendants().stream()
                 .flatMap(r -> r.getOffences().stream())
                 .map(Offence::getId)

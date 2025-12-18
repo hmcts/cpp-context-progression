@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.query.api;
 
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -204,7 +204,7 @@ public class ApplicationQueryApiTest {
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
         when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
-        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(Json.createObjectBuilder()
+        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(JsonObjects.createObjectBuilder()
                 .add("groups", createArrayBuilder()
                         .add(createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
                         .build())
@@ -218,7 +218,7 @@ public class ApplicationQueryApiTest {
 
         String caseId = randomUUID().toString();
         final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         jsonObjectBuilder.add("prosecutionCaseId", caseId);
         final JsonObject jsonObjectPayload = createObjectBuilder().add("linkedCases", jsonArrayBuilder.add(jsonObjectBuilder).build()).build();
         final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
@@ -226,7 +226,7 @@ public class ApplicationQueryApiTest {
 
         when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
         when(defenceQueryService.isUserProsecutingOrDefendingCase(envelope, caseId)).thenReturn(false);
-        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(Json.createObjectBuilder()
+        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(JsonObjects.createObjectBuilder()
                 .add("groups", createArrayBuilder()
                         .build())
                 .build());
@@ -239,14 +239,14 @@ public class ApplicationQueryApiTest {
 
         String caseId = randomUUID().toString();
         final JsonArrayBuilder jsonArrayBuilder = createArrayBuilder();
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         jsonObjectBuilder.add("prosecutionCaseId", caseId);
         final JsonObject jsonObjectPayload = createObjectBuilder().add("linkedCases", jsonArrayBuilder.add(jsonObjectBuilder).build()).build();
         final Metadata metadata = QueryClientTestBase.metadataFor(APPLICATION_AT_GLANCE_DEFENCE);
         final JsonEnvelope envelope = JsonEnvelope.envelopeFrom(metadata, jsonObjectPayload);
 
         when(applicationQueryView.getCourtApplicationForApplicationAtAGlance(any())).thenReturn(envelope);
-        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(Json.createObjectBuilder()
+        when(usersGroupQueryService.getUserGroups(any(), any())).thenReturn(JsonObjects.createObjectBuilder()
                 .add("groups", createArrayBuilder()
                         .add(createObjectBuilder().add("groupName", "Non CPS Prosecutors").build())
                         .build())

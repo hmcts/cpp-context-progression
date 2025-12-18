@@ -10,8 +10,8 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.CourtApplicationPartyListingNeeds.courtApplicationPartyListingNeeds;
@@ -114,7 +114,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -728,7 +728,7 @@ public class CourtApplicationProcessor {
                 final Hearing updatedHearing = updateHearingWithApplication(event, hearing, courtApplication);
                 progressionService.linkApplicationsToHearing(event, updatedHearing, singletonList(courtApplication.getId()), SENT_FOR_LISTING);
 
-                final JsonArrayBuilder prosecutionCasesBuilder = Json.createArrayBuilder();
+                final JsonArrayBuilder prosecutionCasesBuilder = JsonObjects.createArrayBuilder();
                 final Stream<ProsecutionCase> prosecutionCaseStream = ofNullable(updatedHearing.getProsecutionCases()).map(Collection::stream).orElseGet(Stream::empty);
                 prosecutionCaseStream.map(prosecutionCase -> objectToJsonObjectConverter.convert(prosecutionCase)).forEach(prosecutionCasesBuilder::add);
                 final JsonObjectBuilder hearingExtendedPayloadBuilder = createObjectBuilder()

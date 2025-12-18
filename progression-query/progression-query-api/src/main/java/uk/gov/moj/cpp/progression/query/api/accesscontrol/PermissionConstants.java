@@ -1,6 +1,6 @@
 package uk.gov.moj.cpp.progression.query.api.accesscontrol;
 
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 
 public class PermissionConstants {
     static final String COTR_DEFENCE_ACCESS = "defence-access";

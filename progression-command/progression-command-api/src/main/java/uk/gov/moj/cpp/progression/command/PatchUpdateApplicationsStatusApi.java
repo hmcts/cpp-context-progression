@@ -9,7 +9,7 @@ import uk.gov.justice.services.core.sender.Sender;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -32,7 +32,7 @@ public class PatchUpdateApplicationsStatusApi {
         for (int i = 0; i < applications.size(); i++) {
             final JsonObject application = applications.getJsonObject(i);
 
-            final JsonObjectBuilder jsonObject = Json.createObjectBuilder()
+            final JsonObjectBuilder jsonObject = JsonObjects.createObjectBuilder()
                     .add(ID, application.getString(ID));
             if (application.containsKey(APPLICATION_STATUS)) {
                 jsonObject.add(APPLICATION_STATUS, application.getString(APPLICATION_STATUS));

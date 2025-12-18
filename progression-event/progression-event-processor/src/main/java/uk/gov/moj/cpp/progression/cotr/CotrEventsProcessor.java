@@ -6,8 +6,8 @@ import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.services.core.annotation.Component.EVENT_PROCESSOR;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
@@ -63,7 +63,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -231,7 +231,7 @@ public class CotrEventsProcessor {
 
     private JsonObject buildPayload(final Envelope<CotrCreated> event) {
 
-        final JsonObjectBuilder eventPayload = Json.createObjectBuilder()
+        final JsonObjectBuilder eventPayload = JsonObjects.createObjectBuilder()
                 .add(COTR_ID, event.payload().getCotrId().toString());
 
         if (nonNull(event.payload().getSubmissionId())) {
@@ -659,7 +659,7 @@ public class CotrEventsProcessor {
                 .withName(PROGRESSION_OPERATION_FAILED)
                 .build();
 
-        final JsonObject cpsServeMaterialStatusUpdated = Json.createObjectBuilder().add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
+        final JsonObject cpsServeMaterialStatusUpdated = JsonObjects.createObjectBuilder().add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))
                 .add(CASE_ID, payload.getString(CASE_ID))
                 .add(MESSAGE, message)
                 .add(OPERATION, command).build();
@@ -686,7 +686,7 @@ public class CotrEventsProcessor {
     }
 
     private JsonObject buildUpdateCotr(final JsonObject payload, final UUID hearingId) {
-        return Json.createObjectBuilder()
+        return JsonObjects.createObjectBuilder()
                 .add(COTR_ID, payload.getString(COTR_ID))
                 .add(HEARING_ID, String.valueOf(hearingId))
                 .add(SUBMISSION_ID, payload.getString(SUBMISSION_ID))

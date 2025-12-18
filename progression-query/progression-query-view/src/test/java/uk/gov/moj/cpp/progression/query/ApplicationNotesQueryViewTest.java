@@ -31,7 +31,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,7 +82,7 @@ public class ApplicationNotesQueryViewTest {
         final JsonEnvelope envelope = applicationNotesQueryView.getApplicationNotes(
                 JsonEnvelope.envelopeFrom(JsonEnvelope.metadataBuilder().withId(randomUUID())
                                 .withName(PROGRESSION_QUERY_APPLICATION_NOTES).build(),
-                        Json.createObjectBuilder().add(APPLICATION_ID, VALUE_APPLICATION_ID.toString()).build()));
+                        JsonObjects.createObjectBuilder().add(APPLICATION_ID, VALUE_APPLICATION_ID.toString()).build()));
 
         //Then
         verifyResponseList(envelope);

@@ -5,7 +5,7 @@ import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.toList;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.justice.services.core.annotation.Component.COMMAND_HANDLER;
 import static uk.gov.justice.services.core.enveloper.Enveloper.envelop;
 import static uk.gov.justice.services.messaging.Envelope.metadataFrom;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
@@ -104,7 +104,7 @@ public class UsersGroupService {
 
     protected Envelope<JsonObject> getOrganisationForLaaContractNumber(final Envelope<?> envelope, final String laaContractNumber) {
 
-        final JsonObject orgDetailsJsonEnvelope = Json.createObjectBuilder().add(LAA_CONTRACT_NUMBER, laaContractNumber).build();
+        final JsonObject orgDetailsJsonEnvelope = JsonObjects.createObjectBuilder().add(LAA_CONTRACT_NUMBER, laaContractNumber).build();
 
         return requester.requestAsAdmin(envelopeFrom(
                 metadataFrom(envelope.metadata()).withName("usersgroups.get-organisation-details-by-laaContractNumber"),
@@ -115,7 +115,7 @@ public class UsersGroupService {
 
     protected JsonObject getOrganisationForOrganisationId(final Envelope<?> envelope, final String organisationId) {
 
-        final JsonObject orgDetailsJsonEnvelope = Json.createObjectBuilder().add(ORGANISATION_ID, organisationId).build();
+        final JsonObject orgDetailsJsonEnvelope = JsonObjects.createObjectBuilder().add(ORGANISATION_ID, organisationId).build();
 
         final Envelope<JsonObject> jsonResultEnvelope = requester.requestAsAdmin(envelopeFrom(
                 metadataFrom(envelope.metadata()).withName("usersgroups.get-organisation-details"),

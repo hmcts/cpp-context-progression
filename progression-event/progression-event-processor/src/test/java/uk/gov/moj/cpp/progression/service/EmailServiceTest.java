@@ -1,8 +1,8 @@
 package uk.gov.moj.cpp.progression.service;
 
 import static java.lang.String.format;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -386,11 +386,11 @@ public class EmailServiceTest {
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return Json.createObjectBuilder()
-                .add("documentAccess", Json.createArrayBuilder().add("Listing Officer"))
-                .add("canCreateUserGroups", Json.createArrayBuilder().add("Listing Officer"))
-                .add("canReadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
-                .add("canDownloadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+        return JsonObjects.createObjectBuilder()
+                .add("documentAccess", JsonObjects.createArrayBuilder().add("Listing Officer"))
+                .add("canCreateUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer"))
+                .add("canReadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+                .add("canDownloadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
     }
 

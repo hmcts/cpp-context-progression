@@ -6,8 +6,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static uk.gov.justice.core.courts.AddMaterialV2.addMaterialV2;
 import static uk.gov.justice.core.courts.DefendantSubject.defendantSubject;
@@ -76,7 +76,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -680,7 +680,7 @@ public class NotificationService {
 
             emailAddressOptional.ifPresent(email -> {
                 final CourtDocument courtDocument = postalService.courtDocument(postalNotificationDetails.getCourtApplication().getId(), materialId, event, null);
-                final JsonObject courtDocumentPayload = Json.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
+                final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder().add("courtDocument", objectToJsonObjectConverter.convert(courtDocument)).build();
 
                 LOGGER.info("creating court document payload - {}", courtDocumentPayload);
 
@@ -779,7 +779,7 @@ public class NotificationService {
                 postalNotificationDetails.getCourtApplication().getId(), materialId, event, null
         );
 
-        final JsonObject courtDocumentPayload = Json.createObjectBuilder()
+        final JsonObject courtDocumentPayload = JsonObjects.createObjectBuilder()
                 .add("courtDocument", objectToJsonObjectConverter.convert(courtDocument))
                 .build();
 

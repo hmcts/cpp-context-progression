@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.query.utils;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static uk.gov.moj.cpp.progression.query.utils.CaseHearingsQueryHelper.addHearing;
 
 import uk.gov.justice.core.courts.CourtApplication;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -61,7 +61,7 @@ public class ApplicationHearingQueryHelper {
         applicationHearings.forEach((courtApplication, hearings) ->
                 hearings.stream().filter(h -> isNull(h.getIsBoxHearing()) || !h.getIsBoxHearing())
                         .forEach(hearing -> {
-                            final JsonObjectBuilder applicationHearingsJsonBuilder = Json.createObjectBuilder()
+                            final JsonObjectBuilder applicationHearingsJsonBuilder = JsonObjects.createObjectBuilder()
                                     .add(ID, courtApplication.getId().toString())
                                     .add(TITLE, courtApplication.getType().getType());
                             addHearing(applicationHearingsJsonBuilder, hearing);
@@ -85,7 +85,7 @@ public class ApplicationHearingQueryHelper {
                 Comparator.nullsLast(Comparator.naturalOrder())
         ));
 
-        final JsonArrayBuilder sortedArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder sortedArrayBuilder = JsonObjects.createArrayBuilder();
         hearingJsonObjects.forEach(sortedArrayBuilder::add);
 
         return sortedArrayBuilder.build();

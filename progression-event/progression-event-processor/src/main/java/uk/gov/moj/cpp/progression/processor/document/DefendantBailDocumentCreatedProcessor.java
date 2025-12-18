@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public class DefendantBailDocumentCreatedProcessor {
 
             final Optional<JsonObject> materialMetadata = materialService.getMaterialMetadata(envelope, defendantBailDocumentCreated.getMaterialId());
             materialMetadata.ifPresent(data -> {
-                final JsonObject jsonObject = Json.createObjectBuilder()
+                final JsonObject jsonObject = JsonObjects.createObjectBuilder()
                         .add("materialId", defendantBailDocumentCreated.getMaterialId().toString())
                         .add("courtDocument", objectToJsonObjectConverter
                                 .convert(buildCourtDocumentWithMaterialUserGroups(defendantBailDocumentCreated, data, bailDocumentTypeId))).build();

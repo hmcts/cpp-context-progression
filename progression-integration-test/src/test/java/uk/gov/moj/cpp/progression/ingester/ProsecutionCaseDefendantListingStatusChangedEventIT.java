@@ -1,5 +1,7 @@
 package uk.gov.moj.cpp.progression.ingester;
 
+import uk.gov.justice.services.messaging.JsonObjects;
+
 import uk.gov.justice.services.common.converter.StringToJsonObjectConverter;
 import uk.gov.justice.services.integrationtest.utils.jms.JmsMessageProducerClient;
 import uk.gov.justice.services.messaging.JsonEnvelope;

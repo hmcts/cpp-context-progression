@@ -286,7 +286,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -2315,7 +2315,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     private String transformToPartialMatchDefendantPayload(final uk.gov.justice.core.courts.Defendant defendant, final UUID prosecutionCaseId, final List<Cases> casesList) {
-        final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder jsonObjectBuilder = JsonObjects.createObjectBuilder();
         jsonObjectBuilder.add("defendantId", defendant.getId().toString());
         jsonObjectBuilder.add("masterDefendantId", defendant.getMasterDefendantId().toString());
         jsonObjectBuilder.add("prosecutionCaseId", prosecutionCaseId.toString());
@@ -2335,7 +2335,7 @@ public class CaseAggregate implements Aggregate {
         }
         jsonObjectBuilder.add("defendantsMatchedCount", casesList.size());
 
-        final JsonArrayBuilder jsonDefendantsMatchedBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder jsonDefendantsMatchedBuilder = JsonObjects.createArrayBuilder();
         casesList.forEach(cases -> convertToJsonArray(jsonDefendantsMatchedBuilder, cases, cases.getDefendants()));
         jsonObjectBuilder.add("defendantsMatched", jsonDefendantsMatchedBuilder.build());
         return jsonObjectBuilder.build().toString();
@@ -2347,7 +2347,7 @@ public class CaseAggregate implements Aggregate {
                 return;
             }
 
-            final JsonObjectBuilder defendantJsonObjectBuilder = Json.createObjectBuilder();
+            final JsonObjectBuilder defendantJsonObjectBuilder = JsonObjects.createObjectBuilder();
             defendantJsonObjectBuilder.add("defendantId", defendant.getDefendantId());
             addToJsonObjectNullSafe(defendantJsonObjectBuilder, "masterDefendantId", defendant.getMasterDefendantId());
             defendantJsonObjectBuilder.add("courtProceedingsInitiated", ZONE_DATETIME_FORMATTER.format(defendant.getCourtProceedingsInitiated()));
@@ -2368,7 +2368,7 @@ public class CaseAggregate implements Aggregate {
     }
 
     private void addAddress(final Address address, final JsonObjectBuilder jsonObjectBuilder) {
-        final JsonObjectBuilder addressJsonObjectBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder addressJsonObjectBuilder = JsonObjects.createObjectBuilder();
         addToJsonObjectNullSafe(addressJsonObjectBuilder, "addressLine1", address.getAddress1());
         addToJsonObjectNullSafe(addressJsonObjectBuilder, "addressLine2", address.getAddress2());
         addToJsonObjectNullSafe(addressJsonObjectBuilder, "addressLine3", address.getAddress3());

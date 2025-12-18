@@ -40,7 +40,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -128,11 +128,11 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final DocumentGeneratorClient documentGeneratorClient = mock(DocumentGeneratorClient.class);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream("resulted.json");
-             final JsonReader jsonReader = Json.createReader(stream)) {
+             final JsonReader jsonReader = JsonObjects.createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
             final String newPayload = Resources.toString(getResource("payload-with-plea-description.json"), Charset.defaultCharset());
 
-            final JsonReader reader = Json.createReader(new StringReader(newPayload));
+            final JsonReader reader = JsonObjects.createReader(new StringReader(newPayload));
             JsonObject res = reader.readObject();
 
             when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
@@ -160,10 +160,10 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final DocumentGeneratorClient documentGeneratorClient = mock(DocumentGeneratorClient.class);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream("resulted.json");
-             final JsonReader jsonReader = Json.createReader(stream)) {
+             final JsonReader jsonReader = JsonObjects.createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
             final String newPayload = Resources.toString(getResource("record-sheet-payload-with-plea-description.json"), Charset.defaultCharset());
-            final JsonReader reader = Json.createReader(new StringReader(newPayload));
+            final JsonReader reader = JsonObjects.createReader(new StringReader(newPayload));
             JsonObject res = reader.readObject();
             when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
             when(documentGeneratorClient.generatePdfDocument(any(), anyString(), any())).thenReturn(newPayload.getBytes());
@@ -190,10 +190,10 @@ public class DefaultQueryApiProsecutioncasesCaseIdDefendantsDefendantIdExtractTe
         final DocumentGeneratorClient documentGeneratorClient = mock(DocumentGeneratorClient.class);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (final InputStream stream = loader.getResourceAsStream("progression.query.prosecutioncase-with-appeal-application-hearing.json");
-             final JsonReader jsonReader = Json.createReader(stream)) {
+             final JsonReader jsonReader = JsonObjects.createReader(stream)) {
             final JsonObject payload = jsonReader.readObject();
             final String newPayload = Resources.toString(getResource("court-extract-payload-with-plea-description.json"), Charset.defaultCharset());
-            final JsonReader reader = Json.createReader(new StringReader(newPayload));
+            final JsonReader reader = JsonObjects.createReader(new StringReader(newPayload));
             JsonObject res = reader.readObject();
             when(documentGeneratorClientProducer.documentGeneratorClient()).thenReturn(documentGeneratorClient);
             when(documentGeneratorClient.generatePdfDocument(any(), anyString(), any())).thenReturn(newPayload.getBytes());

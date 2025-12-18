@@ -3,8 +3,8 @@ package uk.gov.moj.cpp.progression.query.api;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createArrayBuilder;
+import static uk.gov.justice.services.messaging.JsonObjects.createObjectBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -111,18 +111,18 @@ public class DocumentQueryApiTest {
     }
 
     private static JsonObject buildDocumentTypeDataWithRBAC() {
-        return Json.createObjectBuilder()
-                .add("documentAccess", Json.createArrayBuilder().add("Listing Officer"))
-                .add("canCreateUserGroups", Json.createArrayBuilder().add("Listing Officer"))
-                .add("canReadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
-                .add("canDownloadUserGroups", Json.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+        return JsonObjects.createObjectBuilder()
+                .add("documentAccess", JsonObjects.createArrayBuilder().add("Listing Officer"))
+                .add("canCreateUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer"))
+                .add("canReadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
+                .add("canDownloadUserGroups", JsonObjects.createArrayBuilder().add("Listing Officer").add("Magistrates"))
                 .build();
     }
 
     private static JsonObject buildHearingTypeListJsonObject() {
 
-        final JsonObject hearingTypeList = Json.createObjectBuilder()
-                .add("hearingTypes", Json.createArrayBuilder()
+        final JsonObject hearingTypeList = JsonObjects.createObjectBuilder()
+                .add("hearingTypes", JsonObjects.createArrayBuilder()
                         .add(createObjectBuilder()
                                 .add("id", "06b0c2bf-3f98-46ed-ab7e-56efaf9ecced")
                                 .add("hearingCode", "TIS")

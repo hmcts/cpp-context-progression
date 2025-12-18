@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
@@ -135,7 +135,7 @@ public class HearingResultedEventListenerTest {
 
     private JsonObject jsonFromString(final String jsonObjectStr) {
         JsonObject object;
-        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonObjectStr))) {
+        try (JsonReader jsonReader = JsonObjects.createReader(new StringReader(jsonObjectStr))) {
             object = jsonReader.readObject();
         }
         return object;

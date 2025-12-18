@@ -50,7 +50,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonObject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -148,9 +148,9 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(sjpCourtReferral);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().build()));
+                (JsonObjects.createObjectBuilder().build()));
         when(progressionService.getReferralReasonByReferralReasonId(any(), any()))
-                .thenReturn(Json.createObjectBuilder().add("reason", "reason for referral").build());
+                .thenReturn(JsonObjects.createObjectBuilder().add("reason", "reason for referral").build());
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class),
                 any(JsonEnvelope.class))).thenReturn(prosecutionCase);
         when(listCourtHearingTransformer.transform(any(), any(), any(), any(), any(UUID.class))).thenReturn
@@ -179,7 +179,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(sjpCourtReferral);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
+                (JsonObjects.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         //When
         this.eventProcessor.process(jsonEnvelope);
@@ -202,7 +202,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(sjpCourtReferral);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
+                (JsonObjects.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         //When
         this.eventProcessor.process(jsonEnvelope);
@@ -225,7 +225,7 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(sjpCourtReferral);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
+                (JsonObjects.createObjectBuilder().add("caseId", randomUUID().toString()).build()));
 
         //When
         this.eventProcessor.process(jsonEnvelope);
@@ -255,10 +255,10 @@ public class CaseReferredToCourtEventProcessorTest {
         when(jsonObjectToObjectConverter.convert(courtReferralJson, SjpCourtReferral.class))
                 .thenReturn(sjpCourtReferral);
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().build()));
-        when(progressionService.getReferralReasonByReferralReasonId(any(), any())).thenReturn(Json.createObjectBuilder().build());
+                (JsonObjects.createObjectBuilder().build()));
+        when(progressionService.getReferralReasonByReferralReasonId(any(), any())).thenReturn(JsonObjects.createObjectBuilder().build());
         when(progressionService.getReferralReasonByReferralReasonId(any(), any()))
-                .thenReturn(Json.createObjectBuilder().add("reason", "For disqualification")
+                .thenReturn(JsonObjects.createObjectBuilder().add("reason", "For disqualification")
                         .build());
 
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
@@ -348,9 +348,9 @@ public class CaseReferredToCourtEventProcessorTest {
                 .thenReturn(sjpCourtReferral);
 
         when(progressionService.caseExistsByCaseUrn(any(), any())).thenReturn(Optional.of
-                (Json.createObjectBuilder().build()));
+                (JsonObjects.createObjectBuilder().build()));
         when(progressionService.getReferralReasonByReferralReasonId(any(), any()))
-                .thenReturn(Json.createObjectBuilder().add("reason", "reason for referral").build());
+                .thenReturn(JsonObjects.createObjectBuilder().add("reason", "reason for referral").build());
         when(referredProsecutionCaseTransformer.transform(any(ReferredProsecutionCase.class), any(HearingLanguage.class), any
                 (JsonEnvelope.class))).thenReturn(prosecutionCase);
         when(listCourtHearingTransformer.transformSjpReferralNextHearing(any(), any(), any(), any(), any())).thenReturn

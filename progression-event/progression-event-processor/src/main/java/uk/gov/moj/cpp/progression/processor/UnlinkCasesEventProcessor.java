@@ -15,7 +15,7 @@ import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.moj.cpp.progression.events.CasesUnlinked;
 
 import javax.inject.Inject;
-import javax.json.Json;
+import uk.gov.justice.services.messaging.JsonObjects;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -51,9 +51,9 @@ public class UnlinkCasesEventProcessor {
 
     private JsonObject buildCaseUnlinkedEventPayload(final CasesUnlinked casesUnlinked) {
 
-        final JsonObjectBuilder payloadBuilder = Json.createObjectBuilder();
+        final JsonObjectBuilder payloadBuilder = JsonObjects.createObjectBuilder();
         payloadBuilder.add(LINK_ACTION_TYPE, UNLINK);
-        final JsonArrayBuilder casesArrayBuilder = Json.createArrayBuilder();
+        final JsonArrayBuilder casesArrayBuilder = JsonObjects.createArrayBuilder();
 
         casesUnlinked.getUnlinkedCases().forEach(
                 unlinkedCases ->
