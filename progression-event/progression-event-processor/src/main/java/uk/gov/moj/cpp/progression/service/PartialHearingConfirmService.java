@@ -144,30 +144,6 @@ public class PartialHearingConfirmService {
     }
 
     /**
-     * remove all prosecutionCasesDefendantsOffences which is not seeded by seedingHearing
-     *
-     * @param confirmedHearing
-     * @param hearing
-     * @param seedingHearing
-     */
-    public List<ProsecutionCase> getDeltaSeededProsecutionCases(final ConfirmedHearing confirmedHearing, final Hearing hearing, final SeedingHearing seedingHearing) {
-        final List<ProsecutionCase> deltaSeededProsecutionCases = getDifferences(confirmedHearing, hearing);
-        final List<UUID> deltaSeededOffenceIds = deltaSeededProsecutionCases.stream()
-                .flatMap(pc -> pc.getDefendants().stream())
-                .flatMap(defendant -> defendant.getOffences().stream())
-                .filter(offence -> nonNull(offence.getSeedingHearing()) && offence.getSeedingHearing().getSeedingHearingId().equals(seedingHearing.getSeedingHearingId()))
-                .map(Offence::getId)
-                .collect(Collectors.toList());
-
-        deltaSeededProsecutionCases.forEach(prosecutionCase -> prosecutionCase.getDefendants().forEach(defendant -> defendant.getOffences().removeIf(offence -> !deltaSeededOffenceIds.contains(offence.getId()))));
-        deltaSeededProsecutionCases.forEach(prosecutionCase -> prosecutionCase.getDefendants().removeIf(defendant -> defendant.getOffences().isEmpty()));
-        deltaSeededProsecutionCases.removeIf(prosecutionCase -> prosecutionCase.getDefendants().isEmpty());
-
-        return deltaSeededProsecutionCases;
-    }
-
-
-    /**
      * The method generates prosecutionCases based on seedingHearing from deltaProsecutionCases.
      * Each related hearing's prosecutionCases can be populated by this method.
      *

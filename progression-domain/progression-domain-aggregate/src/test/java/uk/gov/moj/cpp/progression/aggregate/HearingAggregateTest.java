@@ -2366,6 +2366,7 @@ public class HearingAggregateTest {
         List<Object> events = hearingAggregate.updateOffence(defendantId, offences, null).collect(toList());
         final HearingOffencesUpdatedV2 hearingOffencesUpdated = (HearingOffencesUpdatedV2)events.get(0);
         assertThat(hearingOffencesUpdated.getHearingId(), is(hearingId));
+        assertThat(hearingOffencesUpdated.getUpdatedOffences().get(0).getSeedingHearing(), is(notNullValue()));
         List<Offence> offencesOfDef1InHearing = hearingAggregate.getHearing().getProsecutionCases().get(0).getDefendants().get(0).getOffences();
         assertThat(offencesOfDef1InHearing.size(), is(1));
         assertThat(offencesOfDef1InHearing.get(0).getId(), is(offenceId));

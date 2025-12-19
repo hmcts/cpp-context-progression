@@ -482,7 +482,7 @@ public class HearingConfirmedEventProcessor {
             updateHearingForPartialAllocation(jsonEnvelope, confirmedHearing, deltaProsecutionCases);
             HearingListingNeeds newHearingForRemainingUnallocatedOffences;
             if (nonNull(seedingHearing)) {
-                final List<ProsecutionCase> deltaSeededProsecutionCases = partialHearingConfirmService.getDeltaSeededProsecutionCases(confirmedHearing, hearingInProgression, seedingHearing);
+                final List<ProsecutionCase> deltaSeededProsecutionCases = partialHearingConfirmService.getDifferences(confirmedHearing, hearingInProgression);
                 final ListNextHearings listNextHearings = partialHearingConfirmService.transformToListNextCourtHearing(deltaSeededProsecutionCases, hearingInitiate.getHearing(), hearingInProgression, seedingHearing);
                 listingService.listNextCourtHearings(jsonEnvelope, listNextHearings);
                 newHearingForRemainingUnallocatedOffences = listNextHearings.getHearings().get(0);
