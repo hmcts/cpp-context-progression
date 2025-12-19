@@ -99,6 +99,7 @@ import uk.gov.moj.cpp.progression.util.HearingUnallocatedCourtRoomRemovedHelper;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -2217,12 +2218,11 @@ public class HearingAggregate implements Aggregate {
     public Stream<Object> updateOffence(UUID defendantId, final List<Offence> updatedOffences, final List<Offence> newOffences) {
         if (isNull(this.hearing.getHasSharedResults()) || !this.hearing.getHasSharedResults()) {
             LOGGER.info("Hearing with id {} and the status: {} is either not yet set or not shared, offence can be updated\"", hearing.getId(), hearingListingStatus);
-            final Set<UUID> existingOffences = this.hearing.getProsecutionCases().stream()
+            final Map<UUID, Offence> existingOffences = this.hearing.getProsecutionCases().stream()
                     .flatMap(prosecutionCase -> prosecutionCase.getDefendants().stream())
                     .filter(defendant -> defendant.getId().equals(defendantId))
                     .flatMap(defendant -> defendant.getOffences().stream())
-                    .map(Offence::getId)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toMap(Offence::getId, Function.identity(), (oldValue, newValue) -> isNull(newValue.getSeedingHearing()) ? oldValue : newValue));
 
             final HearingOffencesUpdatedV2.Builder hearingOffencesUpdatedV2Builder = HearingOffencesUpdatedV2.hearingOffencesUpdatedV2()
                     .withDefendantId(defendantId)
@@ -2230,7 +2230,8 @@ public class HearingAggregate implements Aggregate {
                     .withNewOffences(newOffences);
 
             if (updatedOffences != null) {
-                hearingOffencesUpdatedV2Builder.withUpdatedOffences(updatedOffences.stream().filter(offence -> existingOffences.contains(offence.getId()))
+                hearingOffencesUpdatedV2Builder.withUpdatedOffences(updatedOffences.stream().filter(offence -> existingOffences.keySet().contains(offence.getId()))
+                        .map(off -> Offence.offence().withValuesFrom(off).withSeedingHearing(existingOffences.get(off.getId()).getSeedingHearing()).build())
                         .collect(collectingAndThen(Collectors.toList(), getListOrNull())));
             }
             final HearingOffencesUpdatedV2 hearingOffencesUpdatedV2 = hearingOffencesUpdatedV2Builder.build();
