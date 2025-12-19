@@ -1,6 +1,5 @@
 package uk.gov.moj.cpp.progression.helper;
 
-import static java.util.Optional.of;
 import static java.util.UUID.fromString;
 import static java.util.UUID.randomUUID;
 import static javax.json.Json.createObjectBuilder;
@@ -19,12 +18,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.services.messaging.JsonEnvelope.envelopeFrom;
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 import static uk.gov.moj.cpp.progression.helper.HearingNotificationHelper.HEARING_DATE_PATTERN;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.CJS_OFFENCE_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.LEGISLATION_WELSH;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.MODEOFTRIAL_CODE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.OFFENCE_TITLE;
-import static uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService.WELSH_OFFENCE_TITLE;
 
 import uk.gov.justice.core.courts.Address;
 import uk.gov.justice.core.courts.CourtCentre;
@@ -47,7 +40,6 @@ import uk.gov.moj.cpp.progression.service.ListingService;
 import uk.gov.moj.cpp.progression.service.NotificationService;
 import uk.gov.moj.cpp.progression.service.ProgressionService;
 import uk.gov.moj.cpp.progression.service.RefDataService;
-import uk.gov.moj.cpp.progression.service.ReferenceDataOffenceService;
 import uk.gov.moj.cpp.progression.service.dto.HearingNotificationInputData;
 import uk.gov.moj.cpp.progression.service.payloads.AssociatedDefenceOrganisation;
 import uk.gov.moj.cpp.progression.service.payloads.DefenceOrganisationAddress;
@@ -67,7 +59,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
@@ -133,9 +124,6 @@ public class HearingNotificationHelperTest {
     private Requester requester;
 
     @Mock
-    private ReferenceDataOffenceService referenceDataOffenceService;
-
-    @Mock
     private NotificationInfoJdbcRepository notificationInfoRepository;
 
     @Captor
@@ -158,12 +146,16 @@ public class HearingNotificationHelperTest {
     private UUID caseId;
     private UUID defendantId;
     private UUID hearingId;
+    private UUID offenceId1;
+    private UUID offenceId2;
 
     @BeforeEach
-    public void initMocks() {
-        caseId = UUID.randomUUID();
-        defendantId = UUID.randomUUID();
-        hearingId = UUID.randomUUID();
+    void initMocks() {
+        caseId = randomUUID();
+        defendantId = randomUUID();
+        hearingId = randomUUID();
+        offenceId1 = randomUUID();
+        offenceId2 = randomUUID();
 
         final Address address = Address.address()
                 .withAddress1("testAddress1")
@@ -205,7 +197,7 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_EmailToAllRelevantParties() {
+    void sendHearingNotifications_EmailToAllRelevantParties() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -215,6 +207,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -236,7 +230,6 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -246,7 +239,7 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_EmailToAllRelevantParties_WhenCivilCaseExparteFalse() {
+    void sendHearingNotifications_EmailToAllRelevantParties_WhenCivilCaseExparteFalse() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -256,6 +249,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase-civil-exparte-false.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -277,7 +272,6 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -287,7 +281,7 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void shouldNotSendHearingNotifications_NoNotificationSentToAllRelevantParties_WhenCivilCaseExparteTrue() {
+    void shouldNotSendHearingNotifications_NoNotificationSentToAllRelevantParties_WhenCivilCaseExparteTrue() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -297,6 +291,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase-civil-exparte-true.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -318,7 +314,6 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -329,17 +324,18 @@ public class HearingNotificationHelperTest {
 
 
     @Test
-    public void sendHearingNotifications_LetterToAllRelevantParties() {
+    void sendHearingNotifications_LetterToAllRelevantParties() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -360,7 +356,6 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -370,17 +365,18 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_LetterToDefendantOrganisation_EmailToProsecutor() {
+    void sendHearingNotifications_LetterToDefendantOrganisation_EmailToProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -401,7 +397,6 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -414,11 +409,10 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_LetterToPersonDefendant_EmailToProsecutor() {
+    void sendHearingNotifications_LetterToPersonDefendant_EmailToProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
@@ -435,7 +429,6 @@ public class HearingNotificationHelperTest {
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -448,17 +441,18 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_EmailToPersonDefendant_LetterToProsecutor() {
+    void sendHearingNotifications_EmailToPersonDefendant_LetterToProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -469,7 +463,7 @@ public class HearingNotificationHelperTest {
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor-with-no-email.json")));
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -482,11 +476,10 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_LetterToOrganisationDefendant_EmailToProsecutor() {
+    void sendHearingNotifications_LetterToOrganisationDefendant_EmailToProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
@@ -503,7 +496,7 @@ public class HearingNotificationHelperTest {
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -516,11 +509,10 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_EmailToOrganisationDefendant_LetterToProsecutor() {
+    void sendHearingNotifications_EmailToOrganisationDefendant_LetterToProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
@@ -537,7 +529,7 @@ public class HearingNotificationHelperTest {
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor-with-no-email.json")));
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -550,17 +542,18 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_EmailToDefendantOrganisation_LetterToProsecutor() {
+    void sendHearingNotifications_EmailToDefendantOrganisation_LetterToProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -582,7 +575,7 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -595,17 +588,18 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_EmailToDefendantOrganisation_NoNotificationToCpsProsecutor() {
+    void sendHearingNotifications_EmailToDefendantOrganisation_NoNotificationToCpsProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -627,7 +621,7 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -638,17 +632,18 @@ public class HearingNotificationHelperTest {
     }
 
     @Test
-    public void sendHearingNotifications_LetterToDefendantOrganisation_NoNotificationToCpsProsecutor() {
+    void sendHearingNotifications_LetterToDefendantOrganisation_NoNotificationToCpsProsecutor() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
-        final UUID materialId = randomUUID();
         final UUID hearingId = randomUUID();
         final ZonedDateTime hearingTime = ZonedDateTime.now().plusDays(5);
         HearingNotificationInputData inputData = getInputData(caseId, defendantId, TEMPLATE_NAME, hearingId, hearingTime);
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -669,7 +664,7 @@ public class HearingNotificationHelperTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
@@ -701,22 +696,13 @@ public class HearingNotificationHelperTest {
         return new StringToJsonObjectConverter().convert(response);
     }
 
-    private static JsonObject getOffence(final String modeoftrial) {
-        return Json.createObjectBuilder().add(LEGISLATION, "E12")
-                .add(LEGISLATION_WELSH, "123")
-                .add(OFFENCE_TITLE, "title-of-offence")
-                .add(WELSH_OFFENCE_TITLE, "welsh-title")
-                .add(MODEOFTRIAL_CODE, modeoftrial)
-                .add(CJS_OFFENCE_CODE, "British").build();
-    }
-
     private HearingNotificationInputData getInputData(final UUID caseId, final UUID defendantId, final String templateName, final UUID hearingId,
                                                       final ZonedDateTime hearingTime){
         final HearingNotificationInputData hearingNotificationInputData = new HearingNotificationInputData();
         hearingNotificationInputData.setHearingType(HEARING_TYPE);
-        hearingNotificationInputData.setCaseIds(ImmutableList.of(caseId));
-        hearingNotificationInputData.setDefendantIds(ImmutableList.of(defendantId));
-        hearingNotificationInputData.setDefendantOffenceListMap(ImmutableMap.of(defendantId, ImmutableList.of(randomUUID())));
+        hearingNotificationInputData.setCaseIds(List.of(caseId));
+        hearingNotificationInputData.setDefendantIds(List.of(defendantId));
+        hearingNotificationInputData.setDefendantOffenceListMap(ImmutableMap.of(defendantId, List.of(offenceId1,offenceId2)));
         hearingNotificationInputData.setTemplateName(templateName);
         hearingNotificationInputData.setHearingId(hearingId);
         hearingNotificationInputData.setHearingDateTime(hearingTime);
@@ -739,6 +725,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -747,7 +735,7 @@ public class HearingNotificationHelperTest {
         ));
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         // When
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
@@ -769,6 +757,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -777,7 +767,7 @@ public class HearingNotificationHelperTest {
         ));
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         // When
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
@@ -802,6 +792,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -810,7 +802,7 @@ public class HearingNotificationHelperTest {
         ));
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         // When
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
@@ -833,6 +825,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -841,7 +835,7 @@ public class HearingNotificationHelperTest {
         ));
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         // When
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
@@ -866,6 +860,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -874,7 +870,6 @@ public class HearingNotificationHelperTest {
         ));
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
 
         // When
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
@@ -901,6 +896,8 @@ public class HearingNotificationHelperTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -911,7 +908,7 @@ public class HearingNotificationHelperTest {
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor-with-no-email.json")));
         AssociatedDefenceOrganisation associatedDefenceOrganisation = null;
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         hearingNotificationHelper.sendHearingNotificationsToRelevantParties(jsonEnvelope, inputData);
 
