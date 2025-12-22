@@ -185,14 +185,13 @@ public class HearingExtendedEventListener {
     private ProsecutionCase mergeCases(final List<ProsecutionCase> prosecutionCases) {
         final ProsecutionCase firstCase = prosecutionCases.get(0);
         prosecutionCases.stream().skip(1).forEach(nextCase ->{
+            firstCase.getDefendants()
+                    .forEach(defFromFirstCase -> nextCase.getDefendants().stream().filter(def -> def.getId().equals(defFromFirstCase.getId())).findAny()
+                            .ifPresent(defFromNextCase -> mergeOffences(defFromFirstCase,defFromNextCase)));
+
             nextCase.getDefendants().stream()
                     .filter(def -> firstCase.getDefendants().stream().noneMatch(defFromFirstCase -> defFromFirstCase.getId().equals(def.getId())))
                     .forEach(def -> firstCase.getDefendants().add(def));
-
-            firstCase.getDefendants().stream()
-                    .filter(defFromFirstCase -> nextCase.getDefendants().stream().anyMatch(def -> def.getId().equals(defFromFirstCase.getId())))
-                    .forEach(defFromFirstCase -> mergeOffences(defFromFirstCase, nextCase.getDefendants().stream().filter(def -> def.getId().equals(defFromFirstCase.getId())).findAny().get()));
-
 
         } );
         return firstCase;
