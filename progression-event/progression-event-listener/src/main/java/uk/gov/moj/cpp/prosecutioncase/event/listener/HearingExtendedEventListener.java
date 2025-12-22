@@ -43,6 +43,7 @@ import javax.persistence.NoResultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("java:S1168")
 @ServiceComponent(EVENT_LISTENER)
 public class HearingExtendedEventListener {
 

@@ -79,7 +79,6 @@ public class HearingExtendedEventListenerTest {
     private UUID prosecutionCaseId;
     private UUID defendantId;
     private String hearingPayload;
-    private String hearingPayloadWithSameCaseWithDifferentDefendant;
 
 
     @BeforeEach
@@ -88,7 +87,6 @@ public class HearingExtendedEventListenerTest {
         prosecutionCaseId = randomUUID();
         defendantId = randomUUID();
         hearingPayload = createPayload("/json/hearingDataProsecutionCase.json");
-        hearingPayloadWithSameCaseWithDifferentDefendant = createPayload("/json/hearingDataWithSameCaseWithDifferentDefendant.json");
     }
 
     @Test
@@ -111,15 +109,15 @@ public class HearingExtendedEventListenerTest {
     }
 
     @Test
-    public void shouldAddNewDefendantWhenHearingExtended() {
+    void shouldAddNewDefendantWhenHearingExtended() {
         final UUID case1Id = randomUUID();
-        final UUID def1_1Id = randomUUID();
-        final UUID def1_2Id = randomUUID();
+        final UUID def1ForCase1Id = randomUUID();
+        final UUID def2ForCase1Id = randomUUID();
         final UUID case2Id = randomUUID();
-        final UUID def2_1Id = randomUUID();
+        final UUID def1ForCase2Id = randomUUID();
 
-        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID()))),
-                case2Id, asList(Map.of(def2_1Id, asList(randomUUID(), randomUUID())))
+        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID()))),
+                case2Id, asList(Map.of(def1ForCase2Id, asList(randomUUID(), randomUUID())))
         ));
 
         final HearingEntity hearingEntity = createHearingEntity(objectToJsonObjectConverter.convert(dbHearing).toString());
@@ -127,9 +125,9 @@ public class HearingExtendedEventListenerTest {
 
         final UUID extendedFromHearingId = randomUUID();
         final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId,
-                Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID()))),
-                case2Id, asList(Map.of(def2_1Id, asList(randomUUID(), randomUUID())))),
-                Map.of(case1Id, asList(Map.of(def1_2Id, asList(randomUUID(), randomUUID())))) , false, false);
+                Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID()))),
+                case2Id, asList(Map.of(def1ForCase2Id, asList(randomUUID(), randomUUID())))),
+                Map.of(case1Id, asList(Map.of(def2ForCase1Id, asList(randomUUID(), randomUUID())))) , false, false);
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.hearing-extended"),
@@ -146,9 +144,9 @@ public class HearingExtendedEventListenerTest {
         assertThat(savedHearing.getProsecutionCases().size(), is(2));
         final ProsecutionCase case1 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case1Id)).findFirst().get();
         final ProsecutionCase case2 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case2Id)).findFirst().get();
-        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_1Id)).findFirst().get();
-        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_2Id)).findFirst().get();
-        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def2_1Id)).findFirst().get();
+        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase1Id)).findFirst().get();
+        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def2ForCase1Id)).findFirst().get();
+        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase2Id)).findFirst().get();
 
         assertThat(case1.getDefendants().size(), is(2));
         assertThat(def1_1.getOffences().size(), is(4));
@@ -158,17 +156,17 @@ public class HearingExtendedEventListenerTest {
     }
 
     @Test
-    public void shouldAddNewCaseWhenHearingExtended() {
+    void shouldAddNewCaseWhenHearingExtended() {
         final UUID case1Id = randomUUID();
-        final UUID def1_1Id = randomUUID();
-        final UUID def1_2Id = randomUUID();
+        final UUID def1ForCase1Id = randomUUID();
+        final UUID def2ForCase1Id = randomUUID();
         final UUID case2Id = randomUUID();
-        final UUID def2_1Id = randomUUID();
+        final UUID def1ForCase2Id = randomUUID();
         final UUID case3Id = randomUUID();
-        final UUID def3_1Id = randomUUID();
+        final UUID def1ForCase3Id = randomUUID();
 
-        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID()))),
-                case2Id, asList(Map.of(def2_1Id, asList(randomUUID(), randomUUID())))
+        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID()))),
+                case2Id, asList(Map.of(def1ForCase2Id, asList(randomUUID(), randomUUID())))
         ));
 
         final HearingEntity hearingEntity = createHearingEntity(objectToJsonObjectConverter.convert(dbHearing).toString());
@@ -176,10 +174,10 @@ public class HearingExtendedEventListenerTest {
 
         final UUID extendedFromHearingId = randomUUID();
         final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId,
-                Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID()))),
-                        case2Id, asList(Map.of(def2_1Id, asList(randomUUID(), randomUUID())))),
-                Map.of(case1Id, asList(Map.of(def1_2Id, asList(randomUUID(), randomUUID()))),
-                        case3Id, asList(Map.of(def3_1Id, asList(randomUUID(), randomUUID())))) , false, false);
+                Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID()))),
+                        case2Id, asList(Map.of(def1ForCase2Id, asList(randomUUID(), randomUUID())))),
+                Map.of(case1Id, asList(Map.of(def2ForCase1Id, asList(randomUUID(), randomUUID()))),
+                        case3Id, asList(Map.of(def1ForCase3Id, asList(randomUUID(), randomUUID())))) , false, false);
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.hearing-extended"),
@@ -197,10 +195,10 @@ public class HearingExtendedEventListenerTest {
         final ProsecutionCase case1 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case1Id)).findFirst().get();
         final ProsecutionCase case2 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case2Id)).findFirst().get();
         final ProsecutionCase case3 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case3Id)).findFirst().get();
-        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_1Id)).findFirst().get();
-        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_2Id)).findFirst().get();
-        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def2_1Id)).findFirst().get();
-        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def3_1Id)).findFirst().get();
+        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase1Id)).findFirst().get();
+        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def2ForCase1Id)).findFirst().get();
+        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase2Id)).findFirst().get();
+        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase3Id)).findFirst().get();
 
         assertThat(case1.getDefendants().size(), is(2));
         assertThat(def1_1.getOffences().size(), is(4));
@@ -213,17 +211,17 @@ public class HearingExtendedEventListenerTest {
 
 
     @Test
-    public void shouldKeepCaseIfTheCaseIsNotInRequestWhenHearingExtended() {
+    void shouldKeepCaseIfTheCaseIsNotInRequestWhenHearingExtended() {
         final UUID case1Id = randomUUID();
-        final UUID def1_1Id = randomUUID();
-        final UUID def1_2Id = randomUUID();
+        final UUID def1ForCase1Id = randomUUID();
+        final UUID def2ForCase1Id = randomUUID();
         final UUID case2Id = randomUUID();
-        final UUID def2_1Id = randomUUID();
+        final UUID def1ForCase2Id = randomUUID();
         final UUID case3Id = randomUUID();
-        final UUID def3_1Id = randomUUID();
+        final UUID def1ForCase3Id = randomUUID();
 
-        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID()))),
-                case2Id, asList(Map.of(def2_1Id, asList(randomUUID(), randomUUID())))
+        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID()))),
+                case2Id, asList(Map.of(def1ForCase2Id, asList(randomUUID(), randomUUID())))
         ));
 
         final HearingEntity hearingEntity = createHearingEntity(objectToJsonObjectConverter.convert(dbHearing).toString());
@@ -231,9 +229,9 @@ public class HearingExtendedEventListenerTest {
 
         final UUID extendedFromHearingId = randomUUID();
         final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId,
-                Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID())))),
-                Map.of(case1Id, asList(Map.of(def1_2Id, asList(randomUUID(), randomUUID()))),
-                        case3Id, asList(Map.of(def3_1Id, asList(randomUUID(), randomUUID())))) , false, false);
+                Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID())))),
+                Map.of(case1Id, asList(Map.of(def2ForCase1Id, asList(randomUUID(), randomUUID()))),
+                        case3Id, asList(Map.of(def1ForCase3Id, asList(randomUUID(), randomUUID())))) , false, false);
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.hearing-extended"),
@@ -251,10 +249,10 @@ public class HearingExtendedEventListenerTest {
         final ProsecutionCase case1 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case1Id)).findFirst().get();
         final ProsecutionCase case2 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case2Id)).findFirst().get();
         final ProsecutionCase case3 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case3Id)).findFirst().get();
-        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_1Id)).findFirst().get();
-        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_2Id)).findFirst().get();
-        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def2_1Id)).findFirst().get();
-        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def3_1Id)).findFirst().get();
+        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase1Id)).findFirst().get();
+        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def2ForCase1Id)).findFirst().get();
+        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase2Id)).findFirst().get();
+        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase3Id)).findFirst().get();
 
         assertThat(case1.getDefendants().size(), is(2));
         assertThat(def1_1.getOffences().size(), is(4));
@@ -265,17 +263,17 @@ public class HearingExtendedEventListenerTest {
         assertThat(def3_1.getOffences().size(), is(2));    }
 
     @Test
-    public void shouldKeepDefendantIfTheDefendantIsNotInRequestWhenHearingExtended() {
+    void shouldKeepDefendantIfTheDefendantIsNotInRequestWhenHearingExtended() {
         final UUID case1Id = randomUUID();
-        final UUID def1_1Id = randomUUID();
-        final UUID def1_2Id = randomUUID();
+        final UUID def1ForCase1Id = randomUUID();
+        final UUID def2ForCase1Id = randomUUID();
         final UUID case2Id = randomUUID();
-        final UUID def2_1Id = randomUUID();
+        final UUID def1ForCase2Id = randomUUID();
         final UUID case3Id = randomUUID();
-        final UUID def3_1Id = randomUUID();
+        final UUID def1ForCase3Id = randomUUID();
 
-        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID())), Map.of(def1_2Id, asList(randomUUID(), randomUUID()))),
-                case2Id, asList(Map.of(def2_1Id, asList(randomUUID(), randomUUID())))
+        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID())), Map.of(def2ForCase1Id, asList(randomUUID(), randomUUID()))),
+                case2Id, asList(Map.of(def1ForCase2Id, asList(randomUUID(), randomUUID())))
         ));
 
         final HearingEntity hearingEntity = createHearingEntity(objectToJsonObjectConverter.convert(dbHearing).toString());
@@ -283,8 +281,8 @@ public class HearingExtendedEventListenerTest {
 
         final UUID extendedFromHearingId = randomUUID();
         final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId,
-                Map.of(case1Id, asList(Map.of(def1_1Id, asList(randomUUID(), randomUUID())))),
-                Map.of(case3Id, asList(Map.of(def3_1Id, asList(randomUUID(), randomUUID())))) , false, false);
+                Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(randomUUID(), randomUUID())))),
+                Map.of(case3Id, asList(Map.of(def1ForCase3Id, asList(randomUUID(), randomUUID())))) , false, false);
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.hearing-extended"),
@@ -302,10 +300,10 @@ public class HearingExtendedEventListenerTest {
         final ProsecutionCase case1 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case1Id)).findFirst().get();
         final ProsecutionCase case2 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case2Id)).findFirst().get();
         final ProsecutionCase case3 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case3Id)).findFirst().get();
-        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_1Id)).findFirst().get();
-        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_2Id)).findFirst().get();
-        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def2_1Id)).findFirst().get();
-        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def3_1Id)).findFirst().get();
+        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase1Id)).findFirst().get();
+        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def2ForCase1Id)).findFirst().get();
+        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase2Id)).findFirst().get();
+        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase3Id)).findFirst().get();
 
         assertThat(case1.getDefendants().size(), is(2));
         assertThat(def1_1.getOffences().size(), is(4));
@@ -317,21 +315,21 @@ public class HearingExtendedEventListenerTest {
     }
 
     @Test
-    public void shouldKeepOffenceIfTheOffenceIsNotInRequestWhenHearingExtended() {
+    void shouldKeepOffenceIfTheOffenceIsNotInRequestWhenHearingExtended() {
         final UUID case1Id = randomUUID();
-        final UUID def1_1Id = randomUUID();
-        final UUID def1_off1Id = randomUUID();
-        final UUID def1_off2Id = randomUUID();
-        final UUID def1_off3Id = randomUUID();
-        final UUID def1_off4Id = randomUUID();
-        final UUID def1_2Id = randomUUID();
+        final UUID def1ForCase1Id = randomUUID();
+        final UUID off1ForDef1ForCase1Id = randomUUID();
+        final UUID off2ForDef1ForCase1Id = randomUUID();
+        final UUID off3ForDef1ForCase1Id = randomUUID();
+        final UUID off4ForDef1ForCase1Id = randomUUID();
+        final UUID def2ForCase1Id = randomUUID();
         final UUID case2Id = randomUUID();
-        final UUID def2_1Id = randomUUID();
+        final UUID def1ForCase2Id = randomUUID();
         final UUID case3Id = randomUUID();
-        final UUID def3_1Id = randomUUID();
+        final UUID def1ForCase3Id = randomUUID();
 
-        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1_1Id, asList(def1_off1Id,def1_off2Id)), Map.of(def1_2Id, asList(randomUUID(), randomUUID()))),
-                case2Id, asList(Map.of(def2_1Id, asList(randomUUID(), randomUUID())))
+        final Hearing dbHearing = createHearing(hearingId, Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(off1ForDef1ForCase1Id,off2ForDef1ForCase1Id)), Map.of(def2ForCase1Id, asList(randomUUID(), randomUUID()))),
+                case2Id, asList(Map.of(def1ForCase2Id, asList(randomUUID(), randomUUID())))
         ));
 
         final HearingEntity hearingEntity = createHearingEntity(objectToJsonObjectConverter.convert(dbHearing).toString());
@@ -339,8 +337,8 @@ public class HearingExtendedEventListenerTest {
 
         final UUID extendedFromHearingId = randomUUID();
         final HearingExtended hearingExtended = createHearingExtended(hearingId, extendedFromHearingId,
-                Map.of(case1Id, asList(Map.of(def1_1Id, asList(def1_off1Id, def1_off1Id)))),
-                Map.of(case3Id, asList(Map.of(def3_1Id, asList(randomUUID(), randomUUID()))),case1Id, asList(Map.of(def1_1Id, asList(def1_off3Id,def1_off4Id)))) , false, false);
+                Map.of(case1Id, asList(Map.of(def1ForCase1Id, asList(off1ForDef1ForCase1Id, off1ForDef1ForCase1Id)))),
+                Map.of(case3Id, asList(Map.of(def1ForCase3Id, asList(randomUUID(), randomUUID()))),case1Id, asList(Map.of(def1ForCase1Id, asList(off3ForDef1ForCase1Id,off4ForDef1ForCase1Id)))) , false, false);
 
         final JsonEnvelope jsonEnvelope = envelopeFrom(
                 MetadataBuilderFactory.metadataWithRandomUUID("progression.event.hearing-extended"),
@@ -358,17 +356,17 @@ public class HearingExtendedEventListenerTest {
         final ProsecutionCase case1 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case1Id)).findFirst().get();
         final ProsecutionCase case2 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case2Id)).findFirst().get();
         final ProsecutionCase case3 = savedHearing.getProsecutionCases().stream().filter(pc -> pc.getId().equals(case3Id)).findFirst().get();
-        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_1Id)).findFirst().get();
-        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1_2Id)).findFirst().get();
-        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def2_1Id)).findFirst().get();
-        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def3_1Id)).findFirst().get();
+        final Defendant def1_1 = case1.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase1Id)).findFirst().get();
+        final Defendant def1_2 = case1.getDefendants().stream().filter(def -> def.getId().equals(def2ForCase1Id)).findFirst().get();
+        final Defendant def2_1 = case2.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase2Id)).findFirst().get();
+        final Defendant def3_1 = case3.getDefendants().stream().filter(def -> def.getId().equals(def1ForCase3Id)).findFirst().get();
 
         assertThat(case1.getDefendants().size(), is(2));
         assertThat(def1_1.getOffences().size(), is(4));
-        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(def1_off1Id)), is(true));
-        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(def1_off2Id)), is(true));
-        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(def1_off3Id)), is(true));
-        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(def1_off4Id)), is(true));
+        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(off1ForDef1ForCase1Id)), is(true));
+        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(off2ForDef1ForCase1Id)), is(true));
+        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(off3ForDef1ForCase1Id)), is(true));
+        assertThat(def1_1.getOffences().stream().anyMatch(off -> off.getId().equals(off4ForDef1ForCase1Id)), is(true));
         assertThat(def1_2.getOffences().size(), is(2));
         assertThat(case2.getDefendants().size(), is(1));
         assertThat(def2_1.getOffences().size(), is(2));
