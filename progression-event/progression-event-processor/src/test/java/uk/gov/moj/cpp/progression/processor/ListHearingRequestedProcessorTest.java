@@ -99,6 +99,8 @@ public class ListHearingRequestedProcessorTest {
     private static final UUID MULTI_OFFENCE_DEFENDANT_ID = randomUUID();
     private static final UUID SAME_DEFENDANT_OFFENCE_ID_1 = randomUUID();
     private static final UUID SAME_DEFENDANT_OFFENCE_ID_2 = randomUUID();
+    private UUID offenceId1;
+    private UUID offenceId2;
 
     private static final UUID materialId = randomUUID();
 
@@ -189,26 +191,8 @@ public class ListHearingRequestedProcessorTest {
 
     @BeforeEach
     public void initMocks() {
-        final Address address = Address.address()
-                .withAddress1("testAddress1")
-                .withAddress2("testAddress2")
-                .withAddress3("address3")
-                .withAddress4("address4")
-                .withAddress5("address5")
-                .withPostcode("sl6 1nb")
-                .build();
-        final LjaDetails ljaDetails = LjaDetails.ljaDetails()
-                .withLjaCode("testLja")
-                .withWelshLjaName("testWalesLja")
-                .withLjaName("ljaName")
-                .build();
-        final CourtCentre enrichedCourtCenter = CourtCentre.courtCentre()
-                .withCourtHearingLocation("Burmimgham")
-                .withId(randomUUID())
-                .withLja((ljaDetails)).withName("Lavender Court")
-                .withAddress(address)
-                .withWelshCourtCentre(false)
-                .build();
+        offenceId1 = randomUUID();
+        offenceId2 = randomUUID();
         setField(this.jsonObjectToObjectConverter, "objectMapper", new ObjectMapperProducer().objectMapper());
         setField(this.listHearingRequestedProcessor, "jsonObjectToObjectConverter", jsonObjectToObjectConverter);
 
@@ -216,7 +200,6 @@ public class ListHearingRequestedProcessorTest {
         setField(this.hearingNotificationHelper, "defenceService", defenceService);
         setField(this.hearingNotificationHelper, "notificationInfoJdbcRepository", notificationInfoJdbcRepository);
         setField(this.hearingNotificationHelper, "referenceDataService", refDataService);
-        setField(this.hearingNotificationHelper, "referenceDataOffenceService", referenceDataOffenceService);
         setField(this.hearingNotificationHelper, "notificationService", notificationService);
         setField(this.hearingNotificationHelper, "materialUrlGenerator", materialUrlGenerator);
         setField(this.hearingNotificationHelper, "documentGeneratorService", documentGeneratorService);
@@ -250,7 +233,7 @@ public class ListHearingRequestedProcessorTest {
         when(progressionService.getProsecutionCaseDetailById(any(JsonEnvelope.class), any(String.class))).thenReturn(Optional.of(createObjectBuilder().add("prosecutionCase", prosecutionCaseJson).build()));
         final ListCourtHearing listCourtHearing = ListCourtHearing.listCourtHearing().build();
         when(listCourtHearingTransformer.transform(any(JsonEnvelope.class), any(List.class), any(CourtHearingRequest.class), any(UUID.class))).thenReturn(listCourtHearing);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor.json")));
         when(applicationParameters.getNotifyHearingTemplateId()).thenReturn(TEMPLATE_ID);
 
@@ -315,6 +298,8 @@ public class ListHearingRequestedProcessorTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
         when(progressionService.transformCourtCentreV2(any(), any())).thenReturn(getCourtCentre());
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -336,7 +321,7 @@ public class ListHearingRequestedProcessorTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
         listHearingRequestedProcessor.handle(requestMessage);
 
         verify(notificationService, times(2)).sendEmail(any(), any(), any(), any(), any(), prosecutorEmailCapture.capture());
@@ -359,6 +344,8 @@ public class ListHearingRequestedProcessorTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
         when(progressionService.transformCourtCentreV2(any(), any())).thenReturn(getCourtCentre());
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -380,7 +367,7 @@ public class ListHearingRequestedProcessorTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         listHearingRequestedProcessor.handle(requestMessage);
 
@@ -389,7 +376,7 @@ public class ListHearingRequestedProcessorTest {
     }
 
     @Test
-    public void sendHearingNotificationsToPartiesWithNoDefandantRepByOrgAndNoProsecutorCpsFlagOn() {
+    void sendHearingNotificationsToPartiesWithNoDefandantRepByOrgAndNoProsecutorCpsFlagOn() {
 
         final UUID caseId = randomUUID();
         final UUID defendantId = randomUUID();
@@ -404,6 +391,8 @@ public class ListHearingRequestedProcessorTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
         when(progressionService.transformCourtCentreV2(any(), any())).thenReturn(getCourtCentre());
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -414,7 +403,7 @@ public class ListHearingRequestedProcessorTest {
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor-with-no-email-and-cpsFlag-on.json")));
 
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(null);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         listHearingRequestedProcessor.handle(requestMessage);
 
@@ -442,6 +431,8 @@ public class ListHearingRequestedProcessorTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
         when(progressionService.transformCourtCentreV2(any(), any())).thenReturn(getCourtCentre());
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -463,7 +454,7 @@ public class ListHearingRequestedProcessorTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
         listHearingRequestedProcessor.handle(requestMessage);
 
         verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
@@ -487,6 +478,8 @@ public class ListHearingRequestedProcessorTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
                 add("prosecutionCase", prosecutionCase)
@@ -526,6 +519,8 @@ public class ListHearingRequestedProcessorTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
 
         when(progressionService.transformCourtCentreV2(any(), any())).thenReturn(getCourtCentre());
@@ -547,7 +542,7 @@ public class ListHearingRequestedProcessorTest {
                 .withOrganisationName("defence Organisation")
                 .build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
         listHearingRequestedProcessor.handle(requestMessage);
         verify(notificationService, times(2)).sendLetter(any(), any(), any(), any(), any(), anyBoolean());
     }
@@ -568,6 +563,8 @@ public class ListHearingRequestedProcessorTest {
 
         final JsonObject prosecutionCase = FileUtil.jsonFromString(FileUtil.getPayload("progressioncase.json")
                 .replaceAll("%CASE_ID%", caseId.toString())
+                .replaceAll("OFFENCE_ID_1", offenceId1.toString())
+                .replaceAll("OFFENCE_ID_2", offenceId2.toString())
                 .replaceAll("%DEFENDANT_ID%", defendantId.toString()));
         when(progressionService.transformCourtCentreV2(any(), any())).thenReturn(getCourtCentre());
         when(progressionService.getProsecutionCaseDetailById(any(), any())).thenReturn(Optional.of(createObjectBuilder().
@@ -578,7 +575,7 @@ public class ListHearingRequestedProcessorTest {
         when(refDataService.getProsecutor(any(), any(), any())).thenReturn(Optional.of(getPayload("prosecutor-with-cpsFlag-on.json")));
         AssociatedDefenceOrganisation associatedDefenceOrganisation = AssociatedDefenceOrganisation.associatedDefenceOrganisationBuilder().build();
         when(defenceService.getDefenceOrganisationByDefendantId(any(), any())).thenReturn(associatedDefenceOrganisation);
-        when(referenceDataOffenceService.getOffenceById(any(), any(), any())).thenReturn(of(getOffence("trial")));
+
 
         listHearingRequestedProcessor.handle(requestMessage);
 
