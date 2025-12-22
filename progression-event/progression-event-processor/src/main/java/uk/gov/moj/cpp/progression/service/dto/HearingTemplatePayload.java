@@ -51,12 +51,12 @@ public class HearingTemplatePayload {
     this.isCivil = isCivil;
   }
 
-  public boolean isCivil() {
+  public boolean getIsCivil() {
     return isCivil;
   }
 
-  public void setCivil(final boolean civil) {
-    isCivil = civil;
+  public void setIsCivil(final boolean isCivil) {
+    this.isCivil = isCivil;
   }
 
   public List<CaseOffence> getWelshOffenceList() {
@@ -259,7 +259,7 @@ public class HearingTemplatePayload {
       this.issueDate = hearingTemplatePayload.getIssueDate();
       this.offenceList = hearingTemplatePayload.getOffenceList();
       this.welshOffenceList = hearingTemplatePayload.getWelshOffenceList();
-      this.isCivil = hearingTemplatePayload.isCivil();
+      this.isCivil = hearingTemplatePayload.getIsCivil();
       return this;
     }
 
