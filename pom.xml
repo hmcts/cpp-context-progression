@@ -10,7 +10,7 @@
 
     <groupId>uk.gov.moj.cpp.progression</groupId>
     <artifactId>progression-parent</artifactId>
-    <version>17.0.224-SNAPSHOT</version>
+    <version>17.0.224-CCT-2257-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Progression services application</name>
