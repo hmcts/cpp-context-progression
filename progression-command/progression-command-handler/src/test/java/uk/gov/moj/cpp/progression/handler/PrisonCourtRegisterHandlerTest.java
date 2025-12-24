@@ -214,6 +214,30 @@ public class PrisonCourtRegisterHandlerTest {
     }
 
     @Test
+    public void shouldCreateRegisterGeneratedEventV2() throws Exception {
+        aggregator = new CourtCentreAggregate();
+        when(eventSource.getStreamById(any())).thenReturn(eventStream);
+        when(aggregateService.get(eventStream, CourtCentreAggregate.class)).thenReturn(aggregator);
+
+        prisonCourtRegisterHandler.recordPrisonCourtRegisterDocumentSent(buildRecordPrisonCourtRegisterSentEnvelope());
+
+        prisonCourtRegisterHandler.handleNotifyCourtCentre(buildRecordRegisterGeneratedEnvelope());
+
+        ArgumentCaptor<Stream> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
+
+        Mockito.verify(eventStream, times(2)).append(argumentCaptor.capture());
+
+        Stream<JsonEnvelope> envelopeStream = (Stream)argumentCaptor.getValue();
+
+        assertThat(envelopeStream, streamContaining(
+                jsonEnvelope(
+                        metadata().withName("progression.event.prison-court-register-generated-v2"),
+                        JsonEnvelopePayloadMatcher.payload().isJson(allOf(
+                                withJsonPath("$.courtCentreId", is(COURT_CENTRE_ID.toString())),
+                                withJsonPath("$.fileId", is(SYSTEM_DOCUMENT_ID.toString())))))));
+    }
+
+    @Test
     public void shouldRecordPrisonCourtRegisterDocumentSent() throws Exception {
 
         aggregator = new CourtCentreAggregate();
