@@ -23,6 +23,8 @@ import static uk.gov.justice.core.courts.CourtApplicationType.courtApplicationTy
 import static uk.gov.justice.core.courts.DefendantCase.defendantCase;
 import static uk.gov.justice.core.courts.JudicialResult.judicialResult;
 import static uk.gov.justice.core.courts.JudicialResultCategory.INTERMEDIARY;
+import static uk.gov.justice.core.courts.LinkType.LINKED;
+import static uk.gov.justice.core.courts.LinkType.STANDALONE;
 import static uk.gov.justice.core.courts.ProsecutionCaseIdentifier.prosecutionCaseIdentifier;
 import static uk.gov.justice.core.courts.SendNotificationForAutoApplicationInitiated.sendNotificationForAutoApplicationInitiated;
 import static uk.gov.justice.core.courts.SummonsTemplateType.NOT_APPLICABLE;
@@ -249,11 +251,14 @@ public class ApplicationAggregateTest {
     public void shouldReturnCourtApplicationCreatedForCourtProceedings() {
         final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withIsCivil(true).build();
         final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
-                .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(randomUUID()).build())
-                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
-                .withSummonsApprovalRequired(false)
-                .build(), false, false, prosecutionCase)
+                        .initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withType(courtApplicationType().withLinkType(LINKED).build())
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .withSummonsApprovalRequired(false)
+                        .build(), false, false, prosecutionCase)
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
@@ -264,10 +269,37 @@ public class ApplicationAggregateTest {
     }
 
     @Test
+    public void shouldReturnCourtApplicationCreatedForStandaloneApplication() {
+        final String applicationReference = "APP00001";
+        final ProsecutionCase prosecutionCase = ProsecutionCase.prosecutionCase().withIsCivil(true).build();
+        final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings.initiateCourtApplicationProceedings()
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withApplicationReference(applicationReference)
+                        .withType(courtApplicationType()
+                                .withLinkType(STANDALONE)
+                                .build())
+                        .build())
+                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                .withSummonsApprovalRequired(false)
+                .build();
+
+        final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, false, false, prosecutionCase).collect(toList());
+
+        assertThat(eventStream.size(), is(1));
+
+        final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
+        assertThat(courtApplicationProceedingsInitiated.getCourtApplication().getApplicationReference(), is(applicationReference));
+    }
+
+    @Test
     public void testCourtApplicationCreatedForCourtProceedingsIsIdempotent() {
         InitiateCourtApplicationProceedings initiateCourtProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(randomUUID()).build())
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
                 .build();
@@ -513,12 +545,15 @@ public class ApplicationAggregateTest {
     @Test
     public void shouldReturnCourtApplicationCreatedForCourtProceedingsWithSjpCase() {
         final List<Object> eventStream = aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
-                .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(randomUUID())
-                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
-                .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
-                .withSummonsApprovalRequired(false)
-                .build(), true, false, ProsecutionCase.prosecutionCase().build())
+                        .initiateCourtApplicationProceedings()
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
+                                .withType(courtApplicationType().withLinkType(LINKED).build())
+                                .build())
+                        .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
+                        .withSummonsApprovalRequired(false)
+                        .build(), true, false, ProsecutionCase.prosecutionCase().build())
                 .collect(toList());
         assertThat(eventStream.size(), is(1));
         final CourtApplicationProceedingsInitiated courtApplicationProceedingsInitiated = (CourtApplicationProceedingsInitiated) eventStream.get(0);
@@ -768,7 +803,10 @@ public class ApplicationAggregateTest {
     public void shouldReferApplicationToCourtHearing() {
         aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
                         .initiateCourtApplicationProceedings()
-                        .withCourtApplication(courtApplication().withId(randomUUID()).build())
+                        .withCourtApplication(courtApplication()
+                                .withId(randomUUID())
+                                .withType(courtApplicationType().withLinkType(LINKED).build())
+                                .build())
                         .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                         .withSummonsApprovalRequired(false)
                         .build(), false, false)
@@ -1311,8 +1349,17 @@ public class ApplicationAggregateTest {
     public void shouldRaiseIgnoreEventWhenApplicationBoxWorkRequested() {
         aggregate.initiateCourtApplicationProceedings(InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(randomUUID())
-                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase()
+                                .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier()
+                                        .withCaseURN(STRING.next())
+                                        .build())
+                                .withIsSJP(true)
+                                .build()))
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .build()
+                )
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
                 .build(), true, false);
@@ -1331,8 +1378,11 @@ public class ApplicationAggregateTest {
     public void shouldRaiseNotificationEvent() {
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(randomUUID())
-                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtApplication(courtApplication()
+                        .withId(randomUUID())
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
+                        .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
                 .build();
@@ -1356,8 +1406,11 @@ public class ApplicationAggregateTest {
         final UUID applicationId = randomUUID();
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(applicationId)
-                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtApplication(courtApplication()
+                        .withId(applicationId)
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
                 .build();
@@ -1399,8 +1452,11 @@ public class ApplicationAggregateTest {
         final LocalDate orderedDate = LocalDate.now();
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(applicationId)
-                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtApplication(courtApplication()
+                        .withId(applicationId)
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
+                        .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
                 .withIsAmended(true)
@@ -1452,9 +1508,12 @@ public class ApplicationAggregateTest {
         UUID applicationId = randomUUID();
         UUID subjectId = randomUUID();
         UUID offenceId = randomUUID();
-        CourtApplication courtApplication = courtApplication().withId(applicationId)
+        CourtApplication courtApplication = courtApplication()
+                .withId(applicationId)
                 .withSubject(CourtApplicationParty.courtApplicationParty().withId(subjectId).build())
-                .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build();
+                .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
+                .withType(courtApplicationType().withLinkType(LINKED).build())
+                .build();
 
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
@@ -1476,8 +1535,10 @@ public class ApplicationAggregateTest {
         UUID applicationId = randomUUID();
         UUID subjectId = randomUUID();
         UUID offenceId = randomUUID();
-        CourtApplication courtApplication = courtApplication().withId(applicationId)
+        CourtApplication courtApplication = courtApplication()
+                .withId(applicationId)
                 .withSubject(CourtApplicationParty.courtApplicationParty().withId(subjectId).build())
+                .withType(courtApplicationType().withLinkType(LINKED).build())
                 .build();
 
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
@@ -1503,7 +1564,8 @@ public class ApplicationAggregateTest {
         LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").withStatusDate(LocalDate.now()).build();
 
-        CourtApplication courtApplication = courtApplication().withId(applicationId)
+        CourtApplication courtApplication = courtApplication()
+                .withId(applicationId)
                 .withSubject(CourtApplicationParty.courtApplicationParty().withId(subjectId).build())
                 .withCourtApplicationCases(singletonList(courtApplicationCase()
                         .withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
@@ -1513,6 +1575,7 @@ public class ApplicationAggregateTest {
                                 .withId(offenceId)
                                 .build()))
                         .build()))
+                .withType(courtApplicationType().withLinkType(LINKED).build())
                 .build();
 
 
@@ -1549,6 +1612,7 @@ public class ApplicationAggregateTest {
                                 .withId(offenceId)
                                 .build()))
                         .build()))
+                .withType(courtApplicationType().withLinkType(LINKED).build())
                 .build();
 
 
@@ -1573,7 +1637,10 @@ public class ApplicationAggregateTest {
         final UUID hearingId = randomUUID();
         InitiateCourtApplicationProceedings initiateCourtProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(courtApplicationId).build())
+                .withCourtApplication(courtApplication()
+                        .withId(courtApplicationId)
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().withId(hearingId).build())
                 .withSummonsApprovalRequired(false)
                 .build();
@@ -1603,8 +1670,11 @@ public class ApplicationAggregateTest {
 
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(courtApplicationId)
-                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtApplication(courtApplication()
+                        .withId(courtApplicationId)
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
+                        .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
                 .build();
@@ -1630,8 +1700,11 @@ public class ApplicationAggregateTest {
         final UUID applicationId = randomUUID();
         final InitiateCourtApplicationProceedings initiateCourtApplicationProceedings = InitiateCourtApplicationProceedings
                 .initiateCourtApplicationProceedings()
-                .withCourtApplication(courtApplication().withId(applicationId)
-                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build())).build())
+                .withCourtApplication(courtApplication()
+                        .withId(applicationId)
+                        .withType(courtApplicationType().withLinkType(LINKED).build())
+                        .withCourtApplicationCases(singletonList(courtApplicationCase().withProsecutionCaseIdentifier(ProsecutionCaseIdentifier.prosecutionCaseIdentifier().withCaseURN(STRING.next()).build()).withIsSJP(true).build()))
+                        .build())
                 .withCourtHearing(CourtHearingRequest.courtHearingRequest().build())
                 .withSummonsApprovalRequired(false)
                 .build();
@@ -1785,7 +1858,8 @@ public class ApplicationAggregateTest {
         LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").withStatusDate(LocalDate.now()).build();
 
-        CourtApplication courtApplication = courtApplication().withId(applicationId)
+        CourtApplication courtApplication = courtApplication()
+                .withId(applicationId)
                 .withCourtApplicationCases(singletonList(courtApplicationCase()
                         .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
                         .withIsSJP(true)
@@ -1793,6 +1867,7 @@ public class ApplicationAggregateTest {
                 .withSubject(CourtApplicationParty.courtApplicationParty()
                         .withId(randomUUID())
                         .build())
+                .withType(courtApplicationType().withLinkType(LINKED).build())
                 .build();
 
 
@@ -1809,11 +1884,11 @@ public class ApplicationAggregateTest {
 
         final List<Object> events = aggregate.updateApplicationLaaReference(laaReference).toList();
         assertThat(events.size(), is(2));
-        final CourtApplicationUpdated courtApplicationUpdated = (CourtApplicationUpdated)events.get(0);
+        final CourtApplicationUpdated courtApplicationUpdated = (CourtApplicationUpdated) events.get(0);
         assertThat(courtApplicationUpdated.getCourtApplication().getLaaApplnReference(), is(laaReference));
         assertThat(courtApplicationUpdated.getCourtApplication().getId(), is(applicationId));
 
-        final HearingApplicationLaaReferenceUpdateReceived hearingApplicationLaaReferenceUpdateReceived = (HearingApplicationLaaReferenceUpdateReceived)events.get(1);
+        final HearingApplicationLaaReferenceUpdateReceived hearingApplicationLaaReferenceUpdateReceived = (HearingApplicationLaaReferenceUpdateReceived) events.get(1);
         assertThat(hearingApplicationLaaReferenceUpdateReceived.getLaaReference(), is(laaReference));
         assertThat(hearingApplicationLaaReferenceUpdateReceived.getApplicationId(), is(applicationId));
 
@@ -1832,12 +1907,14 @@ public class ApplicationAggregateTest {
         LaaReference laaReference = LaaReference.laaReference().withApplicationReference("applicationReference")
                 .withStatusCode("statusCode").withStatusDescription("description").withStatusDate(statusDate).build();
 
-        CourtApplication courtApplication = courtApplication().withId(applicationId)
+        CourtApplication courtApplication = courtApplication()
+                .withId(applicationId)
                 .withCourtApplicationCases(singletonList(courtApplicationCase()
                         .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
                         .withIsSJP(true)
                         .build()))
                 .withLaaApplnReference(LaaReference.laaReference().withApplicationReference("applicationReference").withStatusCode("statusCode").withStatusDate(statusDate).build())
+                .withType(courtApplicationType().withLinkType(LINKED).build())
                 .build();
 
 
@@ -1867,7 +1944,8 @@ public class ApplicationAggregateTest {
                 .withStatusDate(statusDate)
                 .build();
 
-        final CourtApplication courtApplication = courtApplication().withId(applicationId)
+        final CourtApplication courtApplication = courtApplication()
+                .withId(applicationId)
                 .withCourtApplicationCases(singletonList(courtApplicationCase()
                         .withProsecutionCaseIdentifier(prosecutionCaseIdentifier().withCaseURN(STRING.next()).build())
                         .withIsSJP(true)
@@ -1876,6 +1954,7 @@ public class ApplicationAggregateTest {
                         .withId(randomUUID())
                         .build())
                 .withLaaApplnReference(LaaReference.laaReference().withApplicationReference("applicationReference").withStatusCode("statusCode").withStatusDate(statusDate).build())
+                .withType(courtApplicationType().withLinkType(LINKED).build())
                 .build();
 
 
@@ -1891,11 +1970,11 @@ public class ApplicationAggregateTest {
         aggregate.initiateCourtApplicationProceedings(initiateCourtApplicationProceedings, true, false);
         final List<Object> events = aggregate.updateApplicationLaaReference(laaReference).toList();
         assertThat(events.size(), is(2));
-        final CourtApplicationUpdated courtApplicationUpdated = (CourtApplicationUpdated)events.get(0);
+        final CourtApplicationUpdated courtApplicationUpdated = (CourtApplicationUpdated) events.get(0);
         assertThat(courtApplicationUpdated.getCourtApplication().getLaaApplnReference(), is(laaReference));
         assertThat(courtApplicationUpdated.getCourtApplication().getId(), is(applicationId));
 
-        final HearingApplicationLaaReferenceUpdateReceived hearingApplicationLaaReferenceUpdateReceived = (HearingApplicationLaaReferenceUpdateReceived)events.get(1);
+        final HearingApplicationLaaReferenceUpdateReceived hearingApplicationLaaReferenceUpdateReceived = (HearingApplicationLaaReferenceUpdateReceived) events.get(1);
         assertThat(hearingApplicationLaaReferenceUpdateReceived.getLaaReference(), is(laaReference));
         assertThat(hearingApplicationLaaReferenceUpdateReceived.getApplicationId(), is(applicationId));
 
