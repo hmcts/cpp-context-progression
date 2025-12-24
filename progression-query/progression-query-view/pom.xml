@@ -3,7 +3,7 @@
     <parent>
         <groupId>uk.gov.moj.cpp.progression</groupId>
         <artifactId>progression-query</artifactId>
-        <version>17.0.224-CCT-2257-SNAPSHOT</version>
+        <version>17.0.225-CCT-2257-SNAPSHOT</version>
     </parent>
     <artifactId>progression-query-view</artifactId>
     <packaging>jar</packaging>
