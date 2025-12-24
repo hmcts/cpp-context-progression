@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import uk.gov.justice.core.courts.CourtRegisterRecorded;
 import uk.gov.justice.core.courts.PrisonCourtRegisterFailed;
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.core.courts.PrisonCourtRegisterSent;
 import uk.gov.justice.core.courts.PrisonCourtRegisterWithoutRecipientsRecorded;
@@ -171,10 +172,14 @@ public class CourtCentreAggregateTest {
                         .withSystemDocGeneratorId(systemDocumentId)
                         .withPayloadFileId(payloadFileId).build())
                 .collect(Collectors.toList());
-        assertThat(eventStream.size(), is(1));
-        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = (PrisonCourtRegisterGenerated) eventStream.get(0);
-        assertThat(prisonCourtRegisterGenerated.getCourtCentreId(), is(courtCentreId));
-        assertThat(prisonCourtRegisterGenerated.getFileId(), is(systemDocumentId));
+        assertThat(eventStream.size(), is(2));
+        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated1 = (PrisonCourtRegisterGenerated) eventStream.get(0);
+        assertThat(prisonCourtRegisterGenerated1.getCourtCentreId(), is(courtCentreId));
+        assertThat(prisonCourtRegisterGenerated1.getFileId(), is(systemDocumentId));
+
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated2 = (PrisonCourtRegisterGeneratedV2) eventStream.get(1);
+        assertThat(prisonCourtRegisterGenerated2.getCourtCentreId(), is(courtCentreId));
+        assertThat(prisonCourtRegisterGenerated2.getFileId(), is(systemDocumentId));
     }
 
 

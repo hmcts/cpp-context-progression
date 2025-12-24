@@ -100,6 +100,7 @@ public class PrisonCourtRegisterHandler extends AbstractCommandHandler {
         appendEventsToStream(envelope, eventStream, events);
     }
 
+    // Here
     @Handles("progression.command.notify-prison-court-register")
     public void handleNotifyCourtCentre(final Envelope<NotifyPrisonCourtRegister> envelope) throws EventStreamException {
 

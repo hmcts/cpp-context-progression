@@ -11,6 +11,7 @@ import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderF
 import static uk.gov.justice.services.test.utils.core.reflection.ReflectionUtil.setField;
 
 import uk.gov.justice.core.courts.PrisonCourtRegisterGenerated;
+import uk.gov.justice.core.courts.PrisonCourtRegisterGeneratedV2;
 import uk.gov.justice.core.courts.PrisonCourtRegisterRecorded;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDefendant;
 import uk.gov.justice.core.courts.prisonCourtRegisterDocument.PrisonCourtRegisterDocumentRequest;
@@ -157,6 +158,31 @@ public class PrisonCourtRegisterEventListenerTest {
                 objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated)));
 
         assertThat(prisonCourtRegisterEntity.getFileId(), is(fileId));
+    }
+
+    @Test
+    public void testPrisonCourtRegisterGeneratedV2() {
+        final UUID courtCenterId = UUID.randomUUID();
+        final UUID fileId = UUID.randomUUID();
+        final UUID hearingId = UUID.randomUUID();
+        final UUID id = UUID.randomUUID();
+
+        final PrisonCourtRegisterGeneratedV2 prisonCourtRegisterGenerated = PrisonCourtRegisterGeneratedV2.prisonCourtRegisterGeneratedV2()
+                .withCourtCentreId(courtCenterId)
+                .withDefendant(PrisonCourtRegisterDefendant.prisonCourtRegisterDefendant().build())
+                .withFileId(fileId)
+                .withHearingDate(ZonedDateTime.now(UTC))
+                .withHearingVenue(PrisonCourtRegisterHearingVenue.prisonCourtRegisterHearingVenue().build())
+                .withHearingId(hearingId)
+                .withId(id)
+                .withRecipients(Collections.emptyList())
+                .build();
+
+        prisonCourtRegisterEventListener.sendPrisonCourtRegisterNotificationToAmp(envelopeFrom(metadataWithRandomUUID("progression.event.prison-court-register-generated-V2"),
+                objectToJsonObjectConverter.convert(prisonCourtRegisterGenerated)));
+
+        // TODO assert post to AMP
+        // assertThat(prisonCourtRegisterEntity.getFileId(), is(fileId));
     }
 
     // this is for old events, catch-up and replay DLQs

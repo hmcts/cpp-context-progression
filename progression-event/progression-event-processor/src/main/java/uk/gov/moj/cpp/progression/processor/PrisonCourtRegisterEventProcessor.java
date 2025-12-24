@@ -210,6 +210,43 @@ public class PrisonCourtRegisterEventProcessor {
                 });
     }
 
+    @SuppressWarnings("squid:S1160")
+    @Handles("progression.event.prison-court-register-generated-v2")
+    public void sendPrisonCourtRegisterV2(final JsonEnvelope envelope) {
+        LOGGER.info("progression.event.prison-court-register-generated {}", envelope.payload());
+        final JsonObject payload = envelope.payloadAsJsonObject();
+        final PrisonCourtRegisterGenerated prisonCourtRegisterGenerated = converter.convert(payload, PrisonCourtRegisterGenerated.class);
+        final PrisonCourtRegisterDefendant defendant = prisonCourtRegisterGenerated.getDefendant();
+        final PrisonCourtRegisterHearingVenue hearingVenue = prisonCourtRegisterGenerated.getHearingVenue();
+        final UUID fileId = prisonCourtRegisterGenerated.getFileId();
+
+
+        final JsonArray recipients = payload.getJsonArray(FIELD_RECIPIENTS);
+
+        final String emailSubject = String.format("RESULTS SUMMARY: %s; %s; %s; %s",
+                getCourtHouse(hearingVenue), defendant.getName(), getDefendantDateOfBirth(defendant), generateURN(defendant));
+
+        recipients.stream().map(JsonObject.class::cast)
+                .filter(recipient -> recipient.containsKey("emailAddress1"))
+                .flatMap(recipient -> Stream.of(
+                        new EmailPair(recipient.getString("emailAddress1"), recipient.getString("emailTemplateName")))
+                )
+                .filter(pair -> !Strings.isNullOrEmpty(pair.getEmail()))
+                .forEach(pair -> {
+                    final JsonObjectBuilder notifyObjectBuilder = createObjectBuilder();
+                    notifyObjectBuilder.add(FIELD_NOTIFICATION_ID, UUID.randomUUID().toString());
+                    notifyObjectBuilder.add(FIELD_TEMPLATE_ID, applicationParameters.getEmailTemplateId(pair.getTemplate()));
+                    notifyObjectBuilder.add(SEND_TO_ADDRESS, pair.getEmail());
+                    notifyObjectBuilder.add(FILE_ID, fileId.toString());
+                    notifyObjectBuilder.add(PERSONALISATION, createObjectBuilder()
+                            .add("subject", emailSubject)
+                            .add("name_of_defendant", defendant.getName())
+                            .build());
+
+                    this.notificationNotifyService.sendEmailNotification(envelope, notifyObjectBuilder.build());
+                });
+    }
+
     private String getDefendantDateOfBirth(final PrisonCourtRegisterDefendant defendant) {
         if(nonNull(defendant.getDateOfBirth())) {
             return defendant.getDateOfBirth();
